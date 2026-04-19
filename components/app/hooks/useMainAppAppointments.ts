@@ -255,6 +255,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
           consultationSourceAppointmentId: firstExternal.consultationSourceAppointmentId,
           consultationSourceCompletedAt: firstExternal.consultationSourceCompletedAt,
           consultationSourceRecordId: firstExternal.consultationSourceRecordId,
+          branchId: firstExternal.branchId,
         });
       }
     }
