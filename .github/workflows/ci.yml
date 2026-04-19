@@ -88,7 +88,7 @@ jobs:
           channelId: live
           projectId: gen-lang-client-0444130146
 
-      - name: Deploy Firestore Rules
-        run: npx firebase-tools deploy --only firestore:rules,storage
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      # Firestore Rules و Storage Rules بيتنشروا يدوياً من الجهاز المحلي
+      # باستخدام: firebase deploy --only firestore:rules,storage
+      # لتوفير الحاجة لـ FIREBASE_TOKEN secret. يتم نشرهم فقط عند تعديل
+      # القواعد نفسها (نادراً ما يحصل بعد الإطلاق).
