@@ -164,7 +164,11 @@ const readJsonIfExists = async (absolutePath) => {
 const ensureConsoleFilterInstalled = async (cwd) => {
   const indexFile = path.resolve(cwd, 'index.tsx');
   const content = await readFile(indexFile, 'utf8');
-  const hasImport = content.includes("import { installConsoleProductionFilter } from './utils/installConsoleProductionFilter';");
+  // نقبل إما static import أو dynamic import — dynamic بنستخدمه لتأجيل
+  // التحميل وتسريع boot بدون ما نخسر الحماية.
+  const hasStaticImport = content.includes("import { installConsoleProductionFilter } from './utils/installConsoleProductionFilter';");
+  const hasDynamicImport = content.includes("import('./utils/installConsoleProductionFilter')");
+  const hasImport = hasStaticImport || hasDynamicImport;
   const hasCall = content.includes('installConsoleProductionFilter();');
   return hasImport && hasCall;
 };
