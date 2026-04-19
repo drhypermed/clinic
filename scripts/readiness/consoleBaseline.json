@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-04-18T08:34:22.416Z",
+  "counts": {
+    "debug": 0,
+    "info": 7,
+    "log": 77,
+    "warn": 128,
+    "error": 251
+  }
+}

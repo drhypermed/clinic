@@ -1,0 +1,154 @@
+/**
+ * Hook مراقب بنرات الصفحة الرئيسية (useHomepageBanner):
+ * يقوم هذا الـ Hook بجلب وإدارة البنرات الإعلانية أو التنبيهات التي تظهر في الواجهة:
+ * 1. دعم جمهورين مختلفين (الأطباء والجمهور العام).
+ * 2. تدوير تلقائي للصور (Rotation) بناءً على إعدادات المؤقت.
+ * 3. فحص صلاحية انتهاء البنرات (Expiry Check).
+ * 4. معالجة الروابط (CTA) والعناوين الفرعية.
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import { doc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
+import { getDocCacheFirst } from '../services/firestore/cacheFirst';
+import { useTrustedNow } from './useTrustedNow';
+import { filterActiveBannerItems } from '../utils/homepageBannerTime';
+
+/** الفئات المستهدفة للبنرات */
+type HomepageBannerAudience = 'doctors' | 'public';
+
+/** هيكل بيانات العنصر الواحد في البنر */
+interface HomepageBannerItem {
+  imageUrl: string;
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  targetUrl?: string;
+  isActive?: boolean;
+  displaySeconds?: number;
+  expiresAt?: string;
+}
+
+/** هيكل البيانات الكامل للإعدادات القادمة من Firestore */
+interface HomepageBannerData {
+  imageUrl?: string;
+  imageUrls?: string[];
+  items?: HomepageBannerItem[];
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  targetUrl?: string;
+  isActive?: boolean;
+  bannerHeight?: number;
+  rotationSeconds?: number;
+}
+
+/** أسماء الوثائق في Firestore حسب الجمهور المستهدف */
+const BANNER_SETTINGS_DOC_BY_AUDIENCE: Record<HomepageBannerAudience, string> = {
+  doctors: 'homepageBanner',
+  public: 'homepageBannerPublic',
+};
+
+/**
+ * وظيفة توحيد البيانات (Normalization) لضمان العمل مع الإصدارات القديمة والجديدة للهيكل
+ */
+const normalizeBannerData = (data: HomepageBannerData, nowMs: number): HomepageBannerData => {
+  const normalizedUrls = Array.isArray(data.imageUrls)
+    ? data.imageUrls.filter(Boolean)
+    : data.imageUrl
+      ? [data.imageUrl]
+      : [];
+
+  const normalizedItems: HomepageBannerItem[] = Array.isArray(data.items)
+    ? data.items
+      .filter((item) => !!item?.imageUrl)
+      .map((item) => ({
+        ...item,
+        displaySeconds: Math.max(1, Number(item.displaySeconds) || Math.max(1, Number(data.rotationSeconds) || 5)),
+        expiresAt: item.expiresAt || '',
+      }))
+    : normalizedUrls.map((url, index) => ({
+      imageUrl: url,
+      title: index === 0 ? data.title : '',
+      subtitle: index === 0 ? data.subtitle : '',
+      ctaText: index === 0 ? data.ctaText : '',
+      targetUrl: index === 0 ? data.targetUrl : '',
+      isActive: true,
+      displaySeconds: Math.max(1, Number(data.rotationSeconds) || 5),
+      expiresAt: '',
+    }));
+
+  // فلترة العناصر الفعالة وغير منتهية الصلاحية
+  const activeItems = filterActiveBannerItems(normalizedItems, nowMs);
+
+  return {
+    ...data,
+    items: normalizedItems,
+    imageUrls: activeItems.map((item) => item.imageUrl),
+    imageUrl: activeItems[0]?.imageUrl || normalizedUrls[0] || data.imageUrl,
+    title: activeItems[0]?.title || data.title,
+    subtitle: activeItems[0]?.subtitle || data.subtitle,
+    ctaText: activeItems[0]?.ctaText || data.ctaText,
+    targetUrl: activeItems[0]?.targetUrl || data.targetUrl,
+    bannerHeight: data.bannerHeight || 500,
+    rotationSeconds: Math.max(1, Number(data.rotationSeconds) || 5),
+  };
+};
+
+/**
+ * Hook لجلب البنر الفعال حالياً.
+ * @param audience الجمهور المستهدف (doctors افتراضياً).
+ */
+export const useHomepageBanner = (audience: HomepageBannerAudience = 'doctors') => {
+  const [rawBanner, setRawBanner] = useState<HomepageBannerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  // البنرات تنتهي صلاحيتها بالأيام وليس الثواني، 5 دقائق كافية لإعادة الحساب
+  const { nowMs } = useTrustedNow({ tickMs: 5 * 60 * 1000, syncIntervalMs: 30 * 60 * 1000 });
+
+  const banner = useMemo(() => {
+    return rawBanner ? normalizeBannerData(rawBanner, nowMs) : null;
+  }, [rawBanner, nowMs]);
+
+  useEffect(() => {
+    const docId = BANNER_SETTINGS_DOC_BY_AUDIENCE[audience] || 'homepageBannerDoctors';
+    const docRef = doc(db, 'settings', docId);
+
+    let isCancelled = false;
+
+    // 1. استرجاع سريع من الكاش (Cache-First)
+    const loadFromCache = async () => {
+      try {
+        const snap = await getDocCacheFirst(docRef);
+        if (isCancelled) return;
+        if (!snap.exists()) {
+          setRawBanner(null);
+          setLoading(false);
+          return;
+        }
+        setRawBanner(snap.data() as HomepageBannerData);
+        setLoading(false);
+      } catch (err) {
+        if (!isCancelled) setLoading(false);
+        console.warn('Banner cache load failed:', err);
+      }
+    };
+    
+    // البنرات بتتغير كل شهر — كاش يكفي بدل مراقبة مستمرة
+    void loadFromCache();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [audience]);
+
+  return {
+    banner,
+    loading,
+    isVisible: !!(
+      banner?.isActive &&
+      ((banner?.items && banner.items.some((item) => item.isActive !== false && !!item.imageUrl)) ||
+        (banner?.imageUrls && banner.imageUrls.length > 0) ||
+        banner?.imageUrl)
+    ),
+  };
+};

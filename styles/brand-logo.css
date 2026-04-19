@@ -1,0 +1,51 @@
+/*
+  ===============================================================
+  brand-logo.css
+  أنيميشن الشعار الموحّد (لمعة منسابة على سطح اللوجو)
+  يُستخدم في LandingPage و صفحات تسجيل الدخول و الـ Sidebar.
+  ===============================================================
+*/
+
+@keyframes dh-logo-sweep {
+  0%   { background-position: 220% 50%; }
+  100% { background-position: -220% 50%; }
+}
+
+.dh-logo-stage {
+  position: relative;
+}
+
+.dh-logo-stage--glow {
+  filter: drop-shadow(0 10px 24px rgba(37, 99, 235, 0.22));
+}
+
+.dh-logo-base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dh-logo-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask: url('/logo.png') center/contain no-repeat;
+          mask: url('/logo.png') center/contain no-repeat;
+  background: linear-gradient(115deg,
+    rgba(255, 255, 255, 0)   0%,
+    rgba(147, 197, 253, .18) 34%,
+    rgba(196, 181, 253, .38) 46%,
+    rgba(255, 255, 255, .55) 50%,
+    rgba(196, 181, 253, .38) 54%,
+    rgba(147, 197, 253, .18) 66%,
+    rgba(255, 255, 255, 0)   100%);
+  background-size: 280% 100%;
+  mix-blend-mode: overlay;
+  animation: dh-logo-sweep 12s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dh-logo-shine { animation: none; opacity: 0; }
+}

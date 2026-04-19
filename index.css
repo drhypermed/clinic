@@ -1,0 +1,10 @@
+@import './styles/admin-modern-unified.css';
+@import './styles/brand-logo.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  تم نقل كل الـ CSS المخصص إلى ملفات مجزأة داخل مجلد styles/ للمحافظة على التنظيم.
+  ترتيب التحميل يتم من index.html بنفس المنطق السابق وبدون تغيير سلوك التطبيق.
+*/

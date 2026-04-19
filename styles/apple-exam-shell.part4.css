@@ -1,0 +1,921 @@
+@media (max-width: 640px) {
+  .apple-exam-shell {
+    padding: 0.9rem;
+    border-radius: 22px;
+  }
+
+  .clinic-section-header {
+    padding: 10px 12px;
+  }
+
+  .clinic-section-header__title {
+    font-size: 1rem;
+  }
+}
+
+@keyframes dh-hyper-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes dh-ai-button-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes dh-ai-spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dh-ai-spinner-pulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(0.82);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dh-reveal-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.992);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.dh-hyper-animated-gradient {
+  background-image: linear-gradient(112deg,
+      #f97316 0%,
+      #facc15 18%,
+      #fff7ed 34%,
+      #ffffff 44%,
+      #38bdf8 58%,
+      #2563eb 76%,
+      #f97316 100%);
+  background-size: 300% 300%;
+  animation: dh-hyper-gradient-shift 20s linear infinite;
+  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.34));
+}
+
+/* Prescription editor: 2026 SaaS refresh */
+.prescription-workspace {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+.prescription-editor,
+.prescription-preview-panel {
+  min-width: 0;
+}
+
+.apple-exam-shell.new-exam-shell {
+  --rx-primary: #2563eb;
+  --rx-primary-strong: #1d4ed8;
+  --rx-primary-soft: rgba(59, 130, 246, 0.1);
+  --rx-accent: #93c5fd;
+  --rx-border: rgba(148, 163, 184, 0.25);
+  --rx-border-strong: rgba(100, 116, 139, 0.4);
+  --rx-surface: #ffffff;
+  --rx-surface-subtle: #f8fafc;
+  --rx-muted: #475569;
+  --rx-title: #0f172a;
+  --rx-unified-gradient: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+  --rx-unified-gradient-strong: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --rx-unified-shadow: rgba(37, 99, 235, 0.72);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.apple-exam-shell.new-exam-shell::before {
+  display: none !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-exam-stack {
+  display: grid;
+  gap: 0.75rem !important;
+  background: transparent !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-exam-stack > * {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-exam-stack > * + * {
+  border-top: 0 !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section,
+.apple-exam-shell.new-exam-shell .apple-quick-search,
+.prescription-preview-panel {
+  position: relative;
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.05),
+    0 4px 16px -8px rgba(15, 23, 42, 0.08),
+    0 16px 36px -20px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* قسم البحث السريع: شريط التدرج عبر طبقة الخلفية — يضمن الحواف الدائرية دون الحاجة لـoverflow:hidden */
+.apple-exam-shell.new-exam-shell .apple-quick-search {
+  border-top: 1px solid rgba(148, 163, 184, 0.3) !important;
+  background:
+    linear-gradient(90deg,
+      rgba(37, 99, 235, 0.72) 0%,
+      rgba(29, 78, 216, 0.72) 100%) 0 0 / 100% 4px no-repeat,
+    #ffffff !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section,
+.apple-exam-shell.new-exam-shell .apple-quick-search {
+  padding: 0.85rem 0.95rem 0.9rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .space-y-3,
+.apple-exam-shell.new-exam-shell .space-y-4,
+.apple-exam-shell.new-exam-shell .space-y-6 {
+  --tw-space-y-reverse: 0;
+  margin-top: 0 !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section::before {
+  display: none !important;
+}
+
+/* apple-quick-search يستخدم طبقة الخلفية بدلاً من ::after لأنه يفتقر لـoverflow:hidden */
+.apple-exam-shell.new-exam-shell .clinic-section::after {
+  /* شريط علوي موحّد خفيف لكل الأقسام والبحث السريع */
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 10px;
+  left: 10px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--rx-unified-gradient) !important;
+  opacity: 0.72;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0 0.4rem !important;
+  margin-bottom: 0.55rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header__group {
+  gap: 0.7rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header__bar,
+.apple-exam-shell.new-exam-shell .apple-quick-search__bar,
+.apple-exam-shell.new-exam-shell .apple-quick-search__bar-small {
+  display: block !important;
+  background: var(--rx-unified-gradient-strong) !important;
+  opacity: 0.78;
+  box-shadow: 0 6px 12px -10px var(--rx-unified-shadow) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header__bar {
+  width: 4px !important;
+  height: 28px !important;
+  border-radius: 999px !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header__title,
+.apple-exam-shell.new-exam-shell .apple-quick-search__title {
+  color: var(--rx-title) !important;
+  font-size: 0.98rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.01em;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-section-header__title {
+  margin-bottom: 0.05rem;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-action {
+  padding: 0.72rem 1rem !important;
+  border-radius: 18px !important;
+  background: var(--rx-unified-gradient-strong) !important;
+  box-shadow: 0 12px 24px -22px rgba(37, 99, 235, 0.54) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field,
+.apple-exam-shell.new-exam-shell .clinic-section select,
+.apple-exam-shell.new-exam-shell .apple-quick-search__input {
+  background: var(--rx-surface) !important;
+  /*
+    توحيد اتجاه الشريط الجانبي للخانات الصغيرة:
+    - `border-right` هو الشريط المميز الثابت لكل الخانات.
+    - `border-left` مرجّع للحد العادي حتى مايبقاش فيه يمين/شمال مختلف.
+    غيّر السمك/اللون من السطرين دول لو عايز تعديل يدوي سريع.
+  */
+  border: 1px solid rgba(148, 163, 184, 0.32) !important;
+  border-left: 1px solid rgba(148, 163, 184, 0.32) !important;
+  border-right: 2px solid rgba(59, 130, 246, 0.3) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 2px 8px -4px rgba(15, 23, 42, 0.05) !important;
+  color: #0f172a !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.apple-exam-shell.new-exam-shell input.clinic-field,
+.apple-exam-shell.new-exam-shell .clinic-section select,
+.apple-exam-shell.new-exam-shell .apple-quick-search__input {
+  min-height: 40px;
+  padding-top: 0.7rem !important;
+  padding-bottom: 0.55rem !important;
+  font-size: 0.88rem !important;
+}
+
+.apple-exam-shell.new-exam-shell textarea.clinic-field {
+  min-height: 46px !important;
+  padding-top: 0.82rem !important;
+  padding-bottom: 0.62rem !important;
+  line-height: 1.38 !important;
+  font-size: 0.9rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field--compact {
+  min-height: 36px !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field--readonly {
+  background: #f8fafc !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field:hover,
+.apple-exam-shell.new-exam-shell .clinic-section select:hover,
+.apple-exam-shell.new-exam-shell .apple-quick-search__input:hover {
+  border-color: var(--rx-border-strong) !important;
+  border-left-color: var(--rx-border-strong) !important;
+  border-right-color: rgba(71, 85, 105, 0.64) !important;
+  box-shadow: 0 8px 18px -20px rgba(15, 23, 42, 0.12) !important;
+  transform: none;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field:focus,
+.apple-exam-shell.new-exam-shell .clinic-field:focus-within,
+.apple-exam-shell.new-exam-shell .clinic-section select:focus,
+.apple-exam-shell.new-exam-shell .apple-quick-search__input:focus {
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  border-left-color: rgba(59, 130, 246, 0.45) !important;
+  border-right-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 8px -4px rgba(59, 130, 246, 0.18) !important;
+  transform: none;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-field::placeholder,
+.apple-exam-shell.new-exam-shell .apple-quick-search__input::placeholder {
+  color: rgba(100, 116, 139, 0.62) !important;
+  font-size: 0.74rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+}
+
+.apple-exam-shell.new-exam-shell button,
+.prescription-actions-wrapper button {
+  transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.22s ease, transform 0.18s ease, filter 0.2s ease;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-float-label {
+  background: #ffffff !important;
+  color: #2d4a63 !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  border-radius: 999px !important;
+  padding: 2px 8px !important;
+  top: 0 !important;
+  right: 0.9rem !important;
+  transform: translateY(-52%) !important;
+  z-index: 8 !important;
+  font-size: 10.5px !important;
+  font-weight: 900 !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-label,
+.apple-exam-shell.new-exam-shell .apple-quick-search__subtitle {
+  color: #334155 !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-unit,
+.apple-exam-shell.new-exam-shell .text-slate-500,
+.apple-exam-shell.new-exam-shell .text-slate-400 {
+  color: #566879 !important;
+}
+
+.apple-exam-shell.new-exam-shell .relative:has(> .clinic-float-label),
+.apple-exam-shell.new-exam-shell .group:has(> .clinic-float-label) {
+  padding-top: 0.42rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-card::after {
+  display: none !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-btn {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 20px !important;
+  background: var(--rx-unified-gradient-strong) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 14px 24px -22px rgba(37, 99, 235, 0.62) !important;
+  transition: background 0.28s ease, filter 0.24s ease, box-shadow 0.24s ease, transform 0.18s ease;
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-btn:hover:not(:disabled) {
+  filter: saturate(1.06) brightness(1.03);
+  box-shadow: 0 18px 28px -22px rgba(37, 99, 235, 0.7) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-btn:disabled {
+  opacity: 0.96;
+  cursor: not-allowed;
+}
+
+.analyze-ai-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.analyze-ai-btn.is-analyzing {
+  background-image: linear-gradient(120deg, #1d4ed8 0%, #2563eb 52%, #1d4ed8 100%) !important;
+  background-size: 220% 220%;
+  animation: dh-ai-button-flow 2.2s linear infinite;
+}
+
+.analyze-ai-btn__spinner {
+  position: relative;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: 0 0 auto;
+}
+
+.analyze-ai-btn__spinner-circle {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 2.2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  animation: dh-ai-spinner-rotate 0.8s linear infinite;
+  flex: 0 0 auto;
+}
+
+.analyze-ai-btn__spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, rgba(255, 255, 255, 0.2) 0deg, rgba(255, 255, 255, 0.98) 120deg, rgba(255, 255, 255, 0.2) 360deg);
+  animation: dh-ai-spinner-rotate 0.95s linear infinite;
+}
+
+.analyze-ai-btn__spinner-ring::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 999px;
+  background: rgba(14, 116, 144, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.analyze-ai-btn__spinner-dot {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 999px;
+  background: #f8fafc;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  animation: dh-ai-spinner-pulse 0.95s ease-in-out infinite;
+}
+
+.analyze-inline-cancel-btn {
+  align-self: center;
+  border: 1px solid rgba(5, 150, 105, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  color: #065f46;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 11px;
+  font-weight: 800;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.analyze-inline-cancel-btn:hover {
+  background: rgba(236, 253, 245, 0.98);
+  border-color: rgba(5, 150, 105, 0.4);
+}
+
+.analyze-inline-cancel-btn:active {
+  transform: scale(0.98);
+}
+
+/* === تحليل الحالة: زر inline أنيق === */
+.analyze-action-btn {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 3px 10px -4px rgba(51, 65, 85, 0.45),
+    0 1px 3px rgba(51, 65, 85, 0.18) !important;
+  white-space: nowrap;
+}
+.analyze-action-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  box-shadow: 0 5px 16px -5px rgba(30, 41, 59, 0.5) !important;
+  transform: translateY(-1px);
+}
+.analyze-action-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+.analyze-subtitle {
+  color: #94a3b8 !important;
+}
+
+/* === prescription actions bar === */
+.prescription-actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+.prescription-actions-print-row,
+.prescription-actions-save-row,
+.prescription-actions-tools-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* الموبايل */
+@media (max-width: 767px) {
+  /* صف الأزرار الخضراء الثلاثة في سطر واحد */
+  .prescription-actions-print-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .prescription-actions-print-row > .rx-gradient-btn {
+    width: 100%;
+    flex: unset;
+    min-width: 0;
+  }
+
+  /* صف الحفظ: حفظ في السجلات + حفظ روشتة جاهزة جمب بعض */
+  .prescription-actions-save-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .prescription-actions-save-row > button {
+    width: 100%;
+    flex: unset;
+    min-width: 0;
+  }
+
+  /* صف الأدوات: بيانات فقط + رجوع/إعادة */
+  .prescription-actions-tools-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .prescription-actions-tools-row > .rx-gradient-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .prescription-actions-wrapper .rx-gradient-btn {
+    white-space: normal;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    font-size: 11px;
+    line-height: 1.15;
+  }
+}
+
+.prescription-actions-history-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+/* أزرار الإجراءات: لون موحد متسق مع ثيم "كشف جديد" */
+.prescription-actions-wrapper .rx-gradient-btn {
+  min-height: 42px;
+  border: 1px solid transparent;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow:
+    0 12px 22px -16px rgba(15, 23, 42, 0.42),
+    0 1px 4px rgba(15, 23, 42, 0.2);
+}
+
+.prescription-actions-wrapper .rx-gradient-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: saturate(1.06) brightness(1.02);
+}
+
+.prescription-actions-wrapper .rx-gradient-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.prescription-actions-wrapper .rx-gradient-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* الافتراضي: باقي أزرار الإجراءات تدرج أزرق موحد */
+.prescription-actions-wrapper .rx-gradient-btn--blue,
+.prescription-actions-wrapper .rx-gradient-btn--amber,
+.prescription-actions-wrapper .rx-gradient-btn--violet {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  border-color: rgba(37, 99, 235, 0.62) !important;
+  font-weight: 900 !important;
+  box-shadow:
+    0 14px 24px -22px rgba(37, 99, 235, 0.62),
+    0 1px 4px rgba(15, 23, 42, 0.2) !important;
+}
+
+.prescription-actions-wrapper .rx-gradient-btn--blue:hover:not(:disabled),
+.prescription-actions-wrapper .rx-gradient-btn--amber:hover:not(:disabled),
+.prescription-actions-wrapper .rx-gradient-btn--violet:hover:not(:disabled) {
+  filter: saturate(1.06) brightness(1.03);
+  box-shadow: 0 18px 28px -22px rgba(37, 99, 235, 0.7) !important;
+}
+
+/* أزرار (طباعة / تنزيل الروشتة / إرسال واتساب) — نفس التدرج الأخضر المستخدم في باقي الصفحات */
+.prescription-actions-wrapper .prescription-actions-print-row > .rx-gradient-btn--green {
+  background: linear-gradient(135deg, #059669 0%, #10b981 52%, #34d399 100%) !important;
+  border-color: rgba(5, 150, 105, 0.58) !important;
+  box-shadow:
+    0 14px 24px -22px rgba(5, 150, 105, 0.62),
+    0 1px 4px rgba(15, 23, 42, 0.2) !important;
+}
+
+.prescription-actions-wrapper .prescription-actions-print-row > .rx-gradient-btn--green:hover:not(:disabled) {
+  filter: saturate(1.06) brightness(1.03);
+  box-shadow: 0 18px 28px -22px rgba(5, 150, 105, 0.7) !important;
+}
+
+.rx-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  color: #047857;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.rx-icon-btn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+.rx-icon-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border-color: rgba(5, 150, 105, 0.34);
+}
+
+@media (min-width: 768px) {
+  /* على الديسكتوب: سطرين فقط — الأول أخضر، والثاني يجمع save-row و tools-row */
+  .prescription-actions-wrapper {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .prescription-actions-print-row {
+    flex: 0 0 100%;
+    width: 100%;
+    gap: 0.3rem;
+  }
+
+  .prescription-actions-save-row {
+    flex: 1 1 auto;
+    width: auto;
+    gap: 0.3rem;
+  }
+
+  .prescription-actions-tools-row {
+    flex: 0 0 auto;
+    width: auto;
+    gap: 0.3rem;
+    margin-inline-start: auto;
+  }
+
+  .prescription-actions-wrapper .rx-gradient-btn {
+    min-height: 38px;
+  }
+
+  .rx-icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+}
+
+.apple-exam-shell.new-exam-shell .apple-action-note {
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff7ed;
+  color: #9a3412;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__input {
+  padding-right: 3rem !important;
+  padding-left: 3rem !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__icon {
+  color: #94a3b8 !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__actions {
+  background: transparent !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn {
+  min-height: 44px;
+  border-radius: 14px !important;
+}
+
+/* شرح سريع: هذه المجموعة تجعل أزرار الإضافة اليدوية بنفس أسلوب زر "تحليل الحالة" */
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn {
+  color: #ffffff !important;
+  border: 1px solid transparent !important;
+  box-shadow:
+    0 12px 24px -18px rgba(15, 23, 42, 0.46),
+    0 1px 4px rgba(15, 23, 42, 0.2) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--ready,
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--note {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: rgba(4, 120, 87, 0.58) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--ready {
+  background: var(--rx-unified-gradient-strong) !important;
+  border-color: rgba(37, 99, 235, 0.62) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--active {
+  background: var(--rx-unified-gradient-strong) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(37, 99, 235, 0.62) !important;
+  box-shadow: 0 8px 16px -10px rgba(37, 99, 235, 0.62) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--consultation-active {
+  background: linear-gradient(135deg, #059669 0%, #10b981 52%, #34d399 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(5, 150, 105, 0.62) !important;
+  box-shadow: 0 8px 16px -10px rgba(5, 150, 105, 0.48) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--insurance-active {
+  background: linear-gradient(135deg, #047857 0%, #059669 52%, #10b981 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(4, 120, 87, 0.66) !important;
+  box-shadow: 0 8px 16px -10px rgba(4, 120, 87, 0.5) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--discount-active {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 52%, #f87171 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(220, 38, 38, 0.66) !important;
+  box-shadow: 0 8px 16px -10px rgba(220, 38, 38, 0.5) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--idle {
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: #1d4ed8 !important;
+  border: 1px solid rgba(37, 99, 235, 0.24) !important;
+}
+
+.apple-exam-shell.new-exam-shell .clinic-toggle-btn--idle:hover {
+  background: rgba(37, 99, 235, 0.14) !important;
+  border-color: rgba(37, 99, 235, 0.4) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--med,
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--lab,
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn--advice {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: rgba(4, 120, 87, 0.58) !important;
+}
+
+.apple-exam-shell.new-exam-shell .apple-quick-search__action-btn.manual-action-btn:hover {
+  filter: saturate(1.06) brightness(1.02);
+  transform: translateY(-1px);
+}
+
+.prescription-preview-panel {
+  padding: 1rem 0.85rem 0.85rem !important;
+  background: linear-gradient(165deg, #ebeff5 0%, #dde5ef 50%, #e5edf5 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.08) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 8px 32px -16px rgba(15, 23, 42, 0.14),
+    0 32px 64px -40px rgba(15, 23, 42, 0.16) !important;
+}
+
+.prescription-preview-panel #printable-prescription {
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.05),
+    0 8px 28px -8px rgba(0, 0, 0, 0.14),
+    0 20px 48px -16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.prescription-preview-panel .prescription-actions-wrapper {
+  padding: 0 !important;
+}
+
+.prescription-preview-panel .prescription-preview-root {
+  background: transparent !important;
+}
+
+.prescription-preview-panel .prescription-preview-toolbar > div {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+@media (min-width: 768px) {
+  .prescription-preview-panel .prescription-preview-toolbar > div {
+    padding-inline: 0 !important;
+  }
+}
+
+.prescription-actions {
+  justify-content: flex-start !important;
+}
+
+@media (min-width: 640px) {
+  .apple-exam-shell.new-exam-shell .clinic-section,
+  .apple-exam-shell.new-exam-shell .apple-quick-search {
+    padding: 0.95rem 1rem 1rem !important;
+  }
+
+  .prescription-preview-panel {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .prescription-editor-grid {
+    display: block;
+  }
+}
+
+.prescription-editor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.prescription-editor-grid .editor-block,
+.prescription-preview-panel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.prescription-editor-grid .editor-block.reveal-on-scroll,
+.prescription-preview-panel.reveal-on-scroll {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0) scale(0.994);
+  will-change: transform, opacity;
+}
+
+.prescription-editor-grid .editor-block.reveal-on-scroll.is-in-view,
+.prescription-preview-panel.reveal-on-scroll.is-in-view {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: dh-reveal-up 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+/* تنعيم عرض التاريخ على الموبايل: نعتمد نصاً موحداً فوق input التاريخ نفسه. */
+.apple-exam-shell.new-exam-shell input[type='date'][aria-label='تاريخ الزيارة'] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prescription-editor-grid .editor-block.reveal-on-scroll,
+  .prescription-preview-panel.reveal-on-scroll,
+  .prescription-editor-grid .editor-block.reveal-on-scroll.is-in-view,
+  .prescription-preview-panel.reveal-on-scroll.is-in-view {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* زر الحفظ الأساسي (الأزرق) */
+.prescription-save-cta {
+  letter-spacing: -0.01em;
+}
+
+.prescription-save-cta:hover:not(:disabled) {
+  letter-spacing: -0.012em;
+}
+
+.prescription-save-cta:active:not(:disabled) {
+  letter-spacing: -0.01em;
+}
+
+

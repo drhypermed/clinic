@@ -1,0 +1,147 @@
+/*
+  ===============================================================
+  layout-viewport.css
+  هذا الملف مسؤول عن القواعد العامة للعرض على الموبايل والـ RTL.
+  الجزء 1: منع خروج العرض أفقيًا (overflow-x).
+  الجزء 2: تثبيت سلوك #root و section داخل حدود الشاشة.
+  الجزء 3: خلفية صفحة الروشتة clinic-page وتأثير الطبقة الخلفية.
+  ===============================================================
+*/
+
+/* الجزء التفصيلي 1: منع القص الأفقي على الشاشات الصغيرة */
+/* Mobile Layout Fix - Prevent clipping on small screens */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  font-family: 'Cairo', sans-serif;
+}
+
+/* الشريط الجانبي الثابت — ضمان عدم تحرك السايدبار عند ظهور/اختفاء شريط التمرير */
+/* scrollbar-gutter على html يؤثر على نافذة العرض (viewport) مما يثبت موضع العناصر المثبتة (fixed) */
+@media (min-width: 768px) {
+  html {
+    scrollbar-gutter: stable;
+  }
+}
+
+/* الجزء التفصيلي 2: تثبيت حاوية التطبيق الرئيسية داخل عرض الشاشة */
+/* Ensure main app container prevents scrolling */
+#root {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* الجزء التفصيلي 3: فرض المحاذاة الصحيحة عند اتجاه RTL */
+/* For RTL layouts - ensure proper alignment */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* الجزء التفصيلي 4: إجبار كل section على احترام عرض الـ viewport */
+/* Ensure all sections respect viewport width */
+section {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* الجزء التفصيلي 5: خلفية صفحة الروشتة والطبقة الزخرفية الخلفية */
+/* Prescription view background */
+.clinic-page {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, #eff6ff 0%, #e0ecff 52%, #dbeafe 100%);
+}
+
+.clinic-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.75;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at center, #000 30%, transparent 100%);
+}
+
+.prescription-page {
+  background: #ffffff !important;
+}
+
+.prescription-page::before {
+  display: none !important;
+}
+
+.prescription-page .prescription-main {
+  background: #ffffff !important;
+}
+
+.prescription-main {
+  padding-inline: 0.75rem !important;
+}
+
+@media (min-width: 640px) {
+  .prescription-main {
+    padding-inline: 1rem !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .prescription-main {
+    padding-inline: 1.1rem !important;
+  }
+}
+
+/* ===============================================================
+   أنيميشن عام لكل صفحات التطبيق (فتح + أثناء السكرول)
+   - يتم تفعيل الكلاس app-reveal-item من MainAppCore باستخدام IntersectionObserver.
+   - الهدف: حركة سلسة بدون تقطيع بصري أثناء التمرير.
+   =============================================================== */
+
+@keyframes app-reveal-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.993);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.app-reveal-item {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-reveal-item:not(.is-in-view) {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0) scale(0.994);
+  will-change: transform, opacity;
+}
+
+.app-reveal-item.is-in-view {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: app-reveal-up 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-reveal-item,
+  .app-reveal-item:not(.is-in-view),
+  .app-reveal-item.is-in-view {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+

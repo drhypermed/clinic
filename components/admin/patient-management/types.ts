@@ -1,0 +1,54 @@
+import { Dispatch, SetStateAction, ReactNode } from 'react';
+import { PublicUserBooking } from '../../../types';
+
+export interface PatientAccount {
+  id: string;
+  name: string;
+  email: string;
+  createdAt?: string;
+  lastLoginAt?: string;
+  isAccountDisabled?: boolean;
+  disabledReason?: string;
+  disabledAt?: string;
+  verificationStatus?: string;
+  totalAppointments: number;
+  completedAppointments: number;
+  totalReviews: number;
+  averageRating: string;
+  bookings: PublicUserBooking[];
+}
+
+export interface PatientManagementPanelProps {
+  currentView: string;
+}
+
+type HighlightMatchFn = (value: string | undefined | null) => ReactNode;
+
+export interface PatientManagementTableProps {
+  patients: PatientAccount[];
+  filteredPatients: PatientAccount[];
+  highlightMatch: HighlightMatchFn;
+  onDisableAccount: (patientId: string) => Promise<void> | void;
+  onEnableAccount: (patientId: string) => Promise<void> | void;
+  onDeletePatient: (patientId: string) => Promise<void> | void;
+  onOpenReviews: (patient: PatientAccount) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => Promise<void> | void;
+}
+
+export interface PatientReviewsModalProps {
+  selectedPatientId: string;
+  selectedPatientName: string;
+  selectedPatientReviews: PublicUserBooking[] | null;
+  highlightMatch: HighlightMatchFn;
+  onDeleteReview: (patientId: string, bookingId: string) => Promise<void> | void;
+  onClose: () => void;
+}
+
+export interface UsePatientManagementActionsParams {
+  isAdminUser: boolean;
+  adminEmail?: string | null;
+  setPatients: Dispatch<SetStateAction<PatientAccount[]>>;
+  setSelectedPatientReviews: Dispatch<SetStateAction<PublicUserBooking[] | null>>;
+}

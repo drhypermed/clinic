@@ -1,0 +1,149 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// أنواع ملف الطبيب العام ومراجعات الجمهور (Doctor Public Profile)
+// ─────────────────────────────────────────────────────────────────────────────
+// يحتوي على:
+//   - DoctorClinicScheduleRow: سطر من مواعيد العمل
+//   - DoctorClinicServiceRow: سطر من الخدمات والأسعار
+//   - DoctorAdProfile: ملف الطبيب الكامل للعرض في الدليل العام
+//   - PublicUserBooking: حجز من جمهور مسجل (غير حجوزات السكرتارية)
+//   - DoctorPublicReview: مراجعة عامة من مريض بعد الكشف
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** صف واحد في جدول مواعيد عمل الطبيب (مثلاً: الأحد من 10ص إلى 2م) */
+export interface DoctorClinicScheduleRow {
+  id: string;
+  day: string;
+  from: string;
+  to: string;
+  notes?: string;
+}
+
+/** صف واحد في جدول الخدمات والأسعار في ملف الطبيب (مثلاً: كشف عام 300ج) */
+export interface DoctorClinicServiceRow {
+  id: string;
+  name: string;
+  price: number | null;
+  discountedPrice?: number | null;
+}
+
+/**
+ * وسيلة تواصل إضافية في ملف الطبيب (فيسبوك، تويتر، إنستا ...).
+ * النوع داخلي فقط (مش مُصدَّر) لأنه جزء تفصيلي من DoctorAdProfile.
+ */
+interface DoctorSocialLink {
+  id: string;
+  platform: string;
+  url: string;
+}
+
+/**
+ * ملف الطبيب العام (الإعلاني) — ده اللي بيظهر في دليل الأطباء للجمهور.
+ * الحقول الاختيارية متفاوتة: بعضها للاشتراك المميز فقط، وبعضها إحصائيات داخلية.
+ */
+export interface DoctorAdProfile {
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  academicDegree?: string;
+  subSpecialties?: string;
+  featuredServicesSummary?: string;
+  workplace?: string;
+  extraInfo?: string;
+  profileImage?: string;
+  clinicName?: string;
+  bio: string;
+
+  // العنوان
+  governorate: string;
+  city: string;
+  addressDetails: string;
+
+  // المواعيد والخدمات
+  clinicSchedule: DoctorClinicScheduleRow[];
+  clinicServices: DoctorClinicServiceRow[];
+  examinationPrice: number | null;
+  discountedExaminationPrice?: number | null;
+  consultationPrice: number | null;
+  discountedConsultationPrice?: number | null;
+  services: string[];
+  imageUrls: string[];
+
+  // التواصل
+  contactPhone?: string;
+  whatsapp?: string;
+  socialLinks?: DoctorSocialLink[];
+  socialMediaPlatform?: string; // حقول توافق قديم — استخدم socialLinks في الكود الجديد
+  socialMediaUrl?: string;
+
+  // سنوات الخبرة والتقييمات
+  yearsExperience: number | null;
+  ratingAverage?: number;
+  ratingCount?: number;
+  ratingTotal?: number;
+
+  // حالة النشر
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+
+  // ─── نوع الحساب والاشتراك ───
+  accountType?: 'free' | 'premium';
+  premiumStartDate?: string;
+  premiumExpiryDate?: string;
+  premiumNotificationSent?: boolean; // هل اتبعت له إشعار تجديد
+
+  // ─── استهلاك الموارد (للإحصائيات والحدود) ───
+  storageUsageBytes?: number; // استهلاك التخزين
+  aiApiCallsCount?: number;   // عدد استدعاءات الذكاء الاصطناعي
+  aiTokensUsed?: number;      // عدد الـ tokens المستخدمة
+  lastStorageUpdateAt?: string;
+
+  // ─── روابط عامة وحالة النشاط ───
+  publicSlug?: string;   // معرف آمن للروابط العامة (بديل عن UID لأسباب أمنية)
+  lastActiveAt?: string;
+  isActive?: boolean;
+}
+
+/**
+ * حجز من مستخدم عام (مسجل في فورم الجمهور) — غير حجوزات السكرتارية.
+ * بيظهر في صفحة "حجوزاتي" للمريض، وبنستخدمه في تجميع المراجعات بعد الكشف.
+ */
+export interface PublicUserBooking {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  dateTime: string;
+  createdAt: string;
+  patientName: string;
+  phone: string;
+  visitReason?: string;
+  appointmentType?: 'exam' | 'consultation';
+
+  // ربط بالاستشارة بعد كشف سابق (لو Applicable)
+  consultationSourceAppointmentId?: string;
+  consultationSourceCompletedAt?: string;
+  consultationSourceRecordId?: string;
+
+  // الحالة والمراجعة
+  status?: 'pending' | 'completed';
+  completedAt?: string;
+  rating?: number;
+  reviewComment?: string;
+  reviewedAt?: string;
+}
+
+/**
+ * مراجعة عامة يضيفها المريض بعد الكشف — ده اللي بيظهر في ملف الطبيب العام
+ * ويساعد في التقييمات (ratingAverage في DoctorAdProfile).
+ */
+export interface DoctorPublicReview {
+  id: string;
+  doctorId: string;
+  bookingId: string;
+  publicUserId: string;
+  rating: number;
+  reviewComment?: string;
+  reviewedAt: string;
+  patientName?: string;
+}

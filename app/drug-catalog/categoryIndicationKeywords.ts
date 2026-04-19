@@ -1,0 +1,148 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// قاموس البحث بالكلمات المفتاحية للأدوية (Category Indication Keywords)
+// ─────────────────────────────────────────────────────────────────────────────
+// يحتوي على مجموعات من الكلمات الدلالية المرتبطة بكل تصنيف دوائي.
+// الهدف: تحسين تجربة البحث — لما الطبيب يكتب "صداع"، يلاقي الباراسيتامول
+// والإيبوبروفين تلقائياً من غير ما يدور بالاسم العلمي.
+// الكلمات مخلوطة عمداً (عربي + إنجليزي) علشان الطبيب يكتب باللي يريحه.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { Category } from './types';
+
+/**
+ * خريطة تربط كل تصنيف (Category) بمصفوفة من الكلمات المفتاحية بالعربي والإنجليزي.
+ * تشمل هذه الكلمات: أسماء الأمراض، الأعراض، المجموعات الدوائية، والأسماء العلمية الشائعة.
+ * استخدمنا Partial<Record> لأنه مش كل قيم Category لازم يكون ليها كلمات مفتاحية.
+ */
+const CATEGORY_INDICATION_KEYWORDS: Partial<Record<string, string[]>> = {
+  [Category.PARACETAMOL]: ['ألم', 'حمى', 'حرارة', 'صداع', 'مسكن', 'خافض حرارة', 'وجع', 'آلام', 'pain', 'fever', 'headache', 'analgesic', 'antipyretic'],
+  [Category.IBUPROFEN]: ['ألم', 'حمى', 'التهاب', 'صداع', 'آلام عظام', 'أسنان', 'دورة', 'مسكن', 'مضاد التهاب', 'pain', 'fever', 'inflammation', 'NSAID'],
+  [Category.DICLOFENAC]: ['ألم', 'التهاب', 'روماتيزم', 'ظهر', 'عضلات', 'مفاصل', 'دورة', 'مسكن', 'مضاد التهاب', 'pain', 'inflammation', 'arthritis', 'NSAID'],
+  [Category.AMOXICILLIN_CLAV]: ['عدوى بكتيريا', 'التهاب', 'أذن', 'حلق', 'صدر', 'جروح', 'جلد', 'مجرى بول', 'مضاد حيوي', 'infection', 'otitis', 'tonsillitis', 'UTI', 'sinusitis'],
+  [Category.CEPHALOSPORINS_G1]: ['عدوى بكتيريا', 'جلد', 'عظام', 'مجرى بول', 'مضاد حيوي', 'infection', 'skin', 'bone', 'UTI', 'cefazolin', 'cefalexin'],
+  [Category.CEPHALOSPORINS_G2]: ['عدوى بكتيريا', 'صدر', 'أذن', 'حلق', 'مجرى بول', 'مضاد حيوي', 'infection', 'respiratory', 'cefuroxime'],
+  [Category.CEPHALOSPORINS_G3]: ['عدوى بكتيريا', 'صدر', 'مستشفى', 'سيبترا', 'سيفترياكسون', 'مضاد حيوي', 'infection', 'ceftriaxone', 'cefixime'],
+  [Category.CEPHALOSPORINS_G4]: ['عدوى بكتيريا', 'مستشفى', 'صعبة', 'مضاد حيوي', 'infection', 'cefepime'],
+  [Category.TETRACYCLINES]: ['حب شباب', 'ملاريا', 'كلاميديا', 'بروسيلا', 'ميكوبلازما', 'مضاد حيوي', 'acne', 'chlamydia', 'tetracycline'],
+  [Category.PENICILLIN]: ['عدوى بكتيريا', 'حلق', 'لوز', 'جلد', 'مضاد حيوي', 'بنسلين', 'infection', 'strep', 'penicillin'],
+  [Category.SULFONAMIDES]: ['عدوى بكتيريا', 'مسالك بول', 'أذن', 'إسهال', 'حروق', 'سلفا', 'مضاد حيوي', 'UTI', 'sulfa', 'cotrimoxazole'],
+  [Category.FLUOROQUINOLONES]: ['عدوى بكتيريا', 'مسالك بول', 'بروستاتا', 'إسهال مسافرين', 'سلفا', 'كينولون', 'مضاد حيوي', 'UTI', 'prostatitis', 'ciprofloxacin', 'levofloxacin'],
+  [Category.MACROLIDES]: ['عدوى بكتيريا', 'صدر', 'أذن', 'حلق', 'سعال', 'ميكوبلازما', 'كلاريثرومايسين', 'أزيثرومايسين', 'مضاد حيوي', 'infection', 'azithromycin', 'clarithromycin'],
+  [Category.CARBAPENEMS]: ['عدوى مستشفى', 'صعبة', 'مقاومة', 'ميروبينيم', 'إيميبينيم', 'مضاد حيوي', 'infection', 'meropenem', 'imipenem'],
+  [Category.LINCOSAMIDES]: ['عدوى بكتيريا', 'لاهوائية', 'جلد', 'عظام', 'كليندامايسين', 'مضاد حيوي', 'infection', 'clindamycin'],
+  [Category.GLYCOPEPTIDES]: ['عدوى مستشفى', 'مقاومة', 'فانكومايسين', 'MRSA', 'مضاد حيوي', 'infection', 'vancomycin'],
+  [Category.TOPICAL_ANTIBIOTICS]: ['جرح', 'حروق', 'جلد', 'عدوى موضعية', 'بكتيريا', 'مرهم', 'كريم', 'infection', 'wound', 'burns', 'mupirocin', 'fusidic'],
+  [Category.ANTIBIOTICS_OPHTHALMIC]: ['عدوى عين', 'التهاب ملتحمة', 'عين حمراء', 'قطرات عيون', 'مضاد حيوي', 'conjunctivitis', 'eye infection', 'ophthalmic'],
+  [Category.AMINOGLYCOSIDES]: ['عدوى مستشفى', 'سيبسس', 'أميكاسين', 'جنتاميسين', 'مضاد حيوي', 'infection', 'aminoglycoside'],
+  [Category.ANTIBIOTIC_SUSPENSIONS]: ['عدوى أطفال', 'شراب', 'أذن', 'حلق', 'صدر', 'مضاد حيوي', 'pediatric', 'suspension', 'syrup', 'infection'],
+  [Category.ANTIVIRAL]: ['فيروس', 'إنفلونزا', 'هربس', 'جدري', 'كورونا', 'antiviral', 'flu', 'herpes', 'viral'],
+  [Category.ANTIFUNGAL]: ['فطريات', 'كانديدا', 'جلد', 'أظافر', 'فم', 'antifungal', 'candida', 'fungal', 'tinea'],
+  [Category.ANTIPARASITIC]: ['ديدان', 'طفيليات', 'أكسجين', 'جيارديا', 'دودة', 'parasites', 'worms', 'anthelmintic', 'oxamniquine', 'metronidazole'],
+  [Category.VACCINES]: ['لقاح', 'تطعيم', 'مناعة', 'وقاية', 'vaccine', 'immunization', 'prevention'],
+  [Category.PROTON_PUMP_INHIBITORS]: ['حموضة', 'ارتجاع', 'قرحة معدة', 'حرقة', 'PPI', 'أوميبرازول', 'acid', 'GERD', 'heartburn', 'ulcer'],
+  [Category.H2_BLOCKERS]: ['حموضة', 'ارتجاع', 'قرحة', 'فاموتيدين', 'رانيتيدين', 'acid', 'GERD', 'H2'],
+  [Category.ANTACIDS]: ['حموضة', 'حرقة', 'فوار', 'معدة', 'antacid', 'heartburn', 'gaviscon'],
+  [Category.H_PYLORI]: ['جرثومة معدة', 'أتش بيلوري', 'قرحة', 'H. pylori', 'eradication', 'triple therapy'],
+  [Category.ANTIEMETIC]: ['غثيان', 'قيء', 'تقيؤ', 'استفراغ', 'دوار', 'كيماوي', 'جراحة', 'مغص', 'nausea', 'vomiting', 'antiemetic', 'ondansetron', 'metoclopramide'],
+  [Category.LAXATIVES]: ['إمساك', 'تصلب براز', 'ملين', 'constipation', 'laxative', 'lactulose', 'bisacodyl'],
+  [Category.ANTIDIARRHEAL]: ['إسهال', 'اسهال', 'معوي', 'مطهر معوي', 'diarrhea', 'ant diarrheal', 'racecadotril', 'loperamide'],
+  [Category.IBS_SPASTIC_COLON]: ['قولون عصبي', 'انتفاخ', 'مغص', 'تشنج', 'IBS', 'spastic colon', 'مبيفيرين', 'ديسيكلومين'],
+  [Category.LIVER_SUPPORT]: ['كبد', 'دهون كبد', 'دعم كبد', 'صفراء', 'liver', 'hepatoprotective', 'silymarin', 'ursodeoxycholic'],
+  [Category.WEIGHT_LOSS]: ['تخسيس', 'وزن', 'سمنة', 'تنحيف', 'weight loss', 'obesity', 'orlistat'],
+  [Category.DIGESTIVE]: ['هضم', 'عسر هضم', 'فاتح شهية', 'انتفاخ', 'digestive', 'appetite', 'enzymes'],
+  [Category.ANTIFLATULENT]: ['غازات', 'انتفاخ', 'مغص', 'ريح', 'flatulence', 'bloating', 'simethicone'],
+  [Category.GIT_DISTURBANCE]: ['مغص رضع', 'ماء غريب', 'مغص', 'colic', 'infant', 'gripe water'],
+  [Category.ANTISPASMODIC]: ['مغص', 'تقلصات', 'بطن', 'ديسيكلومين', 'مبيفيرين', 'spasm', 'colic', 'antispasmodic'],
+  [Category.GUT_ANTISEPTIC]: ['إسهال', 'عدوى معوية', 'مطهر معوي', 'rifaximin', 'antiseptic', 'traveler diarrhea'],
+  [Category.PROBIOTICS]: ['بكتيريا نافعة', 'إسهال', 'مضاد حيوي', 'مناعة', 'probiotic', 'flora', 'lactobacillus'],
+  [Category.ANTIHISTAMINIC]: ['حساسية', 'هرش', 'عطس', 'رشح', 'ارتيكاريا', 'حكة', 'جيوب', 'allergy', 'itching', 'urticaria', 'rhinitis', 'antihistamine'],
+  [Category.NON_SEDATING_ANTIHISTAMINE]: ['حساسية', 'لا نعاس', 'سيتريزين', 'لوراتادين', 'فيكسوفينادين', 'allergy', 'non-drowsy'],
+  [Category.SEDATING_ANTIHISTAMINE]: ['حساسية', 'نعاس', 'ديزلوراتادين', 'allergy', 'sedating', 'sleep'],
+  [Category.DRY_COUGH]: ['كحة ناشفة', 'سعال جاف', 'كحة', 'dry cough', 'dextromethorphan', 'antitussive'],
+  [Category.PRODUCTIVE_COUGH]: ['كحة ببلغم', 'بلغم', 'سعال', 'expectorant', 'mucolytic', 'ambroxol', 'acetylcysteine'],
+  [Category.HERBAL_COUGH]: ['كحة', 'أعشاب', 'آمن أطفال', 'سعال', 'cough', 'herbal', 'pediatric'],
+  [Category.COLD_FLU]: ['برد', 'إنفلونزا', 'زكام', 'حمى', 'آلام', 'cold', 'flu', 'paracetamol', 'decongestant'],
+  [Category.NASAL_DECONGESTANTS]: ['احتقان أنف', 'زكام', 'انسداد أنف', 'قطرات أنف', 'decongestant', 'nasal', 'congestion', 'xylometazoline'],
+  [Category.BRONCHODILATORS]: ['ربو', 'كحة', 'ضيق نفس', 'شعب هوائية', 'سالبوتامول', 'أيبراتروبيوم', 'asthma', 'COPD', 'bronchodilator', 'salbutamol'],
+  [Category.COPD]: ['انسداد رئوي', 'ربو', 'ضيق نفس', 'COPD', 'chronic obstructive', 'tiotropium'],
+  [Category.NEBULIZER]: ['نيبوليزر', 'ربو', 'شعب', 'استنشاق', 'nebulizer', 'inhalation', 'salbutamol'],
+  [Category.NASAL_ANTI_ALLERGY]: ['حساسية أنف', 'جيوب', 'رينيت', 'fluticasone', 'mometasone', 'allergic rhinitis', 'nasal steroid'],
+  [Category.ORAL_CORTICOSTEROIDS]: ['التهاب', 'ربو', 'حساسية شديدة', 'كورتيزون', 'بريدنيزولون', 'corticosteroid', 'prednisolone', 'dexamethasone'],
+  [Category.DIABETES]: ['سكر', 'جلوكوز', 'ميتفورمين', 'أنسولين', 'diabetes', 'DM', 'glucose', 'metformin', 'insulin'],
+  [Category.ANTIHYPERLIPIDEMICS]: ['كوليسترول', 'دهون', 'ستاتين', 'خفض دهون', 'cholesterol', 'lipid', 'statin', 'atorvastatin'],
+  [Category.ACE_INHIBITORS]: ['ضغط', 'قلب', 'كلى', 'كابتوبريل', 'إينالابريل', 'hypertension', 'ACE', 'heart failure', 'ramipril'],
+  [Category.ARBS]: ['ضغط', 'قلب', 'لوسارتان', 'فالسارتان', 'hypertension', 'ARB', 'heart failure'],
+  [Category.BETA_BLOCKERS]: ['ضغط', 'قلب', 'خفقان', 'أتينولول', 'بيسوبرولول', 'hypertension', 'beta blocker', 'palpitation'],
+  [Category.CALCIUM_CHANNEL_BLOCKERS]: ['ضغط', 'أملوديبين', 'نيفيديبين', 'hypertension', 'CCB', 'amlodipine'],
+  [Category.DIURETIC]: ['ضغط', 'ماء', 'وذمة', 'مدر بول', 'diuretic', 'hypertension', 'edema', 'furosemide'],
+  [Category.LOOP_DIURETICS]: ['وذمة', 'فشل قلب', 'فوروسيميد', 'مدر بول', 'edema', 'heart failure', 'furosemide'],
+  [Category.THIAZIDE_DIURETICS]: ['ضغط', 'مدر بول', 'هيدروكلوروثيازايد', 'hypertension', 'thiazide'],
+  [Category.THIAZIDE_LIKE_DIURETICS]: ['ضغط', 'إنداناميد', 'مدر بول', 'hypertension', 'indapamide'],
+  [Category.POTASSIUM_SPARING_DIURETICS]: ['ضغط', 'وذمة', 'مدر بول', 'احتفاظ بوتاسيوم', 'amiloride', 'triamterene'],
+  [Category.ALDOSTERONE_ANTAGONISTS]: ['فشل قلب', 'وذمة', 'سبيرونولاكتون', 'إبليرينون', 'heart failure', 'spironolactone'],
+  [Category.HEART_FAILURE]: ['فشل قلب', 'قصور قلب', 'heart failure', 'EF', 'sacubitril', 'digoxin'],
+  [Category.ANTIARRHYTHMIC]: ['عدم انتظام ضربات', 'خفقان', 'أميويدارون', 'arrhythmia', 'palpitation', 'amiodarone'],
+  [Category.ANTI_ISCHEMIC]: ['ذبحة', 'قلب', 'قصور تروية', 'نترات', 'ischemia', 'angina', 'nitrate'],
+  [Category.ORTHOSTATIC_HYPOTENSION]: ['هبوط ضغط', 'دوخة وقوف', 'ميدودرين', 'orthostatic', 'hypotension'],
+  [Category.ANALGESICS]: ['ألم', 'مسكن', 'حمى', 'صداع', 'analgesic', 'pain', 'fever', 'paracetamol', 'ibuprofen'],
+  [Category.ANTIEPILEPTICS]: ['صرع', 'تشنج', 'نوبات', 'التهاب أعصاب', 'epilepsy', 'seizure', 'anticonvulsant', 'valproate', 'carbamazepine'],
+  [Category.ANTI_PARKINSON]: ['باركنسون', 'رعاش', 'Parkinson', 'tremor', 'levodopa', 'dopamine'],
+  [Category.ANTIDEPRESSANTS]: ['اكتئاب', 'مزاج', 'قلق', 'depression', 'anxiety', 'SSRI', 'sertraline', 'fluoxetine'],
+  [Category.ADHD_NOOTROPICS]: ['فرط حركة', 'تركيز', 'ذاكرة', 'ADHD', 'nootropic', 'methylphenidate'],
+  [Category.ANTIPSYCHOTIC]: ['ذهان', 'هلاوس', 'وسواس', 'psychosis', 'antipsychotic', 'risperidone', 'olanzapine'],
+  [Category.HYPNOTICS_SEDATIVES]: ['أرق', 'نوم', 'قلق', 'مهدئ', 'insomnia', 'sedative', 'hypnotic', 'zolpidem', 'alprazolam'],
+  [Category.DEMENTIA]: ['خرف', 'زهايمر', 'ذاكرة', 'dementia', 'Alzheimer', 'donepezil', 'memantine'],
+  [Category.VERTIGO]: ['دوار', 'دوخة', 'دوران', 'vertigo', 'dizziness', 'betahistine', 'cinnarizine'],
+  [Category.MUSCLE_RELAXANTS]: ['تشنج عضلات', 'ظهر', 'رقبة', 'مرخي عضلات', 'muscle relaxant', 'spasm', 'baclofen', 'tizanidine'],
+  [Category.ANTI_RHEUMATIC_OSTEOARTHRITIS]: ['روماتيزم', 'خشونة', 'مفاصل', 'ألم مفاصل', 'rheumatoid', 'osteoarthritis', 'DMARD'],
+  [Category.ANTI_GOUT]: ['نقرس', 'حمض يوريك', 'gout', 'uric acid', 'allopurinol', 'colchicine'],
+  [Category.BONE_SUPPORT]: ['عظام', 'غضاريف', 'كالسيوم', 'فيتامين د', 'bone', 'joint', 'glucosamine', 'chondroitin'],
+  [Category.ANTIANEMIC]: ['أنيميا', 'فقر دم', 'حديد', 'anemia', 'iron', 'ferrous', 'B12', 'folic'],
+  [Category.ANTIPLATELET]: ['تجلط', 'جلطة', 'أسبرين', 'كلوبيدوجريل', 'antiplatelet', 'stroke', 'heart', 'aspirin'],
+  [Category.HEMATOLOGY]: ['نزيف', 'دم', 'تجلط', 'هيبارين', 'وارفارين', 'ترانيكسام', 'hematology', 'bleeding', 'coagulation', 'heparin', 'anticoagulant', 'DVT'],
+  [Category.ANTI_ACNE]: ['حب شباب', 'بثور', 'acne', 'pimples', 'isotretinoin', 'adapalene', 'benzoyl'],
+  [Category.PSORIASIS]: ['صدفية', 'جلد', 'psoriasis', 'plaques', 'methotrexate', 'topical steroid'],
+  [Category.DERMA_CARE]: ['جلد', 'جفاف', 'التهاب جلد', 'dermatitis', 'eczema', 'skin', 'emollient'],
+  [Category.OPHTHALMIC]: ['عين', 'قطرات عيون', 'احمرار', 'جفاف عين', 'ophthalmic', 'eye', 'drops', 'conjunctivitis'],
+  [Category.VAGINAL_ANTIFUNGAL]: ['فطريات مهبل', 'حكة مهبل', 'candida', 'vaginal', 'yeast', 'clotrimazole', 'miconazole'],
+  [Category.VAGINAL_INFECTIONS]: ['عدوى مهبل', 'التهاب مهبل', 'بكتيريا', 'vaginal infection', 'bacterial', 'metronidazole'],
+  [Category.MENSTRUAL_PAIN_RELIEF]: ['آلام دورة', 'دورة', 'تشنج', 'ميفا', 'naproxen', 'mefenamic', 'dysmenorrhea'],
+  [Category.CONTRACEPTION]: ['منع حمل', 'حبوب منع', 'contraception', 'birth control', 'OCP', 'oral contraceptive'],
+  [Category.LACTAGOGUE]: ['لبن', 'رضاعة', 'إدرار حليب', 'lactation', 'galactagogue', 'domperidone'],
+  [Category.URINARY_CARE]: ['مسالك بول', 'حرقة بول', 'تكرار تبول', 'urinary', 'UTI', 'cystitis', 'dysuria'],
+  [Category.LICE_SCABIES]: ['قمل', 'جرب', 'حكة', 'lice', 'scabies', 'permethrin', 'ivermectin'],
+  [Category.FIRST_AID]: ['حروق', 'كدمات', 'جرح', 'إسعاف', 'burns', 'bruises', 'first aid'],
+  [Category.MULTI_VITAMINS]: ['فيتامينات', 'مكملات', 'نقص', 'vitamins', 'supplements', 'deficiency'],
+  [Category.CALCIUM_GROWTH]: ['كالسيوم', 'عظام', 'نمو', 'calcium', 'bone', 'growth', 'vitamin D'],
+  [Category.IMMUNITY_OMEGA]: ['مناعة', 'أوميجا', 'omega', 'immunity', 'fish oil', 'omega 3'],
+  [Category.MOUTH_THROAT]: ['فم', 'حلق', 'قرح فم', 'التهاب حلق', 'mouth', 'throat', 'oral', 'sore throat'],
+  [Category.EAR_CARE]: ['أذن', 'شمع', 'ألم أذن', 'ear', 'wax', 'earache', 'otalgia'],
+  [Category.NASAL_CARE]: ['أنف', 'غسول أنف', 'محلول ملحي', 'nasal', 'saline', 'rinse'],
+  [Category.HAIR_CARE]: ['شعر', 'تقصف', 'تساقط', 'hair', 'hair loss', 'minoxidil', 'finasteride'],
+  [Category.SKIN_CARE]: ['بشرة', 'عناية', 'ترطيب', 'skin care', 'moisturizer', 'cosmetic'],
+  [Category.ANTI_NEOPLASTIC_IMMUNOMODULATING]: ['أورام', 'مناعة', 'كيمو', 'روماتيزم', 'صدفية', 'زراعة', 'كورتيزون', 'مثبط مناعة', 'ذئبة', 'بروستاتا', 'DMARD', 'ميثوتريكسات', 'أزاثيوبرين', 'تاكروليمس', 'oncology', 'immunomodulating', 'chemotherapy'],
+  [Category.APPETIZER_LIVER]: ['فاتح شهية', 'كبد', 'هضم', 'appetite', 'liver', 'tonic'],
+  [Category.DECONGESTANT]: ['احتقان', 'زكام', 'انسداد أنف', 'decongestant', 'pseudoephedrine'],
+  [Category.NASAL]: ['أنف', 'قطرات أنف', 'nasal', 'drops', 'spray'],
+  [Category.SALINE]: ['محلول ملحي', 'غسيل أنف', 'saline', 'nasal wash', 'rinse'],
+  [Category.COUGH]: ['كحة', 'سعال', 'cough', 'expectorant', 'antitussive'],
+  [Category.TOPICAL_CARE]: ['موضعي', 'كريم', 'مرهم', 'جل', 'topical', 'cream', 'ointment'],
+  [Category.ANTI_INFLAMMATORY_EDEMA]: ['التهاب', 'تورم', 'زور', 'edema', 'inflammation', 'throat'],
+  [Category.VITAMINS_MINERALS]: ['فيتامينات', 'معادن', 'نقص', 'vitamins', 'minerals', 'deficiency'],
+  [Category.DIETARY_SUPPLEMENTS]: ['مكملات', 'مناعة', 'dietary', 'supplements', 'immune'],
+  [Category.ACID_RELATED_DISORDERS]: ['حموضة', 'ارتجاع', 'قرحة', 'حرقة', 'PPI', 'acid', 'GERD'],
+  [Category.ANTIBIOTICS]: ['عدوى بكتيريا', 'مضاد حيوي', 'infection', 'antibiotic'],
+  [Category.RHEUMATOLOGY]: ['روماتيزم', 'مناعة', 'rheumatoid', 'immunology', 'arthritis'],
+  [Category.DIARRHEA_MANAGEMENT]: ['إسهال', 'اسهال', 'diarrhea', 'ORS', 'zinc', 'racecadotril'],
+  [Category.HEMORRHOIDS]: ['بواسير', 'حكة شرجية', 'ألم شرج', 'تشققات شرجية', 'نزيف بسيط من الشرج', 'hemorrhoids', 'pruritus', 'fissure', 'anal', '#hemorrhoids'],
+};
+
+/**
+ * دالة مساعدة لجلب الكلمات المفتاحية لتصنيف معين بشكل آمن.
+ * بترجع مصفوفة فاضية لو التصنيف undefined أو مش موجود في القاموس،
+ * عشان الكود اللي بيستدعيها ما يحتاجش يعمل null-checks.
+ */
+export function getIndicationKeywordsForCategory(category: string | undefined): string[] {
+  if (!category) return [];
+  return CATEGORY_INDICATION_KEYWORDS[category] ?? [];
+}

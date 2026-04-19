@@ -1,0 +1,245 @@
+import { Category, Medication } from '../../types';
+
+const fixed = (t: string) => () => t;
+
+const COMMON_HEMORRHOIDS_WARNINGS = [
+	'للاستخدام الموضعي/الشرجي فقط. لا يُؤخذ عن طريق الفم.',
+	'تجنب ملامسة العينين والأغشية المخاطية.',
+	'اغسل اليدين قبل وبعد الاستعمال.',
+	'أوقف الاستخدام عند حدوث تهيّج شديد أو حساسية.',
+	'نصيحة عامة: زيادة الألياف في الغذاء وشرب سوائل كافية وتجنب الإمساك يُسرّع التحسّن.',
+];
+
+const CORTICOSTEROID_HEMORRHOIDS_WARNINGS = [
+	...COMMON_HEMORRHOIDS_WARNINGS,
+	'يحتوي كورتيزون: لا يُستخدم لأكثر من ٧–١٤ يوماً متواصلة على المنطقة الشرجية؛ تجنب الاستخدام المطول على منطقة كبيرة.',
+	'الحمل: يُستخدم عند الضرورة فقط؛ قلّل المدة (حد أقصى ٥–٧ أيام) وتجنب المساحات الواسعة.',
+];
+
+const NITRATE_HEMORRHOIDS_WARNINGS = [
+	...COMMON_HEMORRHOIDS_WARNINGS,
+	'يحتوي نترات (غليسيريل ترينيتريت): قد يسبب صداعاً. لا يُستخدم مع أدوية إمهاء (مثل سildenafil، vardenafil، tadalafil) بسبب خطر انخفاض ضغط الدم الشديد.',
+];
+
+export const HEMORRHOIDS_GROUP: Medication[] = [
+	// 1
+	{
+		id: 'faktu-oint-30gm-policresulen-cinchocaine',
+		name: 'faktu oint. 30 gm',
+		genericName: 'policresulen & cinchocaine hydrochloride',
+		concentration: '30 gm',
+		price: 76,
+		matchKeywords: ['faktu', 'policresulen', 'cinchocaine', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'مرهم', 'ointment', 'شرخ', 'شرجي', 'حكة شرجية'],
+		usage: 'مرهم للبواسير (بوليكريسولين وسينكوكائين) لتخفيف الألم والحكة والالتهاب البسيط.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Ointment',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 2
+	{
+		id: 'faktu-8-rectal-supp-cinchocaine-policresulen',
+		name: 'faktu 8 rectal supp.',
+		genericName: 'cinchocaine & policresulen',
+		concentration: '8 supp.',
+		price: 72,
+		matchKeywords: ['faktu', 'supp', 'suppository', 'cinchocaine', 'policresulen', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'تحاميل', 'شرخ', 'شرجي', 'حكة شرجية'],
+		usage: 'تحاميل شرجية للبواسير (سينكوكائين وبوليكريسولين) لتخفيف الألم والحكة والالتهاب.',
+		timing: 'مرتين يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Suppository',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('لبوس في الشرج مرتين يومياً بعد التبرز لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 3
+	{
+		id: 'sediproct-topical-cream-20gm-cinchocaine-hydrocortisone',
+		name: 'sediproct topical cream 20 gm',
+		genericName: 'cinchocaine hydrochloride & hydrocortisone',
+		concentration: '20 gm',
+		price: 42,
+		matchKeywords: ['sediproct', 'cream', 'cinchocaine', 'hydrocortisone', 'كورتيزون', 'بواسير', 'hemorrhoids', '#hemorrhoids'],
+		usage: 'كريم للبواسير (سينكوكائين وهيدروكورتيزون) لتخفيف الألم والحكة والالتهاب.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...CORTICOSTEROID_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 4
+	{
+		id: 'frezyderm-cream-30gm-hamamelis-zinc-lidocaine-chamomile',
+		name: 'frezyderm cream 30 gm',
+		genericName: 'hamamelis & citrus & zinc oxide & lidocaine & chamomile & mustard',
+		concentration: '30 gm',
+		price: 90,
+		matchKeywords: ['frezyderm', 'hamamelis', 'zinc oxide', 'lidocaine', 'chamomile', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'كريم'],
+		usage: 'كريم للبواسير (هاماميليس، زنك، ليدوكائين، بابونج) لتخفيف الألم والحكة والتهيج.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 5
+	{
+		id: 'vinosin-cream-50gm-glyceryl-trinitrate-chlorhexidine-tannins',
+		name: 'vinosin cream 50 gm',
+		genericName: 'glyceryl trinitrate & chlorhexidine acetate & tannins',
+		concentration: '50 gm',
+		price: 105,
+		matchKeywords: ['vinosin', 'glyceryl trinitrate', 'chlorhexidine', 'tannins', 'نترات', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'تشققات'],
+		usage: 'كريم للبواسير والتشققات (غليسيريل ترينيتريت، كلورهيكسيدين، تانينات) لتخفيف الألم وتحسين التروية.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...NITRATE_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 7
+	{
+		id: 'fine-derm-0-25-rectal-cream-30gm',
+		name: 'fine derm 0.25% rectal cream 30 gm',
+		genericName: 'glyceryl trinitrate & clove oil & panthenol & grape seed oil',
+		concentration: '0.25% (30 gm)',
+		price: 79.75,
+		matchKeywords: ['fine derm', '0.25%', 'glyceryl trinitrate', 'clove', 'panthenol', 'grape seed', 'نترات', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'تشققات'],
+		usage: 'كريم شرجي للبواسير والتشققات (غليسيريل ترينيتريت، زيت قرنفل، بانثينول، زيت بذر العنب) لتخفيف الألم وتحسين التروية.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...NITRATE_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 8
+	{
+		id: 'fine-derm-0-25-rectal-cream-50gm',
+		name: 'fine derm 0.25% rectal cream 50 gm',
+		genericName: 'glyceryl trinitrate & clove oil & panthenol & grape seed oil',
+		concentration: '0.25% (50 gm)',
+		price: 95,
+		matchKeywords: ['fine derm', '0.25%', '50gm', 'glyceryl trinitrate', 'clove', 'panthenol', 'grape seed', 'نترات', 'بواسير', 'hemorrhoids', '#hemorrhoids'],
+		usage: 'كريم شرجي للبواسير والتشققات (غليسيريل ترينيتريت، زيت قرنفل، بانثينول، زيت بذر العنب) لتخفيف الألم وتحسين التروية.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...NITRATE_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 9
+	{
+		id: 'doxiproct-rectal-oint-30gm-calcium-dobesilate-lidocaine',
+		name: 'doxiproct rectal oint. 30 gm',
+		genericName: 'calcium dobesilate & lidocaine hydrochloride',
+		concentration: '30 gm',
+		price: 40,
+		matchKeywords: ['doxiproct', 'calcium dobesilate', 'lidocaine', 'دوكسيبوكت', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'مرهم'],
+		usage: 'مرهم شرجي للبواسير (كالسيوم دوبيسيلات وليدوكائين) لتخفيف الألم ودعم جدار الأوعية الدقيقة.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Ointment',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 10
+	{
+		id: 'doxiproct-plus-rectal-oint-30gm',
+		name: 'doxiproct plus rectal oint. 30 gm',
+		genericName: 'calcium dobesilate monohydrate & lidocaine hydrochloride',
+		concentration: '30 gm',
+		price: 40,
+		matchKeywords: ['doxiproct plus', 'calcium dobesilate', 'lidocaine', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'مرهم'],
+		usage: 'مرهم شرجي للبواسير (كالسيوم دوبيسيلات مونوهيدرات وليدوكائين) لتخفيف الألم ودعم جدار الأوعية الدقيقة.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Ointment',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 11
+	{
+		id: 'extra-cream-50gm-glycerin-glyceryl-trinitrate-clove-panthenol',
+		name: 'extra cream 50 gm',
+		genericName: 'glycerin & glyceryl trinitrate & clove extract & panthenol & grape seed',
+		concentration: '50 gm',
+		price: 65,
+		matchKeywords: ['extra', 'glycerin', 'glyceryl trinitrate', 'clove', 'panthenol', 'grape seed', 'نترات', 'بواسير', 'hemorrhoids', '#hemorrhoids'],
+		usage: 'كريم للبواسير (غليسيرين، غليسيريل ترينيتريت، مستخلص قرنفل، بانثينول، بذر العنب) لتخفيف الألم والترطيب وتحسين التروية.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...NITRATE_HEMORRHOIDS_WARNINGS],
+	},
+
+	// 12
+	{
+		id: 'selcodel-cream-30gm-dexpanthenol-zinc-oxide-glycerin',
+		name: 'selcodel cream 30 gm',
+		genericName: 'dexpanthenol & zinc oxide & glycerin & acetyl alcohol & stearyl',
+		concentration: '30 gm',
+		price: 55,
+		matchKeywords: ['selcodel', 'dexpanthenol', 'zinc oxide', 'glycerin', 'ديكسبانثينول', 'بواسير', 'hemorrhoids', '#hemorrhoids', 'كريم'],
+		usage: 'كريم للبواسير (ديكسبانثينول، أكسيد الزنك، غليسيرين) لترطيب الجلد وتخفيف التهيج والالتهاب البسيط.',
+		timing: '٢–٣ مرات يومياً – ٧ أيام',
+		category: Category.HEMORRHOIDS,
+		form: 'Cream',
+		minAgeMonths: 72,
+		maxAgeMonths: 1200,
+		minWeight: 20,
+		maxWeight: 250,
+		calculationRule: fixed('طبقة على المنطقة المصابة ٢–٣ مرات يومياً لمدة ٧ أيام'),
+		warnings: [...COMMON_HEMORRHOIDS_WARNINGS],
+	},
+];
+

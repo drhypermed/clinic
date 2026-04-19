@@ -1,0 +1,95 @@
+module.exports = (context) => {
+  const {
+    getDb,
+    ACCOUNT_TYPE_CONTROL_DOC_ID,
+    normalizeSmartRxConfig,
+    admin,
+    assertAdminRequest,
+  } = context;
+  const updateAccountTypeControls = async (request) => {
+    const adminEmail = await assertAdminRequest(request);
+    const incoming = request?.data || {};
+    const config = normalizeSmartRxConfig(incoming);
+
+    await getDb().collection('settings').doc(ACCOUNT_TYPE_CONTROL_DOC_ID).set({
+      freeDailyLimit: config.freeDailyLimit,
+      premiumDailyLimit: config.premiumDailyLimit,
+      freeRecordDailyLimit: config.freeRecordDailyLimit,
+      premiumRecordDailyLimit: config.premiumRecordDailyLimit,
+      freePublicBookingDailyLimit: config.freePublicBookingDailyLimit,
+      premiumPublicBookingDailyLimit: config.premiumPublicBookingDailyLimit,
+      freePublicFormBookingDailyLimit: config.freePublicFormBookingDailyLimit,
+      premiumPublicFormBookingDailyLimit: config.premiumPublicFormBookingDailyLimit,
+      freeSecretaryEntryRequestDailyLimit: config.freeSecretaryEntryRequestDailyLimit,
+      premiumSecretaryEntryRequestDailyLimit: config.premiumSecretaryEntryRequestDailyLimit,
+      freeReadyPrescriptionDailyLimit: config.freeReadyPrescriptionDailyLimit,
+      premiumReadyPrescriptionDailyLimit: config.premiumReadyPrescriptionDailyLimit,
+      freeMedicalReportDailyLimit: config.freeMedicalReportDailyLimit,
+      premiumMedicalReportDailyLimit: config.premiumMedicalReportDailyLimit,
+      freeReadyPrescriptionsMaxCount: config.freeReadyPrescriptionsMaxCount,
+      premiumReadyPrescriptionsMaxCount: config.premiumReadyPrescriptionsMaxCount,
+      freeMedicationCustomizationsMaxCount: config.freeMedicationCustomizationsMaxCount,
+      premiumMedicationCustomizationsMaxCount: config.premiumMedicationCustomizationsMaxCount,
+      freeInteractionToolDailyLimit: config.freeInteractionToolDailyLimit,
+      premiumInteractionToolDailyLimit: config.premiumInteractionToolDailyLimit,
+      freeRenalToolDailyLimit: config.freeRenalToolDailyLimit,
+      premiumRenalToolDailyLimit: config.premiumRenalToolDailyLimit,
+      freePregnancyToolDailyLimit: config.freePregnancyToolDailyLimit,
+      premiumPregnancyToolDailyLimit: config.premiumPregnancyToolDailyLimit,
+      freeAnalysisLimitMessage: config.freeAnalysisLimitMessage,
+      premiumAnalysisLimitMessage: config.premiumAnalysisLimitMessage,
+      freeRecordLimitMessage: config.freeRecordLimitMessage,
+      premiumRecordLimitMessage: config.premiumRecordLimitMessage,
+      freePublicBookingLimitMessage: config.freePublicBookingLimitMessage,
+      premiumPublicBookingLimitMessage: config.premiumPublicBookingLimitMessage,
+      freePublicFormBookingLimitMessage: config.freePublicFormBookingLimitMessage,
+      premiumPublicFormBookingLimitMessage: config.premiumPublicFormBookingLimitMessage,
+      freeSecretaryEntryRequestLimitMessage: config.freeSecretaryEntryRequestLimitMessage,
+      premiumSecretaryEntryRequestLimitMessage: config.premiumSecretaryEntryRequestLimitMessage,
+      freeReadyPrescriptionDailyLimitMessage: config.freeReadyPrescriptionDailyLimitMessage,
+      premiumReadyPrescriptionDailyLimitMessage: config.premiumReadyPrescriptionDailyLimitMessage,
+      freeMedicalReportLimitMessage: config.freeMedicalReportLimitMessage,
+      premiumMedicalReportLimitMessage: config.premiumMedicalReportLimitMessage,
+      freeReadyPrescriptionsCapacityMessage: config.freeReadyPrescriptionsCapacityMessage,
+      premiumReadyPrescriptionsCapacityMessage: config.premiumReadyPrescriptionsCapacityMessage,
+      freeMedicationCustomizationsCapacityMessage: config.freeMedicationCustomizationsCapacityMessage,
+      premiumMedicationCustomizationsCapacityMessage: config.premiumMedicationCustomizationsCapacityMessage,
+      whatsappNumber: config.whatsappNumber,
+      freeAnalysisWhatsappMessage: config.freeAnalysisWhatsappMessage,
+      premiumAnalysisWhatsappMessage: config.premiumAnalysisWhatsappMessage,
+      freeRecordWhatsappMessage: config.freeRecordWhatsappMessage,
+      premiumRecordWhatsappMessage: config.premiumRecordWhatsappMessage,
+      freePublicBookingWhatsappMessage: config.freePublicBookingWhatsappMessage,
+      premiumPublicBookingWhatsappMessage: config.premiumPublicBookingWhatsappMessage,
+      freePublicFormBookingWhatsappMessage: config.freePublicFormBookingWhatsappMessage,
+      premiumPublicFormBookingWhatsappMessage: config.premiumPublicFormBookingWhatsappMessage,
+      freeSecretaryEntryRequestWhatsappMessage: config.freeSecretaryEntryRequestWhatsappMessage,
+      premiumSecretaryEntryRequestWhatsappMessage: config.premiumSecretaryEntryRequestWhatsappMessage,
+      freeReadyPrescriptionWhatsappMessage: config.freeReadyPrescriptionWhatsappMessage,
+      premiumReadyPrescriptionWhatsappMessage: config.premiumReadyPrescriptionWhatsappMessage,
+      freeMedicalReportWhatsappMessage: config.freeMedicalReportWhatsappMessage,
+      premiumMedicalReportWhatsappMessage: config.premiumMedicalReportWhatsappMessage,
+      freeReadyPrescriptionsCapacityWhatsappMessage: config.freeReadyPrescriptionsCapacityWhatsappMessage,
+      premiumReadyPrescriptionsCapacityWhatsappMessage: config.premiumReadyPrescriptionsCapacityWhatsappMessage,
+      freeMedicationCustomizationsCapacityWhatsappMessage: config.freeMedicationCustomizationsCapacityWhatsappMessage,
+      premiumMedicationCustomizationsCapacityWhatsappMessage: config.premiumMedicationCustomizationsCapacityWhatsappMessage,
+      interactionToolPremiumOnly: config.interactionToolPremiumOnly,
+      renalToolPremiumOnly: config.renalToolPremiumOnly,
+      pregnancyToolPremiumOnly: config.pregnancyToolPremiumOnly,
+      interactionToolLockedMessage: config.interactionToolLockedMessage,
+      renalToolLockedMessage: config.renalToolLockedMessage,
+      pregnancyToolLockedMessage: config.pregnancyToolLockedMessage,
+      premiumTagLabel: config.premiumTagLabel,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: adminEmail,
+    }, { merge: true });
+
+    return {
+      ok: true,
+      config,
+    };
+  };
+
+  
+  return updateAccountTypeControls;
+};

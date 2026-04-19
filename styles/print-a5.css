@@ -1,0 +1,141 @@
+/*
+  ===============================================================
+  print-a5.css  — القواعد الثابتة للطباعة (لا تحتوي على أبعاد ورقة)
+
+  المبدأ الأساسي:
+  - @page { size } تُحقن فقط من JS عبر injectPrintPageStyle
+    (CSS custom properties لا تعمل داخل @page في أي متصفح)
+  - هذا الملف يتحكم في layout الطباعة فقط (position/visibility)
+  - جميع أبعاد الورقة تأتي من rx-dynamic-print-style المُحقَن قبل كل طباعة
+  ===============================================================
+*/
+
+@media print {
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: hidden !important;
+  }
+
+  body > * {
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
+  /*
+    إزالة التحولات من العناصر الأم لمنع احتجاز position:fixed
+    (مشكلة transform stacking context في Chrome/Firefox)
+  */
+  #root,
+  .prescription-editor-grid,
+  .prescription-editor-grid .editor-block,
+  .prescription-preview-panel,
+  .prescription-preview-root,
+  .app-reveal-item,
+  .app-reveal-item:not(.is-in-view),
+  .app-reveal-item.is-in-view,
+  .reveal-on-scroll,
+  .reveal-on-scroll:not(.is-in-view),
+  .reveal-on-scroll.is-in-view {
+    transform: none !important;
+    filter: none !important;
+    will-change: auto !important;
+    opacity: 1 !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* إظهار الروشتة فقط */
+  #print-prescription-wrapper,
+  #print-prescription-wrapper * {
+    visibility: visible !important;
+  }
+
+  #print-prescription-wrapper {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+    /* الأبعاد والعرض تأتي من rx-dynamic-print-style */
+  }
+
+  #prescription-scale-container {
+    position: relative !important;
+    margin: 0 !important;
+    /* الأبعاد والإزاحة تأتي من rx-dynamic-print-style */
+  }
+
+  #printable-prescription {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    overflow: visible !important;   /* لا نقطع الفوتر أبداً */
+    break-inside: avoid !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    /* الأبعاد والتحويل (transform) تأتي من rx-dynamic-print-style */
+  }
+
+  /* إخفاء عناصر الواجهة */
+  .prescription-actions-wrapper,
+  .prescription-actions-main-grid,
+  .rx-icon-btn {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* إخفاء أزرار الحذف (x) في الطباعة */
+  .no-print {
+    display: none !important;
+  }
+
+  /*
+    إصلاح textarea في الطباعة:
+    بعض المتصفحات بتعرض الـ textarea بحجمه الافتراضي (intrinsic size)
+    بدل ما يملى المساحة المتاحة ← بيسبب فراغات بين العناوين والمحتوى.
+    الحل: نجبره يتصرف كنص عادي.
+  */
+  #printable-prescription textarea,
+  #printable-prescription textarea[data-auto-resize] {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    resize: none !important;
+    font: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+    text-align: left !important;
+    direction: ltr !important;
+    box-sizing: border-box !important;
+    /* إزالة الحجم الافتراضي للـ textarea */
+    field-sizing: content !important;
+    cols: unset !important;
+  }
+}

@@ -1,0 +1,316 @@
+// استيراد أنواع البيانات والمرافق الخاصة بـ Gemini AI
+import { VitalSigns } from '../types';
+import { generateContentWithSecurity, generateJson, GEMINI_MODEL, tryParseJson } from './geminiUtils';
+
+// واجهة برمجية لنتائج التحليل (التشخيص بالعربية والإنجليزية)
+interface AnalysisResult {
+  diagnosisAr: string;
+  diagnosisEn: string;
+}
+
+const toText = (v: any): string => (v ?? '').toString();
+
+/**
+ * وظيفة لتنظيف البيانات السريرية من النصوص "الفارغة" أو الكلمات التي تعبر عن عدم وجود بيانات
+ * تمنع ظهور كلمات مثل "No findings" في أماكن غير مرغوب فيها
+ */
+const normalizeEmptyClinicalPlaceholder = (value: any, source: string): string => {
+  const out = toText(value).trim();
+  if (!out) return '';
+
+  const sourceText = toText(source).trim();
+  if (sourceText) return out;
+
+  const normalized = out
+    .toLowerCase()
+    .replace(/[\s._\-:;!?,/]+/g, ' ')
+    .trim();
+
+  // قائمة الكلمات والعبارات التي تعتبر "لا توجد بيانات"
+  const placeholders = new Set([
+    'no data', 'no data provided', 'no data available',
+    'no investigations performed', 'no investigation performed',
+    'no information provided', 'no information', 'not available',
+    'no findings documented', 'no finding documented',
+    'no investigations documented', 'no investigation documented',
+    'no findings', 'no investigations', 'no significant findings',
+    'not documented', 'not provided', 'none', 'n a', 'na'
+  ]);
+
+  return placeholders.has(normalized) ? '' : out;
+};
+
+
+const isMostlyEnglish = (s: string): boolean => {
+  const text = (s || '').toString();
+  const letters = text.match(/[A-Za-z]/g)?.length || 0;
+  const arabic = text.match(/[\u0600-\u06FF]/g)?.length || 0;
+  return letters > 0 && letters >= arabic * 2;
+};
+
+/**
+ * ترجمة سريعة (أوفلاين) لبعض المصطلحات العامة إلى مصطلحات طبية بالإنجليزية
+ * تساعد في تسريع عملية التحليل وجعلها أدق بدون الاعتماد الكلي على الذكاء الاصطناعي
+ */
+const smartClinicalFallbackTranslate = (s: string): string => {
+  let out = (s || '').toString().trim();
+  if (!out) return '';
+
+  const repl: Array<[RegExp, string]> = [
+    [/\bكحة\b/g, 'cough'], [/\bكحه\b/g, 'cough'],
+    [/\bبلغم\b/g, 'sputum'],
+    [/\bسخونية\b/g, 'fever'], [/\bحرارة\b/g, 'fever'],
+    [/\bالتهاب\b/g, 'inflammation'],
+    [/\bحرقان بول\b/g, 'dysuria'],
+    [/\bتكرار بول\b/g, 'urinary frequency'],
+    [/\bإسهال\b/g, 'diarrhea'],
+    [/\bقيء\b/g, 'vomiting'], [/\bترجيع\b/g, 'vomiting'],
+    [/\bدوخة\b/g, 'dizziness'],
+    [/\bصداع\b/g, 'headache'],
+    [/\bضيق نفس\b/g, 'dyspnea'], [/\bنهجان\b/g, 'dyspnea'],
+    [/\bألم صدر\b/g, 'chest pain'],
+    [/\bحساسية\b/g, 'allergy'],
+    [/\bرشح\b/g, 'rhinorrhea'],
+    [/\bاحتقان\b/g, 'nasal congestion'],
+    [/\bالتهاب حلق\b/g, 'sore throat'],
+    [/\bألم بطن\b/g, 'abdominal pain'],
+    [/\bمغص\b/g, 'colicky abdominal pain'],
+  ];
+
+  for (const [r, v] of repl) out = out.replace(r, v);
+
+  // تصحيح حالة الأحرف (للتحاليل الشائعة) لتظهر بشكل احتراف في الروشتة
+  out = out
+    .replace(/\bcbc\b/gi, 'CBC')
+    .replace(/\bcrp\b/gi, 'CRP')
+    .replace(/\besr\b/gi, 'ESR')
+    .replace(/\brbs\b/gi, 'RBS')
+    .replace(/\bhba1c\b/gi, 'HbA1c')
+    .replace(/\bua\b/gi, 'UA')
+    .replace(/\bus\b/gi, 'U/S')
+    .replace(/\bcxr\b/gi, 'CXR')
+    .replace(/\becg\b/gi, 'ECG')
+    .replace(/\bct\b/gi, 'CT')
+    .replace(/\bmri\b/gi, 'MRI');
+
+  return out.replace(/\s+/g, ' ').trim();
+};
+
+
+const buildVitalsSummary = (v: VitalSigns): string => {
+  const parts: string[] = [];
+  if (v.bp) parts.push(`BP ${v.bp}`);
+  if (v.pulse) parts.push(`Pulse ${v.pulse}`);
+  if (v.temp) parts.push(`Temp ${v.temp}`);
+  if (v.rbs) parts.push(`RBS ${v.rbs}`);
+  if (v.spo2) parts.push(`SpO2 ${v.spo2}`);
+  if (v.rr) parts.push(`RR ${v.rr}`);
+  return parts.length ? parts.join(', ') : 'N/A';
+};
+
+
+const sanitizeAnalysisResult = (raw: any): AnalysisResult => {
+  return {
+    diagnosisAr: toText(raw?.diagnosisAr).trim(),
+    diagnosisEn: toText(raw?.diagnosisEn).trim(),
+  };
+};
+
+/**
+ * الوظيفة الأساسية لتحليل الحالة الصحية للمريض (AI Analysis)
+ * ترسل بيانات المريض (الشكوى، التاريخ المرضي، الفحص، التحاليل) إلى Gemini AI
+ * ليعطي "التشخيص المحتمل" بالعربية والإنجليزية لتسهيل عمل الطبيب
+ */
+export const analyzeComplaint = async (
+  complaint: string, history: string, exam: string, investigations: string,
+  ageDetails: { years: number; months: number; days: number },
+  weight: number, vitalSigns: VitalSigns
+): Promise<AnalysisResult> => {
+
+  const ageMonths = (ageDetails?.years || 0) * 12 + (ageDetails?.months || 0);
+  const vitals = buildVitalsSummary(vitalSigns || ({} as any));
+
+  // إعداد "الأمر" (Prompt) الموجه للذكاء الاصطناعي
+  // نحدد له دوره كـ "استشاري طب أسرة" ونضع شروط صارمة للرد (JSON فقط)
+  const stage1Prompt = `
+You are a Senior Family Medicine Consultant.
+
+Goal: Provide one most-likely diagnosis only.
+
+Rules:
+1) Use all clinical inputs (complaint, history, exam, investigations, vitals) to make clinical decisions.
+2) Output one most-likely diagnosis in Arabic and English.
+3) Do NOT propose or mention specific medications, brands, doses, investigations, or treatment instructions.
+4) diagnosisAr/diagnosisEn must be disease names only.
+
+---
+PATIENT
+Age: ${ageDetails.years}y ${ageDetails.months}m ${ageDetails.days}d (TotalMonths: ${ageMonths})
+WeightKg: ${Number.isFinite(weight) ? weight : 0}
+Vitals: ${vitals}
+Complaint: ${toText(complaint) || 'NOT PROVIDED'}
+History: ${toText(history) || 'NOT PROVIDED'}
+Exam: ${toText(exam) || 'NOT PROVIDED'}
+Investigations: ${toText(investigations) || 'NOT PROVIDED'}
+
+---
+Return STRICT JSON ONLY:
+{
+  "diagnosisAr": "...",
+  "diagnosisEn": "..."
+}
+`;
+
+  try {
+    // إرسال الطلب للذكاء الاصطناعي واستقبال النتيجة بصيغة JSON
+    const stage1 = await generateJson(stage1Prompt, { temperature: 0.25 });
+    return sanitizeAnalysisResult(stage1);
+  } catch (error) {
+    console.error('Gemini Rx Error:', error);
+    // تظهر هذه الرسالة للمستخدم في حال حدوث فشل في الاتصال بالخادم
+    throw new Error('حدث خطأ أثناء تحليل الحالة بالذكاء الاصطناعي. حاول مرة أخرى.');
+  }
+};
+
+
+/**
+ * وظيفة لتحويل المصطلحات السريرية من العربية (أو خليط) إلى الإنجليزية الطبية
+ * تساعد هذه الوظيفة الطبيب في كتابة روشتة احترافية تترجم "نهجان" إلى "dyspnea" و"كحة" إلى "cough" إلخ
+ */
+export const translateClinicalData = async (
+  complaint: string,
+  history: string,
+  exam: string,
+  diagnosis: string,
+  investigations: string
+): Promise<{ complaintEn: string; historyEn: string; examEn: string; investigationsEn: string; diagnosisEn: string }> => {
+
+  const pickText = (...values: Array<string | undefined | null>): string => {
+    for (const v of values) {
+      const s = toText(v).trim();
+      if (s) return s;
+    }
+    return '';
+  };
+  const parseLine = (text: string, key: string): string => {
+    const re = new RegExp(`^\\s*${key}\\s*:\\s*(.*)$`, 'im');
+    const m = (text || '').match(re);
+    return (m?.[1] || '').trim();
+  };
+  // If user already entered English (or mostly English), keep it as-is to avoid "over-translation".
+  const complaintText = toText(complaint).trim();
+  const historyText = toText(history).trim();
+  const examText = toText(exam).trim();
+  const invText = toText(investigations).trim();
+  const dxText = toText(diagnosis).trim();
+
+  if ([complaintText, historyText, examText, invText, dxText].every(x => !x || isMostlyEnglish(x))) {
+    return {
+      complaintEn: complaintText,
+      historyEn: historyText,
+      examEn: examText,
+      investigationsEn: invText,
+      diagnosisEn: dxText
+    };
+  }
+
+  const prompt = `You are a bilingual clinician and medical editor.
+TASK: Convert the following mixed Arabic/English clinical notes into accurate, professional medical English.
+GOAL: Not literal translation - use correct clinical terminology while preserving meaning. Do NOT add new symptoms, findings, diagnoses, or tests.
+
+STRICT RULES:
+1) Preserve all numbers, units, durations, dates, and measurements exactly.
+2) Preserve drug names and brand names as-is (do not translate medication names).
+3) Preserve and standardize common test abbreviations in uppercase when appropriate (CBC, CRP, ESR, RBS, HbA1c, LFTs, RFTs, UA, CXR, ECG, U/S).
+4) Keep negations intact (e.g., "لا يوجد" -> "no ...").
+5) Expand colloquial Arabic into proper clinical terms (e.g., "حرقان بول" -> "dysuria", "نهجان" -> "dyspnea").
+6) Use abbreviations ONLY if very common: DM, HTN, COPD, URTI, UTI. Otherwise, write in full.
+7) Keep each field focused and concise; do not add labels like "C/O:".
+
+INPUT:
+Complaint: """${complaintText}"""
+History: """${historyText}"""
+Examination: """${examText}"""
+Investigations: """${invText}"""
+Diagnosis: """${dxText}"""
+
+Return STRICT JSON ONLY:
+{ "complaintEn": "...", "historyEn": "...", "examEn": "...", "investigationsEn": "...", "diagnosisEn": "..." }`;
+
+  try {
+    const responseText = await generateContentWithSecurity(prompt, {
+      model: GEMINI_MODEL,
+      responseMimeType: 'application/json',
+      temperature: 0
+    });
+
+    const parsed = tryParseJson(responseText || '{}') || {};
+    const normalized = {
+      complaintEn: normalizeEmptyClinicalPlaceholder(parsed.complaintEn, complaintText),
+      historyEn: normalizeEmptyClinicalPlaceholder(parsed.historyEn, historyText),
+      examEn: normalizeEmptyClinicalPlaceholder(parsed.examEn, examText),
+      investigationsEn: normalizeEmptyClinicalPlaceholder(parsed.investigationsEn, invText),
+      diagnosisEn: normalizeEmptyClinicalPlaceholder(parsed.diagnosisEn, dxText)
+    };
+
+    // If model returned unusable empty output, fallback instead of propagating blanks.
+    const hasAnyOutput =
+      !!pickText(
+        normalized.complaintEn,
+        normalized.historyEn,
+        normalized.examEn,
+        normalized.investigationsEn,
+        normalized.diagnosisEn
+      );
+    if (!hasAnyOutput) {
+      throw new Error('Empty translation output');
+    }
+
+    return normalized;
+  } catch (e) {
+    // Second-pass fallback with plain text format (more tolerant than strict JSON)
+    try {
+      const textPrompt = `Translate to medical English and return ONLY these 5 lines:
+complaintEn: ...
+historyEn: ...
+examEn: ...
+investigationsEn: ...
+diagnosisEn: ...
+
+Complaint: ${complaintText}
+History: ${historyText}
+Examination: ${examText}
+Investigations: ${invText}
+Diagnosis: ${dxText}`;
+
+      const textResponse = await generateContentWithSecurity(textPrompt, {
+        model: GEMINI_MODEL,
+        responseMimeType: 'text/plain',
+        temperature: 0
+      });
+
+      const out = {
+        complaintEn: parseLine(textResponse, 'complaintEn'),
+        historyEn: parseLine(textResponse, 'historyEn'),
+        examEn: parseLine(textResponse, 'examEn'),
+        investigationsEn: parseLine(textResponse, 'investigationsEn'),
+        diagnosisEn: parseLine(textResponse, 'diagnosisEn')
+      };
+
+      if (pickText(out.complaintEn, out.historyEn, out.examEn, out.investigationsEn, out.diagnosisEn)) {
+        return out;
+      }
+    } catch {
+      // continue to offline fallback
+    }
+
+    // Final fallback without breaking Rx generation
+    return {
+      complaintEn: smartClinicalFallbackTranslate(complaintText),
+      historyEn: smartClinicalFallbackTranslate(historyText),
+      examEn: smartClinicalFallbackTranslate(examText),
+      investigationsEn: smartClinicalFallbackTranslate(invText),
+      diagnosisEn: smartClinicalFallbackTranslate(dxText)
+    };
+  }
+};

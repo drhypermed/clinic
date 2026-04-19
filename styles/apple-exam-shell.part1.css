@@ -1,0 +1,445 @@
+/*
+  ===============================================================
+  apple-exam-shell.css
+  هذا الملف يخص واجهة صفحة الفحص الجديدة apple-exam-shell.
+  الجزء 1: الحاوية الخارجية (الخلفيات الشعاعية والظل والزجاجية).
+  الجزء 2: تحسينات نمط Reference-like وتناسق التفاصيل.
+  الجزء 3: مواءمة ألوان الحقول مع لون كل قسم طبي.
+  الجزء 4: تحسينات Responsive للشاشات الصغيرة + أنيميشن dh-hyper.
+  ===============================================================
+*/
+
+/* الجزء التفصيلي 1: القالب البصري الرئيسي لصفحة الفحص */
+/* Apple-like exam page styling (scoped) */
+.apple-exam-shell {
+  position: relative;
+  margin: 0 auto;
+  padding: clamp(1rem, 2vw, 1.75rem);
+  border-radius: 28px;
+  font-family: 'Cairo', sans-serif;
+  background:
+    radial-gradient(1200px 320px at 85% -10%, rgba(14, 165, 233, 0.42), transparent 58%),
+    radial-gradient(900px 280px at -12% 0%, rgba(16, 185, 129, 0.35), transparent 60%),
+    linear-gradient(180deg, #e0f2fe 0%, #cffafe 50%, #ecfeff 100%);
+  border: 1px solid rgba(14, 165, 233, 0.32);
+  box-shadow: 0 30px 80px -60px rgba(15, 23, 42, 0.6);
+}
+
+.apple-exam-shell input,
+.apple-exam-shell textarea,
+.apple-exam-shell button,
+.apple-exam-shell h2,
+.apple-exam-shell h3,
+.apple-exam-shell label,
+.apple-exam-shell p,
+.apple-exam-shell span,
+.apple-exam-shell div {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.apple-exam-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.apple-exam-shell>* {
+  position: relative;
+  z-index: 1;
+}
+
+.apple-exam-stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.apple-exam-shell .clinic-section {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid rgba(14, 165, 233, 0.28) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 22px 44px -34px rgba(8, 47, 73, 0.28) !important;
+  backdrop-filter: blur(10px);
+}
+
+.apple-exam-shell .clinic-section::before {
+  height: 3px;
+  opacity: 0.7;
+}
+
+.apple-exam-shell .clinic-section-header {
+  background: linear-gradient(120deg, rgba(186, 230, 253, 0.94), rgba(167, 243, 208, 0.9)) !important;
+  border: 1px solid rgba(14, 165, 233, 0.45) !important;
+  border-radius: 16px !important;
+  padding: 12px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 12px 24px -20px rgba(15, 23, 42, 0.45);
+}
+
+.apple-exam-shell .clinic-section-header__bar {
+  width: 6px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #06b6d4, #0ea5e9, #2563eb);
+  box-shadow: 0 10px 18px -14px rgba(14, 116, 144, 0.8);
+}
+
+.apple-exam-shell .clinic-section-header__title {
+  color: #082f49;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+}
+
+.apple-exam-shell .clinic-label {
+  color: #0c4a6e !important;
+  font-weight: 700;
+}
+
+.apple-exam-shell .clinic-float-label {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(34, 211, 238, 0.65) !important;
+  color: #0c4a6e !important;
+  box-shadow: 0 8px 16px -14px rgba(15, 23, 42, 0.5) !important;
+  z-index: 8;
+}
+
+.apple-exam-shell .clinic-field {
+  background: rgba(248, 250, 252, 0.99) !important;
+  border: 2px solid rgba(14, 165, 233, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 22px -18px rgba(14, 116, 144, 0.25) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.apple-exam-shell .clinic-field::placeholder {
+  color: rgba(71, 85, 105, 0.8) !important;
+}
+
+.apple-exam-shell .clinic-field:hover {
+  border-color: rgba(14, 116, 144, 0.62) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 14px 24px -20px rgba(14, 116, 144, 0.4) !important;
+}
+
+.apple-exam-shell .clinic-field:focus {
+  border-color: inherit !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 22px -18px rgba(14, 116, 144, 0.25) !important;
+  transform: none !important;
+}
+
+.apple-exam-shell .clinic-field--readonly {
+  background: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+}
+
+.apple-exam-shell .clinic-unit {
+  color: rgba(71, 85, 105, 0.8);
+}
+
+.apple-exam-shell .clinic-info {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  color: #1e293b !important;
+  box-shadow: 0 12px 22px -18px rgba(15, 23, 42, 0.35);
+}
+
+.apple-exam-shell .clinic-action {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 60%, #60a5fa 100%) !important;
+  border: none !important;
+  box-shadow: 0 18px 30px -20px rgba(30, 64, 175, 0.7) !important;
+}
+
+.apple-exam-shell .clinic-action:hover {
+  box-shadow: 0 20px 34px -20px rgba(30, 64, 175, 0.75) !important;
+}
+
+.apple-exam-shell .clinic-section--basic {
+  --section-accent: #06b6d4;
+  --section-accent-strong: #0284c7;
+  --section-glow: rgba(14, 165, 233, 0.45);
+  --section-card-bg: linear-gradient(180deg, rgba(165, 243, 252, 0.62), rgba(255, 255, 255, 0.97));
+  --section-border: rgba(6, 182, 212, 0.68);
+  --section-header-bg-start: rgba(103, 232, 249, 0.68);
+  --section-header-bg-end: rgba(165, 243, 252, 0.66);
+  --section-header-border: rgba(6, 182, 212, 0.68);
+  --section-field-bg: rgba(248, 250, 252, 0.95);
+  --section-highlight-bg: rgba(226, 232, 240, 0.6);
+  --section-focus: #0284c7;
+}
+
+.apple-exam-shell .clinic-section--clinical {
+  --section-accent: #10b981;
+  --section-accent-strong: #047857;
+  --section-glow: rgba(16, 185, 129, 0.45);
+  --section-card-bg: linear-gradient(180deg, rgba(187, 247, 208, 0.62), rgba(255, 255, 255, 0.97));
+  --section-border: rgba(16, 185, 129, 0.68);
+  --section-header-bg-start: rgba(134, 239, 172, 0.65);
+  --section-header-bg-end: rgba(187, 247, 208, 0.64);
+  --section-header-border: rgba(16, 185, 129, 0.68);
+  --section-field-bg: rgba(248, 250, 252, 0.95);
+  --section-highlight-bg: rgba(226, 232, 240, 0.6);
+  --section-focus: #047857;
+}
+
+.apple-exam-shell .clinic-section--vitals {
+  --section-accent: #f59e0b;
+  --section-accent-strong: #ea580c;
+  --section-glow: rgba(249, 115, 22, 0.45);
+  --section-card-bg: linear-gradient(180deg, rgba(254, 215, 170, 0.62), rgba(255, 255, 255, 0.97));
+  --section-border: rgba(249, 115, 22, 0.68);
+  --section-header-bg-start: rgba(253, 186, 116, 0.64);
+  --section-header-bg-end: rgba(254, 215, 170, 0.62);
+  --section-header-border: rgba(249, 115, 22, 0.68);
+  --section-field-bg: rgba(248, 250, 252, 0.95);
+  --section-highlight-bg: rgba(226, 232, 240, 0.6);
+  --section-focus: #ea580c;
+}
+
+.apple-exam-shell .clinic-section--basic {
+  background: var(--section-card-bg) !important;
+  border-color: var(--section-border) !important;
+}
+
+.apple-exam-shell .clinic-section--clinical {
+  background: var(--section-card-bg) !important;
+  border-color: var(--section-border) !important;
+}
+
+.apple-exam-shell .clinic-section--vitals {
+  background: var(--section-card-bg) !important;
+  border-color: var(--section-border) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-field {
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  background: linear-gradient(180deg, rgba(240, 249, 255, 0.95), rgba(255, 255, 255, 0.98)) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-field:focus {
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 22px -18px rgba(37, 99, 235, 0.22) !important;
+  transform: none !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  background: linear-gradient(180deg, rgba(236, 253, 245, 0.95), rgba(255, 255, 255, 0.98)) !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field:focus {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 22px -18px rgba(16, 185, 129, 0.25) !important;
+  transform: none !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  background: linear-gradient(180deg, rgba(255, 247, 237, 0.95), rgba(255, 255, 255, 0.98)) !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field:focus {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 22px -18px rgba(37, 99, 235, 0.22) !important;
+  transform: none !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-float-label {
+  background: rgba(224, 242, 254, 0.96) !important;
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  color: #0369a1 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-float-label {
+  background: rgba(209, 250, 229, 0.96) !important;
+  border-color: rgba(16, 185, 129, 0.52) !important;
+  color: #065f46 !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-float-label {
+  background: rgba(254, 243, 199, 0.96) !important;
+  border-color: rgba(245, 158, 11, 0.48) !important;
+  color: #b45309 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-info {
+  color: #1e293b !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  font-weight: 700;
+}
+
+.apple-action-card {
+  border-radius: 22px;
+  border: 2px solid rgba(14, 165, 233, 0.36);
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.72), rgba(209, 250, 229, 0.68), rgba(255, 255, 255, 0.95));
+  box-shadow: 0 20px 40px -28px rgba(8, 47, 73, 0.34);
+  padding: 18px;
+}
+
+.apple-action-btn {
+  width: 100%;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #0891b2 52%, #2563eb 100%);
+  box-shadow: 0 18px 30px -20px rgba(14, 116, 144, 0.62);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.apple-action-btn:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.08);
+  box-shadow: 0 22px 34px -20px rgba(14, 116, 144, 0.7);
+}
+
+.apple-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.apple-action-note {
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(251, 191, 36, 0.65);
+  background: rgba(254, 243, 199, 0.7);
+  color: #92400e;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.apple-action-hint {
+  margin-top: 12px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.apple-exam-shell .apple-quick-search {
+  background: linear-gradient(180deg, rgba(209, 250, 229, 0.7), rgba(224, 242, 254, 0.74), rgba(255, 255, 255, 0.96)) !important;
+  border: 2px solid rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 20px 40px -28px rgba(6, 95, 70, 0.32) !important;
+  backdrop-filter: blur(10px);
+}
+
+.apple-exam-shell .apple-quick-search__title {
+  color: #0f172a !important;
+}
+
+.apple-exam-shell .apple-quick-search__bar,
+.apple-exam-shell .apple-quick-search__bar-small {
+  background: linear-gradient(180deg, #34d399, #10b981, #0284c7) !important;
+}
+
+.apple-exam-shell .apple-quick-search__input {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 2px solid rgba(16, 185, 129, 0.42) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 18px -18px rgba(6, 95, 70, 0.28) !important;
+}
+
+.apple-exam-shell .apple-quick-search__input:focus {
+  border-color: rgba(16, 185, 129, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 18px -18px rgba(6, 95, 70, 0.28) !important;
+  transform: none !important;
+}
+
+.apple-exam-shell .apple-quick-search__icon {
+  color: rgba(100, 116, 139, 0.9) !important;
+}
+
+.apple-exam-shell .apple-quick-search__clear {
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.apple-exam-shell .apple-quick-search__subtitle {
+  color: #1e293b !important;
+}
+
+.apple-exam-shell .apple-quick-search__actions {
+  background: rgba(248, 250, 252, 0.95) !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+.apple-exam-shell .apple-quick-search__action-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 18px -16px rgba(15, 23, 42, 0.35) !important;
+}
+
+.apple-exam-shell .apple-quick-search__action-btn:hover {
+  background: rgba(238, 242, 255, 0.95) !important;
+  border-color: rgba(99, 102, 241, 0.45) !important;
+}
+
+.apple-exam-shell .apple-quick-search__result {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.5) !important;
+}
+
+.apple-exam-shell .apple-quick-search__dose {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 70%, #60a5fa 100%) !important;
+  box-shadow: 0 18px 30px -22px rgba(30, 64, 175, 0.7) !important;
+  color: #f8fafc !important;
+}
+
+.apple-exam-shell .apple-quick-search__dose * {
+  color: inherit !important;
+}
+
+.apple-exam-shell .apple-quick-search__info-grid>div {
+  background: rgba(248, 250, 252, 0.95) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  box-shadow: 0 10px 18px -16px rgba(15, 23, 42, 0.35) !important;
+}
+
+.apple-exam-shell .apple-quick-search__usage {
+  background: rgba(239, 246, 255, 0.9) !important;
+  border: 1px solid rgba(147, 197, 253, 0.5) !important;
+  color: #1e3a8a !important;
+}
+
+.apple-exam-shell .apple-quick-search__instructions {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  color: #1e293b !important;
+}
+
+.apple-exam-shell .apple-quick-search__cta {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%) !important;
+  box-shadow: 0 18px 30px -22px rgba(15, 23, 42, 0.7) !important;
+}
+
+.apple-exam-shell .apple-quick-search__cta:hover {
+  filter: saturate(1.05);
+}
+
+.apple-exam-shell .apple-quick-search__alert {
+  box-shadow: 0 12px 22px -18px rgba(15, 23, 42, 0.25) !important;
+  backdrop-filter: blur(6px);
+}
+
+.apple-exam-shell .apple-quick-search__empty {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+

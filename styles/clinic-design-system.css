@@ -1,0 +1,275 @@
+/*
+  ===============================================================
+  clinic-design-system.css
+  هذا الملف هو نظام التصميم الأساسي لأقسام العيادة.
+  الجزء 1: هيكل الكروت clinic-section (خلفية/حدود/ظلال).
+  الجزء 2: الهيدر الداخلي للأقسام clinic-section-header.
+  الجزء 3: الحقول clinic-field وملصقاتها وحالات hover/focus.
+  الجزء 4: متغيرات ألوان كل نوع قسم (basic/history/clinical/vitals).
+  الهدف: توحيد الشكل البصري بدون أي تأثير على منطق التشغيل.
+  ===============================================================
+*/
+
+/* الجزء التفصيلي: نظام تصميم موحد لكل أقسام العيادة */
+/* Clinic section design system */
+.clinic-section {
+  position: relative;
+  isolation: isolate;
+  font-family: 'Cairo', sans-serif;
+  border-radius: 14px !important;
+  background: var(--section-card-bg, #ffffff);
+  border: 2px solid var(--section-border, rgba(15, 23, 42, 0.2));
+  box-shadow: 0 14px 24px -18px rgba(15, 23, 42, 0.52);
+  overflow: hidden;
+}
+
+.clinic-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--section-accent), var(--section-accent-strong), var(--section-accent));
+  opacity: 1;
+  z-index: 0;
+}
+
+.clinic-section::after {
+  content: none;
+}
+
+.clinic-section>* {
+  position: relative;
+  z-index: 1;
+}
+
+.clinic-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--section-header-bg-start, #eef2ff);
+  border: 2px solid var(--section-header-border, rgba(15, 23, 42, 0.2));
+  border-radius: 10px;
+  padding: 11px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 10px 20px -16px rgba(15, 23, 42, 0.5);
+}
+
+.clinic-section-header__group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.clinic-section-header__bar {
+  width: 8px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--section-accent), var(--section-accent-strong));
+  box-shadow: 0 8px 14px -10px var(--section-glow, rgba(15, 23, 42, 0.4));
+}
+
+.clinic-section-header__title {
+  margin: 0;
+  color: #020617;
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.clinic-section input,
+.clinic-section textarea,
+.clinic-section button {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.clinic-label {
+  font-weight: 800;
+  color: var(--section-accent-strong);
+  text-shadow: none;
+  letter-spacing: 0.01em;
+}
+
+.clinic-float-label {
+  position: absolute;
+  top: -0.58rem;
+  right: 1rem;
+  padding: 4px 11px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 2px solid rgba(100, 116, 139, 0.35);
+  box-shadow: 0 8px 16px -14px rgba(15, 23, 42, 0.5);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.clinic-unit {
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.clinic-field {
+  background: var(--section-field-bg, #f5f7fb);
+  border-radius: 10px !important;
+  border: 2px solid rgba(100, 116, 139, 0.45);
+  box-shadow: 0 10px 18px -16px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.clinic-field::placeholder {
+  color: #475569;
+  opacity: 1;
+  font-weight: 500 !important;
+}
+
+.clinic-field:focus {
+  outline: none;
+  border-color: var(--section-focus);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.14), 0 14px 24px -16px rgba(15, 23, 42, 0.45);
+  transform: translateY(-1px);
+}
+
+.clinic-field:hover {
+  box-shadow: 0 14px 24px -18px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.clinic-field--readonly {
+  background: #e2e8f0;
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+.clinic-field--compact {
+  box-shadow: 0 10px 22px -20px rgba(15, 23, 42, 0.48);
+}
+
+.clinic-section--basic .clinic-field:hover {
+  border-color: #22d3ee !important;
+}
+
+.clinic-section--basic .clinic-field:focus {
+  border-color: #0891b2 !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18), 0 20px 30px -22px rgba(6, 182, 212, 0.52) !important;
+}
+
+.clinic-section--clinical .clinic-field:hover {
+  border-color: #60a5fa !important;
+}
+
+.clinic-section--clinical .clinic-field:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), 0 20px 30px -22px rgba(37, 99, 235, 0.52) !important;
+}
+
+.clinic-section--vitals .clinic-field:hover {
+  border-color: #fb923c !important;
+}
+
+.clinic-section--vitals .clinic-field:focus {
+  border-color: #ea580c !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18), 0 20px 30px -22px rgba(249, 115, 22, 0.54) !important;
+}
+
+.clinic-action {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px !important;
+  color: #fff;
+  box-shadow: 0 14px 28px -20px rgba(15, 23, 42, 0.66), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.clinic-action:hover {
+  transform: translateY(-1px) scale(1.01);
+  filter: saturate(1.08);
+  box-shadow: 0 20px 32px -22px rgba(15, 23, 42, 0.64);
+}
+
+.clinic-action:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.clinic-info {
+  border: 2px solid var(--section-header-border, rgba(15, 23, 42, 0.24));
+  background: var(--section-header-bg-end, #dbeafe);
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 10px 18px -14px rgba(15, 23, 42, 0.45);
+  opacity: 1;
+}
+
+.clinic-info summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clinic-info summary::-webkit-details-marker {
+  display: none;
+}
+
+.clinic-section--basic {
+  --section-accent: #06b6d4;
+  --section-accent-strong: #0e7490;
+  --section-glow: rgba(8, 145, 178, 0.6);
+  --section-card-bg: #f0fdff;
+  --section-border: rgba(8, 145, 178, 0.5);
+  --section-header-bg-start: #bae6fd;
+  --section-header-bg-end: #7dd3fc;
+  --section-header-border: rgba(14, 116, 144, 0.65);
+  --section-field-bg: #ffffff;
+  --section-highlight-bg: #cffafe;
+  --section-focus: #0891b2;
+}
+
+.clinic-section--clinical {
+  --section-accent: #2563eb;
+  --section-accent-strong: #1e40af;
+  --section-glow: rgba(37, 99, 235, 0.64);
+  --section-card-bg: #eff6ff;
+  --section-border: rgba(37, 99, 235, 0.52);
+  --section-header-bg-start: #bfdbfe;
+  --section-header-bg-end: #93c5fd;
+  --section-header-border: rgba(30, 64, 175, 0.7);
+  --section-field-bg: #ffffff;
+  --section-highlight-bg: #dbeafe;
+  --section-focus: #1d4ed8;
+}
+
+.clinic-section--vitals {
+  --section-accent: #f97316;
+  --section-accent-strong: #c2410c;
+  --section-glow: rgba(249, 115, 22, 0.64);
+  --section-card-bg: #fff7ed;
+  --section-border: rgba(249, 115, 22, 0.5);
+  --section-header-bg-start: #fed7aa;
+  --section-header-bg-end: #fdba74;
+  --section-header-border: rgba(194, 65, 12, 0.72);
+  --section-field-bg: #ffffff;
+  --section-highlight-bg: #ffedd5;
+  --section-focus: #ea580c;
+}
+
+.clinic-action--basic {
+  background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+}
+
+.dropdown-shadow {
+  box-shadow: 0 14px 20px -14px rgba(15, 23, 42, 0.55);
+}
+
+.clinic-section--clinical .clinic-info {
+  color: #0b1b45;
+  background: #bfdbfe;
+  border-color: #1d4ed8;
+  font-weight: 900;
+  opacity: 1;
+}
+

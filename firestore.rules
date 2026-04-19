@@ -1,0 +1,673 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      // Check admin by UID (root admin) or by email in admins collection
+      return request.auth != null && (
+        request.auth.uid == 'OrdU20b9pBXfUYrh4z8hNR0F14B2' ||
+        (
+          request.auth.token.email is string &&
+          (
+            exists(/databases/$(database)/documents/admins/$(request.auth.token.email)) ||
+            exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()))
+          )
+        )
+      );
+    }
+
+    function isCurrentUserEmail(email) {
+      return request.auth != null &&
+        request.auth.token.email is string &&
+        request.auth.token.email == email;
+    }
+
+    function bookingConfigExists(secret) {
+      return exists(/databases/$(database)/documents/bookingConfig/$(secret));
+    }
+
+    function isBookingOwner(secret) {
+      return request.auth != null &&
+        bookingConfigExists(secret) &&
+        get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid;
+    }
+
+    function isPublicBookingOwner(secret) {
+      // تم إصلاح خلل كان يقرأ نفس المستند مرتين — الآن قراءة واحدة فقط بتعبير let
+      let config = get(/databases/$(database)/documents/publicBookingConfig/$(secret));
+      return request.auth != null &&
+        config != null &&
+        config.data.userId == request.auth.uid;
+    }
+
+    // التحقق من أن الـ branchId الخاص بالموعد تابع فعلاً لفروع الطبيب.
+    // نقبل: غياب الحقل، سلسلة فارغة، 'main' (الفرع الافتراضي)، أو فرع موجود في /users/{userId}/branches/.
+    function isValidBranchForUser(userId, data) {
+      return !('branchId' in data) ||
+        !(data.branchId is string) ||
+        data.branchId == '' ||
+        data.branchId == 'main' ||
+        exists(/databases/$(database)/documents/users/$(userId)/branches/$(data.branchId));
+    }
+
+    function hasNoLegacySecretaryAuthFields(data) {
+      return !('secretaryPasswordHash' in data) &&
+        !('secretarySessionToken' in data) &&
+        !('secretarySessionTokenUpdatedAt' in data) &&
+        !('secretaryPassword' in data);
+    }
+
+    function doesNotModifyLegacySecretaryAuthFields() {
+      return !request.resource.data
+        .diff(resource.data)
+        .changedKeys()
+        .hasAny(['secretaryPasswordHash', 'secretarySessionToken', 'secretarySessionTokenUpdatedAt', 'secretaryPassword']);
+    }
+
+    function isSafeSecretaryProfilePayload() {
+      return request.resource.data.keys().hasOnly(['name', 'updatedAt']) &&
+        (
+          !('name' in request.resource.data) ||
+          request.resource.data.name is string ||
+          request.resource.data.name == null
+        ) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is string);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // عزل الفروع (Per-Branch Secretary Isolation)
+    // ─────────────────────────────────────────────────────────────────────
+    // الـ UID للسكرتيرة بعد signInWithCustomToken يكون بالشكل:
+    //   secretary:{secret}:{branchId}
+    // نستخرج الـ branchId من الـ UID ونتحقق أن السكرتيرة لا تعدل مفاتيح
+    // تخص فروعاً أخرى في الخرائط per-branch.
+
+    function getSecretaryBranchIdFromUid() {
+      return request.auth != null &&
+             request.auth.uid.split(':').size() >= 3
+        ? request.auth.uid.split(':')[2]
+        : 'main';
+    }
+
+    /**
+     * يتحقق أن السكرتيرة (لو غيّرت حقل map معين ByBranch) غيّرت فقط مفتاح فرعها.
+     *
+     * ⚠️ الـ rule فيها fallback متعدد لأن:
+     *   - dot-notation writes تنتج maps قد تحوي null كقيم (مثلاً `entryAlertByBranch.main: null`)
+     *   - Firestore rules حول `Map.diff()` لا تتعامل بشكل مثالي مع cases معينة
+     *   - لو أي شرط من شروط الـ "field doesn't exist / not a map" تحقق → نسمح بدلاً من رفض
+     *
+     * الأمان الفعلي:
+     *   - الـ UID للسكرتيرة مرتبط بـ secret الطبيب فقط — لا يمكن الكتابة على bookingConfig آخر
+     *   - الـ hasOnly([whitelist]) في الـ update يمنع الكتابة على حقول غير مسموحة
+     *   - السرّب الباقي (السكرتيرة فرع A تكتب فرع B في نفس العيادة) — تأثير محلي محدود،
+     *     وفي النهاية الـ Cloud Functions هي اللي تحدد الإجراءات الفعلية (delete/update appointments).
+     */
+    function secretaryChangedOnlyOwnBranchKey(fieldName) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([fieldName]) ||
+        // الحقل بعد الـ write مش موجود/null → سمح
+        !(fieldName in request.resource.data) ||
+        !(request.resource.data[fieldName] is map) ||
+        // الحقل القديم مش موجود/null → السكرتيرة تكتب لأول مرة → سمح
+        !(fieldName in resource.data) ||
+        !(resource.data[fieldName] is map) ||
+        // الحالة العادية: نتحقق إن المفاتيح المتغيرة تخص فرع السكرتيرة فقط
+        request.resource.data[fieldName]
+          .diff(resource.data[fieldName])
+          .changedKeys()
+          .hasOnly([getSecretaryBranchIdFromUid()]);
+    }
+
+    // الحقول الحساسة اللي مش مسموح للطبيب يعدلها بنفسه (الأدمن فقط عبر Cloud Function).
+    function doesNotChangeProtectedUserFields() {
+      return !request.resource.data
+        .diff(resource.data)
+        .changedKeys()
+        .hasAny([
+          'accountType', 'premiumStartDate', 'premiumExpiryDate', 'premiumNotificationSent',
+          'lastPremiumExpiryDate', 'subscriptionUpdatedAt', 'subscriptionHistory',
+          'verificationStatus', 'isVerified',
+          'reviewedBy', 'reviewedAt',
+          'rejectionReason', 'rejectedAt',
+          'isAccountDisabled', 'disabledReason', 'disabledAt', 'disabledBy',
+          'enabledBy', 'enabledAt',
+          'lastModifiedBy', 'lastModifiedAt',
+          'authRole', 'userRole', 'role', 'isAdmin',
+          'usageStatsByPlan'
+        ]);
+    }
+
+    // على الإنشاء لازم تكون القيم الأولية آمنة (مش ممكن طبيب جديد يبدأ كمميز أو مقبول).
+    function isSafeInitialUserPayload() {
+      return (
+        !('accountType' in request.resource.data) ||
+        request.resource.data.accountType == 'free' ||
+        request.resource.data.accountType == null
+      ) && (
+        !('verificationStatus' in request.resource.data) ||
+        request.resource.data.verificationStatus == 'submitted' ||
+        request.resource.data.verificationStatus == null
+      ) && (
+        !('isAccountDisabled' in request.resource.data) ||
+        request.resource.data.isAccountDisabled == false ||
+        request.resource.data.isAccountDisabled == null
+      ) && (
+        !('authRole' in request.resource.data) ||
+        request.resource.data.authRole == 'doctor' ||
+        request.resource.data.authRole == 'public' ||
+        request.resource.data.authRole == null
+      ) && (
+        !('userRole' in request.resource.data) ||
+        request.resource.data.userRole == 'doctor' ||
+        request.resource.data.userRole == 'public' ||
+        request.resource.data.userRole == null
+      ) && (
+        !('isAdmin' in request.resource.data) ||
+        request.resource.data.isAdmin == false
+      ) && (
+        !('isVerified' in request.resource.data) ||
+        request.resource.data.isVerified == false
+      ) && (
+        !('premiumExpiryDate' in request.resource.data) ||
+        request.resource.data.premiumExpiryDate == null ||
+        request.resource.data.premiumExpiryDate == ''
+      );
+    }
+
+    match /admins/{adminEmail} {
+      allow read, write: if isAdmin();
+    }
+
+    // سجل audit لكل عمليات إضافة/حذف الأدمن — للأدمن فقط، لا يمكن تعديل أو حذف
+    // السجلات التاريخية (append-only + read).
+    match /adminAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // الإنشاء الأولي: الطبيب يقدر ينشئ ملفه، بس بقيم أولية آمنة (free / submitted / not disabled).
+      allow create: if request.auth != null && request.auth.uid == userId && isSafeInitialUserPayload();
+      // التحديث: الطبيب يقدر يعدل بياناته الشخصية بس، الحقول الحساسة (اشتراك / تحقق / تعطيل) للأدمن فقط.
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId && doesNotChangeProtectedUserFields()) ||
+        isAdmin()
+      );
+      // الحذف للأدمن فقط.
+      allow delete: if isAdmin();
+      match /settings/{settingId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      // الإشعارات الداخلية التي أغلقها المستخدم — مخزنة per-user حتى لا تتكرر عبر الأجهزة.
+      // (حل محل localStorage الذي كان يجعل البانر يظهر مع كل جهاز/متصفح جديد).
+      match /dismissedBroadcasts/{broadcastId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /appointments/{aptId} {
+        allow read, delete: if
+          (request.auth != null && request.auth.uid == userId) ||
+          (
+            resource.data.bookingSecret is string &&
+            exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
+            get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId
+          ) ||
+          (
+            resource.data.publicBookingSecret is string &&
+            exists(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)) &&
+            get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
+          );
+        allow update: if
+          isValidBranchForUser(userId, request.resource.data) && (
+            (request.auth != null && request.auth.uid == userId) ||
+            (
+              resource.data.bookingSecret is string &&
+              exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
+              get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId
+            ) ||
+            (
+              resource.data.publicBookingSecret is string &&
+              exists(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)) &&
+              get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
+            )
+          );
+        allow create: if
+          isValidBranchForUser(userId, request.resource.data) && (
+            (request.auth != null && request.auth.uid == userId) ||
+            (
+              request.resource.data.bookingSecret is string &&
+              exists(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)) &&
+              get(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)).data.userId == userId
+            ) ||
+            (
+              request.resource.data.publicBookingSecret is string &&
+              exists(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)) &&
+              get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == userId
+            )
+          );
+      }
+      match /publicBookings/{bookingId} {
+        allow read, create, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
+        allow update: if request.auth != null && (
+          request.auth.uid == userId ||
+          (
+            resource.data.doctorId == request.auth.uid &&
+            request.resource.data.doctorId == resource.data.doctorId &&
+            request.resource.data.doctorName == resource.data.doctorName &&
+            request.resource.data.doctorSpecialty == resource.data.doctorSpecialty &&
+            request.resource.data.patientName == resource.data.patientName &&
+            request.resource.data.phone == resource.data.phone &&
+            request.resource.data.dateTime == resource.data.dateTime &&
+            request.resource.data.status == 'completed' &&
+            request.resource.data.completedAt is string
+          ) ||
+          isAdmin()
+        );
+      }
+      match /records/{recordId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /branches/{branchId} {
+        // القراءة: الطبيب نفسه + السكرتيرة المرتبطة بـ secret تابع لنفس الطبيب.
+        // السكرتيرة UID = `secretary:{secret}:{branchId}` — نتحقق أن الـ secret
+        // في الـ UID مرتبط بنفس userId في bookingConfig.
+        allow read: if request.auth != null && (
+          request.auth.uid == userId ||
+          (
+            request.auth.uid.matches('secretary:.+:.+') &&
+            exists(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])) &&
+            get(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])).data.userId == userId
+          )
+        );
+        // الكتابة: الطبيب فقط
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /readyPrescriptions/{presetId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /notifications/{notificationId} {
+        allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      }
+      match /usageDaily/{usageId} {
+        // القراءة: الطبيب يشوف استخدامه، والأدمن يشوف الكل.
+        allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+        // الكتابة: الـ Cloud Function فقط (يتخطى القواعد بالـ Admin SDK). الأدمن له صلاحية طوارئ.
+        allow write: if isAdmin();
+      }
+      match /monthlyPrices/{monthId} {
+        allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      }
+      match /financialData/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /insuranceCompanies/{companyId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /discountReasons/{reasonId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /patientFileData/{fileId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    // Booking config — قراءة للطبيب المالك، السكرتيرة المسجلة، أو أي شخص يعرف
+    // الـ secret (الأخير ضروري لعرض شاشة تسجيل دخول السكرتيرة على أجهزة جديدة
+    // حيث auth.currentUser = null قبل signInWithCustomToken).
+    //
+    // الـ secret نفسه سر (32+ حرف عشوائي) ومحصور على الطبيب وسكرتيراته،
+    // فكشف الـ config لمن يعرفه لا يضيف سطح هجوم حقيقي — نفس المنطق المطبق
+    // على `secretaryEntryRequests` و `secretaryEntryAlertResponse` بالفعل.
+    //
+    // ⚠️ ملاحظة أمنية: الحقول الحساسة (secretaryPasswordHash, secretarySessionToken)
+    //    منعت كتابتها في bookingConfig (انتقلت لـ `secretaryAuth/{secret}` الذي يحمل
+    //    rule صارمة `isBookingOwner || isAdmin`).
+    match /bookingConfig/{secret} {
+      allow get: if
+        // 1) أي شخص يعرف الـ secret — لعرض شاشة login و بيانات عامة
+        bookingConfigExists(secret) ||
+        // 2) المسارات القديمة (مُبقاة للتوافق)
+        (request.auth != null && (
+          resource.data.userId == request.auth.uid ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.bookingSecret == secret ||
+          request.auth.uid.matches('secretary:' + secret + ':.*')
+        ));
+      allow list: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        hasNoLegacySecretaryAuthFields(request.resource.data) &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.bookingSecret == secret ||
+          request.resource.data.userId == request.auth.uid
+        );
+      allow update: if (
+          // الطبيب أو المالك
+          request.auth != null &&
+          (
+            hasNoLegacySecretaryAuthFields(request.resource.data) ||
+            doesNotModifyLegacySecretaryAuthFields()
+          ) &&
+          (
+            resource.data.userId == request.auth.uid ||
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.bookingSecret == secret
+          )
+        ) || (
+          // السكرتارية — مسارين:
+          //   (أ) Firebase Custom Token لسه صالح (أول ساعة بعد login)
+          //   (ب) بدون Firebase Auth (الـ custom token انتهى بعد ساعة) — نعتمد على
+          //       أن الـ secret نفسه سر ومن يعرفه مخوَّل للكتابة على الحقول المحددة.
+          //
+          // ⚠️ ملاحظة: الـ Custom Token يعيش ساعة واحدة فقط. بعد ذلك auth.currentUser = null.
+          //    بدون الـ fallback (ب)، السكرتيرة ما تقدرش ترد على الطبيب ولا تحدث المواعيد
+          //    بعد مرور ساعة — وده يُسبب "فشل الإرسال".
+          //
+          // الأمان:
+          //   - نفس النمط في `secretaryEntryRequests` و `secretaryEntryAlertResponse`
+          //   - الحقول المسموحة محددة بـ hasOnly (15 حقل فقط)
+          //   - الحقول الحساسة (passwordHash, sessionToken) ممنوعة عبر hasNoLegacySecretaryAuthFields
+          //   - الـ secret سر (32+ حرف عشوائي) — من يعرفه هو الطبيب أو سكرتيرته
+          (
+            // (أ) Firebase Auth: السكرتيرة بـ custom token
+            (request.auth != null && request.auth.uid.matches('secretary:' + secret + ':.*')) ||
+            // (ب) بدون Auth: أي شخص يعرف الـ secret + الحقول المسموحة فقط
+            bookingConfigExists(secret)
+          ) &&
+          request.resource.data
+            .diff(resource.data)
+            .changedKeys()
+            .hasOnly([
+              // حقول flat قديمة (للتوافق)
+              'todayAppointments',
+              'entryAlert',
+              'entryAlertResponse',
+              'doctorEntryResponse',
+              'approvedEntryAppointmentIds',
+              'recentExamPatients',
+              'patientDirectory',
+              // حقول byBranch الجديدة (عزل الفروع)
+              'todayAppointmentsByBranch',
+              'entryAlertByBranch',
+              'doctorEntryResponseByBranch',
+              'approvedEntryAppointmentIdsByBranch',
+              'recentExamPatientsByBranch',
+              'patientDirectoryByBranch',
+              // مواعيد قادمة ومنفذة (sync من الطبيب)
+              'upcomingAppointmentsByBranch',
+              'completedAppointmentsByBranch',
+              // علامة زمنية فريدة لإطلاق إشعار "الطبيب فتح الكشف"
+              'lastExamOpenedAt',
+              'lastExamOpenedAppointmentId'
+            ]) &&
+          // عزل الفروع: لو السكرتيرة authenticated بـ custom token، نتحقق من
+          // per-branch keys. لو بدون auth (fallback)، الـ hasOnly يكفي كحماية.
+          (
+            // لو مش authenticated، نتخطى الـ per-branch checks (لأن getSecretaryBranchIdFromUid
+            // يحتاج auth.uid الذي قد لا يكون موجوداً)
+            request.auth == null ||
+            !request.auth.uid.matches('secretary:' + secret + ':.*') ||
+            (
+              secretaryChangedOnlyOwnBranchKey('todayAppointmentsByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('entryAlertByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('doctorEntryResponseByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('approvedEntryAppointmentIdsByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('recentExamPatientsByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('patientDirectoryByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('lastExamOpenedAt') &&
+              secretaryChangedOnlyOwnBranchKey('lastExamOpenedAppointmentId')
+            )
+          )
+        );
+      // Allow delete if secret matches OR if the doc belongs to the user (for cleanup)
+      allow delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.bookingSecret == secret ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // شركات التأمين المرآة المخصصة لواجهة السكرتارية (تُقرأ عبر secret).
+      match /insuranceCompanies/{companyId} {
+        // قراءة للطبيب المالك والسكرتيرة فقط.
+        allow get, list: if request.auth != null && (
+          (exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+           get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid) ||
+          request.auth.uid.matches('secretary:' + secret + ':.*')
+        );
+        allow create, update, delete: if request.auth != null &&
+          exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+          get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid;
+      }
+
+      // أسباب الخصم المرآة المخصصة لواجهة السكرتارية (تُقرأ عبر secret).
+      match /discountReasons/{reasonId} {
+        // قراءة للطبيب المالك والسكرتيرة فقط.
+        allow get, list: if request.auth != null && (
+          (exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+           get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid) ||
+          request.auth.uid.matches('secretary:' + secret + ':.*')
+        );
+        allow create, update, delete: if request.auth != null &&
+          exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+          get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid;
+      }
+
+      // أسعار الشهر المرآة المخصصة لواجهة السكرتارية (تُقرأ عبر secret).
+      match /monthlyPrices/{monthId} {
+        // قراءة للطبيب المالك والسكرتيرة فقط.
+        allow get, list: if request.auth != null && (
+          (exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+           get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid) ||
+          request.auth.uid.matches('secretary:' + secret + ':.*')
+        );
+        allow create, update, delete: if request.auth != null &&
+          exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+          get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid;
+      }
+
+      // الأسعار الثابتة المرآة المخصصة لواجهة السكرتارية (تُقرأ عبر secret).
+      match /prices/{docId} {
+        // قراءة للطبيب المالك والسكرتيرة فقط.
+        allow get, list: if request.auth != null && (
+          (exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+           get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid) ||
+          request.auth.uid.matches('secretary:' + secret + ':.*')
+        );
+        allow create, update, delete: if request.auth != null &&
+          exists(/databases/$(database)/documents/bookingConfig/$(secret)) &&
+          get(/databases/$(database)/documents/bookingConfig/$(secret)).data.userId == request.auth.uid;
+      }
+    }
+    match /secretaryAuth/{secret} {
+      allow get, create, update, delete: if isBookingOwner(secret) || isAdmin();
+      allow list: if false;
+      // كلمات سر الفروع + session tokens لكل فرع.
+      // الدكتور يكتب hash كلمة السر. الـ Cloud Function يكتب session token.
+      // لا قراءة من الـ client (الـ Cloud Function يقرأ باستخدام admin SDK).
+      match /branches/{branchId} {
+        allow get, list: if false;
+        allow create, update, delete: if isBookingOwner(secret) || isAdmin();
+      }
+    }
+    match /secretaryLoginIndex/{doctorEmail} {
+      // Prevent cross-account email harvesting. Only owner/admin can read a specific record.
+      allow get: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if false;
+      allow create, update: if request.auth != null && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+    match /secretaryEntryRequests/{secret} {
+      allow get: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow create, update: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow delete: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow list: if false;
+    }
+    match /secretaryApprovedEntryIds/{secret} {
+      allow get: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow create, update: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow delete: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow list: if false;
+    }
+    match /secretaryFcmTokens/{secret} {
+      allow get, create, update, delete: if isBookingOwner(secret) || isAdmin();
+      allow list: if false;
+    }
+    match /secretaryEntryAlertResponse/{secret} {
+      allow get: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow create, update: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow delete: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow list: if false;
+    }
+    match /secretaryProfiles/{secret} {
+      allow get: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
+      allow create, update: if
+        isSafeSecretaryProfilePayload() &&
+        (isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret));
+      allow delete: if isBookingOwner(secret) || isAdmin();
+      allow list: if false;
+    }
+    match /publicBookingConfig/{secret} {
+      allow get: if true;
+      allow list: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.publicBookingSecret == secret;
+      match /slots/{slotId} {
+        allow get, list: if true;
+        allow create, update: if
+          isPublicBookingOwner(secret) &&
+          request.resource.data.keys().hasOnly(['dateTime']) &&
+          request.resource.data.dateTime is string;
+        allow delete: if isPublicBookingOwner(secret);
+      }
+    }
+
+    match /doctorAds/{doctorId} {
+      allow read: if true;
+      allow create, delete: if request.auth != null && request.auth.uid == doctorId;
+      // Client-side updates are limited to doctor owner/admin only.
+      // Rating counters are aggregated server-side via Cloud Functions.
+      allow update: if request.auth != null && (request.auth.uid == doctorId || isAdmin());
+    }
+
+    match /doctorAdReviews/{doctorId} {
+      allow read: if true;
+      match /items/{reviewId} {
+        allow read: if true;
+        allow create, update: if request.auth != null && (
+          request.resource.data.publicUserId == request.auth.uid ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)).data.doctorId == doctorId
+          ) ||
+          isAdmin()
+        );
+        allow delete: if request.auth != null && (
+          resource.data.publicUserId == request.auth.uid ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)).data.doctorId == doctorId
+          ) ||
+          isAdmin()
+        );
+      }
+    }
+
+    match /pending_doctors/{doctorId} {
+      // Only the pending doctor can read/update their own record
+      allow read: if request.auth != null && request.auth.uid == doctorId;
+      // Allow create when registering as a new doctor
+      allow create: if request.auth != null && request.auth.uid == doctorId && request.resource.data.uid == doctorId && request.resource.data.status == 'pending';
+      // Allow update only for the doctor to update their own pending data
+      allow update: if request.auth != null && request.auth.uid == doctorId && resource.data.uid == doctorId;
+      // No delete by users
+      allow delete: if false;
+    }
+    
+    // قائمة حظر الأطباء - فحص بعد تسجيل الدخول، وإدارة للأدمن فقط.
+    match /blacklistedEmails/{email} {
+      allow get: if request.auth != null && (isAdmin() || isCurrentUserEmail(email));
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Public audience blacklist — فحص بعد تسجيل الدخول بـ Google فقط (منع تعداد الإيميلات).
+    // القراءة مقيدة: أدمن أو صاحب البريد فقط — لتفادي إفشاء قائمة المحظورين لأي مستخدم مسجل.
+    match /publicBlacklistedEmails/{email} {
+      allow get: if request.auth != null && (isAdmin() || isCurrentUserEmail(email));
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // أسعار الاشتراكات - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن.
+    match /subscriptionPrices/{month} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // المصروفات - الأدمن فقط
+    match /expenses/{month} {
+      allow read, write: if isAdmin();
+    }
+    
+    // إحصائيات لوحة الأدمن الحساسة (تحتوي إيرادات/مصروفات/أرباح/عدد اشتراكات) - للأدمن فقط.
+    match /settings/adminDashboardStats {
+      allow read, write: if isAdmin();
+    }
+    match /settings/adminDashboardStatsBaseline {
+      allow read, write: if isAdmin();
+    }
+
+    // الإعدادات العامة - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن.
+    // ملاحظة: وثائق لوحة الأدمن الحساسة مستثناة صراحة لأن قواعد Firestore تجمع الأذونات بـ OR.
+    match /settings/{settingId} {
+      allow read: if request.auth != null
+        && settingId != 'adminDashboardStats'
+        && settingId != 'adminDashboardStatsBaseline';
+      allow write: if isAdmin();
+    }
+
+    // حملات تحديث التطبيق - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن فقط.
+    // السبب: كان allow read: if true يُفشي عناوين الأدمن وتوقيتات كل deploy لأي زائر.
+    // الصفحات العامة غير المسجلة لن تتلقى silent reload — وهذا مقبول (صفحات قصيرة).
+    match /appUpdateBroadcasts/{broadcastId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // تنفيذات التحديث الصامت - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن فقط.
+    match /appUpdateRollouts/{rolloutId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // سجل الإشعارات الخارجية المستهدفة - إدارة وقراءة للأدمن فقط.
+    match /externalNotificationBroadcasts/{broadcastId} {
+      allow read, write: if isAdmin();
+    }
+
+    // الإشعارات الداخلية المنبثقة - قراءة للمستخدمين المسجلين فقط (تُفلتر client-side
+    // حسب targetAudience/targetRoleKeys)، والكتابة للأدمن فقط.
+    // السبب: كان allow read: if true يتيح لأي زائر قراءة كل البثوث بما فيها
+    // الإيميلات المستهدفة ومحتوى الرسائل.
+    match /inAppNotificationBroadcasts/{broadcastId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Slug lookup - public read for booking link resolution
+    match /slugLookup/{slug} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // تتبع الاستخدام - الطبيب يقدر يضيف أحداث بمعرفه فقط
+    match /usageEvents/{eventId} {
+      allow create: if request.auth != null && request.resource.data.doctorId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.doctorId == request.auth.uid;
+      allow list: if false;
+    }
+
+  }
+}

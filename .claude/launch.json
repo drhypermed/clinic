@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vite-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "firebase-functions-emulator",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "functions", "run", "serve"],
+      "port": 5001
+    }
+  ]
+}

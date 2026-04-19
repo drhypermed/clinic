@@ -1,0 +1,176 @@
+/* الجزء التفصيلي 2: تحسينات النمط المرجعي (Reference-like refresh) */
+/* Reference-like dashboard refresh for new exam page */
+.apple-exam-shell {
+  font-family: 'Cairo', sans-serif !important;
+  background:
+    radial-gradient(920px 260px at 12% -10%, rgba(125, 211, 252, 0.32), transparent 62%),
+    radial-gradient(940px 260px at 88% -15%, rgba(196, 181, 253, 0.26), transparent 60%),
+    linear-gradient(180deg, #eef2f7 0%, #e8edf4 100%) !important;
+  border: 1px solid #d3dce8 !important;
+  box-shadow: 0 28px 56px -48px rgba(15, 23, 42, 0.45) !important;
+}
+
+.apple-exam-shell::before {
+  background-image: none !important;
+}
+
+.apple-exam-shell .clinic-section {
+  background: #ffffff !important;
+  border: 1px solid #dde5ef !important;
+  border-radius: 30px !important;
+  box-shadow: 0 20px 36px -30px rgba(15, 23, 42, 0.34) !important;
+  overflow: hidden;
+}
+
+.apple-exam-shell .clinic-section::before {
+  display: none !important;
+}
+
+.apple-exam-shell .clinic-section--basic {
+  border-top: 14px solid #0ea5e9 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical {
+  border-top: 14px solid #0ea97f !important;
+}
+
+.apple-exam-shell .clinic-section--vitals {
+  border-top: 14px solid #ff0f7b !important;
+}
+
+.apple-exam-shell .clinic-section-header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 0 12px !important;
+}
+
+.apple-exam-shell .clinic-section-header__bar {
+  width: 10px;
+  height: 44px;
+  background: #1d4ed8 !important;
+  box-shadow: 0 12px 22px -16px rgba(29, 78, 216, 0.9) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-section-header__bar {
+  background: #0ea5e9 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-section-header__bar {
+  background: #0ea97f !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-section-header__bar {
+  background: #ff0f7b !important;
+}
+
+.apple-exam-shell .clinic-section-header__title {
+  font-size: 1.32rem;
+  font-weight: 900;
+  color: #0f172a !important;
+}
+
+.apple-exam-shell .clinic-float-label {
+  border-radius: 10px;
+  border-width: 1px !important;
+  box-shadow: 0 8px 18px -16px rgba(30, 41, 59, 0.55) !important;
+}
+
+.apple-exam-shell .clinic-field {
+  background: #f8fafc !important;
+  border: 2px solid #d2dce8 !important;
+  border-radius: 18px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.28) !important;
+}
+
+.apple-exam-shell .clinic-field:hover {
+  border-color: #94a3b8 !important;
+}
+
+.apple-exam-shell .clinic-field:focus {
+  border-color: #d2dce8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.28) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-field {
+  border-left: 5px solid #0ea5e9 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field {
+  border-left: 5px solid #ff0f7b !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field {
+  border-left: 5px solid #0ea97f !important;
+}
+
+.apple-exam-shell .clinic-action {
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #0595d8 0%, #0284c7 100%) !important;
+  border: 1px solid rgba(2, 132, 199, 0.45) !important;
+  color: #fff !important;
+  box-shadow: 0 18px 28px -20px rgba(3, 105, 161, 0.78) !important;
+}
+
+.apple-exam-shell .clinic-action:hover {
+  filter: saturate(1.08);
+}
+
+.apple-action-card {
+  border-radius: 30px !important;
+  border: 1px solid #dbe5f1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 36px -30px rgba(15, 23, 42, 0.32) !important;
+}
+
+.apple-action-btn {
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  box-shadow: 0 18px 30px -20px rgba(2, 132, 199, 0.72) !important;
+}
+
+.apple-action-hint {
+  color: #64748b !important;
+}
+
+.apple-exam-shell .apple-quick-search {
+  border-radius: 30px !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe5f1 !important;
+  border-top: 14px solid #0ea5e9 !important;
+  box-shadow: 0 20px 36px -30px rgba(15, 23, 42, 0.32) !important;
+}
+
+.apple-exam-shell .apple-quick-search__bar,
+.apple-exam-shell .apple-quick-search__bar-small {
+  background: #0ea5e9 !important;
+}
+
+.apple-exam-shell .apple-quick-search__input {
+  background: #f8fafc !important;
+  border: 2px solid #d2dce8 !important;
+}
+
+.apple-exam-shell .apple-quick-search__input:focus {
+  border-color: #d2dce8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 18px -18px rgba(15, 23, 42, 0.2) !important;
+}
+
+.apple-exam-shell .apple-quick-search__action-btn {
+  border-radius: 12px !important;
+  border: 1px solid #d2dce8 !important;
+  background: #f8fafc !important;
+}
+
+.apple-exam-shell .apple-quick-search__dose {
+  background: linear-gradient(135deg, #0595d8 0%, #0284c7 100%) !important;
+}
+
+.apple-exam-shell .apple-quick-search__cta {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+}
+
+

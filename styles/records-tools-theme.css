@@ -1,0 +1,71 @@
+/*
+  ===============================================================
+  records-tools-theme.css
+  الجزء 1: دعم min-h-screen باستخدام 100dvh للأجهزة الحديثة.
+  الجزء 2: متغيرات ألوان يوم المواعيد/بطاقات المرضى في السجلات.
+  الجزء 3: إزالة الغلاف الخارجي المرئي من drug-tools/new-exam shells.
+  ===============================================================
+*/
+
+@supports (min-height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+:root {
+  --dh-day-grad-start: #1e3a8a;
+  --dh-day-grad-mid: #1d4ed8;
+  --dh-day-grad-end: #0369a1;
+  --dh-day-border: #bfdbfe;
+  --dh-day-shadow: rgba(30, 64, 175, 0.18);
+
+  --dh-patient-border: #e2e8f0;
+  --dh-patient-shadow: rgba(15, 23, 42, 0.05);
+}
+
+/* حاوية اليوم: بطاقة بيضاء ناعمة بحدود زرقاء خفيفة */
+.dh-day-shell {
+  border-color: var(--dh-day-border);
+  background: #ffffff;
+  box-shadow: 0 4px 20px -8px var(--dh-day-shadow);
+}
+
+/* رأس اليوم: تدرج أزرق احترافي */
+.dh-day-head {
+  background: linear-gradient(135deg, var(--dh-day-grad-start) 0%, var(--dh-day-grad-mid) 55%, var(--dh-day-grad-end) 100%);
+}
+
+/* رأس اليوم: تدرج أخضر (للمنفذة) */
+.dh-day-head-green {
+  background: linear-gradient(135deg, #064e3b 0%, #059669 55%, #0d9488 100%);
+}
+
+/* حاوية اليوم الخضراء */
+.dh-day-shell-green {
+  border-color: #a7f3d0;
+  background: #ffffff;
+  box-shadow: 0 4px 20px -8px rgba(5, 150, 105, 0.18);
+}
+
+/* بطاقة المريض: خلفية بيضاء نظيفة */
+.dh-patient-shell {
+  border-color: var(--dh-patient-border);
+  background: #ffffff;
+  box-shadow: 0 1px 8px -3px var(--dh-patient-shadow);
+}
+
+/* Drug tools + new exam: إلغاء الغلاف الخارجي فقط */
+.drug-tools-shell,
+.new-exam-shell {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.drug-tools-shell::before,
+.new-exam-shell::before {
+  display: none !important;
+}

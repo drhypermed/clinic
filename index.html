@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="google-site-verification" content="7pT-Ov5N_mM45PI2rxU4buPCd8WYJlJh_HsycEjTJdI" />
+    <!-- Prevent Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Unified UI font: Cairo — تحميل غير معطِّل للعرض -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"></noscript>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16a34a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="DrHyper Med">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>دكتور هايبر — نظام إدارة العيادات الذكية</title>
+    <meta name="description" content="دكتور هايبر — نظام متكامل لإدارة العيادات الذكية: تصميم وطباعة روشتة احترافية، المساعدة في الوصول للتشخيص، اختيار من أكتر من 10,000 دواء بالاستخدامات والتحذيرات وأحدث الأسعار وفحص التفاعلات، حجز مواعيد إلكتروني، تنسيق فوري مع السكرتارية، ملفات وسجلات المرضى، الحسابات والتأمينات، إدارة فروع متعددة، دليل الأطباء وتسويق العيادات، وإشعارات فورية — كل ده في مكان واحد على أي جهاز.">
+    <meta name="keywords" content="نظام إدارة عيادات, برنامج عيادة, حجز مواعيد عيادة, برنامج روشتات, طباعة روشتة, إدارة عيادة مصر, برنامج عيادات أطباء, نظام حجز إلكتروني, دكتور هايبر, جرعات أطفال, سكرتارية عيادة, تسويق عيادات, برنامج إدارة عيادة طبية, أفضل برنامج عيادة, تفاعلات الأدوية, جرعات الأدوية, أسعار الأدوية, تشخيص طبي, ملفات مرضى, حسابات عيادة, تأمين طبي, إدارة فروع عيادة, دليل أطباء">
+    <link rel="canonical" href="https://www.drhypermed.com/">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.drhypermed.com/">
+    <meta property="og:title" content="دكتور هايبر — نظام إدارة العيادات الذكية">
+    <meta property="og:description" content="دكتور هايبر — نظام متكامل لإدارة العيادات: روشتة احترافية، مساعدة في التشخيص، أكتر من 10,000 دواء بتفاعلاته وجرعاته وأسعاره، حجز إلكتروني، تنسيق سكرتارية، ملفات مرضى، حسابات وتأمينات، إدارة فروع، تسويق وإشعارات — كل ده في مكان واحد.">
+    <meta property="og:image" content="https://www.drhypermed.com/pwa-512x512.png">
+    <meta property="og:locale" content="ar_EG">
+    <meta property="og:site_name" content="Dr Hyper Clinic">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="دكتور هايبر — نظام إدارة العيادات الذكية">
+    <meta name="twitter:description" content="دكتور هايبر — نظام متكامل لإدارة العيادات: روشتة احترافية، مساعدة في التشخيص، أكتر من 10,000 دواء بتفاعلاته وجرعاته وأسعاره، حجز إلكتروني، تنسيق سكرتارية، ملفات مرضى، حسابات وتأمينات، إدارة فروع، تسويق وإشعارات — كل ده في مكان واحد.">
+    <meta name="twitter:image" content="https://www.drhypermed.com/pwa-512x512.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "دكتور هايبر",
+      "alternateName": "Dr Hyper Clinic",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "url": "https://www.drhypermed.com",
+      "description": "دكتور هايبر — نظام متكامل لإدارة العيادات: روشتة احترافية، مساعدة في التشخيص، أكتر من 10,000 دواء بتفاعلاته وجرعاته وأسعاره، حجز إلكتروني، تنسيق سكرتارية، ملفات مرضى، حسابات وتأمينات، إدارة فروع، تسويق وإشعارات — كل ده في مكان واحد.",
+      "inLanguage": "ar",
+      "image": "https://www.drhypermed.com/pwa-512x512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Dr Hyper Clinic",
+        "url": "https://www.drhypermed.com"
+      },
+      "offers": {
+        "@type": "Offer",
+        "availability": "https://schema.org/InStock",
+        "price": "0",
+        "priceCurrency": "EGP"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "مصر"
+      }
+    }
+    </script>
+    <style>
+        /* ===== Boot splash (runs before React mounts) ===== */
+        #dh-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 2147483647;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            background:
+                radial-gradient(ellipse at top, #eaf4ff 0%, #ffffff 55%, #f6fbff 100%);
+            font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+            transition: opacity .22s ease, visibility .22s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+        #dh-splash.dh-splash--hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .dh-splash__logo-wrap {
+            position: relative;
+            width: min(56vw, 220px);
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dh-splash__ring {
+            position: absolute;
+            inset: -8%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #16a34a;
+            border-right-color: #2563eb;
+            animation: dh-spin 1.4s linear infinite;
+            opacity: .75;
+        }
+        .dh-splash__ring--inner {
+            inset: 4%;
+            border-top-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: #2563eb;
+            border-left-color: #d4a256;
+            animation-duration: 2.2s;
+            animation-direction: reverse;
+            opacity: .55;
+        }
+        .dh-splash__glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(37,99,235,.25) 0%, rgba(37,99,235,0) 70%);
+            animation: dh-pulse 2s ease-in-out infinite;
+        }
+        .dh-splash__logo {
+            width: 78%;
+            height: 78%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 24px rgba(37, 99, 235, .25));
+            opacity: 0;
+            transform: scale(.6);
+            animation: dh-pop .9s cubic-bezier(.2, .9, .25, 1.2) .1s forwards;
+        }
+        .dh-splash__title {
+            font-size: clamp(20px, 4.5vw, 28px);
+            font-weight: 800;
+            color: #0f2a5b;
+            letter-spacing: .5px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: dh-rise .7s ease-out .55s forwards;
+        }
+        .dh-splash__subtitle {
+            margin-top: -18px;
+            font-size: clamp(12px, 3vw, 14px);
+            color: #5b6b88;
+            opacity: 0;
+            animation: dh-fade .7s ease-out .8s forwards;
+        }
+        .dh-splash__status {
+            /* قريب من الـ subtitle عشان يحس إنه امتداد للكلام اللي فوقه،
+               ونفس الوزن واللون عشان يبان محترف ومتناسق.
+               margin-top سالب عشان يلغي flex gap اللي على #dh-splash. */
+            margin-top: -22px;
+            min-height: 20px;
+            font-size: clamp(12px, 3vw, 14px);
+            font-weight: 500;
+            color: #5b6b88;
+            letter-spacing: .2px;
+            opacity: 0;
+            transition: opacity .3s ease;
+            text-align: center;
+            padding: 0 16px;
+        }
+        .dh-splash__status.dh-splash__status--visible { opacity: 1; }
+        .dh-splash__dots {
+            display: inline-flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .dh-splash__dots span {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #16a34a;
+            opacity: .35;
+            animation: dh-dot 1.2s ease-in-out infinite;
+        }
+        .dh-splash__dots span:nth-child(2) { animation-delay: .15s; background: #2563eb; }
+        .dh-splash__dots span:nth-child(3) { animation-delay: .3s;  background: #d4a256; }
+
+        @keyframes dh-spin { to { transform: rotate(360deg); } }
+        @keyframes dh-pulse {
+            0%, 100% { transform: scale(1);   opacity: .55; }
+            50%      { transform: scale(1.08); opacity: .9; }
+        }
+        @keyframes dh-pop {
+            0%   { opacity: 0; transform: scale(.6) rotate(-6deg); }
+            60%  { opacity: 1; transform: scale(1.06) rotate(2deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        @keyframes dh-rise {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dh-fade { to { opacity: 1; } }
+        @keyframes dh-dot {
+            0%, 100% { opacity: .35; transform: translateY(0); }
+            50%      { opacity: 1;  transform: translateY(-4px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dh-splash__ring,
+            .dh-splash__glow,
+            .dh-splash__logo,
+            .dh-splash__title,
+            .dh-splash__subtitle,
+            .dh-splash__dots span { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+    </style>
+
+    <!-- Stylesheets — تحميل غير معطِّل عشان الـ splash يبان فوراً -->
+    <link rel="stylesheet" href="/index.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/animations-loading.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/layout-viewport.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/clinic-design-system.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/apple-exam-shell.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/print-a5.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/styles/records-tools-theme.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="/index.css">
+        <link rel="stylesheet" href="/styles/animations-loading.css">
+        <link rel="stylesheet" href="/styles/layout-viewport.css">
+        <link rel="stylesheet" href="/styles/clinic-design-system.css">
+        <link rel="stylesheet" href="/styles/apple-exam-shell.css">
+        <link rel="stylesheet" href="/styles/print-a5.css">
+        <link rel="stylesheet" href="/styles/records-tools-theme.css">
+    </noscript>
+</head>
+
+<body>
+    <div id="dh-splash" role="status" aria-live="polite" aria-label="جاري تشغيل التطبيق">
+        <div class="dh-splash__logo-wrap">
+            <div class="dh-splash__glow"></div>
+            <div class="dh-splash__ring"></div>
+            <div class="dh-splash__ring dh-splash__ring--inner"></div>
+            <img class="dh-splash__logo" src="/pwa-512x512.png" alt="Dr Hyper Med" width="512" height="512" fetchpriority="high" decoding="async">
+        </div>
+        <div class="dh-splash__title">دكتور هايبر</div>
+        <div class="dh-splash__subtitle">نظام إدارة العيادات الذكية</div>
+        <div id="dh-splash-status" class="dh-splash__status">جارِ تشغيل التطبيق...</div>
+        <div class="dh-splash__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <script>
+        // Performance timing — يظهر في console للتشخيص
+        window.__dhSplashT0 = performance.now();
+        console.log('[DH-TIMING] splash-visible: 0ms');
+
+        (function () {
+            var splash = document.getElementById('dh-splash');
+            if (!splash) return;
+            var hidden = false;
+
+            function hide(reason) {
+                if (hidden) return;
+                hidden = true;
+                var elapsed = Math.round(performance.now() - window.__dhSplashT0);
+                console.log('[DH-TIMING] splash-hidden (' + reason + '): ' + elapsed + 'ms');
+                splash.classList.add('dh-splash--hidden');
+                setTimeout(function () {
+                    if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+                }, 100);
+            }
+
+            // ========= Expose hide to App mount =========
+            // الصفحة الحقيقية (MainApp/LandingPage/...) هتستدعي window.__dhHideSplash()
+            // لما تعمل mount فعلاً — كده المستخدم ميشوفش شاشة بيضاء وسطانية.
+            window.__dhHideSplash = function (reason) { hide(reason || 'page-ready'); };
+
+            // ========= رسائل متغيرة تحت اللوجو =========
+            // بدل ما المستخدم يستنى بدون أي feedback، نعرض رسائل متدرّجة بتوضّح
+            // إن التطبيق بيحمّل. كل رسالة بتفضل 1.8 ثانية ثم تتبدّل بنعومة.
+            var statusEl = document.getElementById('dh-splash-status');
+            if (statusEl) {
+                var statusMessages = [
+                    'جارٍ تهيئة النظام',
+                    'جارٍ تحميل بياناتك الطبية',
+                    'جارٍ تحضير لوحة التحكم',
+                    'جارٍ التحقق من صلاحيات الحساب',
+                    'جارٍ مزامنة آخر التحديثات',
+                    'لحظات وتكتمل جاهزية النظام'
+                ];
+                var statusIdx = 0;
+                var showStatus = function () {
+                    statusEl.textContent = statusMessages[statusIdx];
+                    statusEl.classList.add('dh-splash__status--visible');
+                };
+                // أوّل رسالة تظهر بعد 600ms (بعد ما اللوجو والعنوان يبانوا)
+                setTimeout(showStatus, 600);
+                // كل 1.8 ثانية نغيّر الرسالة بـ crossfade
+                var statusTimer = setInterval(function () {
+                    if (hidden) { clearInterval(statusTimer); return; }
+                    statusEl.classList.remove('dh-splash__status--visible');
+                    setTimeout(function () {
+                        statusIdx = (statusIdx + 1) % statusMessages.length;
+                        statusEl.textContent = statusMessages[statusIdx];
+                        statusEl.classList.add('dh-splash__status--visible');
+                    }, 300);
+                }, 1800);
+            }
+
+            // ========= Safety net =========
+            // 7 ثواني كحد أقصى — لو التحميل لأي سبب تأخر أكتر من كده بنخفي السبلاش
+            // ونعرض الصفحة الحالية حتى لو لسه بتحمل.
+            setTimeout(function () { hide('safety-timeout'); }, 7000);
+        })();
+    </script>
+    <div id="root"></div>
+    <script>
+        (function () {
+            var RECOVERY_FLAG = 'dh-module-recovery-ts';
+            var RECOVERY_PARAM = 'reset_pwa';
+            var RECOVERY_TS_PARAM = 'dh_recover_ts';
+            var RECOVERY_COOLDOWN_MS = 2 * 60 * 1000;
+            var recoveryFlagInMemory = false;
+            var recoveryTimestampInMemory = 0;
+
+            function getRecoveryTimestamp() {
+                if (recoveryFlagInMemory && recoveryTimestampInMemory > 0) {
+                    return recoveryTimestampInMemory;
+                }
+                try {
+                    var raw = sessionStorage.getItem(RECOVERY_FLAG);
+                    var parsed = Number(raw || 0);
+                    if (!isFinite(parsed) || parsed <= 0) return 0;
+                    return parsed;
+                } catch (_) {
+                    return recoveryTimestampInMemory;
+                }
+            }
+
+            function hasRecoveryFlag() {
+                var timestamp = getRecoveryTimestamp();
+                if (timestamp <= 0) return false;
+                return Date.now() - timestamp < RECOVERY_COOLDOWN_MS;
+            }
+
+            function setRecoveryFlag() {
+                recoveryFlagInMemory = true;
+                recoveryTimestampInMemory = Date.now();
+                try {
+                    sessionStorage.setItem(RECOVERY_FLAG, String(recoveryTimestampInMemory));
+                } catch (_) { }
+            }
+
+            function clearRecoveryFlag() {
+                recoveryFlagInMemory = false;
+                recoveryTimestampInMemory = 0;
+                try {
+                    sessionStorage.removeItem(RECOVERY_FLAG);
+                } catch (_) { }
+            }
+
+            function removeRecoveryParamsFromUrl() {
+                try {
+                    var current = new URL(window.location.href);
+                    if (!current.searchParams.has(RECOVERY_PARAM) && !current.searchParams.has(RECOVERY_TS_PARAM)) {
+                        return;
+                    }
+                    current.searchParams.delete(RECOVERY_PARAM);
+                    current.searchParams.delete(RECOVERY_TS_PARAM);
+                    window.history.replaceState({}, '', current.toString());
+                } catch (_) { }
+            }
+
+            function safeReload() {
+                window.location.reload();
+            }
+
+            function clearCachesAndReload() {
+                if (!('caches' in window)) {
+                    safeReload();
+                    return;
+                }
+
+                caches.keys()
+                    .then(function (keys) {
+                        return Promise.all(keys.map(function (key) {
+                            return caches.delete(key);
+                        }));
+                    })
+                    .catch(function () { })
+                    .finally(safeReload);
+            }
+
+            function unregisterSwAndReload() {
+                if (!('serviceWorker' in navigator)) {
+                    clearCachesAndReload();
+                    return;
+                }
+
+                navigator.serviceWorker.getRegistrations()
+                    .then(function (registrations) {
+                        return Promise.all(registrations.map(function (registration) {
+                            return registration.unregister();
+                        }));
+                    })
+                    .catch(function () { })
+                    .finally(clearCachesAndReload);
+            }
+
+            function tryRecover() {
+                if (hasRecoveryFlag()) return;
+                setRecoveryFlag();
+                unregisterSwAndReload();
+            }
+
+            function hasResetParam() {
+                try {
+                    var params = new URLSearchParams(window.location.search || '');
+                    return params.get(RECOVERY_PARAM) === '1';
+                } catch (_) {
+                    return false;
+                }
+            }
+
+            function shouldRecoverFromRuntimeError(errorLike) {
+                var msg = '';
+                try {
+                    msg = String((errorLike && errorLike.message) || errorLike || '').toLowerCase();
+                } catch (_) {
+                    msg = '';
+                }
+                if (!msg) return false;
+                return (
+                    msg.indexOf('isauthenticated is not defined') !== -1 ||
+                    msg.indexOf('chunkloaderror') !== -1 ||
+                    msg.indexOf('failed to fetch dynamically imported module') !== -1 ||
+                    msg.indexOf('unsupported mime type') !== -1 ||
+                    msg.indexOf("mime type ('text/html')") !== -1 ||
+                    msg.indexOf('importscripts failed') !== -1
+                );
+            }
+
+            if (hasResetParam()) {
+                tryRecover();
+                removeRecoveryParamsFromUrl();
+            }
+
+            window.addEventListener('error', function (event) {
+                var target = event.target;
+                if (!target || target.tagName !== 'SCRIPT') return;
+                var src = String(target.src || '');
+                var isSwRelatedScript =
+                    src.indexOf('/sw.js') !== -1 ||
+                    src.indexOf('/firebase-messaging-sw.js') !== -1 ||
+                    src.indexOf('/workbox-') !== -1;
+                if (target.type === 'module' || isSwRelatedScript) {
+                    tryRecover();
+                }
+            }, true);
+
+            window.addEventListener('error', function (event) {
+                if (shouldRecoverFromRuntimeError(event && event.error)) {
+                    tryRecover();
+                }
+            });
+
+            window.addEventListener('unhandledrejection', function (event) {
+                if (shouldRecoverFromRuntimeError(event && event.reason)) {
+                    tryRecover();
+                }
+            });
+
+            function isAppMounted() {
+                var root = document.getElementById('root');
+                return !!(root && root.childElementCount > 0);
+            }
+
+            function scheduleMountRecoveryWatchdog() {
+                setTimeout(function () {
+                    if (isAppMounted()) {
+                        clearRecoveryFlag();
+                        removeRecoveryParamsFromUrl();
+                    }
+                }, 4000);
+
+                setTimeout(function () {
+                    if (hasRecoveryFlag()) return;
+                    if (document.visibilityState === 'hidden') return;
+                    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+                    if (isAppMounted()) return;
+                    // Grace window for slow iPhone devices before forcing recovery.
+                    setTimeout(function () {
+                        if (hasRecoveryFlag()) return;
+                        if (document.visibilityState === 'hidden') return;
+                        if (isAppMounted()) {
+                            clearRecoveryFlag();
+                            removeRecoveryParamsFromUrl();
+                            return;
+                        }
+                        tryRecover();
+                    }, 3000);
+                }, 25000);
+            }
+
+            if (document.readyState === 'complete') {
+                scheduleMountRecoveryWatchdog();
+            } else {
+                window.addEventListener('load', scheduleMountRecoveryWatchdog, { once: true });
+            }
+        })();
+    </script>
+    <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

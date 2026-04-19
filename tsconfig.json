@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "types": [
+      "node",
+      "vite/client",
+      "vite-plugin-pwa/client"
+    ],
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/types": [
+        "./types.ts"
+      ],
+      "@/constants": [
+        "./app/drug-catalog/constants.ts"
+      ],
+      "@/categoryIndicationKeywords": [
+        "./app/drug-catalog/categoryIndicationKeywords.ts"
+      ],
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "drugs/git/temp_fix.ts",
+    "drugs_backup/**",
+    "tests/**",
+    "vitest.config.ts"
+  ]
+}

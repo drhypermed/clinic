@@ -1,0 +1,176 @@
+
+import { Medication, Category } from '../../types';
+
+export const TETRACYCLINES_GROUP: Medication[] = [
+	// Helper
+	// NOTE: Doxycycline is generally avoided in children < 8 years and in pregnancy unless physician decides.
+	// We enforce minAgeMonths=96 as a safe default in the app.
+	// Convert numbers to Arabic numerals
+	// eslint-disable-next-line @typescript-eslint/no-shadow
+	// (Some files in this repo do not use eslint; keep it simple.)
+	// Helper
+	{
+		id: 'vibramycin-100mg-10-caps',
+		name: 'Vibramycin 100mg 10 caps.',
+		genericName: 'doxycycline',
+		concentration: '100mg',
+		price: 65,
+		matchKeywords: [
+			'vibramycin', 'vibramycin 100', 'doxycycline', 'دوكسي', 'فيبرامايسين', 'دوكسيسيكلين',
+			'acne', 'chlamydia', 'respiratory infection', 'sinusitis', 'bronchitis', 'pneumonia', 'uti',
+			'حب شباب', 'كلاميديا', 'التهاب رئوي', 'جيوب انفية', 'التهاب شعبي',
+			'#antibiotics', '#tetracycline',
+		],
+		usage: 'مضاد حيوي (دوكسيسيكلين) لالتهابات الجهاز التنفسي/حب الشباب/بعض عدوى الجلد.',
+		timing: 'كل ١٢ ساعة – ٧–١٠ أيام',
+		category: Category.TETRACYCLINES,
+		form: 'Capsules',
+		minAgeMonths: 96,
+		maxAgeMonths: 1200,
+		minWeight: 25,
+		maxWeight: 200,
+		calculationRule: () => 'كبسولة ١٠٠ مجم كل ١٢ ساعة بعد الأكل لمدة ٧–١٠ أيام',
+		warnings: [
+			'يُتجنب في الحمل والرضاعة؛ إن استُخدم للضرورة القصوى (مثل ركتسيا) فأقل جرعة وأقصر مدة.',
+			'يُتجنب للأطفال أقل من ٨ سنوات (خطر تلون دائم للأسنان/نقص مينا).',
+			'تجنب أخذه مع اللبن/الكالسيوم/الحديد/مضادات الحموضة (فاصل ساعتين).',
+			'قد يسبب حساسية شديدة للشمس: استخدم واقي شمس وتجنب التعرض المباشر.',
+			'يجب البلع مع كوب ماء كامل والبقاء منتصباً ٣٠ دقيقة لتجنب قرحة المريء.',
+		],
+	},
+
+	{
+		id: 'doxycost-200mg-10-tabs',
+		name: 'Doxycost 200mg 10 tabs.',
+		genericName: 'doxycycline',
+		concentration: '200mg',
+		price: 43,
+		matchKeywords: [
+			'doxycost', 'doxycost 200', 'doxy 200', 'doxycycline 200', 'دوكسيكوست',
+			'acne', 'chlamydia', 'respiratory infection',
+			'حب شباب', 'كلاميديا', 'دوكسيسيكلين',
+			'#antibiotics', '#tetracycline',
+		],
+		usage: 'دوكسيسيكلين تركيز أعلى—قد يُستخدم كجرعة يومية حسب التشخيص والحالة.',
+		timing: 'مرة يومياً – ٧–١٠ أيام',
+		category: Category.TETRACYCLINES,
+		form: 'Tablet',
+		minAgeMonths: 144,
+		maxAgeMonths: 1200,
+		minWeight: 40,
+		maxWeight: 200,
+		calculationRule: () => 'قرص ٢٠٠ مجم مرة يومياً بعد الأكل لمدة ٧–١٠ أيام',
+		warnings: [
+			'يُتجنب في الحمل والرضاعة؛ إن استُخدم للضرورة القصوى (مثل ركتسيا) فأقل جرعة وأقصر مدة.',
+			'يُتجنب للأطفال أقل من ٨ سنوات (خطر تلون دائم للأسنان).',
+			'تجنب أخذه مع اللبن/الكالسيوم/الحديد/مضادات الحموضة (فاصل ساعتين).',
+			'قد يسبب حساسية شديدة للشمس: استخدم واقي شمس.',
+			'يجب البلع مع كوب ماء كامل والبقاء منتصباً ٣٠ دقيقة لتجنب قرحة المريء.',
+		],
+	},
+
+	{
+		id: 'tabocine-100mg-10-caps',
+		name: 'Tabocine 100mg 10 caps.',
+		genericName: 'doxycycline anhydrous',
+		concentration: '100mg',
+		price: 46,
+		matchKeywords: [
+			'tabocine', 'tabocine 100', 'doxycycline', 'دوكسي', 'تابوسين', 'دوكسيسيكلين',
+			'acne', 'respiratory infection', 'حب شباب',
+			'#antibiotics', '#tetracycline',
+		],
+		usage: 'مضاد حيوي (دوكسيسيكلين) بديل لفيبرامايسين.',
+		timing: 'كل ١٢ ساعة – ٧–١٠ أيام',
+		category: Category.TETRACYCLINES,
+		form: 'Capsules',
+		minAgeMonths: 96,
+		maxAgeMonths: 1200,
+		minWeight: 25,
+		maxWeight: 200,
+		calculationRule: () => 'كبسولة ١٠٠ مجم كل ١٢ ساعة بعد الأكل لمدة ٧–١٠ أيام',
+		warnings: [
+			'يُتجنب في الحمل والرضاعة؛ إن استُخدم للضرورة القصوى (مثل ركتسيا) فأقل جرعة وأقصر مدة.',
+			'يُتجنب للأطفال أقل من ٨ سنوات (خطر تلون دائم للأسنان).',
+			'فاصل ساعتين عن الكالسيوم/الحديد/مضادات الحموضة.',
+			'قد يسبب حساسية شديدة للشمس: استخدم واقي شمس.',
+			'يجب البلع مع كوب ماء كامل والبقاء منتصباً ٣٠ دقيقة لتجنب قرحة المريء.',
+		],
+	},
+
+	{
+		id: 'doxycost-50mg-30-tabs',
+		name: 'Doxycost 50mg 30 tabs.',
+		genericName: 'doxycycline',
+		concentration: '50mg',
+		price: 51,
+		matchKeywords: [
+			'doxycost', 'doxycost 50', 'doxy 50', 'doxycycline 50', 'دوكسيكوست ٥٠', 'دوكسيسيكلين',
+			'acne', 'rosacea', 'حب شباب', 'وردية',
+			'#antibiotics', '#tetracycline',
+		],
+		usage: 'دوكسيسيكلين جرعة أقل—يُستخدم أحياناً لحب الشباب/الالتهابات الجلدية.',
+		timing: 'مرة أو مرتين يومياً – ٤–٨ أسابيع (حب الشباب)',
+		category: Category.TETRACYCLINES,
+		form: 'Tablet',
+		minAgeMonths: 96,
+		maxAgeMonths: 1200,
+		minWeight: 25,
+		maxWeight: 200,
+		calculationRule: () => 'قرص ٥٠ مجم مرة أو مرتين يومياً بعد الأكل لمدة ٤–٨ أسابيع',
+		warnings: [
+			'يُتجنب في الحمل والرضاعة؛ إن استُخدم للضرورة القصوى (مثل ركتسيا) فأقل جرعة وأقصر مدة.',
+			'يُتجنب للأطفال أقل من ٨ سنوات (خطر تلون دائم للأسنان).',
+			'فاصل ساعتين عن الكالسيوم/الحديد/مضادات الحموضة.',
+			'قد يسبب حساسية شديدة للشمس: استخدم واقي شمس.',
+			'يجب البلع مع كوب ماء كامل والبقاء منتصباً ٣٠ دقيقة لتجنب قرحة المريء.',
+		],
+	},
+
+	{
+		id: 'terramycin-eye-oint-5g',
+		name: 'Terramycin eye oint. 5 gm',
+		genericName: 'oxytetracycline & polymyxin b',
+		concentration: '5gm',
+		price: 28,
+		matchKeywords: [
+			'terramycin', 'terramycin eye', 'eye ointment', 'oxytetracycline', 'polymyxin',
+			'تيراميسين', 'مرهم عين', 'التهاب ملتحمة', 'رمد', 'شعيرة', 'stye', 'conjunctivitis',
+			'#antibiotics', '#tetracycline', '#ophthalmic',
+		],
+		usage: 'مرهم عين مضاد حيوي لالتهابات العين البكتيرية السطحية.',
+		timing: '٣–٤ مرات يومياً – ٥–٧ أيام',
+		category: Category.TETRACYCLINES,
+		form: 'Ointment',
+		minAgeMonths: 1,
+		maxAgeMonths: 1200,
+		minWeight: 3,
+		maxWeight: 200,
+		calculationRule: () => 'شريط رفيع داخل الجفن السفلي ٣–٤ مرات يومياً لمدة ٥–٧ أيام',
+		warnings: ['قد يسبب زغللة مؤقتة بعد الاستخدام.', 'تجنب العدسات اللاصقة أثناء العلاج.'],
+	},
+
+	{
+		id: 'oxypol-eye-oint-5g',
+		name: 'Oxypol eye oint. 5 gm',
+		genericName: 'oxytetracycline & polymyxin b sulphate',
+		concentration: '5gm',
+		price: 17,
+		matchKeywords: [
+			'oxypol', 'oxypol eye', 'eye ointment', 'oxytetracycline', 'polymyxin',
+			'اوكسى بول', 'أوكسيبول', 'مرهم عين', 'التهاب ملتحمة', 'رمد', 'شعيرة',
+			'#antibiotics', '#tetracycline', '#ophthalmic',
+		],
+		usage: 'مرهم عين مضاد حيوي (بديل لتيراميسين) لالتهابات العين البكتيرية.',
+		timing: '٣–٤ مرات يومياً – ٥–٧ أيام',
+		category: Category.TETRACYCLINES,
+		form: 'Ointment',
+		minAgeMonths: 1,
+		maxAgeMonths: 1200,
+		minWeight: 3,
+		maxWeight: 200,
+		calculationRule: () => 'شريط رفيع داخل الجفن السفلي ٣–٤ مرات يومياً لمدة ٥–٧ أيام',
+		warnings: ['قد يسبب زغللة مؤقتة.', 'تجنب العدسات اللاصقة أثناء العلاج.'],
+	},
+];
+

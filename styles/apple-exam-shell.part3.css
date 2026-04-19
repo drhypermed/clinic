@@ -1,0 +1,84 @@
+/* الجزء التفصيلي 3: ربط لون الحقول بلون كل قسم طبي */
+/* Match each section field color with its own section accent */
+.apple-exam-shell .clinic-section--basic .clinic-field {
+  background: #f8fafc !important;
+  border: 2px solid #cbe9f9 !important;
+  border-left: 5px solid #0ea5e9 !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-field:hover {
+  border-color: #7dd3fc !important;
+  border-left-color: #0284c7 !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-field:focus {
+  border-color: #cbe9f9 !important;
+  border-left-color: #0284c7 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--basic .clinic-float-label {
+  background: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #075985 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field {
+  background: #f8fafc !important;
+  border: 2px solid #c9f5e7 !important;
+  border-left: 5px solid #0ea97f !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field:hover {
+  border-color: #86efca !important;
+  border-left-color: #047857 !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-field:focus {
+  border-color: #c9f5e7 !important;
+  border-left-color: #047857 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--clinical .clinic-float-label {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #065f46 !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field {
+  background: #f8fafc !important;
+  border: 2px solid #ffd1e7 !important;
+  border-left: 5px solid #ff0f7b !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field:hover {
+  border-color: #ff9cc8 !important;
+  border-left-color: #e60064 !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-field:focus {
+  border-color: #ffd1e7 !important;
+  border-left-color: #e60064 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 20px -18px rgba(15, 23, 42, 0.25) !important;
+}
+
+.apple-exam-shell .clinic-section--vitals .clinic-float-label {
+  background: #ffe4f1 !important;
+  border-color: #ff9cc8 !important;
+  color: #9d174d !important;
+}
+
+
