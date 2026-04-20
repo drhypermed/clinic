@@ -85,7 +85,7 @@ const parseScalingEnvInt = (name, fallback, min, max) => {
 };
 
 const CALLABLE_MIN_INSTANCES = parseScalingEnvInt('CALLABLE_MIN_INSTANCES', 0, 0, 50);
-const CRITICAL_CALLABLE_MIN_INSTANCES = parseScalingEnvInt('CRITICAL_CALLABLE_MIN_INSTANCES', 1, 0, 20);
+const CRITICAL_CALLABLE_MIN_INSTANCES = parseScalingEnvInt('CRITICAL_CALLABLE_MIN_INSTANCES', 0, 0, 20);
 const CALLABLE_MAX_INSTANCES = Math.max(
   CALLABLE_MIN_INSTANCES,
   parseScalingEnvInt('CALLABLE_MAX_INSTANCES', 200, 1, 200)
@@ -160,7 +160,7 @@ exports.notifyDoctorOnNewAppointment = onDocumentCreated({ document: 'users/{use
 exports.notifyDoctorOnSecretaryEntryRequest = onDocumentWritten({ document: 'secretaryEntryRequests/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifyDoctorOnSecretaryEntryRequest'));
 exports.notifySecretaryOnBookingConfigUpdate = onDocumentWritten({ document: 'bookingConfig/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifySecretaryOnBookingConfigUpdate'));
 exports.cleanupExternalNotificationBroadcastLogs = onSchedule({ schedule: 'every day 03:30', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'cleanupExternalNotificationBroadcastLogs'));
-exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 5 minutes', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
+exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 30 minutes', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
 exports.onDoctorAdReviewWrite = onDocumentWritten({ document: 'doctorAdReviews/{doctorId}/items/{reviewId}', region: REGION }, lazy('./src/functions/reviewFunctions', 'onDoctorAdReviewWrite'));
 exports.enforceUserTextLengthTopLevel = onDocumentWritten(
   { document: '{collectionId}/{docId}', region: REGION },
