@@ -11,6 +11,7 @@ import { PatientContactActions } from '../common/PatientContactActions';
 import { useAuth } from '../../hooks/useAuth';
 import { PatientFileCostsSection } from './PatientFileCostsSection';
 import { PatientFileVisitsList } from './PatientFileVisitsList';
+import { patientFilesService } from '../../services/patient-files';
 
 const getTodayDateKey = (): string =>
   new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
@@ -39,6 +40,19 @@ interface PatientFileDetailsModalProps {
     updatedRecordsCount: number;
     updatedAppointmentsCount: number;
   } | null>;
+  onSaveAdditionalInfo: (payload: {
+    patientFileId?: string;
+    patientFileNumber?: number;
+    patientFileNameKey?: string;
+    patientName: string;
+    phone?: string;
+    additionalInfo: string;
+  }) => Promise<{
+    patientFileId: string;
+    patientFileNumber: number;
+    patientFileNameKey: string;
+    additionalInfo: string;
+  } | null>;
   /** الفرع النشط — يمرر لـ PatientFileCostsSection لفصل التكاليف بين الفروع */
   branchId?: string;
 }
@@ -50,6 +64,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
   onEditConsultationVisit,
   onGeneratePatientMedicalReport,
   onUpdatePatientIdentity,
+  onSaveAdditionalInfo,
   branchId,
 }) => {
   const { user } = useAuth();
@@ -62,12 +77,18 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
   const [isUpdatingIdentity, setIsUpdatingIdentity] = useState(false);
   const [identityUpdateError, setIdentityUpdateError] = useState<string | null>(null);
   const [identityUpdateSuccess, setIdentityUpdateSuccess] = useState<string | null>(null);
+  const [isAdditionalInfoEditorOpen, setIsAdditionalInfoEditorOpen] = useState(false);
+  const [editAdditionalInfo, setEditAdditionalInfo] = useState('');
+  const [isSavingAdditionalInfo, setIsSavingAdditionalInfo] = useState(false);
+  const [additionalInfoError, setAdditionalInfoError] = useState<string | null>(null);
+  const [additionalInfoSuccess, setAdditionalInfoSuccess] = useState<string | null>(null);
   const [reportLanguage, setReportLanguage] = useState<ClinicalReportLanguage>('ar');
-  const [reportPageSize, setReportPageSize] = useState<ClinicalReportPageSize>('A4');
+  const [reportPageSize, setReportPageSize] = useState<ClinicalReportPageSize>('A5');
   const [reportFontSize, setReportFontSize] = useState('13');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isReportSettingsOpen, setIsReportSettingsOpen] = useState(false);
+  const [reportSettingsSaved, setReportSettingsSaved] = useState(false);
 
   useEffect(() => {
     if (!patientFile || typeof window === 'undefined') return;
@@ -118,13 +139,57 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
     setIdentityUpdateError(null);
     setIdentityUpdateSuccess(null);
     setIsIdentityEditorOpen(false);
-    setReportLanguage('ar');
-    setReportPageSize('A4');
-    setReportFontSize('13');
+    setEditAdditionalInfo(String(patientFile.additionalInfo || '').trim());
+    setIsAdditionalInfoEditorOpen(false);
+    setAdditionalInfoError(null);
+    setAdditionalInfoSuccess(null);
+    // نبدأ بقيم من localStorage (mirror سريع) ثم بنحدّث من Firestore في الخلفية
+    const defaults = patientFilesService.getDefaultReportPreferences();
+    const local = patientFilesService.readReportPreferencesFromLocalStorage();
+    setReportLanguage(local.language ?? defaults.language);
+    setReportPageSize(local.pageSize ?? defaults.pageSize);
+    setReportFontSize(String(local.fontSize ?? defaults.fontSize));
     setReportError(null);
     setIsGeneratingReport(false);
     setIsReportSettingsOpen(false);
+    setReportSettingsSaved(false);
   }, [latestVisitRecord, patientFile]);
+
+  // تحميل تفضيلات التقرير من Firestore — تتغلب على قيم localStorage لما يكون فيه مستخدم مسجل
+  useEffect(() => {
+    if (!user?.uid) return;
+    let cancelled = false;
+    (async () => {
+      const cloudPrefs = await patientFilesService.loadReportPreferences(user.uid);
+      if (cancelled || !cloudPrefs) return;
+      setReportLanguage(cloudPrefs.language);
+      setReportPageSize(cloudPrefs.pageSize);
+      setReportFontSize(String(cloudPrefs.fontSize));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, patientFile?.key]);
+
+  const handleSaveReportSettings = async () => {
+    try {
+      const parsedFont = Number(reportFontSize);
+      const normalizedFont = Number.isFinite(parsedFont)
+        ? Math.max(10, Math.min(22, Math.round(parsedFont)))
+        : 13;
+
+      const saved = await patientFilesService.saveReportPreferences(user?.uid || '', {
+        language: reportLanguage,
+        pageSize: reportPageSize,
+        fontSize: normalizedFont,
+      });
+      setReportFontSize(String(saved.fontSize));
+      setReportSettingsSaved(true);
+      setTimeout(() => setReportSettingsSaved(false), 2200);
+    } catch (error) {
+      console.error('Error saving report settings:', error);
+    }
+  };
 
   const handleSubmitIdentityUpdate = async () => {
     const normalizedName = String(editPatientName || '').trim();
@@ -162,6 +227,69 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
       setIdentityUpdateError(message);
     } finally {
       setIsUpdatingIdentity(false);
+    }
+  };
+
+  const handleSubmitAdditionalInfo = async () => {
+    if (!patientFile) return;
+
+    setIsSavingAdditionalInfo(true);
+    setAdditionalInfoError(null);
+    setAdditionalInfoSuccess(null);
+
+    try {
+      await onSaveAdditionalInfo({
+        patientFileId: patientFile.fileId,
+        patientFileNumber: patientFile.fileNumber,
+        patientFileNameKey: patientFile.key,
+        patientName: String(patientFile.name || '').trim(),
+        phone: String(patientFile.phones?.[0] || '').trim() || undefined,
+        additionalInfo: String(editAdditionalInfo || '').trim(),
+      });
+
+      setAdditionalInfoSuccess('تم حفظ المعلومات الإضافية بنجاح.');
+      setIsAdditionalInfoEditorOpen(false);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : 'حدث خطأ أثناء حفظ المعلومات الإضافية.';
+      setAdditionalInfoError(message);
+    } finally {
+      setIsSavingAdditionalInfo(false);
+    }
+  };
+
+  const handleDeleteAdditionalInfo = async () => {
+    if (!patientFile) return;
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm('هل أنت متأكد من حذف المعلومات الإضافية لهذا المريض؟')
+      : true;
+    if (!confirmed) return;
+
+    setIsSavingAdditionalInfo(true);
+    setAdditionalInfoError(null);
+    setAdditionalInfoSuccess(null);
+
+    try {
+      await onSaveAdditionalInfo({
+        patientFileId: patientFile.fileId,
+        patientFileNumber: patientFile.fileNumber,
+        patientFileNameKey: patientFile.key,
+        patientName: String(patientFile.name || '').trim(),
+        phone: String(patientFile.phones?.[0] || '').trim() || undefined,
+        additionalInfo: '',
+      });
+
+      setEditAdditionalInfo('');
+      setIsAdditionalInfoEditorOpen(false);
+      setAdditionalInfoSuccess('تم حذف المعلومات الإضافية.');
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : 'حدث خطأ أثناء حذف المعلومات الإضافية.';
+      setAdditionalInfoError(message);
+    } finally {
+      setIsSavingAdditionalInfo(false);
     }
   };
 
@@ -257,8 +385,8 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                     إغلاق
                   </button>
                 </div>
-                {/* السطر الرابع: زر تعديل بيانات المريض */}
-                <div className="mt-3 pt-3 border-t border-white/20">
+                {/* السطر الخامس: زر تعديل بيانات المريض + زر إضافة معلومات إضافية */}
+                <div className="mt-3 pt-3 border-t border-white/20 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -270,6 +398,24 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                   >
                     {isIdentityEditorOpen ? 'إغلاق تعديل البيانات' : 'تعديل بيانات المريض'}
                   </button>
+                  {!String(patientFile.additionalInfo || '').trim() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdditionalInfoError(null);
+                        setAdditionalInfoSuccess(null);
+                        setEditAdditionalInfo('');
+                        setIsAdditionalInfoEditorOpen((prev) => !prev);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/15 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-white/25"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                      {isAdditionalInfoEditorOpen ? 'إغلاق المعلومات الإضافية' : 'إضافة معلومات إضافية عن المريض'}
+                    </button>
+                  )}
                 </div>
               </div>
             </header>
@@ -347,21 +493,162 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
               </div>
             )}
 
+            {/* ─── قسم المعلومات الإضافية عن المريض (حساسية/أمراض مزمنة/ملاحظات) ─── */}
+            {(String(patientFile.additionalInfo || '').trim() || isAdditionalInfoEditorOpen) && (
+              <>
+                {/* فاصل أزرق مطابق لفاصل "سجل الزيارات" و"التكاليف المالية" */}
+                <div className="flex items-center gap-3 px-1 pt-1">
+                  <span className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                    <svg className="w-4 h-4 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="9" y1="13" x2="15" y2="13" />
+                      <line x1="9" y1="17" x2="13" y2="17" />
+                    </svg>
+                    <span className="text-[11px] font-black text-blue-700 whitespace-nowrap">معلومات إضافية عن المريض</span>
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-l from-blue-100 to-slate-100" />
+                </div>
+
+                {/* رسائل النجاح/الفشل — تظهر فوق البطاقة */}
+                {additionalInfoSuccess && (
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-700">
+                    {additionalInfoSuccess}
+                  </div>
+                )}
+                {additionalInfoError && (
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">
+                    {additionalInfoError}
+                  </div>
+                )}
+
+                {/* بطاقة عرض المعلومات — تظهر فقط لما يكون فيه معلومات محفوظة والمحرر مقفول */}
+                {!isAdditionalInfoEditorOpen && String(patientFile.additionalInfo || '').trim() && (
+                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-blue-700">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="9" y1="13" x2="15" y2="13" />
+                          <line x1="9" y1="17" x2="13" y2="17" />
+                        </svg>
+                        ملاحظات وتنبيهات المريض
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdditionalInfoError(null);
+                            setAdditionalInfoSuccess(null);
+                            setEditAdditionalInfo(String(patientFile.additionalInfo || '').trim());
+                            setIsAdditionalInfoEditorOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 text-[11px] font-black transition-colors"
+                        >
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          تعديل
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDeleteAdditionalInfo}
+                          disabled={isSavingAdditionalInfo}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
+                        >
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                            <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
+                          </svg>
+                          حذف
+                        </button>
+                      </div>
+                    </div>
+                    <div className="px-4 py-3 text-sm font-semibold text-slate-700 whitespace-pre-wrap leading-relaxed">
+                      {String(patientFile.additionalInfo || '').trim()}
+                    </div>
+                  </div>
+                )}
+
+                {/* بطاقة التحرير — تظهر عند الإضافة أو التعديل */}
+                {isAdditionalInfoEditorOpen && (
+                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-black text-blue-700">
+                        {String(patientFile.additionalInfo || '').trim() ? 'تعديل المعلومات الإضافية' : 'إضافة معلومات إضافية جديدة'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAdditionalInfoEditorOpen(false);
+                          setAdditionalInfoError(null);
+                        }}
+                        className="inline-flex items-center rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 px-2.5 py-1 text-[11px] font-black transition-colors"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                    <div className="px-4 py-3 space-y-2">
+                      <label className="block text-[11px] font-black text-slate-600">
+                        اكتب أي معلومات مهمة عن المريض (مثال: الحساسية، أمراض مزمنة، ملاحظات)
+                      </label>
+                      <textarea
+                        value={editAdditionalInfo}
+                        onChange={(event) => setEditAdditionalInfo(event.target.value)}
+                        rows={4}
+                        placeholder="مثال: حساسية من البنسلين، مريض ضغط..."
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 leading-relaxed focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-y"
+                      />
+                      <div className="flex flex-wrap justify-end gap-2 pt-1">
+                        {String(patientFile.additionalInfo || '').trim() && (
+                          <button
+                            type="button"
+                            onClick={handleDeleteAdditionalInfo}
+                            disabled={isSavingAdditionalInfo}
+                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
+                          >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                            </svg>
+                            حذف المعلومات
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleSubmitAdditionalInfo}
+                          disabled={isSavingAdditionalInfo}
+                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                        >
+                          {isSavingAdditionalInfo ? 'جاري الحفظ' : 'حفظ'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             {/* قسم التقرير الطبي */}
             <div className="dh-day-shell rounded-2xl border overflow-hidden">
               <div className="dh-day-head px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
+                {/* العنوان + الوصف فوق، الأزرار تحت على الموبايل، يمين على الشاشات الأكبر */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                  <div className="min-w-0 flex-1">
                     <div className="text-sm font-black text-white">طباعة تقرير طبي للحالة</div>
                     <div className="text-[11px] font-medium text-blue-100 mt-0.5">
-                      {isReportSettingsOpen ? 'اختر لغة التقرير وحجم الورق وحجم الخط ثم اطبع' : 'اضغط على الإعدادات لتخصيص التقرير'}
+                      {isReportSettingsOpen ? 'اختر لغة التقرير وحجم الورق وحجم الخط ثم احفظ أو اطبع' : 'اضغط على الإعدادات لتخصيص التقرير'}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:shrink-0 sm:justify-end">
                     <button
                       type="button"
                       onClick={() => setIsReportSettingsOpen(v => !v)}
-                      className="shrink-0 rounded-xl border border-white/40 bg-white/15 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-white/25"
+                      className="flex-1 sm:flex-none sm:shrink-0 rounded-xl border border-white/40 bg-white/15 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-white/25"
                     >
                       {isReportSettingsOpen ? 'طي' : 'الإعدادات'}
                     </button>
@@ -369,16 +656,16 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       type="button"
                       onClick={handleGenerateMedicalReport}
                       disabled={isGeneratingReport}
-                      className={`shrink-0 rounded-xl px-4 py-2 text-xs font-black transition-all ${isGeneratingReport ? 'bg-emerald-500/50 text-white/70 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700 hover:shadow-md active:scale-[0.98]'}`}
+                      className={`flex-1 sm:flex-none sm:shrink-0 rounded-xl px-4 py-2 text-xs font-black transition-all inline-flex items-center justify-center gap-2 ${isGeneratingReport ? 'bg-emerald-500/50 text-white/70 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700 hover:shadow-md active:scale-[0.98]'}`}
                     >
                       {isGeneratingReport ? (
-                        <span className="inline-flex items-center gap-2">
-                          <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <>
+                          <svg className="w-3.5 h-3.5 animate-spin shrink-0" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                           </svg>
-                          جاري التوليد
-                        </span>
+                          <span>جاري التوليد</span>
+                        </>
                       ) : 'طباعة التقرير'}
                     </button>
                   </div>
@@ -420,6 +707,27 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-indigo-500 focus:outline-none"
                       />
                     </label>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[11px] font-bold text-slate-500">
+                      {reportSettingsSaved ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-700">
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          تم حفظ الإعدادات
+                        </span>
+                      ) : (
+                        'الإعدادات دي هتتحفظ سحابياً عشان تظهر في أي جهاز تفتحه'
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSaveReportSettings}
+                      className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 text-xs font-black transition-colors"
+                    >
+                      حفظ الإعدادات
+                    </button>
                   </div>
                   {reportError && (
                     <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">

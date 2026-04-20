@@ -53,6 +53,126 @@ const normalizeAge = (age?: { years?: unknown; months?: unknown; days?: unknown 
   };
 };
 
+/** هل القيمة صفرية فعلاً (فاضي، 0، أو أصفار مكررة)؟ — نستخدمها لحذف الأجزاء الصفرية من نص العمر */
+const isZeroAgePart = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed === 0;
+};
+
+/** بناء نص العمر بالعربي مع تجاهل الأجزاء الصفرية */
+const buildAgeTextAr = (age: PatientAgeSnapshot): string => {
+  const parts: string[] = [];
+  if (!isZeroAgePart(age.years)) parts.push(`${age.years} سنة`);
+  if (!isZeroAgePart(age.months)) parts.push(`${age.months} شهر`);
+  if (!isZeroAgePart(age.days)) parts.push(`${age.days} يوم`);
+  return parts.join(' - ') || '0 يوم';
+};
+
+/** بناء نص العمر بالإنجليزي مع تجاهل الأجزاء الصفرية */
+const buildAgeTextEn = (age: PatientAgeSnapshot): string => {
+  const parts: string[] = [];
+  if (!isZeroAgePart(age.years)) parts.push(`${age.years}y`);
+  if (!isZeroAgePart(age.months)) parts.push(`${age.months}m`);
+  if (!isZeroAgePart(age.days)) parts.push(`${age.days}d`);
+  return parts.join(' ') || '0d';
+};
+
+/**
+ * تحويل اسم المريض العربي إلى حروف لاتينية (Romanization)
+ *
+ * خريطة تقريبية تتعامل مع التوحيدات الشائعة للهمزات والألف المقصورة والتاء
+ * المربوطة. الاسم الناتج قابل للقراءة بإنجليزي وإن كانت الترجمة الصوتية
+ * تختلف باختلاف اللهجات — الغرض هنا دعم التقرير الإنجليزي.
+ */
+const ARABIC_TRANSLITERATION_MAP: Record<string, string> = {
+  '\u0627': 'a',
+  '\u0623': 'a',
+  '\u0625': 'i',
+  '\u0622': 'aa',
+  '\u0671': 'a',
+  '\u0628': 'b',
+  '\u062a': 't',
+  '\u062b': 'th',
+  '\u062c': 'j',
+  '\u062d': 'h',
+  '\u062e': 'kh',
+  '\u062f': 'd',
+  '\u0630': 'dh',
+  '\u0631': 'r',
+  '\u0632': 'z',
+  '\u0633': 's',
+  '\u0634': 'sh',
+  '\u0635': 's',
+  '\u0636': 'd',
+  '\u0637': 't',
+  '\u0638': 'z',
+  '\u0639': 'a',
+  '\u063a': 'gh',
+  '\u0641': 'f',
+  '\u0642': 'q',
+  '\u0643': 'k',
+  '\u0644': 'l',
+  '\u0645': 'm',
+  '\u0646': 'n',
+  '\u0647': 'h',
+  '\u0629': 'a',
+  '\u0648': 'w',
+  '\u064a': 'y',
+  '\u0649': 'a',
+  '\u0626': 'i',
+  '\u0624': 'u',
+  '\u0621': '',
+  '\u0640': '',
+  '\u064b': '',
+  '\u064c': '',
+  '\u064d': '',
+  '\u064e': '',
+  '\u064f': '',
+  '\u0650': '',
+  '\u0651': '',
+  '\u0652': '',
+};
+
+const transliterateArabicToEnglish = (value: string): string => {
+  const raw = toText(value);
+  if (!raw) return '';
+  const latin = Array.from(raw)
+    .map((ch) => {
+      if (Object.prototype.hasOwnProperty.call(ARABIC_TRANSLITERATION_MAP, ch)) {
+        return ARABIC_TRANSLITERATION_MAP[ch];
+      }
+      return ch;
+    })
+    .join('');
+
+  return latin
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+/**
+ * نقرر اسم المريض المعروض في التقرير حسب اللغة. للإنجليزي نُحاول نحوّل الاسم
+ * العربي لحروف لاتينية (إن كان اللي محفوظ عربي)، ولو الاسم أصلاً إنجليزي نسيبه زي ما هو.
+ */
+const ARABIC_LETTER_REGEX = /[\u0600-\u06FF]/;
+
+const resolvePatientNameForReport = (
+  name: string,
+  language: ClinicalReportLanguage,
+): string => {
+  const trimmed = toText(name);
+  if (!trimmed) return language === 'ar' ? 'مريض بدون اسم' : 'Unnamed Patient';
+  if (language === 'ar') return trimmed;
+  if (!ARABIC_LETTER_REGEX.test(trimmed)) return trimmed;
+  return transliterateArabicToEnglish(trimmed) || trimmed;
+};
+
 const buildMedicationLines = (rxItems: Array<{ type?: string; medication?: { name?: string }; instructions?: string }>): string[] => {
   const lines: string[] = [];
 
@@ -115,10 +235,11 @@ const buildVisitSnapshot = (
     visitDateLabel: formatPatientFileDateLabel(visit.date),
     sourceExamDateIso: toText(visit.sourceExamDate) || undefined,
     sourceExamDateLabel: visit.sourceExamDate ? formatPatientFileDateLabel(visit.sourceExamDate) : undefined,
-    complaint: pickLocalizedText(language, visitContent.complaintAr, visitContent.complaintEn),
-    history: pickLocalizedText(language, visitContent.historyAr, visitContent.historyEn),
-    examination: pickLocalizedText(language, visitContent.examAr, visitContent.examEn),
-    investigations: pickLocalizedText(language, visitContent.investigationsAr, visitContent.investigationsEn),
+    // نستخدم النسخة اللي اتحفظت بعد معالجة الذكاء الاصطناعي + تعديلات الطبيب (زي ما بيظهر في سجلات المرضى)
+    complaint: toText(visitContent.complaintEn),
+    history: toText(visitContent.historyEn),
+    examination: toText(visitContent.examEn),
+    investigations: toText(visitContent.investigationsEn),
     diagnosis: toText(localizedDiagnosis),
     medications: buildMedicationLines(visitContent.rxItems || []),
     advice: uniqueNonEmpty((visitContent.generalAdvice || []).map((item) => toText(item))),
@@ -153,12 +274,12 @@ export const buildPatientClinicalTimelineSnapshot = (
   ]);
 
   return {
-    patientName: toText(patientFile.name) || 'مريض بدون اسم',
+    patientName: resolvePatientNameForReport(toText(patientFile.name), language),
     patientFileNumber: patientFile.fileNumber,
     patientPhone: phoneCandidates[0],
     patientAge: age,
-    patientAgeTextAr: `${age.years} سنة - ${age.months} شهر - ${age.days} يوم`,
-    patientAgeTextEn: `${age.years}y ${age.months}m ${age.days}d`,
+    patientAgeTextAr: buildAgeTextAr(age),
+    patientAgeTextEn: buildAgeTextEn(age),
     visitCount: orderedVisits.length,
     examCount: Number(patientFile.examCount || 0),
     consultationCount: Number(patientFile.consultationCount || 0),

@@ -107,10 +107,28 @@ export const formatLabInvestigationItem = (raw: string): string => {
     return `${testOnly} (سبب سريري مرتبط بالحالة)`;
 };
 
-/** 
+/**
+ * فلترة البديل حسب السن المدخل:
+ * يرجع true لو البديل مناسب لعمر المريض، false لو خارج النطاق الآمن.
+ * - لو مفيش عمر مدخل (ageMonths <= 0) يقبل كل البدائل (لا فلترة).
+ * - لو البديل بدون minAgeMonths نعتبره صالح من الميلاد.
+ * - لو البديل بدون maxAgeMonths نعتبره بدون حد أقصى.
+ */
+const isAgeAppropriate = (med: Medication, ageMonths: number): boolean => {
+    if (!Number.isFinite(ageMonths) || ageMonths <= 0) return true;
+    const minAge = Number.isFinite(med.minAgeMonths) ? (med.minAgeMonths as number) : 0;
+    const maxAge = Number.isFinite(med.maxAgeMonths) ? (med.maxAgeMonths as number) : Infinity;
+    return ageMonths >= minAge && ageMonths <= maxAge;
+};
+
+/**
  * بناء البدائل الدوائية (buildAlternativesSameScientific):
  * يبحث في قاعدة البيانات عن أدوية تحتوي على نفس المادة الفعالة (Generic Name)
  * أو تنتمي لنفس التصنيف الطبي، لتمكين الطبيب من تغيير الصنف إذا كان غير متوفر.
+ *
+ * فلتر السن (Age Safety Filter):
+ * بعد جمع المرشحين، نستبعد الأدوية غير المناسبة لعمر المريض المدخل بناءً على
+ * minAgeMonths / maxAgeMonths الخاصة بكل دواء. لو مفيش عمر مدخل يُعرض كل شيء.
  */
 export const buildAlternativesSameScientific = (
     medication: Medication,
@@ -151,7 +169,11 @@ export const buildAlternativesSameScientific = (
     }
 
     const allMatches = [...scientificMatches, ...categoryMatches];
-    const limitedMatches = allMatches.slice(0, 10);
+
+    // 4. فلترة حسب السن: استبعاد الأدوية غير المناسبة لعمر المريض المدخل
+    const ageFiltered = allMatches.filter(m => isAgeAppropriate(m, ageMonths));
+
+    const limitedMatches = ageFiltered.slice(0, 10);
 
     return limitedMatches.map(m => ({
         name: m.name,

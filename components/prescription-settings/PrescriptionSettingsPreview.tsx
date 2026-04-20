@@ -48,9 +48,6 @@ interface PrescriptionSettingsPreviewProps {
   localSettings: PrescriptionSettings;
   previewRef: RefObject<HTMLDivElement | null>;
   previewScale: number;
-  previewTextAr?: string;
-  previewTextEn?: string;
-  previewRxItems?: PrescriptionItem[];
 }
 
 export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewProps> = ({
@@ -58,10 +55,10 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
   localSettings,
   previewRef,
   previewScale,
-  previewTextAr,
-  previewTextEn,
-  previewRxItems = [],
 }) => {
+  // كنا نستقبل نصوص وأدوية معاينة مخصّصة من تاب "المنتصف"، لكن تلك الـ inputs اتحذفت
+  // (اتكررت مع تاب الطباعة). نستخدم دائماً قائمة PRINT_PREVIEW_RX_ITEMS الافتراضية.
+  const previewRxItems: PrescriptionItem[] = [];
   const containerRef = useRef<HTMLDivElement>(null);
   const previewElementRef = useRef<HTMLDivElement>(null);
   const innerContentRef = useRef<HTMLDivElement>(null);
@@ -325,53 +322,6 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
                         arabicStyle={localSettings.middle?.arabicStyle}
                       />
                     </>
-                  )}
-                  {(previewTextEn || previewTextAr) && (
-                    <div
-                      style={{
-                        marginTop: previewRxItems.length > 0 ? 20 : '50%',
-                        transform:
-                          previewRxItems.length > 0 ? 'none' : 'translateY(-50%)',
-                        textAlign: 'center',
-                        padding: 10,
-                      }}
-                    >
-                      {previewTextEn && (
-                        <p
-                          style={{
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#000',
-                            marginBottom: 8,
-                            textShadow: '0 2px 4px rgba(255,255,255,0.8)',
-                            ...localSettings.middle?.englishStyle,
-                            fontFamily:
-                              localSettings.middle?.englishStyle?.fontFamily ||
-                              localSettings.middle?.englishFont ||
-                              '"Playfair Display"',
-                          }}
-                        >
-                          {previewTextEn}
-                        </p>
-                      )}
-                      {previewTextAr && (
-                        <p
-                          style={{
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#000',
-                            textShadow: '0 2px 4px rgba(255,255,255,0.8)',
-                            ...localSettings.middle?.arabicStyle,
-                            fontFamily:
-                              localSettings.middle?.arabicStyle?.fontFamily ||
-                              localSettings.middle?.arabicFont ||
-                              '"El Messiri"',
-                          }}
-                        >
-                          {previewTextAr}
-                        </p>
-                      )}
-                    </div>
                   )}
                 </div>
               </div>

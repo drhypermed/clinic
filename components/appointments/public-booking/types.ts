@@ -56,6 +56,8 @@ export type TodayAppointment = {
   age?: string;
   phone?: string;
   visitReason?: string;
+  /** أول زيارة؟ — من فورم الجمهور، لمساعدة السكرتارية في ربط المريض بملف سابق */
+  isFirstVisit?: boolean;
   secretaryVitals?: SecretaryVitalsInput;
   dateTime: string;
   source?: 'clinic' | 'secretary' | 'public'; // مصدر الحجز

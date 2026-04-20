@@ -85,6 +85,7 @@ module.exports = (context) => {
     const sourceLabel = sourceKey === 'public' ? 'حجز من الفورم العام' : 'حجز من السكرتارية';
     const age = String(data?.age || '').trim() || 'غير متوفر';
     const visitReason = String(data?.visitReason || '').trim();
+    const isFirstVisit = typeof data?.isFirstVisit === 'boolean' ? data.isFirstVisit : null;
     const secretaryVitals = normalizeSecretaryVitals(data?.secretaryVitals);
     const secretaryVitalsSummary = buildSecretaryVitalsSummary(secretaryVitals);
     const rawType = String(data?.appointmentType || 'exam').trim().toLowerCase();
@@ -96,6 +97,8 @@ module.exports = (context) => {
       `السن: ${age}`,
     ];
     if (visitReason) bodyParts.push(`سبب الزيارة: ${visitReason}`);
+    if (isFirstVisit === true) bodyParts.push('أول زيارة');
+    else if (isFirstVisit === false) bodyParts.push('زار العيادة من قبل');
     if (secretaryVitalsSummary) bodyParts.push(`القياسات والعلامات الحيوية: ${secretaryVitalsSummary}`);
     if (dateTime) bodyParts.push(`الموعد: ${dateTime}`);
     const body = bodyParts.join(' · ');
@@ -112,10 +115,12 @@ module.exports = (context) => {
         bookingSecret: String(data?.bookingSecret || ''),
         publicBookingSecret: String(data?.publicBookingSecret || ''),
       });
-      return;
+      // نكمّل لحجز الجمهور لأن إشعار السكرتارية لا يزال مطلوباً حتى لو الطبيب مش مسجّل tokens.
     }
 
-    
+    // تجميع tokens السكرتارية منفصلة: (1) لاستبعادها من إرسال الطبيب، (2) لإرسال push موازٍ لها.
+    const secretaryTokensSet = new Set();
+    const relatedSecretsSet = new Set();
     try {
       const secretsToCheck = new Set();
       const normalizedBookingSecret = String(data?.bookingSecret || '').trim();
@@ -131,10 +136,10 @@ module.exports = (context) => {
           relatedDocs.forEach((docSnap) => secretsToCheck.add(String(docSnap.id || '').trim()));
         }
       }
-      const secretaryTokensSet = new Set();
       const db2 = getDb();
       for (const sec of secretsToCheck) {
         if (!sec) continue;
+        relatedSecretsSet.add(sec);
         const secTokenSnap = await db2.doc(`secretaryFcmTokens/${sec}`).get().catch(() => null);
         if (secTokenSnap?.exists) {
           getFcmTokensFromDoc(secTokenSnap.data()).forEach((t) => secretaryTokensSet.add(t));
@@ -148,78 +153,94 @@ module.exports = (context) => {
       // Non-fatal: if we can't filter, send to all doctor tokens
     }
 
-    if (tokens.length === 0) {
-      console.warn('[notifyDoctorOnNewAppointment] all doctor tokens matched secretary tokens; skipping doctor push');
-      return;
-    }
+    const branchId = String(data?.branchId || '').trim() || 'main';
+    const notificationTitle = 'موعد جديد';
 
-    try {
-      // تمرير branchId في الـ deep-link حتى يعرف الطبيب في أي فرع الموعد (لتوجيه واجهته)
-      const branchId = String(data?.branchId || '').trim() || 'main';
-      const appointmentsLink = `/appointments?branchId=${encodeURIComponent(branchId)}`;
-      const appointmentsAbsoluteLink = toAbsoluteWebUrl(appointmentsLink);
-      const notificationTitle = 'موعد جديد';
-      // tag per-branch عشان إشعار فرع لا يستبدل إشعار فرع آخر لنفس الموعد
-      const notificationTag = `new_appointment_${branchId}_${aptId}`;
-      const response = await admin.messaging().sendEachForMulticast({
-        tokens,
-        data: {
-          type: 'new_appointment',
-          title: notificationTitle,
-          body,
-          icon: WEB_PUSH_ICON,
-          badge: WEB_PUSH_BADGE,
-          tag: notificationTag,
-          url: appointmentsAbsoluteLink,
-          link: appointmentsLink,
-          appointmentId: String(aptId),
-          branchId,
-          patientName: String(data.patientName || ''),
-          dateTime: String(data.dateTime || ''),
-          source: String(data.source || ''),
-          appointmentType: String(data.appointmentType || 'exam'),
-          ...(data.consultationSourceAppointmentId ? { consultationSourceAppointmentId: String(data.consultationSourceAppointmentId) } : {}),
-          ...(data.consultationSourceCompletedAt ? { consultationSourceCompletedAt: String(data.consultationSourceCompletedAt) } : {}),
-          ...(data.consultationSourceRecordId ? { consultationSourceRecordId: String(data.consultationSourceRecordId) } : {}),
-          ...(data.age ? { age: String(data.age) } : {}),
-          ...(data.visitReason ? { visitReason: String(data.visitReason) } : {}),
-          ...buildSecretaryVitalsNotificationData(secretaryVitals),
-        },
-        webpush: {
-          headers: HIGH_URGENCY_HEADERS,
-          notification: {
-            title: notificationTitle,
-            body,
-            icon: WEB_PUSH_ICON,
-            badge: WEB_PUSH_BADGE,
-            tag: notificationTag,
-            renotify: true,
-            requireInteraction: true,
-            data: {
-              type: 'new_appointment',
-              url: appointmentsAbsoluteLink,
-              link: appointmentsLink,
-              appointmentId: String(aptId),
-              branchId,
+    // ينفِّذ send + cleanup tokens الفاسدة لمستلم واحد (طبيب/سكرتيرة).
+    const sendPush = async ({ logLabel, tokens: targetTokens, type, tag, link, extraData, cleanupInvalid }) => {
+      if (!Array.isArray(targetTokens) || targetTokens.length === 0) return;
+      const absoluteLink = toAbsoluteWebUrl(link);
+      const baseData = {
+        type,
+        title: notificationTitle,
+        body,
+        icon: WEB_PUSH_ICON,
+        badge: WEB_PUSH_BADGE,
+        tag,
+        url: absoluteLink,
+        link,
+        appointmentId: String(aptId),
+        branchId,
+        patientName: String(data.patientName || ''),
+        dateTime: String(data.dateTime || ''),
+        source: String(data.source || ''),
+        appointmentType: String(data.appointmentType || 'exam'),
+        ...(data.age ? { age: String(data.age) } : {}),
+        ...(data.visitReason ? { visitReason: String(data.visitReason) } : {}),
+        ...(isFirstVisit !== null ? { isFirstVisit: String(isFirstVisit) } : {}),
+        ...(extraData || {}),
+      };
+      try {
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: targetTokens,
+          data: baseData,
+          webpush: {
+            headers: HIGH_URGENCY_HEADERS,
+            notification: {
+              title: notificationTitle,
+              body,
+              icon: WEB_PUSH_ICON,
+              badge: WEB_PUSH_BADGE,
+              tag,
+              renotify: true,
+              requireInteraction: true,
+              data: { type, url: absoluteLink, link, appointmentId: String(aptId), branchId },
+              actions: [{ action: 'dh_open_app', title: 'لمزيد ادخل التطبيق' }],
             },
-            actions: [
-              { action: 'dh_open_app', title: 'لمزيد ادخل التطبيق' },
-            ],
           },
-        }
-      });
-      logMulticastResult('notifyDoctorOnNewAppointment', response, tokens);
-      const invalidTokens = getInvalidFcmTokensFromResponse(response, tokens);
-      if (invalidTokens.length > 0) {
-        await Promise.all(
-          candidateUserIds.map((candidateUserId) =>
-            cleanupInvalidDoctorTokens(candidateUserId, invalidTokens)
-          )
-        );
+        });
+        logMulticastResult(logLabel, response, targetTokens);
+        const invalid = getInvalidFcmTokensFromResponse(response, targetTokens);
+        if (invalid.length > 0 && cleanupInvalid) await cleanupInvalid(invalid);
+      } catch (err) {
+        console.error(`[${logLabel}] FCM send failed:`, err);
       }
-    } catch (err) {
-      console.error('[notifyDoctorOnNewAppointment] FCM send failed:', err);
-    }
+    };
+
+    const doctorPush = tokens.length === 0
+      ? Promise.resolve(console.warn('[notifyDoctorOnNewAppointment] all doctor tokens matched secretary tokens; skipping doctor push'))
+      : sendPush({
+          logLabel: 'notifyDoctorOnNewAppointment',
+          tokens,
+          type: 'new_appointment',
+          tag: `new_appointment_${branchId}_${aptId}`,
+          link: `/appointments?branchId=${encodeURIComponent(branchId)}`,
+          extraData: {
+            ...(data.consultationSourceAppointmentId ? { consultationSourceAppointmentId: String(data.consultationSourceAppointmentId) } : {}),
+            ...(data.consultationSourceCompletedAt ? { consultationSourceCompletedAt: String(data.consultationSourceCompletedAt) } : {}),
+            ...(data.consultationSourceRecordId ? { consultationSourceRecordId: String(data.consultationSourceRecordId) } : {}),
+            ...buildSecretaryVitalsNotificationData(secretaryVitals),
+          },
+          cleanupInvalid: (invalid) => Promise.all(
+            candidateUserIds.map((candidateUserId) => cleanupInvalidDoctorTokens(candidateUserId, invalid))
+          ),
+        });
+
+    // لا نرسل للسكرتارية لو هي اللي حجزت (source === 'secretary') لتجنب إشعار ذاتي.
+    const secretaryPush = (sourceKey === 'public' && secretaryTokensSet.size > 0)
+      ? sendPush({
+          logLabel: 'notifySecretaryOnNewPublicAppointment',
+          tokens: Array.from(secretaryTokensSet),
+          type: 'new_public_appointment',
+          tag: `new_public_appointment_${branchId}_${aptId}`,
+          link: `/book/s/${encodeURIComponent(Array.from(relatedSecretsSet)[0] || '')}?branchId=${encodeURIComponent(branchId)}`,
+          cleanupInvalid: (invalid) => Promise.all(
+            Array.from(relatedSecretsSet).map((sec) => cleanupInvalidSecretaryTokens(sec, invalid))
+          ),
+        })
+      : Promise.resolve();
+
+    await Promise.allSettled([doctorPush, secretaryPush]);
   };
 
 

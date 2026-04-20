@@ -37,12 +37,6 @@ export const getTodayDateKey = () =>
 const resolveItemBranch = (item: { branchId?: string } | null | undefined): string =>
     (item && item.branchId) ? item.branchId : 'main';
 
-/** مفتاح localStorage متوافق مع الفرع (main → بدون prefix). */
-const branchLocalKey = (key: string, branchId?: string): string => {
-    if (!branchId || branchId === 'main') return key;
-    return `${branchId}__${key}`;
-};
-
 interface DoSyncArgs {
     userId: string | undefined;
     fileId: string | undefined;
@@ -53,12 +47,29 @@ interface DoSyncArgs {
     branchId?: string;
 }
 
+/** يحوّل PatientInsuranceItem إلى شكل insuranceExtra المتخزن في الـ daily doc. */
+const toInsuranceExtra = (ins: PatientInsuranceItem) => ({
+    id: ins.id,
+    companyId: ins.companyId ?? '',
+    companyName: ins.companyName,
+    type: ins.type,
+    amount: ins.amount,
+    branchId: ins.branchId,
+    insuranceMembershipId: ins.insuranceMembershipId,
+    insuranceApprovalCode: ins.insuranceApprovalCode,
+    note: ins.note,
+    fromPatientFile: true,
+    patientFileId: ins.patientFileId,
+    patientName: ins.patientName,
+});
+
 /**
  * مزامنة التكاليف إلى Firestore + تحديث ملخصات الأيام المتأثرة في
  * financial-data + إطلاق حدث لتحديث التقارير المالية.
  *
  * بيفلتر العناصر بحيث الـ daily Firestore doc لفرع معين يحتوي فقط على
- * العناصر اللي تخصه.
+ * العناصر اللي تخصه. بيدمج بيانات هذا الملف مع بيانات الملفات الأخرى
+ * الموجودة في Firestore daily doc بحيث ما نمسحش بياناتهم.
  */
 export const doSyncCostsToFirestore = ({
     userId,
@@ -78,39 +89,45 @@ export const doSyncCostsToFirestore = ({
         ...(extraDateKeys ?? []),
     ]);
     const targetBranch = branchId || 'main';
-    for (const dk of dateKeys) {
-        // القيم الحالية لفرعنا من localStorage (بعد recomputeDailyTotals)
-        const intvKey = `${branchLocalKey('interventionsRevenue', targetBranch)}_${dk}`;
-        const otherKey = `${branchLocalKey('otherRevenue', targetBranch)}_${dk}`;
-        const intv = parseFloat(localStorage.getItem(intvKey) || '0') || 0;
-        const other = parseFloat(localStorage.getItem(otherKey) || '0') || 0;
 
-        // insuranceExtras: نقرأ الكل ونفلتر على الفرع
-        let allExtras: any[] = [];
-        try { allExtras = JSON.parse(localStorage.getItem(`${branchLocalKey('insuranceExtra', targetBranch)}_${dk}`) || '[]'); } catch { /* ignore */ }
-        // fallback للمفتاح العام (كان بيُستخدم قبل التقسيم بالفرع)
-        if (allExtras.length === 0) {
-            try { allExtras = JSON.parse(localStorage.getItem(`insuranceExtra_${dk}`) || '[]'); } catch { /* ignore */ }
-        }
-        const extras = allExtras.filter((e: any) => resolveItemBranch(e) === targetBranch);
+    const syncOneDay = async (dk: string): Promise<void> => {
+        // نجيب الحالة الحالية من Firestore (cache-first — سريع) عشان نحافظ على
+        // بيانات الملفات الأخرى في نفس اليوم/الفرع.
+        const currentDoc = await financialDataService.getDailyData(userId, dk, branchId).catch(() => null);
+        const currentCash: any[] = Array.isArray(currentDoc?.cashCostItems) ? currentDoc!.cashCostItems : [];
+        const currentExtras: any[] = Array.isArray(currentDoc?.insuranceExtras) ? currentDoc!.insuranceExtras : [];
 
-        // cashCostItems: نقرأ كل العناصر لليوم ده ونفلتر حسب الفرع
-        let allCashItems: any[] = [];
-        try {
-            allCashItems = JSON.parse(localStorage.getItem(`patientCostItems_${dk}`) || '[]');
-        } catch { /* ignore */ }
-        const cashItems = allCashItems.filter((i: any) =>
-            i.patientFileId && resolveItemBranch(i) === targetBranch
-        );
+        // شيل عناصر هذا الملف من الحالة الحالية، بعدين ضيف عناصره المحدّثة
+        const otherFilesCash = currentCash.filter((c: any) => c.patientFileId !== fileId);
+        const thisFileCashForDay = costs.filter(c => c.dateKey === dk && resolveItemBranch(c) === targetBranch);
+        const mergedCash = [...otherFilesCash, ...thisFileCashForDay];
 
-        financialDataService.saveDailyData(userId, dk, {
+        const otherFilesExtras = currentExtras.filter((e: any) => e.patientFileId !== fileId);
+        const thisFileInsForDay = insurance
+            .filter(i => i.dateKey === dk && resolveItemBranch(i) === targetBranch)
+            .map(toInsuranceExtra);
+        const mergedExtras = [...otherFilesExtras, ...thisFileInsForDay];
+
+        // إعادة حساب الإجماليات من العناصر المدمجة (للفرع الحالي فقط — الـ doc per-branch)
+        const intv = mergedCash
+            .filter((c: any) => c.type === 'interventions')
+            .reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0);
+        const other = mergedCash
+            .filter((c: any) => c.type === 'other')
+            .reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0);
+
+        await financialDataService.saveDailyData(userId, dk, {
             interventionsRevenue: intv,
             otherRevenue: other,
-            insuranceExtras: extras,
-            cashCostItems: cashItems,
-        }, branchId).catch(console.error);
-    }
-    window.dispatchEvent(new Event('financialDataUpdated'));
+            insuranceExtras: mergedExtras,
+            cashCostItems: mergedCash,
+        }, branchId);
+    };
+
+    Promise.all(Array.from(dateKeys).map((dk) => syncOneDay(dk).catch(console.error)))
+        .finally(() => {
+            window.dispatchEvent(new Event('financialDataUpdated'));
+        });
 };
 
 interface SaveCostInput {

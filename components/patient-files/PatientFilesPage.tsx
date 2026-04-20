@@ -57,6 +57,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   const [visibleCount, setVisibleCount] = useState<number>(PATIENT_FILES_PAGE_SIZE);
   const [settingsPhonesByNameKey, setSettingsPhonesByNameKey] = useState<Record<string, string[]>>({});
   const [appointmentPhonesByNameKey, setAppointmentPhonesByNameKey] = useState<Record<string, string[]>>({});
+  const [additionalInfoByNameKey, setAdditionalInfoByNameKey] = useState<Record<string, string>>({});
   const seniorityIndexRunRef = useRef<{ userId: string; recordCount: number } | null>(null);
 
   const patientFiles = useMemo(() => buildPatientFiles(records), [records]);
@@ -91,6 +92,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   useEffect(() => {
     if (!userId) {
       setSettingsPhonesByNameKey({});
+      setAdditionalInfoByNameKey({});
       return;
     }
 
@@ -102,12 +104,18 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         if (cancelled) return;
 
         const nextPhonesByNameKey: Record<string, string[]> = {};
+        const nextAdditionalInfoByNameKey: Record<string, string> = {};
         settingsSnap.docs.forEach((snap) => {
           if (!snap.id.startsWith(PATIENT_FILE_DOC_PREFIX)) return;
 
           const data = snap.data() as Record<string, unknown>;
           const nameKey = String(data.patientFileNameKey || '').trim() || decodePatientFileNameKeyFromDocId(snap.id);
           if (!nameKey) return;
+
+          const additionalInfoText = String(data.additionalInfo || '').trim();
+          if (additionalInfoText) {
+            nextAdditionalInfoByNameKey[nameKey] = additionalInfoText;
+          }
 
           const phoneCandidates = uniqueTrimmed([
             String(data.phone || '').trim(),
@@ -124,6 +132,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         });
 
         setSettingsPhonesByNameKey(nextPhonesByNameKey);
+        setAdditionalInfoByNameKey(nextAdditionalInfoByNameKey);
       } catch (error) {
         console.error('Error loading patient file phones from settings:', error);
       }
@@ -191,8 +200,9 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         ...(settingsPhonesByNameKey[file.key] || []),
         ...(appointmentPhonesByNameKey[file.key] || []),
       ]),
+      additionalInfo: additionalInfoByNameKey[file.key] || '',
     }));
-  }, [patientFiles, settingsPhonesByNameKey, appointmentPhonesByNameKey]);
+  }, [patientFiles, settingsPhonesByNameKey, appointmentPhonesByNameKey, additionalInfoByNameKey]);
 
   const filteredPatientFiles = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -302,6 +312,43 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
     });
   };
 
+  const handleSaveAdditionalInfo = async (payload: {
+    patientFileId?: string;
+    patientFileNumber?: number;
+    patientFileNameKey?: string;
+    patientName: string;
+    phone?: string;
+    additionalInfo: string;
+  }) => {
+    if (!userId) {
+      throw new Error('يجب تسجيل الدخول أولاً.');
+    }
+
+    const result = await patientFilesService.savePatientAdditionalInfo({
+      userId,
+      patientFileId: payload.patientFileId,
+      patientFileNumber: payload.patientFileNumber,
+      patientFileNameKey: payload.patientFileNameKey,
+      patientName: payload.patientName,
+      phone: payload.phone,
+      additionalInfo: payload.additionalInfo,
+    });
+
+    if (result) {
+      setAdditionalInfoByNameKey((prev) => {
+        const next = { ...prev };
+        if (result.additionalInfo) {
+          next[result.patientFileNameKey] = result.additionalInfo;
+        } else {
+          delete next[result.patientFileNameKey];
+        }
+        return next;
+      });
+    }
+
+    return result;
+  };
+
   return (
     <div data-no-reveal className="px-3 pt-5 pb-3 sm:px-5 sm:pt-6 sm:pb-4 space-y-3" dir="rtl">
 
@@ -402,11 +449,8 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
                   <span className="text-[11px] font-bold bg-white/15 text-white rounded-full px-2.5 py-1">
                     {file.consultationCount} استشارة
                   </span>
-                  <span className="inline-flex items-center gap-1 bg-white/20 border border-white/30 text-white rounded-full px-2.5 py-1 text-[11px] font-black">
-                    عرض
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                      <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                  <span className="inline-flex items-center bg-white text-blue-700 rounded-full px-4 py-1.5 text-[11px] font-black shadow-sm hover:shadow-md transition-shadow ring-2 ring-white/60">
+                    التفاصيل
                   </span>
                 </div>
               </button>
@@ -446,6 +490,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         }}
         onGeneratePatientMedicalReport={onGeneratePatientMedicalReport}
         onUpdatePatientIdentity={handleUpdatePatientIdentity}
+        onSaveAdditionalInfo={handleSaveAdditionalInfo}
         branchId={branchId}
       />
     </div>

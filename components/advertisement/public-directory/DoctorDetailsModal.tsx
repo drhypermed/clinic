@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaWhatsapp, FaYoutube, FaXTwitter } from 'react-icons/fa6';
 import { FaLink } from 'react-icons/fa';
 import type { DoctorAdProfile, DoctorClinicScheduleRow } from '../../../types';
@@ -117,9 +118,9 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
     copyShareLink(window.location.href);
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-[2px] flex items-center justify-center md:p-5"
+      className="fixed inset-0 z-[9995] bg-slate-950/70 backdrop-blur-[2px] flex items-start md:items-center justify-center md:p-5 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -420,6 +421,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

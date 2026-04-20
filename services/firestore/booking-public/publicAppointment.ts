@@ -26,6 +26,8 @@ interface PublicBookingPayload {
   age: string;
   phone: string;
   visitReason: string;
+  /** أول زيارة؟ — من سؤال فورم الجمهور (true/false); undefined لو لم يُحدَّد */
+  isFirstVisit?: boolean;
   appointmentType?: 'exam' | 'consultation';
   consultationSourceAppointmentId?: string;
   consultationSourceCompletedAt?: string;
@@ -104,6 +106,7 @@ export const createAppointmentFromPublic = async (
     createdAt,
     age: age || undefined,
     visitReason: visitReason || undefined,
+    isFirstVisit: typeof data.isFirstVisit === 'boolean' ? data.isFirstVisit : undefined,
     source: 'public', // المصدر: حجز عام من الرابط
     publicUserId: meta?.publicUserId,
     appointmentType: isConsultationBooking ? 'consultation' : 'exam',
@@ -124,13 +127,8 @@ export const createAppointmentFromPublic = async (
     branchId: data.branchId,
   };
 
-  /**
-   * التنفيذ الذري (Transaction):
-   * نتحقق من أن الفترة الزمنية (Slot) لا تزال متاحة، ثم نقوم بـ:
-   * أ. كتابة الموعد الجديد في جدول الطبيب.
-   * ب. حذف الفترة الزمنية من المواعيد المتاحة للجمهور فوراً.
-   * ملاحظة: الـ Transaction يتم أولاً قبل خصم الكوتة لتجنب خسارة الكوتة إذا كان الـ Slot محجوزاً بالفعل.
-   */
+  // الـ Slot يبقى متاحاً لباقي الجمهور بعد الحجز — الإخفاء لمن حجز يتم client-side
+  // عبر فلترة مواعيد المستخدم. الـ Transaction قبل خصم الكوتة حتى لا نخسرها لو الـ Slot غير موجود.
   await runTransaction(db, async (transaction) => {
     const slotSnap = await transaction.get(slotRef);
     if (!slotSnap.exists()) {
@@ -147,7 +145,6 @@ export const createAppointmentFromPublic = async (
       appointmentDocRef,
       omitUndefined(appointment as unknown as Record<string, unknown>)
     );
-    transaction.delete(slotRef);
   });
 
   // إدارة الكوتة بعد نجاح الحجز: لو فشلت، نحذف الموعد كإجراء تراجعي

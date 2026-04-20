@@ -13,6 +13,7 @@
 
 import React from 'react';
 import type { PatientRecord } from '../../../types';
+import type { DailyFinancialData } from '../../../services/financial-data';
 import { formatCurrency } from '../utils/formatters';
 import type { DailyInsuranceExtraEntry } from '../hooks/useFinancialData';
 import { useInsuranceClaims } from '../hooks/useInsuranceClaims';
@@ -20,8 +21,6 @@ import { useInsuranceClaims } from '../hooks/useInsuranceClaims';
 interface InsuranceClaimsSectionProps {
   /** معرف المستخدم (لتحميل إعدادات الروشتة للفاتورة) */
   userId: string;
-  /** الفرع النشط */
-  branchId?: string;
   /** اسم الشهر الحالي (للعرض في الهيدر) */
   currentMonthLabel: string;
   records: PatientRecord[];
@@ -32,11 +31,12 @@ interface InsuranceClaimsSectionProps {
   consultPrice: number;
   /** الإضافات التأمينية لليوم المحدد (مفلترة بالفرع من useFinancialData) */
   dailyInsuranceExtras?: DailyInsuranceExtraEntry[];
+  /** خريطة Firestore اليومية (مفلترة بالفرع) — لجلب extras للأيام الماضية */
+  yearlyDailyMap: Record<string, DailyFinancialData>;
 }
 
 export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
   userId,
-  branchId,
   currentMonthLabel,
   records,
   selectedDate,
@@ -44,6 +44,7 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
   examPrice,
   consultPrice,
   dailyInsuranceExtras = [],
+  yearlyDailyMap,
 }) => {
   const {
     claims,
@@ -57,13 +58,13 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
     handlePrintInsuranceInvoice,
   } = useInsuranceClaims({
     userId,
-    branchId,
     records,
     selectedDate,
     selectedDayKey,
     examPrice,
     consultPrice,
     dailyInsuranceExtras,
+    yearlyDailyMap,
   });
 
   // لا نعرض القسم إذا لم يكن هناك حالات تأمين في الشهر

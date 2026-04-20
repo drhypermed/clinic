@@ -66,7 +66,7 @@ export const PresetListItem: React.FC<Props> = ({
           {summaryChips.map((chip) => (
             <span
               key={`${preset.id}-${chip.key}`}
-              className="rounded-full border border-blue-700 bg-blue-600 px-3 py-1.5 text-xs font-black text-white shadow-sm md:px-4 md:py-2 md:text-sm"
+              className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 md:px-4 md:py-2 md:text-sm"
             >
               {chip.label}: {chip.count}
             </span>

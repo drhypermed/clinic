@@ -74,7 +74,6 @@ export type UsePublicBookingAppointmentActionsParams = {
     setDiscountPercent: Dispatch<SetStateAction<number>>;
     setDiscountReasonId: Dispatch<SetStateAction<string>>;
     setDiscountReasonLabel: Dispatch<SetStateAction<string>>;
-    setDoctorResponseToast: Dispatch<SetStateAction<'approved' | 'wait' | null>>;
     setPendingEntryAppointmentId: Dispatch<SetStateAction<string | null>>;
     setBookingQuotaNotice: Dispatch<SetStateAction<BookingQuotaNotice | null>>;
     setFormError: Dispatch<SetStateAction<string | null>>;

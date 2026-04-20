@@ -84,9 +84,6 @@ export const usePublicBookingPageState = () => {
   const [approvedEntryAppointmentIds, setApprovedEntryAppointmentIds] = useState<string[]>([]);
   const [secretaryApprovedEntryIds, setSecretaryApprovedEntryIds] = useState<string[]>([]);
   const [pendingEntryAppointmentId, setPendingEntryAppointmentId] = useState<string | null>(null);
-  const [doctorResponseToast, setDoctorResponseToast] = useState<'approved' | 'wait' | null>(null);
-  const lastDoctorResponseRespondedAtRef = useRef<string | null>(null);
-  const doctorResponseInitializedRef = useRef(false);
   const [secretaryActionToast, setSecretaryActionToast] = useState<'approved' | 'rejected' | null>(null);
   const [subscriptionFormTitle, setSubscriptionFormTitle] = useState<string>('');
   const [bookingFormOpen, setBookingFormOpen] = useState(true);
@@ -199,10 +196,6 @@ export const usePublicBookingPageState = () => {
     setSecretaryApprovedEntryIds,
     pendingEntryAppointmentId,
     setPendingEntryAppointmentId,
-    doctorResponseToast,
-    setDoctorResponseToast,
-    lastDoctorResponseRespondedAtRef,
-    doctorResponseInitializedRef,
     secretaryActionToast,
     setSecretaryActionToast,
     subscriptionFormTitle,

@@ -8,6 +8,7 @@ import type { TodayAppointment } from '../../../types';
 import { formatUserTime } from '../../../utils/cairoTime';
 import { PatientContactActions } from '../../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../../common/SecretaryVitalsPills';
+import { FirstVisitBadge } from '../FirstVisitBadge';
 
 type PublicBookingTodaySectionProps = {
   sortedTodayAppointments: TodayAppointment[];
@@ -79,6 +80,7 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
                     <span className="border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 rounded-full">
                       {formatUserTime(apt.dateTime, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
                     </span>
+                    <FirstVisitBadge isFirstVisit={apt.isFirstVisit} />
                   </div>
 
                   {/* التفاصيل */}

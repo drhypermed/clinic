@@ -143,19 +143,54 @@ export const useSecretaryDataLoading = ({
 
   refreshAppointmentsRef.current = refreshAppointments;
 
-  // ── 3) Polling كل 30 ثانية ──
+  // ── 3) Polling كل 15 ثانية ──
+  // السكرتيرة ما تقدرش تستخدم onSnapshot مباشرة على users/{uid}/appointments
+  // بسبب rules، لذلك نعتمد على Cloud Function. نوقف الـ polling وهي التاب مخفي
+  // لتوفير استدعاءات CF، ونحدّث فوراً عند رجوع التاب visible.
   useEffect(() => {
     if (!isAuthenticated || !secret || !userId) return;
     let isDisposed = false;
-    const tick = async () => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const tick = () => {
       if (isDisposed) return;
-      await refreshAppointmentsRef.current();
+      void refreshAppointmentsRef.current();
     };
-    void tick();
-    const interval = setInterval(() => { void tick(); }, 30000);
+
+    const startPolling = () => {
+      if (intervalId != null) return;
+      intervalId = setInterval(tick, 15000);
+    };
+    const stopPolling = () => {
+      if (intervalId == null) return;
+      clearInterval(intervalId);
+      intervalId = null;
+    };
+
+    const handleVisibilityChange = () => {
+      if (typeof document === 'undefined') return;
+      if (document.visibilityState === 'visible') {
+        tick();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    tick();
+    if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+      startPolling();
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
     return () => {
       isDisposed = true;
-      clearInterval(interval);
+      stopPolling();
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, [isAuthenticated, secret, userId]);
 

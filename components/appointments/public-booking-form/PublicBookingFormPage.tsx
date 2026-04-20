@@ -25,6 +25,7 @@ import { usePublicBookingBootstrap } from './usePublicBookingBootstrap';
 import { usePublicBookingSuggestions } from './usePublicBookingSuggestions';
 import { usePublicBookingShare } from './usePublicBookingShare';
 import { usePublicBookingSubmit } from './usePublicBookingSubmit';
+import { firestoreService } from '../../../services/firestore';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
 import { formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import {
@@ -64,16 +65,53 @@ export const PublicBookingFormPage: React.FC = () => {
     }
   }, [branches, selectedBranchId]);
 
-  // فلترة slots: المواعيد القديمة (بدون branchId) تظهر في كل الفروع
+  // المواعيد التي حجزها المستخدم الحالي عند هذا الطبيب — لإخفائها من عنده فقط
+  // مع إبقائها متاحة لباقي الجمهور.
+  const [myBookedDateTimes, setMyBookedDateTimes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user?.uid || !userId) {
+      setMyBookedDateTimes((prev) => (prev.size === 0 ? prev : new Set()));
+      return;
+    }
+
+    const unsub = firestoreService.subscribeToPublicUserBookings(user.uid, (bookings) => {
+      const next = new Set<string>();
+      bookings.forEach((b) => {
+        if (b.doctorId === userId && b.dateTime) next.add(b.dateTime);
+      });
+      // Bail out if the filtered dates haven't changed — subscription fires for bookings
+      // across all doctors, so unrelated updates would otherwise break filteredSlots memo.
+      setMyBookedDateTimes((prev) => {
+        if (prev.size === next.size) {
+          let same = true;
+          for (const dt of next) {
+            if (!prev.has(dt)) { same = false; break; }
+          }
+          if (same) return prev;
+        }
+        return next;
+      });
+    });
+
+    return () => unsub();
+  }, [user?.uid, userId]);
+
+  // فلترة slots: المواعيد القديمة (بدون branchId) تظهر في كل الفروع،
+  // مع استبعاد المواعيد التي حجزها المستخدم الحالي من قبل عند نفس الطبيب.
   const filteredSlots = React.useMemo(() => {
-    if (!selectedBranchId || branches.length <= 1) return slots;
-    return slots.filter((slot) => !slot.branchId || slot.branchId === selectedBranchId);
-  }, [slots, selectedBranchId, branches.length]);
+    const baseSlots = (!selectedBranchId || branches.length <= 1)
+      ? slots
+      : slots.filter((slot) => !slot.branchId || slot.branchId === selectedBranchId);
+    if (myBookedDateTimes.size === 0) return baseSlots;
+    return baseSlots.filter((slot) => !myBookedDateTimes.has(slot.dateTime));
+  }, [slots, selectedBranchId, branches.length, myBookedDateTimes]);
 
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [visitReason, setVisitReason] = useState('');
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
   const [selectedConsultationCandidateId, setSelectedConsultationCandidateId] = useState<string>('');
   const [activeSuggestionField, setActiveSuggestionField] = useState<'name' | 'phone' | null>(null);
@@ -124,6 +162,7 @@ export const PublicBookingFormPage: React.FC = () => {
     age,
     phone,
     visitReason,
+    isFirstVisit,
     selectedBranchId,
     onSuccess: () => setSuccess(true),
   });
@@ -280,6 +319,7 @@ export const PublicBookingFormPage: React.FC = () => {
           patientName={patientName}
           age={age}
           visitReason={visitReason}
+          isFirstVisit={isFirstVisit}
           activeSuggestionField={activeSuggestionField}
           phoneSuggestionOptions={phoneSuggestionOptions}
           latestPhoneForName={latestPhoneForName}
@@ -299,6 +339,7 @@ export const PublicBookingFormPage: React.FC = () => {
           }}
           onAgeChange={(value) => setAge(sanitizePublicText(value, MAX_PUBLIC_AGE_LENGTH))}
           onVisitReasonChange={(value) => setVisitReason(sanitizePublicText(value, MAX_PUBLIC_REASON_LENGTH))}
+          onIsFirstVisitChange={setIsFirstVisit}
           applyPhoneSuggestion={applyPhoneSuggestion}
           normalizePhone={normalizePhone}
           formError={formError}

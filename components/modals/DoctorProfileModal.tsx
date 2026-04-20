@@ -11,6 +11,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { LoadingText } from '../ui/LoadingText';
 import { formatUserDate, formatUserTime } from '../../utils/cairoTime';
 import { getExpiryStatus } from '../../utils/expiryTime';
@@ -196,9 +197,12 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
       });
 
       setSuccess('✅ تم حفظ التعديلات بنجاح');
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       setTimeout(() => {
         onClose();
-      }, 1000);
+      }, 1600);
     } catch (err) {
       console.error('Error saving profile:', err);
       setError('فشل حفظ التعديلات. يرجى المحاولة مرة أخرى.');
@@ -209,9 +213,9 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[2000] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[2000] flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -446,6 +450,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
           onCancel={cropper.cancelCrop}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

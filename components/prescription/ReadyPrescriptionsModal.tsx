@@ -141,11 +141,7 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
       >
         {/* رأس النافذة الرئيسية */}
         <div className="shrink-0 border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-white p-4 sm:p-5">
-          <div
-            className={`flex items-center gap-2 ${
-              draft.isEditorOpen ? 'justify-between' : 'justify-between flex-wrap lg:flex-nowrap'
-            }`}
-          >
+          <div className="flex items-center gap-2 justify-between flex-wrap lg:flex-nowrap">
             <div className="order-1 flex min-w-0 items-center gap-2">
               <h3 className="flex items-center gap-2 whitespace-nowrap text-lg font-black text-slate-800 sm:text-xl">
                 <span className="h-6 w-1.5 rounded-full bg-blue-600"></span>
@@ -166,9 +162,7 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
               onClick={onClose}
               variant="danger"
               size="sm"
-              className={`${
-                draft.isEditorOpen ? 'order-last' : 'order-2 lg:order-3'
-              } flex h-9 min-h-9 w-9 min-w-9 items-center justify-center px-0 text-xl leading-none font-black`}
+              className="order-2 lg:order-3 flex h-7 min-h-7 w-7 min-w-7 items-center justify-center px-0 text-base leading-none font-black"
             >
               ×
             </Button>

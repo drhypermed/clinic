@@ -205,6 +205,29 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     });
   };
 
+  // حفظ معلومات إضافية عن المريض (حساسية/أمراض مزمنة/ملاحظات) — تُستخدم من نافذة تفاصيل الملف
+  const handleSaveAdditionalInfo = async (payload: {
+    patientFileId?: string;
+    patientFileNumber?: number;
+    patientFileNameKey?: string;
+    patientName: string;
+    phone?: string;
+    additionalInfo: string;
+  }) => {
+    if (!userId) {
+      throw new Error('يجب تسجيل الدخول أولاً.');
+    }
+    return patientFilesService.savePatientAdditionalInfo({
+      userId,
+      patientFileId: payload.patientFileId,
+      patientFileNumber: payload.patientFileNumber,
+      patientFileNameKey: payload.patientFileNameKey,
+      patientName: payload.patientName,
+      phone: payload.phone,
+      additionalInfo: payload.additionalInfo,
+    });
+  };
+
   const handleConfirmPastRecordDate = (type: PastRecordModalType, datetime: string) => {
     if (type === 'exam') {
       onAddPastExam(datetime);
@@ -437,6 +460,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
         }}
         onGeneratePatientMedicalReport={onGeneratePatientMedicalReport}
         onUpdatePatientIdentity={handleUpdatePatientIdentity}
+        onSaveAdditionalInfo={handleSaveAdditionalInfo}
         branchId={branchId}
       />
     </>

@@ -75,6 +75,7 @@ const parseAppointment = (raw: unknown): TodayAppointment | null => {
   if (phone) result.phone = phone;
   const visitReason = toOptionalText(item.visitReason);
   if (visitReason) result.visitReason = visitReason;
+  if (typeof item.isFirstVisit === 'boolean') result.isFirstVisit = item.isFirstVisit;
 
   if (item.secretaryVitals && typeof item.secretaryVitals === 'object') {
     result.secretaryVitals = item.secretaryVitals as TodayAppointment['secretaryVitals'];

@@ -176,7 +176,9 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         lastSyncTime: financialData.lastSyncTime,
         userId,
         branchId,
-        dailyInsuranceExtras: financialData.dailyInsuranceExtras
+        dailyInsuranceExtras: financialData.dailyInsuranceExtras,
+        yearlyDailyMap: financialData.yearlyDailyMap,
+        yearlyMonthlyMap: financialData.yearlyMonthlyMap,
     });
 
     // العرض | Render
@@ -219,6 +221,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             dailyInsuranceExtras={financialData.dailyInsuranceExtras}
                             userId={userId}
                             branchId={branchId}
+                            yearlyDailyMap={financialData.yearlyDailyMap}
                         />
                         <DailyExpensesSection
                             formattedSelectedDay={navigation.formattedSelectedDay}
@@ -235,7 +238,6 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                     <>
                         <InsuranceClaimsSection
                             userId={userId}
-                            branchId={branchId}
                             currentMonthLabel={navigation.monthLabel}
                             records={records}
                             selectedDate={navigation.selectedDate}
@@ -243,6 +245,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             examPrice={parseFloat(fixedPrices.examinationPrice || '0') || 0}
                             consultPrice={parseFloat(fixedPrices.consultationPrice || '0') || 0}
                             dailyInsuranceExtras={financialData.dailyInsuranceExtras}
+                            yearlyDailyMap={financialData.yearlyDailyMap}
                         />
                         <MonthlyRevenueSection
                             currentMonthLabel={navigation.monthLabel}

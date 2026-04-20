@@ -5,9 +5,10 @@
 //   - CompanyClaim: البنية الكاملة لمطالبة شركة واحدة (كشوفات + استشارات + extras)
 //   - createEmptyClaim: ينشئ سجل مطالبة فارغ للشركة قبل التعبئة
 //   - asTimestamp: تحويل آمن لتاريخ ISO إلى ms (مع fallback لـ NaN)
-//   - readInsuranceExtrasForDay: قراءة extras من localStorage مع فلترة الفرع
+//   - readInsuranceExtrasForDay: قراءة extras من خريطة Firestore اليومية (IndexedDB cache)
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { DailyFinancialData } from '../../../services/financial-data';
 import type { DailyInsuranceExtraEntry } from '../hooks/useFinancialData';
 
 /** البنية الكاملة لمطالبة شركة تأمين واحدة داخل شهر أو فترة محددة. */
@@ -66,23 +67,16 @@ export const createEmptyClaim = (companyName: string): CompanyClaim => ({
 });
 
 /**
- * قراءة extras ليوم معين من localStorage مع فلترة على الفرع النشط.
- * في حالة خطأ parse، يرجع مصفوفة فارغة (دفاعي).
+ * قراءة extras ليوم معين من خريطة Firestore اليومية (الفرع مفلتر بالفعل
+ * على مستوى الـ Firestore doc، فمش محتاجين re-filter).
  */
 export const readInsuranceExtrasForDay = (
   dayKey: string,
-  branchId?: string,
+  yearlyDailyMap: Record<string, DailyFinancialData>,
 ): DailyInsuranceExtraEntry[] => {
-  const str = localStorage.getItem(`insuranceExtra_${dayKey}`);
-  if (!str) return [];
-  try {
-    const allExtras = JSON.parse(str) as Array<DailyInsuranceExtraEntry & { branchId?: string }>;
-    if (!Array.isArray(allExtras)) return [];
-    const targetBranch = branchId || 'main';
-    return allExtras.filter((e) => ((e?.branchId as string) || 'main') === targetBranch);
-  } catch {
-    return [];
-  }
+  const entry = yearlyDailyMap[dayKey];
+  if (!entry || !Array.isArray(entry.insuranceExtras)) return [];
+  return entry.insuranceExtras as DailyInsuranceExtraEntry[];
 };
 
 /**

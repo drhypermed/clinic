@@ -23,6 +23,7 @@ export interface PatientFileData {
   examCount: number;
   consultationCount: number;
   latestVisitDate?: string;
+  additionalInfo?: string;
 }
 
 export interface VisitContent {

@@ -129,10 +129,7 @@ export const DrugInteractions: React.FC = () => {
                         className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white font-black text-sm bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-500 shadow-[0_8px_20px_-8px_rgba(37,99,235,0.5)] hover:shadow-lg transition-all active:scale-[0.98] disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                     >
                         {isChecking ? (
-                            <>
-                                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                                <LoadingText>جاري فحص التفاعلات</LoadingText>
-                            </>
+                            <LoadingText>جاري فحص التفاعلات</LoadingText>
                         ) : (
                             'فحص التفاعلات الدوائية'
                         )}

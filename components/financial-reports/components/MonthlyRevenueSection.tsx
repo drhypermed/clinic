@@ -95,14 +95,14 @@ export const MonthlyRevenueSection: React.FC<MonthlyRevenueSectionProps> = ({
                         </span>
                     </div>
                     {totalIncome > 0 && (collectedCash !== undefined || insuranceClaims !== undefined) && (
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl px-3 py-2">
-                                <span className="text-xs font-bold text-white">💵 نقد محصّل</span>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl px-3 py-2.5">
+                                <span className="text-sm font-bold text-white">💵 نقد محصّل</span>
                                 <span className="text-sm font-black text-white">{formatCurrency(collectedCash ?? totalIncome)}</span>
                             </div>
                             {(insuranceClaims ?? 0) > 0 && (
-                                <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl px-3 py-2">
-                                    <span className="text-xs font-bold text-white">🏢 مطالبات تأمين</span>
+                                <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl px-3 py-2.5">
+                                    <span className="text-sm font-bold text-white">🏢 مطالبات تأمين</span>
                                     <span className="text-sm font-black text-white">{formatCurrency(insuranceClaims ?? 0)}</span>
                                 </div>
                             )}

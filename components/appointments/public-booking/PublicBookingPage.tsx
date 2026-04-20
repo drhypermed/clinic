@@ -31,7 +31,6 @@ import type { SecretaryBookingView } from './PublicBookingSidebar';
 import { usePublicBookingPageLogic } from './usePublicBookingPageLogicCore';
 import {
   buildSecretaryActionToastKey,
-  buildSecretaryDoctorResponseToastKey,
   clearTimedPayload,
 } from '../internalToastStorage';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
@@ -63,8 +62,6 @@ export const PublicBookingPage: React.FC = () => {
     pushEnableSuccessMessage,
     handleEnableSecretaryPushNotifications,
     handleSecretaryPushPromptLater,
-    doctorResponseToast,
-    setDoctorResponseToast,
     secretaryActionToast,
     setSecretaryActionToast,
     entryAlert,
@@ -261,11 +258,6 @@ export const PublicBookingPage: React.FC = () => {
         </div>
         <InAppAudienceNotificationPopup audience="secretaries" scopeIds={[secret || '', userId || '']} />
         <PublicBookingAlerts
-          doctorResponseToast={doctorResponseToast}
-          onCloseDoctorToast={() => {
-            setDoctorResponseToast(null);
-            if (secret) clearTimedPayload(buildSecretaryDoctorResponseToastKey(secret));
-          }}
           secretaryActionToast={secretaryActionToast}
           onCloseSecretaryToast={() => {
             setSecretaryActionToast(null);
@@ -277,12 +269,19 @@ export const PublicBookingPage: React.FC = () => {
           onRejectEntry={handleRejectEntryAlert}
         />
 
-        {/* رسالة نجاح */}
+        {/* رسالة نجاح — في الأعلى بخلفية خضراء ونص أبيض ليكون واضحاً */}
         {success && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none px-4">
-            <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-emerald-200 bg-white shadow-2xl p-4 text-center animate-fadeIn">
-              <p className="text-emerald-700 font-black">تم الحفظ بنجاح</p>
-              <p className="text-slate-500 text-xs font-bold mt-1">تم حفظ بيانات المريض وتأكيد الموعد بنجاح.</p>
+          <div className="fixed top-4 left-4 right-4 z-[1200] flex justify-center pointer-events-none px-4" dir="rtl">
+            <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-green-700 bg-green-600 shadow-2xl p-4 text-center animate-fadeIn">
+              <div className="flex items-center justify-center gap-2">
+                <span className="inline-flex w-8 h-8 items-center justify-center rounded-full bg-white/20 shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+                <p className="text-white font-black text-base">تم الحفظ بنجاح</p>
+              </div>
+              <p className="text-white text-xs font-bold mt-1 opacity-95">تم حفظ بيانات المريض وتأكيد الموعد بنجاح.</p>
             </div>
           </div>
         )}

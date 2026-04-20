@@ -22,7 +22,7 @@
   normalizeOptionalText,
 } = require('./secretaryLoginHelpers');
 
-module.exports = ({ HttpsError, getDb, admin }) => {
+module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
   const secretaryLoginWithDoctorEmail = async (request) => {
     const doctorEmail = normalizeEmail(request?.data?.doctorEmail);
     const requestedSecret = normalizeSecret(request?.data?.secret);
@@ -629,16 +629,18 @@ module.exports = ({ HttpsError, getDb, admin }) => {
   //   - بعد كل create/update/delete بنستدعيها مرة أخرى للتحديث
   // ───────────────────────────────────────────────────────────────────────────
   const toLocalIsoDayString = (isoString) => {
-    // نحاول استخراج جزء التاريخ من الـ ISO string مباشرة (أول 10 حروف = YYYY-MM-DD UTC).
-    // للسكرتيرة في مصر (Cairo = UTC+2/+3)، ده تقريب معقول — المواعيد لليوم الحالي
-    // نادراً ما تكون في حدود نصف ساعة قبل منتصف الليل UTC.
     const normalized = String(isoString || '').trim();
     if (!normalized) return '';
-    // لو الـ string على شكل YYYY-MM-DDTHH:mm — ناخد أول 10 حروف مباشرة
-    if (/^\d{4}-\d{2}-\d{2}/.test(normalized)) return normalized.slice(0, 10);
     const parsed = new Date(normalized);
-    if (Number.isNaN(parsed.getTime())) return '';
-    return parsed.toISOString().slice(0, 10);
+    if (Number.isNaN(parsed.getTime())) {
+      if (/^\d{4}-\d{2}-\d{2}/.test(normalized)) return normalized.slice(0, 10);
+      return '';
+    }
+    try {
+      return getCairoDateKey(parsed);
+    } catch (_) {
+      return parsed.toISOString().slice(0, 10);
+    }
   };
 
   const compactAppointmentForSecretary = (doc) => {
@@ -652,6 +654,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     if (data.age) out.age = String(data.age).slice(0, 32);
     if (data.phone) out.phone = String(data.phone).slice(0, 20);
     if (data.visitReason) out.visitReason = String(data.visitReason).slice(0, 400);
+    if (typeof data.isFirstVisit === 'boolean') out.isFirstVisit = data.isFirstVisit;
     if (data.secretaryVitals) out.secretaryVitals = data.secretaryVitals;
     if (data.source) out.source = data.source;
     if (data.appointmentType) out.appointmentType = data.appointmentType;
@@ -681,7 +684,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     const todayStrInput = normalizeText(request?.data?.todayStr);
     const todayStr = /^\d{4}-\d{2}-\d{2}$/.test(todayStrInput)
       ? todayStrInput
-      : new Date().toISOString().slice(0, 10);
+      : getCairoDateKey(new Date());
 
     if (!userId || !secret) {
       throw new HttpsError('invalid-argument', 'MISSING_PARAMETERS');

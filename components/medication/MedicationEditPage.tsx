@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Medication } from '../../types';
 import { useMedications } from '../../hooks/medications';
 import { useMedicationSearch } from '../../hooks/medications/useMedicationSearch';
@@ -245,65 +246,108 @@ export const MedicationEditPage: React.FC<MedicationEditPageProps> = ({
                 </div>
             </div>
 
-            {/* نافذة عرض الأدوية المعدلة مسبقاً */}
-            {showModifiedModal && (
+            {/* نافذة عرض الأدوية المعدلة مسبقاً — portaled إلى body للهروب من stacking context الأب */}
+            {showModifiedModal && createPortal(
                 <div
-                    className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[300] flex items-center justify-center p-4 animate-fadeIn"
-                    onClick={() => setShowModifiedModal(false)}
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn"
+                    onMouseDown={(e) => { if (e.target === e.currentTarget) { e.stopPropagation(); setShowModifiedModal(false); } }}
+                    onClick={(e) => { if (e.target === e.currentTarget) { e.stopPropagation(); setShowModifiedModal(false); } }}
                 >
                     <div
-                        className="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl max-h-[86vh] flex flex-col overflow-hidden border border-slate-200"
+                        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[86dvh] sm:my-auto border border-slate-200"
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="bg-slate-900 px-5 py-4 flex justify-between items-center rounded-t-[24px]">
-                            <h3 className="text-white text-base font-black">الأدوية المعدلة ({modifiedMedications.length})</h3>
-                            <button onClick={() => setShowModifiedModal(false)} className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+                        {/* رأس النافذة — متناسق مع باقي المودالات */}
+                        <div className="bg-white px-5 py-4 flex justify-between items-start gap-3 border-b border-slate-200 shrink-0">
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 text-amber-600 shrink-0">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                </span>
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <h3 className="text-lg font-bold tracking-tight leading-tight text-slate-900">الأدوية المعدلة</h3>
+                                    <p className="text-[11px] text-slate-500 font-semibold">{modifiedMedications.length} دواء مخصص</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowModifiedModal(false)}
+                                aria-label="إغلاق"
+                                className="shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-full transition-colors active:scale-95"
+                            >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
-                        <div className="p-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-50">
+                        {/* قائمة الأدوية المعدلة */}
+                        <div className="p-3 overflow-y-auto custom-scrollbar flex-1 bg-slate-50 space-y-2">
                             {modifiedMedications.length > 0 ? (
-                                <div className="space-y-2">
-                                    {modifiedMedications.map((med) => (
-                                        <button
-                                            key={med.id}
-                                            onClick={() => { handleSelectMed(med); setShowModifiedModal(false); }}
-                                            className="w-full bg-white p-3 rounded-xl shadow-sm border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all text-left group"
-                                            dir="ltr"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
-                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                                    </svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <h4 className="font-black text-slate-800 text-sm truncate">{med.name}</h4>
-                                                        {(med as any).isNew ? (
-                                                            <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-2 py-0.5 rounded-full">مضاف</span>
-                                                        ) : (
-                                                            <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full">معدل</span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-slate-500 font-medium truncate">{med.genericName}</p>
-                                                </div>
+                                modifiedMedications.map((med) => (
+                                    <button
+                                        key={med.id}
+                                        onClick={() => { handleSelectMed(med); setShowModifiedModal(false); }}
+                                        className="w-full text-right p-3.5 bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/30 transition-colors group flex items-center gap-3"
+                                    >
+                                        <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <h4 className="font-bold text-slate-900 text-sm truncate group-hover:text-emerald-700 transition-colors">
+                                                    {med.name}
+                                                </h4>
+                                                {(med as any).isNew ? (
+                                                    <span className="bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                        مضاف
+                                                    </span>
+                                                ) : (
+                                                    <span className="bg-amber-50 text-amber-700 border border-amber-100 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                        معدل
+                                                    </span>
+                                                )}
                                             </div>
-                                        </button>
-                                    ))}
-                                </div>
+                                            {med.genericName && (
+                                                <p className="text-xs text-slate-500 font-semibold truncate mt-0.5">{med.genericName}</p>
+                                            )}
+                                            {med.form && (
+                                                <p className="text-[11px] text-slate-400 font-semibold truncate mt-0.5">{med.form}</p>
+                                            )}
+                                        </div>
+                                        <svg className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                ))
                             ) : (
-                                <div className="text-center py-10">
-                                    <div className="text-4xl mb-3 opacity-60">📋</div>
-                                    <p className="text-slate-500 font-bold text-sm">لا توجد أدوية معدلة حتى الآن</p>
+                                <div className="py-12 text-center">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white border border-slate-200 text-slate-400 mb-3">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-slate-700 text-sm font-bold">لا توجد أدوية معدلة</p>
+                                    <p className="text-slate-500 text-xs mt-1">ستظهر هنا الأدوية بعد تعديلها أو إضافتها.</p>
                                 </div>
                             )}
                         </div>
+
+                        {/* تذييل */}
+                        <div className="p-3 bg-white border-t border-slate-200 shrink-0">
+                            <button
+                                onClick={() => setShowModifiedModal(false)}
+                                className="w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm"
+                            >
+                                إغلاق
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* عرض نافذة التعديل الفعلية عند اختيار دواء */}

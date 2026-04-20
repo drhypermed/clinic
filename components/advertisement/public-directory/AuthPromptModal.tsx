@@ -1,5 +1,6 @@
 /** نافذة حث المستخدم على الدخول: تظهر عند محاولة الحجز بدون حساب؛ توفر زر الدخول عبر Google. */
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 
 interface AuthPromptModalProps {
@@ -21,9 +22,9 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
 }) => {
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[63] bg-slate-950/65 backdrop-blur-[2px] p-4 flex items-center justify-center"
+      className="fixed inset-0 z-[9995] bg-slate-950/65 backdrop-blur-[2px] p-3 sm:p-4 flex items-start sm:items-center justify-center overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -73,6 +74,7 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
           <span>{authWorking ? 'جارٍ التنفيذ' : 'تسجيل الدخول بجوجل'}</span>
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

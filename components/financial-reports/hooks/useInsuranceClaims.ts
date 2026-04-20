@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // يغلف كل منطق حساب كشف حساب شركات التأمين:
 //   1) تجميع الكشوفات والاستشارات المؤمنة لكل شركة داخل الشهر المحدد
-//   2) إضافة الـ extras (تداخلات + دخل آخر) من localStorage لليوم المحدد
+//   2) إضافة الـ extras (تداخلات + دخل آخر) من خريطة Firestore اليومية
 //   3) حساب مطالبة لفترة مخصصة (computeRangeClaim) للفواتير
 //   4) طباعة فاتورة شركة (handlePrintInsuranceInvoice)
 //
@@ -14,6 +14,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { PatientRecord } from '../../../types';
+import type { DailyFinancialData } from '../../../services/financial-data';
 import { usePrescriptionSettings } from '../../../hooks/usePrescriptionSettings';
 import { printPatientInvoice } from '../../patient-files/invoicePrintUtils';
 import type { DailyInsuranceExtraEntry } from './useFinancialData';
@@ -27,24 +28,25 @@ import {
 
 interface UseInsuranceClaimsParams {
   userId: string;
-  branchId?: string;
   records: PatientRecord[];
   selectedDate: Date;
   selectedDayKey: string;
   examPrice: number;
   consultPrice: number;
   dailyInsuranceExtras?: DailyInsuranceExtraEntry[];
+  /** خريطة Firestore اليومية (مفلترة بالفرع) — مصدر extras للأيام الماضية */
+  yearlyDailyMap: Record<string, DailyFinancialData>;
 }
 
 export const useInsuranceClaims = ({
   userId,
-  branchId,
   records,
   selectedDate,
   selectedDayKey,
   examPrice,
   consultPrice,
   dailyInsuranceExtras = [],
+  yearlyDailyMap,
 }: UseInsuranceClaimsParams) => {
   const { settings: rxSettings } = usePrescriptionSettings(userId || null);
 
@@ -149,10 +151,10 @@ export const useInsuranceClaims = ({
       const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       // لليوم المحدد: نستخدم البيانات اللي جاية من prop (محدثة لحظياً)
-      // لباقي الأيام: نقرأ من localStorage ونفلتر على الفرع
+      // لباقي الأيام: نقرأ من خريطة Firestore (مفلترة بالفرع أصلاً في الـ doc)
       const extras = dayKey === selectedDayKey
         ? dailyInsuranceExtras
-        : readInsuranceExtrasForDay(dayKey, branchId);
+        : readInsuranceExtrasForDay(dayKey, yearlyDailyMap);
 
       extras.forEach((extra) => {
         if (!claimsMap[extra.companyName]) {
@@ -178,7 +180,7 @@ export const useInsuranceClaims = ({
     );
 
     return { claims: sortedClaims, totalCompanyShare: totalCS };
-  }, [records, startTs, endTs, selectedDate, selectedDayKey, dailyInsuranceExtras, resolveBasePriceByDate, branchId]);
+  }, [records, startTs, endTs, selectedDate, selectedDayKey, dailyInsuranceExtras, resolveBasePriceByDate, yearlyDailyMap]);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // حالة فاتورة الشركة (فترة مخصصة)
@@ -256,10 +258,10 @@ export const useInsuranceClaims = ({
     // ── extras في الفترة (inclusive) ──
     let dayKey = fromKey;
     while (dayKey <= toKey) {
-      // لليوم المحدد: البيانات من prop (محدثة لحظياً)، لغيره: من localStorage
+      // لليوم المحدد: البيانات من prop (محدثة لحظياً)، لغيره: من خريطة Firestore
       const extras = dayKey === selectedDayKey
         ? dailyInsuranceExtras
-        : readInsuranceExtrasForDay(dayKey, branchId);
+        : readInsuranceExtrasForDay(dayKey, yearlyDailyMap);
 
       extras.forEach((extra) => {
         if (extra.companyName !== companyName) return;
@@ -277,7 +279,7 @@ export const useInsuranceClaims = ({
     }
 
     return claim;
-  }, [records, resolveBasePriceByDate, selectedDayKey, dailyInsuranceExtras, branchId]);
+  }, [records, resolveBasePriceByDate, selectedDayKey, dailyInsuranceExtras, yearlyDailyMap]);
 
   /** طباعة فاتورة شركة عن الفترة المحددة حالياً (invoiceDateFrom → invoiceDateTo). */
   const handlePrintInsuranceInvoice = useCallback((companyName: string) => {

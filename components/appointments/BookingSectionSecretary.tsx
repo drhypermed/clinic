@@ -225,15 +225,35 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             )}
           </div>
 
-          <div className="sm:col-span-2 flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2">
-              <button type="submit" disabled={credentialsSaving} className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white font-bold text-sm disabled:opacity-60">
-                {credentialsSaving ? 'جاري الحفظ' : 'حفظ الإعدادات'}
-              </button>
-              {credentialsSuccess && <span className="text-emerald-600 text-sm font-bold animate-pulse">تم الحفظ</span>}
-              {credentialsError && <span className="text-red-600 text-sm font-bold">{credentialsError}</span>}
+          <div className="sm:col-span-2 mt-2">
+            <div
+              className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold"
+              role="status"
+              aria-live="polite"
+            >
+              {credentialsSaving ? (
+                <span className="flex items-center gap-2 text-blue-700">
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeDasharray="40 80" />
+                  </svg>
+                  جاري الحفظ...
+                </span>
+              ) : credentialsError ? (
+                <span className="text-red-600">⚠️ {credentialsError}</span>
+              ) : credentialsSuccess ? (
+                <span className="flex items-center gap-1 text-emerald-600">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                  تم الحفظ تلقائياً
+                </span>
+              ) : (
+                <span className="text-slate-500">✓ الحفظ تلقائي — أي تعديل يُحفظ خلال ثانية.</span>
+              )}
             </div>
           </div>
+          {/* زر احتياطي مخفي لدعم ضغط Enter داخل أي حقل (form submit fallback) */}
+          <button type="submit" disabled={credentialsSaving} className="hidden" aria-hidden="true" tabIndex={-1}>
+            حفظ
+          </button>
         </form>
       </div>
     )}

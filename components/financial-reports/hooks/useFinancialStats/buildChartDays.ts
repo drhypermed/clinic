@@ -5,7 +5,7 @@
  * الشهر المختار. كل يوم يحتوي على:
  *   - عدد الكشوفات/الاستشارات في هذا اليوم.
  *   - دخل الكشوفات/الاستشارات (مع تطبيق الأسعار التاريخية والخصومات).
- *   - الدخل الإضافي (تداخلات + دخل آخر) من localStorage أو الـ state الحالي.
+ *   - الدخل الإضافي (تداخلات + دخل آخر) من Firestore.
  *   - إضافات التأمين (extras).
  *   - المصروفات اليومية (manual + discount expense من الخصومات).
  *   - إجمالي الدخل.
@@ -17,21 +17,8 @@
 import type { ChartDay, DayStats } from '../useFinancialStats.shared';
 import { parseInsuranceExtras, summarizeInsuranceExtrasByType } from '../useFinancialStats.shared';
 import { buildCairoDateTime, formatUserDate, getCairoDateParts } from '../../../../utils/cairoTime';
-import { formatDateKey, branchLocalKey } from '../../utils/formatters';
-
-/** يقرا insuranceExtras من المفتاح الموحد ويفلتر على الفرع النشط */
-const readInsuranceExtrasForBranch = (dayKey: string, branchId?: string): string | null => {
-    const raw = localStorage.getItem(`insuranceExtra_${dayKey}`);
-    if (!raw) return null;
-    try {
-        const all = JSON.parse(raw);
-        if (!Array.isArray(all)) return null;
-        const target = branchId || 'main';
-        return JSON.stringify(all.filter((e: any) => (e?.branchId || 'main') === target));
-    } catch {
-        return null;
-    }
-};
+import { formatDateKey } from '../../utils/formatters';
+import type { DailyFinancialData } from '../../../../services/financial-data';
 
 interface BuildChartDaysInput {
     startOfMonth: Date;
@@ -47,7 +34,8 @@ interface BuildChartDaysInput {
         discountExpense: number;
     }>;
     selectedDayInsuranceExtras: { interventions: number; other: number; total: number };
-    branchId?: string;
+    /** خريطة البيانات اليومية من Firestore (مفتاحها YYYY-MM-DD) — مفلترة بالفرع في طبقة الـ service */
+    yearlyDailyMap: Record<string, DailyFinancialData>;
 }
 
 export const buildChartDays = ({
@@ -60,7 +48,7 @@ export const buildChartDays = ({
     monthStatsDailyBreakdown,
     visitFinancialByDate,
     selectedDayInsuranceExtras,
-    branchId,
+    yearlyDailyMap,
 }: BuildChartDaysInput): ChartDay[] => {
     const days: ChartDay[] = [];
     const current = new Date(startOfMonth);
@@ -69,6 +57,7 @@ export const buildChartDays = ({
         const dateStr = formatDateKey(current);
         const cairoDay = buildCairoDateTime(dateStr, '12:00');
         const dayData = monthStatsDailyBreakdown[dateStr] || { exams: 0, consultations: 0 };
+        const entry = yearlyDailyMap[dateStr];
 
         let dayInterventionsCash = 0;
         let dayOtherCash = 0;
@@ -78,15 +67,17 @@ export const buildChartDays = ({
             dayOtherCash = parseFloat(dailyOther) || 0;
             dayManualExpense = parseFloat(dailyExpense) || 0;
         } else {
-            dayInterventionsCash = parseFloat(localStorage.getItem(`${branchLocalKey('interventionsRevenue', branchId)}_${dateStr}`) || '0') || 0;
-            dayOtherCash = parseFloat(localStorage.getItem(`${branchLocalKey('otherRevenue', branchId)}_${dateStr}`) || '0') || 0;
-            dayManualExpense = parseFloat(localStorage.getItem(`${branchLocalKey('dailyExpense', branchId)}_${dateStr}`) || '0') || 0;
+            dayInterventionsCash = Number(entry?.interventionsRevenue) || 0;
+            dayOtherCash = Number(entry?.otherRevenue) || 0;
+            dayManualExpense = Number(entry?.dailyExpense) || 0;
         }
 
         const dayInsuranceExtras =
             dateStr === selectedDayKey
                 ? selectedDayInsuranceExtras
-                : summarizeInsuranceExtrasByType(parseInsuranceExtras(readInsuranceExtrasForBranch(dateStr, branchId)));
+                : summarizeInsuranceExtrasByType(parseInsuranceExtras(
+                    Array.isArray(entry?.insuranceExtras) ? JSON.stringify(entry!.insuranceExtras) : null
+                ));
 
         const dayInterventions = dayInterventionsCash + dayInsuranceExtras.interventions;
         const dayOther = dayOtherCash + dayInsuranceExtras.other;

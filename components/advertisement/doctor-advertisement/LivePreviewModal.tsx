@@ -4,6 +4,7 @@
  * تهدف لتقليل أخطاء الإدخال وضمان جودة عرض الإعلانات قبل نشرها للعامة.
  */
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6';
 import { FaLink } from 'react-icons/fa';
@@ -62,9 +63,9 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
     }))
     .filter((item) => item.url);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm p-3 md:p-5 flex items-center justify-center overflow-y-auto"
+      className="fixed inset-0 z-[9995] bg-slate-950/80 backdrop-blur-sm p-3 md:p-5 flex items-start md:items-center justify-center overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -288,7 +289,8 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

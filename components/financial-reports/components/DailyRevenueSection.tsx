@@ -7,7 +7,7 @@ import {
     deleteInsuranceExtraFromDate,
     syncCostsToFirestore, loadCostsFromFirestore,
 } from '../../../services/patientCostService';
-import { financialDataService } from '../../../services/financial-data';
+import { financialDataService, type DailyFinancialData } from '../../../services/financial-data';
 import { PatientCard, RevenueSection } from './daily-revenue/PatientCard';
 
 interface CashCostEntry {
@@ -37,6 +37,8 @@ interface DailyRevenueSectionProps {
     userId: string;
     /** الفرع النشط — يُستخدم لفصل مفاتيح localStorage بين الفروع */
     branchId?: string;
+    /** خريطة Firestore اليومية (مفلترة بالفرع) — لجلب cashCostItems لليوم المختار */
+    yearlyDailyMap: Record<string, DailyFinancialData>;
 }
 
 // PatientCard و RevenueSection مُستخرجان إلى `./daily-revenue/PatientCard.tsx`
@@ -61,7 +63,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
     interventionsValue, interventionsLabel, onUpdateInterventionsLabel,
     otherValue, otherLabel, onUpdateOtherLabel,
     totalDailyRevenue, dailyInsuranceTotal, dailyInsuranceExtras,
-    userId, branchId,
+    userId, branchId, yearlyDailyMap,
 }) => {
     const [cashCostItems, setCashCostItems] = useState<CashCostEntry[]>([]);
     const [localInsExtras, setLocalInsExtras] = useState<DailyInsuranceExtraEntry[]>(dailyInsuranceExtras);
@@ -73,9 +75,14 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
     useEffect(() => { setLocalInsExtras(dailyInsuranceExtras); }, [dailyInsuranceExtras]);
 
     const readFromStorage = useCallback(() => {
+        // الأولوية: Firestore daily doc (cashCostItems مفلترة بالفرع أصلاً في الـ doc)
+        const firestoreItems = yearlyDailyMap[selectedDayKey]?.cashCostItems;
+        if (Array.isArray(firestoreItems) && firestoreItems.length > 0) {
+            setCashCostItems(firestoreItems as CashCostEntry[]);
+            return;
+        }
+        // fallback: localStorage (للتحديثات اللحظية بعد add/edit/delete محلي قبل ما Firestore ترد)
         try {
-            // المصدر الرئيسي موحد cross-branch؛ نفلتر محلياً على الفرع النشط
-            // العناصر القديمة بدون branchId بتعتبر فرع 'main' (backward compat)
             const raw = localStorage.getItem(`patientCostItems_${selectedDayKey}`) ?? '[]';
             const all = JSON.parse(raw) as Array<CashCostEntry & { branchId?: string }>;
             const target = branchId || 'main';
@@ -84,7 +91,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
         } catch {
             setCashCostItems([]);
         }
-    }, [selectedDayKey, branchId]);
+    }, [selectedDayKey, branchId, yearlyDailyMap]);
 
     useEffect(() => {
         readFromStorage();
@@ -278,6 +285,24 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
     const consultCashTotal   = selectedDayConsultBreakdowns.reduce((s, b) => s + b.cashAmount, 0);
     const consultInsEntries  = selectedDayConsultBreakdowns.filter(b => b.insuranceAmount > 0);
 
+    // إجماليات كل فئة (كاش + تأمين) — تُعرض في بطاقات الملخص العلوية مثل الشاشة الشهرية
+    const examsIncomeTotal =
+        examCashTotal + examInsEntries.reduce((s, b) => s + b.insuranceAmount, 0);
+    const consultsIncomeTotal =
+        consultCashTotal + consultInsEntries.reduce((s, b) => s + b.insuranceAmount, 0);
+    const interventionsIncomeTotal =
+        cashInterventions.reduce((s, i) => s + i.amount, 0) +
+        insInterventions.reduce((s, e) => s + e.amount, 0);
+    const otherIncomeTotal =
+        cashOtherItems.reduce((s, i) => s + i.amount, 0) +
+        insOtherItems.reduce((s, e) => s + e.amount, 0);
+
+    const examsCountToday = selectedDayExamBreakdowns.length;
+    const consultsCountToday = selectedDayConsultBreakdowns.length;
+
+    const displayInterventionsLabel = (interventionsLabel || '').trim() || 'التداخلات';
+    const displayOtherLabel = (otherLabel || '').trim() || 'دخل آخر';
+
     return (
         <div className="rounded-2xl shadow-sm overflow-hidden">
             {/* Edit modal: cash item */}
@@ -374,6 +399,52 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
             </div>
 
             <div className="bg-white p-4 space-y-4">
+                {/* ملخص بطاقات الفئات (نفس أسلوب الإيرادات الشهرية) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1 h-full flex flex-col">
+                        <label className="block text-sm font-bold text-slate-700">الكشوفات</label>
+                        <div className="bg-blue-50 rounded-xl border-2 border-blue-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-blue-700 text-center break-words">
+                                {formatCurrency(examsIncomeTotal)}
+                            </div>
+                            <div className="text-xs text-center text-blue-500 font-bold mt-1">
+                                {examsCountToday} كشف
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1 h-full flex flex-col">
+                        <label className="block text-sm font-bold text-slate-700">الاستشارات</label>
+                        <div className="bg-indigo-50 rounded-xl border-2 border-indigo-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-indigo-700 text-center break-words">
+                                {formatCurrency(consultsIncomeTotal)}
+                            </div>
+                            <div className="text-xs text-center text-indigo-500 font-bold mt-1">
+                                {consultsCountToday} استشارة
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1 h-full flex flex-col">
+                        <label className="block text-sm font-bold text-slate-700">{displayInterventionsLabel}</label>
+                        <div className="bg-purple-50 rounded-xl border-2 border-purple-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-purple-700 text-center break-words">
+                                {formatCurrency(interventionsIncomeTotal)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1 h-full flex flex-col">
+                        <label className="block text-sm font-bold text-slate-700">{displayOtherLabel}</label>
+                        <div className="bg-teal-50 rounded-xl border-2 border-teal-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-teal-700 text-center break-words">
+                                {formatCurrency(otherIncomeTotal)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* تفاصيل المرضى (تحت الملخص) — تبقى للتحرير والحذف */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <RevenueSection emoji="💉" title="الكشوفات">
                         <PatientCard label="كشوفات كاش" amount={examCashTotal} />
@@ -436,18 +507,20 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl p-3">
-                        <span className="font-bold text-white">💰 إجمالي اليوم (كاش)</span>
-                        <span className="text-base sm:text-xl font-black text-white">{formatCurrency(totalDailyRevenue || 0)}</span>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl p-3">
-                        <span className="font-bold text-white">إجمالي اليوم (تأمينات)</span>
-                        <span className="text-base sm:text-xl font-black text-white">{formatCurrency(dailyInsuranceTotal || 0)}</span>
-                    </div>
                     <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-blue-700 to-blue-600 rounded-xl p-3">
-                        <span className="font-bold text-white">إجمالي اليوم (كاش + تأمينات)</span>
+                        <span className="font-bold text-white">💰 إجمالي اليوم</span>
                         <span className="text-base sm:text-xl font-black text-white">{formatCurrency((totalDailyRevenue || 0) + (dailyInsuranceTotal || 0))}</span>
                     </div>
+                    <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl px-3 py-2.5">
+                        <span className="text-sm font-bold text-white">💵 نقد محصّل</span>
+                        <span className="text-sm font-black text-white">{formatCurrency(totalDailyRevenue || 0)}</span>
+                    </div>
+                    {(dailyInsuranceTotal || 0) > 0 && (
+                        <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl px-3 py-2.5">
+                            <span className="text-sm font-bold text-white">🏢 مطالبات تأمين</span>
+                            <span className="text-sm font-black text-white">{formatCurrency(dailyInsuranceTotal || 0)}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

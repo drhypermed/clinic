@@ -1,4 +1,5 @@
 import type { PatientRecord } from '../../../types';
+import type { DailyFinancialData, MonthlyFinancialData } from '../../../services/financial-data';
 import type { DailyInsuranceExtraEntry } from './useFinancialData';
 
 export interface DayStats {
@@ -85,6 +86,10 @@ export interface UseFinancialStatsProps {
     userId: string;             // معرف المستخدم لتحميل الأسعار
     branchId?: string;          // الفرع النشط لفلترة سجل الأسعار
     dailyInsuranceExtras?: DailyInsuranceExtraEntry[]; // إضافات التأمين اليومية الحالية
+    /** خريطة بيانات Firestore اليومية لسنة selectedDate — مُمرّرة من useFinancialData. */
+    yearlyDailyMap: Record<string, DailyFinancialData>;
+    /** خريطة بيانات Firestore الشهرية لسنة selectedDate — مُمرّرة من useFinancialData. */
+    yearlyMonthlyMap: Record<string, MonthlyFinancialData>;
 }
 export interface PatientDailyBreakdown {
     patientName: string;

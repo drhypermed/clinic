@@ -21,26 +21,12 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import type { PatientRecord } from '../../../types';
-import { formatDateKey, branchLocalKey } from '../utils/formatters';
-
-/**
- * تقرا insuranceExtras من المفتاح الموحد وتفلتر على الفرع النشط.
- * كل extra جواه `branchId` (أو 'main' للعناصر القديمة).
- */
-const readInsuranceExtrasForBranch = (dayKey: string, branchId?: string): string | null => {
-    const raw = localStorage.getItem(`insuranceExtra_${dayKey}`);
-    if (!raw) return null;
-    try {
-        const all = JSON.parse(raw);
-        if (!Array.isArray(all)) return null;
-        const target = branchId || 'main';
-        const filtered = all.filter((e: any) => (e?.branchId || 'main') === target);
-        return JSON.stringify(filtered);
-    } catch {
-        return null;
-    }
-};
-import { financialDataService, type PriceChangeHistoryEntry } from '../../../services/financial-data';
+import { formatDateKey } from '../utils/formatters';
+import {
+    financialDataService,
+    type DailyFinancialData,
+    type MonthlyFinancialData,
+} from '../../../services/financial-data';
 import { computePaymentBreakdownForBasePrice } from '../../../utils/paymentDiscount';
 import {
     type DayStats,
@@ -71,30 +57,43 @@ export const useFinancialStats = ({
     lastSyncTime,
     userId,
     branchId,
-    dailyInsuranceExtras = []
+    dailyInsuranceExtras = [],
+    yearlyDailyMap: propYearlyDailyMap,
+    yearlyMonthlyMap: propYearlyMonthlyMap,
 }: UseFinancialStatsProps): UseFinancialStatsReturn => {
     const selectedDayKey = formatDateKey(selectedDay);
-    const [priceChangeHistory, setPriceChangeHistory] = useState<PriceChangeHistoryEntry[]>([]);
+
+    // لما السنة اللي عايزها التبويب السنوي (selectedYear) تكون مختلفة عن سنة الشهر المعروض (viewYear)،
+    // بنجلب خريطة إضافية للسنة التانية من Firestore (cache-first — سريع بفضل IndexedDB).
+    // كده ما بنكررش الـ fetch لسنة useFinancialData بيجيبها أصلاً.
+    const viewYear = selectedDate.getFullYear();
+    const needsExtraYear = selectedYear !== viewYear;
+    const [extraYearDailyMap, setExtraYearDailyMap] = useState<Record<string, DailyFinancialData>>({});
+    const [extraYearMonthlyMap, setExtraYearMonthlyMap] = useState<Record<string, MonthlyFinancialData>>({});
 
     useEffect(() => {
-        let isDisposed = false;
-        if (!userId) {
-            setPriceChangeHistory([]);
+        if (!userId || !needsExtraYear) {
+            setExtraYearDailyMap({});
+            setExtraYearMonthlyMap({});
             return;
         }
+        let cancelled = false;
+        financialDataService.getYearlyDailyEntries(userId, selectedYear, branchId)
+            .then((entries) => { if (!cancelled) setExtraYearDailyMap(entries); })
+            .catch(() => { if (!cancelled) setExtraYearDailyMap({}); });
+        financialDataService.getYearlyMonthlyEntries(userId, selectedYear, branchId)
+            .then((entries) => { if (!cancelled) setExtraYearMonthlyMap(entries); })
+            .catch(() => { if (!cancelled) setExtraYearMonthlyMap({}); });
+        return () => { cancelled = true; };
+    }, [userId, branchId, selectedYear, needsExtraYear, lastSyncTime]);
 
-        financialDataService.getPriceChangeHistory(userId, branchId).then((history) => {
-            if (isDisposed) return;
-            setPriceChangeHistory(history);
-        }).catch(() => {
-            if (isDisposed) return;
-            setPriceChangeHistory([]);
-        });
-
-        return () => {
-            isDisposed = true;
-        };
-    }, [userId, examPrice, consultPrice, lastSyncTime, branchId]);
+    // الخريطة الموحّدة: سنة العرض (من props) + السنة الإضافية لو الـ selectedYear مختلف
+    const yearlyDailyMap = useMemo(() => (
+        needsExtraYear ? { ...extraYearDailyMap, ...propYearlyDailyMap } : propYearlyDailyMap
+    ), [propYearlyDailyMap, extraYearDailyMap, needsExtraYear]);
+    const yearlyMonthlyMap = useMemo(() => (
+        needsExtraYear ? { ...extraYearMonthlyMap, ...propYearlyMonthlyMap } : propYearlyMonthlyMap
+    ), [propYearlyMonthlyMap, extraYearMonthlyMap, needsExtraYear]);
 
     // الكشوفات الجديدة بتحفظ سعرها جواها (serviceBasePrice). الكشوفات القديمة
     // بدون هذا الحقل تستخدم السعر الحالي كـ fallback. سجل priceHistory للعرض فقط.
@@ -252,8 +251,9 @@ export const useFinancialStats = ({
                 totalInterventions += parseFloat(dailyInterventions) || 0;
                 totalOther += parseFloat(dailyOther) || 0;
             } else {
-                totalInterventions += parseFloat(localStorage.getItem(`${branchLocalKey('interventionsRevenue', branchId)}_${dayKey}`) || '0') || 0;
-                totalOther += parseFloat(localStorage.getItem(`${branchLocalKey('otherRevenue', branchId)}_${dayKey}`) || '0') || 0;
+                const entry = yearlyDailyMap[dayKey];
+                totalInterventions += Number(entry?.interventionsRevenue) || 0;
+                totalOther += Number(entry?.otherRevenue) || 0;
             }
         }
         return {
@@ -261,7 +261,7 @@ export const useFinancialStats = ({
             other: totalOther,
             total: totalInterventions + totalOther
         };
-    }, [dailyInterventions, dailyOther, selectedDayKey, selectedDate, branchId]);
+    }, [dailyInterventions, dailyOther, selectedDayKey, selectedDate, yearlyDailyMap]);
 
     const monthlyAdditionalRevenue = useMemo(() => {
         const year = selectedDate.getFullYear();
@@ -271,18 +271,21 @@ export const useFinancialStats = ({
         let totalOther = 0;
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const entry = yearlyDailyMap[dayKey];
             const cashInterventions =
                 dayKey === selectedDayKey
                     ? (parseFloat(dailyInterventions) || 0)
-                    : (parseFloat(localStorage.getItem(`${branchLocalKey('interventionsRevenue', branchId)}_${dayKey}`) || '0') || 0);
+                    : (Number(entry?.interventionsRevenue) || 0);
             const cashOther =
                 dayKey === selectedDayKey
                     ? (parseFloat(dailyOther) || 0)
-                    : (parseFloat(localStorage.getItem(`${branchLocalKey('otherRevenue', branchId)}_${dayKey}`) || '0') || 0);
+                    : (Number(entry?.otherRevenue) || 0);
             const extrasSummary =
                 dayKey === selectedDayKey
                     ? selectedDayInsuranceExtras
-                    : summarizeInsuranceExtrasByType(parseInsuranceExtras(readInsuranceExtrasForBranch(dayKey, branchId)));
+                    : summarizeInsuranceExtrasByType(parseInsuranceExtras(
+                        Array.isArray(entry?.insuranceExtras) ? JSON.stringify(entry!.insuranceExtras) : null
+                    ));
             totalInterventions += cashInterventions + extrasSummary.interventions;
             totalOther += cashOther + extrasSummary.other;
         }
@@ -291,7 +294,7 @@ export const useFinancialStats = ({
             other: totalOther,
             total: totalInterventions + totalOther
         };
-    }, [dailyInterventions, dailyOther, selectedDate, selectedDayKey, selectedDayInsuranceExtras, branchId]);
+    }, [dailyInterventions, dailyOther, selectedDate, selectedDayKey, selectedDayInsuranceExtras, yearlyDailyMap]);
 
     const monthlyInsuranceExtrasTotal = useMemo(() => {
         const year = selectedDate.getFullYear();
@@ -300,14 +303,17 @@ export const useFinancialStats = ({
         let total = 0;
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const entry = yearlyDailyMap[dayKey];
             const extrasSummary =
                 dayKey === selectedDayKey
                     ? selectedDayInsuranceExtras
-                    : summarizeInsuranceExtrasByType(parseInsuranceExtras(readInsuranceExtrasForBranch(dayKey, branchId)));
+                    : summarizeInsuranceExtrasByType(parseInsuranceExtras(
+                        Array.isArray(entry?.insuranceExtras) ? JSON.stringify(entry!.insuranceExtras) : null
+                    ));
             total += extrasSummary.total;
         }
         return total;
-    }, [selectedDate, selectedDayKey, selectedDayInsuranceExtras, branchId]);
+    }, [selectedDate, selectedDayKey, selectedDayInsuranceExtras, yearlyDailyMap]);
 
     const monthlyDailyExpenses = useMemo(() => {
         const year = selectedDate.getFullYear();
@@ -319,11 +325,12 @@ export const useFinancialStats = ({
             if (dayKey === selectedDayKey) {
                 total += parseFloat(dailyExpense) || 0;
             } else {
-                total += parseFloat(localStorage.getItem(`${branchLocalKey('dailyExpense', branchId)}_${dayKey}`) || '0') || 0;
+                const entry = yearlyDailyMap[dayKey];
+                total += Number(entry?.dailyExpense) || 0;
             }
         }
         return total;
-    }, [dailyExpense, selectedDayKey, selectedDate, branchId]);
+    }, [dailyExpense, selectedDayKey, selectedDate, yearlyDailyMap]);
 
     const visitFinancialByDate = useMemo(
         () => buildVisitFinancialByDate({
@@ -379,7 +386,7 @@ export const useFinancialStats = ({
             monthStatsDailyBreakdown: monthStats.dailyBreakdown,
             visitFinancialByDate,
             selectedDayInsuranceExtras,
-            branchId,
+            yearlyDailyMap,
         }),
         [
             monthStats.dailyBreakdown,
@@ -391,7 +398,7 @@ export const useFinancialStats = ({
             selectedDayInsuranceExtras,
             selectedDayKey,
             visitFinancialByDate,
-            branchId,
+            yearlyDailyMap,
         ]
     );
 
@@ -408,7 +415,8 @@ export const useFinancialStats = ({
             dailyExpense,
             selectedDayInsuranceExtras,
             resolveBasePriceByDate,
-            branchId,
+            yearlyDailyMap,
+            yearlyMonthlyMap,
         }),
         [
             records,
@@ -420,7 +428,8 @@ export const useFinancialStats = ({
             dailyExpense,
             selectedDayInsuranceExtras,
             selectedDayKey,
-            branchId,
+            yearlyDailyMap,
+            yearlyMonthlyMap,
         ]
     );
 

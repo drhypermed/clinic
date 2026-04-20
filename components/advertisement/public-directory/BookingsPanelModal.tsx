@@ -1,5 +1,6 @@
 /** لوحة الحجوزات: تستعرض قائمة مواعيد المستخدم القادمة والسابقة مع إمكانية إضافة تقييمات للزيارات المكتملة. */
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { LoadingText } from '../../ui/LoadingText';
 import type { PublicUserBooking } from '../../../types';
@@ -39,9 +40,9 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
 }) => {
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[64] bg-slate-950/60 backdrop-blur-[2px] p-4 flex items-center justify-center"
+      className="fixed inset-0 z-[9995] bg-slate-950/60 backdrop-blur-[2px] p-3 sm:p-4 flex items-start sm:items-center justify-center overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -205,7 +206,8 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

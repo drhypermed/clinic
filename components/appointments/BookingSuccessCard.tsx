@@ -179,7 +179,8 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
 
         {/* تذييل الكارت */}
         <div className="py-3 px-2 text-center bg-slate-100">
-          <p className="text-[10px] font-bold opacity-50">Dr hyper أقوى نظام لإدارة العيادات وطباعة الروشتات في مصر</p>
+          <p className="text-[10px] font-bold opacity-50">Dr hyper Med أقوى نظام لإدارة العيادات وطباعة الروشتات في مصر</p>
+          <p className="text-[10px] font-bold opacity-50 mt-0.5" dir="ltr">www.drhypermed.com</p>
         </div>
       </div>
 

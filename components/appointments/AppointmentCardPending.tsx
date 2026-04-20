@@ -5,6 +5,7 @@ import { isConsultationAppointment } from '../../utils/appointmentType';
 import { formatUserTime } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
+import { FirstVisitBadge } from './FirstVisitBadge';
 
 interface AppointmentCardPendingProps {
   apt: ClinicAppointment;
@@ -105,6 +106,7 @@ export const AppointmentCardPending: React.FC<AppointmentCardPendingProps> = ({
           {isPast && (
             <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700">⚠️ فات الموعد</span>
           )}
+          <FirstVisitBadge isFirstVisit={apt.isFirstVisit} />
         </div>
 
         {/* Row 3: age + visit reason */}

@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { isRatedBooking } from './patientUtils';
 import { PatientReviewsModalProps } from '../../../types';
 import { formatUserDate } from '../../../utils/cairoTime';
@@ -23,8 +24,8 @@ export const PatientReviewsModal: React.FC<PatientReviewsModalProps> = ({
 
   if (!selectedPatientReviews) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9995] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
       <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-slate-600">
         <div className="p-6 border-b border-slate-700 flex justify-between items-center">
           <h3 className="text-2xl font-black text-white">💬 تعليقات وتقييمات: {highlightMatch(selectedPatientName)}</h3>
@@ -86,6 +87,7 @@ export const PatientReviewsModal: React.FC<PatientReviewsModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

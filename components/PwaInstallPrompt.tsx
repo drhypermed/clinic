@@ -17,10 +17,11 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: AppInstallOutcome; platform: string }>;
 }
 
-// مفاتيح الذاكرة المحلية لتتبع ما إذا كان التطبيق قد تم تثبيته بالفعل لتجنب إزعاج المستخدم
-const LEGACY_PWA_INSTALLED_FLAG_KEY = 'dh_pwa_installed';
-const MAIN_PWA_INSTALLED_FLAG_KEY = 'dh_pwa_installed_main';
-const SECRETARY_PWA_INSTALLED_FLAG_KEY = 'dh_pwa_installed_secretary';
+// ملاحظة: ما بنخزّنش أي flags في localStorage عشان "التطبيق اتثبت قبل كده".
+// المصدر الوحيد للحقيقة هو display-mode: standalone — لو المستخدم شال التطبيق
+// ورجع للمتصفح، لازم رسالة التثبيت تظهر تاني بدون أي ذاكرة سابقة.
+// كمان بنمسح flags قديمة لو موجودة من نُسخ سابقة (legacy cleanup).
+const LEGACY_INSTALL_FLAG_KEYS = ['dh_pwa_installed', 'dh_pwa_installed_main', 'dh_pwa_installed_secretary'] as const;
 const DEFAULT_MANIFEST_PATH = '/manifest.webmanifest';
 // متغير عالمي لحفظ الحدث (Event) لضمان عدم ضياعه عند التنقل بين الصفحات
 let cachedBeforeInstallPromptEvent: BeforeInstallPromptEvent | null = null;
@@ -89,23 +90,27 @@ const buildSecretaryManifest = (startUrl: string, origin: string) => ({
 export const PwaInstallPrompt: React.FC = () => {
   const location = useLocation();
   const isSecretaryRoute = isSecretaryPath(location.pathname);
-  const installFlagKey = isSecretaryRoute ? SECRETARY_PWA_INSTALLED_FLAG_KEY : MAIN_PWA_INSTALLED_FLAG_KEY;
   const installTargetLabel = isSecretaryRoute ? 'سكرتارية العيادة' : 'التطبيق';
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(
     () => cachedBeforeInstallPromptEvent
   );
-  const [showInstallCard, setShowInstallCard] = useState(() => Boolean(cachedBeforeInstallPromptEvent));
+  // الكارت بيظهر طالما التطبيق مش متثبت (مش متوقف على beforeinstallprompt event)،
+  // عشان لو Chrome قرر ميفجرش الحدث (سبق الدسمس مثلاً) المستخدم لسه يقدر يثبت يدوياً.
+  const [showInstallCard, setShowInstallCard] = useState(false);
   const [showIosCard, setShowIosCard] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    // تنظيف أي flags قديمة من نُسخ سابقة — المصدر الوحيد للحقيقة هو standalone mode.
+    LEGACY_INSTALL_FLAG_KEYS.forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+
     const standalone = isStandaloneMode();
     setIsInstalled(standalone);
 
     if (standalone) {
-      localStorage.setItem(installFlagKey, '1');
-      if (!isSecretaryRoute) localStorage.setItem(LEGACY_PWA_INSTALLED_FLAG_KEY, '1');
       setDeferredPrompt(null);
       setShowInstallCard(false);
       setShowIosCard(false);
@@ -113,17 +118,13 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    // إذا التطبيق اتشال من الجهاز، يبقى لازم نمسح الأعلام القديمة
-    // حتى يظهر زر/تنبيه التثبيت مرة أخرى عند الزيارة من المتصفح.
-    localStorage.removeItem(installFlagKey);
-    if (!isSecretaryRoute) localStorage.removeItem(LEGACY_PWA_INSTALLED_FLAG_KEY);
-
+    // التطبيق مش متثبت → نظهر الكارت دايماً (حتى لو beforeinstallprompt معملش fire).
+    setShowInstallCard(true);
     if (isIosSafari()) {
       setShowIosCard(true);
     }
     if (cachedBeforeInstallPromptEvent) {
       setDeferredPrompt(cachedBeforeInstallPromptEvent);
-      setShowInstallCard(true);
     }
 
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -131,12 +132,9 @@ export const PwaInstallPrompt: React.FC = () => {
       installEvent.preventDefault();
       cachedBeforeInstallPromptEvent = installEvent;
       setDeferredPrompt(installEvent);
-      setShowInstallCard(true);
     };
 
     const handleInstalled = () => {
-      localStorage.setItem(installFlagKey, '1');
-      if (!isSecretaryRoute) localStorage.setItem(LEGACY_PWA_INSTALLED_FLAG_KEY, '1');
       cachedBeforeInstallPromptEvent = null;
       setIsInstalled(true);
       setDeferredPrompt(null);
@@ -151,7 +149,7 @@ export const PwaInstallPrompt: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleInstalled);
     };
-  }, [installFlagKey, isSecretaryRoute]);
+  }, [isSecretaryRoute]);
 
   useEffect(() => {
     const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
@@ -185,8 +183,6 @@ export const PwaInstallPrompt: React.FC = () => {
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
     if (choice.outcome === 'accepted') {
-      localStorage.setItem(installFlagKey, '1');
-      if (!isSecretaryRoute) localStorage.setItem(LEGACY_PWA_INSTALLED_FLAG_KEY, '1');
       cachedBeforeInstallPromptEvent = null;
       setIsInstalled(true);
       setShowInstallCard(false);

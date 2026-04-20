@@ -32,6 +32,7 @@ type PublicBookingFormCardProps = {
   patientName: string;
   age: string;
   visitReason: string;
+  isFirstVisit: boolean | null;
   activeSuggestionField: 'name' | 'phone' | null;
   phoneSuggestionOptions: PatientSuggestionOption[];
   latestPhoneForName: PatientSuggestionOption | null;
@@ -45,6 +46,7 @@ type PublicBookingFormCardProps = {
   onPatientNameChange: (value: string) => void;
   onAgeChange: (value: string) => void;
   onVisitReasonChange: (value: string) => void;
+  onIsFirstVisitChange: (value: boolean) => void;
   applyPhoneSuggestion: (item: PatientSuggestionOption) => void;
   normalizePhone: (value?: string) => string;
   formError: string | null;
@@ -69,6 +71,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   patientName,
   age,
   visitReason,
+  isFirstVisit,
   activeSuggestionField,
   phoneSuggestionOptions,
   latestPhoneForName,
@@ -82,6 +85,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   onPatientNameChange,
   onAgeChange,
   onVisitReasonChange,
+  onIsFirstVisitChange,
   applyPhoneSuggestion,
   normalizePhone,
   formError,
@@ -149,6 +153,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
           patientName={patientName}
           age={age}
           visitReason={visitReason}
+          isFirstVisit={isFirstVisit}
           activeSuggestionField={activeSuggestionField}
           phoneSuggestionOptions={phoneSuggestionOptions}
           latestPhoneForName={latestPhoneForName}
@@ -162,6 +167,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
           onPatientNameChange={onPatientNameChange}
           onAgeChange={onAgeChange}
           onVisitReasonChange={onVisitReasonChange}
+          onIsFirstVisitChange={onIsFirstVisitChange}
           applyPhoneSuggestion={applyPhoneSuggestion}
           normalizePhone={normalizePhone}
         />

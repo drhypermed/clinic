@@ -27,6 +27,13 @@
 import { ensurePatientFileReference } from './patientFileReference';
 import { ensurePatientFilesSeniorityIndex } from './seniorityIndex';
 import { syncPatientIdentityByFile } from './syncIdentity';
+import { savePatientAdditionalInfo } from './additionalInfo';
+import {
+    getDefaultReportPreferences,
+    loadReportPreferences,
+    readReportPreferencesFromLocalStorage,
+    saveReportPreferences,
+} from './reportPreferences';
 
 export {
     buildPatientFileDocIdFromNameKey,
@@ -42,9 +49,25 @@ export type {
     SyncPatientIdentityByFileResult,
 } from './types';
 
+export type {
+    SavePatientAdditionalInfoInput,
+    SavePatientAdditionalInfoResult,
+} from './additionalInfo';
+
+export type {
+    ReportPreferences,
+    ReportLanguagePref,
+    ReportPageSizePref,
+} from './reportPreferences';
+
 /** الواجهة الموحّدة لخدمة ملفات المرضى */
 export const patientFilesService = {
     ensurePatientFilesSeniorityIndex,
     ensurePatientFileReference,
     syncPatientIdentityByFile,
+    savePatientAdditionalInfo,
+    loadReportPreferences,
+    saveReportPreferences,
+    readReportPreferencesFromLocalStorage,
+    getDefaultReportPreferences,
 };

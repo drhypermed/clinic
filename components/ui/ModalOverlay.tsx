@@ -14,10 +14,12 @@
  * - الفروقات بين المودالات الحالية (z-[9999] مقابل z-[200]، backdrop مختلف،
  *   `no-print` في بعضها دون الآخر) يجب الحفاظ عليها كما هي عبر الـ props،
  *   لأنها تؤثر على الطبقات المطبوعة وعلى ظهور تحذيرات فوق مودالات أخرى.
- * - لم يُفعّل `createPortal` افتراضياً — معظم مودالات التطبيق لا تستخدمه.
+ * - يستخدم `createPortal` على document.body للهروب من stacking contexts الأب
+ *   (transform/zoom/filter) التي كانت تسبب اختفاء بعض المودالات تحت هيدر التطبيق على الموبايل.
  */
 
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export type ModalAnimation = 'fade' | 'slideUp' | 'both' | 'none';
 
@@ -100,7 +102,10 @@ export const ModalOverlay: React.FC<ModalOverlayProps> = ({
     .filter(Boolean)
     .join(' ');
 
-  return (
+  // Portal المودال إلى document.body للهروب من أي stacking context
+  // (transform, zoom, filter) في المكونات الأب اللي بيكسر position:fixed
+  // ويخلي المودال يظهر تحت هيدر التطبيق على الموبايل.
+  const modalTree = (
     <div
       role="dialog"
       aria-modal="true"
@@ -119,4 +124,7 @@ export const ModalOverlay: React.FC<ModalOverlayProps> = ({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return modalTree;
+  return createPortal(modalTree, document.body);
 };

@@ -38,6 +38,7 @@ type UsePublicBookingSubmitParams = {
   age: string;
   phone: string;
   visitReason: string;
+  isFirstVisit: boolean | null;
   selectedBranchId?: string;
   onSuccess: () => void;
 };
@@ -56,6 +57,7 @@ export const usePublicBookingSubmit = ({
   age,
   phone,
   visitReason,
+  isFirstVisit,
   selectedBranchId,
   onSuccess,
 }: UsePublicBookingSubmitParams) => {
@@ -108,6 +110,10 @@ export const usePublicBookingSubmit = ({
       setFormError('يرجى إدخال سبب الزيارة');
       return;
     }
+    if (isFirstVisit === null) {
+      setFormError('يرجى تحديد إذا كانت هذه أول زيارة أم لا');
+      return;
+    }
 
     const slot = slots.find((s) => s.id === selectedSlotId);
     if (!slot) {
@@ -143,6 +149,7 @@ export const usePublicBookingSubmit = ({
           age: ageVal,
           phone: ph,
           visitReason: reasonVal,
+          isFirstVisit: isFirstVisit === true,
           appointmentType: resolvedAppointmentType,
           consultationSourceAppointmentId: resolvedAppointmentType === 'consultation' ? selectedConsultationCandidateId : undefined,
           consultationSourceCompletedAt: resolvedAppointmentType === 'consultation' ? selectedConsultationCandidate?.examCompletedAt : undefined,

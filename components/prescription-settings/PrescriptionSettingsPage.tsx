@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
-import { PrescriptionSettings, PrescriptionItem, Medication } from '../../types';
+import { PrescriptionSettings } from '../../types';
 import { useTabSync } from '../../hooks/useTabSync';
 import { usePrescriptionSettingsForm } from './usePrescriptionSettingsForm';
 import { PrescriptionSettingsPreview } from './PrescriptionSettingsPreview';
@@ -57,19 +57,6 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
     const containerRef = useRef<HTMLDivElement>(null);
     const previewRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const [previewTextAr, setPreviewTextAr] = useState('');
-    const [previewTextEn, setPreviewTextEn] = useState('');
-    const [previewRxItems, setPreviewRxItems] = useState<PrescriptionItem[]>([]);
-
-    const addMedicationToPreview = (med: Medication) => {
-        setPreviewRxItems(prev => [...prev, {
-            id: `preview-${Date.now()}`,
-            type: 'medication',
-            medication: med,
-            instructions: med.instructions || ''
-        }]);
-    };
 
     const form = usePrescriptionSettingsForm({ settings, onSave });
 
@@ -127,9 +114,6 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                         localSettings={form.localSettings}
                         previewRef={previewRef}
                         previewScale={previewScale}
-                        previewTextAr={previewTextAr}
-                        previewTextEn={previewTextEn}
-                        previewRxItems={previewRxItems}
                     />
                 </div>
 
@@ -203,11 +187,6 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                                 setOpenSection={form.setOpenSection}
                                 showNotification={form.showNotification}
                                 setMiddleBgToCrop={form.setMiddleBgToCrop}
-                                previewTextAr={previewTextAr}
-                                setPreviewTextAr={setPreviewTextAr}
-                                previewTextEn={previewTextEn}
-                                setPreviewTextEn={setPreviewTextEn}
-                                onAddMedicationToPreview={addMedicationToPreview}
                             />
                         )}
 

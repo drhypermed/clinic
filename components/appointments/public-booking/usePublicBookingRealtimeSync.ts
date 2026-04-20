@@ -15,15 +15,11 @@ import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } 
 import { firestoreService } from '../../../services/firestore';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import { parseIsoTimeMs } from '../../../utils/expiryTime';
-import { SECRETARY_LAST_SECRET_KEY, SECRETARY_TOAST_AUTO_HIDE_MS } from './constants';
+import { SECRETARY_LAST_SECRET_KEY } from './constants';
 import {
   clearSecretaryHandledEntryAlert,
-  buildSecretaryDoctorResponseToastKey,
-  clearTimedPayload,
   markNotificationSeen,
-  persistTimedPayload,
   readSecretaryHandledEntryAlert,
-  readTimedPayload,
   wasNotificationSeen,
 } from '../internalToastStorage';
 import {
@@ -35,10 +31,7 @@ import type {
   SecretaryVitalsVisibility,
 } from '../../../types';
 import { buildSecretaryVisibilityByFieldDefinitions } from '../../../utils/secretaryVitals';
-import {
-  isDoctorResponseToastValue,
-  mergePatientDirectoryLists,
-} from './realtimeSync.helpers';
+import { mergePatientDirectoryLists } from './realtimeSync.helpers';
 
 /**
  * المعاملات الخاصة بـ Hook المزامنة اللحظية مع Firestore
@@ -53,8 +46,6 @@ type UsePublicBookingRealtimeSyncParams = {
   isAuthenticatedRef: MutableRefObject<boolean>;
   lastEntryAlertCreatedRef: MutableRefObject<string | null>; // آخر وقت لتنبيه دخول تم عرضه
   entryAlertInitializedRef: MutableRefObject<boolean>;
-  lastDoctorResponseRespondedAtRef: MutableRefObject<string | null>;
-  doctorResponseInitializedRef: MutableRefObject<boolean>;
   // دوال تحديث الحالة في واجهة الصفحة الرئيسية
   setIsAuthenticated: Dispatch<SetStateAction<boolean>>;
   setAuthChecking: Dispatch<SetStateAction<boolean>>;
@@ -71,7 +62,6 @@ type UsePublicBookingRealtimeSyncParams = {
   setSecretaryVitalFields: Dispatch<SetStateAction<SecretaryVitalFieldDefinition[]>>;
   setSecretaryApprovedEntryIds: Dispatch<SetStateAction<string[]>>;
   setPendingEntryAppointmentId: Dispatch<SetStateAction<string | null>>;
-  setDoctorResponseToast: Dispatch<SetStateAction<'approved' | 'wait' | null>>;
 };
 
 /**
@@ -88,8 +78,6 @@ export const usePublicBookingRealtimeSync = ({
   isAuthenticatedRef,
   lastEntryAlertCreatedRef,
   entryAlertInitializedRef,
-  lastDoctorResponseRespondedAtRef,
-  doctorResponseInitializedRef,
   setIsAuthenticated,
   setAuthChecking,
   setAuthError,
@@ -105,7 +93,6 @@ export const usePublicBookingRealtimeSync = ({
   setSecretaryVitalFields,
   setSecretaryApprovedEntryIds,
   setPendingEntryAppointmentId,
-  setDoctorResponseToast,
 }: UsePublicBookingRealtimeSyncParams) => {
 
   // التأثير الأول: الاشتراك في إعدادات وبيانات العيادة (الاشتراك الرئيسي)
@@ -385,65 +372,12 @@ export const usePublicBookingRealtimeSync = ({
     return () => unsub();
   }, [secret, sessionBranchId, setSecretaryApprovedEntryIds]);
 
-  useEffect(() => {
-    if (!secret) return;
-    const storageKey = buildSecretaryDoctorResponseToastKey(secret);
-    const restored = readTimedPayload(storageKey, isDoctorResponseToastValue);
-    if (!restored) return;
-    setDoctorResponseToast(restored.value);
-    const remainingMs = Math.max(0, restored.expiresAt - Date.now());
-    const timer = setTimeout(() => {
-      setDoctorResponseToast(null);
-      clearTimedPayload(storageKey);
-    }, remainingMs);
-    return () => clearTimeout(timer);
-  }, [secret, setDoctorResponseToast]);
-
-  // التأثير الثالث: التعامل مع رد فعل الطبيب وعرضه كتنبيه منبثق (Toast)
+  // عند وصول رد الطبيب: نمسح الحالة "المعلقة" للموعد الذي طلبت السكرتيرة دخوله.
+  // الـ toast UI لرد الطبيب اتحذف كلياً — secretaryActionToast المفصّل بيغطي نفس الحدث.
   useEffect(() => {
     if (!doctorEntryResponse?.respondedAt) return;
-    // عدم تفعيل التنبيه إذا كان المستخدم قد نفذ إجراءً للتو من رابط إشعار خارجي
     const isPushActionRunning = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('dh_action');
     if (isPushActionRunning) return;
-
-    if (!doctorResponseInitializedRef.current) {
-      doctorResponseInitializedRef.current = true;
-      lastDoctorResponseRespondedAtRef.current = doctorEntryResponse.respondedAt;
-      return;
-    }
-
-    if (lastDoctorResponseRespondedAtRef.current === doctorEntryResponse.respondedAt) return;
-    lastDoctorResponseRespondedAtRef.current = doctorEntryResponse.respondedAt;
-
     setPendingEntryAppointmentId(null);
-    const storageKey = buildSecretaryDoctorResponseToastKey(secret);
-
-    // إظهار تنبيه "تم الموافقة" أو "انتظر" بناءً على اختيار الطبيب
-    if (doctorEntryResponse.status === 'approved') {
-      setDoctorResponseToast('approved');
-      persistTimedPayload(storageKey, 'approved', SECRETARY_TOAST_AUTO_HIDE_MS);
-      void playNotificationCue('entry_response_approved');
-      const t = setTimeout(() => {
-        setDoctorResponseToast(null);
-        clearTimedPayload(storageKey);
-      }, SECRETARY_TOAST_AUTO_HIDE_MS);
-      return () => clearTimeout(t);
-    }
-
-    setDoctorResponseToast('wait');
-    persistTimedPayload(storageKey, 'wait', SECRETARY_TOAST_AUTO_HIDE_MS);
-    void playNotificationCue('entry_response_wait');
-    const t = setTimeout(() => {
-      setDoctorResponseToast(null);
-      clearTimedPayload(storageKey);
-    }, SECRETARY_TOAST_AUTO_HIDE_MS);
-    return () => clearTimeout(t);
-  }, [
-    secret,
-    doctorEntryResponse,
-    doctorResponseInitializedRef,
-    lastDoctorResponseRespondedAtRef,
-    setPendingEntryAppointmentId,
-    setDoctorResponseToast,
-  ]);
+  }, [doctorEntryResponse, setPendingEntryAppointmentId]);
 };

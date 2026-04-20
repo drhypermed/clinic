@@ -40,8 +40,28 @@ function toObject(value) {
   return value && typeof value === 'object' ? value : {};
 }
 
+// نسخة مبسّطة من utils/textEncoding.ts (SW لا يمكنه import TS مباشرة).
+// نكتشف bytes UTF-8 عربية مفسَّرة كـ Latin-1: بايت قائد C0–DF متبوعاً ببايت مكمّل 80–BF.
+const MOJIBAKE_SW_PATTERN = /[\u00C0-\u00DF][\u0080-\u00BF]/;
+
+function repairPotentialMojibake(value) {
+  if (!value || typeof value !== 'string') return value;
+  if (!MOJIBAKE_SW_PATTERN.test(value)) return value;
+  try {
+    const bytes = new Uint8Array(value.length);
+    for (let i = 0; i < value.length; i += 1) {
+      bytes[i] = value.charCodeAt(i) & 0xff;
+    }
+    const decoded = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    if (!decoded || /\uFFFD/.test(decoded)) return value;
+    return decoded;
+  } catch (_) {
+    return value;
+  }
+}
+
 function toString(value) {
-  return String(value == null ? '' : value).trim();
+  return repairPotentialMojibake(String(value == null ? '' : value).trim());
 }
 
 function extractSecretaryVitals(data) {

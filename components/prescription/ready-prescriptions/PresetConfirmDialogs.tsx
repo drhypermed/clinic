@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import type { ReadyPrescription } from '../../../types';
 import { Button } from '../../ui/Button';
 
@@ -30,8 +31,8 @@ export const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
 }) => {
     if (!candidate) return null;
 
-    return (
-        <div className="fixed inset-0 z-[10020] bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[10020] bg-black/55 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl" dir="rtl">
                 <h4 className="text-lg font-black text-slate-800 mb-2">تأكيد حذف الروشتة الجاهزة</h4>
                 <p className="text-sm font-bold text-slate-600 mb-5">
@@ -48,7 +49,8 @@ export const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
                     </Button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
@@ -94,8 +96,8 @@ export const ApplyPresetDialog: React.FC<ApplyPresetDialogProps> = ({
 }) => {
     if (!candidate) return null;
 
-    return (
-        <div className="fixed inset-0 z-[10020] bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[10020] bg-black/55 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <div className="w-full max-w-xl bg-white rounded-3xl p-6 shadow-2xl border border-slate-200" dir="rtl">
                 <h4 className="text-lg font-black text-slate-800 mb-2">طريقة إضافة الروشتة الجاهزة</h4>
                 <p className="text-sm font-bold text-slate-600 mb-4">
@@ -152,6 +154,7 @@ export const ApplyPresetDialog: React.FC<ApplyPresetDialogProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

@@ -27,6 +27,8 @@ export interface ClinicAppointment {
   age?: string;
   /** سبب الزيارة */
   visitReason?: string;
+  /** أول زيارة؟ (يملأها المريض في فورم الجمهور ليدل الطبيب/السكرتارية هل له ملف سابق) */
+  isFirstVisit?: boolean;
   /** مصدر الحجز: من السكرتارية، من الفورم العام للجمهور، أو من العيادة */
   source?: 'secretary' | 'clinic' | 'public';
   /** مستخدم الجمهور صاحب الحجز (لو الحجز من الفورم العام) */

@@ -19,7 +19,6 @@ import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import { extractBookingQuotaNotice } from './helpers';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
 import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
-import { buildSecretaryDoctorResponseToastKey, clearTimedPayload } from '../internalToastStorage';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
 import type { TodayAppointment } from './types';
@@ -75,7 +74,6 @@ export const usePublicBookingAppointmentActions = ({
   setDiscountPercent,
   setDiscountReasonId,
   setDiscountReasonLabel,
-  setDoctorResponseToast,
   setPendingEntryAppointmentId,
   setBookingQuotaNotice,
   setFormError,
@@ -106,8 +104,6 @@ export const usePublicBookingAppointmentActions = ({
 
   const requestEntryNow = async (apt: EntryRequestAppointment) => {
     if (!secret || !userId) return;
-    setDoctorResponseToast(null);
-    clearTimedPayload(buildSecretaryDoctorResponseToastKey(secret));
     setPendingEntryAppointmentId(apt.id);
     setEntryRequestSendingId(apt.id);
     setBookingQuotaNotice(null);

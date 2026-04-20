@@ -22,6 +22,7 @@ type PublicBookingPatientFieldsProps = {
   patientName: string;
   age: string;
   visitReason: string;
+  isFirstVisit: boolean | null;
   activeSuggestionField: 'name' | 'phone' | null;
   phoneSuggestionOptions: PatientSuggestionOption[];
   latestPhoneForName: PatientSuggestionOption | null;
@@ -35,6 +36,7 @@ type PublicBookingPatientFieldsProps = {
   onPatientNameChange: (value: string) => void;
   onAgeChange: (value: string) => void;
   onVisitReasonChange: (value: string) => void;
+  onIsFirstVisitChange: (value: boolean) => void;
   applyPhoneSuggestion: (item: PatientSuggestionOption) => void;
   normalizePhone: (value?: string) => string;
 };
@@ -45,6 +47,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
   patientName,
   age,
   visitReason,
+  isFirstVisit,
   activeSuggestionField,
   phoneSuggestionOptions,
   latestPhoneForName,
@@ -57,6 +60,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
   onPatientNameChange,
   onAgeChange,
   onVisitReasonChange,
+  onIsFirstVisitChange,
   applyPhoneSuggestion,
   normalizePhone,
 }) => {
@@ -149,6 +153,32 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
           dir="rtl"
         />
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-slate-500 mb-1.5">هل هي أول زيارة؟</label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onIsFirstVisitChange(true)}
+            className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${isFirstVisit === true
+              ? 'bg-emerald-600 text-white border-emerald-600'
+              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+          >
+            نعم، أول زيارة
+          </button>
+          <button
+            type="button"
+            onClick={() => onIsFirstVisitChange(false)}
+            className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${isFirstVisit === false
+              ? 'bg-amber-600 text-white border-amber-600'
+              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+          >
+            لا، زرت من قبل
+          </button>
+        </div>
       </div>
     </>
   );

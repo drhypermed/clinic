@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { financialDataService } from '../../../services/financial-data';
+import {
+    financialDataService,
+    type DailyFinancialData,
+    type MonthlyFinancialData,
+} from '../../../services/financial-data';
 import { formatDateKey, formatMonthKey, branchLocalKey } from '../utils/formatters';
 interface MonthlyExpenses {
     rentExpense: string;      // الإيجار
@@ -87,6 +91,10 @@ interface UseFinancialDataReturn {
     updateLabel: (key: keyof RevenueLabels, value: string) => void;
     dailyInsuranceExtras: DailyInsuranceExtraEntry[];
     lastSyncTime: number;
+    /** خريطة Firestore اليومية للسنة المعروضة — مفلترة بالفرع. يستهلكها useFinancialStats. */
+    yearlyDailyMap: Record<string, DailyFinancialData>;
+    /** خريطة Firestore الشهرية للسنة المعروضة — مفلترة بالفرع. */
+    yearlyMonthlyMap: Record<string, MonthlyFinancialData>;
 }
 export const useFinancialData = ({
     userId,
@@ -115,8 +123,14 @@ export const useFinancialData = ({
         otherRevenueLabel: normalizeRevenueLabel(localStorage.getItem(`revenueLabel_other${branchSuffix}`), 'other')
     });
     const [dailyInsuranceExtras, setDailyInsuranceExtras] = useState<DailyInsuranceExtraEntry[]>([]);
+    const [yearlyDailyMap, setYearlyDailyMap] = useState<Record<string, DailyFinancialData>>({});
+    const [yearlyMonthlyMap, setYearlyMonthlyMap] = useState<Record<string, MonthlyFinancialData>>({});
     useEffect(() => {
-        if (!userId) return;
+        if (!userId) {
+            setYearlyDailyMap({});
+            setYearlyMonthlyMap({});
+            return;
+        }
         let cancelled = false;
         const year = selectedDate.getFullYear();
         const targetBranch = branchId || 'main';
@@ -145,6 +159,7 @@ export const useFinancialData = ({
 
         financialDataService.getYearlyDailyEntries(userId, year, branchId).then(daily => {
             if (cancelled) return;
+            setYearlyDailyMap(daily);
             Object.entries(daily).forEach(([k, v]) => {
                 // Bug #B1 fix: كتابة المجاميع بمفاتيح branch-aware عن طريق الـ setters الموجودة
                 if (v.interventionsRevenue !== undefined)
@@ -169,6 +184,7 @@ export const useFinancialData = ({
 
         financialDataService.getYearlyMonthlyEntries(userId, year, branchId).then(monthly => {
             if (cancelled) return;
+            setYearlyMonthlyMap(monthly);
             Object.entries(monthly).forEach(([k, v]) => {
                 // Bug #B3 fix: المصروفات الشهرية بمفاتيح branch-aware
                 const fields: Array<keyof MonthlyExpenses> = ['rentExpense', 'salariesExpense', 'toolsExpense', 'electricityExpense', 'otherExpense'];
@@ -272,6 +288,20 @@ export const useFinancialData = ({
                 // إطلاق حدث للـ UI تعيد قراءة patientCostItems_${dk} المصدر الموحد
                 window.dispatchEvent(new Event('financialDataUpdated'));
             }
+
+            // حدّث خريطة اليوم في yearlyDailyMap عشان المستهلكين (DailyRevenueSection,
+            // InsuranceClaimsSection) يلاقوا أحدث بيانات بدل ما يعتمدوا على localStorage.
+            setYearlyDailyMap(prev => ({
+                ...prev,
+                [selectedDayKey]: {
+                    ...(prev[selectedDayKey] || {}),
+                    ...(data.interventionsRevenue !== undefined && { interventionsRevenue: data.interventionsRevenue }),
+                    ...(data.otherRevenue !== undefined && { otherRevenue: data.otherRevenue }),
+                    ...(data.dailyExpense !== undefined && { dailyExpense: data.dailyExpense }),
+                    ...(data.insuranceExtras !== undefined && { insuranceExtras: data.insuranceExtras }),
+                    ...(data.cashCostItems !== undefined && { cashCostItems: data.cashCostItems }),
+                },
+            }));
         }, undefined, branchId);
         return () => unsubscribe();
     }, [userId, selectedDayKey, branchId]);
@@ -417,7 +447,9 @@ export const useFinancialData = ({
         labels,
         updateLabel,
         dailyInsuranceExtras,
-        lastSyncTime
+        lastSyncTime,
+        yearlyDailyMap,
+        yearlyMonthlyMap
     };
 };
 

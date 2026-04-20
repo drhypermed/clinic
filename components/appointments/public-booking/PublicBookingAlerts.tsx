@@ -16,8 +16,6 @@ import type { EntryAlert } from './types';
  * تشمل تنبيهات رد فعل الطبيب (موافقة/انتظار) وتنبيهات طلبات الدخول
  */
 type PublicBookingAlertsProps = {
-  doctorResponseToast: 'approved' | 'wait' | null; // حالة رد الطبيب على طلب السكرتارية
-  onCloseDoctorToast: () => void;
   secretaryActionToast: 'approved' | 'rejected' | null; // حالة تأكيد السكرتارية لوجود المريض
   onCloseSecretaryToast: () => void;
   entryAlert: EntryAlert | null; // تفاصيل تنبيه طلب الدخول القادم من الطبيب
@@ -31,8 +29,6 @@ type PublicBookingAlertsProps = {
  * يعرض واجهات منبثقة (Toasts/Modals) لإبلاغ السكرتارية بأفعال الطبيب أو طلبات الدخول اللحظية
  */
 export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
-  doctorResponseToast,
-  onCloseDoctorToast,
   secretaryActionToast,
   onCloseSecretaryToast,
   entryAlert,
@@ -42,40 +38,6 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
 }) => {
   return (
     <>
-      {/* تنبيه: الطبيب وافق على دخول مريض معين */}
-      {doctorResponseToast === 'approved' && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-emerald-600 text-white shadow-xl border border-emerald-700 animate-fadeIn">
-          <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </span>
-          <p className="font-bold text-sm flex-1">تم الموافقة بالدخول</p>
-          <button type="button" onClick={onCloseDoctorToast} className="p-1.5 rounded-lg hover:bg-white/20" title="إغلاق">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {/* تنبيه: الطبيب يطلب من السكرتارية جعل الحالة تنتظر قليلاً */}
-      {doctorResponseToast === 'wait' && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-amber-500 text-white shadow-xl border border-amber-600 animate-fadeIn">
-          <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </span>
-          <p className="font-bold text-sm flex-1">يتم الانتظار قليلًا</p>
-          <button type="button" onClick={onCloseDoctorToast} className="p-1.5 rounded-lg hover:bg-white/20" title="إغلاق">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-
       {/* تأكيد من السكرتارية للطبيب أن الحالة قد دخلت العيادة بالفعل */}
       {secretaryActionToast === 'approved' && (
         <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-emerald-600 text-white shadow-xl border border-emerald-700 animate-fadeIn">

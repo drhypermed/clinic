@@ -197,8 +197,6 @@ export const usePublicBookingPageLogic = () => {
     isAuthenticatedRef: auth.isAuthenticatedRef,
     lastEntryAlertCreatedRef: state.lastEntryAlertCreatedRef,
     entryAlertInitializedRef: state.entryAlertInitializedRef,
-    lastDoctorResponseRespondedAtRef: state.lastDoctorResponseRespondedAtRef,
-    doctorResponseInitializedRef: state.doctorResponseInitializedRef,
     setIsAuthenticated: auth.setIsAuthenticated,
     setAuthChecking: auth.setAuthChecking,
     setAuthError: auth.setAuthError,
@@ -214,7 +212,6 @@ export const usePublicBookingPageLogic = () => {
     setSecretaryVitalFields: state.setSecretaryVitalFields,
     setSecretaryApprovedEntryIds: state.setSecretaryApprovedEntryIds,
     setPendingEntryAppointmentId: state.setPendingEntryAppointmentId,
-    setDoctorResponseToast: state.setDoctorResponseToast,
   });
 
 
@@ -274,7 +271,6 @@ export const usePublicBookingPageLogic = () => {
     setDiscountPercent: state.setDiscountPercent,
     setDiscountReasonId: state.setDiscountReasonId,
     setDiscountReasonLabel: state.setDiscountReasonLabel,
-    setDoctorResponseToast: state.setDoctorResponseToast,
     setPendingEntryAppointmentId: state.setPendingEntryAppointmentId,
     setBookingQuotaNotice: state.setBookingQuotaNotice,
     setFormError: state.setFormError,
@@ -353,8 +349,6 @@ export const usePublicBookingPageLogic = () => {
     pushEnableSuccessMessage: push.pushEnableSuccessMessage,
     handleEnableSecretaryPushNotifications: push.handleEnableSecretaryPushNotifications,
     handleSecretaryPushPromptLater: push.handleSecretaryPushPromptLater,
-    doctorResponseToast: state.doctorResponseToast,
-    setDoctorResponseToast: state.setDoctorResponseToast,
     secretaryActionToast: state.secretaryActionToast,
     setSecretaryActionToast: state.setSecretaryActionToast,
     entryAlert: state.entryAlert,

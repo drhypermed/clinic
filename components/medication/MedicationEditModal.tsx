@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Medication, MedicationCustomization } from '../../types';
 import { medicationCustomizationService } from '../../services/medicationCustomizationService';
 import { useAuth } from '../../hooks/useAuth';
@@ -88,6 +89,7 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                     form: savedCustomization?.form !== undefined ? savedCustomization.form : baseMedication.form
                 });
             } catch (error) {
+                if (!isMounted) return;
                 console.error('Error loading customization:', error);
                 const baseMedication = await getBaseMedication(medication);
                 if (!isMounted) return;
@@ -253,10 +255,10 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
 
     if (!medication) return null;
 
-    return (
+    const modalContent = (
         <>
             {notification && (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[400] animate-fadeIn">
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[10001] animate-fadeIn">
                     <div className={`px-6 py-4 rounded-2xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 ${
                         notification.type === 'success' ? 'bg-emerald-600' :
                         notification.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
@@ -272,12 +274,12 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
             )}
 
             <div
-                className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[300] flex items-center justify-center p-4 animate-fadeIn no-print"
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn no-print"
                 onMouseDown={(e) => { if (e.target === e.currentTarget) { e.stopPropagation(); onClose(); } }}
                 onClick={(e) => { if (e.target === e.currentTarget) { e.stopPropagation(); onClose(); } }}
             >
                 <div
-                    className="bg-white rounded-[28px] shadow-[0_25px_70px_-30px_rgba(0,0,0,0.65)] w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200"
+                    className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[92dvh] sm:my-auto border border-slate-200"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -287,7 +289,7 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                         onClose={onClose}
                     />
 
-                    <div className="p-7 space-y-6 overflow-y-auto custom-scrollbar bg-slate-50 flex-1">
+                    <div className="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar bg-slate-50 flex-1">
                         <MedicationBasicInfoSection
                             formData={formData}
                             isNewMedication={isNewMedication}
@@ -325,4 +327,6 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
             />
         </>
     );
+
+    return createPortal(modalContent, document.body);
 };

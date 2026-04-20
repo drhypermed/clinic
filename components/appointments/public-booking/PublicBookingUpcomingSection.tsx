@@ -6,6 +6,7 @@ import { isConsultationAppointment } from '../../../utils/appointmentType';
 import { getSourceBadgeStyle, getSourceLabel } from './helpers';
 import type { TodayAppointment } from '../../../types';
 import { buildCairoDateTime, formatUserDate, formatUserTime } from '../../../utils/cairoTime';
+import { FirstVisitBadge } from '../FirstVisitBadge';
 
 type DayGroup = { dateStr: string; fullDate: string; appointments: TodayAppointment[] };
 
@@ -114,6 +115,7 @@ const UpcomingCard: React.FC<{ apt: TodayAppointment; onEdit: (a: TodayAppointme
           <span className="border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 rounded-full">
             {formatUserTime(apt.dateTime, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
           </span>
+          <FirstVisitBadge isFirstVisit={apt.isFirstVisit} />
         </div>
         {apt.phone && <p className="text-[11px] font-bold text-slate-500" dir="ltr">{apt.phone}</p>}
         {apt.visitReason && <p className="text-[11px] font-bold text-slate-500">{apt.visitReason}</p>}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { FaXmark, FaFileLines } from 'react-icons/fa6';
 import type { LegalDocumentDefinition } from '../../../app/legal/types';
 
@@ -32,9 +33,9 @@ export const LegalDocumentModal: React.FC<LegalDocumentModalProps> = ({
 
   if (!isOpen || !activeDocument) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[260] bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-3 sm:p-5"
+      className="fixed inset-0 z-[9995] bg-slate-900/30 backdrop-blur-md flex items-start sm:items-center justify-center p-3 sm:p-5 overflow-y-auto"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -92,6 +93,7 @@ export const LegalDocumentModal: React.FC<LegalDocumentModalProps> = ({
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

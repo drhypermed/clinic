@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface CropperModalFrameProps {
   title: string;
@@ -17,8 +18,8 @@ export const CropperModalFrame: React.FC<CropperModalFrameProps> = ({
   onSave,
   onCancel,
 }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9995] flex items-start sm:items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         <div className="p-4 border-b">
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>
@@ -37,7 +38,8 @@ export const CropperModalFrame: React.FC<CropperModalFrameProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

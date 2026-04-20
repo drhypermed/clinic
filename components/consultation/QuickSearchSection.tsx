@@ -32,6 +32,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
   const searchContainerRef = useRef<HTMLDivElement>(null); // مرجع لحاوية البحث للكشف عن النقر خارجها
   const [showWarningModal, setShowWarningModal] = useState(false); // إظهار نافذة التحذير الطبي
   const [warningData, setWarningData] = useState<any>(null); // بيانات التحذير (نوع المخالفة: سن/وزن)
+  const [pendingDose, setPendingDose] = useState<string>(''); // الجرعة المحسوبة المعلّقة لحين تأكيد التحذير (تجنب إعادة الحساب)
   // نفس روح زر "كشف جديد" مع لون موحد لتقليل التشتيت البصري.
   const manualActionPrimaryBtnClass = 'apple-quick-search__action-btn manual-action-btn manual-action-btn--ready w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-[0.98] text-right shadow-sm';
   const manualActionChipBtnClass = 'apple-quick-search__action-btn manual-action-btn flex items-center justify-start gap-2.5 px-3.5 py-3 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-[0.98] w-full text-right shadow-sm';
@@ -40,13 +41,19 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
     try {
       const saved = localStorage.getItem('dr_hyper_favorites');
       return saved ? JSON.parse(saved) : [];
-    } catch {
+    } catch (e) {
+      // تحذير فقط — لا نفشل الواجهة بسبب تالف localStorage
+      console.warn('[favorites] failed to parse stored favorites:', e);
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem('dr_hyper_favorites', JSON.stringify(favorites));
+    try {
+      localStorage.setItem('dr_hyper_favorites', JSON.stringify(favorites));
+    } catch (e) {
+      console.warn('[favorites] failed to persist favorites:', e);
+    }
   }, [favorites]);
 
   useEffect(() => {
@@ -178,6 +185,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
           });
         }
 
+        setPendingDose(dose);
         setWarningData({
           title: 'تحذير طبي هام',
           warnings: warnings,
@@ -194,8 +202,8 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
     const handleConfirmWarning = () => {
     setShowWarningModal(false);
     if (selectedMed) {
-      const dose = calculateDose(selectedMed);
-      onAddMedication(selectedMed, dose);
+      onAddMedication(selectedMed, pendingDose);
+      setPendingDose('');
     }
   };
 
@@ -408,21 +416,21 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
               </div>
 
               <div className="apple-quick-search__info-grid grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">نقطة العمر الآمنة</span>
-                  <span className="font-bold text-blue-700 text-sm">{formatMinAge(selectedMed.minAgeMonths)}</span>
+                  <span className="block font-bold text-blue-700 text-sm break-words">{formatMinAge(selectedMed.minAgeMonths)}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">التركيز</span>
-                  <span className="font-bold text-slate-700 text-sm">{selectedMed.concentration}</span>
+                  <span className="block font-bold text-slate-700 text-sm break-words">{selectedMed.concentration}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">التصنيف</span>
-                  <span className="font-bold text-emerald-700 text-sm">{selectedMed.category}</span>
+                  <span className="block font-bold text-emerald-700 text-sm break-words">{selectedMed.category}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">طريقة التعاطي</span>
-                  <span className="font-bold text-slate-700 text-sm">{selectedMed.timing || 'غير محدد'}</span>
+                  <span className="block font-bold text-slate-700 text-sm break-words">{selectedMed.timing || 'غير محدد'}</span>
                 </div>
               </div>
 

@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
 
 interface ProfileImageCropperOverlayProps {
@@ -30,9 +31,9 @@ export const ProfileImageCropperOverlay: React.FC<ProfileImageCropperOverlayProp
     onConfirm,
     onCancel,
 }) => {
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex flex-col items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10001] flex flex-col items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
         >
             <div
@@ -96,6 +97,7 @@ export const ProfileImageCropperOverlay: React.FC<ProfileImageCropperOverlayProp
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

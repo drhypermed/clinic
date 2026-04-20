@@ -1,5 +1,6 @@
 /** نافذة التقييمات: تستعرض آراء الجمهور والتعليقات النصية لتعزيز الشفافية والمساعدة في اختيار الطبيب. */
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { LoadingText } from '../../ui/LoadingText';
 import type { DoctorPublicReview } from '../../../types';
@@ -30,9 +31,9 @@ export const DoctorReviewsModal: React.FC<DoctorReviewsModalProps> = ({
 
   const textCommentsCount = reviews.filter((review) => Boolean(review.reviewComment?.trim())).length;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[65] bg-slate-950/65 backdrop-blur-[2px] p-4 flex items-center justify-center"
+      className="fixed inset-0 z-[9995] bg-slate-950/65 backdrop-blur-[2px] p-3 sm:p-4 flex items-start sm:items-center justify-center overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -104,7 +105,8 @@ export const DoctorReviewsModal: React.FC<DoctorReviewsModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

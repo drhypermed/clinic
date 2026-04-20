@@ -203,15 +203,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
         let monthRevenue = 0, monthCash = 0, monthInsurance = 0;
         let yearRevenue = 0, yearCash = 0, yearInsurance = 0;
 
-        const addExam = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number }) => {
-            if (yr === currentYear) { yearExams++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; }
-            if (mKey === monthKey) { monthExams++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; }
-            if (dayKey === todayKey) { todayExams++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; }
+        // خصومات الأسعار (discountAmount) بتتحسب كمصروف — مطابقة للتقارير المالية
+        let todayDiscountExp = 0, monthDiscountExp = 0, yearDiscountExp = 0;
+
+        const addExam = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number; discountAmount: number }) => {
+            if (yr === currentYear) { yearExams++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
+            if (mKey === monthKey) { monthExams++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; monthDiscountExp += bd.discountAmount; }
+            if (dayKey === todayKey) { todayExams++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; todayDiscountExp += bd.discountAmount; }
         };
-        const addConsult = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number }) => {
-            if (yr === currentYear) { yearConsults++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; }
-            if (mKey === monthKey) { monthConsults++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; }
-            if (dayKey === todayKey) { todayConsults++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; }
+        const addConsult = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number; discountAmount: number }) => {
+            if (yr === currentYear) { yearConsults++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
+            if (mKey === monthKey) { monthConsults++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; monthDiscountExp += bd.discountAmount; }
+            if (dayKey === todayKey) { todayConsults++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; todayDiscountExp += bd.discountAmount; }
         };
 
         const calcBreakdown = (r: PatientRecord, basePrice: number) =>
@@ -276,9 +279,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
             if (mKey === monthKey) monthFixedExp += total;
         });
 
-        const todayExpenses = todayDailyExp;
-        const monthExpenses = monthDailyExp + monthFixedExp;
-        const yearExpenses = yearDailyExp + yearFixedExp;
+        // المصروفات = مصروفات يومية + مصروفات ثابتة شهرية + خصومات الأسعار
+        // (خصومات الأسعار بتتحسب كمصروف في التقارير المالية، فلازم تتطابق هنا)
+        const todayExpenses = todayDailyExp + todayDiscountExp;
+        const monthExpenses = monthDailyExp + monthFixedExp + monthDiscountExp;
+        const yearExpenses = yearDailyExp + yearFixedExp + yearDiscountExp;
 
         return {
             today: { exams: todayExams, consults: todayConsults, revenue: todayRevenue + todayInterventions + todayOther, expenses: todayExpenses, insurance: todayInsurance, interventions: todayInterventions, other: todayOther },

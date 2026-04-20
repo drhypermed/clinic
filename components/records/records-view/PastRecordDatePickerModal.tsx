@@ -11,6 +11,7 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 export type PastRecordModalType = 'exam' | 'consultation';
 
@@ -38,9 +39,9 @@ export const PastRecordDatePickerModal: React.FC<PastRecordDatePickerModalProps>
 
     const reset = () => onStateChange({ isOpen: false, type: null, selectedDate: todayStr, selectedTime: '' });
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-start sm:items-center justify-center z-[9995] p-3 sm:p-4 overflow-y-auto"
             onClick={reset}
         >
             <div
@@ -83,6 +84,7 @@ export const PastRecordDatePickerModal: React.FC<PastRecordDatePickerModalProps>
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

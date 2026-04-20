@@ -123,8 +123,8 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
                         <SecretaryVitalsPills vitals={vitals} compact separator=" | " title="" />
                     </div>
                 )}
-                <DualField title="التاريخ المرضي" aiValue={data.historyEn} term={term} titleTone={titleTone} />
                 <DualField title="الشكوى" aiValue={data.complaintEn} term={term} titleTone={titleTone} />
+                <DualField title="التاريخ المرضي" aiValue={data.historyEn} term={term} titleTone={titleTone} />
                 <DualField title="ملاحظات الكشف" aiValue={data.examEn} term={term} titleTone={titleTone} />
                 <DualField title="الفحوصات الموجودة" aiValue={data.investigationsEn} term={term} titleTone={titleTone} />
                 {(hasText(data.diagnosisEn) || (data.diagnosisEn || '').trim() === NO_PERTINENT_EN) && (

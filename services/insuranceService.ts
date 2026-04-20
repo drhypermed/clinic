@@ -194,6 +194,49 @@ const deleteCompanyFromBookingConfig = async (
   }
 };
 
+/**
+ * تنظيف الشركات اليتيمة في مرآة السكرتارية:
+ * يحذف أي شركة موجودة في `bookingConfig/{secret}/insuranceCompanies` لكنها
+ * **غير موجودة** في مصدر الطبيب `users/{userId}/insuranceCompanies`.
+ *
+ * السبب: المزامنة عند الحذف كانت "fire-and-forget"؛ أي فشل مؤقت (أوفلاين/
+ * صلاحية/شبكة) كان يترك سجلات يتيمة ظاهرة فقط للسكرتارية.
+ * هذه الدالة تعيد التوفيق بين المصدرين وتُشغّل تلقائياً عند جلب قائمة الطبيب.
+ */
+const reconcileBookingConfigMirror = async (
+  userId: string,
+  sourceCompanies: InsuranceCompany[]
+): Promise<void> => {
+  try {
+    const bookingSecret = await getUserBookingSecret(userId);
+    if (!bookingSecret) return;
+
+    const mirrorSnapshot = await getDocsCacheFirst(
+      query(getBookingConfigCompaniesRef(bookingSecret), orderBy('name', 'asc'))
+    );
+    const sourceIds = new Set(sourceCompanies.map((c) => c.id));
+    const orphanIds: string[] = [];
+    mirrorSnapshot.docs.forEach((d: any) => {
+      if (!sourceIds.has(d.id)) orphanIds.push(d.id);
+    });
+
+    if (orphanIds.length === 0) return;
+
+    await Promise.all(
+      orphanIds.map((id) =>
+        deleteDoc(doc(getBookingConfigCompaniesRef(bookingSecret), id)).catch(() => {
+          /* best-effort */
+        })
+      )
+    );
+    console.info(
+      `[InsuranceService] Cleaned up ${orphanIds.length} orphan insurance company mirror(s).`
+    );
+  } catch (error) {
+    console.warn('[InsuranceService] Failed reconciling insurance mirror:', error);
+  }
+};
+
 export const insuranceService = {
   /**
    * جلب جميع شركات التأمين المتعاقدة (مع دعم الكاش)
@@ -207,6 +250,8 @@ export const insuranceService = {
       const companies = mapCompaniesSnapshot(snapshot);
       // مزامنة غير معيقة للخلفية حتى ترى السكرتارية نفس الشركات عبر secret.
       void Promise.all(companies.map((company) => syncCompanyToBookingConfig(userId, company)));
+      // تنظيف أي شركات يتيمة في مرآة السكرتارية (حذف الطبيب قد يكون فشل سابقاً بصمت)
+      void reconcileBookingConfigMirror(userId, companies);
       return companies;
     } catch (error) {
       console.error('[InsuranceService] Error getting companies:', error);
@@ -250,6 +295,8 @@ export const insuranceService = {
       const companies = mapCompaniesSnapshot(snapshot);
       // مزامنة غير معيقة للخلفية حتى ترى السكرتارية نفس الشركات عبر secret.
       void Promise.all(companies.map((company) => syncCompanyToBookingConfig(userId, company)));
+      // تنظيف أي شركات يتيمة في مرآة السكرتارية (حذف الطبيب قد يكون فشل سابقاً بصمت)
+      void reconcileBookingConfigMirror(userId, companies);
       callback(companies);
     }).catch(() => {
       if (!cancelled) callback([]);

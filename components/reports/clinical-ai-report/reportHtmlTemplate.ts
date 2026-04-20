@@ -29,7 +29,7 @@ const buildLabels = (language: ClinicalReportLanguage) => {
   if (language === 'ar') {
     return {
       dir: 'rtl', lang: 'ar',
-      reportTitle: '\u0627\u0644\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0637\u0628\u064a',
+      reportTitle: '\u062a\u0642\u0631\u064a\u0631 \u0637\u0628\u064a',
       patientSection: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0631\u064a\u0636',
       patientName: '\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644',
       fileNumber: '\u0631\u0642\u0645 \u0627\u0644\u0645\u0644\u0641',
@@ -46,15 +46,15 @@ const buildLabels = (language: ClinicalReportLanguage) => {
       complaint: '\u0627\u0644\u0634\u0643\u0648\u0649', history: '\u0627\u0644\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0645\u0631\u0636\u064a',
       examination: '\u0627\u0644\u0641\u062d\u0635 \u0627\u0644\u0633\u0631\u064a\u0631\u064a', investigations: '\u0627\u0644\u0641\u062d\u0648\u0635\u0627\u062a \u0648\u0627\u0644\u062a\u062d\u0627\u0644\u064a\u0644',
       diagnosis: '\u0627\u0644\u062a\u0634\u062e\u064a\u0635', medications: '\u0627\u0644\u0623\u062f\u0648\u064a\u0629 \u0627\u0644\u0645\u0648\u0635\u0648\u0641\u0629',
-      advice: '\u0627\u0644\u062a\u0639\u0644\u064a\u0645\u0627\u062a \u0627\u0644\u0637\u0628\u064a\u0629', vitals: '\u0627\u0644\u0642\u064a\u0627\u0633\u0627\u062a \u0627\u0644\u062d\u064a\u0648\u064a\u0629',
+      advice: '\u0627\u0644\u062a\u0639\u0644\u064a\u0645\u0627\u062a \u0627\u0644\u0637\u0628\u064a\u0629', vitals: '\u0627\u0644\u0642\u064a\u0627\u0633\u0627\u062a \u0648\u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062d\u064a\u0648\u064a\u0629',
       noData: '\u2014',
       signatureTitle: '\u0627\u0644\u062a\u0648\u0642\u064a\u0639 \u0648\u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f',
       doctorSig: '\u062a\u0648\u0642\u064a\u0639 \u0627\u0644\u0637\u0628\u064a\u0628 \u0627\u0644\u0645\u0639\u0627\u0644\u062c', clinicStamp: '\u062e\u062a\u0645 \u0627\u0644\u0637\u0628\u064a\u0628',
-      legalNote: '\u0647\u0630\u0627 \u0627\u0644\u062a\u0642\u0631\u064a\u0631 \u0645\u064f\u0648\u0644\u064e\u0651\u062f \u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u064b\u0627 \u0645\u0646 \u0646\u0638\u0627\u0645 \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u064a\u0627\u062f\u0629 \u0648\u064a\u064f\u0639\u062a\u0645\u062f \u0628\u062a\u0648\u0642\u064a\u0639 \u0648\u062e\u062a\u0645 \u0627\u0644\u0637\u0628\u064a\u0628 \u0627\u0644\u0645\u0639\u0627\u0644\u062c.',
       editHint: '\u0627\u0646\u0642\u0631 \u0639\u0644\u0649 \u0623\u064a \u062d\u0642\u0644 \u0644\u062a\u0639\u062f\u064a\u0644\u0647 \u0642\u0628\u0644 \u0627\u0644\u0637\u0628\u0627\u0639\u0629',
       print: '\u0637\u0628\u0627\u0639\u0629', close: '\u0625\u063a\u0644\u0627\u0642',
       notDocumented: '\u063a\u064a\u0631 \u0645\u0648\u062b\u0642', linkedExam: '\u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u0643\u0634\u0641',
-      sourceNote: 'Dr. Hyper \u2014 \u0646\u0638\u0627\u0645 \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u064a\u0627\u062f\u0629',
+      sourceNote: 'DrHyperMed \u2014 \u0646\u0638\u0627\u0645 \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u064a\u0627\u062f\u0627\u062a \u0627\u0644\u0630\u0643\u064a\u0629',
+      sourceUrl: 'www.drhypermed.com',
     };
   }
   return {
@@ -68,12 +68,12 @@ const buildLabels = (language: ClinicalReportLanguage) => {
     examBadge: 'Examination', consultBadge: 'Consultation', complaint: 'Chief Complaint',
     history: 'Medical History', examination: 'Clinical Examination', investigations: 'Investigations',
     diagnosis: 'Diagnosis', medications: 'Prescribed Medications', advice: 'Medical Instructions',
-    vitals: 'Vital Signs', noData: '\u2014', signatureTitle: 'Signature & Authorization',
+    vitals: 'Measurements & Vital Signs', noData: '\u2014', signatureTitle: 'Signature & Authorization',
     doctorSig: 'Doctor Signature', clinicStamp: 'Doctor Stamp',
-    legalNote: "This report is electronically generated and authorized by the treating doctor's signature and clinic stamp.",
     editHint: 'Click any field to edit before printing',
     print: 'Print', close: 'Close', notDocumented: 'Not documented', linkedExam: 'Linked to exam',
-    sourceNote: 'Dr. Hyper \u2014 Clinic Management System',
+    sourceNote: 'DrHyperMed \u2014 Smart Clinic Management System',
+    sourceUrl: 'www.drhypermed.com',
   };
 };
 
@@ -234,8 +234,8 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
     `.sum-list{padding-inline-start:16px;display:grid;gap:4px}`,
     `.sum-list li{font-size:.86rem;line-height:1.6;outline:none;cursor:text}`,
     `.sum-list li:focus{color:var(--blue)}`,
-    `.sum-recs{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}`,
-    `.rec-chip{background:var(--teal-lt);color:var(--teal);border-radius:999px;padding:4px 10px;font-size:.76rem;font-weight:700;outline:none;cursor:text}`,
+    `.sum-recs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}`,
+    `.rec-chip{background:var(--teal-lt);color:var(--teal);border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:700;outline:none;cursor:text;line-height:1.6;display:inline-block;max-width:100%;word-break:break-word;white-space:normal}`,
     `.rec-chip:focus{outline:2px solid var(--teal)}`,
     `.sec-title{padding:14px 24px 0}`,
     `.sec-title h2{font-size:.95rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px}`,
@@ -286,8 +286,10 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
     `.sigbox-name{font-size:.9rem;font-weight:900;outline:none;cursor:text;min-width:40px}`,
     `.sigbox-name:focus{color:var(--blue)}`,
     `.sig-line{height:1px;background:var(--line);margin-top:8px}`,
-    `.legal-note{margin-top:10px;padding:10px 13px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;font-size:.74rem;color:var(--soft);line-height:1.75}`,
-    `.rpt-footer{padding:10px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:.7rem;color:var(--soft);font-weight:600}`,
+    `.rpt-footer{padding:10px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.7rem;color:var(--soft);font-weight:600;flex-wrap:wrap}`,
+    `.rpt-footer-brand{display:flex;flex-direction:column;gap:2px}`,
+    `.rpt-footer-url{color:var(--blue);font-weight:700;text-decoration:none;font-size:.7rem;letter-spacing:.02em}`,
+    `.rpt-footer-url:hover{text-decoration:underline}`,
     `@media print{`,
     `@page{size:${pageSize};margin:12mm 10mm 18mm}`,
     `.toolbar{display:none!important}`,
@@ -367,11 +369,16 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
       <div class="sigbox"><div class="sigbox-lbl">${escapeHtml(L.doctorSig)}</div><div class="sigbox-name" contenteditable="true" spellcheck="false">${escapeHtml(doctorText)}</div><div class="sig-line"></div></div>
       <div class="sigbox"><div class="sigbox-lbl">${escapeHtml(L.clinicStamp)}</div><div class="sigbox-name" contenteditable="true" spellcheck="false"> </div><div class="sig-line"></div></div>
     </div>
-    <div class="legal-note" contenteditable="true" spellcheck="false">${escapeHtml(L.legalNote)}</div>
   </div>
-  <div class="rpt-footer"><span>${escapeHtml(L.sourceNote)}</span><span>${escapeHtml(reportDate)}</span></div>
+  <div class="rpt-footer">
+    <div class="rpt-footer-brand">
+      <span>${escapeHtml(L.sourceNote)}</span>
+      <a class="rpt-footer-url" href="https://${escapeHtml(L.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(L.sourceUrl)}</a>
+    </div>
+    <span>${escapeHtml(reportDate)}</span>
+  </div>
 </div>
-<div class="pf-url">www.drhypermed.com</div>
+<div class="pf-url">${escapeHtml(L.sourceUrl)}</div>
 <script>
 (function(){
   var p=document.getElementById('btn-print');

@@ -129,10 +129,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                         className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white font-black text-sm bg-gradient-to-br from-emerald-600 to-green-700 shadow-[0_8px_20px_-8px_rgba(5,150,105,0.5)] hover:shadow-lg transition-all active:scale-[0.98] disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                     >
                         {loading ? (
-                            <>
-                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                                <LoadingText>جاري التحليل</LoadingText>
-                            </>
+                            <LoadingText>جاري التحليل</LoadingText>
                         ) : 'حساب وتحليل الجرعة'}
                     </button>
 
