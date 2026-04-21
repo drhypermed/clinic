@@ -192,7 +192,7 @@ exports.cleanupOldUsageEvents = onSchedule(
   lazy('./src/functions/cleanupFunctions', 'cleanupOldUsageEvents')
 );
 exports.refreshAdminDashboardAggregates = onSchedule(
-  { schedule: 'every 10 minutes', timeZone: 'Africa/Cairo', region: REGION },
+  { schedule: '0 */6 * * *', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/dashboardAggregationFunctions', 'refreshAdminDashboardAggregates')
 );
 exports.refreshAdminDashboardAggregatesNow = onCall(
@@ -203,10 +203,10 @@ exports.syncAdminDashboardUserCounter = onDocumentWritten(
   { document: 'users/{userId}', region: REGION },
   lazy('./src/functions/dashboardCounterFunctions', 'syncAdminDashboardUserCounter')
 );
-// B2: مباعدة عن refreshAdminDashboardAggregates (تعمل على الدقائق 0,10,20...)
-// هذه تعمل على الدقائق 5,15,25... لتفادي الكتابة المتزامنة على settings/adminDashboardStats.
+// B2: مباعدة عن refreshAdminDashboardAggregates (تعمل كل ٦ ساعات على الساعات 0,6,12,18).
+// هذه تعمل بعدها بـ ٥ دقائق لتفادي الكتابة المتزامنة على settings/adminDashboardStats.
 exports.materializeAdminDashboardSummary = onSchedule(
-  { schedule: '5,15,25,35,45,55 * * * *', timeZone: 'Africa/Cairo', region: REGION },
+  { schedule: '5 */6 * * *', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/dashboardCounterFunctions', 'materializeAdminDashboardSummary')
 );
 exports.materializeAdminDashboardSummaryNow = onCall(

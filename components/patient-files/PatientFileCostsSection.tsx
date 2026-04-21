@@ -130,8 +130,13 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     setIsLoadingCosts(true);
     didReceiveFirstSnapshotRef.current = false;
 
+    // cancelled flag: يمنع أي استجابة متأخرة من تحديث state بعد cleanup
+    // (لو اتغيّر fileId أو اتقفل القسم والاستجابة لسه على الطريق).
+    let cancelled = false;
+
     // مؤقت أمان: إذا لم يستجب Firestore خلال 5 ثوانٍ → اعرض البيانات المحلية
     const safetyTimer = setTimeout(() => {
+      if (cancelled) return;
       if (!didReceiveFirstSnapshotRef.current) {
         didReceiveFirstSnapshotRef.current = true;
         const localCosts = loadPatientFileCosts(fileId);
@@ -146,6 +151,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
       userId,
       fileId,
       (firestoreCosts, firestoreIns) => {
+        if (cancelled) return;
         clearTimeout(safetyTimer);
         if (!didReceiveFirstSnapshotRef.current) {
           didReceiveFirstSnapshotRef.current = true;
@@ -157,7 +163,8 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
             if (localCosts.length > 0 || localIns.length > 0) {
               setCostItems(localCosts);
               setInsuranceItems(localIns);
-              syncCostsToFirestore(userId, fileId, localCosts, localIns).catch(console.error);
+              syncCostsToFirestore(userId, fileId, localCosts, localIns)
+                .catch((err) => console.error('Costs sync error:', err));
               return;
             }
           }
@@ -168,6 +175,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     );
 
     return () => {
+      cancelled = true;
       clearTimeout(safetyTimer);
       unsubscribe();
     };

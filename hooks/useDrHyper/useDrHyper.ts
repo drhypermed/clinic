@@ -138,7 +138,11 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         showNotification,
         activeBranchId,
     });
-    const { records, readyPrescriptions } = realtimeData;
+    const {
+        records,
+        readyPrescriptions,
+        refreshRecords,
+    } = realtimeData;
 
     const draftPersistence = useDrHyperDraft({
         userId: user?.uid,
@@ -159,9 +163,9 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         handleApplyReadyPrescription,
         handleLoadRecord,
         handleLoadConsultation,
-        handleDeleteRecord,
-        handleDeleteConsultation,
-        handleDeleteExam,
+        handleDeleteRecord: handleDeleteRecordRaw,
+        handleDeleteConsultation: handleDeleteConsultationRaw,
+        handleDeleteExam: handleDeleteExamRaw,
         handleOpenConsultation,
         handleNewExamFromRecord,
         handleFullAutomatedRX,
@@ -214,11 +218,32 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
 
     // أغلفة تربط حفظ/إعادة الضبط بنظام الـ draft: عند النجاح نضع بصمة محفوظة ونمسح الـ draft،
     // وعند إعادة الضبط نمسح الـ draft ونعيد تتبع التغييرات من الصفر.
+    // كمان: بعد أي حفظ/حذف ناجح نعيد قراءة السجلات من الكاش المحلي (0 قراءات سيرفر)
+    // لأن Firestore SDK يحدّث الكاش تلقائياً بعد الكتابة الناجحة.
     const handleSaveRecord: typeof handleSaveRecordRaw = async (e) => {
         const result = await handleSaveRecordRaw(e);
         if (result && result.ok) {
             draftPersistence.markDraftSaved();
+            void refreshRecords();
         }
+        return result;
+    };
+
+    const handleDeleteRecord: typeof handleDeleteRecordRaw = async (id) => {
+        const result = await handleDeleteRecordRaw(id);
+        void refreshRecords();
+        return result;
+    };
+
+    const handleDeleteConsultation: typeof handleDeleteConsultationRaw = async (record) => {
+        const result = await handleDeleteConsultationRaw(record);
+        void refreshRecords();
+        return result;
+    };
+
+    const handleDeleteExam: typeof handleDeleteExamRaw = async (record) => {
+        const result = await handleDeleteExamRaw(record);
+        void refreshRecords();
         return result;
     };
 

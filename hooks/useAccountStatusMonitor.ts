@@ -182,6 +182,9 @@ export const useAccountStatusMonitor = (
 
         const data = docSnap.data();
         if (data.isAccountDisabled === true) {
+          // check-and-set ذري قبل أي عملية async — يمنع signOut المكرر
+          // لو snapshot فات فجأة مرتين (server + cache).
+          if (statusHandled) return;
           statusHandled = true;
           const disabledMsg = data.disabledReason ? `⛔ تم تعطيل حسابك.\n\nالسبب: ${data.disabledReason}` : '⛔ تم تعطيل حسابك بواسطة الإدارة.';
           localStorage.setItem(PUBLIC_AUTH_ERROR_KEY, disabledMsg);
@@ -222,6 +225,7 @@ export const useAccountStatusMonitor = (
 
       // 1. فحص حالة التعطيل (Disabled)
       if (data.isAccountDisabled === true) {
+        if (statusHandled) return; // حارس ذري — يمنع signOut المكرر من snapshot متزامن
         statusHandled = true;
         const disabledMsg = '⛔ تم تعطيل حسابك. يرجى التواصل مع الإدارة لإعادة التفعيل';
         localStorage.setItem('blacklist_message', disabledMsg);
@@ -233,6 +237,7 @@ export const useAccountStatusMonitor = (
 
       // 2. فحص حالة الرفض في التحقق (Rejected Verification)
       if (data.verificationStatus === 'rejected') {
+        if (statusHandled) return;
         statusHandled = true;
         const rejectionReason = data.rejectionReason ? `\n\nسبب الرفض: ${data.rejectionReason}` : '';
         const rejectedMsg = `⛔ تم رفض طلب انضمامك للنظام${rejectionReason}\n\nللدعم، يرجى التواصل معنا`;
@@ -245,6 +250,7 @@ export const useAccountStatusMonitor = (
 
       // 3. فحص حالة الحذف (Deleted)
       if (data.verificationStatus === 'deleted') {
+        if (statusHandled) return;
         statusHandled = true;
         const deletedMsg = '⛔ تم حذف حسابك بشكل نهائي من قبل الإدارة.';
         localStorage.setItem('blacklist_message', deletedMsg);

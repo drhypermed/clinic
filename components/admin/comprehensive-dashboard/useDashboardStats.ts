@@ -15,9 +15,21 @@ import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import { INITIAL_DASHBOARD_STATS } from './constants';
 import type { DashboardStats } from './types';
 
-const DASHBOARD_STATS_REFRESH_MS = 120000;
+const DASHBOARD_STATS_REFRESH_MS = 6 * 60 * 60 * 1000; // ٦ ساعات — المستخدم لديه زر "تحديث الآن" للتحديث الفوري
 const SUMMARY_COLLECTION = 'settings';
 const SUMMARY_DOC_ID = 'adminDashboardStats';
+
+/**
+ * كاش على مستوى الوحدة لعدادات القوائم السوداء — getCountFromServer
+ * تُحتسب كل واحدة كقراءة لحد ١٠٠٠ مستند، فبنخزّن النتيجة لمدة ساعة عشان
+ * إعادة فتح الداشبورد من نفس الجلسة لا تعيد الحساب.
+ */
+const BLACKLIST_COUNT_CACHE_TTL_MS = 60 * 60 * 1000;
+let blacklistCountCache: {
+  expiresAt: number;
+  doctorBlacklisted: number;
+  publicBlacklisted: number;
+} | null = null;
 
 type RawDoc = Record<string, any>;
 
@@ -116,16 +128,36 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
         const summaryRef = doc(db, SUMMARY_COLLECTION, SUMMARY_DOC_ID);
         const readSummary = skipCache ? getDocFromServer(summaryRef) : getDocCacheFirst(summaryRef);
 
+        const now = Date.now();
+        const canUseBlacklistCache =
+          !skipCache && blacklistCountCache != null && blacklistCountCache.expiresAt > now;
+        const blacklistReads = canUseBlacklistCache
+          ? Promise.resolve({
+              doctorCount: blacklistCountCache!.doctorBlacklisted,
+              publicCount: blacklistCountCache!.publicBlacklisted,
+            })
+          : Promise.all([
+              getCountFromServer(collection(db, 'blacklistedEmails')),
+              getCountFromServer(collection(db, 'publicBlacklistedEmails')),
+            ]).then(([doctorSnap, publicSnap]) => {
+              const doctorCount = asNumber(doctorSnap.data().count);
+              const publicCount = asNumber(publicSnap.data().count);
+              blacklistCountCache = {
+                expiresAt: Date.now() + BLACKLIST_COUNT_CACHE_TTL_MS,
+                doctorBlacklisted: doctorCount,
+                publicBlacklisted: publicCount,
+              };
+              return { doctorCount, publicCount };
+            });
+
         const [
-          doctorBlacklistSnap,
-          publicBlacklistSnap,
+          blacklistCounts,
           doctorHomeBannerSnap,
           publicHomeBannerSnap,
           footerLineSnap,
           summarySnap,
         ] = await Promise.all([
-          getCountFromServer(collection(db, 'blacklistedEmails')),
-          getCountFromServer(collection(db, 'publicBlacklistedEmails')),
+          blacklistReads,
           skipCache
             ? getDoc(doc(db, 'settings', 'homepageBanner'))
             : getDocCacheFirst(doc(db, 'settings', 'homepageBanner')),
@@ -176,8 +208,8 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           freeDocsCount = Math.max(0, totalDoctors - premiumDocsCount);
         }
 
-        const doctorBlacklisted = doctorBlacklistSnap.data().count;
-        const publicBlacklisted = publicBlacklistSnap.data().count;
+        const doctorBlacklisted = blacklistCounts.doctorCount;
+        const publicBlacklisted = blacklistCounts.publicCount;
         const totalBlacklisted = doctorBlacklisted + publicBlacklisted;
 
         const homeBannerItems =

@@ -9,6 +9,29 @@ import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime'
 import { getTrustedNowMs, syncTrustedTime } from '../utils/trustedTime';
 import { getLegacyDoctorProfileDocRef, getUserProfileDocRef, mergePrimaryProfileData } from './firestore/profileRoles';
 
+// Cache ذاكرة لتخصيصات الأدوية — يمنع قراءات متكررة من Firestore عند التنقل بين الشاشات.
+// TTL قصير (60 ثانية) يضمن إن أي تعديل من tab آخر يظهر خلال دقيقة.
+const CUSTOMIZATIONS_CACHE_TTL_MS = 60_000;
+const customizationsCache = new Map<string, { value: Record<string, MedicationCustomization>; expiresAt: number }>();
+
+const readCustomizationsFromCache = (userId: string): Record<string, MedicationCustomization> | null => {
+    const entry = customizationsCache.get(userId);
+    if (!entry) return null;
+    if (entry.expiresAt < Date.now()) {
+        customizationsCache.delete(userId);
+        return null;
+    }
+    return entry.value;
+};
+
+const writeCustomizationsToCache = (userId: string, value: Record<string, MedicationCustomization>): void => {
+    customizationsCache.set(userId, { value, expiresAt: Date.now() + CUSTOMIZATIONS_CACHE_TTL_MS });
+};
+
+const invalidateCustomizationsCache = (userId: string): void => {
+    customizationsCache.delete(userId);
+};
+
 const resolveEffectiveAccountType = async (userId: string): Promise<'free' | 'premium'> => {
     const doctorRef = getLegacyDoctorProfileDocRef(userId);
     const userRef = getUserProfileDocRef(userId);
@@ -50,14 +73,20 @@ export const medicationCustomizationService = {
      * جلب جميع تخصيصات الأدوية الخاصة بالمستخدم من مستند المستخدم في Firestore
      */
     getCustomizations: async (userId: string): Promise<Record<string, MedicationCustomization>> => {
+        const cached = readCustomizationsFromCache(userId);
+        if (cached) return cached;
+
         try {
             const userRef = doc(db, 'users', userId);
             const userDoc = await getDocCacheFirst(userRef);
 
             if (userDoc.exists()) {
                 const data = userDoc.data();
-                return (data.medicationCustomizations || {}) as Record<string, MedicationCustomization>;
+                const customizations = (data.medicationCustomizations || {}) as Record<string, MedicationCustomization>;
+                writeCustomizationsToCache(userId, customizations);
+                return customizations;
             }
+            writeCustomizationsToCache(userId, {});
             return {};
         } catch (error) {
             console.error('[MedicationCustomization] Error getting customizations:', error);
@@ -72,17 +101,22 @@ export const medicationCustomizationService = {
         userId: string,
         onUpdate: (customizations: Record<string, MedicationCustomization>) => void
     ) => {
-        const userRef = doc(db, 'users', userId);
         let cancelled = false;
 
+        const cached = readCustomizationsFromCache(userId);
+        if (cached) {
+            onUpdate(cached);
+            return () => { cancelled = true; };
+        }
+
+        const userRef = doc(db, 'users', userId);
         getDocCacheFirst(userRef).then((snap) => {
             if (cancelled) return;
-            if (snap.exists()) {
-                const data = snap.data();
-                onUpdate(data.medicationCustomizations || {});
-            } else {
-                onUpdate({});
-            }
+            const customizations = snap.exists()
+                ? ((snap.data()?.medicationCustomizations || {}) as Record<string, MedicationCustomization>)
+                : {};
+            writeCustomizationsToCache(userId, customizations);
+            onUpdate(customizations);
         }).catch(() => {});
 
         return () => { cancelled = true; };
@@ -235,6 +269,7 @@ export const medicationCustomizationService = {
                 },
                 { merge: true }
             );
+            invalidateCustomizationsCache(userId);
             console.log('[MedicationCustomization] Customization saved for medication:', medicationId);
         } catch (error) {
             console.error('[MedicationCustomization] Error saving customization:', error);
@@ -262,6 +297,7 @@ export const medicationCustomizationService = {
                 new FieldPath('medicationCustomizations', normalizedMedicationId),
                 deleteField()
             );
+            invalidateCustomizationsCache(userId);
 
             console.log('[MedicationCustomization] Customization deleted for medication:', normalizedMedicationId);
         } catch (error) {

@@ -1,8 +1,19 @@
 import { buildClinicalAiReportHtml } from './reportHtmlTemplate';
 import type { OpenClinicalAiReportWindowInput } from './types';
 
+// حارس ضد تسرّب listeners: لو فُتحت النافذة مرة سابقة، ننظّف listeners الجلسة القديمة
+// قبل فتح الجديدة. بدون ده، كل فتح جديد = listeners إضافية باقية بعد الإغلاق.
+type OverlaySession = { cleanup: () => void };
+let activeSession: OverlaySession | null = null;
+
 export const openClinicalAiReportWindow = (input: OpenClinicalAiReportWindowInput): void => {
   if (typeof document === 'undefined') return;
+
+  // نظّف أي جلسة سابقة (listeners + DOM) قبل إنشاء واحدة جديدة
+  if (activeSession) {
+    activeSession.cleanup();
+    activeSession = null;
+  }
 
   const overlayId = 'clinical-ai-report-overlay';
   const existingOverlay = document.getElementById(overlayId);
@@ -66,6 +77,7 @@ export const openClinicalAiReportWindow = (input: OpenClinicalAiReportWindowInpu
     window.removeEventListener('keydown', onEscape);
     window.removeEventListener('resize', syncLayout);
     overlay.remove();
+    activeSession = null;
   };
 
   const onMessage = (event: MessageEvent) => {
@@ -94,4 +106,7 @@ export const openClinicalAiReportWindow = (input: OpenClinicalAiReportWindowInpu
   window.addEventListener('keydown', onEscape);
   window.addEventListener('resize', syncLayout);
   syncLayout();
+
+  // سجّل الجلسة الحالية عشان أي فتح تالي ينضّف listeners بتاعتها
+  activeSession = { cleanup: closeOverlay };
 };

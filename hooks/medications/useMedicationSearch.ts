@@ -52,14 +52,23 @@ export const useMedicationSearch = () => {
         });
     }, [medications]);
 
-    const search = useCallback((query: string, favorites: string[] = []): Medication[] => {
+    const search = useCallback((
+        query: string,
+        favorites: string[] = [],
+        usageStats: Record<string, number> = {},
+    ): Medication[] => {
         const term = normalizeText(query);
+        const getUsage = (id: string): number => {
+            const n = usageStats[id];
+            return typeof n === 'number' && n > 0 ? n : 0;
+        };
 
         if (!term) {
             if (favorites.length > 0) {
                 const favoritesSet = new Set(favorites);
                 return indexedMedications
                     .filter((item) => favoritesSet.has(item.med.id))
+                    .sort((a, b) => getUsage(b.med.id) - getUsage(a.med.id) || a.idx - b.idx)
                     .map((item) => item.med);
             }
             return [];
@@ -95,7 +104,12 @@ export const useMedicationSearch = () => {
         }
 
         return ranked
-            .sort((a, b) => (a.rank - b.rank) || (a.idx - b.idx))
+            .sort((a, b) => {
+                if (a.rank !== b.rank) return a.rank - b.rank;
+                const usageDiff = getUsage(b.med.id) - getUsage(a.med.id);
+                if (usageDiff !== 0) return usageDiff;
+                return a.idx - b.idx;
+            })
             .slice(0, 50)
             .map(x => x.med);
     }, [indexedMedications]);

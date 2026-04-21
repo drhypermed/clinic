@@ -10,8 +10,8 @@
  * 4. التنظيف التلقائي للسجلات القديمة جداً (أكثر من 7 سنين) لتوفير المساحة.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { collection, deleteDoc, deleteField, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { collection, deleteDoc, deleteField, doc, getDocs, getDocsFromCache, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { PatientRecord, ReadyPrescription } from '../../types';
 import { db } from '../../services/firebaseConfig';
 import { getDocsCacheFirst } from '../../services/firestore/cacheFirst';
@@ -50,6 +50,20 @@ const toIsoMaybe = (value: unknown): string | undefined => {
     }
   }
   return undefined;
+};
+
+/** توحيد صيغة الـ date (string / Timestamp / Date / number) إلى ISO string موحّد */
+const normalizeRecordDateField = (raw: unknown): string => {
+  if (!raw) return '';
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'number') return new Date(raw).toISOString();
+  if (raw instanceof Date) return raw.toISOString();
+  if (typeof raw === 'object') {
+    const ts = raw as { toDate?: () => Date; seconds?: number };
+    if (typeof ts.toDate === 'function') return ts.toDate().toISOString();
+    if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000).toISOString();
+  }
+  return '';
 };
 
 /** تحويل البيانات الخام المجلوبة من Firestore إلى كائن "روشتة جاهزة" متوافق مع النوع */
@@ -97,19 +111,27 @@ export const useDrHyperRealtimeData = ({
   // guards: تضمن تشغيل migration مرة واحدة فقط لمنع feedback loop (كتابة Firestore تولد snapshot جديد)
   const legacyConsultationsMigratedRef = useRef(false);
   const patientFilesBackfillDoneRef = useRef(false);
+  // مرجع لدالة التحديث اليدوي — تُستدعى من خارج الـ hook بعد الحفظ/الحذف
+  const refreshRecordsFromCacheRef = useRef<() => Promise<void>>(async () => {});
 
   // تحديث المرجع لضمان استخدام أحدث نسخة من دالة الإشعارات داخل UseEffect
   useEffect(() => {
     showNotificationRef.current = showNotification;
   }, [showNotification]);
 
-  // --- 1. مراقبة سجلات المرضى ---
+  // --- 1. تحميل سجلات المرضى (بدون listener دائم — توفير قراءات Firestore) ---
+  // الاستراتيجية:
+  //   1) عرض فوري من الكاش المحلي (0 قراءات).
+  //   2) قراءة واحدة من السيرفر لضمان تحديث البيانات (≈ عدد السجلات).
+  //   3) refreshRecordsFromCacheRef: يُستدعى بعد الحفظ/الحذف ليقرأ من الكاش
+  //      (الذي يحدّثه Firestore SDK تلقائياً بعد الكتابة الناجحة) — بدون قراءات سيرفر.
   useEffect(() => {
     if (!user) {
       setRecords([]);
       patientFilesSeniorityIndexedRef.current = false;
       legacyConsultationsMigratedRef.current = false;
       patientFilesBackfillDoneRef.current = false;
+      refreshRecordsFromCacheRef.current = async () => {};
       return;
     }
 
@@ -292,27 +314,56 @@ export const useDrHyperRealtimeData = ({
       }
     };
 
-    // تحميل كل سجلات المستخدم بدون orderBy عشان نضمن إنها تشمل السجلات القديمة
-    // اللي قد يكون حقل date فيها متخزّن بصيغة مختلفة (Timestamp vs string).
-    // النظام بيحذف تلقائياً اللي أقدم من 7 سنين، فالمجموع محدود طبيعياً.
-    // الـ limit 10000 سقف أمان للحالات النادرة جداً.
-    const q = query(
-      collection(db, 'users', user.uid, 'records'),
-      limit(10000)
-    );
+    // تحميل كل السجلات — المطلوب عشان:
+    //  1) الإحصائيات (كشوفات الشهر، إجمالي المرضى، إلخ) محتاجة كل السجلات.
+    //  2) ملفات المرضى محتاجة كل تاريخ المريض مش آخر 30 يوم بس.
+    //  3) البحث العميق (الشكوى، التاريخ المرضي، الأدوية) محتاج محتوى كامل.
+    // dateMs الموجود في السجلات الجديدة مفيد لاستعلامات لاحقة (البحث بتاريخ مخصوص
+    // عبر fetchRecordsByDateRange، مثلاً). migration dateMs خفيف (writes بس) ومُستبقى
+    // عشان أي optimization مستقبلي.
+    const q = query(collection(db, 'users', user.uid, 'records'), limit(10000));
 
-    /** تحويل أي صيغة date (string / Timestamp / Date / number) لـ ISO string موحّد */
-    const normalizeDateField = (raw: unknown): string => {
-      if (!raw) return '';
-      if (typeof raw === 'string') return raw;
-      if (typeof raw === 'number') return new Date(raw).toISOString();
-      if (raw instanceof Date) return raw.toISOString();
-      if (typeof raw === 'object') {
-        const ts = raw as { toDate?: () => Date; seconds?: number };
-        if (typeof ts.toDate === 'function') return ts.toDate().toISOString();
-        if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000).toISOString();
+    // مفتاح localStorage للتحقق من انتهاء migration الخاص بـ dateMs للمستخدم الحالي.
+    const DATE_MS_MIGRATION_KEY = `dh_dateMs_migrated_${user.uid}`;
+    const isDateMsMigrated = (() => {
+      try {
+        return localStorage.getItem(DATE_MS_MIGRATION_KEY) === '1';
+      } catch {
+        return false;
       }
-      return '';
+    })();
+
+    // Migration لـ dateMs: يكتب dateMs للسجلات القديمة اللي ما عندهاش.
+    // مفيد لاستعلامات التاريخ المستقبلية (fetchRecordsByDateRange).
+    const maybeBackfillDateMs = async (loadedRecords: PatientRecord[]) => {
+      if (isDateMsMigrated) return;
+
+      const toFix = loadedRecords.filter((record) => {
+        const existing = (record as { dateMs?: unknown }).dateMs;
+        return typeof existing !== 'number' || !Number.isFinite(existing);
+      });
+
+      if (toFix.length === 0) {
+        try { localStorage.setItem(DATE_MS_MIGRATION_KEY, '1'); } catch { /* no-op */ }
+        return;
+      }
+
+      const updates = toFix.map((record) => {
+        const parsed = Date.parse(record.date || '');
+        const computedMs = Number.isFinite(parsed) ? parsed : Date.now();
+        return updateDoc(doc(db, 'users', user.uid, 'records', record.id), {
+          dateMs: computedMs,
+        }).catch((err) => {
+          console.warn('dateMs backfill failed for record', record.id, err);
+        });
+      });
+
+      try {
+        await Promise.all(updates);
+        localStorage.setItem(DATE_MS_MIGRATION_KEY, '1');
+      } catch (error) {
+        console.error('dateMs migration error:', error);
+      }
     };
 
     const handleSnap = (snapshot: any, allowMutations: boolean) => {
@@ -322,7 +373,7 @@ export const useDrHyperRealtimeData = ({
         return {
           id: docSnapshot.id,
           ...raw,
-          date: normalizeDateField((raw as { date?: unknown }).date),
+          date: normalizeRecordDateField((raw as { date?: unknown }).date),
         };
       }) as PatientRecord[];
 
@@ -338,6 +389,10 @@ export const useDrHyperRealtimeData = ({
       if (allowMutations && !patientFilesBackfillDoneRef.current) {
         patientFilesBackfillDoneRef.current = true;
         void maybeBackfillPatientFiles(loadedRecordsRaw, true);
+      }
+      // dateMs backfill: يشتغل مرة واحدة عشان الاستعلامات السيرفر-سايد لاحقاً.
+      if (allowMutations) {
+        void maybeBackfillDateMs(loadedRecordsRaw);
       }
 
       const loadedRecords = attachSeparatedConsultationsToExamRecords(loadedRecordsRaw);
@@ -365,19 +420,39 @@ export const useDrHyperRealtimeData = ({
       }
     };
 
+    let cancelled = false;
+
+    // (1) عرض من الكاش فوراً — 0 قراءات
     getDocsCacheFirst(q).then((snap) => {
-      if (!snap.empty) handleSnap(snap, false);
+      if (cancelled || snap.empty) return;
+      handleSnap(snap, false);
     }).catch(() => { });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const isServerSnapshot = !(snapshot?.metadata?.fromCache ?? false);
-      handleSnap(snapshot, isServerSnapshot);
-    }, (error) => {
+    // (2) قراءة واحدة من السيرفر لضمان أحدث نسخة — تشغّل migrations/auto-delete مرة واحدة
+    getDocs(q).then((snap) => {
+      if (cancelled) return;
+      handleSnap(snap, true);
+    }).catch((error) => {
+      if (cancelled) return;
       console.error('Error loading records:', error);
       showNotificationRef.current('حدث خطأ في تحميل السجلات', 'error');
     });
 
-    return () => unsubscribe();
+    // (3) دالة تحديث من الكاش بعد الحفظ/الحذف — Firestore SDK يحدّث الكاش تلقائياً بعد الكتابة
+    refreshRecordsFromCacheRef.current = async () => {
+      if (cancelled) return;
+      try {
+        const snap = await getDocsFromCache(q);
+        if (!cancelled) handleSnap(snap, false);
+      } catch {
+        // الكاش غير متاح — نتجاهل بصمت
+      }
+    };
+
+    return () => {
+      cancelled = true;
+      refreshRecordsFromCacheRef.current = async () => {};
+    };
   }, [user, activeBranchId]);
 
   // --- 2. مراقبة الروشتات الجاهزة ---
@@ -444,9 +519,134 @@ export const useDrHyperRealtimeData = ({
     return () => unsubscribe();
   }, [user]);
 
+  // دالة تحديث السجلات من الكاش — تُستدعى من خارج الـ hook بعد الحفظ/الحذف
+  // لتعكس التغييرات في القائمة المحلية دون قراءات سيرفر إضافية.
+  const refreshRecords = useCallback(async () => {
+    await refreshRecordsFromCacheRef.current();
+  }, []);
+
+  // دمج سجلات جاية من السيرفر مع القائمة الحالية (بدون تكرار).
+  // يطبّق نفس ترتيب وفلترة الفرع اللي في handleSnap عشان النتيجة متسقة.
+  const mergeServerRecords = useCallback(
+    (docs: { id: string; data: () => unknown }[]) => {
+      if (docs.length === 0) return;
+      const incoming = docs.map((docSnapshot) => {
+        const raw = (docSnapshot.data() || {}) as Record<string, unknown>;
+        return {
+          id: docSnapshot.id,
+          ...(raw as Omit<PatientRecord, 'id'>),
+          date: normalizeRecordDateField(raw.date),
+        } as PatientRecord;
+      });
+
+      setRecords((prev) => {
+        const byId = new Map<string, PatientRecord>(prev.map((r) => [r.id, r]));
+        incoming.forEach((rec) => byId.set(rec.id, rec));
+        let merged = Array.from(byId.values());
+        merged = attachSeparatedConsultationsToExamRecords(merged);
+        if (activeBranchId) {
+          merged = merged.filter((r) => (r.branchId || DEFAULT_BRANCH_ID) === activeBranchId);
+        }
+        merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        return merged;
+      });
+    },
+    [activeBranchId],
+  );
+
+  // بحث على السيرفر باسم المريض / تليفون / رقم الملف.
+  // يرجع عدد السجلات اللي اتجابت (للـ UI يعرف لو لسه محتاج يعمل fallback).
+  const searchRecordsOnServer = useCallback(
+    async (term: string): Promise<number> => {
+      const trimmed = String(term || '').trim();
+      if (!user || trimmed.length < 2) return 0;
+
+      const normalizedName = buildPatientFileNameKey(trimmed);
+      const fileNum = Number(trimmed);
+      const phoneDigits = trimmed.replace(/\D/g, '');
+
+      const recordsRef = collection(db, 'users', user.uid, 'records');
+      const queries: Promise<{ docs: { id: string; data: () => unknown }[] }>[] = [];
+
+      if (normalizedName) {
+        queries.push(
+          getDocs(
+            query(
+              recordsRef,
+              where('patientFileNameKey', '>=', normalizedName),
+              where('patientFileNameKey', '<=', normalizedName + '\uf8ff'),
+              limit(30),
+            ),
+          ),
+        );
+      }
+
+      if (Number.isFinite(fileNum) && fileNum > 0) {
+        queries.push(
+          getDocs(query(recordsRef, where('patientFileNumber', '==', fileNum), limit(30))),
+        );
+      }
+
+      if (phoneDigits.length >= 5) {
+        queries.push(
+          getDocs(query(recordsRef, where('phone', '==', phoneDigits), limit(30))),
+        );
+      }
+
+      if (queries.length === 0) return 0;
+
+      try {
+        const snaps = await Promise.all(queries);
+        const uniqueDocs = new Map<string, { id: string; data: () => unknown }>();
+        snaps.forEach((snap) => {
+          snap.docs.forEach((d) => uniqueDocs.set(d.id, d));
+        });
+        const docs = Array.from(uniqueDocs.values());
+        mergeServerRecords(docs);
+        return docs.length;
+      } catch (error) {
+        console.error('searchRecordsOnServer failed:', error);
+        return 0;
+      }
+    },
+    [user, mergeServerRecords],
+  );
+
+  // جلب سجلات يوم/مدى محدد من السيرفر (لفلتر التاريخ — قبل 30 يوم).
+  const fetchRecordsByDateRange = useCallback(
+    async (startMs: number, endMs: number): Promise<number> => {
+      if (!user) return 0;
+      if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return 0;
+      if (endMs < startMs) return 0;
+
+      const recordsRef = collection(db, 'users', user.uid, 'records');
+      try {
+        const snap = await getDocs(
+          query(
+            recordsRef,
+            where('dateMs', '>=', startMs),
+            where('dateMs', '<=', endMs),
+            limit(200),
+          ),
+        );
+        mergeServerRecords(snap.docs);
+        return snap.docs.length;
+      } catch (error) {
+        console.error('fetchRecordsByDateRange failed:', error);
+        return 0;
+      }
+    },
+    [user, mergeServerRecords],
+  );
+
   return {
     records,
     readyPrescriptions,
+    refreshRecords,
+    // دوال بحث سيرفر-سايد متاحة لاستخدام مستقبلي (توفير قراءات على نطاق كبير).
+    // دلوقتي مش مستعملة لأن records محملة بالكامل والبحث بيشتغل محلياً.
+    searchRecordsOnServer,
+    fetchRecordsByDateRange,
   };
 };
 

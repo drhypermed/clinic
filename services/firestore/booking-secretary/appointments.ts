@@ -7,7 +7,7 @@
  * 4. حفظ الموعد في مجموعة المواعيد الخاصة بالطبيب مع وسم المصدر بـ 'secretary'.
  */
 
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, limit, query, where } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { consumeBookingQuota } from '../../accountTypeControlsService';
 import { isQuotaLimitExceededError, isQuotaTransientError } from '../../account-type-controls/quotaErrors';
@@ -96,7 +96,8 @@ export const createAppointmentFromSecret = async (
     const collisionQuery = query(
       appointmentsRef,
       where('dateTime', '==', data.dateTime),
-      where('branchId', '==', resolvedBranchId)
+      where('branchId', '==', resolvedBranchId),
+      limit(10)
     );
     const existing = await getDocs(collisionQuery);
     const hasActiveCollision = existing.docs.some((d) => {

@@ -6,7 +6,14 @@
  * 3. حذف المواعيد (يدوياً أو تلقائياً عند انتهاء صلاحيتها).
  */
 
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, writeBatch } from 'firebase/firestore';
+
+/**
+ * الحد الأقصى لعدد المواعيد المتاحة للعرض في صفحة الحجز العامة.
+ * المريض يختار من أقرب ٦٠ موعداً قادم — عدد كافٍ لخيارات عدة أسابيع،
+ * ومنع استعلامات غير محدودة على مجموعة يمكن أن تنمو بلا سقف.
+ */
+const PUBLIC_SLOTS_QUERY_LIMIT = 60;
 import { PublicBookingSlot } from '../../../types';
 import { db } from '../../firebaseConfig';
 import { getDocsCacheFirst } from '../cacheFirst';
@@ -48,7 +55,7 @@ export const getPublicSlots = async (secret: string): Promise<PublicBookingSlot[
   if (!normalizedSecret) return [];
 
   const slotsRef = collection(db, 'publicBookingConfig', normalizedSecret, 'slots');
-  const q = query(slotsRef, orderBy('dateTime', 'asc'));
+  const q = query(slotsRef, orderBy('dateTime', 'asc'), limit(PUBLIC_SLOTS_QUERY_LIMIT));
   const snapshot = await getDocsCacheFirst(q);
   const nowMs = Date.now();
 
@@ -89,7 +96,7 @@ export const subscribeToPublicSlots = (
   }
 
   const slotsRef = collection(db, 'publicBookingConfig', normalizedSecret, 'slots');
-  const q = query(slotsRef, orderBy('dateTime', 'asc'));
+  const q = query(slotsRef, orderBy('dateTime', 'asc'), limit(PUBLIC_SLOTS_QUERY_LIMIT));
   let migrationDone = false;
 
   /** معالجة البيانات وتحويلها للنموذج الموحد */

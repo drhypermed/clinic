@@ -125,7 +125,7 @@ export const getBookingSecretByUserId = async (userId: string): Promise<string |
     }
 
     // بديل: جلب كافة الإعدادات وترتيبها برمجياً (في حال فشل الـ Query بسبب غياب الـ Index)
-    const fallbackQuery = query(configsRef, where('userId', '==', normalizedUserId));
+    const fallbackQuery = query(configsRef, where('userId', '==', normalizedUserId), limit(10));
     const fallbackSnapshot = await getDocs(fallbackQuery);
 
     if (!fallbackSnapshot.empty) {
@@ -165,7 +165,7 @@ export const getBookingSecretByUserId = async (userId: string): Promise<string |
     // محاولة أخيرة بسيطة جداً بدون ترتيب أو تعقيد
     try {
       const configsRef = collection(db, 'bookingConfig');
-      const q = query(configsRef, where('userId', '==', normalizedUserId));
+      const q = query(configsRef, where('userId', '==', normalizedUserId), limit(10));
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const docs = snapshot.docs

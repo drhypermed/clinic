@@ -9,7 +9,12 @@
  * 3. تتبع عدد مرات استخدام كل دواء (Usage Stats) لترتيب المقترحات.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../useAuth';
+import {
+  loadMedicationUsageStats,
+  saveMedicationUsageStats,
+} from '../../services/medicationUsageStatsService';
 
 /** أنواع الصفحات/الواجهات المتاحة في تطبيق DrHyper */
 type DrHyperView =
@@ -42,6 +47,9 @@ const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
 ];
 
 export const useDrHyperViewAndUsage = () => {
+  const { user } = useAuth();
+  const userId = user?.uid;
+
   // حالة الواجهة الحالية - يتم تحميلها من الذاكرة المحلية (LocalStorage) if exists
   const [currentView, setCurrentView] = useState<DrHyperView>(() => {
     try {
@@ -74,14 +82,39 @@ export const useDrHyperViewAndUsage = () => {
     }
   });
 
-  // حفظ الإحصائيات في الذاكرة المحلية عند تحديثها
+  // دمج العدّادات من السحابة مرة واحدة عند توفر userId (max بين المحلي والبعيد)
+  const didMergeCloudRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!userId || didMergeCloudRef.current === userId) return;
+    didMergeCloudRef.current = userId;
+    let cancelled = false;
+    loadMedicationUsageStats(userId).then((cloudStats) => {
+      if (cancelled) return;
+      setUsageStats((prev) => {
+        const merged: Record<string, number> = { ...prev };
+        for (const [id, count] of Object.entries(cloudStats)) {
+          const local = merged[id] || 0;
+          if (count > local) merged[id] = count;
+        }
+        return merged;
+      });
+    });
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // حفظ الإحصائيات في الذاكرة المحلية فوراً + في السحابة بعد debounce
   useEffect(() => {
     try {
       localStorage.setItem('dr_hyper_usage_stats', JSON.stringify(usageStats));
     } catch {
       // تجاهل أخطاء الذاكرة المحلية
     }
-  }, [usageStats]);
+    if (!userId) return;
+    const timer = setTimeout(() => {
+      saveMedicationUsageStats(userId, usageStats);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [usageStats, userId]);
 
   /** زيادة عداد استخدام دواء معين بمقدار 1 */
   const trackMedUsage = (medId: string) => {

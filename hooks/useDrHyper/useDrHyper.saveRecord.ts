@@ -146,6 +146,12 @@ export const createSaveRecordAction = ({
     };
 
     const visitIso = buildVisitIso();
+    // dateMs: رقم ثابت بالميلي ثانية — يُستعمل للفرز والفلترة على السيرفر بأمان.
+    // بديل موحد لحقل date المتغير النوع (string/Timestamp/number) في السجلات القديمة.
+    const visitDateMs = (() => {
+      const parsed = Date.parse(visitIso);
+      return Number.isFinite(parsed) ? parsed : Date.now();
+    })();
     const shouldSaveAsConsultation = visitType === 'consultation';
 
     // ─── جلب الأسعار الحالية (helper مستخرج) ───────────────────────────
@@ -195,6 +201,7 @@ export const createSaveRecordAction = ({
       vitals,
       ...clinicalPayload,
       date: visitIso,
+      dateMs: visitDateMs,
       branchId: activeBranchId || DEFAULT_BRANCH_ID,
       ...paymentPayload,
       serviceBasePrice: Number.isFinite(Number(resolvedServiceBasePrice))
@@ -334,6 +341,7 @@ export const createSaveRecordAction = ({
           bmi: bmi || undefined,
           vitals,
           date: visitIso,
+          dateMs: visitDateMs,
           ...clinicalPayload,
           isConsultationOnly: true,
           branchId: persistedConsultationBranchId || activeBranchId || DEFAULT_BRANCH_ID,
@@ -409,6 +417,7 @@ export const createSaveRecordAction = ({
           bmi: bmi || undefined,
           vitals,
           date: visitIso,
+          dateMs: visitDateMs,
           ...clinicalPayload,
           isConsultationOnly: true,
           branchId: activeBranchId || DEFAULT_BRANCH_ID,

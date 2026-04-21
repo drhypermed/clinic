@@ -100,8 +100,8 @@ export const RxList: React.FC<RxListProps> = ({
     const query = activeSearchIdx < rxItems.length && rxItems[activeSearchIdx] && rxItems[activeSearchIdx].medication
       ? rxItems[activeSearchIdx].medication!.name
       : '';
-    return search(query);
-  }, [activeSearchIdx, rxItems, search]);
+    return search(query, [], usageStats);
+  }, [activeSearchIdx, rxItems, search, usageStats]);
 
   return (
     <div className={`flex-1 flex flex-col ${listGap} pl-2 pr-1 relative z-40 min-h-0 overflow-visible`}>

@@ -211,15 +211,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [mobileMenuOpen]);
 
-    // Lock body scroll when mobile menu is open
+    // قفل تمرير الصفحة وراء القائمة المفتوحة في الموبايل
+    // ملاحظة: `overflow: hidden` على body وحده لا يمنع التمرير باللمس على iOS Safari،
+    // لذلك نستخدم `position: fixed` مع حفظ واستعادة الـ scrollY حتى لا يقفز المستخدم للأعلى عند الإغلاق.
     useEffect(() => {
-        if (mobileMenuOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
+        if (!mobileMenuOpen) return;
+
+        const scrollY = window.scrollY;
+        const body = document.body;
+        const previous = {
+            position: body.style.position,
+            top: body.style.top,
+            width: body.style.width,
+            overflow: body.style.overflow,
+        };
+
+        body.style.position = 'fixed';
+        body.style.top = `-${scrollY}px`;
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+
         return () => {
-            document.body.style.overflow = '';
+            body.style.position = previous.position;
+            body.style.top = previous.top;
+            body.style.width = previous.width;
+            body.style.overflow = previous.overflow;
+            window.scrollTo(0, scrollY);
         };
     }, [mobileMenuOpen]);
 
@@ -434,7 +451,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Mobile Sidebar */}
             <aside
                 className={`
-          md:hidden fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[1000] no-print
+          md:hidden fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-[1000] no-print
           transform transition-transform duration-300 ease-out overflow-y-auto
           ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
