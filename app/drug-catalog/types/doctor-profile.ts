@@ -27,6 +27,38 @@ export interface DoctorClinicServiceRow {
 }
 
 /**
+ * فرع واحد من فروع الطبيب داخل إعلانه العام.
+ * كل فرع ليه عنوانه ومواعيده وأسعاره وخدماته وصوره المستقلة،
+ * عشان الطبيب اللي عنده أكتر من عيادة يقدر يعرض كل فرع بتفاصيله
+ * من غير ما يخسر الفروع التانية.
+ */
+export interface DoctorAdBranch {
+  id: string;
+  /** اسم الفرع اللي الطبيب بيسميه (مثلاً: "فرع المعادي") — يظهر للجمهور. */
+  name: string;
+
+  // العنوان
+  governorate: string;
+  city: string;
+  addressDetails: string;
+
+  // التواصل (كل فرع ممكن يكون له رقمه المستقل)
+  contactPhone: string;
+  whatsapp: string;
+
+  // المواعيد والخدمات والأسعار
+  clinicSchedule: DoctorClinicScheduleRow[];
+  clinicServices: DoctorClinicServiceRow[];
+  examinationPrice: number | null;
+  discountedExaminationPrice: number | null;
+  consultationPrice: number | null;
+  discountedConsultationPrice: number | null;
+
+  // صور الفرع
+  imageUrls: string[];
+}
+
+/**
  * وسيلة تواصل إضافية في ملف الطبيب (فيسبوك، تويتر، إنستا ...).
  * النوع داخلي فقط (مش مُصدَّر) لأنه جزء تفصيلي من DoctorAdProfile.
  */
@@ -53,12 +85,20 @@ export interface DoctorAdProfile {
   clinicName?: string;
   bio: string;
 
-  // العنوان
+  // ─── فروع الطبيب (الهيكل الجديد) ───
+  // كل فرع بعنوانه ومواعيده وأسعاره وصوره مستقلة.
+  // الإعلان الحديث يكتب هنا. الحقول القديمة تحت هي لـbackwards-compat
+  // مع الإعلانات اللي اتحفظت قبل ما ندعم تعدد الفروع.
+  branches?: DoctorAdBranch[];
+
+  // ─── الحقول القديمة (Legacy — للتوافق مع بيانات قبل تعدد الفروع) ───
+  // عند التحميل: لو الإعلان ما فيهوش branches، بنعمل فرع افتراضي
+  // من الحقول دي. عند الحفظ الجديد: بنكتب الحقول دي من أول فرع
+  // عشان أي كود قديم ما بيقراش branches لسه يلاقي قيم صالحة.
   governorate: string;
   city: string;
   addressDetails: string;
 
-  // المواعيد والخدمات
   clinicSchedule: DoctorClinicScheduleRow[];
   clinicServices: DoctorClinicServiceRow[];
   examinationPrice: number | null;
@@ -68,7 +108,7 @@ export interface DoctorAdProfile {
   services: string[];
   imageUrls: string[];
 
-  // التواصل
+  // التواصل — contactPhone/whatsapp بقوا per-branch كمان، دول legacy.
   contactPhone?: string;
   whatsapp?: string;
   socialLinks?: DoctorSocialLink[];

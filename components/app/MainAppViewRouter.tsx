@@ -421,8 +421,6 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           doctorName={p.normalizedDoctorName}
           doctorSpecialty={p.normalizedDoctorSpecialty}
           profileImage={p.profileImage || undefined}
-          bookingSecret={p.bookingSecret}
-          onBookingSecretReady={p.handleBookingSecretReady}
         />
       )}
 

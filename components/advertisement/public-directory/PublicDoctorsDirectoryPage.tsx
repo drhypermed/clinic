@@ -14,8 +14,12 @@ import { DoctorReviewsModal } from './DoctorReviewsModal';
 import { AdBanner } from '../../common/AdBanner';
 import { AppUpdateBroadcastBanner } from '../../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../../common/InAppAudienceNotificationPopup';
+import { JsonLdTag } from '../../common/JsonLdTag';
 import type { PublicDoctorsDirectoryPageProps } from '../../../types';
 import { usePublicDoctorsDirectoryController } from './usePublicDoctorsDirectoryController';
+// Schema.org ItemList — بيورّي جوجل إن الصفحه فيها ليستة أطباء منظّمه.
+// بيظهر في نتايج البحث كـRich Snippet (بعدد الأطباء وتخصّصاتهم).
+import { buildDoctorsItemListSchema } from '../../../utils/doctorSchema';
 
 export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProps> = (props) => {
   const {
@@ -88,18 +92,28 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
   }
 
   const isLoggedIn = !!props.user;
+  // JSON-LD ItemList بيتحط في <head> — بيساعد جوجل يفهم محتوى الصفحه.
+  // بنستخدم filteredAds (مش ads) عشان لو المستخدم عمل فلتر، الـschema يعكس اللي ظاهر.
+  const itemListSchema = filteredAds.length > 0
+    ? buildDoctorsItemListSchema(filteredAds)
+    : null;
 
   return (
     <div
       className="min-h-screen relative"
       dir="rtl"
       style={{
+        // خلفيّه موحّده في عائلة teal/cyan فقط — شيلت اللون الـsky (كان rgba(14,165,233))
+        // cyan-500 = rgba(6,182,212) → أقرب لهويّة العلامه
         background:
-          'radial-gradient(1200px 320px at 85% -10%, rgba(14,165,233,0.28), transparent 58%),' +
+          'radial-gradient(1200px 320px at 85% -10%, rgba(6,182,212,0.28), transparent 58%),' +
           'radial-gradient(900px 280px at -12% 0%, rgba(16,185,129,0.22), transparent 60%),' +
-          'linear-gradient(180deg, #e0f2fe 0%, #cffafe 50%, #ecfeff 100%)',
+          'linear-gradient(180deg, #cffafe 0%, #ecfeff 50%, #f0fdfa 100%)',
       }}
     >
+      {/* Schema.org ItemList — ميظهرش في الـUI بس بيتحط في <head> لجوجل */}
+      <JsonLdTag id="directory-itemlist" json={itemListSchema} />
+
       <PublicActionsBar
         onOpenAccount={() => setShowAccountPanel(true)}
         onOpenBookings={() => setShowBookingsPanel(true)}

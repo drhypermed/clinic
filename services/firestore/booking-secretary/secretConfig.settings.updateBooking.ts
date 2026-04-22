@@ -192,6 +192,13 @@ export const updateBookingSettings = async (
         userMapUpdates[`secretaryVitalFieldsByBranch.${branchMapKey}`] = normalizedSecretaryVitalFields;
         configMapUpdates[`secretaryVitalFieldsByBranch.${branchMapKey}`] = normalizedSecretaryVitalFields;
     }
+    // كلمة السر كنص واضح — تُخزَّن في مستند المستخدم فقط (الذي لا يقرأه غير الطبيب)،
+    // لإعادة عرضها في واجهة الطبيب حتى يراها ويعدلها متى شاء.
+    if (secretaryPassword !== undefined) {
+        const normalizedSecretaryPassword = String(secretaryPassword).trim();
+        userMapUpdates[`secretaryPasswordPlainByBranch.${branchMapKey}`] =
+            normalizedSecretaryPassword || deleteField();
+    }
     if (Object.keys(userMapUpdates).length > 0) {
         await updateDoc(userRef, userMapUpdates).catch(() => undefined);
     }

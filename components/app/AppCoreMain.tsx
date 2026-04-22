@@ -7,6 +7,7 @@ import { AppCoreContent } from './core/AppCoreContent';
 import { isAuthPathname, isDoctorOnboardingPathname } from './core/constants';
 import { useAuthFlowGuard } from './core/useAuthFlowGuard';
 import { usePageTitle } from './core/usePageTitle';
+import { useHostAwareMeta } from './core/useHostAwareMeta';
 import { useDoctorOnboardingStatus } from './core/useDoctorOnboardingStatus';
 import { usePremiumSubscriptionWatcher } from './core/usePremiumSubscriptionWatcher';
 import { useAppRedirectEffect } from './core/useAppRedirectEffect';
@@ -50,6 +51,11 @@ export const App: React.FC = () => {
 
   // 5. تحديث عنوان الصفحة (Page Title) في المتصفح ديناميكياً
   usePageTitle(pathname);
+
+  // 5.1 تحديث الـmeta tags حسب الدومين (patient vs clinic) — بيحصل مره واحده عند التحميل
+  // drhypermed.com     → meta + title خاصّين بالمرضى (index في جوجل)
+  // clinic.drhypermed.com → robots noindex (مش بيظهر في جوجل)
+  useHostAwareMeta();
 
   // 6. التحقق من حالة إكمال الملف الشخصي للطبيب ورفع الوثائق المطلوبة
   const doctorOnboardingStatus = useDoctorOnboardingStatus({

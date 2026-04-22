@@ -1,4 +1,17 @@
+# Dr Hyper — قواعد الزحف لجوجل
+# الملف ده بيُقدَّم لأي دومين مرتبط بالمشروع (drhypermed.com + clinic.drhypermed.com)،
+# فبنسرد الـsitemap-ين وجوجل بيقرا كل واحد حسب الدومين اللي بيتصفّحه.
+
 User-agent: *
 Allow: /
 
-Sitemap: https://www.drhypermed.com/sitemap.xml
+# صفحات خاصّه بالحسابات — مش محتاجين فهرستها
+Disallow: /login
+Disallow: /home
+Disallow: /app/
+Disallow: /admin
+Disallow: /book-public/
+
+# Sitemap لكل دومين
+Sitemap: https://drhypermed.com/sitemap-patient.xml
+Sitemap: https://clinic.drhypermed.com/sitemap-clinic.xml

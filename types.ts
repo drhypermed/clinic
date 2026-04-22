@@ -57,7 +57,6 @@ export type {
   DoctorAdvertisementPageProps,
   DoctorAdHeaderProps,
   DoctorAdInfoSectionProps,
-  DoctorAdContactSectionProps,
   DoctorAdPricingServicesSectionProps,
   DoctorAdScheduleSectionProps,
   DoctorAdImagesSectionProps,

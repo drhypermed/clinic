@@ -93,9 +93,13 @@ export default defineConfig({
         ],
       },
       manifest: {
+        // الـmanifest الافتراضي للـbuild — بيستخدم فقط على localhost/staging.
+        // على الإنتاج (drhypermed.com / clinic.drhypermed.com) الـindex.html بيبدّله
+        // ديناميكياً لـmanifest-patient.webmanifest (DrHyperPublic) أو
+        // manifest-clinic.webmanifest (DrHyperMed) حسب الدومين.
         id: '/',
-        name: 'DrHyper Med',
-        short_name: 'DrHyper Med',
+        name: 'DrHyperMed',
+        short_name: 'DrHyperMed',
         description: 'Smart clinic management, prescriptions, and pediatric dose support.',
         lang: 'ar',
         dir: 'rtl',

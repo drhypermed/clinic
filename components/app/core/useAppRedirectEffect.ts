@@ -89,7 +89,11 @@ export const useAppRedirectEffect = ({
         return;
       }
 
-      if (!isAuthPath && pathname !== '/') {
+      // دليل المستخدم (/user-guide) صفحه عامّه بدون تسجيل دخول — الدكتور الجديد
+      // يقدر يقراها قبل ما يسجّل عشان يفهم التطبيق.
+      const isPublicStaticPath = pathname === '/user-guide';
+
+      if (!isAuthPath && pathname !== '/' && !isPublicStaticPath) {
         if (hasLocalBlacklistMessage) {
           if (lastRedirectPathRef.current !== '/login/doctor') {
             lastRedirectPathRef.current = '/login/doctor';

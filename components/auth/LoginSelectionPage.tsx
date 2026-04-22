@@ -15,6 +15,14 @@ import {
 import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
+// تحديد وضع التطبيق حسب الدومين — المريض يشوف خيار واحد، الطاقم الطبّي يشوف الباقي
+import { getHostMode } from '../../utils/hostMode';
+
+// المجموعات الثلاث:
+//  - 'clinic': خيارات دخول الأطباء + السكرتاريه (بتظهر على clinic.drhypermed.com)
+//  - 'public': خيار دخول الجمهور فقط (بيظهر على drhypermed.com)
+//  - 'any'   : بيظهر في الحالتين (مفيش دلوقتي، بس متروك للمرونه)
+type RoleAudience = 'clinic' | 'public' | 'any';
 
 interface RoleOption {
   id: string;
@@ -23,6 +31,7 @@ interface RoleOption {
   icon: React.ReactNode;
   tone: 'blue' | 'emerald';
   route: string;
+  audience: RoleAudience;
 }
 
 const OPTIONS: RoleOption[] = [
@@ -33,6 +42,7 @@ const OPTIONS: RoleOption[] = [
     icon: <FaUserDoctor className="w-6 h-6" />,
     tone: 'blue',
     route: '/login/doctor',
+    audience: 'clinic',
   },
   {
     id: 'signup-doctor',
@@ -41,6 +51,7 @@ const OPTIONS: RoleOption[] = [
     icon: <FaUserPlus className="w-6 h-6" />,
     tone: 'blue',
     route: '/signup/doctor',
+    audience: 'clinic',
   },
   {
     id: 'login-secretary',
@@ -49,6 +60,7 @@ const OPTIONS: RoleOption[] = [
     icon: <FaClipboardUser className="w-6 h-6" />,
     tone: 'emerald',
     route: '/login/secretary',
+    audience: 'clinic',
   },
   {
     id: 'login-public',
@@ -57,12 +69,34 @@ const OPTIONS: RoleOption[] = [
     icon: <FaUserGroup className="w-6 h-6" />,
     tone: 'emerald',
     route: '/login/public',
+    audience: 'public',
   },
 ];
 
 export const LoginSelectionPage: React.FC = () => {
   useHideBootSplash('login-selection-mounted');
   const navigate = useNavigate();
+
+  // فلتره الخيارات حسب الدومين الحالي:
+  //  - على drhypermed.com → يظهر فقط "دخول الجمهور"
+  //  - على clinic.drhypermed.com → تظهر خيارات الأطباء/السكرتاريه فقط
+  //  - في الـdev (both) → كل الخيارات تظهر للتجربه
+  const hostMode = getHostMode();
+  const visibleOptions = OPTIONS.filter((opt) => {
+    if (hostMode === 'both') return true;
+    if (opt.audience === 'any') return true;
+    if (hostMode === 'clinic' && opt.audience === 'clinic') return true;
+    if (hostMode === 'patient' && opt.audience === 'public') return true;
+    return false;
+  });
+
+  // العنوان والوصف بيتغيّروا حسب الجمهور
+  const heroTitle = hostMode === 'clinic' ? 'بوابه الطاقم الطبّي' : hostMode === 'patient' ? 'أهلاً بيك في Dr Hyper' : 'النظام الأقوى لإدارة العيادات';
+  const heroSubtitle = hostMode === 'clinic'
+    ? 'سجّل دخولك كطبيب أو سكرتاريه للوصول لنظام إدارة العياده.'
+    : hostMode === 'patient'
+      ? 'سجّل دخولك لحجز موعدك عند دكتورك بسهوله وسرعه.'
+      : 'اختر نوع الدخول المناسب لك من القائمة وابدأ استخدام المنصة.';
 
   return (
     <AuthLayout>
@@ -72,10 +106,10 @@ export const LoginSelectionPage: React.FC = () => {
           <BrandLogo className="w-72 h-72 lg:w-[22rem] lg:h-[22rem] mb-2" size={352} fetchPriority="high" />
           <div className="mt-2 lg:mt-5 inline-block bg-white/90 rounded-xl ring-1 ring-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_20px_-10px_rgba(15,23,42,0.15)] px-5 py-3">
             <p className="text-xl lg:text-2xl font-bold text-slate-900 leading-snug">
-              النظام الأقوى لإدارة العيادات
+              {heroTitle}
             </p>
             <p className="mt-2 text-base text-slate-700 font-semibold leading-relaxed">
-              اختر نوع الدخول المناسب لك من القائمة وابدأ استخدام المنصة.
+              {heroSubtitle}
             </p>
           </div>
         </div>
@@ -84,7 +118,7 @@ export const LoginSelectionPage: React.FC = () => {
         <div className="flex-1 w-full max-w-md">
           <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 p-5 space-y-3 overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500" />
-            {OPTIONS.map((opt) => {
+            {visibleOptions.map((opt) => {
               const isBlue = opt.tone === 'blue';
               const iconBg = isBlue
                 ? 'bg-blue-600 text-white'

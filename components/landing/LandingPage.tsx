@@ -30,6 +30,7 @@ import {
   HiOutlineArrowRightEndOnRectangle,
   HiOutlineSparkles,
   HiOutlineSquares2X2,
+  HiOutlineBookOpen,
 } from 'react-icons/hi2';
 
 /* ── helpers ── */
@@ -230,6 +231,36 @@ export const LandingPage: React.FC = () => {
                 افتح حسابك مجاناً في أقل من دقيقة، واختار الواجهة المناسبة لدورك — طبيب، سكرتارية، أو مريض.
               </p>
             </div>
+          </A>
+
+          {/* ── دليل المستخدم — بيبان قبل كروت تسجيل الدخول ── */}
+          {/* قبل ما الدكتور يسجّل، بيقدر يقرا دليل مفصّل عن كل ميزات التطبيق. */}
+          {/* ده بيقلّل أسئله الدعم الفنّي بنسبه كبيره وبيرفع ثقه الدكتور قبل التسجيل. */}
+          <A>
+            <button
+              type="button"
+              onClick={() => go('/user-guide')}
+              className="group w-full mb-5 sm:mb-6 flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-blue-50 via-white to-indigo-50 ring-1 ring-blue-200/60 hover:ring-blue-400 hover:shadow-lg transition-all text-right active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                  <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">دليل المستخدم</h3>
+                    <span className="text-[10px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-full">جديد</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug mt-0.5">
+                    شوف كل ميزات التطبيق خطوه بخطوه قبل ما تسجّل — 10 مواضيع مرتّبه بالترتيب اللي هتستخدمه.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 hidden sm:flex items-center gap-1 text-blue-700 font-black text-xs group-hover:gap-2 transition-all">
+                <span>افتح الدليل</span>
+                <HiOutlineArrowRightEndOnRectangle className="w-4 h-4" />
+              </div>
+            </button>
           </A>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">

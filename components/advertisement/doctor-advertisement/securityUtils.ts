@@ -33,6 +33,23 @@ export const sanitizeTextInput = (value: unknown, maxLength: number) =>
     .slice(0, maxLength);
 
 /**
+ * تطهير نص متعدد الأسطر (textarea): بيشيل رموز التحكم الخطيرة
+ * بس بيحافظ على `\n` (السطر الجديد) عشان الطبيب لما يكتب كلام في أكتر
+ * من سطر في خانة الإعلان، الأسطر تفضل زي ما هي قدام الجمهور.
+ *
+ * Why: CONTROL_CHARS_REGEX الأصلي بيعتبر \n حرف تحكم وبيستبدله بمسافة،
+ * فكان أي كتابة في textarea بتتحول لسطر واحد طويل.
+ */
+export const sanitizeMultilineInput = (value: unknown, maxLength: number) =>
+  String(value || '')
+    // نوحّد \r\n و \r إلى \n قبل التنظيف
+    .replace(/\r\n?/g, '\n')
+    // نشيل كل أحرف التحكم ما عدا \n (\u000A) و \t (\u0009)
+    .replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, ' ')
+    .trim()
+    .slice(0, maxLength);
+
+/**
  * يتحقق أن الرابط: صالح كـ URL، ويبدأ بـ http:// أو https:// فقط.
  * رفض javascript:, data:, file:, وغيرها من الـ protocols اللي ممكن تكون خطر.
  */

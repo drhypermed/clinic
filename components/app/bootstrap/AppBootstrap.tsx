@@ -14,6 +14,9 @@ const PwaInstallPrompt = React.lazy(() => import('../../PwaInstallPrompt').then(
 const NotificationTogglePrompt = React.lazy(() => import('../../NotificationTogglePrompt').then(m => ({ default: m.NotificationTogglePrompt })));
 const PublicBookingPage = React.lazy(() => import('../../appointments/public-booking/PublicBookingPage').then(m => ({ default: m.PublicBookingPage })));
 const PublicBookingFormPage = React.lazy(() => import('../../appointments/public-booking-form/PublicBookingFormPage').then(m => ({ default: m.PublicBookingFormPage })));
+// صفحه الطبيب المستقلّه (SEO-first) — URL: /dr/:slug
+// مسار منفصل عن App عشان الـbot يشوف المحتوى بدون الـauth gates.
+const DoctorPublicPage = React.lazy(() => import('../../advertisement/public-directory/DoctorPublicPage').then(m => ({ default: m.DoctorPublicPage })));
 
 /**
  * يعمل تمرير للأعلى تلقائياً مع كل تغيير في المسار،
@@ -229,6 +232,8 @@ const RootApp: React.FC = () => {
           <Route path="/book-public/s/:secret" element={<PublicBookingFormPage />} />
           <Route path="/book-public/:userId/:secret" element={<PublicBookingFormPage />} />
           <Route path="/book-public/:userId" element={<PublicBookingFormPage />} />
+          {/* صفحه الطبيب المستقلّه — URL صديق لمحركات البحث (/dr/slug) */}
+          <Route path="/dr/:slug" element={<DoctorPublicPage />} />
           <Route path="*" element={<App />} />
         </Routes>
       </React.Suspense>

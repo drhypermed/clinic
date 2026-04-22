@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:public": "cross-env VITE_DEV_HOST_MODE=patient vite --port 5173 --strictPort",
+    "dev:clinic": "cross-env VITE_DEV_HOST_MODE=clinic vite --port 5174 --strictPort",
+    "dev:split": "concurrently -n \"PUBLIC,CLINIC\" -c \"cyan.bold,blue.bold\" \"npm:dev:public\" \"npm:dev:clinic\"",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -46,6 +49,8 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",

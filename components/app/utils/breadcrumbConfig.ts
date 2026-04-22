@@ -26,7 +26,7 @@ export const VIEW_LABELS: Record<AppView, string> = {
   medicationEdit: 'تعديل الأدوية',
   settings: 'تصميم الروشتة',
   branchSettings: 'إدارة الفروع',
-  advertisement: 'الإعلان والجمهور',
+  advertisement: 'الإعلان',
   secretary: 'السكرتارية',
 };
 

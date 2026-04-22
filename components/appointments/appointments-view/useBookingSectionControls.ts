@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import type {
   CustomBox,
@@ -19,47 +19,6 @@ import {
   normalizeSecretaryVitalFieldDefinitions,
   normalizeSecretaryVitalsVisibility,
 } from '../../../utils/secretaryVitals';
-import { safeLsGet, safeLsRemove, safeLsSet } from '../../../utils/localStorageHelpers';
-
-const SECRETARY_PASSWORD_CACHE_PREFIX = 'dh_secretary_password_cache_v1_';
-const SECRETARY_AUTOSAVE_DEBOUNCE_MS = 900;
-
-/**
- * مفتاح تخزين كلمة سر السكرتارية في localStorage.
- * كل فرع له كلمة سر مستقلة، فالمفتاح يتضمن userId + branchId.
- * لو ما فيش branchId نستخدم المفتاح القديم (legacy) للتوافق مع الحسابات اللي كانت بفرع واحد.
- */
-const getSecretaryPasswordStorageKey = (userId: string, branchId?: string): string => {
-  const normalizedUserId = userId.trim();
-  if (!normalizedUserId) return '';
-  const normalizedBranchId = (branchId || '').trim();
-  return normalizedBranchId
-    ? `${SECRETARY_PASSWORD_CACHE_PREFIX}${normalizedUserId}_${normalizedBranchId}`
-    : `${SECRETARY_PASSWORD_CACHE_PREFIX}${normalizedUserId}`;
-};
-
-const readCachedSecretaryPassword = (userId: string, branchId?: string): string => {
-  if (!userId) return '';
-  const perBranchKey = getSecretaryPasswordStorageKey(userId, branchId);
-  const perBranchValue = perBranchKey ? (safeLsGet(perBranchKey) || '').trim() : '';
-  if (perBranchValue) return perBranchValue;
-  // fallback للمفتاح القديم (قبل تقسيم الكاش على الفروع)
-  const legacyKey = getSecretaryPasswordStorageKey(userId);
-  return legacyKey ? (safeLsGet(legacyKey) || '').trim() : '';
-};
-
-const writeCachedSecretaryPassword = (userId: string, password: string, branchId?: string): void => {
-  if (!userId) return;
-  const storageKey = getSecretaryPasswordStorageKey(userId, branchId);
-  if (!storageKey) return;
-  const normalizedPassword = password.trim();
-  if (normalizedPassword) {
-    safeLsSet(storageKey, normalizedPassword);
-  } else {
-    safeLsRemove(storageKey);
-  }
-};
-
 /**
  * الملف: useBookingSectionControls.ts (Hook)
  * الوصف: هذا الـ Hook مسؤول عن "إدارة روابط الحجز" بمختلف أنواعها. 
@@ -208,13 +167,8 @@ export const useBookingSectionControls = ({
         return;
       }
       firestoreService.getBookingConfigByUserId(userId, activeBranchId).then((legacyConfig) => {
-        const hasSavedPasswordHash = Boolean(
-          config?.secretaryAuthRequired || legacyConfig?.secretaryPasswordHash
-        );
-        const cachedPassword = hasSavedPasswordHash ? readCachedSecretaryPassword(userId, activeBranchId) : '';
-
         setBookingFormTitle((config?.formTitle ?? '').trim() || legacyConfig?.formTitle || '');
-        setSecretaryPassword(cachedPassword);
+        setSecretaryPassword((legacyConfig?.secretaryPasswordPlain ?? '').trim());
         const nextFields = normalizeSecretaryVitalFieldDefinitions(
           config?.secretaryVitalFields || legacyConfig?.secretaryVitalFields,
           prescriptionSecretaryFields
@@ -228,11 +182,6 @@ export const useBookingSectionControls = ({
         setSecretaryVitalFields(nextFields);
         setSecretaryVitalsVisibility(nextVisibility);
         setSecretaryPasswordTouched(false);
-
-        if (!hasSavedPasswordHash) {
-          writeCachedSecretaryPassword(userId, '', activeBranchId);
-        }
-
         setSecretarySettingsHydrated(true);
       });
     });
@@ -309,9 +258,7 @@ export const useBookingSectionControls = ({
       }
 
       if (secretaryPasswordTouched) {
-        const normalizedPassword = secretaryPassword.trim();
-        setSecretaryPassword(normalizedPassword);
-        writeCachedSecretaryPassword(userId, normalizedPassword, currentBranchId);
+        setSecretaryPassword(secretaryPassword.trim());
       }
 
       setSecretaryPasswordTouched(false);
@@ -345,27 +292,6 @@ export const useBookingSectionControls = ({
     e.preventDefault();
     await performSaveBookingCredentials();
   }, [performSaveBookingCredentials]);
-
-  // Auto-save: يحفظ تلقائياً بعد فترة قصيرة من آخر تعديل (debounced).
-  // أي تغيير في الإعدادات يعيد ضبط المؤقت؛ ومع تغيير الفرع يُلغى التحميل الـ hydrated فيوقف الحفظ حتى اكتمال الجلب.
-  const autoSaveRef = useRef<(() => Promise<void>) | null>(null);
-  autoSaveRef.current = performSaveBookingCredentials;
-
-  useEffect(() => {
-    if (!secretarySettingsHydrated || !secretarySettingsDirty || !userId) return;
-    const handle = window.setTimeout(() => {
-      void autoSaveRef.current?.();
-    }, SECRETARY_AUTOSAVE_DEBOUNCE_MS);
-    return () => window.clearTimeout(handle);
-  }, [
-    secretarySettingsHydrated,
-    secretarySettingsDirty,
-    userId,
-    secretaryPassword,
-    bookingFormTitle,
-    secretaryVitalsVisibility,
-    secretaryVitalFields,
-  ]);
 
   /** نسخ رابط حجز السكرتارية */
   const copyBookingLink = () => {

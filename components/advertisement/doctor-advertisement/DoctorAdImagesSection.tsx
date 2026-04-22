@@ -13,7 +13,8 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
     <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-3 space-y-2.5">
       <h3 className="text-sm font-black text-slate-700 mb-2.5 block">الصور</h3>
       <div>
-        <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 border border-purple-300 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]">
+        {/* زر رفع الصورة: نفس تدرج الأزرق المستخدم في أزرار "إضافة" بباقي أقسام الإعلان */}
+        <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]">
           <input
             type="file"
             accept="image/*"

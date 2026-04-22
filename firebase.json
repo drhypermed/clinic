@@ -18,6 +18,8 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      { "source": "/sitemap.xml", "function": "sitemap" },
+      { "source": "/robots.txt", "function": "robots" },
       {
         "source": "**",
         "destination": "/index.html"
@@ -98,6 +100,15 @@
           {
             "key": "Charset",
             "value": "utf-8"
+          }
+        ]
+      },
+      {
+        "source": "/@(sitemap.xml|robots.txt)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400, s-maxage=86400"
           }
         ]
       }

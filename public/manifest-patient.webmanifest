@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "DrHyperPublic — دليل الأطباء",
+  "short_name": "DrHyperPublic",
+  "description": "دليل الأطباء في مصر — ابحث عن دكتورك، شوف التقييمات، واحجز موعدك إلكترونياً.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0d9488",
+  "background_color": "#ffffff",
+  "categories": ["medical", "health"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

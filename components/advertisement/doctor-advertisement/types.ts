@@ -38,28 +38,9 @@ export interface DoctorAdInfoSectionProps {
   onExtraInfoChange: (value: string) => void;
 }
 
-export interface DoctorAdContactSectionProps {
-  governorate: string;
-  city: string;
-  otherCity: string;
-  addressDetails: string;
-  contactPhone: string;
-  whatsapp: string;
-  socialLinks: DoctorSocialLink[];
-  governorates: readonly string[];
-  cityOptions: string[];
-  isCustomCityValue: (value: string) => boolean;
-  onGovernorateChange: (value: string) => void;
-  onCityChange: (value: string) => void;
-  onOtherCityChange: (value: string) => void;
-  onAddressDetailsChange: (value: string) => void;
-  onContactPhoneChange: (value: string) => void;
-  onWhatsappChange: (value: string) => void;
-  onSocialPlatformChange: (id: string, value: string) => void;
-  onSocialUrlChange: (id: string, value: string) => void;
-  onSocialRemove: (id: string) => void;
-  onSocialAdd: () => void;
-}
+// ملحوظة: DoctorAdContactSectionProps اتشالت من هنا وبقت معرَّفة داخل
+// DoctorAdContactSection.tsx نفسه — لأن المكون اتبسّط وبقى بيتعامل مع فرع واحد فقط.
+// روابط السوشيال اتفصلت لقسم عالمي منفصل (DoctorAdSocialLinksSection).
 
 export interface DoctorAdPricingServicesSectionProps {
   examinationPrice: string;
@@ -92,6 +73,8 @@ export interface DoctorAdScheduleSectionProps {
   onNewScheduleNotesChange: (value: string) => void;
   onAddScheduleRow: () => void;
   onRemoveScheduleRow: (id: string) => void;
+  // تعديل صف مواعيد موجود: الطبيب بيضغط "تعديل" جنب "حذف" فيبقى الصف قابل للتحرير
+  onUpdateScheduleRow: (id: string, patch: Partial<DoctorClinicScheduleRow>) => void;
 }
 
 export interface DoctorAdImagesSectionProps {

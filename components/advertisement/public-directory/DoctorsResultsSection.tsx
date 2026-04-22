@@ -1,7 +1,25 @@
 import React from 'react';
-import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6';
-import { FaLink } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6';
+// شعارات البراندات الرسميه (Fa6) — مملوئه ومعروفه للكل
+// ملاحظه: Outline للبراندات غلط لأن المستخدم بيعرف الشعار المملوء (زي ستيكر الـapp)
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTiktok,
+  FaXTwitter,
+  FaYoutube,
+  FaWhatsapp,
+} from 'react-icons/fa6';
+// أيقونات Lucide للعناصر اللي مش براندات (تقييم/عنوان/اتصال...)
+import {
+  LuGraduationCap, // 🎓 → شهاده أكاديميه
+  LuStar,          // ⭐ → تقييم
+  LuMapPin,        // 📍 → العنوان
+  LuStethoscope,   // 🩺 → خدمات طبّيه
+  LuPhone,         // 📞 → اتصال هاتفي
+  LuSearch,        // أيقونة البحث الفارغ (بديل الـinline svg القديمه)
+  LuLink,          // أيقونة افتراضيه لمنصّات السوشيال غير المعروفه
+} from 'react-icons/lu';
 import type { DoctorAdProfile } from '../../../types';
 import { LoadingText } from '../../ui/LoadingText';
 import {
@@ -10,6 +28,7 @@ import {
   getAvatarImage,
   getClinicServices,
   getDoctorRatingStats,
+  getPrimaryBranch,
   normalizePhoneForTel,
   normalizePhoneForWhatsApp,
   sanitizeBioForDisplay,
@@ -26,22 +45,64 @@ interface DoctorsResultsSectionProps {
   loadingMore?: boolean;
 }
 
-const SOCIAL_ICONS: Record<string, React.ReactNode> = {
-  facebook: <FaFacebook className="w-3.5 h-3.5" />,
-  instagram: <FaInstagram className="w-3.5 h-3.5" />,
-  tiktok: <FaTiktok className="w-3.5 h-3.5" />,
-  youtube: <FaYoutube className="w-3.5 h-3.5" />,
-  x: <FaXTwitter className="w-3.5 h-3.5" />,
-  twitter: <FaXTwitter className="w-3.5 h-3.5" />,
-  linkedin: <FaLinkedin className="w-3.5 h-3.5" />,
+// تصميم 2026 الاحترافي لأيقونات السوشيال — زرار دايري ملوّن بلون البراند الأصلي
+// كل براند عنده: الشعار المملوء + اللون الرسمي + label للـaccessibility
+// الـgradient الخاص بـInstagram دا شكله الرسمي (البرتقالي/الأحمر/البنفسجي/الأزرق)
+type SocialStyle = { icon: React.ReactNode; bg: string; label: string };
+
+// حجم الأيقونات كبّرته لـ w-5 h-5 (20px) داخل دايره 40px = نسبه 50% (شكل 2026 المألوف)
+const SOCIAL_STYLES: Record<string, SocialStyle> = {
+  facebook: {
+    icon: <FaFacebookF className="w-5 h-5" />,
+    bg: 'bg-[#1877F2]',                                                  // لون فيسبوك الرسمي
+    label: 'Facebook',
+  },
+  instagram: {
+    icon: <FaInstagram className="w-5 h-5" />,
+    // تدرّج الإنستاجرام الرسمي (أصفر→برتقالي→وردي→بنفسجي→أزرق) بقيم Tailwind arbitrary
+    bg: 'bg-[linear-gradient(45deg,#FEDA75_0%,#FA7E1E_25%,#D62976_50%,#962FBF_75%,#4F5BD5_100%)]',
+    label: 'Instagram',
+  },
+  tiktok: {
+    icon: <FaTiktok className="w-5 h-5" />,
+    bg: 'bg-black',                                                      // تيك توك أسود
+    label: 'TikTok',
+  },
+  youtube: {
+    icon: <FaYoutube className="w-5 h-5" />,
+    bg: 'bg-[#FF0000]',                                                  // يوتيوب أحمر
+    label: 'YouTube',
+  },
+  x: {
+    icon: <FaXTwitter className="w-5 h-5" />,
+    bg: 'bg-black',                                                      // X براند أسود بعد التحديث
+    label: 'X',
+  },
+  twitter: {
+    icon: <FaXTwitter className="w-5 h-5" />,
+    bg: 'bg-black',
+    label: 'X',
+  },
+  linkedin: {
+    icon: <FaLinkedinIn className="w-5 h-5" />,
+    bg: 'bg-[#0A66C2]',                                                  // لينكد إن أزرق
+    label: 'LinkedIn',
+  },
 };
 
-const getSocialIcon = (platform?: string): React.ReactNode => {
+// Fallback لمنصّه غير معروفه — لون سلايت محايد
+const DEFAULT_SOCIAL_STYLE: SocialStyle = {
+  icon: <LuLink className="w-5 h-5" strokeWidth={2.25} />,
+  bg: 'bg-slate-600',
+  label: 'رابط',
+};
+
+const getSocialStyle = (platform?: string): SocialStyle => {
   const key = (platform || '').toLowerCase();
-  for (const [name, icon] of Object.entries(SOCIAL_ICONS)) {
-    if (key.includes(name)) return icon;
+  for (const [name, style] of Object.entries(SOCIAL_STYLES)) {
+    if (key.includes(name)) return style;
   }
-  return <FaLink className="w-3.5 h-3.5" />;
+  return DEFAULT_SOCIAL_STYLE;
 };
 
 export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
@@ -58,9 +119,8 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
     return (
       <section className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/95 p-10 text-center shadow-[0_24px_60px_-48px_rgba(2,6,23,0.8)]">
         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center">
-          <svg className="w-10 h-10 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          {/* أيقونة البحث لحالة "مفيش نتائج" — Lucide */}
+          <LuSearch className="w-10 h-10 text-teal-500" strokeWidth={2} />
         </div>
         <h3 className="text-lg md:text-xl font-black text-slate-800">لا توجد نتائج مطابقة</h3>
         <p className="mt-2 text-slate-500 font-bold">جرّب تغيير معايير البحث أو مسح الفلاتر</p>
@@ -80,17 +140,21 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
       {filteredAds.map((ad) => {
         const avatarImage = getAvatarImage(ad);
         const clinicServices = getClinicServices(ad);
-        const callPhone = normalizePhoneForTel(ad.contactPhone);
-        const whatsappPhone = normalizePhoneForWhatsApp(ad.whatsapp || ad.contactPhone);
+        // البطاقة بتعرض بيانات الفرع الأساسي (الأول) — لو الطبيب عنده فروع
+        // متعددة، الجمهور بيشوف التفاصيل الباقية لما يفتح صفحة تفاصيل الطبيب.
+        const primaryBranch = getPrimaryBranch(ad);
+        const callPhone = normalizePhoneForTel(primaryBranch.contactPhone);
+        const whatsappPhone = normalizePhoneForWhatsApp(primaryBranch.whatsapp || primaryBranch.contactPhone);
         const ratingStats = getDoctorRatingStats(ad);
         const locationText = formatLocation(ad) || 'العنوان غير محدد';
         const cardSummary = sanitizeBioForDisplay(
           ad.featuredServicesSummary || ad.subSpecialties || ad.workplace || ad.extraInfo || ad.bio || ''
         );
-        const hasExamDiscount = ad.discountedExaminationPrice != null &&
-          (ad.examinationPrice == null || ad.discountedExaminationPrice < ad.examinationPrice);
-        const hasConsultDiscount = ad.discountedConsultationPrice != null &&
-          (ad.consultationPrice == null || ad.discountedConsultationPrice < ad.consultationPrice);
+        // الأسعار المعروضة في البطاقة = أسعار الفرع الأساسي
+        const hasExamDiscount = primaryBranch.discountedExaminationPrice != null &&
+          (primaryBranch.examinationPrice == null || primaryBranch.discountedExaminationPrice < primaryBranch.examinationPrice);
+        const hasConsultDiscount = primaryBranch.discountedConsultationPrice != null &&
+          (primaryBranch.consultationPrice == null || primaryBranch.discountedConsultationPrice < primaryBranch.consultationPrice);
         const hasDiscountedService = clinicServices.some(
           (s) => s.discountedPrice != null && (s.price == null || s.discountedPrice < s.price)
         );
@@ -123,13 +187,21 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                     src={avatarImage}
                     alt={`صورة ${ad.doctorName}`}
                     className="w-full h-full object-cover"
+                    // تحسينات الأداء (Priority 3 من خطّة التوفير):
+                    // loading="lazy"   = الصوره متحمّلش إلا لمّا تقرّب من الـviewport
+                    // decoding="async" = البراوزر بيفك الصوره في thread منفصل بدون ما يعلّق الصفحه
+                    // width/height     = البراوزر بيحجز المكان قبل التحميل (منع Layout Shift)
+                    // fetchPriority low = الصور ثانويه، العنوان والنص أهم = تحميل أسرع للمحتوى المهم
                     loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
+                    width={112}
+                    height={128}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
-                    <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    {/* Placeholder لو مفيش صوره — أيقونه "دكتور" بدل السيلويت القديم */}
+                    <LuStethoscope className="w-10 h-10" strokeWidth={1.5} />
                   </div>
                 )}
               </div>
@@ -147,8 +219,10 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                 </p>
 
                 {ad.academicDegree && (
-                  <p className="mt-1.5 text-[11px] font-black text-indigo-700 truncate" title={ad.academicDegree}>
-                    🎓 {ad.academicDegree}
+                  // الشهاده الأكاديميه — أيقونة قبّعة تخرّج بدل إيموجي 🎓
+                  <p className="mt-1.5 flex items-center gap-1 text-[11px] font-black text-indigo-700 truncate" title={ad.academicDegree}>
+                    <LuGraduationCap className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
+                    <span className="truncate">{ad.academicDegree}</span>
                   </p>
                 )}
 
@@ -159,7 +233,9 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                       onClick={() => onOpenDoctorReviews(ad)}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-black hover:bg-amber-100 transition-colors"
                     >
-                      ⭐ {ratingStats.average.toFixed(1)} ({ratingStats.count})
+                      {/* نجمه ممتلئه للتقييم — بديل إيموجي ⭐ */}
+                      <LuStar className="w-3 h-3 fill-amber-500 text-amber-500" strokeWidth={2} />
+                      {ratingStats.average.toFixed(1)} ({ratingStats.count})
                     </button>
                   ) : (
                     <span className="text-[11px] font-bold text-slate-400">بدون تقييمات</span>
@@ -171,8 +247,13 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                   )}
                 </div>
 
-                <p className="mt-1.5 text-[11px] sm:text-xs font-bold text-slate-600 line-clamp-1" title={locationText}>
-                  📍 {locationText}
+                {/* العنوان — دبّوس خريطه بدل إيموجي 📍 */}
+                <p
+                  className="mt-1.5 flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-600 line-clamp-1"
+                  title={locationText}
+                >
+                  <LuMapPin className="w-3.5 h-3.5 shrink-0 text-slate-500" strokeWidth={2} />
+                  <span className="truncate">{locationText}</span>
                 </p>
 
                 {cardSummary && (
@@ -192,52 +273,63 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                 <div className="text-[10px] font-bold text-emerald-600">الكشف</div>
                 {hasExamDiscount ? (
                   <div className="flex items-baseline gap-1 flex-wrap">
-                    <span className="font-black">{formatPrice(ad.discountedExaminationPrice ?? null)}</span>
-                    {ad.examinationPrice != null && (
-                      <span className="text-[10px] text-slate-400 line-through">{formatPrice(ad.examinationPrice)}</span>
+                    <span className="font-black">{formatPrice(primaryBranch.discountedExaminationPrice ?? null)}</span>
+                    {primaryBranch.examinationPrice != null && (
+                      <span className="text-[10px] text-slate-400 line-through">{formatPrice(primaryBranch.examinationPrice)}</span>
                     )}
                   </div>
                 ) : (
-                  <div>{formatPrice(ad.examinationPrice ?? null)}</div>
+                  <div>{formatPrice(primaryBranch.examinationPrice ?? null)}</div>
                 )}
               </div>
               <div className="rounded-lg bg-sky-50 border border-sky-100 px-2.5 py-1.5 text-sky-800">
                 <div className="text-[10px] font-bold text-sky-600">الاستشارة</div>
                 {hasConsultDiscount ? (
                   <div className="flex items-baseline gap-1 flex-wrap">
-                    <span className="font-black">{formatPrice(ad.discountedConsultationPrice ?? null)}</span>
-                    {ad.consultationPrice != null && (
-                      <span className="text-[10px] text-slate-400 line-through">{formatPrice(ad.consultationPrice)}</span>
+                    <span className="font-black">{formatPrice(primaryBranch.discountedConsultationPrice ?? null)}</span>
+                    {primaryBranch.consultationPrice != null && (
+                      <span className="text-[10px] text-slate-400 line-through">{formatPrice(primaryBranch.consultationPrice)}</span>
                     )}
                   </div>
                 ) : (
-                  <div>{formatPrice(ad.consultationPrice ?? null)}</div>
+                  <div>{formatPrice(primaryBranch.consultationPrice ?? null)}</div>
                 )}
               </div>
             </div>
 
             {clinicServices.length > 0 && (
               <div className="px-3 sm:px-4 mt-2">
-                <div className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[11px] font-black text-slate-700">
-                  🩺 {clinicServices.length} خدمة{hasDiscountedService ? ' • يوجد خصومات' : ''}
+                {/* عدد الخدمات الطبّيه — سمّاعه بدل إيموجي 🩺 */}
+                <div className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[11px] font-black text-slate-700 flex items-center gap-1.5">
+                  <LuStethoscope className="w-3.5 h-3.5 shrink-0 text-teal-600" strokeWidth={2} />
+                  <span>{clinicServices.length} خدمة{hasDiscountedService ? ' • يوجد خصومات' : ''}</span>
                 </div>
               </div>
             )}
 
             {socialLinks.length > 0 && (
+              // تصميم 2026:
+              // - دايره ملوّنه بلون البراند الرسمي (Facebook أزرق، Instagram gradient، YouTube أحمر...)
+              // - شعار مملوء أبيض فوق الخلفيّه الملوّنه = شكل واضح ومعروف
+              // - shadow + lift effect لمّا الماوس يعدّي = إحساس 3D ناعم
+              // - title بيبان لمّا المستخدم يحوّم (accessibility)
               <div className="px-3 sm:px-4 mt-2 flex flex-wrap gap-1.5">
-                {socialLinks.slice(0, 5).map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="h-7 px-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-800 font-black text-[10px] inline-flex items-center justify-center gap-1 hover:bg-indigo-100 transition-all"
-                  >
-                    {getSocialIcon(social.platform)}
-                    <span>{social.platform || 'Social'}</span>
-                  </a>
-                ))}
+                {socialLinks.slice(0, 5).map((social) => {
+                  const { icon, bg, label } = getSocialStyle(social.platform);
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={label}
+                      aria-label={label}
+                      className={`w-10 h-10 rounded-full ${bg} text-white inline-flex items-center justify-center shadow-[0_2px_6px_-1px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_14px_-3px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 transition-all duration-200`}
+                    >
+                      {icon}
+                    </a>
+                  );
+                })}
               </div>
             )}
 
@@ -245,27 +337,31 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
             <div className="px-3 sm:px-4 pt-3 pb-3 mt-3 border-t border-slate-100 bg-gradient-to-b from-transparent to-slate-50/50">
               {(callPhone || whatsappPhone) && (
                 <div className="grid grid-cols-2 gap-2 mb-2">
+                  {/* زر الاتصال — أيقونة سمّاعه هاتف بدل إيموجي 📞 */}
                   <a
                     href={callPhone ? `tel:${callPhone}` : undefined}
-                    className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1 transition-all ${
+                    className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1.5 transition-all ${
                       callPhone
                         ? 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'
                         : 'border-slate-200 bg-slate-50 text-slate-400 pointer-events-none'
                     }`}
                   >
-                    📞 اتصال
+                    <LuPhone className="w-3.5 h-3.5" strokeWidth={2.25} />
+                    اتصال
                   </a>
+                  {/* زر واتساب — الشعار الرسمي (أوضح من الإيموجي 💬 لأنه بيدلّ على واتساب بالتحديد) */}
                   <a
                     href={whatsappPhone ? `https://wa.me/${whatsappPhone}` : undefined}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1 transition-all ${
+                    className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1.5 transition-all ${
                       whatsappPhone
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
                         : 'border-slate-200 bg-slate-50 text-slate-400 pointer-events-none'
                     }`}
                   >
-                    💬 واتساب
+                    <FaWhatsapp className="w-4 h-4" />
+                    واتساب
                   </a>
                 </div>
               )}

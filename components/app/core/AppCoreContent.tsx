@@ -3,6 +3,9 @@ import type { NavigateFunction } from 'react-router-dom';
 import type { ExtendedUser } from '../../../hooks/useAuth';
 import { safeStorageGetItem } from '../../../services/auth-service/storage';
 import { LoadingStateScreen } from '../LoadingStateScreen';
+// تحديد وضع الدومين الحالي (مريض / عياده / both في الـdev) — عشان نمنع المرضى من الوصول
+// لصفحات الأطباء والعكس، وده بيخلّي كل دومين يبان كـ"تطبيق مستقل".
+import { getHostMode } from '../../../utils/hostMode';
 
 import type { DoctorOnboardingStatus } from './useDoctorOnboardingStatus';
 
@@ -17,6 +20,10 @@ const PublicDoctorsDirectoryPage = React.lazy(() => import('../../advertisement/
 const ComprehensiveAdminDashboard = React.lazy(() => import('../../admin/comprehensive-dashboard/ComprehensiveAdminDashboard').then(m => ({ default: m.ComprehensiveAdminDashboard })));
 const MainApp = React.lazy(() => import('../MainApp').then(m => ({ default: m.MainApp })));
 const LandingPage = React.lazy(() => import('../../landing/LandingPage').then(m => ({ default: m.LandingPage })));
+// صفحه تعريف المريض — بتظهر فقط على drhypermed.com (الـlanding الأصلي يفضل على clinic.drhypermed.com)
+const PatientLandingPage = React.lazy(() => import('../../landing/PatientLandingPage').then(m => ({ default: m.PatientLandingPage })));
+// دليل المستخدم — صفحه عامّه (بدون تسجيل دخول) على دومين العياده فقط
+const UserGuidePage = React.lazy(() => import('../../landing/user-guide/UserGuidePage').then(m => ({ default: m.UserGuidePage })));
 
 /**
  * مكون محتوى التطبيق الأساسي (App Core Content Component)
@@ -64,10 +71,101 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
 }) => {
   const hasBlacklistMessage = safeStorageGetItem('blacklist_message');
   const userRole = user?.authRole === 'doctor' || user?.authRole === 'public' ? user.authRole : null;
+  const hostMode = getHostMode();
+
+  // ── كشف تضارب الدومين مع الدور (cross-role conflict) ──
+  // لو مستخدم مسجّل دخول على الدومين الغلط:
+  //   • طبيب على drhypermed.com    → لازم يتحوّل لـclinic.drhypermed.com
+  //   • مريض على clinic.drhypermed.com → لازم يتحوّل لـdrhypermed.com
+  // بنحسب ده مرّه واحده ونستخدمه في:
+  //   1) الـuseEffect اللي بيعمل redirect خارجي عبر window.location.replace
+  //   2) الـredirectTarget useMemo — يرجّع null عشان ميحصلش navigate داخلي
+  //      في نفس اللحظه (كان بيعمل flicker قبل ما الـpage تعيد التحميل).
+  //   3) الرندر — نرجّع LoadingStateScreen لحد ما الـredirect الخارجي يشتغل.
+  const isCrossRoleConflict = React.useMemo((): boolean => {
+    if (hostMode === 'both') return false;        // dev مفتوح للاتنين
+    if (loading) return false;                    // استنى الـauth يكمّل
+    if (!user || !userRole) return false;         // مفيش مستخدم = مفيش تضارب
+    if (hasBlacklistMessage) return false;        // blacklist له مسار خاص
+    if (hostMode === 'patient' && userRole === 'doctor') return true;
+    if (hostMode === 'clinic' && userRole === 'public') return true;
+    return false;
+  }, [hasBlacklistMessage, hostMode, loading, user, userRole]);
+
+  // 🐛 إصلاح bug دوّامة التوجيه (cross-role redirect loop):
+  // لمّا نلاحظ التضارب، نعمل redirect خارجي لدومينه الصح. ده بيوقف الدوّامه
+  // فوراً لأن الصفحه كلها بتتعاد تحميل على الدومين التاني.
+  //
+  // بنحاول نحافظ على نيّه المستخدم: لو admin فتح drhypermed.com/admin
+  // بالغلط، نوّدّيه على clinic.drhypermed.com/admin (مش /home فقط).
+  React.useEffect(() => {
+    if (!isCrossRoleConflict) return;
+    if (hostMode === 'patient' && userRole === 'doctor') {
+      // طبيب على دومين المرضى = حوّله لبوّابه العياده.
+      // لو المسار الأصلي /admin أو /app/* بيخص clinic — نحفظه.
+      const preservedPath = (
+        pathname === '/admin' ||
+        pathname === '/app/admin' ||
+        pathname.startsWith('/app/') ||
+        pathname === '/home' ||
+        pathname.startsWith('/home/')
+      ) ? pathname : '/home';
+      window.location.replace(`https://clinic.drhypermed.com${preservedPath}`);
+    } else if (hostMode === 'clinic' && userRole === 'public') {
+      // مريض على دومين العياده = حوّله لدومين المرضى.
+      // مسارات المريض محدوده (/public، /book-public/...) — نحفظها لو طابقت.
+      const preservedPath = (
+        pathname === '/public' ||
+        pathname.startsWith('/book-public/')
+      ) ? pathname : '/public';
+      window.location.replace(`https://drhypermed.com${preservedPath}`);
+    }
+  }, [hostMode, isCrossRoleConflict, pathname, userRole]);
+
+  // ── تقسيم المسارات حسب الجمهور ──
+  // كل مسار ينتمي لـ"public" (للمرضى) أو "clinic" (للأطباء/السكرتاريه/الأدمن) أو "any" (للكلّ).
+  // لما الدومين الحالي = patient → المسارات الـclinic بتتحوّل تلقائياً لـlogin المريض
+  // لما الدومين الحالي = clinic → المسارات الـpublic بتتحوّل تلقائياً لـlogin الطاقم الطبّي
+  const isClinicOnlyPath = (
+    pathname === '/login/doctor' ||
+    pathname === '/signup/doctor' ||
+    pathname === '/login/secretary' ||
+    pathname === '/doctor/onboarding' ||
+    pathname === '/home' ||
+    pathname.startsWith('/home/') ||
+    pathname === '/admin' ||
+    pathname === '/app/admin' ||
+    pathname.startsWith('/app/') ||
+    pathname === '/user-guide'      // دليل المستخدم مخصوص للدكاتره — مش هيظهر على دومين المرضى
+  );
+  const isPublicOnlyPath = (
+    pathname === '/login/public' ||
+    pathname === '/public' ||
+    pathname.startsWith('/book-public/')
+  );
 
   // حساب هدف التوجيه أثناء الرندر — بدون استدعاء navigate مباشرةً داخل الرندر
   // (استدعاء navigate أثناء الرندر يُسبّب تحذير React "setState in render")
   const redirectTarget = React.useMemo((): string | null => {
+    // لو في تضارب cross-role، الـredirect الخارجي (window.location.replace) هيتولّى
+    // الموضوع — مفيش داعي للـnavigate الداخلي (كان بيعمل flicker).
+    if (isCrossRoleConflict) return null;
+
+    // أولاً: قيود الدومين (host mode) — أعلى أولويه بعد الـblacklist
+    if (hostMode === 'patient' && isClinicOnlyPath) {
+      // المريض دخل على مسار طبّي بالغلط = نوّجهه لـlogin المريض
+      return '/login/public';
+    }
+    if (hostMode === 'clinic' && isPublicOnlyPath) {
+      // طبيب دخل على مسار مريض بالغلط = نوّجهه لـlogin الطاقم الطبّي
+      return '/login';
+    }
+    // على دومين المرضى، /login (شاشه الاختيار) مالهاش معنى لأن في خيار واحد بس.
+    // نوّجه مباشره لـ/login/public عشان المستخدم ميشوفش قائمه خيار واحد فقط.
+    if (hostMode === 'patient' && pathname === '/login') {
+      return '/login/public';
+    }
+
     if (hasBlacklistMessage && pathname !== '/login/doctor') return '/login/doctor';
     if (pathname === '/' && user) return userRole === 'public' ? '/public' : '/home';
     if (isAuthPath && user && !hasAuthFlowGuard && userRole) {
@@ -76,7 +174,7 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
     }
     if ((pathname === '/admin' || pathname === '/app/admin') && !isAdminUser && user) return '/home';
     return null;
-  }, [hasAuthFlowGuard, hasBlacklistMessage, isAdminUser, isAuthPath, pathname, user, userRole]);
+  }, [hasAuthFlowGuard, hasBlacklistMessage, hostMode, isAdminUser, isAuthPath, isClinicOnlyPath, isCrossRoleConflict, isPublicOnlyPath, pathname, user, userRole]);
 
   // تنفيذ التوجيه بعد اكتمال الرندر لتجنّب تحديث BrowserRouter أثناء الرسم
   React.useEffect(() => {
@@ -84,6 +182,11 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
       navigate(redirectTarget, { replace: true });
     }
   }, [navigate, redirectTarget]);
+
+  // 0. تضارب cross-role — الـpage هتتعاد تحميل خارجياً، نعرض loading لحد ما يحصل
+  if (isCrossRoleConflict) {
+    return <LoadingStateScreen />;
+  }
 
   // 1. شاشة تحميل أثناء انتظار بيانات المستخدم أو حالة الطبيب
   if ((loading || (user && doctorOnboardingStatus === 'loading')) && !(isAuthPath && hasAuthFlowGuard)) {
@@ -102,9 +205,24 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
     return <DoctorGoogleLoginPage />;
   }
 
-  // 4. الصفحة الرئيسية — للزوار غير المسجلين فقط (المسجلون وُجِّهوا أعلاه)
+  // 4. الصفحه الرئيسيّه — للزوار غير المسجّلين فقط (المسجّلون وُجِّهوا أعلاه)
+  // بنختار الـlanding المناسبه حسب الدومين:
+  //   - drhypermed.com         → PatientLandingPage (للمرضى)
+  //   - clinic.drhypermed.com  → LandingPage الأصليّه (للأطباء)
+  //   - في الـdev (both)        → LandingPage الأصليّه عشان نقدر نشوفها كمان، والـpatient
+  //                               تتشاف بـ?hostMode=patient
   if (pathname === '/') {
+    if (hostMode === 'patient') {
+      return <PatientLandingPage />;
+    }
     return <LandingPage />;
+  }
+
+  // 4.1 دليل المستخدم — صفحه عامّه (بدون تسجيل دخول مطلوب).
+  // بتظهر على clinic.drhypermed.com أو في الـdev فقط (مش على دومين المرضى — اتحجبت
+  // فوق في isClinicOnlyPath). لمّا دكتور يزورها قبل ما يسجّل، يقرا ويفهم التطبيق.
+  if (pathname === '/user-guide') {
+    return <UserGuidePage />;
   }
 
   // 5. مسارات المصادقة والتسجيل
@@ -119,21 +237,24 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
     return <LoginSelectionPage />;
   }
 
+  // 6. دليل الأطباء العام (/public) — مفتوح للضيف والمسجّل.
+  // ضروري لـSEO: جوجل لازم يقدر يفهرس صفحه الدليل بدون ما يعمل تسجيل دخول.
+  // الـcomponent بيتعامل مع user = null (بيعرض زر "سجّل دخول" لمّا يحاول يحجز).
+  // clinic host مبيوصلش هنا أصلاً (cross-role redirect في الـuseMemo فوق).
+  if (pathname === '/public') {
+    return <PublicDoctorsDirectoryPage user={user} profile={null} onLogout={() => signOut()} />;
+  }
+
   if (!user) return <LoginSelectionPage />;
 
-  // 6. إعداد حساب الطبيب (Onboarding)
+  // 7. إعداد حساب الطبيب (Onboarding)
   if (userRole === 'doctor' && pathname === '/doctor/onboarding') {
     return <DoctorOnboardingPage />;
   }
 
-  // 7. لوحة تحكم الأدمن (التوجيه لغير الأدمن تمّ أعلاه)
+  // 8. لوحة تحكم الأدمن (التوجيه لغير الأدمن تمّ أعلاه)
   if (pathname === '/admin' || pathname === '/app/admin') {
     return <ComprehensiveAdminDashboard user={user} onLogout={signOut} />;
-  }
-
-  // 8. صفحة الجمهور
-  if (userRole === 'public' && pathname === '/public') {
-    return <PublicDoctorsDirectoryPage user={user as any} profile={null} onLogout={() => signOut()} />;
   }
 
   if (!userRole) return null;

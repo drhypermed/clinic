@@ -13,7 +13,7 @@
 // ملاحظة: formatTimeWithPeriod اتنقل لـ ../timeFormat.ts عشان مشترك مع doctor-advertisement.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { DoctorAdProfile } from '../../../types';
+import type { DoctorAdBranch, DoctorAdProfile } from '../../../types';
 import { formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 
 // نعيد التصدير للحفاظ على التوافق مع الاستيرادات الموجودة (helpers.ts كان فيه الدالة).
@@ -26,11 +26,48 @@ export const formatPrice = (value: number | null) => {
 };
 
 export const formatLocation = (ad: DoctorAdProfile) => {
-  const parts = [ad.governorate, ad.city, ad.addressDetails].filter(Boolean);
+  // لو الإعلان فيه فروع متعددة، نعرض عنوان الفرع الأول (الأساسي)
+  const primary = getPrimaryBranch(ad);
+  const parts = [primary.governorate, primary.city, primary.addressDetails].filter(Boolean);
   return parts.join(' - ');
 };
 
-export const getAvatarImage = (ad: DoctorAdProfile) => ad.profileImage || ad.imageUrls[0] || '';
+/**
+ * يرجع مصفوفة الفروع من إعلان. لو الإعلان جديد (فيه branches[]) بيرجعها زي ما هي.
+ * لو قديم (بالحقول الـtop-level) بيبني فرع افتراضي واحد منها — عشان الـUI
+ * يقدر يتعامل مع كل الحالات بنفس الشكل.
+ */
+export const getAdBranches = (ad: DoctorAdProfile): DoctorAdBranch[] => {
+  if (Array.isArray(ad.branches) && ad.branches.length > 0) {
+    return ad.branches;
+  }
+  // fallback: فرع واحد مبني من الحقول القديمة
+  return [{
+    id: 'legacy-branch',
+    name: 'الفرع الرئيسي',
+    governorate: ad.governorate || '',
+    city: ad.city || '',
+    addressDetails: ad.addressDetails || '',
+    contactPhone: ad.contactPhone || '',
+    whatsapp: ad.whatsapp || '',
+    clinicSchedule: Array.isArray(ad.clinicSchedule) ? ad.clinicSchedule : [],
+    clinicServices: Array.isArray(ad.clinicServices) ? ad.clinicServices : [],
+    examinationPrice: ad.examinationPrice ?? null,
+    discountedExaminationPrice: ad.discountedExaminationPrice ?? null,
+    consultationPrice: ad.consultationPrice ?? null,
+    discountedConsultationPrice: ad.discountedConsultationPrice ?? null,
+    imageUrls: Array.isArray(ad.imageUrls) ? ad.imageUrls : [],
+  }];
+};
+
+/** الفرع الرئيسي (الأول) — نستخدمه في البطاقات المختصرة (card preview). */
+export const getPrimaryBranch = (ad: DoctorAdProfile): DoctorAdBranch => getAdBranches(ad)[0];
+
+export const getAvatarImage = (ad: DoctorAdProfile) => {
+  if (ad.profileImage) return ad.profileImage;
+  const primary = getPrimaryBranch(ad);
+  return primary.imageUrls[0] || ad.imageUrls?.[0] || '';
+};
 
 export const getInitials = (name: string) => {
   const trimmed = name.trim();
@@ -84,8 +121,19 @@ export const getDoctorRatingStats = (ad: DoctorAdProfile) => {
   return { count, average };
 };
 
-export const getFilledClinicSchedule = (ad: DoctorAdProfile) =>
-  ad.clinicSchedule.filter((row) => {
+export const getFilledClinicSchedule = (ad: DoctorAdProfile) => {
+  const primary = getPrimaryBranch(ad);
+  return primary.clinicSchedule.filter((row) => {
+    const from = row.from?.trim() || '';
+    const to = row.to?.trim() || '';
+    const notes = row.notes?.trim() || '';
+    return Boolean(from || to || notes);
+  });
+};
+
+/** نفس اللي فوق بس لفرع محدد — للاستخدام في تبويبات الفروع. */
+export const getFilledScheduleForBranch = (branch: DoctorAdBranch) =>
+  branch.clinicSchedule.filter((row) => {
     const from = row.from?.trim() || '';
     const to = row.to?.trim() || '';
     const notes = row.notes?.trim() || '';
@@ -93,10 +141,12 @@ export const getFilledClinicSchedule = (ad: DoctorAdProfile) =>
   });
 
 export const getClinicServices = (ad: DoctorAdProfile) => {
-  if (Array.isArray(ad.clinicServices) && ad.clinicServices.length > 0) {
-    return ad.clinicServices;
+  const primary = getPrimaryBranch(ad);
+  if (Array.isArray(primary.clinicServices) && primary.clinicServices.length > 0) {
+    return primary.clinicServices;
   }
-  return ad.services.map((name, index) => ({
+  // fallback للإعلانات القديمة جداً اللي كانت بتستخدم ad.services كأسماء فقط
+  return (ad.services || []).map((name, index) => ({
     id: `legacy-${index + 1}`,
     name,
     price: null as number | null,
@@ -121,7 +171,8 @@ export const sanitizeBioForDisplay = (bio?: string) => {
 export const generateDoctorSlug = (doctor: DoctorAdProfile): string => {
   const name = (doctor.doctorName || 'doctor').toLowerCase().trim();
   const specialty = (doctor.doctorSpecialty || '').toLowerCase().trim();
-  const city = (doctor.city || '').toLowerCase().trim();
+  // نستخدم مدينة الفرع الأساسي (فيها الحقول القديمة fallback)
+  const city = (getPrimaryBranch(doctor).city || '').toLowerCase().trim();
   
   // تنظيف النص: الإبقاء على العربية والإنجليزية والأرقام والشرطات فقط
   const cleanPart = (text: string) => 

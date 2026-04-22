@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
             id: 'advertisement' as ViewType,
-            label: 'الإعلان والجمهور',
+            label: 'الإعلان',
             icon: <FaBullhorn className="w-5 h-5" />,
             activeColor: 'bg-cyan-600',
             activeTextColor: 'text-white',

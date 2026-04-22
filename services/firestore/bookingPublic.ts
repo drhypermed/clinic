@@ -23,6 +23,7 @@ import {
 } from './booking-public/slots';
 import {
   deletePublicUserBookingReview,
+  getPublicUserBookingsOnce,
   markPublicUserBookingCompleted,
   savePublicUserBooking,
   submitPublicUserBookingReview,
@@ -46,6 +47,7 @@ export const bookingPublicService = {
   deletePublicSlot,
   savePublicUserBooking,
   subscribeToPublicUserBookings,
+  getPublicUserBookingsOnce,
   markPublicUserBookingCompleted,
   submitPublicUserBookingReview,
   deletePublicUserBookingReview,

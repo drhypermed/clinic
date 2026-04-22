@@ -16,8 +16,9 @@ import {
     orderBy,
     limit,
     QueryConstraint,
+    getDoc,
+    getDocs,
 } from 'firebase/firestore';
-import { getDocCacheFirst, getDocsCacheFirst } from './cacheFirst';
 import { db } from '../firebaseConfig';
 import type { DoctorAdProfile } from '../../types';
 import { normalizeText } from '../../utils/textEncoding';
@@ -270,10 +271,14 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
 };
 
 export const doctorAdsService = {
-    /** جلب بيانات الإعلان الطبيب يدوياً */
+    /**
+     * جلب بيانات الإعلان الطبيب يدوياً.
+     * بنستخدم getDoc (مش cache-first) عشان لو الطبيب لسه حافظ تحديث،
+     * يلاقي آخر نسخة مش النسخة القديمة من الكاش.
+     */
     getDoctorAdByDoctorId: async (doctorId: string): Promise<DoctorAdProfile | null> => {
         const ref = doc(db, 'doctorAds', doctorId);
-        const snap = await getDocCacheFirst(ref);
+        const snap = await getDoc(ref);
         if (!snap.exists()) return null;
         return normalizeDoctorAd(doctorId, snap.data() as Record<string, unknown>);
     },
@@ -292,7 +297,11 @@ export const doctorAdsService = {
         await setDoc(ref, prepared, { merge: true });
     },
 
-    /** الاشتراك اللحظي في بيانات ملف الطبيب */
+    /**
+     * الاشتراك اللحظي في بيانات ملف الطبيب.
+     * بنستخدم getDoc فريش بدل cache-first عشان أي تحديث يظهر فوراً
+     * بدل ما الطبيب يلاقي بياناته القديمة بعد ما حفظ.
+     */
     subscribeToDoctorAd: (
         doctorId: string,
         onUpdate: (ad: DoctorAdProfile | null) => void
@@ -300,7 +309,7 @@ export const doctorAdsService = {
         const ref = doc(db, 'doctorAds', doctorId);
         let cancelled = false;
 
-        getDocCacheFirst(ref).then((snap) => {
+        getDoc(ref).then((snap) => {
             if (cancelled) return;
             if (!snap.exists()) {
                 onUpdate(null);
@@ -312,18 +321,19 @@ export const doctorAdsService = {
         return () => { cancelled = true; };
     },
 
-    /** 
+    /**
      * جلب جميع الأطباء المنشورين مرتبين تاريخياً.
-     * تم تحسين هذه الدالة لتستخدم ترتيب فايربيز (Indexing) بدلاً من الفرز البرمجي.
+     * بنستخدم getDocs (مش cache-first) عشان لما الطبيب يحدّث إعلانه
+     * ويدخل الدليل العام يلاقي التحديث ظاهر مباشرة.
      */
     getPublishedDoctorAds: async (): Promise<DoctorAdProfile[]> => {
         const ref = collection(db, 'doctorAds');
         const q = query(
-            ref, 
+            ref,
             where('isPublished', '==', true),
             orderBy('updatedAt', 'desc')
         );
-        const snap = await getDocsCacheFirst(q);
+        const snap = await getDocs(q);
         return snap.docs
             .map((docSnap) => normalizeDoctorAd(docSnap.id, docSnap.data() as Record<string, unknown>))
             .filter((item): item is DoctorAdProfile => Boolean(item));
@@ -367,7 +377,9 @@ export const doctorAdsService = {
         }
 
         const q = query(ref, ...constraints);
-        const snap = await getDocsCacheFirst(q);
+        // getDocs (مش cache-first) عشان أي تحديث في إعلانات الأطباء يظهر
+        // للجمهور مباشرة بدون ما يستنى تحديث الكاش الخلفي.
+        const snap = await getDocs(q);
         let allResults = snap.docs
             .map((docSnap) => normalizeDoctorAd(docSnap.id, docSnap.data() as Record<string, unknown>))
             .filter((item): item is DoctorAdProfile => Boolean(item));
@@ -408,7 +420,7 @@ export const doctorAdsService = {
         };
     },
 
-    /** الاشتراك اللحظي في قائمة الأطباء المنشورين (للتحديثات الفورية في الدليل) */
+    /** جلب قائمة الأطباء المنشورين (للتحديثات الفورية في الدليل) — بيجيب من السيرفر مباشرة. */
     subscribeToPublishedDoctorAds: (
         onUpdate: (ads: DoctorAdProfile[]) => void
     ) => {
@@ -420,7 +432,7 @@ export const doctorAdsService = {
         );
         let cancelled = false;
 
-        getDocsCacheFirst(q).then((snap) => {
+        getDocs(q).then((snap) => {
             if (cancelled) return;
             const list = snap.docs
                 .map((docSnap: any) => normalizeDoctorAd(docSnap.id, docSnap.data() as Record<string, unknown>))
@@ -429,5 +441,25 @@ export const doctorAdsService = {
         }).catch(() => {});
 
         return () => { cancelled = true; };
+    },
+
+    /**
+     * جلب طبيب واحد عن طريق الـpublicSlug (URL صديق للSEO).
+     * بنستخدمها في صفحه /dr/:slug — القراءه الوحيده = مطابقه بالـindex.
+     * لو مفيش طبيب بالـslug ده → بنرجع null.
+     */
+    getDoctorByPublicSlug: async (slug: string): Promise<DoctorAdProfile | null> => {
+        if (!slug) return null;
+        const ref = collection(db, 'doctorAds');
+        const q = query(
+            ref,
+            where('isPublished', '==', true),
+            where('publicSlug', '==', slug),
+            limit(1),
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+        const first = snap.docs[0];
+        return normalizeDoctorAd(first.id, first.data() as Record<string, unknown>);
     },
 };

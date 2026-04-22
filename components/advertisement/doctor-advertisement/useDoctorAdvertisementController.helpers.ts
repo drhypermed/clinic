@@ -1,11 +1,10 @@
 import type {
+  DoctorAdBranch,
   DoctorAdProfile,
-  DoctorClinicScheduleRow,
-  DoctorClinicServiceRow,
 } from '../../../types';
 import type { DoctorSocialLink } from './types';
-import { sanitizeSocialLinks, sanitizeSocialUrl, sanitizeTextInput } from './securityUtils';
-import { isCustomCityValue, toNumber } from './utils';
+import { sanitizeMultilineInput, sanitizeSocialLinks, sanitizeSocialUrl, sanitizeTextInput } from './securityUtils';
+import { normalizeBranch } from './utils';
 
 export const isDoctorAdImageOwnedByDoctor = (imageUrl: string, doctorId: string) => {
   const normalizedUrl = String(imageUrl || '').trim();
@@ -15,6 +14,13 @@ export const isDoctorAdImageOwnedByDoctor = (imageUrl: string, doctorId: string)
   const encodedToken = encodeURIComponent(rawToken);
   return normalizedUrl.includes(rawToken) || normalizedUrl.includes(encodedToken);
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// بناء بيانات المعاينة
+// ─────────────────────────────────────────────────────────────────────────────
+// بناء الـobject اللي بنعرضه في الـLive Preview قبل الحفظ. بياخد الحقول
+// العالمية للطبيب والفروع كما هي في الـstate، وبيرجعها بنفس شكل DoctorAdProfile
+// اللي بتستهلكه صفحة التفاصيل العامة (DoctorDetailsModal).
 
 interface BuildDoctorAdPreviewDataParams {
   safeDoctorId: string;
@@ -28,23 +34,10 @@ interface BuildDoctorAdPreviewDataParams {
   featuredServicesSummary: string;
   workplace: string;
   extraInfo: string;
-  governorate: string;
-  city: string;
-  otherCity: string;
-  addressDetails: string;
-  clinicSchedule: DoctorClinicScheduleRow[];
-  examinationPrice: string;
-  discountedExaminationPrice: string;
-  consultationPrice: string;
-  discountedConsultationPrice: string;
-  clinicServices: DoctorClinicServiceRow[];
-  imageUrls: string[];
-  contactPhone: string;
-  whatsapp: string;
+  branches: DoctorAdBranch[];
   socialLinks: DoctorSocialLink[];
   yearsExperience: string;
   isPublished: boolean;
-  normalizeScheduleRows: (rows: DoctorClinicScheduleRow[]) => DoctorClinicScheduleRow[];
 }
 
 export const buildDoctorAdPreviewData = ({
@@ -59,116 +52,126 @@ export const buildDoctorAdPreviewData = ({
   featuredServicesSummary,
   workplace,
   extraInfo,
-  governorate,
-  city,
-  otherCity,
-  addressDetails,
-  clinicSchedule,
-  examinationPrice,
-  discountedExaminationPrice,
-  consultationPrice,
-  discountedConsultationPrice,
-  clinicServices,
-  imageUrls,
-  contactPhone,
-  whatsapp,
+  branches,
   socialLinks,
   yearsExperience,
   isPublished,
-  normalizeScheduleRows,
 }: BuildDoctorAdPreviewDataParams): DoctorAdProfile => {
-  const cityValue = isCustomCityValue(city) ? otherCity.trim() : city;
+  // بنطبع كل فرع + بنستخلص أول فرع للحقول القديمة (Legacy) عشان أي كود
+  // ما بيقراش branches[] لسه يلاقي قيم صالحة يعرضها.
+  const normalizedBranches = branches.map((b, idx) => normalizeBranch(b, `فرع ${idx + 1}`));
+  const primary = normalizedBranches[0];
+  const yearsNum = Number(yearsExperience);
+
   return {
     doctorId: safeDoctorId || doctorId,
     doctorName: sanitizeTextInput(adDoctorName, 160) || doctorName || '',
     doctorSpecialty: sanitizeTextInput(doctorSpecialty, 160) || '',
     academicDegree: sanitizeTextInput(academicDegree, 400),
-    subSpecialties: sanitizeTextInput(subSpecialties, 1200),
-    featuredServicesSummary: sanitizeTextInput(featuredServicesSummary, 1200),
-    workplace: sanitizeTextInput(workplace, 800),
-    extraInfo: sanitizeTextInput(extraInfo, 1500),
+    subSpecialties: sanitizeMultilineInput(subSpecialties, 1200),
+    featuredServicesSummary: sanitizeMultilineInput(featuredServicesSummary, 1200),
+    workplace: sanitizeMultilineInput(workplace, 800),
+    extraInfo: sanitizeMultilineInput(extraInfo, 1500),
     profileImage: profileImage || '',
     clinicName: '',
-    bio: sanitizeTextInput(extraInfo, 1500),
-    governorate: sanitizeTextInput(governorate, 120),
-    city: sanitizeTextInput(cityValue, 120),
-    addressDetails: sanitizeTextInput(addressDetails, 800),
-    clinicSchedule: normalizeScheduleRows(clinicSchedule),
-    examinationPrice: toNumber(examinationPrice),
-    discountedExaminationPrice: toNumber(discountedExaminationPrice),
-    consultationPrice: toNumber(consultationPrice),
-    discountedConsultationPrice: toNumber(discountedConsultationPrice),
-    clinicServices: clinicServices.filter((service) => service.name.trim()),
-    services: clinicServices.filter((service) => service.name.trim()).map((service) => service.name),
-    imageUrls,
-    contactPhone: sanitizeTextInput(contactPhone, 40),
-    whatsapp: sanitizeTextInput(whatsapp, 40),
+    bio: sanitizeMultilineInput(extraInfo, 1500),
+
+    // الفروع (المصدر الحقيقي)
+    branches: normalizedBranches,
+
+    // Legacy: نسخ أول فرع للحقول القديمة (عشان التوافق في عرض قديم)
+    governorate: primary?.governorate || '',
+    city: primary?.city || '',
+    addressDetails: primary?.addressDetails || '',
+    clinicSchedule: primary?.clinicSchedule || [],
+    examinationPrice: primary?.examinationPrice ?? null,
+    discountedExaminationPrice: primary?.discountedExaminationPrice ?? null,
+    consultationPrice: primary?.consultationPrice ?? null,
+    discountedConsultationPrice: primary?.discountedConsultationPrice ?? null,
+    clinicServices: primary?.clinicServices || [],
+    services: (primary?.clinicServices || []).map((s) => s.name),
+    imageUrls: primary?.imageUrls || [],
+    contactPhone: primary?.contactPhone || '',
+    whatsapp: primary?.whatsapp || '',
+
     socialLinks: sanitizeSocialLinks(socialLinks),
     socialMediaPlatform: sanitizeTextInput(socialLinks[0]?.platform, 80),
     socialMediaUrl: sanitizeSocialUrl(socialLinks[0]?.url),
-    yearsExperience: toNumber(yearsExperience),
+    yearsExperience: Number.isFinite(yearsNum) && yearsNum >= 0 ? yearsNum : null,
     isPublished,
     createdAt: String(Date.now()),
     updatedAt: String(Date.now()),
   };
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// التحقق قبل الحفظ
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface ValidateDoctorAdBeforeSaveParams {
   adDoctorName: string;
   doctorSpecialty: string;
-  governorate: string;
-  city: string;
-  otherCity: string;
-  addressDetails: string;
+  branches: DoctorAdBranch[];
   socialLinks: DoctorSocialLink[];
-  examinationPrice: string;
-  discountedExaminationPrice: string;
-  consultationPrice: string;
-  discountedConsultationPrice: string;
-  clinicServices: DoctorClinicServiceRow[];
 }
 
 export const validateDoctorAdBeforeSave = ({
   adDoctorName,
   doctorSpecialty,
-  governorate,
-  city,
-  otherCity,
-  addressDetails,
+  branches,
   socialLinks,
-  examinationPrice,
-  discountedExaminationPrice,
-  consultationPrice,
-  discountedConsultationPrice,
-  clinicServices,
 }: ValidateDoctorAdBeforeSaveParams): string => {
   if (!adDoctorName.trim()) return 'يرجى إدخال اسم الطبيب.';
   if (!doctorSpecialty.trim()) return 'يرجى إدخال التخصص الطبي في الحساب.';
-  if (!governorate) return 'يرجى اختيار المحافظة.';
-  const cityValue = isCustomCityValue(city) ? otherCity.trim() : city;
-  if (!cityValue) return 'يرجى اختيار المدينة أو كتابة مدينة أخرى.';
-  if (!addressDetails.trim()) return 'يرجى إدخال العنوان بالتفصيل.';
+  if (!Array.isArray(branches) || branches.length === 0) {
+    return 'يرجى إضافة فرع واحد على الأقل للإعلان.';
+  }
+
+  // نتحقق من كل فرع بشكل منفصل — كل فرع لازم يكون فيه بيانات العنوان والأسعار صحيحة
+  for (let i = 0; i < branches.length; i++) {
+    const b = branches[i];
+    const prefix = branches.length > 1 ? `فرع "${b.name || `رقم ${i + 1}`}": ` : '';
+    if (!b.name.trim()) return `${prefix}يرجى إدخال اسم الفرع.`;
+    if (!b.governorate) return `${prefix}يرجى اختيار المحافظة.`;
+    if (!b.city.trim()) return `${prefix}يرجى اختيار المدينة أو كتابة مدينة أخرى.`;
+    if (!b.addressDetails.trim()) return `${prefix}يرجى إدخال العنوان بالتفصيل.`;
+
+    // أسعار الكشف
+    if (b.discountedExaminationPrice != null && b.examinationPrice == null) {
+      return `${prefix}يرجى إدخال سعر الكشف قبل إضافة سعر الخصم.`;
+    }
+    if (
+      b.discountedExaminationPrice != null &&
+      b.examinationPrice != null &&
+      b.discountedExaminationPrice >= b.examinationPrice
+    ) {
+      return `${prefix}سعر الكشف بعد الخصم يجب أن يكون أقل من السعر الأساسي.`;
+    }
+
+    // أسعار الاستشارة
+    if (b.discountedConsultationPrice != null && b.consultationPrice == null) {
+      return `${prefix}يرجى إدخال سعر الاستشارة قبل إضافة سعر الخصم.`;
+    }
+    if (
+      b.discountedConsultationPrice != null &&
+      b.consultationPrice != null &&
+      b.discountedConsultationPrice >= b.consultationPrice
+    ) {
+      return `${prefix}سعر الاستشارة بعد الخصم يجب أن يكون أقل من السعر الأساسي.`;
+    }
+
+    // خصم الخدمات
+    const invalidServiceDiscount = b.clinicServices.some((service) => {
+      const p = service.price;
+      const d = service.discountedPrice;
+      return d != null && (p == null || d >= p);
+    });
+    if (invalidServiceDiscount) {
+      return `${prefix}خصم الخدمة يجب أن يكون أقل من سعر الخدمة الأساسي.`;
+    }
+  }
+
   const invalidSocial = socialLinks.some((item) => item.url.trim() && !sanitizeSocialUrl(item.url));
   if (invalidSocial) return 'رابط السوشيال غير صحيح. يجب أن يبدأ بـ http أو https.';
-  const exam = toNumber(examinationPrice);
-  const discountedExam = toNumber(discountedExaminationPrice);
-  if (discountedExam != null && exam == null) return 'يرجى إدخال سعر الكشف قبل إضافة سعر الخصم.';
-  if (discountedExam != null && exam != null && discountedExam >= exam) {
-    return 'سعر الكشف بعد الخصم يجب أن يكون أقل من السعر الأساسي.';
-  }
-  const consultation = toNumber(consultationPrice);
-  const discountedConsultation = toNumber(discountedConsultationPrice);
-  if (discountedConsultation != null && consultation == null) {
-    return 'يرجى إدخال سعر الاستشارة قبل إضافة سعر الخصم.';
-  }
-  if (discountedConsultation != null && consultation != null && discountedConsultation >= consultation) {
-    return 'سعر الاستشارة بعد الخصم يجب أن يكون أقل من السعر الأساسي.';
-  }
-  const invalidServiceDiscount = clinicServices.some((service) => {
-    const p = toNumber(service.price == null ? '' : String(service.price));
-    const d = toNumber(service.discountedPrice == null ? '' : String(service.discountedPrice));
-    return d != null && (p == null || d >= p);
-  });
-  if (invalidServiceDiscount) return 'خصم الخدمة يجب أن يكون أقل من سعر الخدمة الأساسي.';
   return '';
 };

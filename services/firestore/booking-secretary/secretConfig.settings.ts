@@ -148,6 +148,7 @@ export const getBookingConfigByUserId = async (
 ): Promise<{
   formTitle?: string;
   secretaryPasswordHash?: string;
+  secretaryPasswordPlain?: string;
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
 } | null> => {
@@ -162,6 +163,12 @@ export const getBookingConfigByUserId = async (
   const perBranch = pickPerBranchVitalsSettings(userData, branchId);
   const secretaryVitalsVisibility = perBranch.visibility;
   const secretaryVitalFields = perBranch.fields;
+  const branchKey = resolveBranchMapKey(branchId);
+  const plainMap = userData?.secretaryPasswordPlainByBranch;
+  const secretaryPasswordPlain =
+    plainMap && typeof plainMap === 'object' && typeof (plainMap as Record<string, unknown>)[branchKey] === 'string'
+      ? String((plainMap as Record<string, unknown>)[branchKey]).trim()
+      : undefined;
   const doctorEmailValue = normalizeEmail(userData?.doctorEmail);
   const bookingSecretValue = normalizeBookingSecret(userData?.bookingSecret);
   const legacySecretaryPassword =
@@ -218,7 +225,7 @@ export const getBookingConfigByUserId = async (
     }
   }
 
-  return { formTitle, secretaryPasswordHash, secretaryVitalsVisibility, secretaryVitalFields };
+  return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryVitalsVisibility, secretaryVitalFields };
 };
 
 export const saveBookingCredentials = async (

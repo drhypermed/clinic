@@ -1,35 +1,42 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // وحدة تحكم صفحة إعلان الطبيب (Doctor Advertisement Controller)
 // ─────────────────────────────────────────────────────────────────────────────
-// Hook شامل لصفحة إعلان الطبيب — بيدير كل الـ state والعمليات:
-//   • تحميل بيانات الإعلان الحالية (ratings, imageUrls, schedule ...)
-//   • إدارة حقول الإدخال (الاسم، البيو، العنوان، الخدمات، الجدول، السوشيال)
-//   • اختيار/رفع/قصّ الصور (avatar + معرض)
-//   • نشر/إلغاء نشر الإعلان في الدليل العام
-//   • التحقق من صحة البيانات قبل الحفظ (validateDoctorAdBeforeSave)
-//   • بناء بيانات المعاينة قبل النشر (buildDoctorAdPreviewData)
-//
-// المنطق الدقيق (التحقق والمعاينة) في ملف helpers منفصل لتقسيم المسؤوليات.
+// الهدف: hook شامل لصفحة إعلان الطبيب يدير:
+//   • حقول عالمية عن الطبيب (اسم، تخصص، سيرة، سوشيال، خبرة، حالة نشر)
+//   • فروع الطبيب المتعددة (branches[]) — كل فرع له عنوانه ومواعيده وأسعاره
+//     وخدماته وصوره المستقلة (عن طريق useDoctorAdBranches).
+//   • رفع/قص/حذف صور الفرع النشط.
+//   • التحميل من Firestore مع ترحيل البيانات القديمة (قبل تعدد الفروع)
+//     لفرع واحد افتراضي.
+//   • الحفظ في Firestore مع كتابة branches[] + نسخ أول فرع للحقول القديمة
+//     عشان التوافق مع أي كود قديم.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { DoctorAdProfile, DoctorClinicScheduleRow, DoctorClinicServiceRow } from '../../../types';
+import type { DoctorAdProfile } from '../../../types';
 import { DoctorSocialLink } from './types';
 import { firestoreService } from '../../../services/firestore';
 import {
-  deleteDoctorAdImageByUrl, uploadDoctorAdImageBase64, uploadDoctorAdImageFile, } from '../../../services/storageService';
-import { CITIES_BY_GOVERNORATE } from '../constants';
+  deleteDoctorAdImageByUrl, uploadDoctorAdImageBase64, uploadDoctorAdImageFile,
+} from '../../../services/storageService';
 import { getRectCroppedImg } from '../../../utils/rectCropImage';
 import {
-  mapDoctorAdActionError, safeDocId, sanitizeSocialLinks, sanitizeSocialUrl, sanitizeTextInput, } from './securityUtils';
+  mapDoctorAdActionError, safeDocId, sanitizeSocialLinks, sanitizeSocialUrl,
+  sanitizeMultilineInput, sanitizeTextInput,
+} from './securityUtils';
 import {
-  createDefaultSchedule, createScheduleId, createServiceId, createSocialId, CUSTOM_CITY_OPTION, fileToDataUrl, getImageAspect, isCustomCityValue, LEGACY_CUSTOM_CITY_OPTION, MAX_IMAGE_SIZE_BYTES, normalizeScheduleRows, toNumber, } from './utils';
+  MAX_IMAGES_PER_BRANCH, MAX_IMAGE_SIZE_BYTES,
+  createSocialId, fileToDataUrl, getImageAspect,
+  migrateLegacyFieldsToBranch, normalizeBranch,
+} from './utils';
 import type { DoctorAdvertisementPageProps } from '../../../types';
 import {
   buildDoctorAdPreviewData,
   isDoctorAdImageOwnedByDoctor,
   validateDoctorAdBeforeSave,
 } from './useDoctorAdvertisementController.helpers';
+import { useDoctorAdBranches } from './useDoctorAdBranches';
+
 export const useDoctorAdvertisementController = ({
   doctorId,
   doctorName,
@@ -37,38 +44,30 @@ export const useDoctorAdvertisementController = ({
   profileImage,
 }: DoctorAdvertisementPageProps) => {
   const safeDoctorId = useMemo(() => safeDocId(doctorId), [doctorId]);
+
+  // ─── حالة عامة للصفحة ───
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+
+  // ─── الحقول العالمية للطبيب (برا الفروع) ───
   const [adDoctorName, setAdDoctorName] = useState(doctorName || '');
   const [academicDegree, setAcademicDegree] = useState('');
   const [subSpecialties, setSubSpecialties] = useState('');
   const [featuredServicesSummary, setFeaturedServicesSummary] = useState('');
   const [workplace, setWorkplace] = useState('');
   const [extraInfo, setExtraInfo] = useState('');
-  const [governorate, setGovernorate] = useState('');
-  const [city, setCity] = useState('');
-  const [otherCity, setOtherCity] = useState('');
-  const [addressDetails, setAddressDetails] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
   const [socialLinks, setSocialLinks] = useState<DoctorSocialLink[]>([]);
   const [yearsExperience, setYearsExperience] = useState('');
-  const [examinationPrice, setExaminationPrice] = useState('');
-  const [discountedExaminationPrice, setDiscountedExaminationPrice] = useState('');
-  const [consultationPrice, setConsultationPrice] = useState('');
-  const [discountedConsultationPrice, setDiscountedConsultationPrice] = useState('');
-  const [clinicServices, setClinicServices] = useState<DoctorClinicServiceRow[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [persistedImageUrls, setPersistedImageUrls] = useState<string[]>([]);
-  const [clinicSchedule, setClinicSchedule] = useState<DoctorClinicScheduleRow[]>(createDefaultSchedule());
-  const [newScheduleDay, setNewScheduleDay] = useState('');
-  const [newScheduleFrom, setNewScheduleFrom] = useState('');
-  const [newScheduleTo, setNewScheduleTo] = useState('');
-  const [newScheduleNotes, setNewScheduleNotes] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+
+  // ─── فروع الطبيب (كل فرع بمعلوماته المستقلة) ───
+  const branchesApi = useDoctorAdBranches();
+  const { branches, activeBranchId, activeBranch } = branchesApi;
+
+  // ─── حالة رفع الصور (مشتركة — كل صورة بتروح للفرع النشط) ───
   const [pendingCropImage, setPendingCropImage] = useState<string | null>(null);
   const [pendingOriginalFile, setPendingOriginalFile] = useState<File | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -77,28 +76,32 @@ export const useDoctorAdvertisementController = ({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [deletingImageIndex, setDeletingImageIndex] = useState<number | null>(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    x: number; y: number; width: number; height: number;
   } | null>(null);
-  const cityOptions = useMemo(() => {
-    if (!governorate) return [];
-    const rawOptions = CITIES_BY_GOVERNORATE[governorate] || [LEGACY_CUSTOM_CITY_OPTION];
-    const normalized = rawOptions.map((option) =>
-      option === LEGACY_CUSTOM_CITY_OPTION ? CUSTOM_CITY_OPTION : option
-    );
-    return Array.from(new Set(normalized));
-  }, [governorate]);
+
+  // نتذكر كل الصور اللي اتحفظت في Firestore — عشان بعد Save نقدر نحذف من
+  // الـStorage الصور اللي شالها الطبيب من أي فرع.
+  const [persistedImageUrls, setPersistedImageUrls] = useState<string[]>([]);
+
+  // ─── إخفاء رسالة النجاح أوتوماتيك بعد ثواني ───
   useEffect(() => {
     if (!message) return;
     const timeoutId = window.setTimeout(() => setMessage(''), 2600);
     return () => window.clearTimeout(timeoutId);
   }, [message]);
+
+  // ─── مزامنة اسم الطبيب من البروب لما البروب يتغير فقط ───
+  useEffect(() => {
+    if (doctorName.trim()) {
+      setAdDoctorName(doctorName);
+    }
+  }, [doctorName]);
+
+  // ─── بناء بيانات المعاينة (تشمل كل الفروع) ───
   const previewData = useMemo(
     (): DoctorAdProfile =>
       buildDoctorAdPreviewData({
-        safeDoctorId,
+        safeDoctorId: safeDoctorId || '',
         doctorId,
         doctorName,
         doctorSpecialty,
@@ -109,53 +112,19 @@ export const useDoctorAdvertisementController = ({
         featuredServicesSummary,
         workplace,
         extraInfo,
-        governorate,
-        city,
-        otherCity,
-        addressDetails,
-        clinicSchedule,
-        examinationPrice,
-        discountedExaminationPrice,
-        consultationPrice,
-        discountedConsultationPrice,
-        clinicServices,
-        imageUrls,
-        contactPhone,
-        whatsapp,
+        branches,
         socialLinks,
         yearsExperience,
         isPublished,
-        normalizeScheduleRows,
       }),
     [
-    adDoctorName,
-    addressDetails,
-    academicDegree,
-    city,
-    clinicSchedule,
-    clinicServices,
-    consultationPrice,
-    discountedConsultationPrice,
-    discountedExaminationPrice,
-    doctorId,
-    doctorSpecialty,
-    examinationPrice,
-    extraInfo,
-    featuredServicesSummary,
-    governorate,
-    imageUrls,
-    isPublished,
-    otherCity,
-    profileImage,
-    safeDoctorId,
-    socialLinks,
-    subSpecialties,
-    whatsapp,
-    contactPhone,
-    workplace,
-    yearsExperience,
+      adDoctorName, academicDegree, branches, doctorId, doctorName, doctorSpecialty,
+      extraInfo, featuredServicesSummary, isPublished, profileImage, safeDoctorId,
+      socialLinks, subSpecialties, workplace, yearsExperience,
     ]
   );
+
+  // ─── تحميل الإعلان من Firestore + ترحيل البيانات القديمة ───
   useEffect(() => {
     if (!safeDoctorId) {
       setLoading(true);
@@ -167,134 +136,66 @@ export const useDoctorAdvertisementController = ({
       .getDoctorAdByDoctorId(safeDoctorId)
       .then((ad) => {
         if (cancelled || !ad) return;
+        // الحقول العالمية
         setAdDoctorName(ad.doctorName || doctorName || '');
         setAcademicDegree(ad.academicDegree || '');
         setSubSpecialties(ad.subSpecialties || '');
         setFeaturedServicesSummary(ad.featuredServicesSummary || '');
         setWorkplace(ad.workplace || '');
         setExtraInfo(ad.extraInfo || ad.bio || '');
-        setGovernorate(ad.governorate || '');
-        const cities = ad.governorate ? CITIES_BY_GOVERNORATE[ad.governorate] || [LEGACY_CUSTOM_CITY_OPTION] : [];
-        if (ad.city && cities.includes(ad.city)) {
-          if (ad.city === LEGACY_CUSTOM_CITY_OPTION) {
-            setCity(CUSTOM_CITY_OPTION);
-            setOtherCity('');
-          } else {
-            setCity(ad.city);
-            setOtherCity('');
-          }
-        } else if (ad.city) {
-          setCity(CUSTOM_CITY_OPTION);
-          setOtherCity(ad.city);
-        }
-        setAddressDetails(ad.addressDetails || '');
-        setContactPhone(ad.contactPhone || '');
-        setWhatsapp(ad.whatsapp || '');
+        setYearsExperience(ad.yearsExperience != null ? String(ad.yearsExperience) : '');
+
+        // السوشيال (نفس المنطق القديم)
         if (Array.isArray(ad.socialLinks) && ad.socialLinks.length > 0) {
-          setSocialLinks(
-            sanitizeSocialLinks(
-              ad.socialLinks.map((item, index) => ({
-                id: item.id || `social-${index + 1}`,
-                platform: item.platform || '',
-                url: item.url || '',
-              }))
-            )
-          );
+          setSocialLinks(sanitizeSocialLinks(
+            ad.socialLinks.map((item, index) => ({
+              id: item.id || `social-${index + 1}`,
+              platform: item.platform || '',
+              url: item.url || '',
+            }))
+          ));
         } else if (ad.socialMediaUrl) {
-          setSocialLinks(
-            sanitizeSocialLinks([
-              {
-                id: createSocialId(),
-                platform: ad.socialMediaPlatform || 'Social',
-                url: ad.socialMediaUrl,
-              },
-            ])
-          );
+          setSocialLinks(sanitizeSocialLinks([
+            { id: createSocialId(), platform: ad.socialMediaPlatform || 'Social', url: ad.socialMediaUrl },
+          ]));
         } else {
           setSocialLinks([]);
         }
-        setYearsExperience(ad.yearsExperience != null ? String(ad.yearsExperience) : '');
-        setExaminationPrice(ad.examinationPrice != null ? String(ad.examinationPrice) : '');
-        setDiscountedExaminationPrice(
-          ad.discountedExaminationPrice != null ? String(ad.discountedExaminationPrice) : ''
-        );
-        setConsultationPrice(ad.consultationPrice != null ? String(ad.consultationPrice) : '');
-        setDiscountedConsultationPrice(
-          ad.discountedConsultationPrice != null ? String(ad.discountedConsultationPrice) : ''
-        );
-        if (Array.isArray(ad.clinicServices) && ad.clinicServices.length > 0) {
-          setClinicServices(ad.clinicServices);
-        } else if (Array.isArray(ad.services) && ad.services.length > 0) {
-          setClinicServices(
-            ad.services.map((name, index) => ({
-              id: `legacy-${index + 1}`,
-              name,
-              price: null,
-            }))
-          );
-        } else {
-          setClinicServices([]);
-        }
-        const loadedImageUrls = Array.isArray(ad.imageUrls) ? ad.imageUrls : [];
-        setImageUrls(loadedImageUrls);
-        setPersistedImageUrls(loadedImageUrls);
-        setClinicSchedule(normalizeScheduleRows(ad.clinicSchedule));
+
+        // الفروع: لو المستند فيه branches جاهز، نستخدمه. غير كده
+        // نبني فرع واحد من الحقول القديمة (top-level) اللي كانت بتستخدم
+        // قبل ما ندعم تعدد الفروع.
+        const loadedBranches = Array.isArray(ad.branches) && ad.branches.length > 0
+          ? ad.branches.map((b, idx) => normalizeBranch(b, `فرع ${idx + 1}`))
+          : [migrateLegacyFieldsToBranch(ad)];
+        branchesApi.setBranches(loadedBranches);
+        branchesApi.setActiveBranchId(loadedBranches[0]?.id || '');
+
+        // تتبع كل الصور المحفوظة (عبر كل الفروع) — نحتاجها لحذف Storage بعد Save
+        const allPersistedImages = loadedBranches.flatMap((b) => b.imageUrls);
+        setPersistedImageUrls(allPersistedImages);
+
         setIsPublished(Boolean(ad.isPublished));
       })
       .catch((err: unknown) => {
         if (cancelled) return;
         setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [safeDoctorId]);
-  useEffect(() => {
-    if (doctorName.trim() && doctorName !== adDoctorName) {
-      setAdDoctorName(doctorName);
-    }
-  }, [adDoctorName, doctorName]);
-  const addClinicServiceRow = () => {
-    if (clinicServices.length >= 20) {
-      setError('يمكن إضافة حتى 20 خدمة فقط.');
-      return;
-    }
-    setClinicServices((prev) => [
-      ...prev,
-      {
-        id: createServiceId(),
-        name: '',
-        price: null,
-      },
-    ]);
-    setError('');
-  };
-  const updateClinicService = (serviceId: string, patch: Partial<DoctorClinicServiceRow>) => {
-    setClinicServices((prev) =>
-      prev.map((item) => (item.id === serviceId ? { ...item, ...patch } : item))
-    );
-  };
-  const removeClinicService = (serviceId: string) => {
-    setClinicServices((prev) => prev.filter((item) => item.id !== serviceId));
-  };
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // رفع الصور للفرع النشط
+  // ═════════════════════════════════════════════════════════════════════════
   const addImageFromFile = async (file: File) => {
-    if (!safeDoctorId) {
-      setLoading(true);
-      return;
-    }
-    if (!file.type.startsWith('image/')) {
-      setError('يرجى اختيار ملف صورة صالح.');
-      return;
-    }
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setError('حجم الصورة يجب ألا يتجاوز 10 ميجابايت.');
-      return;
-    }
-    if (imageUrls.length >= 6) {
-      setError('يمكن رفع 6 صور كحد أقصى.');
+    if (!safeDoctorId) { setLoading(true); return; }
+    if (!activeBranch) { setError('لا يوجد فرع محدد لرفع الصورة عليه.'); return; }
+    if (!file.type.startsWith('image/')) { setError('يرجى اختيار ملف صورة صالح.'); return; }
+    if (file.size > MAX_IMAGE_SIZE_BYTES) { setError('حجم الصورة يجب ألا يتجاوز 10 ميجابايت.'); return; }
+    if (activeBranch.imageUrls.length >= MAX_IMAGES_PER_BRANCH) {
+      setError(`يمكن رفع ${MAX_IMAGES_PER_BRANCH} صور كحد أقصى لكل فرع.`);
       return;
     }
     try {
@@ -311,15 +212,15 @@ export const useDoctorAdvertisementController = ({
       setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
     }
   };
+
   const onCropComplete = useCallback(
     (
       _croppedArea: { x: number; y: number; width: number; height: number },
       croppedPixels: { x: number; y: number; width: number; height: number }
-    ) => {
-      setCroppedAreaPixels(croppedPixels);
-    },
+    ) => { setCroppedAreaPixels(croppedPixels); },
     []
   );
+
   const handleCancelCrop = () => {
     setPendingCropImage(null);
     setPendingOriginalFile(null);
@@ -328,12 +229,13 @@ export const useDoctorAdvertisementController = ({
     setCropAspect(4 / 3);
     setCroppedAreaPixels(null);
   };
+
   const handleSaveOriginalImage = async () => {
-    if (!safeDoctorId || !pendingOriginalFile) return;
+    if (!safeDoctorId || !pendingOriginalFile || !activeBranch) return;
     setUploadingImage(true);
     try {
       const cloudUrl = await uploadDoctorAdImageFile(safeDoctorId, pendingOriginalFile);
-      setImageUrls((prev) => [...prev, cloudUrl]);
+      branchesApi.appendBranchImage(activeBranch.id, cloudUrl);
       setError('');
       handleCancelCrop();
     } catch (err: unknown) {
@@ -342,18 +244,16 @@ export const useDoctorAdvertisementController = ({
       setUploadingImage(false);
     }
   };
+
   const handleSaveCroppedImage = async () => {
-    if (!safeDoctorId || !pendingCropImage) return;
+    if (!safeDoctorId || !pendingCropImage || !activeBranch) return;
     setUploadingImage(true);
     try {
-      if (croppedAreaPixels) {
-        const cropped = await getRectCroppedImg(pendingCropImage, croppedAreaPixels);
-        const cloudUrl = await uploadDoctorAdImageBase64(safeDoctorId, cropped);
-        setImageUrls((prev) => [...prev, cloudUrl]);
-      } else {
-        const cloudUrl = await uploadDoctorAdImageBase64(safeDoctorId, pendingCropImage);
-        setImageUrls((prev) => [...prev, cloudUrl]);
-      }
+      const dataUrl = croppedAreaPixels
+        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels)
+        : pendingCropImage;
+      const cloudUrl = await uploadDoctorAdImageBase64(safeDoctorId, dataUrl);
+      branchesApi.appendBranchImage(activeBranch.id, cloudUrl);
       setError('');
       handleCancelCrop();
     } catch (err: unknown) {
@@ -362,15 +262,19 @@ export const useDoctorAdvertisementController = ({
       setUploadingImage(false);
     }
   };
-  const removeImage = async (index: number) => {
-    const targetUrl = imageUrls[index];
+
+  // حذف صورة من فرع معيّن: نشيلها من الـstate ونحذفها من Storage لو ملكنا
+  const removeBranchImage = async (branchId: string, imageIndex: number) => {
+    const branch = branches.find((b) => b.id === branchId);
+    if (!branch) return;
+    const targetUrl = branch.imageUrls[imageIndex];
     if (!targetUrl) return;
-    setDeletingImageIndex(index);
+    setDeletingImageIndex(imageIndex);
     try {
       if (safeDoctorId && isDoctorAdImageOwnedByDoctor(targetUrl, safeDoctorId)) {
         await deleteDoctorAdImageByUrl(targetUrl);
       }
-      setImageUrls((prev) => prev.filter((_, idx) => idx !== index));
+      branchesApi.removeBranchImage(branchId, imageIndex);
       setError('');
     } catch (err: unknown) {
       setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
@@ -378,107 +282,101 @@ export const useDoctorAdvertisementController = ({
       setDeletingImageIndex(null);
     }
   };
-  const addScheduleRow = () => {
-    if (!newScheduleDay || !newScheduleFrom || !newScheduleTo) {
-      setError('يرجى إدخال اليوم ووقت البداية والنهاية قبل إضافة الموعد.');
-      return;
-    }
-    setClinicSchedule((prev) => [
-      ...prev,
-      {
-        id: createScheduleId(),
-        day: newScheduleDay,
-        from: newScheduleFrom,
-        to: newScheduleTo,
-        notes: newScheduleNotes.trim(),
-      },
-    ]);
-    setNewScheduleDay('');
-    setNewScheduleFrom('');
-    setNewScheduleTo('');
-    setNewScheduleNotes('');
-    setError('');
-  };
-  const removeScheduleRow = (id: string) => {
-    setClinicSchedule((prev) => prev.filter((row) => row.id !== id));
-  };
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // الحفظ
+  // ═════════════════════════════════════════════════════════════════════════
   const validateBeforeSave = () =>
     validateDoctorAdBeforeSave({
       adDoctorName,
       doctorSpecialty,
-      governorate,
-      city,
-      otherCity,
-      addressDetails,
+      branches,
       socialLinks,
-      examinationPrice,
-      discountedExaminationPrice,
-      consultationPrice,
-      discountedConsultationPrice,
-      clinicServices,
     });
+
   const saveAd = async (publishValue: boolean) => {
-    if (!safeDoctorId) {
-      setLoading(true);
-      return;
-    }
+    if (!safeDoctorId) { setLoading(true); return; }
     setError('');
     setMessage('');
     const validationError = validateBeforeSave();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-    const cityValue = isCustomCityValue(city) ? otherCity.trim() : city;
-    const normalizedClinicServices = clinicServices
-      .map((item) => ({
-        id: item.id,
-        name: sanitizeTextInput(item.name, 160),
-        price: item.price,
-        discountedPrice: item.discountedPrice ?? null,
-      }))
-      .filter((item) => item.name);
-    const normalizedSchedule = normalizeScheduleRows(clinicSchedule);
+    if (validationError) { setError(validationError); return; }
+
+    // نطهر كل فرع ونرمي الخدمات الفاضية
+    const normalizedBranches = branches.map((b) => ({
+      id: b.id,
+      name: sanitizeTextInput(b.name, 80) || 'فرع',
+      governorate: sanitizeTextInput(b.governorate, 120),
+      city: sanitizeTextInput(b.city, 120),
+      addressDetails: sanitizeMultilineInput(b.addressDetails, 800),
+      contactPhone: sanitizeTextInput(b.contactPhone, 40),
+      whatsapp: sanitizeTextInput(b.whatsapp, 40),
+      clinicSchedule: b.clinicSchedule,
+      clinicServices: b.clinicServices
+        .map((s) => ({
+          id: s.id,
+          name: sanitizeTextInput(s.name, 160),
+          price: s.price,
+          discountedPrice: s.discountedPrice ?? null,
+        }))
+        .filter((s) => s.name),
+      examinationPrice: b.examinationPrice,
+      discountedExaminationPrice: b.discountedExaminationPrice,
+      consultationPrice: b.consultationPrice,
+      discountedConsultationPrice: b.discountedConsultationPrice,
+      imageUrls: b.imageUrls,
+    }));
+
     const normalizedSocialLinks = sanitizeSocialLinks(socialLinks);
+    const primary = normalizedBranches[0];
+
     const payload: Partial<DoctorAdProfile> = {
+      // الحقول العالمية
       doctorName: sanitizeTextInput(adDoctorName, 160),
       doctorSpecialty: sanitizeTextInput(doctorSpecialty, 160),
       academicDegree: sanitizeTextInput(academicDegree, 400),
-      subSpecialties: sanitizeTextInput(subSpecialties, 1200),
-      featuredServicesSummary: sanitizeTextInput(featuredServicesSummary, 1200),
-      workplace: sanitizeTextInput(workplace, 800),
-      extraInfo: sanitizeTextInput(extraInfo, 1500),
+      subSpecialties: sanitizeMultilineInput(subSpecialties, 1200),
+      featuredServicesSummary: sanitizeMultilineInput(featuredServicesSummary, 1200),
+      workplace: sanitizeMultilineInput(workplace, 800),
+      extraInfo: sanitizeMultilineInput(extraInfo, 1500),
       profileImage: profileImage || '',
       clinicName: '',
-      bio: sanitizeTextInput(extraInfo, 1500),
-      governorate: sanitizeTextInput(governorate, 120),
-      city: sanitizeTextInput(cityValue, 120),
-      addressDetails: sanitizeTextInput(addressDetails, 800),
-      clinicSchedule: normalizedSchedule,
-      examinationPrice: toNumber(examinationPrice),
-      discountedExaminationPrice: toNumber(discountedExaminationPrice),
-      consultationPrice: toNumber(consultationPrice),
-      discountedConsultationPrice: toNumber(discountedConsultationPrice),
-      clinicServices: normalizedClinicServices,
-      services: normalizedClinicServices.map((item) => item.name),
-      imageUrls,
-      contactPhone: sanitizeTextInput(contactPhone, 40),
-      whatsapp: sanitizeTextInput(whatsapp, 40),
+      bio: sanitizeMultilineInput(extraInfo, 1500),
       socialLinks: normalizedSocialLinks,
       socialMediaPlatform: sanitizeTextInput(normalizedSocialLinks[0]?.platform, 80),
       socialMediaUrl: sanitizeSocialUrl(normalizedSocialLinks[0]?.url),
-      yearsExperience: toNumber(yearsExperience),
+      yearsExperience: (() => { const n = Number(yearsExperience); return Number.isFinite(n) && n >= 0 ? n : null; })(),
       isPublished: publishValue,
+
+      // الفروع (المصدر الحقيقي الجديد)
+      branches: normalizedBranches,
+
+      // نسخ أول فرع للحقول القديمة (Legacy) عشان أي كود قديم لسه يقرأها
+      governorate: primary?.governorate || '',
+      city: primary?.city || '',
+      addressDetails: primary?.addressDetails || '',
+      contactPhone: primary?.contactPhone || '',
+      whatsapp: primary?.whatsapp || '',
+      clinicSchedule: primary?.clinicSchedule || [],
+      clinicServices: primary?.clinicServices || [],
+      examinationPrice: primary?.examinationPrice ?? null,
+      discountedExaminationPrice: primary?.discountedExaminationPrice ?? null,
+      consultationPrice: primary?.consultationPrice ?? null,
+      discountedConsultationPrice: primary?.discountedConsultationPrice ?? null,
+      services: (primary?.clinicServices || []).map((s) => s.name),
+      imageUrls: primary?.imageUrls || [],
     };
+
     setSaving(true);
     try {
       await firestoreService.saveDoctorAdByDoctorId(safeDoctorId, payload);
-      const removedFromAd = persistedImageUrls.filter((url) => !imageUrls.includes(url));
+      // حذف من Storage أي صورة كانت موجودة قبل الحفظ ومش موجودة دلوقتي في أي فرع
+      const currentImages = normalizedBranches.flatMap((b) => b.imageUrls);
+      const removedFromAd = persistedImageUrls.filter((url) => !currentImages.includes(url));
       const removableUrls = removedFromAd.filter((url) => isDoctorAdImageOwnedByDoctor(url, safeDoctorId));
       if (removableUrls.length > 0) {
         await Promise.all(removableUrls.map((url) => deleteDoctorAdImageByUrl(url)));
       }
-      setPersistedImageUrls(imageUrls);
+      setPersistedImageUrls(currentImages);
       setIsPublished(publishValue);
       setMessage(publishValue ? '✅ تم تحديث الإعلان المنشور بنجاح.' : '✅ تم حفظ الإعلان كمسودة.');
     } catch (err: unknown) {
@@ -487,24 +385,35 @@ export const useDoctorAdvertisementController = ({
       setSaving(false);
     }
   };
+
   return {
+    // عام
     loading, saving, message, error, showPreview, setShowPreview, profileImage,
+    // حقول الطبيب العالمية
     adDoctorName, setAdDoctorName, doctorSpecialty, academicDegree, setAcademicDegree,
     yearsExperience, setYearsExperience, subSpecialties, setSubSpecialties,
     featuredServicesSummary, setFeaturedServicesSummary, workplace, setWorkplace,
-    extraInfo, setExtraInfo, governorate, setGovernorate, city, setCity, otherCity,
-    setOtherCity, addressDetails, setAddressDetails, contactPhone, setContactPhone,
-    whatsapp, setWhatsapp, socialLinks, setSocialLinks, cityOptions,
-    examinationPrice, setExaminationPrice, discountedExaminationPrice,
-    setDiscountedExaminationPrice, consultationPrice, setConsultationPrice,
-    discountedConsultationPrice, setDiscountedConsultationPrice, clinicServices,
-    updateClinicService, addClinicServiceRow, removeClinicService, clinicSchedule,
-    newScheduleDay, setNewScheduleDay, newScheduleFrom, setNewScheduleFrom,
-    newScheduleTo, setNewScheduleTo, newScheduleNotes, setNewScheduleNotes,
-    addScheduleRow, removeScheduleRow, imageUrls, deletingImageIndex, addImageFromFile,
-    removeImage, pendingCropImage, crop, zoom, cropAspect, uploadingImage, setCrop,
-    setZoom, onCropComplete, handleCancelCrop, handleSaveCroppedImage,
-    handleSaveOriginalImage, previewData, isPublished, saveAd,
+    extraInfo, setExtraInfo, socialLinks, setSocialLinks,
+    // الفروع + CRUD (نفتح الـAPI كله من الـhook)
+    branches, activeBranchId, activeBranch,
+    setActiveBranchId: branchesApi.setActiveBranchId,
+    canAddBranch: branchesApi.canAddBranch,
+    addBranch: branchesApi.addBranch,
+    removeBranch: branchesApi.removeBranch,
+    renameBranch: branchesApi.renameBranch,
+    updateBranchField: branchesApi.updateBranchField,
+    addScheduleRow: branchesApi.addScheduleRow,
+    removeScheduleRow: branchesApi.removeScheduleRow,
+    updateScheduleRow: branchesApi.updateScheduleRow,
+    addServiceRow: branchesApi.addServiceRow,
+    removeServiceRow: branchesApi.removeServiceRow,
+    updateServiceRow: branchesApi.updateServiceRow,
+    removeBranchImage,
+    // صور (رفع وقص)
+    deletingImageIndex, addImageFromFile,
+    pendingCropImage, crop, zoom, cropAspect, uploadingImage, setCrop, setZoom,
+    onCropComplete, handleCancelCrop, handleSaveCroppedImage, handleSaveOriginalImage,
+    // معاينة وحفظ ونشر
+    previewData, isPublished, saveAd,
   };
 };
-

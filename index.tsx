@@ -4,7 +4,13 @@
 // بدل ما يعمل waterfall متسلسل.
 
 import './services/disablePersistentWebStorage';
+import { applyHostAwareMeta } from './utils/hostAwareMeta';
 import { mountRootApp } from './components/app/bootstrap/AppBootstrap';
+
+// تطبيق الـmeta tags حسب الدومين الحالي قبل ما React يعمل mount —
+// عشان Googlebot والمستخدم يشوفوا الـtitle/description/canonical الصح
+// من أول لحظه (بدل الثابته في index.html اللي مكتوبه للـclinic).
+applyHostAwareMeta();
 
 const __dhT0 = (window as Window & { __dhSplashT0?: number }).__dhSplashT0 || 0;
 console.log('[DH-TIMING] index.tsx-executed: ' + Math.round(performance.now() - __dhT0) + 'ms');

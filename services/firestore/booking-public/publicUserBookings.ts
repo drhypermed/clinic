@@ -87,6 +87,34 @@ export const subscribeToPublicUserBookings = (
   );
 };
 
+/**
+ * جلب حجوزات المريض مرّه واحده فقط (بدون listener دائم).
+ * بيستخدم cache-first: لو فيه كاش يرجّع فوراً، مفيش كاش = طلب واحد للسيرفر.
+ * ده بديل آمن ورخيص لـsubscribeToPublicUserBookings في الصفحات اللي مش محتاجه
+ * مزامنه لحظيّه (زي صفحه الجمهور — مفيش طبيب هيغيّر حجوزات المريض من بعيد).
+ *
+ * لو المستخدم فتح panel حجوزاتي، بنجيبها بس وقتها = توفير 99% من القراءات.
+ */
+export const getPublicUserBookingsOnce = async (
+  publicUserId: string
+): Promise<PublicUserBooking[]> => {
+  const normalizedPublicUserId = sanitizeDocSegment(publicUserId);
+  if (!normalizedPublicUserId) return [];
+
+  const bookingsRef = collection(db, 'users', normalizedPublicUserId, 'publicBookings');
+  const q = query(bookingsRef, orderBy('createdAt', 'desc'));
+
+  try {
+    const snapshot = await getDocsCacheFirst(q);
+    return snapshot.docs
+      .map((item: any) => normalizePublicUserBooking(item.id, item.data() as Record<string, unknown>))
+      .filter((item) => Boolean(item.dateTime));
+  } catch (error) {
+    console.error('[Firestore] Error fetching public user bookings:', error);
+    return [];
+  }
+};
+
 /** تحديث حالة الحجز إلى "مكتمل" عند انتهاء التوقيت أو تأكيد الطبيب */
 export const markPublicUserBookingCompleted = async (
   publicUserId: string,

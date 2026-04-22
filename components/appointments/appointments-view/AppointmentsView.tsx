@@ -5,6 +5,7 @@ import { firestoreService } from '../../../services/firestore';
 import { SecretaryResponseToast } from '../SecretaryResponseToast';
 import { AddAppointmentForm } from '../AddAppointmentForm';
 import { AppointmentsStats } from '../AppointmentsStats';
+import { BookingSectionPublic } from '../BookingSectionPublic'; // قسم رابط الفورم العام للجمهور (اتنقل هنا من صفحة الإعلان)
 import type { AppointmentsViewProps, ClinicAppointment } from '../../../types';
 import { AppointmentsListColumns } from './AppointmentsListColumns';
 import { useSecretaryEntryAlerts } from './useSecretaryEntryAlerts';
@@ -79,8 +80,23 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     discountReasons,
   } = useAppointmentFormState({ userId, records, appointments });
 
-  // Keep hook running for side-effects: fetches bookingSecret, syncs secretary vitals visibility
-  useBookingSectionControls({
+  // الهوك ده بيدير (side-effects + قسم رابط الفورم العام للجمهور):
+  // - بيجيب الـ bookingSecret الخاص بالسكرتارية ويزامن حقول القياسات
+  // - بيوفر قيم ودوال قسم الفورم العام للجمهور (اللي اتنقل هنا فوق حجز موعد)
+  const {
+    publicBookingLink,          // رابط الفورم العام الكامل
+    publicSectionOpen,          // هل القسم مفتوح حالياً
+    togglePublicSection,        // فتح/غلق القسم
+    publicSlots,                // المواعيد المتاحة للجمهور
+    publicSlotDateStr, setPublicSlotDateStr,
+    publicSlotTimeStr, setPublicSlotTimeStr,
+    publicLinkCopied, copyPublicLink,
+    publicSlotAdding, addPublicSlot, removePublicSlot,
+    publicFormTitle, setPublicFormTitle,
+    publicFormContactInfo, setPublicFormContactInfo,
+    publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
+    publicSlotTodayStr, publicTimeMin,
+  } = useBookingSectionControls({
     userId, bookingSecret: bookingSecretProp, onBookingSecretReady,
     prescriptionVitalsConfig,
     prescriptionCustomBoxes,
@@ -192,6 +208,34 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         <div className="dh-stagger-1">
           <AppointmentsStats bookedInLastMonth={bookedInLastMonth} todayCount={todayCount} upcomingCount={upcomingCount} completedInLastMonth={completedInLastMonth} />
         </div>
+
+        {/* قسم رابط الفورم العام للجمهور — موضوع فوق "حجز موعد" ليسهل على الطبيب نسخ الرابط ومشاركته */}
+        {userId && (
+          <div className="dh-stagger-2"><BookingSectionPublic
+            publicBookingLink={publicBookingLink}
+            isOpen={publicSectionOpen}
+            onToggleOpen={togglePublicSection}
+            publicLinkCopied={publicLinkCopied}
+            onCopyPublicLink={copyPublicLink}
+            publicFormTitle={publicFormTitle}
+            onPublicFormTitleChange={setPublicFormTitle}
+            publicFormContactInfo={publicFormContactInfo}
+            onPublicFormContactInfoChange={setPublicFormContactInfo}
+            publicFormSaving={publicFormSaving}
+            onSavePublicFormSettings={savePublicFormSettings}
+            isSaved={isPublicSettingsSaved}
+            publicSlotDateStr={publicSlotDateStr}
+            onPublicSlotDateStrChange={setPublicSlotDateStr}
+            publicSlotTimeStr={publicSlotTimeStr}
+            onPublicSlotTimeStrChange={setPublicSlotTimeStr}
+            publicSlotTodayStr={publicSlotTodayStr}
+            publicTimeMin={publicTimeMin}
+            publicSlotAdding={publicSlotAdding}
+            onAddPublicSlot={addPublicSlot}
+            publicSlots={publicSlots}
+            onRemovePublicSlot={removePublicSlot}
+          /></div>
+        )}
 
         {/* نموذج إضافة وحجز موعد */}
         <div className="dh-stagger-2"><AddAppointmentForm

@@ -31,6 +31,7 @@ import {
 import type { PublicDoctorsDirectoryPageProps } from '../../../types';
 import { useDirectoryFilters } from './useDirectoryFilters';
 import { usePublicBookingReviews } from './usePublicBookingReviews';
+import { getCachedDirectoryPage, setCachedDirectoryPage } from './directoryCache';
 
 export const usePublicDoctorsDirectoryController = ({
   user,
@@ -60,7 +61,8 @@ export const usePublicDoctorsDirectoryController = ({
   const [doctorReviews, setDoctorReviews] = useState<DoctorPublicReview[]>([]);
   const [doctorReviewsLoading, setDoctorReviewsLoading] = useState(false);
   const [myBookings, setMyBookings] = useState<PublicUserBooking[]>([]);
-  const [myBookingsLoading, setMyBookingsLoading] = useState(true);
+  // الـloading بقى false في البدايه لأننا مش بنجيب أي حاجه إلا لمّا المستخدم يفتح panel الحجوزات
+  const [myBookingsLoading, setMyBookingsLoading] = useState(false);
   const [accountSnapshot, setAccountSnapshot] = useState<{ name?: string; email?: string; phone?: string }>(
     profile || {}
   );
@@ -94,7 +96,9 @@ export const usePublicDoctorsDirectoryController = ({
     updateBookingReviewDraft,
     submitBookingReview,
     deleteBookingReview,
-  } = usePublicBookingReviews(user.uid);
+    // للضيف (user = null) بنبعت uid فاضي — الـhook مش بيقرا/يكتب إلا لمّا المستخدم
+    // يدوس على زر فعلي (submitReview/deleteReview) واللي محتاج تسجيل دخول أصلاً.
+  } = usePublicBookingReviews(user?.uid || '');
 
   const buildSiteBookingUrl = async (doctorId: string): Promise<string | null> => {
     const secret = await firestoreService.getPublicSecretByUserId(doctorId);
@@ -115,19 +119,38 @@ export const usePublicDoctorsDirectoryController = ({
     }
   }, [searchParams, ads, selectedDoctorId]);
 
+  // تحسين التكلفه (Priority 2 من خطّة التوفير):
+  // كل filter change كان = 20 قراءه جديده. مع الكاش المحلّي (sessionStorage):
+  //   - لو المستخدم غيّر filter ثم رجع لنفس combination خلال 5 دقايق = 0 قراءات
+  //   - لو refresh للصفحه في نفس الـtab = 0 قراءات
+  // توفير متوقّع: ~70% من قراءات الصفحه الأولى.
   useEffect(() => {
     let active = true;
+    const filters = {
+      specialty: specialtyFilter,
+      governorate: governorateFilter,
+      city: cityFilter,
+      search: searchFilter,
+    };
+
     const fetchFirstPage = async () => {
-      setLoading(true);
       setError('');
+
+      // 1) محاوله قراءه من الكاش أولاً — cache hit = عرض فوري بدون request
+      const cached = getCachedDirectoryPage(filters);
+      if (cached) {
+        setAds(cached.data);
+        setLastVisibleDoc(cached.lastVisibleDoc);
+        setHasMore(cached.hasMore);
+        setLoading(false);
+        return;
+      }
+
+      // 2) cache miss = نطلب من Firestore زي الأول
+      setLoading(true);
       try {
         const { data, lastVisibleDoc: newLastDoc, hasMore: newHasMore } = await firestoreService.getPublishedDoctorAdsPaginated(
-          {
-            specialty: specialtyFilter,
-            governorate: governorateFilter,
-            city: cityFilter,
-            search: searchFilter,
-          },
+          filters,
           20,
           null
         );
@@ -137,6 +160,12 @@ export const usePublicDoctorsDirectoryController = ({
           setLastVisibleDoc(newLastDoc);
           setHasMore(newHasMore);
           setLoading(false);
+          // 3) خزّن في الكاش للـ5 دقايق الجايه
+          setCachedDirectoryPage(filters, {
+            data,
+            lastVisibleDoc: newLastDoc,
+            hasMore: newHasMore,
+          });
         }
       } catch (err: any) {
         if (active) {
@@ -186,21 +215,38 @@ export const usePublicDoctorsDirectoryController = ({
     }
   };
 
+  // تحسين التكلفه (Priority 1 من خطّة التوفير):
+  // كان فيه listener لحظي (onSnapshot) شغّال طول ما الصفحه مفتوحه — كارثه على التكلفه
+  // عند 100K مستخدم (= 100K listener شغّال بيحرق قراءات 24/7).
+  //
+  // الحل: نجيبهم بس لمّا المستخدم يفتح panel "حجوزاتي" (lazy load) + one-time fetch
+  // مع cache-first. السبب إن مفيش طبيب بيعدّل حجوزات المريض من بعيد، فمفيش داعي للمزامنه اللحظيّه.
+  //
+  // توفير متوقّع: ~95% من قراءات الحجوزات (معظم الجمهور مش بيفتح panel الحجوزات).
   useEffect(() => {
+    // تنظيف لو المستخدم سجّل خروج
     if (!user?.uid) {
       setMyBookings([]);
       setMyBookingsLoading(false);
       return;
     }
 
+    // مش بنجيب إلا لمّا الـpanel يفتح — توفير 95%+ من القراءات
+    if (!showBookingsPanel) return;
+
+    let active = true;
     setMyBookingsLoading(true);
-    const unsub = firestoreService.subscribeToPublicUserBookings(user.uid, (bookings) => {
-      setMyBookings(bookings);
-      setMyBookingsLoading(false);
+    firestoreService.getPublicUserBookingsOnce(user.uid).then((bookings) => {
+      if (active) {
+        setMyBookings(bookings);
+        setMyBookingsLoading(false);
+      }
     });
 
-    return () => unsub();
-  }, [user?.uid]);
+    return () => {
+      active = false;
+    };
+  }, [user?.uid, showBookingsPanel]);
 
   useEffect(() => {
     if (!showDoctorReviewsModal || !reviewsDoctor?.doctorId) {
@@ -219,17 +265,19 @@ export const usePublicDoctorsDirectoryController = ({
   }, [reviewsDoctor?.doctorId, showDoctorReviewsModal]);
 
   useEffect(() => {
+    // الـuser ممكن يكون null (ضيف) — نتعامل مع ده بـoptional chaining.
     setAccountSnapshot((prev) => ({
-      name: (profile?.name || prev.name || user.displayName || '').trim() || 'مستخدم عام',
-      email: (profile?.email || prev.email || user.email || '').trim().toLowerCase(),
+      name: (profile?.name || prev.name || user?.displayName || '').trim() || 'مستخدم عام',
+      email: (profile?.email || prev.email || user?.email || '').trim().toLowerCase(),
       phone: (profile?.phone || prev.phone || '').trim(),
     }));
-  }, [profile?.email, profile?.name, profile?.phone, user.displayName, user.email]);
+  }, [profile?.email, profile?.name, profile?.phone, user?.displayName, user?.email]);
 
   useEffect(() => {
-    const isFirebaseVerified = Boolean(auth.currentUser?.emailVerified || user.emailVerified);
+    // للضيف، مفيش verified email — نسيب publicAccountVerified = false.
+    const isFirebaseVerified = Boolean(auth.currentUser?.emailVerified || user?.emailVerified);
     setPublicAccountVerified(isFirebaseVerified);
-  }, [user.emailVerified, user.uid]);
+  }, [user?.emailVerified, user?.uid]);
 
   const upsertPublicAccountProfile = async (currentUser: User, fallbackEmail = '') => {
     const normalizedEmail = (currentUser.email || fallbackEmail || accountSnapshot.email || '').trim().toLowerCase();
@@ -349,11 +397,14 @@ export const usePublicDoctorsDirectoryController = ({
     setShowDoctorReviewsModal(false);
   };
 
-  const activePublicUser = auth.currentUser || user;
-  const accountName = (accountSnapshot.name || activePublicUser.displayName || '').trim() || 'مستخدم عام';
-  const accountEmail = (activePublicUser.email || accountSnapshot.email || '').trim().toLowerCase();
-  const isTemporaryPublicAccount = Boolean(activePublicUser.isAnonymous);
+  // الـactivePublicUser ممكن يكون null للضيف — كل الـchecks تحت باستخدام optional chaining.
+  const activePublicUser: User | null = auth.currentUser || user;
+  const accountName = (accountSnapshot.name || activePublicUser?.displayName || '').trim() || 'مستخدم عام';
+  const accountEmail = (activePublicUser?.email || accountSnapshot.email || '').trim().toLowerCase();
+  // الضيف مش حساب مؤقّت (غير مسجّل أصلاً) — الـtemporary بيوصف الـanonymous Firebase session.
+  const isTemporaryPublicAccount = Boolean(activePublicUser?.isAnonymous);
   const isPublicEmailVerified = Boolean(
+    activePublicUser &&
     !activePublicUser.isAnonymous &&
     activePublicUser.email &&
     (activePublicUser.emailVerified || publicAccountVerified)
@@ -369,11 +420,37 @@ export const usePublicDoctorsDirectoryController = ({
   };
 
   const handleJoinAsDoctor = async () => {
+    // الفكره: تطبيق الجمهور (DrHyperPublic) وتطبيق الطبيب (DrHyperMed) اتنين PWA منفصلين
+    // على دومينين مختلفين. زر "انضمام كطبيب" المفروض يخرج من تطبيق الجمهور خالص
+    // ويفتح تطبيق الطبيب — لو مثبت كـPWA الـbrowser/OS هيعرض "Open in app"،
+    // ولو لسه مش مثبت هيفتح في المتصفح والمستخدم يقدر يثبته من هناك.
+    const DOCTOR_APP_URL = 'https://clinic.drhypermed.com/signup/doctor';
+
     try {
+      // نعمل logout الأول عشان حساب العيان ما يفضلش مفتوح في التطبيق التاني
       await onLogout();
-      navigate('/signup/doctor', { replace: true });
     } catch (err: any) {
-      setError(err?.message || 'تعذر الانتقال إلى تسجيل الطبيب.');
+      // حتى لو فشل الـlogout، نكمّل التحويل — الخطأ ده مش مانع للوصول لتطبيق الطبيب
+      // (الدومين التاني عنده session مختلف أصلاً)
+      console.warn('[handleJoinAsDoctor] logout failed, continuing:', err?.message);
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const host = (window.location.hostname || '').toLowerCase();
+    const isProdPublicDomain =
+      host === 'drhypermed.com' || host === 'www.drhypermed.com';
+
+    if (isProdPublicDomain) {
+      // الإنتاج: نفتح دومين الطبيب في تاب/تطبيق خارجي.
+      // _blank + noopener: أمان — الصفحه الجديده ما تقدرش تتحكم في الصفحه الأصليه.
+      // لو المستخدم مثبّت DrHyperMed كـPWA، Chrome/Edge هيعرضوا "Open in app"
+      // (على Android/Desktop). على iOS هيفتح في Safari — دي حدود النظام.
+      window.open(DOCTOR_APP_URL, '_blank', 'noopener,noreferrer');
+    } else {
+      // localhost / staging: مفيش دومين طبيب منفصل، نرجع للسلوك القديم (نفس التطبيق)
+      // عشان المطور يقدر يختبر flow التسجيل بدون deployment.
+      navigate('/signup/doctor', { replace: true });
     }
   };
 

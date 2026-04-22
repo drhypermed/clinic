@@ -1,6 +1,6 @@
 const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 
@@ -249,3 +249,18 @@ exports.consumeDrugToolQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('.
 // --- Subscription Functions ---
 exports.checkExpiredPremiumSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredPremiumSubscriptions'));
 exports.runExpiredSubscriptionsCheckNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/subscriptionFunctions', 'runExpiredSubscriptionsCheckNow'));
+
+// --- SEO Functions (sitemap + robots) ---
+// الـresponse مكاشّش على CDN لـ24 ساعه — الـFirestore reads تقريباً = 1 في اليوم.
+// minInstances = 0 (مفيش warm instance — SEO ميحتاجش سرعه لحظيّه، الكاش بيتولّى).
+const { createSitemapHandler, robotsHandler } = require('./src/seo');
+const SEO_REQUEST_OPTIONS = {
+  region: REGION,
+  memory: '256MiB',
+  timeoutSeconds: 30,
+  minInstances: 0,
+  maxInstances: 5,
+  concurrency: 80,
+};
+exports.sitemap = onRequest(SEO_REQUEST_OPTIONS, createSitemapHandler(admin));
+exports.robots = onRequest(SEO_REQUEST_OPTIONS, robotsHandler);

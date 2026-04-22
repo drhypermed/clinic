@@ -5,16 +5,14 @@ import { FaLink } from 'react-icons/fa';
 import type { DoctorAdProfile, DoctorClinicScheduleRow } from '../../../types';
 import { useCopyFeedback } from '../../../hooks/useCopyFeedback';
 import {
-  formatLocation,
-  formatPrice,
-  formatTimeWithPeriod,
+  getAdBranches,
   getAvatarImage,
-  getClinicServices,
   getInitials,
   normalizePhoneForTel,
   normalizePhoneForWhatsApp,
   sanitizeBioForDisplay,
 } from './helpers';
+import { BranchPublicView, BranchTabs } from './BranchPublicView';
 
 interface DoctorDetailsModalProps {
   selectedDoctor: DoctorAdProfile | null;
@@ -53,9 +51,22 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
   const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
   const { copied: linkCopied, copy: copyShareLink } = useCopyFeedback();
 
+  // فروع الطبيب + تبويب نشط (بيحدد الفرع اللي الجمهور بيشوف بياناته)
+  const branches = useMemo(
+    () => (selectedDoctor ? getAdBranches(selectedDoctor) : []),
+    [selectedDoctor]
+  );
+  const [activeBranchId, setActiveBranchId] = useState<string>('');
+  React.useEffect(() => {
+    // كل ما الطبيب المختار يتغير، نرجع للفرع الأول
+    setActiveBranchId(branches[0]?.id || '');
+  }, [branches]);
+  const activeBranch = branches.find((b) => b.id === activeBranchId) || branches[0];
+
+  // معرض الصور: صور الفرع النشط فقط
   const galleryImages = useMemo(
-    () => (Array.isArray(selectedDoctor?.imageUrls) ? selectedDoctor.imageUrls.filter(Boolean) : []),
-    [selectedDoctor?.imageUrls]
+    () => (activeBranch ? activeBranch.imageUrls.filter(Boolean) : []),
+    [activeBranch]
   );
 
   const socialLinks = (Array.isArray(selectedDoctor?.socialLinks) ? selectedDoctor?.socialLinks : [])
@@ -88,12 +99,12 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
   if (!selectedDoctor) return null;
 
   const avatarImage = getAvatarImage(selectedDoctor);
-  const locationText = formatLocation(selectedDoctor) || 'العنوان غير محدد';
-  const callPhone = normalizePhoneForTel(selectedDoctor.contactPhone);
-  const whatsappPhone = normalizePhoneForWhatsApp(selectedDoctor.whatsapp || selectedDoctor.contactPhone);
-  const clinicServices = getClinicServices(selectedDoctor);
-  const hasExamDiscount = selectedDoctor.discountedExaminationPrice != null && selectedDoctor.examinationPrice != null && selectedDoctor.discountedExaminationPrice < selectedDoctor.examinationPrice;
-  const hasConsultDiscount = selectedDoctor.discountedConsultationPrice != null && selectedDoctor.consultationPrice != null && selectedDoctor.discountedConsultationPrice < selectedDoctor.consultationPrice;
+  // العنوان وأرقام التواصل بتاعة الفرع النشط (مش الحقول القديمة)
+  const locationText = activeBranch
+    ? [activeBranch.governorate, activeBranch.city, activeBranch.addressDetails].filter(Boolean).join(' - ') || 'العنوان غير محدد'
+    : 'العنوان غير محدد';
+  const callPhone = normalizePhoneForTel(activeBranch?.contactPhone);
+  const whatsappPhone = normalizePhoneForWhatsApp(activeBranch?.whatsapp || activeBranch?.contactPhone);
 
   const bioItems: BioItem[] = [];
   if (selectedDoctor.academicDegree) bioItems.push({ label: 'الدرجة العلمية', value: sanitizeBioForDisplay(selectedDoctor.academicDegree), accent: 'indigo' });
@@ -150,7 +161,15 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
               title="عرض الصورة بالحجم الكامل"
             >
               {avatarImage ? (
-                <img src={avatarImage} alt={selectedDoctor.doctorName} className="w-full h-full object-cover" />
+                // تحسينات أداء: decoding async + width/height لمنع Layout Shift
+                <img
+                  src={avatarImage}
+                  alt={selectedDoctor.doctorName}
+                  className="w-full h-full object-cover"
+                  decoding="async"
+                  width={96}
+                  height={96}
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-800 text-white font-black text-xl">
                   {getInitials(selectedDoctor.doctorName)}
@@ -224,35 +243,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-4 bg-slate-50/40">
-          {/* Prices */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-white p-3 md:p-4 shadow-sm">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-emerald-400 to-teal-400" />
-              <p className="text-[10px] md:text-xs text-emerald-600 font-black">الكشف</p>
-              {hasExamDiscount ? (
-                <>
-                  <p className="text-base md:text-lg font-black text-emerald-700 mt-0.5">{formatPrice(selectedDoctor.discountedExaminationPrice)}</p>
-                  <p className="text-[10px] md:text-xs font-bold text-slate-500 line-through">{formatPrice(selectedDoctor.examinationPrice)}</p>
-                </>
-              ) : (
-                <p className="text-base md:text-lg font-black text-slate-800 mt-0.5">{formatPrice(selectedDoctor.examinationPrice)}</p>
-              )}
-            </div>
-            <div className="relative overflow-hidden rounded-2xl border border-sky-200 bg-white p-3 md:p-4 shadow-sm">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-sky-400 to-cyan-400" />
-              <p className="text-[10px] md:text-xs text-sky-600 font-black">الاستشارة</p>
-              {hasConsultDiscount ? (
-                <>
-                  <p className="text-base md:text-lg font-black text-sky-700 mt-0.5">{formatPrice(selectedDoctor.discountedConsultationPrice)}</p>
-                  <p className="text-[10px] md:text-xs font-bold text-slate-500 line-through">{formatPrice(selectedDoctor.consultationPrice)}</p>
-                </>
-              ) : (
-                <p className="text-base md:text-lg font-black text-slate-800 mt-0.5">{formatPrice(selectedDoctor.consultationPrice)}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Bio Sections */}
+          {/* Bio Sections (عالمية للطبيب، فوق الفروع) */}
           {bioItems.length > 0 && (
             <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm space-y-2.5">
               {bioItems.map((item) => (
@@ -264,66 +255,23 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             </div>
           )}
 
-          {/* Schedule + Services grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Schedule */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-black text-slate-700">🗓️ مواعيد العيادة</p>
-                <span className="text-[10px] font-black text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
-                  {selectedDoctorFilledSchedule.length > 0 ? `${selectedDoctorFilledSchedule.length} يوم` : '—'}
-                </span>
-              </div>
-              {selectedDoctorFilledSchedule.length === 0 ? (
-                <p className="text-xs font-bold text-slate-400 py-2">لا توجد مواعيد مضافة</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {selectedDoctorFilledSchedule.map((row) => (
-                    <div key={row.id} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5">
-                      <span className="font-black text-slate-800 text-[11px] md:text-xs">{row.day}</span>
-                      <span className="font-black text-slate-600 text-[11px] md:text-xs">
-                        {formatTimeWithPeriod(row.from)} - {formatTimeWithPeriod(row.to)}
-                        {row.notes ? ` (${row.notes})` : ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Services */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-black text-slate-700">🩺 الخدمات والأسعار</p>
-                <span className="text-[10px] font-black text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-full px-2 py-0.5">
-                  {clinicServices.length > 0 ? `${clinicServices.length} خدمة` : '—'}
-                </span>
-              </div>
-              {clinicServices.length === 0 ? (
-                <p className="text-xs font-bold text-slate-400 py-2">لا توجد خدمات مضافة</p>
-              ) : (
-                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-                  {clinicServices.map((service) => {
-                    const discounted = service.discountedPrice != null && service.price != null && service.discountedPrice < service.price;
-                    return (
-                      <div key={service.id} className="flex items-center justify-between gap-2 rounded-lg border border-cyan-100 bg-cyan-50/60 px-2.5 py-1.5">
-                        <span className="text-[11px] md:text-xs font-black text-cyan-900 truncate">{service.name}</span>
-                        {discounted ? (
-                          <div className="text-left shrink-0">
-                            <span className="text-[11px] md:text-xs font-black text-emerald-700">{service.discountedPrice} ج</span>
-                            <span className="text-[10px] font-bold text-slate-400 line-through block leading-none">{service.price} ج</span>
-                          </div>
-                        ) : (
-                          <span className="text-[11px] md:text-xs font-black text-cyan-700 shrink-0">
-                            {service.price == null ? '—' : `${service.price} ج`}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          {/* تبويبات الفروع + بيانات الفرع النشط (عنوان/أسعار/مواعيد/خدمات/صور) */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
+            <BranchTabs
+              branches={branches}
+              activeBranchId={activeBranchId}
+              onSelect={setActiveBranchId}
+            />
+            {activeBranch && (
+              <BranchPublicView
+                branch={activeBranch}
+                showContactActions
+                onImageClick={(idx) => {
+                  onPreviewGalleryImage(activeBranch.imageUrls[idx]);
+                  setActiveGalleryIndex(idx);
+                }}
+              />
+            )}
           </div>
 
           {/* Social Links */}
@@ -347,28 +295,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             </div>
           )}
 
-          {/* Gallery */}
-          {galleryImages.length > 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
-              <p className="text-xs font-black text-slate-700 mb-2">📸 صور إضافية ({galleryImages.length})</p>
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                {galleryImages.map((src, idx) => (
-                  <button
-                    key={`${src}-${idx}`}
-                    type="button"
-                    onClick={() => {
-                      onPreviewGalleryImage(src);
-                      setActiveGalleryIndex(idx);
-                    }}
-                    className="relative aspect-square rounded-xl border border-slate-200 overflow-hidden bg-slate-100 hover:ring-2 hover:ring-teal-400 transition-all"
-                    title="عرض الصورة"
-                  >
-                    <img src={src} alt={`${selectedDoctor.doctorName}-${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* ملحوظة: صور الفرع بقت جزء من BranchPublicView فوق، فمابقاش فيه قسم Gallery منفصل. */}
         </div>
       </div>
 
