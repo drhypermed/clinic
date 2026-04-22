@@ -19,7 +19,9 @@ export const MAX_ATTEMPTS = 5;               // أقصى عدد للمحاولا
 export const LOCKOUT_TIME = 15 * 60 * 1000;   // وقت الحظر (15 دقيقة) بالملي ثانية
 
 /** الروابط وإعدادات إعادة التوجيه للرسائل البريدية */
-const ACTION_LINK_BASE_URL = 'https://www.drhypermed.com';
+// روابط الإيميلات للدكاتره (تأكيد/إعاده تعيين) لازم ترجع لدومين العياده
+// عشان ما يحصلش: دكتور يضغط رابط → يلاقي نفسه على صفحه المريض (drhypermed.com)
+const ACTION_LINK_BASE_URL = 'https://clinic.drhypermed.com';
 
 const buildAuthContinueUrl = (path = '/login/doctor') =>
   new URL(path, ACTION_LINK_BASE_URL).toString();

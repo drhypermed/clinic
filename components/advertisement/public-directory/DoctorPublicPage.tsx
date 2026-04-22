@@ -40,7 +40,8 @@ import {
   sanitizeBioForDisplay,
 } from './helpers';
 
-const PATIENT_ORIGIN = 'https://drhypermed.com';
+// الدومين الرسمي للجمهور — www بالظبط عشان يطابق اللي شغّال في Firebase Hosting
+const PATIENT_ORIGIN = 'https://www.drhypermed.com';
 
 /**
  * تحديث meta tags للصفحه بيانات الدكتور — بيساعد جوجل وفيسبوك يعرضوا

@@ -35,6 +35,8 @@ export default defineConfig({
         inlineWorkboxRuntime: true,
         importScripts: ['/firebase-messaging-sw.js'],
         globPatterns: ['**/*.{css,html,ico,png,svg,webmanifest,woff2,woff,ttf}', 'assets/!(drug-*)*.js'],
+        // استثناء الـlogo الضخم (1.1MB) من الـoffline cache — بيتحمّل مرة واحدة عبر الشبكة، مش محتاج يتخزن في الـSW.
+        globIgnores: ['**/logo.png'],
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/__\//, /firebase-messaging-sw\.js$/, /sw\.js$/, /workbox-.*\.js$/],
         cleanupOutdatedCaches: true,
@@ -145,6 +147,8 @@ export default defineConfig({
     cssTarget: 'safari13',
     emptyOutDir: true,
     chunkSizeWarningLimit: 6000,
+    // إيقاف حساب gzip size لعرضه فقط في الـoutput — بيوفر 10-15 ثانية في كل build.
+    reportCompressedSize: false,
     modulePreload: {
       resolveDependencies: (filename, deps, context) => {
         return deps.filter((dep) => {
@@ -152,6 +156,7 @@ export default defineConfig({
           // استثناء الموديولز اللي لا تحتاج التحميل الأولي:
           //   - مجموعات الأدوية (lazy per group)
           //   - messaging / app-check / analytics (تُحمَّل عند الحاجة)
+          //   - مكتبات PDF/chart/crop (lazy — بتتحمّل لما المستخدم يفتح الميزة)
           // ملاحظة: vendor-firebase-core لازم يتحمّل أولاً لأن كل التطبيق بيعتمد عليه،
           // فما نستثنيهش من preload عشان يتحمّل بالتوازي مع index بدل ما يعمل waterfall.
           if (normalized.includes('drug-')) return false;
@@ -159,6 +164,11 @@ export default defineConfig({
           if (normalized.includes('vendor-firebase-messaging-')) return false;
           if (normalized.includes('vendor-firebase-appcheck-')) return false;
           if (normalized.includes('vendor-firebase-analytics-')) return false;
+          // المكتبات التقيلة اللي ما تتستخدم إلا في ميزات متأخرة (طباعة/رسوم/قص صور):
+          if (normalized.includes('vendor-html2canvas-')) return false;
+          if (normalized.includes('vendor-jspdf-')) return false;
+          if (normalized.includes('vendor-recharts-')) return false;
+          if (normalized.includes('vendor-easy-crop-')) return false;
           return true;
         });
       },
@@ -197,6 +207,28 @@ export default defineConfig({
               return 'vendor-react';
             }
             if (normalizedId.includes('/node_modules/@google/genai/')) return 'vendor-genai';
+            // فصل المكتبات التقيلة (كانت كلها مدمجة في vendor = 1.1MB):
+            //   - html2canvas/jspdf: طباعة الروشتات (lazy)
+            //   - recharts: الـdashboard charts (lazy)
+            //   - react-easy-crop: قص الصور (lazy)
+            //   - react-router: راوتينج (startup)
+            //   - react-icons: أيقونات (startup)
+            //   - dompurify: تنظيف HTML (startup)
+            // ملاحظة: @sentry/react مش منفصل — بيعمل circular dependency مع vendor العام
+            // (بعض utilities الـsentry مشتركة مع حاجات تانية)، فسايبينه داخل vendor.
+            if (normalizedId.includes('/node_modules/html2canvas/')) return 'vendor-html2canvas';
+            if (normalizedId.includes('/node_modules/jspdf/')) return 'vendor-jspdf';
+            if (normalizedId.includes('/node_modules/recharts/')) return 'vendor-recharts';
+            if (normalizedId.includes('/node_modules/react-easy-crop/')) return 'vendor-easy-crop';
+            if (
+              normalizedId.includes('/node_modules/react-router/') ||
+              normalizedId.includes('/node_modules/react-router-dom/') ||
+              normalizedId.includes('/node_modules/@remix-run/router/')
+            ) {
+              return 'vendor-react-router';
+            }
+            if (normalizedId.includes('/node_modules/react-icons/')) return 'vendor-react-icons';
+            if (normalizedId.includes('/node_modules/dompurify/')) return 'vendor-dompurify';
             return 'vendor';
           }
         },

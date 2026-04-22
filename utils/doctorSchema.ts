@@ -16,7 +16,8 @@
 import type { DoctorAdProfile } from '../app/drug-catalog/types/doctor-profile';
 import { getPrimaryBranch, getDoctorRatingStats } from '../components/advertisement/public-directory/helpers';
 
-const PATIENT_ORIGIN = 'https://drhypermed.com';
+// الدومين الرسمي للجمهور — www بالظبط عشان يطابق اللي شغّال في Firebase Hosting
+const PATIENT_ORIGIN = 'https://www.drhypermed.com';
 
 // يبني address object لـSchema.org من بيانات الفرع
 const buildAddress = (doctor: DoctorAdProfile) => {

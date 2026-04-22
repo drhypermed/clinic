@@ -10,8 +10,12 @@
 // يوم = رخيص جداً (~$0.003/يوم).
 // ─────────────────────────────────────────────────────────────────────────────
 
+// الدومين الرسمي للجمهور في كل الـURLs اللي بنرجّعها (sitemap + robots) =
+// www.drhypermed.com — لأنه اللي شغّال في Firebase Hosting فعلاً.
+// الدومين بدون www (PATIENT_HOST) بنستخدمه بس لفحص الـHost header الجاي من الـrequest،
+// عشان لو زائر دخل بأيّ من الشكلين (www أو بدون) نعرف إنه patient.
 const PATIENT_HOST = 'drhypermed.com';
-const PATIENT_ORIGIN = 'https://drhypermed.com';
+const PATIENT_ORIGIN = 'https://www.drhypermed.com';
 const CLINIC_ORIGIN = 'https://clinic.drhypermed.com';
 
 // قراءه الـhost الحقيقي — Firebase Hosting بيمرّره في x-forwarded-host

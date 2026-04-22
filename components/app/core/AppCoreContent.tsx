@@ -118,7 +118,8 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
         pathname === '/public' ||
         pathname.startsWith('/book-public/')
       ) ? pathname : '/public';
-      window.location.replace(`https://drhypermed.com${preservedPath}`);
+      // بنحوّل للدومين الرسمي (www) لأن الدومين بدون www لسه DNS مش مظبوط
+      window.location.replace(`https://www.drhypermed.com${preservedPath}`);
     }
   }, [hostMode, isCrossRoleConflict, pathname, userRole]);
 

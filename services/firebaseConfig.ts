@@ -20,9 +20,22 @@ import { getFunctions } from "firebase/functions";
 // import { getAnalytics } from "firebase/analytics";
 // import { getPerformance } from "firebase/performance";
 
+// تحديد authDomain حسب الدومين الحالي للمستخدم عشان نتجنّب مشاكل third-party cookies
+// والتشويش لما الدكتور يبقى على clinic.drhypermed.com ويشوف popup بيقول "drhypermed.com".
+// لو الدكتور على عياده → authDomain = clinic.drhypermed.com (نفس الدومين = صفر مشاكل كروس-أوريجن)
+// لو المريض على drhypermed.com → authDomain = www.drhypermed.com
+// باقي البيئات (localhost/staging) → فallback على www.drhypermed.com
+const resolveAuthDomain = (): string => {
+  if (typeof window === "undefined") return "www.drhypermed.com";
+  const host = (window.location.hostname || "").toLowerCase();
+  if (host === "clinic.drhypermed.com") return "clinic.drhypermed.com";
+  if (host === "drhypermed.com" || host === "www.drhypermed.com") return "www.drhypermed.com";
+  return "www.drhypermed.com";
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyAravOjVTZH-uSdvCPlkTv6GksUxjhNnRw",
-  authDomain: "www.drhypermed.com",
+  authDomain: resolveAuthDomain(),
   projectId: "gen-lang-client-0444130146",
   storageBucket: "gen-lang-client-0444130146.firebasestorage.app",
   messagingSenderId: "244450975164",

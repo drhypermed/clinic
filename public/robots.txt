@@ -13,5 +13,5 @@ Disallow: /admin
 Disallow: /book-public/
 
 # Sitemap لكل دومين
-Sitemap: https://drhypermed.com/sitemap-patient.xml
+Sitemap: https://www.drhypermed.com/sitemap-patient.xml
 Sitemap: https://clinic.drhypermed.com/sitemap-clinic.xml

@@ -46,7 +46,10 @@ const setCanonical = (href: string) => {
 };
 
 // الـorigin الرسمي لكل دومين
-const PATIENT_ORIGIN = 'https://drhypermed.com';
+// بنستخدم www.drhypermed.com لأنه الدومين الشغّال فعلاً في Firebase Hosting،
+// والدومين بدون www لسه مش مظبوط DNS (Status: Needs setup).
+// كده Google هيفهرس النسخه الشغّاله بس ومش هيحصل تضارب canonical.
+const PATIENT_ORIGIN = 'https://www.drhypermed.com';
 const CLINIC_ORIGIN = 'https://clinic.drhypermed.com';
 
 // ── meta للمرضى (drhypermed.com) ──
@@ -63,7 +66,7 @@ const PATIENT_META = {
 // كلمات مفتاحيّه مستهدفه: "برنامج عياده"، "روشته إلكترونيّه"، "إداره عيادات"، "نظام عياده".
 const CLINIC_LANDING_META = {
   title: 'Dr Hyper Clinic | برنامج إداره العيادات والروشته الإلكترونيّه للأطباء في مصر',
-  description: 'نظام متكامل لإداره العياده: روشته إلكترونيّه احترافيّه، أكتر من 10,000 دواء بجرعاتهم وتفاعلاتهم، حجز مواعيد اون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإداره فروع — كل ده في مكان واحد.',
+  description: 'نظام متكامل لإداره العياده: روشته إلكترونيّه احترافيّه، أكتر من 10,000 دواء بأسعارهم وجرعاتهم وتفاعلاتهم، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإداره فروع — كل ده في مكان واحد.',
   robots: 'index, follow',
 } as const;
 
