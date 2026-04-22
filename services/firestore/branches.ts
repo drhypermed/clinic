@@ -21,6 +21,8 @@ import {
     deleteDoc,
     onSnapshot,
     getDocs,
+    query,
+    where,
     writeBatch,
 } from 'firebase/firestore';
 import { getDocsCacheFirst } from './cacheFirst';
@@ -67,11 +69,19 @@ export const branchesService = {
         const unsubscribe = onSnapshot(branchesRef, async (snapshot) => {
             const branches = processBranches(snapshot.docs);
 
-            // إنشاء الفرع الافتراضي تلقائياً لو مفيش فروع
+            // إنشاء الفرع الافتراضي تلقائياً لو مفيش فروع.
+            // الـbug القديم: لو saveBranch فشل (rules/شبكه)، الـreturn هنا
+            // كان يخلّي الـUI شاشه بيضا للأبد. دلوقت لو فشل، نرجّع defaultBranch
+            // محلياً للـUI عشان الدكتور يقدر يكمل شغله.
             if (branches.length === 0) {
                 const defaultBranch = createDefaultBranch();
-                await branchesService.saveBranch(userId, defaultBranch);
-                // الـ onSnapshot هيتفعل تاني بعد الحفظ
+                try {
+                    await branchesService.saveBranch(userId, defaultBranch);
+                    // الـonSnapshot هيتفعل تاني بعد الحفظ
+                } catch (saveError) {
+                    console.warn('[Firestore] Default branch save failed (UI fallback applied):', saveError);
+                    onUpdate([defaultBranch]);
+                }
                 return;
             }
 
@@ -107,33 +117,25 @@ export const branchesService = {
             throw new Error('لا يمكن حذف الفرع الرئيسي');
         }
         try {
-            // نقل المواعيد التابعة للفرع المحذوف إلى الفرع الرئيسي
+            // نقل المواعيد التابعه للفرع المحذوف إلى الفرع الرئيسي.
+            // الـbug القديم: getDocs(appointmentsRef) كان بيقرا كل المواعيد للدكتور
+            // (10K+ reads). الـwhere('branchId') بيخلّي الـquery يجيب اللي تخص الفرع فقط.
             const appointmentsRef = collection(db, 'users', userId, 'appointments');
-            const appointmentsSnap = await getDocs(appointmentsRef);
-            const batch1 = writeBatch(db);
-            let batchCount = 0;
+            const appointmentsSnap = await getDocs(query(appointmentsRef, where('branchId', '==', branchId)));
+            if (!appointmentsSnap.empty) {
+                const batch1 = writeBatch(db);
+                appointmentsSnap.forEach((d) => batch1.update(d.ref, { branchId: DEFAULT_BRANCH_ID }));
+                await batch1.commit();
+            }
 
-            appointmentsSnap.forEach((d) => {
-                if (d.data().branchId === branchId) {
-                    batch1.update(d.ref, { branchId: DEFAULT_BRANCH_ID });
-                    batchCount++;
-                }
-            });
-            if (batchCount > 0) await batch1.commit();
-
-            // نقل سجلات المرضى التابعة للفرع المحذوف إلى الفرع الرئيسي
+            // نقل سجلات المرضى التابعه للفرع المحذوف — نفس التحسين.
             const recordsRef = collection(db, 'users', userId, 'records');
-            const recordsSnap = await getDocs(recordsRef);
-            const batch2 = writeBatch(db);
-            let batchCount2 = 0;
-
-            recordsSnap.forEach((d) => {
-                if (d.data().branchId === branchId) {
-                    batch2.update(d.ref, { branchId: DEFAULT_BRANCH_ID });
-                    batchCount2++;
-                }
-            });
-            if (batchCount2 > 0) await batch2.commit();
+            const recordsSnap = await getDocs(query(recordsRef, where('branchId', '==', branchId)));
+            if (!recordsSnap.empty) {
+                const batch2 = writeBatch(db);
+                recordsSnap.forEach((d) => batch2.update(d.ref, { branchId: DEFAULT_BRANCH_ID }));
+                await batch2.commit();
+            }
 
             // تنظيف الـ slots و secretaryAuth المرتبطين بالفرع المحذوف
             try {
@@ -142,19 +144,16 @@ export const branchesService = {
                 const bookingSecret = String(userData?.bookingSecret || '').trim();
                 const publicSecret = String(userData?.publicBookingSecret || '').trim();
 
-                // مسح الـ slots المتاحة للحجز العام اللي تخص الفرع المحذوف
+                // مسح الـslots المتاحه للحجز العام اللي تخص الفرع المحذوف.
+                // نفس تحسين الـquery: where('branchId') بدل قراءه كل الـslots ثم الفلتره client-side.
                 if (publicSecret) {
                     const slotsRef = collection(db, 'publicBookingConfig', publicSecret, 'slots');
-                    const slotsSnap = await getDocs(slotsRef);
-                    const batch3 = writeBatch(db);
-                    let batchCount3 = 0;
-                    slotsSnap.forEach((s) => {
-                        if (s.data()?.branchId === branchId) {
-                            batch3.delete(s.ref);
-                            batchCount3++;
-                        }
-                    });
-                    if (batchCount3 > 0) await batch3.commit();
+                    const slotsSnap = await getDocs(query(slotsRef, where('branchId', '==', branchId)));
+                    if (!slotsSnap.empty) {
+                        const batch3 = writeBatch(db);
+                        slotsSnap.forEach((s) => batch3.delete(s.ref));
+                        await batch3.commit();
+                    }
                 }
 
                 // مسح كلمة سر السكرتارية المرتبطة بالفرع (يبطل أي session نشطة)

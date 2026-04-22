@@ -1,6 +1,7 @@
 /**
  * صفحة تسجيل دخول السكرتارية (Secretary Login Page):
- * تصميم فيسبوك-style: كارد أبيض بسيط، حقول واضحة، زر أخضر عريض.
+ * تصميم فيسبوك-style: كارد أبيض بسيط، حقول واضحة، زر أزرق عريض.
+ * الألوان موحّده مع باقي صفحات الدخول (أزرق) بدلاً من الأخضر القديم.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +17,7 @@ const SECRETARY_LAST_SECRET_KEY = 'dh_secretary_last_secret';
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const inputBase =
-  'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 hover:border-slate-400 transition';
+  'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 hover:border-slate-400 transition';
 
 const labelBase = 'block text-sm font-bold text-slate-900 mb-1.5';
 
@@ -72,7 +73,7 @@ export const SecretaryLoginPage: React.FC = () => {
         </div>
 
         <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-emerald-600 to-teal-500" />
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 to-blue-500" />
           <div className="px-6 pt-6 pb-4 border-b border-slate-200">
             <h2 className="text-2xl font-black text-slate-900 leading-tight">دخول السكرتارية</h2>
             <p className="text-sm text-slate-600 font-semibold mt-1">سجّل بإيميل الطبيب والرقم السرّي.</p>
@@ -131,7 +132,7 @@ export const SecretaryLoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(5,150,105,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.99]"
+              className="w-full py-3 px-4 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.99]"
             >
               {loading ? (
                 <>

@@ -405,6 +405,8 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
       setActivePreviewIndex(0);
       setStatusMessage('✅ تم حفظ البانر بنجاح.');
     } catch (error) {
+      // لوج تفصيلي يساعدنا نشوف نوع الخطأ الفعلي (Storage/Firestore/Network)
+      console.error('[BannerSave] failed', { settingsDocId: safeSettingsDocId, error });
       setStatusMessage(`❌ ${getSafeErrorMessage(error, 'فشل حفظ البانر.')}`);
     } finally {
       setSaving(false);

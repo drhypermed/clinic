@@ -7,7 +7,7 @@ import { MedicationCustomization } from '../types';
 import { getAccountTypeControls } from './accountTypeControlsService';
 import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime';
 import { getTrustedNowMs, syncTrustedTime } from '../utils/trustedTime';
-import { getLegacyDoctorProfileDocRef, getUserProfileDocRef, mergePrimaryProfileData } from './firestore/profileRoles';
+import { getUserProfileDocRef } from './firestore/profileRoles';
 
 // Cache ذاكرة لتخصيصات الأدوية — يمنع قراءات متكررة من Firestore عند التنقل بين الشاشات.
 // TTL قصير (60 ثانية) يضمن إن أي تعديل من tab آخر يظهر خلال دقيقة.
@@ -33,20 +33,12 @@ const invalidateCustomizationsCache = (userId: string): void => {
 };
 
 const resolveEffectiveAccountType = async (userId: string): Promise<'free' | 'premium'> => {
-    const doctorRef = getLegacyDoctorProfileDocRef(userId);
-    const userRef = getUserProfileDocRef(userId);
-    const [doctorSnap, userSnap] = await Promise.all([
-        getDocCacheFirst(doctorRef),
-        getDocCacheFirst(userRef),
-    ]);
-
-    const merged = mergePrimaryProfileData(
-        userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : null,
-        doctorSnap.exists() ? (doctorSnap.data() as Record<string, unknown>) : null,
-    ) as Record<string, unknown>;
+    // قراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+    const snap = await getDocCacheFirst(getUserProfileDocRef(userId));
+    const data = snap.exists() ? (snap.data() as Record<string, unknown>) : {};
 
     await syncTrustedTime();
-    return resolveEffectiveAccountTypeFromData(merged, getTrustedNowMs());
+    return resolveEffectiveAccountTypeFromData(data, getTrustedNowMs());
 };
 
 const applyLimitPlaceholder = (template: string, limit: number, fallback: string): string => {

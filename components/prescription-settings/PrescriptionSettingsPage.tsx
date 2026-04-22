@@ -84,7 +84,9 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
     }, [form.localSettings.paperSize]);
 
     return (
-        <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 min-h-screen max-w-[100vw] overflow-x-hidden pb-32" dir="rtl">
+        // توحيد الخلفيه مع صفحات السجلات وملفات المرضى: بيضاء بدون تدرّج.
+        // قبل كده كانت from-slate-50 via-blue-50/30 to-indigo-50/20 (تدرّج فاتح).
+        <div className="bg-white min-h-screen max-w-[100vw] overflow-x-hidden pb-32" dir="rtl">
 
             {/* Toast Notification */}
             {form.notification && createPortal(

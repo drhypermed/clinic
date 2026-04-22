@@ -29,6 +29,17 @@ export const patientsService = {
     subscribeToRecords: (userId: string, onUpdate: (records: PatientRecord[]) => void, branchId?: string) => {
         const recordsRef = collection(db, 'users', userId, 'records');
 
+        // معالج آمن للتاريخ — بيقبل ISO string أو Firestore Timestamp.
+        // نفس باترن appointments.ts. لو القيمه مش صالحه بنرجّع 0 عشان الـsort
+        // ما يبقاش NaN (NaN بيخلي ترتيب JS غير محدد).
+        const getDateMs = (value: unknown): number => {
+            if (value && typeof (value as { toDate?: () => Date }).toDate === 'function') {
+                return (value as { toDate: () => Date }).toDate().getTime();
+            }
+            const ms = new Date(value as string).getTime();
+            return Number.isFinite(ms) ? ms : 0;
+        };
+
         /** وظيفة مشتركة لمعالجة البيانات وترتيبها */
         const processRecords = (docs: any[]) => {
             const records = docs.map(doc => ({
@@ -38,9 +49,7 @@ export const patientsService = {
 
             // الترتيب (تنازلياً حسب التاريخ) - نضمن الترتيب برمجياً تحسباً لأي لغبطة في الفهارس
             const sorted = records.sort((a, b) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
-                return dateB - dateA;
+                return getDateMs(b.date) - getDateMs(a.date);
             });
 
             // فلترة حسب الفرع (البيانات القديمة بدون branchId تُعتبر تابعة للفرع الرئيسي)
@@ -59,17 +68,24 @@ export const patientsService = {
 
         const orderedQuery = query(recordsRef, orderBy('date', 'desc'));
         let innerUnsubscribe: (() => void) | null = null;
+        // علم بيتفعّل لمّا الـfallback يشتغل — بعد كده نتجاهل أي callback من الـlistener الأصلي
+        // عشان ما يحصلش onUpdate() مرتين (واحد من الـorderedQuery + واحد من الـfallback).
+        let fallbackActive = false;
 
         const unsubscribe = onSnapshot(orderedQuery, (snapshot) => {
+            // لو الـfallback اشتغل قبل كده، تجاهل أي success متأخر من الـlistener الأصلي.
+            if (fallbackActive) return;
             onUpdate(processRecords(snapshot.docs));
         }, async (error) => {
             console.error("[Firestore] Index missing or query failed:", error);
 
-            /** 
-             * منطق الرجوع الآمن الذكي:
-             * نستخدم الكاش أولاً ثم نفتح مستمعاً بسيطاً بدون ترتيب (No Order) لتجنب الخطأ
-             */
+            // منع تكرار الـfallback لو الـerror handler اتنادى أكتر من مره (شبكه متقطعه مثلاً).
+            // بدون الـguard ده، كل error بيفتح listener جديد والقديم يتسرب.
+            if (fallbackActive) return;
+            fallbackActive = true;
+
             try {
+                // الكاش أولاً (لتجربه فوريّه)، ثم listener بدون ترتيب لتفادي خطأ الـindex.
                 const fallbackSnapshot = await getDocsCacheFirst(recordsRef);
                 onUpdate(processRecords(fallbackSnapshot.docs));
 
@@ -82,7 +98,7 @@ export const patientsService = {
             }
         });
 
-        // إرجاع دالة تنظيف تجمع بين المستمعين (Combined Cleanup)
+        // تنظيف موحّد للمستمعين (الأصلي + الـfallback لو اتفعّل)
         return () => {
             unsubscribe();
             if (innerUnsubscribe) innerUnsubscribe();

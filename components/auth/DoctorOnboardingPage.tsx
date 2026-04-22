@@ -12,10 +12,8 @@ import { AuthLayout } from './AuthLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { getDocCacheFirst } from '../../services/firestore/cacheFirst';
 import {
-  getLegacyDoctorProfileDocRef,
   getUserProfileDocRef,
   isDoctorLikeUserData,
-  mergePrimaryProfileData,
 } from '../../services/firestore/profileRoles';
 
 
@@ -38,18 +36,13 @@ export const DoctorOnboardingPage: React.FC = () => {
 
     const checkAccount = async () => {
       try {
-        const [userSnap, legacyDoctorSnap] = await Promise.all([
-          getDocCacheFirst(getUserProfileDocRef(user.uid)),
-          getDocCacheFirst(getLegacyDoctorProfileDocRef(user.uid)),
-        ]);
+        // قراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+        const userSnap = await getDocCacheFirst(getUserProfileDocRef(user.uid));
         if (!isMountedRef.current) return;
 
-        const data = mergePrimaryProfileData(
-          userSnap.exists() ? (userSnap.data() as Record<string, any>) : null,
-          legacyDoctorSnap.exists() ? (legacyDoctorSnap.data() as Record<string, any>) : null,
-        );
+        const data = userSnap.exists() ? (userSnap.data() as Record<string, any>) : null;
 
-        if ((!userSnap.exists() && !legacyDoctorSnap.exists()) || !isDoctorLikeUserData(data)) {
+        if (!userSnap.exists() || !isDoctorLikeUserData(data)) {
           setError('هذا الحساب غير موجود. سيتم تسجيل الخروج.');
           setChecking(false);
           await signOut();

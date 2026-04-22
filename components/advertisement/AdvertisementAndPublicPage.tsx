@@ -19,8 +19,10 @@ export const AdvertisementAndPublicPage: React.FC<DoctorAdvertisementPageProps> 
   doctorSpecialty,
   profileImage,
 }) => {
+  // الحشو الرأسي موحّد مع صفحات السجلات وملفات المرضى (py-3 sm:py-4)
+  // — قبل كده كان فيه مساحه فاضيه زياده فوق بسبب pt-5
   return (
-    <div className="px-3 pt-5 pb-3 sm:px-5 sm:pt-6 sm:pb-4 space-y-3" dir="rtl">
+    <div className="px-3 py-3 sm:px-5 sm:py-4 space-y-3" dir="rtl">
       {/* صفحة الإعلان التعريفي بالطبيب */}
       <div className="dh-stagger-1"><DoctorAdvertisementPage
         doctorId={doctorId}

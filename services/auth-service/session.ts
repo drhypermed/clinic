@@ -84,12 +84,13 @@ export const updateUserProfile = async (
     if (displayName !== undefined) updates.displayName = displayName.trim();
 
     if (photoURL !== undefined) {
-      // التحقق من طول الرابط لتجنب تجاوز حد حجم الملف الشخصي في Firebase
+      // الـ Firebase Auth profile حدّه ~3000 حرف للـphotoURL.
+      // قبل كده كنّا بنتجاهل الصوره بصمت لو طولها أكتر — فالمستخدم يفتكر إنها اتحفظت
+      // وهي فعلاً مش اتحفظت. دلوقت بنرمي خطأ صريح عشان الـUI يعرف.
       if (photoURL.length > 3000) {
-        console.warn('Photo URL is too large for Firebase profile. Consider using Firebase Storage.');
-      } else {
-        updates.photoURL = photoURL;
+        throw new Error('الصوره كبيرة جداً للحفظ مباشره. ارفعها للسحابه أولاً ثم استخدم رابطها.');
       }
+      updates.photoURL = photoURL;
     }
 
     await updateProfile(user, updates);

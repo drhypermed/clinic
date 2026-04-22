@@ -14,7 +14,7 @@
 
 import { collection, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { getDocCacheFirst, getDocsCacheFirst } from '../firestore/cacheFirst';
+import { getDocCacheFirst, getDocsCacheFirst, subscribeDocCacheFirst } from '../firestore/cacheFirst';
 import type { MonthlyFinancialData } from './types';
 import { branchDocKey, parseBranchDocKey } from './normalizers';
 
@@ -50,7 +50,10 @@ export const saveMonthlyData = async (userId: string, monthKey: string, data: Mo
     }
 };
 
-/** الاشتراك في تحديثات المصروفات الشهرية لحظة بلحظة */
+/**
+ * الاشتراك اللحظي في المصروفات الشهريه (cache-first + onSnapshot حقيقي).
+ * كان قبل كده one-shot — تحديثات من tab/جهاز تاني ما كانتش بتظهر.
+ */
 export const subscribeToMonthlyData = (
     userId: string,
     monthKey: string,
@@ -59,22 +62,15 @@ export const subscribeToMonthlyData = (
     branchId?: string,
 ) => {
     const docRef = doc(db, 'users', userId, 'financialData', 'monthly', 'entries', branchDocKey(monthKey, branchId));
-    let cancelled = false;
-
-    getDocCacheFirst(docRef).then((snapshot) => {
-        if (cancelled) return;
-        if (snapshot.exists()) {
-            onUpdate(snapshot.data() as MonthlyFinancialData);
-        } else {
-            onUpdate({});
-        }
-    }).catch((error) => {
-        if (cancelled) return;
-        console.error('[FinancialData] Error reading monthly data:', error);
-        if (onError) onError(error?.message || 'Unknown error');
+    return subscribeDocCacheFirst(docRef, {
+        next: (snapshot) => {
+            onUpdate(snapshot.exists() ? (snapshot.data() as MonthlyFinancialData) : {});
+        },
+        error: (error) => {
+            console.error('[FinancialData] Error reading monthly data:', error);
+            if (onError) onError(error?.message || 'Unknown error');
+        },
     });
-
-    return () => { cancelled = true; };
 };
 
 /** جلب المصروفات الشهرية لسنة كاملة */

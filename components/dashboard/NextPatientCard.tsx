@@ -30,6 +30,11 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
 
   const isConsultation = appointment.appointmentType === 'consultation';
 
+  // إخفاء visitReason لو نصّه = نوع الموعد (تكرار غير مفيد مع شارة "استشارة"/"كشف")
+  const trimmedReason = (appointment.visitReason || '').trim();
+  const typeLabel = isConsultation ? 'استشارة' : 'كشف';
+  const showReason = trimmedReason.length > 0 && trimmedReason !== typeLabel;
+
   return (
     <div className="relative bg-gradient-to-bl from-teal-500 via-teal-600 to-slate-800 rounded-2xl p-5 sm:p-6 text-white shadow-[0_4px_24px_-4px_rgba(13,148,136,0.4)] overflow-hidden">
       {/* عناصر زخرفية — دوائر مبهمة خلفية */}
@@ -55,7 +60,7 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
         <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-teal-200/80 font-medium">
           {appointment.age && <span className="bg-white/10 rounded-full px-2 py-0.5">{appointment.age}</span>}
           {isConsultation && <span className="bg-violet-400/30 text-violet-100 px-2.5 py-0.5 rounded-full font-bold border border-violet-300/20">استشارة</span>}
-          {appointment.visitReason && <span className="truncate opacity-80">{appointment.visitReason}</span>}
+          {showReason && <span className="truncate opacity-80">{trimmedReason}</span>}
         </div>
 
         {/* قياسات السكرتارية لو موجودة */}

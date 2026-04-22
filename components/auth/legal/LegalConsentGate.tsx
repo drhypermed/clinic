@@ -29,15 +29,13 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
     onValidityChange?.(isValid);
   }, [isValid, onValidityChange]);
 
-  const isDoctor = audience === 'doctor';
-  const topBarGradient = isDoctor
-    ? 'from-blue-700 to-blue-500'
-    : 'from-emerald-600 to-teal-500';
-  const accentText = isDoctor ? 'text-blue-700' : 'text-emerald-700';
-  const accentCheckbox = isDoctor ? 'accent-blue-600' : 'accent-emerald-600';
-  const readBtn = isDoctor
-    ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)]'
-    : 'from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(5,150,105,0.45)]';
+  // ألوان موحّده (أزرق) لكل الـaudiences — الطبيب والجمهور زي بعض.
+  // كنا بنميز الجمهور بالأخضر قبل كده، لكن اتوحد التصميم.
+  const topBarGradient = 'from-blue-700 to-blue-500';
+  const accentText = 'text-blue-700';
+  const accentCheckbox = 'accent-blue-600';
+  const readBtn =
+    'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)]';
 
   const handleToggle = (documentDef: LegalDocumentDefinition, checked: boolean) => {
     persistLegalDocumentConsent(audience, documentDef, checked);

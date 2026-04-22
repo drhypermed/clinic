@@ -8,9 +8,7 @@ import { PUBLIC_AUTH_ERROR_KEY } from '../services/auth-service';
 import { formatUserDate } from '../utils/cairoTime';
 import type { ExtendedUser } from './useAuth';
 import {
-  getLegacyDoctorProfileDocRef,
   getUserProfileDocRef,
-  mergePrimaryProfileData,
   resolveAuthRoleFromProfileData,
 } from '../services/firestore/profileRoles';
 
@@ -209,18 +207,17 @@ export const useAccountStatusMonitor = (
       return () => unsubUsers();
     }
 
-    // مراقبة حسابات الأطباء (Users primary + legacy doctors fallback)
+    // مراقبه حسابات الأطباء — listener واحد على users/{uid}.
+    // كان قبل كده 2 listeners على نفس الـdoc بسبب alias قديم (ضعف القراءات والـonSnapshot triggers).
     const userDocRef = getUserProfileDocRef(user.uid);
-    const legacyDoctorDocRef = getLegacyDoctorProfileDocRef(user.uid);
     let latestUserData: Record<string, any> | null = null;
-    let latestLegacyDoctorData: Record<string, any> | null = null;
 
     const handleDoctorSnapshot = async () => {
       if (statusHandled) return;
       const isBlacklisted = await checkBlacklistedStatus();
       if (isBlacklisted) return;
 
-      const data = mergePrimaryProfileData(latestUserData, latestLegacyDoctorData);
+      const data = latestUserData || {};
       if (Object.keys(data).length === 0 || resolveAuthRoleFromProfileData(data) !== 'doctor') return;
 
       // 1. فحص حالة التعطيل (Disabled)
@@ -265,16 +262,12 @@ export const useAccountStatusMonitor = (
     };
 
     // 1. فحص فوري من الكاش
-    Promise.all([
-      getDocCacheFirst(userDocRef),
-      getDocCacheFirst(legacyDoctorDocRef),
-    ]).then(([userSnap, legacyDoctorSnap]) => {
+    getDocCacheFirst(userDocRef).then((userSnap) => {
       latestUserData = userSnap.exists() ? (userSnap.data() as Record<string, any>) : null;
-      latestLegacyDoctorData = legacyDoctorSnap.exists() ? (legacyDoctorSnap.data() as Record<string, any>) : null;
       void handleDoctorSnapshot();
     }).catch(() => {});
 
-    // 2. مراقبة حية من السيرفر
+    // 2. مراقبه حيه من السيرفر — listener واحد فقط على users/{uid}
     const unsubscribeUser = onSnapshot(
       userDocRef,
       (snap) => {
@@ -286,20 +279,8 @@ export const useAccountStatusMonitor = (
       }
     );
 
-    const unsubscribeLegacyDoctor = onSnapshot(
-      legacyDoctorDocRef,
-      (snap) => {
-        latestLegacyDoctorData = snap.exists() ? (snap.data() as Record<string, any>) : null;
-        void handleDoctorSnapshot();
-      },
-      (error) => {
-        if (!isPermissionDeniedError(error)) console.error('Legacy doctor monitor error:', error);
-      }
-    );
-
     return () => {
       unsubscribeUser();
-      unsubscribeLegacyDoctor();
     };
     // alert.type مُزال من deps عمداً لمنع إعادة subscribe عند ظهور/اختفاء alert
     // يُقرأ alert.type عبر alertTypeRef.current داخل الـ effect

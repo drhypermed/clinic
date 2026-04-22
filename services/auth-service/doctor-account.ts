@@ -23,11 +23,9 @@ import { formatUserDate } from '../../utils/cairoTime';
 import { normalizeEmail } from './validation';
 import {
   buildDoctorUserProfilePayload,
-  getLegacyDoctorProfileDocRef,
   getUserProfileDocRef,
   isDoctorLikeUserData,
   isPublicLikeUserData,
-  mergePrimaryProfileData,
   resolveAuthRoleFromProfileData,
 } from '../firestore/profileRoles';
 
@@ -118,19 +116,12 @@ export const finalizeDoctorGoogleSignIn = async (user: User): Promise<void> => {
     throw new Error(blockMsg);
   }
 
-  // 2. التحقق من وجود ملف الطبيب في قاعدة البيانات
+  // 2. التحقق من وجود ملف الطبيب في قاعدة البيانات.
+  // قراءه واحده من users/{uid} — قبل كده كانت 2 reads بسبب alias قديم لنفس الـdoc.
   const userRef = getUserProfileDocRef(user.uid);
-  const legacyDoctorRef = getLegacyDoctorProfileDocRef(user.uid);
-  const [userDoc, legacyDoctorDoc] = await Promise.all([
-    getDoc(userRef),
-    getDoc(legacyDoctorRef),
-  ]);
-
+  const userDoc = await getDoc(userRef);
   const userData = userDoc.exists() ? (userDoc.data() as Record<string, any>) : null;
-  const legacyDoctorData = legacyDoctorDoc.exists() ? (legacyDoctorDoc.data() as Record<string, any>) : null;
-  const doctorData = isDoctorLikeUserData(userData) || legacyDoctorData
-    ? mergePrimaryProfileData(userData, legacyDoctorData)
-    : null;
+  const doctorData = isDoctorLikeUserData(userData) ? userData : null;
 
   if (!doctorData || resolveAuthRoleFromProfileData(doctorData) !== 'doctor') {
     // التأكد أولاً أنه ليس حساب جمهور يحاول الدخول كطبيب
@@ -220,19 +211,16 @@ export const checkDoctorApprovalStatus = async (
   uid: string
 ): Promise<{ status: 'approved' | 'pending' | 'rejected' | 'not_found'; rejectionReason?: string }> => {
   try {
-    // قراءة مباشرة من السيرفر — حالة الموافقة على الطبيب جزء من مسار تسجيل الدخول
-    // ولا يجوز الاعتماد على الكاش فيها (قد تكون تغيرت من جهة الإدارة).
-    const [userDoc, legacyDoctorDoc, pendingDoc] = await Promise.all([
+    // قراءه مباشره من السيرفر — حالة الموافقه على الطبيب جزء من مسار تسجيل الدخول
+    // ولا يجوز الاعتماد على الكاش فيها (قد تكون تغيرت من جهة الإداره).
+    // قراءتين بدل 3 — الـlegacy alias اتشال (كان نفس userDoc).
+    const [userDoc, pendingDoc] = await Promise.all([
       getDoc(getUserProfileDocRef(uid)),
-      getDoc(getLegacyDoctorProfileDocRef(uid)),
       getDoc(doc(db, 'pending_doctors', uid)),
     ]);
 
     const userData = userDoc.exists() ? (userDoc.data() as Record<string, any>) : null;
-    const legacyDoctorData = legacyDoctorDoc.exists() ? (legacyDoctorDoc.data() as Record<string, any>) : null;
-    const mergedDoctorData = isDoctorLikeUserData(userData) || legacyDoctorData
-      ? mergePrimaryProfileData(userData, legacyDoctorData)
-      : null;
+    const mergedDoctorData = isDoctorLikeUserData(userData) ? userData : null;
 
     if (mergedDoctorData && resolveAuthRoleFromProfileData(mergedDoctorData) === 'doctor') {
       const status = String(mergedDoctorData.verificationStatus || '').trim().toLowerCase();

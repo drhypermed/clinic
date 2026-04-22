@@ -8,9 +8,7 @@ import { getTrustedNowMs, syncTrustedTime } from '../../../utils/trustedTime';
 import {
   buildDoctorUserProfilePayload,
   getDoctorNotificationsCollectionRef,
-  getLegacyDoctorProfileDocRef,
   getUserProfileDocRef,
-  mergePrimaryProfileData,
 } from '../../../services/firestore/profileRoles';
 
 /**
@@ -37,17 +35,11 @@ export const usePremiumSubscriptionWatcher = ({ user }: UsePremiumSubscriptionWa
 
     const checkSubscription = async () => {
       try {
-        // جلب بيانات الطبيب من Firestore
-        const [userDoc, legacyDoctorDoc] = await Promise.all([
-          getDocCacheFirst(getUserProfileDocRef(user.uid)),
-          getDocCacheFirst(getLegacyDoctorProfileDocRef(user.uid)),
-        ]);
-        if (!isMounted || (!userDoc.exists() && !legacyDoctorDoc.exists())) return;
+        // قراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+        const userDoc = await getDocCacheFirst(getUserProfileDocRef(user.uid));
+        if (!isMounted || !userDoc.exists()) return;
 
-        const data = mergePrimaryProfileData(
-          userDoc.exists() ? (userDoc.data() as Record<string, any>) : null,
-          legacyDoctorDoc.exists() ? (legacyDoctorDoc.data() as Record<string, any>) : null,
-        );
+        const data = userDoc.data() as Record<string, any>;
         const accountType = data?.accountType;             // نوع الحساب (free / premium)
         const premiumStartDate = data?.premiumStartDate;   // تاريخ بدء الاشتراك
         const premiumExpiryDate = data?.premiumExpiryDate; // تاريخ انتهاء الاشتراك

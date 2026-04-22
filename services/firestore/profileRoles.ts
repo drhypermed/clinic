@@ -42,13 +42,11 @@ export const resolveAuthRoleFromProfileData = (
   return undefined;
 };
 
-export const mergePrimaryProfileData = (
-  primaryData: Record<string, any> | null | undefined,
-  legacyData: Record<string, any> | null | undefined,
-): Record<string, any> => ({
-  ...(legacyData || {}),
-  ...(primaryData || {}),
-});
+// ملاحظه: اتشال `mergePrimaryProfileData` و `getLegacyDoctorProfileDocRef`
+// و `getLegacyPublicProfileDocRef` لأنهم بقوا aliases عديمه الفايده —
+// كلهم كانوا بيرجعوا نفس doc من users/. ده كان بيخلي كل caller يقرا نفس
+// الـdoc مرتين عبر Promise.all (ضعف القراءات وضعف التكلفه بدون فايده).
+// كل caller دلوقت بيستخدم getUserProfileDocRef مباشرةً مع قراءه واحده.
 
 export const buildDoctorUserProfilePayload = (payload: Record<string, unknown>) => ({
   authRole: 'doctor',
@@ -63,9 +61,6 @@ export const buildPublicUserProfilePayload = (payload: Record<string, unknown>) 
 });
 
 export const getUserProfileDocRef = (userId: string) => doc(db, 'users', userId);
-// Backward-compatible aliases while all callers migrate to users-only helpers.
-export const getLegacyDoctorProfileDocRef = (userId: string) => getUserProfileDocRef(userId);
-export const getLegacyPublicProfileDocRef = (userId: string) => getUserProfileDocRef(userId);
 export const getDoctorNotificationsCollectionRef = (userId: string) => collection(db, 'users', userId, 'notifications');
 export const getDoctorNotificationDocRef = (userId: string, notificationId: string) => doc(db, 'users', userId, 'notifications', notificationId);
 

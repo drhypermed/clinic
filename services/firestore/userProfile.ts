@@ -7,14 +7,12 @@
  */
 
 import { doc, setDoc } from 'firebase/firestore';
-import { getDocCacheFirst } from './cacheFirst';
+import { subscribeDocCacheFirst } from './cacheFirst';
 import { db } from '../firebaseConfig';
 import { normalizeText } from '../../utils/textEncoding';
 import {
     buildDoctorUserProfilePayload,
-    getLegacyDoctorProfileDocRef,
     getUserProfileDocRef,
-    mergePrimaryProfileData,
 } from './profileRoles';
 
 /** هيكل بيانات الملف الشخصي */
@@ -42,57 +40,24 @@ export const userProfileService = {
         userId: string,
         onUpdate: (profile: UserProfileData) => void
     ) => {
+        // اشتراك حقيقي على users/{uid} (cache-first + onSnapshot).
+        // قبل كده كان one-shot، فلو الإداره غيّرت verificationStatus أو premiumExpiryDate
+        // الـUI ما كانش بيشوف التغيير لحد الـrefresh.
         const userRef = getUserProfileDocRef(userId);
-        const doctorRef = getLegacyDoctorProfileDocRef(userId);
-
-        let lastProfile: UserProfileData | null = null;
-        let latestUserData: Record<string, any> | null = null;
-        let latestDoctorData: Record<string, any> | null = null;
-
-        /** وظيفة موحدة لاستخراج البيانات وعرضها مع منع التكرار */
-        const mapAndNotify = () => {
-            const data = mergePrimaryProfileData(latestUserData, latestDoctorData);
-            if (Object.keys(data).length === 0) return;
-            const nextProfile: UserProfileData = {
-                doctorName: normalizeOptionalString(data.doctorName),
-                doctorSpecialty: normalizeOptionalString(data.doctorSpecialty),
-                profileImage: normalizeOptionalString(data.profileImage),
-                doctorWhatsApp: normalizeOptionalString(data.doctorWhatsApp),
-                accountType: data.accountType === 'premium' ? 'premium' : (data.accountType === 'free' ? 'free' : undefined),
-                premiumExpiryDate: normalizeOptionalString(data.premiumExpiryDate),
-            };
-
-            // منع التحديثات المتكررة إذا لم تتغير البيانات الفعلية (Deep comparison bypass)
-            if (lastProfile &&
-                lastProfile.doctorName === nextProfile.doctorName &&
-                lastProfile.doctorSpecialty === nextProfile.doctorSpecialty &&
-                lastProfile.profileImage === nextProfile.profileImage &&
-                lastProfile.doctorWhatsApp === nextProfile.doctorWhatsApp &&
-                lastProfile.accountType === nextProfile.accountType &&
-                lastProfile.premiumExpiryDate === nextProfile.premiumExpiryDate
-            ) {
-                return;
-            }
-
-            lastProfile = nextProfile;
-            onUpdate(nextProfile);
-        };
-
-        // بيانات الملف الشخصي بتتغير نادراً (مرة كل أسبوع/شهر)
-        // كاش يكفي بدل 2 listener مفتوحين باستمرار
-        let cancelled = false;
-
-        Promise.all([
-            getDocCacheFirst(userRef),
-            getDocCacheFirst(doctorRef)
-        ]).then(([uSnap, dSnap]) => {
-            if (cancelled) return;
-            latestUserData = uSnap.exists() ? (uSnap.data() as Record<string, any>) : null;
-            latestDoctorData = dSnap.exists() ? (dSnap.data() as Record<string, any>) : null;
-            mapAndNotify();
-        }).catch(() => { });
-
-        return () => { cancelled = true; };
+        return subscribeDocCacheFirst(userRef, {
+            next: (snap) => {
+                const data = snap.exists() ? (snap.data() as Record<string, any>) : null;
+                if (!data) return;
+                onUpdate({
+                    doctorName: normalizeOptionalString(data.doctorName),
+                    doctorSpecialty: normalizeOptionalString(data.doctorSpecialty),
+                    profileImage: normalizeOptionalString(data.profileImage),
+                    doctorWhatsApp: normalizeOptionalString(data.doctorWhatsApp),
+                    accountType: data.accountType === 'premium' ? 'premium' : (data.accountType === 'free' ? 'free' : undefined),
+                    premiumExpiryDate: normalizeOptionalString(data.premiumExpiryDate),
+                });
+            },
+        });
     },
 
     /** حفظ وتحديث بيانات الملف الشخصي مع دمج التغييرات (Merge) */

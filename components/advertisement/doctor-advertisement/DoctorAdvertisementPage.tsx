@@ -71,7 +71,6 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
       )}
 
       <DoctorAdHeader adDoctorName={adDoctorName} doctorSpecialty={doctorSpecialty} academicDegree={academicDegree} />
-      <DoctorAdPreviewButton onClick={() => setShowPreview(true)} />
 
       {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 font-bold">{error}</div>}
 
@@ -161,6 +160,9 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
         onSaveDraft={() => { void saveAd(false); }}
         onPublish={() => { void saveAd(true); }}
       />
+
+      {/* زرار المعاينه اتنقل هنا تحت خالص — بعد كل المحتوى وأزرار الحفظ/النشر */}
+      <DoctorAdPreviewButton onClick={() => setShowPreview(true)} />
     </div>
   );
 };

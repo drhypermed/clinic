@@ -114,26 +114,100 @@ const pickMeta = (mode: 'patient' | 'clinic', pathname: string) => {
 };
 
 /**
- * يطبّق الـmeta tags حسب الـhost والـpathname.
+ * المسارات اللي بتخدم الجمهور بس — في dev بنستخدمها لاستنتاج الـeffective flavor
+ * (لأن mode='both' بيخدم الاتنين من نفس الـport، فالـpathname هو اللي بيحدد).
+ */
+const isPatientPath = (pathname: string): boolean => {
+  const p = (pathname || '').toLowerCase();
+  return p === '/public' || p.startsWith('/public/') ||
+         p === '/login/public' ||
+         p.startsWith('/book-public/');
+};
+
+/**
+ * في dev (both): بنستنتج الـflavor من الـpathname/override بدل ما نسيب الـmeta
+ * متضارب (عنوان جمهور + واجهة طبيب). في prod: بنستخدم الـmode مباشره.
+ */
+const resolveEffectiveFlavor = (mode: 'patient' | 'clinic' | 'both', pathname: string): 'patient' | 'clinic' => {
+  if (mode !== 'both') return mode;
+  // dev mode — اقرأ override من URL/storage الأول
+  try {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search || '');
+      const fromUrl = params.get('hostMode');
+      if (fromUrl === 'patient' || fromUrl === 'clinic') return fromUrl;
+      const fromStorage = window.localStorage.getItem('__hostMode_override');
+      if (fromStorage === 'patient' || fromStorage === 'clinic') return fromStorage;
+    }
+  } catch { /* تجاهل: storage مقفول */ }
+  // الافتراضي: clinic، إلا إذا الـpath من مسارات الجمهور
+  return isPatientPath(pathname) ? 'patient' : 'clinic';
+};
+
+/** تحديث الـmanifest link + apple title + theme-color حسب الـflavor (dev/prod) */
+const applyFlavorPwaIdentity = (flavor: 'patient' | 'clinic'): void => {
+  if (typeof document === 'undefined') return;
+  const manifestUrl = flavor === 'clinic' ? '/manifest-clinic.webmanifest' : '/manifest-patient.webmanifest';
+  const appTitle = flavor === 'clinic' ? 'DrHyperMed' : 'DrHyperPublic';
+  const themeColor = flavor === 'clinic' ? '#2563eb' : '#0d9488';
+
+  // iOS apple title (بيظهر اسم التطبيق لما المستخدم يضيفه للشاشه)
+  const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if (appleTitle) appleTitle.setAttribute('content', appTitle);
+
+  // theme-color (لون شريط البراوزر العلوي)
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute('content', themeColor);
+
+  // PWA manifest — نبدّل الـlink لو الـhref اختلف (تجنّب re-trigger مكلّف)
+  const links = document.querySelectorAll('link[rel="manifest"]');
+  if (links.length === 0) {
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestUrl;
+    document.head.appendChild(link);
+  } else {
+    links.forEach((el, idx) => {
+      // نسيب واحد بس بالـURL الصح، نشيل الباقي
+      if (idx === 0) {
+        if ((el as HTMLLinkElement).href.endsWith(manifestUrl)) return;
+        (el as HTMLLinkElement).href = manifestUrl;
+      } else {
+        el.parentNode?.removeChild(el);
+      }
+    });
+  }
+};
+
+/**
+ * يطبّق الـmeta tags + هويه التطبيق (manifest/title/theme) حسب الـhost والـpathname.
  * لو مرّرت pathname = undefined بياخد الـwindow.location.pathname الحالي.
+ *
+ * في prod: الـflavor = الـhostname (clinic.drhypermed.com vs drhypermed.com).
+ * في dev (both): الـflavor = الـpathname (/public/* = patient، باقي = clinic).
+ * كده الـtab title والـPWA install دايماً بيطابقوا الواجهه المعروضه.
  */
 export const applyHostAwareMeta = (pathname?: string): void => {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
 
   const mode = getHostMode();
-
-  // في الـdev (both): مفيش تعديل — نسيب الـindex.html زي ما هو
-  if (mode === 'both') return;
-
   const currentPath = pathname ?? window.location.pathname;
-  const meta = pickMeta(mode, currentPath);
-  const origin = mode === 'clinic' ? CLINIC_ORIGIN : PATIENT_ORIGIN;
+  const flavor = resolveEffectiveFlavor(mode, currentPath);
+
+  // طبّق هويه الـPWA (manifest/title/theme) — في dev وprod
+  applyFlavorPwaIdentity(flavor);
+
+  // في dev: لا نلمس الـcanonical/robots/OG لأنها للـSEO على prod فقط، لكن
+  // لازم نحدّث الـtitle عشان التبويب يبان صح للمطوّر.
+  const meta = pickMeta(flavor, currentPath);
+  document.title = meta.title;
+
+  if (mode === 'both') return; // dev — وقفنا هنا، الباقي للـSEO
+
+  const origin = flavor === 'clinic' ? CLINIC_ORIGIN : PATIENT_ORIGIN;
   // الـcanonical = origin + الـpathname الحالي (بدون query أو hash).
   // للصفحات الخاصّه (noindex) الـcanonical مش مهم — جوجل مش هيفهرسها أصلاً.
   const canonical = `${origin}${normalizePathname(currentPath)}`;
-
-  // تحديث الـtitle (تبويب المتصفح + Google)
-  document.title = meta.title;
 
   // الوصف اللي بيظهر تحت العنوان في نتايج جوجل
   setMetaTag('name', 'description', meta.description);

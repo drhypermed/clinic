@@ -31,18 +31,19 @@ let pendingEvents: UsageEvent[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let flushing = false;
 
-/** يكتب كل الأحداث المعلقة دفعة واحدة */
+/** يكتب كل الأحداث المعلّقه دفعه واحده. لو الكتابه فشلت، الأحداث ترجع لقائمه الانتظار. */
 const flushPendingEvents = async (): Promise<void> => {
   if (flushing || pendingEvents.length === 0) return;
   flushing = true;
 
+  // ناخد batch من قائمة الانتظار. لو فشل أي شيء نرجّعه عشان مفيش data loss.
   const batch = pendingEvents.splice(0, BATCH_MAX_SIZE);
   if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
 
   try {
     const writer = writeBatch(db);
 
-    // 1. كتابة الأحداث دفعة واحدة
+    // 1. كتابة الأحداث دفعه واحده
     for (const event of batch) {
       const eventRef = doc(collection(db, 'usageEvents'));
       writer.set(eventRef, { ...event, timestamp: serverTimestamp() });
@@ -50,7 +51,7 @@ const flushPendingEvents = async (): Promise<void> => {
 
     await writer.commit();
 
-    // 2. تحديث العدادات التراكمية — مجمّعة حسب الدكتور
+    // 2. تحديث العدادات التراكميه — مجمّعه حسب الدكتور
     const countsByDoctor = new Map<string, Map<string, number>>();
     for (const event of batch) {
       if (!countsByDoctor.has(event.doctorId)) {
@@ -60,7 +61,7 @@ const flushPendingEvents = async (): Promise<void> => {
       doctorCounts.set(event.eventType, (doctorCounts.get(event.eventType) || 0) + 1);
     }
 
-    // كتابة عداد واحد لكل دكتور بدل عداد لكل حدث
+    // كتابة عدّاد واحد لكل دكتور بدل عدّاد لكل حدث
     for (const [doctorId, counts] of countsByDoctor) {
       const activePlan = await usageTrackingService.resolveActiveAccountType(doctorId);
       const statsUpdate: Record<string, any> = {};
@@ -77,10 +78,13 @@ const flushPendingEvents = async (): Promise<void> => {
       }, { merge: true });
     }
   } catch (error) {
-    console.error('[UsageTracking] Batch flush failed:', error);
+    // الـbatch فشل (انترنت قطع مثلاً) — نرجّع الأحداث لأول القائمه عشان نحاول تاني.
+    // unshift في البدايه عشان الأحداث ترجع بترتيبها الأصلي ومحدش يخسر.
+    pendingEvents.unshift(...batch);
+    console.error('[UsageTracking] Batch flush failed (events restored to queue):', error);
   } finally {
     flushing = false;
-    // لو في أحداث تانية اتجمعت أثناء الكتابة
+    // لو في أحداث متجمّعه (الجديده + المرتجعه)، نجدول flush تاني
     if (pendingEvents.length > 0) scheduleFlush();
   }
 };

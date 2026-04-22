@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import type { ExtendedUser } from '../../../hooks/useAuth';
 import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import {
-  getLegacyDoctorProfileDocRef,
   getUserProfileDocRef,
   isDoctorLikeUserData,
-  mergePrimaryProfileData,
 } from '../../../services/firestore/profileRoles';
 
 /**
@@ -52,31 +50,25 @@ export const useDoctorOnboardingStatus = ({
     let isMounted = true;
     setDoctorOnboardingStatus('loading');
 
-    // 3. جلب بيانات الطبيب من قاعدة البيانات باستخدام تقنية "الكاش أولاً" لسرعة التحميل
-    Promise.all([
-      getDocCacheFirst(getUserProfileDocRef(user.uid)),
-      getDocCacheFirst(getLegacyDoctorProfileDocRef(user.uid)),
-    ])
-      .then(([userSnap, legacyDoctorSnap]) => {
+    // 3. قراءه واحده من users/{uid} بـcache-first — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+    getDocCacheFirst(getUserProfileDocRef(user.uid))
+      .then((userSnap) => {
         if (!isMounted) return;
 
-        const data = mergePrimaryProfileData(
-          userSnap.exists() ? (userSnap.data() as Record<string, any>) : null,
-          legacyDoctorSnap.exists() ? (legacyDoctorSnap.data() as Record<string, any>) : null,
-        );
+        const data = userSnap.exists() ? (userSnap.data() as Record<string, any>) : null;
 
-        if ((!userSnap.exists() && !legacyDoctorSnap.exists()) || !isDoctorLikeUserData(data)) {
+        if (!data || !isDoctorLikeUserData(data)) {
           setDoctorOnboardingStatus('incomplete');
           return;
         }
-        
-        // التحقق من الحقول الأساسية (التخصص، واتساب، ورابط وثيقة التحقق)
+
+        // التحقق من الحقول الأساسيه (التخصص، واتساب، ورابط وثيقة التحقق)
         const hasBasics = Boolean(data?.doctorSpecialty && data?.doctorWhatsApp && data?.verificationDocUrl);
-        
-        // التحقق إذا كان الطلب قد تم رفضه سابقاً من قبل الإدارة
+
+        // التحقق إذا كان الطلب قد تم رفضه سابقاً من قبل الإداره
         const isRejected = data?.verificationStatus === 'rejected';
 
-        // الحساب يعتبر مكتملاً إذا وُجدت البيانات الأساسية ولم يكن مرفوضاً
+        // الحساب يعتبر مكتملاً إذا وُجدت البيانات الأساسيه ولم يكن مرفوضاً
         setDoctorOnboardingStatus(hasBasics && !isRejected ? 'complete' : 'incomplete');
       })
       .catch((err) => {

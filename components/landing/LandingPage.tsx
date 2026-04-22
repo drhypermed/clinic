@@ -8,7 +8,6 @@ import {
   FaUserDoctor,
   FaUserPlus,
   FaClipboardUser,
-  FaUserGroup,
   FaShieldHalved,
   FaCapsules,
   FaStethoscope,
@@ -184,7 +183,7 @@ export const LandingPage: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-6 sm:gap-10 pt-1 lg:self-center">
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-blue-600"><Counter target={10000} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-blue-600"><Counter target={5500} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">دواء</div>
                   </div>
                   <div className="w-px h-9 bg-slate-200" />
@@ -263,7 +262,10 @@ export const LandingPage: React.FC = () => {
             </button>
           </A>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          {/* شبكة كرتين فقط — كارد "للمرضى" اتشال لأن ده دومين الأطباء (clinic.drhypermed.com).
+              ملاحظه: الـroute /login/public لسه مفتوح في AppCoreContent.tsx لمن يدخله مباشرة،
+              لكن مش بنعرضه كـCTA من اللاندنج لأن الجمهور المفروض يدخل من dr drhypermed.com بدلاً منه. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {/* طبيب */}
             <A>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
@@ -299,22 +301,6 @@ export const LandingPage: React.FC = () => {
                 <button type="button" onClick={() => go('/login/secretary')} className="self-start flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
                   <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                   دخول السكرتارية
-                </button>
-              </div>
-            </A>
-            {/* جمهور */}
-            <A delay={160}>
-              <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-violet-600 text-white flex items-center justify-center shadow-md"><FaUserGroup className="w-4 h-4" /></div>
-                  <h3 className="text-base font-black text-slate-900">للمرضى</h3>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
-                  تصفّح دليل الأطباء واحجز موعدك إلكترونياً بدون اتصال.
-                </p>
-                <button type="button" onClick={() => go('/login/public')} className="self-start flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
-                  <FaUserGroup className="w-3 h-3" />
-                  تصفّح الأطباء
                 </button>
               </div>
             </A>

@@ -25,6 +25,12 @@ export const AppointmentRow: React.FC<{ appointment: ClinicAppointment }> = ({ a
   const isDone = !!appointment.examCompletedAt;
   const isConsultation = appointment.appointmentType === 'consultation';
 
+  // إخفاء visitReason لو نصّه = نوع الموعد (تكرار غير مفيد).
+  // مثال: شارة "استشارة" بنفسجيّه + visitReason="استشارة" = نفس الكلمه مرتين.
+  const trimmedReason = (appointment.visitReason || '').trim();
+  const typeLabel = isConsultation ? 'استشارة' : 'كشف';
+  const showReason = trimmedReason.length > 0 && trimmedReason !== typeLabel;
+
   return (
     <div className={`group flex items-center gap-3 px-4 sm:px-5 py-3.5 ${isDone ? 'bg-slate-50/30' : 'hover:bg-slate-50/60'} transition-all duration-150`}>
       {/* شارة الوقت (رمادي إذا اكتمل، تركوازي لو لسه في الانتظار) */}
@@ -44,9 +50,9 @@ export const AppointmentRow: React.FC<{ appointment: ClinicAppointment }> = ({ a
           {appointment.age && (
             <span className={`text-[10px] sm:text-[11px] ${isDone ? 'text-slate-300' : 'text-slate-400'}`}>{appointment.age}</span>
           )}
-          {appointment.visitReason && (
+          {showReason && (
             <span className={`text-[10px] sm:text-[11px] ${isDone ? 'text-slate-300' : 'text-slate-400'} truncate`}>
-              {appointment.age ? '· ' : ''}{appointment.visitReason}
+              {appointment.age ? '· ' : ''}{trimmedReason}
             </span>
           )}
         </div>

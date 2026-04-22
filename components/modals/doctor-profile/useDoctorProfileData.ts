@@ -1,16 +1,11 @@
 /**
  * useDoctorProfileData:
- * hook لتحميل بيانات الطبيب من Firestore (بيانات أساسية + حالة الاشتراك)
- * ودمج الوثيقة الحديثة (users/{uid}) مع القديمة (doctors/{uid})
- * وإدارة الحالات المرتبطة بالنموذج.
+ * hook لتحميل بيانات الطبيب من Firestore (بيانات أساسيه + حالة الاشتراك).
+ * بقى بقراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
  */
 import { useEffect, useState } from 'react';
 import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
-import {
-  getLegacyDoctorProfileDocRef,
-  getUserProfileDocRef,
-  mergePrimaryProfileData,
-} from '../../../services/firestore/profileRoles';
+import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
 
 export type DoctorAccountType = 'free' | 'premium';
 
@@ -101,16 +96,10 @@ export function useDoctorProfileData({
 
       setLoadError('');
       try {
-        // تحميل الوثيقتين بالتوازي + دمجهما (الحديثة لها الأولوية)
-        const [userDoc, legacyDoctorDoc] = await Promise.all([
-          getDocCacheFirst(getUserProfileDocRef(userId)),
-          getDocCacheFirst(getLegacyDoctorProfileDocRef(userId)),
-        ]);
-        const mergedData = mergePrimaryProfileData(
-          userDoc.exists() ? (userDoc.data() as Record<string, unknown>) : null,
-          legacyDoctorDoc.exists() ? (legacyDoctorDoc.data() as Record<string, unknown>) : null,
-        );
-        applyData(mergedData);
+        // قراءه واحده من users/{uid}
+        const userDoc = await getDocCacheFirst(getUserProfileDocRef(userId));
+        const data = userDoc.exists() ? (userDoc.data() as Record<string, unknown>) : null;
+        applyData(data);
       } catch (err) {
         console.error('Error loading doctor data:', err);
         setLoadError('فشل تحميل البيانات');

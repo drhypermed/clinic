@@ -14,7 +14,7 @@
 
 import { collection, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { getDocCacheFirst, getDocsCacheFirst } from '../firestore/cacheFirst';
+import { getDocCacheFirst, getDocsCacheFirst, subscribeDocCacheFirst } from '../firestore/cacheFirst';
 import type { DailyFinancialData } from './types';
 import { branchDocKey, parseBranchDocKey } from './normalizers';
 
@@ -50,7 +50,10 @@ export const saveDailyData = async (userId: string, dateKey: string, data: Daily
     }
 };
 
-/** الاشتراك في تحديثات البيانات اليومية لحظة بلحظة */
+/**
+ * الاشتراك اللحظي في تحديثات البيانات اليوميه (cache-first + onSnapshot حقيقي).
+ * كان قبل كده one-shot — لو tab تاني كتب نفس اليوم، الـUI ما كانش بيشوف التحديث.
+ */
 export const subscribeToDailyData = (
     userId: string,
     dateKey: string,
@@ -59,22 +62,15 @@ export const subscribeToDailyData = (
     branchId?: string,
 ) => {
     const docRef = doc(db, 'users', userId, 'financialData', 'daily', 'entries', branchDocKey(dateKey, branchId));
-    let cancelled = false;
-
-    getDocCacheFirst(docRef).then((snapshot) => {
-        if (cancelled) return;
-        if (snapshot.exists()) {
-            onUpdate(snapshot.data() as DailyFinancialData);
-        } else {
-            onUpdate({});
-        }
-    }).catch((error) => {
-        if (cancelled) return;
-        console.error('[FinancialData] Error reading daily data:', error);
-        if (onError) onError(error?.message || 'Unknown error');
+    return subscribeDocCacheFirst(docRef, {
+        next: (snapshot) => {
+            onUpdate(snapshot.exists() ? (snapshot.data() as DailyFinancialData) : {});
+        },
+        error: (error) => {
+            console.error('[FinancialData] Error reading daily data:', error);
+            if (onError) onError(error?.message || 'Unknown error');
+        },
     });
-
-    return () => { cancelled = true; };
 };
 
 /** جلب جميع إدخالات الأيام لشهر محدد (لغرض حساب الإجماليات والتقارير) */

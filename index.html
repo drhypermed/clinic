@@ -212,22 +212,53 @@
          الاسم والأيقونه والـthemeColor بتبقى صحيحه حسب الدومين.
            - drhypermed.com / www.drhypermed.com → "DrHyperPublic" (teal)  // تطبيق الجمهور/العيانين
            - clinic.drhypermed.com              → "DrHyperMed"    (blue)  // تطبيق الطبيب
-           - localhost / staging                 → نسيب الـmanifest الافتراضي
+           - localhost / staging                 → بيستنتج الـflavor من الـpathname:
+             * /public, /login/public, /book-public/* → DrHyperPublic
+             * كل ما عدا ذلك                          → DrHyperMed
+             * override يدوي: ?hostMode=patient|clinic أو localStorage __hostMode_override
          ═══════════════════════════════════════════════════════════════════════ -->
     <script>
         (function () {
             try {
                 var host = (window.location.hostname || '').toLowerCase();
+                var pathname = (window.location.pathname || '/').toLowerCase();
                 var isClinic = host === 'clinic.drhypermed.com';
                 var isPatient = host === 'drhypermed.com' || host === 'www.drhypermed.com';
+
+                // ── dev/localhost: نستنتج الـflavor من الـpathname والـoverride ──
+                // ده عشان dev يبقى consistent مع اللي بيظهر للمستخدم بدل ما الـtitle
+                // يفضّل "للجمهور" بينما الواجهة المعروضة "للطبيب" أو العكس.
+                if (!isClinic && !isPatient) {
+                    var override = null;
+                    try {
+                        var params = new URLSearchParams(window.location.search || '');
+                        var fromUrl = params.get('hostMode');
+                        if (fromUrl === 'patient' || fromUrl === 'clinic') override = fromUrl;
+                        if (!override) {
+                            var fromStorage = window.localStorage.getItem('__hostMode_override');
+                            if (fromStorage === 'patient' || fromStorage === 'clinic') override = fromStorage;
+                        }
+                    } catch (_) { /* تجاهل: storage ممكن يكون مقفول */ }
+
+                    // المسارات اللي بتخدم الجمهور بس
+                    var isPublicPath = (
+                        pathname === '/public' ||
+                        pathname === '/login/public' ||
+                        pathname.indexOf('/book-public/') === 0
+                    );
+
+                    if (override === 'patient' || (override == null && isPublicPath)) {
+                        isPatient = true;
+                    } else {
+                        // الافتراضي في dev: clinic (الـlanding للأطباء بتطلع على /)
+                        isClinic = true;
+                    }
+                }
 
                 // نعرّض العلم على window قبل أي return عشان سكريبت الـsplash
                 // يعرف يبدّل الكلام تحت اللوجو (جمهور ولّا أطباء) من غير ما ينتظر React.
                 window.__dhIsPatient = isPatient;
                 window.__dhIsClinic = isClinic;
-
-                // dev/staging/localhost = نسيب الافتراضي زي ما هو (سلوك "both" للتجربه)
-                if (!isClinic && !isPatient) return;
 
                 var manifestUrl = isClinic ? '/manifest-clinic.webmanifest' : '/manifest-patient.webmanifest';
                 // الأسماء اللي بتبان على أيقونة التطبيق بعد التثبيت — مفصوله تماماً بين التطبيقين
@@ -242,7 +273,7 @@
                 if (isClinic) {
                     var clinicUrl = 'https://clinic.drhypermed.com/';
                     var clinicTitle = 'Dr Hyper Clinic — برنامج إداره العيادات والروشته الإلكترونيّه';
-                    var clinicDesc = 'نظام متكامل لإداره العياده: روشته إلكترونيّه، دليل أدويه بجرعاتها وتفاعلاتها، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإداره فروع.';
+                    var clinicDesc = 'نظام متكامل لإداره العياده: روشته إلكترونيّه احترافيّه، أكتر من 10,000 دواء بأسعارهم وجرعاتهم وتفاعلاتهم، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإداره فروع — كل ده في مكان واحد.';
                     var clinicImg = 'https://clinic.drhypermed.com/pwa-512x512.png';
 
                     document.title = clinicTitle;

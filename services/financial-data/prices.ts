@@ -28,7 +28,7 @@ import {
     writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { getDocCacheFirst, getDocsCacheFirst } from '../firestore/cacheFirst';
+import { getDocCacheFirst, getDocsCacheFirst, subscribeDocCacheFirst } from '../firestore/cacheFirst';
 import {
     syncMonthlyPricesToBookingConfig,
     syncPricesToBookingConfig,
@@ -50,23 +50,27 @@ import type { PricesTextPayload } from './types';
 // النظام الثابت (Legacy / Fixed Prices)
 // ─────────────────────────────────────────────────────────────
 
-/** جلب الأسعار الثابتة (Legacy) مع fallback لآخر سعر شهري مخزن */
+/**
+ * جلب الأسعار الثابته (Legacy) مع fallback لآخر سعر شهري مخزن.
+ *
+ * ملاحظه عن المرآة (bookingConfigMirror): اتشال الـsync من القراءه. كان قبل كده
+ * كل قراءه بتعمل write للمرآه بنفس البيانات ـ مكلف ومش له فايده. المرآه دلوقت
+ * بتتحدّث بس وقت `savePrices` و `saveMonthlyPrices` (عند تغيير حقيقي).
+ */
 export const getPrices = async (userId: string, branchId?: string): Promise<PricesTextPayload> => {
     try {
         const docRef = doc(db, 'users', userId, 'financialData', branchDocKey('prices', branchId));
         const snapshot = await getDocCacheFirst(docRef);
 
         if (snapshot.exists()) {
-            const data = normalizePricesPayload(
+            return normalizePricesPayload(
                 snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
             );
-            void syncPricesToBookingConfig(userId, data, branchId);
-            return data;
         }
 
-        // توافق رجعي: إن لم توجد الأسعار الثابتة بعد، نستخدم آخر سعر شهري محفوظ.
+        // توافق رجعي: إن لم توجد الأسعار الثابته بعد، نستخدم آخر سعر شهري محفوظ.
         // مهم: نُرشِّح الإدخالات حسب الفرع المطلوب (parseBranchDocKey) حتى لا
-        // نخلط أسعار الفروع المختلفة — وإلا فإن أحدث إدخال لأي فرع سيتسرّب
+        // نخلط أسعار الفروع المختلفه — وإلا فإن أحدث إدخال لأي فرع سيتسرّب
         // إلى الفرع المسؤول عن هذا الاستعلام.
         const targetBranchId = !branchId || branchId === 'main' ? 'main' : branchId;
         const legacyRef = collection(db, 'users', userId, 'monthlyPrices');
@@ -94,6 +98,7 @@ export const getPrices = async (userId: string, branchId?: string): Promise<Pric
                 consultationPrice: toPriceText(prices.consultationPrice || ''),
                 updatedAt: toTimestampMillis((prices.updatedAt || 0) as number) || Date.now(),
             };
+            // الـmigration كتابه فعليه (مش مجرد قراءه) → سينك المرآه ضروري هنا.
             await setDoc(docRef, migratedPayload, { merge: true });
             void syncPricesToBookingConfig(userId, migratedPayload, branchId);
             return migratedPayload;
@@ -180,7 +185,10 @@ export const saveFixedPricesWithHistory = async (
     await syncPricesToBookingConfig(userId, payload, branchId);
 };
 
-/** الاشتراك اللحظي في تحديثات الأسعار الثابتة (Legacy) */
+/**
+ * الاشتراك اللحظي في الأسعار الثابته (cache-first + onSnapshot حقيقي).
+ * كان قبل كده one-shot — لمّا الدكتور يحدّث السعر من tab، tab السكرتيره ما كانش بيشوف.
+ */
 export const subscribeToPrices = (
     userId: string,
     onUpdate: (prices: PricesTextPayload) => void,
@@ -188,31 +196,26 @@ export const subscribeToPrices = (
     branchId?: string,
 ) => {
     const docRef = doc(db, 'users', userId, 'financialData', branchDocKey('prices', branchId));
-    let cancelled = false;
-
-    getDocCacheFirst(docRef).then((snapshot) => {
-        if (cancelled) return;
-        if (snapshot.exists()) {
+    return subscribeDocCacheFirst(docRef, {
+        next: (snapshot) => {
             onUpdate(
-                normalizePricesPayload(
-                    snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
-                )
+                snapshot.exists()
+                    ? normalizePricesPayload(
+                        snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                    )
+                    : {}
             );
-        } else {
-            onUpdate({});
-        }
-    }).catch((error) => {
-        if (cancelled) return;
-        if (isPermissionDeniedError(error)) {
-            onUpdate({});
-            if (onError) onError('لا توجد صلاحية لقراءة الأسعار حالياً.');
-            return;
-        }
-        console.error('[FinancialData] Error reading prices:', error);
-        if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+        },
+        error: (error) => {
+            if (isPermissionDeniedError(error)) {
+                onUpdate({});
+                if (onError) onError('لا توجد صلاحيه لقراءة الأسعار حالياً.');
+                return;
+            }
+            console.error('[FinancialData] Error reading prices:', error);
+            if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+        },
     });
-
-    return () => { cancelled = true; };
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -243,7 +246,11 @@ export const saveMonthlyPrices = async (
     }
 };
 
-/** جلب أسعار الكشف لشهر محدد */
+/**
+ * جلب أسعار الكشف لشهر محدد.
+ * المرآه (mirror) اتشالت من القراءه — كانت بتعمل write بنفس البيانات بدون فايده.
+ * المرآه دلوقت بتتحدّث بس وقت `saveMonthlyPrices`.
+ */
 export const getMonthlyPrices = async (
     userId: string,
     monthKey: string,
@@ -254,9 +261,7 @@ export const getMonthlyPrices = async (
         const snapshot = await getDocCacheFirst(docRef);
 
         if (snapshot.exists()) {
-            const data = snapshot.data() as PricesTextPayload;
-            void syncMonthlyPricesToBookingConfig(userId, monthKey, data, branchId);
-            return data;
+            return snapshot.data() as PricesTextPayload;
         }
         return {};
     } catch (error) {
@@ -290,7 +295,7 @@ export const getAllMonthlyPrices = async (
     }
 };
 
-/** الاشتراك اللحظي في تحديثات الأسعار الشهرية */
+/** الاشتراك اللحظي في الأسعار الشهريه (cache-first + onSnapshot حقيقي) */
 export const subscribeToMonthlyPrices = (
     userId: string,
     monthKey: string,
@@ -299,27 +304,20 @@ export const subscribeToMonthlyPrices = (
     branchId?: string,
 ) => {
     const docRef = doc(db, 'users', userId, 'monthlyPrices', branchDocKey(monthKey, branchId));
-    let cancelled = false;
-
-    getDocCacheFirst(docRef).then((snapshot) => {
-        if (cancelled) return;
-        if (snapshot.exists()) {
-            onUpdate(snapshot.data() as PricesTextPayload);
-        } else {
-            onUpdate({});
-        }
-    }).catch((error) => {
-        if (cancelled) return;
-        if (isPermissionDeniedError(error)) {
-            onUpdate({});
-            if (onError) onError('لا توجد صلاحية لقراءة أسعار هذا القسم حالياً.');
-            return;
-        }
-        console.error('[FinancialData] Error reading monthly prices:', error);
-        if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+    return subscribeDocCacheFirst(docRef, {
+        next: (snapshot) => {
+            onUpdate(snapshot.exists() ? (snapshot.data() as PricesTextPayload) : {});
+        },
+        error: (error) => {
+            if (isPermissionDeniedError(error)) {
+                onUpdate({});
+                if (onError) onError('لا توجد صلاحيه لقراءة أسعار هذا القسم حالياً.');
+                return;
+            }
+            console.error('[FinancialData] Error reading monthly prices:', error);
+            if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+        },
     });
-
-    return () => { cancelled = true; };
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -382,7 +380,10 @@ export const getPricesBySecret = async (
     }
 };
 
-/** اشتراك لحظي في الأسعار الثابتة من مرآة السكرتارية عبر secret */
+/**
+ * اشتراك لحظي في الأسعار الثابته من مرآة السكرتاريه (cache-first + onSnapshot حقيقي).
+ * هنا الاشتراك الحقيقي مهم جداً: السكرتاريه لازم تشوف تحديث السعر فور حفظ الدكتور.
+ */
 export const subscribeToPricesBySecret = (
     secret: string,
     onUpdate: (prices: PricesTextPayload) => void,
@@ -395,28 +396,23 @@ export const subscribeToPricesBySecret = (
     }
 
     const docRef = doc(db, 'bookingConfig', normalizedSecret, 'prices', 'current');
-    let cancelled = false;
-
-    getDocCacheFirst(docRef).then((snapshot) => {
-        if (cancelled) return;
-        if (snapshot.exists()) {
+    return subscribeDocCacheFirst(docRef, {
+        next: (snapshot) => {
             onUpdate(
-                normalizePricesPayload(
-                    snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
-                )
+                snapshot.exists()
+                    ? normalizePricesPayload(
+                        snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                    )
+                    : {}
             );
-        } else {
-            onUpdate({});
-        }
-    }).catch((error) => {
-        if (cancelled) return;
-        if (isPermissionDeniedError(error)) {
-            onUpdate({});
-            if (onError) onError('لا توجد صلاحية لقراءة الأسعار حالياً.');
-            return;
-        }
-        if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+        },
+        error: (error) => {
+            if (isPermissionDeniedError(error)) {
+                onUpdate({});
+                if (onError) onError('لا توجد صلاحيه لقراءة الأسعار حالياً.');
+                return;
+            }
+            if (onError) onError((error as { message?: string })?.message || 'Unknown error');
+        },
     });
-
-    return () => { cancelled = true; };
 };

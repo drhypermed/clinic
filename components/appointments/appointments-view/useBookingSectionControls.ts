@@ -223,6 +223,16 @@ export const useBookingSectionControls = ({
     if (!secretarySettingsHydrated) return;
     if (credentialsSaving) return;
 
+    // تحقق من طول الرقم السري للسكرتيرة (6 على الأقل) لو الطبيب غيّره فعلاً.
+    // المستخدمون اللي مش بيغيّروا الباسورد معندهمش مشكلة لأن touched تفضل false.
+    if (secretaryPasswordTouched) {
+      const trimmedPass = secretaryPassword.trim();
+      if (trimmedPass.length < 6) {
+        setCredentialsError('الرقم السري للسكرتيرة لازم يكون 6 حروف/أرقام على الأقل.');
+        return;
+      }
+    }
+
     setCredentialsError(null);
     setCredentialsSuccess(false);
     setCredentialsSaving(true);

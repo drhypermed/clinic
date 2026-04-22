@@ -431,8 +431,12 @@ export const MainApp: React.FC = () => {
 
   // handlePushPromptLater + canShowPushPrompt اتنقلوا لـ useMainAppResetControls
 
+  // توحيد الخلفيه: كل الصفحات تاخد الخلفيه البيضا الافتراضيه من body
+  // زي سجلات المرضى وملفات المرضى. قبل كده التقارير الماليه والإعلان
+  // وأدوات الأدويه وتصميم الروشته كانوا بياخدوا bg-slate-50 (رمادي فاتح)
+  // ده اللي كان بيظهر كـ"خلفيه غير بيضا" للمستخدم.
   return (
-    <div className={`min-h-screen ${currentView === 'prescription' ? 'clinic-page prescription-page' : currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' ? '' : 'bg-slate-50'}`} dir="rtl">
+    <div className={`min-h-screen ${currentView === 'prescription' ? 'clinic-page prescription-page' : ''}`} dir="rtl">
       <NotificationPermissionPrompt open={canShowPushPrompt} title="فعّل إشعارات العيادة" description="لتصلك إشعارات المواعيد وطلبات السكرتارية فوراً حتى أثناء التنقل داخل النظام." enableLabel="تفعيل الإشعارات" onEnable={handleEnablePushNotifications} onLater={handlePushPromptLater} />
       {pushEnableSuccessMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[10030] w-[min(94vw,30rem)]" dir="rtl">
@@ -441,7 +445,9 @@ export const MainApp: React.FC = () => {
           </div>
         </div>
       )}
-      <div className={currentView === 'prescription' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' ? 'px-0 pt-0' : 'px-2 sm:px-4 md:px-6 pt-2'}>
+      {/* حشو البنر فوق: لا حشو لكل الصفحات عشان الاسم يبقى في نفس المستوى
+          في كل الصفحات بدون مساحه فاضيه فوق. */}
+      <div className="px-0 pt-0">
         <AppUpdateBroadcastBanner audience="doctors" scopeId={userId} />
       </div>
       <InAppAudienceNotificationPopup audience="doctors" scopeIds={[userId]} />
@@ -450,7 +456,7 @@ export const MainApp: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar key={`sidebar-${profileKey}`} currentView={currentView} setCurrentView={navigateToView} todayAppointmentsCount={todayAppointmentsCount} user={user} onShowProfile={() => setShowProfileModal(true)} onLogout={() => signOut()} doctorName={normalizedDoctorName || undefined} profileImage={profileImage || undefined} breadcrumbs={breadcrumbs} onNavigateView={navigateToView} />
 
-        <main ref={mainContentRef} className={`flex-1 min-w-0 overflow-x-hidden ${currentView === 'prescription' ? 'prescription-main md:mr-60 p-0 pt-20 pb-6 sm:p-0 sm:pt-20 sm:pb-6 md:p-0 md:pt-4 md:pb-6' : currentView === 'home' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' || currentView === 'financialReports' || currentView === 'drugtools' || currentView === 'medicationEdit' || currentView === 'settings' || currentView === 'branchSettings' ? 'md:mr-60 p-0 pt-16 pb-24 sm:p-0 sm:pt-16 sm:pb-8 md:p-0 md:pt-4 md:pb-6' : 'md:mr-60 p-2 pb-24 pt-16 sm:p-4 sm:pb-8 md:p-6 md:pb-8 md:pt-6 space-y-4 sm:space-y-6'}`}>
+        <main ref={mainContentRef} className={`flex-1 min-w-0 overflow-x-hidden ${currentView === 'prescription' ? 'prescription-main md:mr-60 p-0 pt-20 pb-6 sm:p-0 sm:pt-20 sm:pb-6 md:p-0 md:pt-4 md:pb-6' : currentView === 'home' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' || currentView === 'financialReports' || currentView === 'drugtools' || currentView === 'medicationEdit' || currentView === 'settings' || currentView === 'branchSettings' || currentView === 'advertisement' ? 'md:mr-60 p-0 pt-16 pb-24 sm:p-0 sm:pt-16 sm:pb-8 md:p-0 md:pt-4 md:pb-6' : 'md:mr-60 p-2 pb-24 pt-16 sm:p-4 sm:pb-8 md:p-6 md:pb-8 md:pt-6 space-y-4 sm:space-y-6'}`}>
           {/* Desktop Breadcrumbs */}
           <div className="hidden md:block sticky top-0 z-40">
             <Breadcrumbs segments={breadcrumbs} onNavigateView={navigateToView} variant="desktop" />

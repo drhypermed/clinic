@@ -17,11 +17,7 @@ import { getTrustedNowMs, syncTrustedTime } from '../../utils/trustedTime';
 import { ToolCard } from './ToolCard';
 import { TOOL_TONES } from './toolTones';
 import { getDocCacheFirst } from '../../services/firestore/cacheFirst';
-import {
-  getLegacyDoctorProfileDocRef,
-  getUserProfileDocRef,
-  mergePrimaryProfileData,
-} from '../../services/firestore/profileRoles';
+import { getUserProfileDocRef } from '../../services/firestore/profileRoles';
 const DrugInteractions = React.lazy(() =>
   import('./DrugInteractions').then((mod) => ({ default: mod.DrugInteractions }))
 );
@@ -122,18 +118,13 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     let mounted = true;
     (async () => {
       try {
-        // كاش أولاً للاستجابة الفورية — البيانات محملة بالفعل من جلسة الدخول.
+        // كاش أولاً للاستجابه الفوريه — البيانات محمّله بالفعل من جلسة الدخول.
         // الأمان مضمون لأن Cloud Function (consumeDrugToolQuota) تتحقق من السيرفر عند كل استخدام فعلي.
-        const [userSnap, legacyDoctorSnap] = await Promise.all([
-          getDocCacheFirst(getUserProfileDocRef(userId)),
-          getDocCacheFirst(getLegacyDoctorProfileDocRef(userId)),
-        ]);
-        const merged = mergePrimaryProfileData(
-          userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : null,
-          legacyDoctorSnap.exists() ? (legacyDoctorSnap.data() as Record<string, unknown>) : null,
-        );
+        // قراءه واحده — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+        const userSnap = await getDocCacheFirst(getUserProfileDocRef(userId));
+        const data = userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : {};
         await syncTrustedTime();
-        const resolvedType = resolveEffectiveAccountTypeFromData(merged, getTrustedNowMs());
+        const resolvedType = resolveEffectiveAccountTypeFromData(data, getTrustedNowMs());
         if (mounted) {
           setAccountType(resolvedType);
           setAccountTypeResolved(true);

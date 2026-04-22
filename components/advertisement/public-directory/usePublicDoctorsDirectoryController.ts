@@ -49,8 +49,11 @@ export const usePublicDoctorsDirectoryController = ({
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingMoreRef = useRef(false);
   const [hasMore, setHasMore] = useState(true);
-  // cursor للـ pagination — الـ service بيرجع رقم (مش DocumentSnapshot كما هو متعارف).
-  const [lastVisibleDoc, setLastVisibleDoc] = useState<number | null>(null);
+  // cursor للـpagination — نص opaque بيرجع من الـservice. شكله مختلف حسب نوع الـquery:
+  //   • بدون بحث نصّي → updatedAt ISO لآخر دكتور في الصفحه (Firestore startAfter).
+  //   • مع بحث نصّي  → رقم offset داخل string (slice client-side بعد الفلتره).
+  // الـcontroller مش محتاج يعرف الفرق — بيبعت القيمه كما هي.
+  const [lastVisibleDoc, setLastVisibleDoc] = useState<string | null>(null);
 
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -448,9 +451,13 @@ export const usePublicDoctorsDirectoryController = ({
       // (على Android/Desktop). على iOS هيفتح في Safari — دي حدود النظام.
       window.open(DOCTOR_APP_URL, '_blank', 'noopener,noreferrer');
     } else {
-      // localhost / staging: مفيش دومين طبيب منفصل، نرجع للسلوك القديم (نفس التطبيق)
-      // عشان المطور يقدر يختبر flow التسجيل بدون deployment.
-      navigate('/signup/doctor', { replace: true });
+      // dev/staging: مفيش دومين طبيب منفصل، لكن لازم نخلي الـtab الجديد
+      // يبقى مستقل تمامًا عن تطبيق الجمهور (sessionStorage مفصول، الـapp بيـreload
+      // كأنه تطبيق مختلف). ?hostMode=clinic = الـtab الجديد يبدأ بـclinic flavor
+      // صراحه فالـtitle/manifest يطابقوا تطبيق الطبيب من أول لحظه.
+      const url = new URL('/signup/doctor', window.location.origin);
+      url.searchParams.set('hostMode', 'clinic');
+      window.open(url.toString(), '_blank', 'noopener,noreferrer');
     }
   };
 

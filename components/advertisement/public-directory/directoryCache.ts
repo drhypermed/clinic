@@ -20,14 +20,18 @@
 
 import type { DoctorAdProfile } from '../../../types';
 
-const CACHE_KEY_PREFIX = 'drh:publicDir:v1:';
+// v3 — الـcursor بقى JSON object {u,d} أو {o} بدل string بسيط.
+// الـbump بيخلي أي cache قديم (v1: number, v2: string عادي) يتجاهل بدل ما يكسر JSON.parse.
+const CACHE_KEY_PREFIX = 'drh:publicDir:v3:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 دقايق
 const MAX_CACHE_ENTRIES = 10;       // حدّ أقصى عشان مفيش overflow (5MB حد sessionStorage)
 
 /** شكل البيانات المخزّنه في الكاش */
 interface CachedPage {
   data: DoctorAdProfile[];
-  lastVisibleDoc: number | null;
+  // cursor للـpagination — JSON string opaque. الـcontroller مش محتاج يفك تشفيره.
+  // للـnon-search: '{"u":updatedAt,"d":docId}'. للـsearch: '{"o":offset}'.
+  lastVisibleDoc: string | null;
   hasMore: boolean;
   cachedAt: number; // timestamp (ms)
 }

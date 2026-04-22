@@ -15,6 +15,8 @@ import {
     where,
     orderBy,
     limit,
+    startAfter,
+    documentId,
     QueryConstraint,
     getDoc,
     getDocs,
@@ -74,6 +76,11 @@ const normalizeDoctorAd = (doctorId: string, data: Record<string, unknown> | und
     const clinicServicesRaw = Array.isArray(data.clinicServices) ? data.clinicServices : [];
     const servicesRaw = Array.isArray(data.services) ? data.services : [];
     const imagesRaw = Array.isArray(data.imageUrls) ? data.imageUrls : [];
+
+    // الفروع — الـfix الأساسي للـbug. قبل كده كانت بتترجع undefined دايمًا
+    // حتى لو محفوظه في Firestore، فالـUI كان بيستخدم النسخه القديمه من فرع واحد.
+    const branchesRaw = Array.isArray(data.branches) ? data.branches : [];
+    const normalizedBranches = branchesRaw.map((item, index) => sanitizeDoctorAdBranch(item, index));
     
     // توحيد خدمات العيادة وأسعارها
     const normalizedClinicServices = clinicServicesRaw
@@ -192,6 +199,60 @@ const normalizeDoctorAd = (doctorId: string, data: Record<string, unknown> | und
         isPublished: Boolean(data.isPublished),
         createdAt: toNonEmptyString(data.createdAt),
         updatedAt: toNonEmptyString(data.updatedAt),
+        // الفروع — لو المستند فيه branches، بنرجّعها؛ لو فاضي (إعلان قديم)
+        // الـUI هيبني فرع افتراضي من الحقول القديمه عبر migrateLegacyFieldsToBranch.
+        branches: normalizedBranches.length > 0 ? normalizedBranches : undefined,
+    };
+};
+
+/**
+ * تطهير فرع واحد — نستخدمها في الحالتين:
+ * • وقت القراءه من Firestore (البيانات جايه كـunknown) لتحويلها لـshape صحيح
+ * • وقت الحفظ (البيانات جايه typed من الـUI) لتنظيفها قبل Firestore
+ * حلّ bug كانت الفروع بتتضاع كلها لما Doctor يحفظ إعلانه — لأن السطرين دول
+ * في الأصل ما كانوش بيعرفوا branches خالص.
+ */
+const sanitizeDoctorAdBranch = (item: unknown, index: number) => {
+    const b = (item ?? {}) as Record<string, unknown>;
+    const scheduleRaw = Array.isArray(b.clinicSchedule) ? b.clinicSchedule : [];
+    const servicesRaw = Array.isArray(b.clinicServices) ? b.clinicServices : [];
+    const imagesRaw = Array.isArray(b.imageUrls) ? b.imageUrls : [];
+    return {
+        id: toNonEmptyString(b.id) || `branch-${index + 1}`,
+        name: toNonEmptyString(b.name) || `فرع ${index + 1}`,
+        governorate: toNonEmptyString(b.governorate),
+        city: toNonEmptyString(b.city),
+        addressDetails: toNonEmptyString(b.addressDetails),
+        contactPhone: toNonEmptyString(b.contactPhone),
+        whatsapp: toNonEmptyString(b.whatsapp),
+        clinicSchedule: scheduleRaw
+            .map((row) => {
+                const r = (row ?? {}) as Record<string, unknown>;
+                return {
+                    id: toNonEmptyString(r.id),
+                    day: toNonEmptyString(r.day),
+                    from: toNonEmptyString(r.from),
+                    to: toNonEmptyString(r.to),
+                    notes: toNonEmptyString(r.notes),
+                };
+            })
+            .filter((r) => r.id && r.day),
+        clinicServices: servicesRaw
+            .map((row, i) => {
+                const r = (row ?? {}) as Record<string, unknown>;
+                return {
+                    id: toNonEmptyString(r.id) || `service-${i + 1}`,
+                    name: toNonEmptyString(r.name),
+                    price: toNumberOrNull(r.price),
+                    discountedPrice: toNumberOrNull(r.discountedPrice),
+                };
+            })
+            .filter((r) => r.name),
+        examinationPrice: toNumberOrNull(b.examinationPrice),
+        discountedExaminationPrice: toNumberOrNull(b.discountedExaminationPrice),
+        consultationPrice: toNumberOrNull(b.consultationPrice),
+        discountedConsultationPrice: toNumberOrNull(b.discountedConsultationPrice),
+        imageUrls: imagesRaw.map((url) => toNonEmptyString(url)).filter(Boolean),
     };
 };
 
@@ -214,6 +275,12 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
     const servicesPrepared = explicitServicesPrepared.length > 0
         ? explicitServicesPrepared
         : clinicServicesPrepared.map((item) => item.name);
+
+    // تطهير كل الفروع — الـfix الأساسي للـbug. قبل كده كان الـfield ده
+    // بيتحذف من الـpayload قبل الحفظ، فالدكتور بيفقد كل الفروع ما عدا الأوّل.
+    const branchesPrepared = Array.isArray(payload.branches)
+        ? payload.branches.map((b, index) => sanitizeDoctorAdBranch(b, index))
+        : [];
 
     return {
         doctorName: toNonEmptyString(payload.doctorName),
@@ -267,6 +334,13 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
         isPublished: Boolean(payload.isPublished),
         createdAt: toNonEmptyString(payload.createdAt) || nowIso,
         updatedAt: nowIso,
+        // الفروع — دي الحقل الرئيسي الجديد للإعلانات اللي فيها أكتر من فرع.
+        // ملاحظه: الحقول فوق (governorate, city, clinicSchedule ...) بتجي من
+        // الـUI نفسه (useDoctorAdvertisementController.ts:354-366) اللي بينسخ
+        // قيم أول فرع للحقول العليا قبل الحفظ. لو في caller جديد بيستخدم
+        // الـservice ده مباشرة، لازم يعمل نفس النسخ — وإلا الفلتر بـgovernorate/city
+        // في الدليل العام مش هيلاقي الدكتور.
+        branches: branchesPrepared,
     };
 };
 
@@ -339,18 +413,33 @@ export const doctorAdsService = {
             .filter((item): item is DoctorAdProfile => Boolean(item));
     },
 
-    /** البحث المتقدم مع الفلترة في دليل الأطباء المنشورين */
+    /**
+     * البحث المتقدم مع الفلترة في دليل الأطباء المنشورين.
+     *
+     * الـcursor (lastVisibleDoc) = JSON string بشكل مختلف حسب النوع:
+     *  • بحث نصّي (client-side pagination) → '{"o":20}' حيث o = offset.
+     *  • مفيش بحث (server-side pagination) → '{"u":"2026-04-22T...","d":"docId"}'
+     *    حيث u = updatedAt للدكتور الأخير، d = documentId للـtiebreaker.
+     *
+     * ليه tiebreaker؟ لو دكتورين حفظوا في نفس الـmillisecond بالظبط،
+     * `startAfter(updatedAt)` لوحده كان بيتخطّى واحد منهم. بإضافة docId
+     * كحقل تاني للترتيب + للـcursor، الترتيب بقى deterministic 100%.
+     *
+     * ليه limit(pageSize + 1)؟ الـtrick بيحدد بدقّة لو فيه صفحه جايه:
+     * لو رجع pageSize+1 = فيه أكتر، نرمي الزيادة. لو رجع ≤ pageSize = خلصت.
+     * بدل ما نرجّع `hasMore=true` غلط لما العدد الكلّي = مضاعف pageSize بالظبط.
+     */
     getPublishedDoctorAdsPaginated: async (
         filters: PublishedAdsFilter = {},
         pageSize: number = 20,
-        lastVisibleDoc: unknown = null
-    ): Promise<{ data: DoctorAdProfile[]; lastVisibleDoc: number | null; hasMore: boolean }> => {
+        lastVisibleDoc: string | null = null
+    ): Promise<{ data: DoctorAdProfile[]; lastVisibleDoc: string | null; hasMore: boolean }> => {
         const ref = collection(db, 'doctorAds');
         const constraints: QueryConstraint[] = [
             where('isPublished', '==', true)
         ];
 
-        // 1. الفلترة على مستوى السيرفر (Server-side Filtering) للقيم الأساسية
+        // 1. الفلترة على مستوى السيرفر للقيم الأساسية (تخصص/محافظه/مدينه)
         if (filters.specialty) {
             constraints.push(where('doctorSpecialty', '==', filters.specialty));
         }
@@ -361,19 +450,28 @@ export const doctorAdsService = {
             }
         }
 
-        // الترتيب والحد الأقصى (Server-side sorting)
+        // الترتيب الأساسي + tiebreaker على documentId
+        // ISO strings بترتّب معجمياً زي التاريخ، فأحدث updatedAt يطلع الأول.
+        // documentId DESC = ترتيب ثابت لأي دكتورين بنفس الـupdatedAt.
         constraints.push(orderBy('updatedAt', 'desc'));
+        constraints.push(orderBy(documentId(), 'desc'));
 
-        // ملاحظة: لا يمكن استخدام limit و startAt مع الفلترة النصية المعقدة (search) 
-        // في حال وجود نص بحث، نؤجل التقسيم للحظة الأخيرة
+        // مع البحث النصّي: Firestore مش قادر يفلتر عربي صح، فبنجيب كل المطابق ونقصّم client-side.
         const useClientSidePagination = Boolean(filters.search);
+        const hasCursor = typeof lastVisibleDoc === 'string' && lastVisibleDoc.length > 0;
+
+        // فك تشفير الـcursor الجاي (لو موجود) — try/catch للتسامح مع cache قديم بصياغه مختلفه.
+        const parsedCursor: { u?: string; d?: string; o?: number } | null = hasCursor
+            ? (() => { try { return JSON.parse(lastVisibleDoc as string); } catch { return null; } })()
+            : null;
 
         if (!useClientSidePagination) {
-            constraints.push(limit(pageSize));
-            if (typeof lastVisibleDoc === 'number' && lastVisibleDoc > 0) {
-                // ملاحظة: Pagination الحقيقي في Firestore يستخدم DocumentSnapshot 
-                // ولكن هنا نستخدم الأرقام كما هو موجود في الكود الأصلي لتجنب تغيير الواجهة
+            // Firestore cursor — startAfter(updatedAt, docId) = pagination دقيق بلا تخطّي.
+            if (parsedCursor?.u && parsedCursor?.d) {
+                constraints.push(startAfter(parsedCursor.u, parsedCursor.d));
             }
+            // +1 trick: نطلب صفحه + 1 سطر عشان نعرف بدقّه لو فيه صفحه جايه.
+            constraints.push(limit(pageSize + 1));
         }
 
         const q = query(ref, ...constraints);
@@ -387,7 +485,7 @@ export const doctorAdsService = {
         // 2. الفلترة النصية المعقدة (تطابق الكلمات والأسماء) - تظل برمجية لدقتها في العربية
         const normalizedSearch = normalizeFilterText(filters.search);
         if (normalizedSearch) {
-            allResults = allResults.filter((ad) => 
+            allResults = allResults.filter((ad) =>
                 [
                     ad.doctorName,
                     ad.doctorSpecialty,
@@ -399,23 +497,34 @@ export const doctorAdsService = {
             );
         }
 
-        // 3. تطبيق تقسيم الصفحات (Pagination) برمجياً إذا لزم الأمر
-        const startIndex = typeof lastVisibleDoc === 'number' && Number.isFinite(lastVisibleDoc)
-            ? Math.max(0, Math.floor(lastVisibleDoc))
-            : 0;
-            
-        const data = useClientSidePagination 
-            ? allResults.slice(startIndex, startIndex + pageSize)
-            : allResults; 
+        // 3. تحضير النتيجه النهائيه + الـcursor للصفحه الجايه
+        if (useClientSidePagination) {
+            // مسار البحث: نقصّم النتايج client-side باستخدام offset.
+            const startIndex = parsedCursor?.o != null && Number.isFinite(parsedCursor.o)
+                ? Math.max(0, parsedCursor.o)
+                : 0;
+            const data = allResults.slice(startIndex, startIndex + pageSize);
+            const nextOffset = startIndex + data.length;
+            const hasMore = nextOffset < allResults.length;
+            return {
+                data,
+                lastVisibleDoc: hasMore ? JSON.stringify({ o: nextOffset }) : null,
+                hasMore,
+            };
+        }
 
-        const nextIndex = startIndex + data.length;
-        const hasMore = useClientSidePagination 
-            ? nextIndex < allResults.length
-            : allResults.length >= pageSize;
-
+        // مسار مفيش بحث: استخدمنا limit(pageSize+1)، فلو رجع > pageSize = فيه صفحه جايه.
+        const hasMore = allResults.length > pageSize;
+        const data = hasMore ? allResults.slice(0, pageSize) : allResults;
+        const lastItem = data[data.length - 1];
+        const lastUpdatedAt = lastItem ? toNonEmptyString(lastItem.updatedAt) : '';
+        const lastDocId = lastItem ? lastItem.doctorId : '';
         return {
             data,
-            lastVisibleDoc: hasMore ? nextIndex : null,
+            // الـcursor فيه updatedAt + docId مع بعض — مطلوب الاتنين للـstartAfter.
+            lastVisibleDoc: hasMore && lastUpdatedAt && lastDocId
+                ? JSON.stringify({ u: lastUpdatedAt, d: lastDocId })
+                : null,
             hasMore,
         };
     },

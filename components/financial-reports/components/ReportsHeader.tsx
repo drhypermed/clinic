@@ -85,24 +85,26 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
     );
 
     return (
+        // توحيد مع الصفحات النظيفه (سجلات المرضى، ملفات المرضى): خلفيه بيضاء
+        // بدل التدرّج الأزرق اللي كان بيخلّي الصفحه دي مختلفه عن باقي التطبيق.
         <div className="sticky top-0 z-10" dir="rtl">
-            <div className="bg-gradient-to-r from-blue-700 to-blue-600 shadow-lg shadow-blue-900/20 rounded-3xl mx-2">
+            <div className="bg-white border-b border-slate-200 mx-2 rounded-b-2xl">
 
                 {/* ── الشريط العلوي ────────────────────────────────── */}
                 <div className="px-4 sm:px-5 pt-3 pb-2 flex items-center justify-between gap-2 flex-wrap">
 
-                    {/* العنوان */}
+                    {/* العنوان — أيقونه رماديّه فاتحه + نص غامق */}
                     <div className="flex items-center gap-2 min-w-0 shrink-0">
-                        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
-                        <h1 className="text-sm sm:text-base font-black text-white">التقارير المالية</h1>
+                        <h1 className="text-sm sm:text-base font-black text-slate-900">التقارير المالية</h1>
                     </div>
 
-                    {/* منتقيات التاريخ */}
+                    {/* منتقيات التاريخ — حدود رماديّه بدل البيضا على أزرق */}
                     <div className="flex items-center gap-1.5 flex-wrap">
 
                         {/* منتقي اليوم — التبويب اليومي */}
@@ -112,8 +114,8 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                 value={selectedDayStr}
                                 max={todayStr}
                                 onChange={(e) => onSetDay(e.target.value)}
-                                className="rounded-xl border border-white/30 bg-white/20 px-2.5 py-1.5 text-xs font-medium
-                                           text-white focus:border-white/60 focus:ring-2 focus:ring-white/20
+                                className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium
+                                           text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
                                            outline-none cursor-pointer"
                             />
                         )}
@@ -124,8 +126,8 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                 <select
                                     value={selectedMonth}
                                     onChange={(e) => onJumpToYearMonth(selectedYear, Number(e.target.value))}
-                                    className="rounded-xl border border-white/30 bg-white/20 px-2.5 py-1.5 text-xs font-bold
-                                               text-white focus:border-white/60 focus:ring-2 focus:ring-white/20
+                                    className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
+                                               text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
                                                outline-none cursor-pointer"
                                 >
                                     {ARABIC_MONTHS.map((name, idx) => {
@@ -142,8 +144,8 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                 <select
                                     value={selectedYear}
                                     onChange={(e) => onJumpToYearMonth(Number(e.target.value), selectedMonth)}
-                                    className="rounded-xl border border-white/30 bg-white/20 px-2.5 py-1.5 text-xs font-bold
-                                               text-white focus:border-white/60 focus:ring-2 focus:ring-white/20
+                                    className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
+                                               text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
                                                outline-none cursor-pointer"
                                 >
                                     {yearOptions.map((y) => (
@@ -158,8 +160,8 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                             <select
                                 value={selectedStatsYear}
                                 onChange={(e) => onSetStatsYear(Number(e.target.value))}
-                                className="rounded-xl border border-white/30 bg-white/20 px-2.5 py-1.5 text-xs font-bold
-                                           text-white focus:border-white/60 focus:ring-2 focus:ring-white/20
+                                className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
+                                           text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
                                            outline-none cursor-pointer"
                             >
                                 {yearOptions.map((y) => (
@@ -170,7 +172,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                     </div>
                 </div>
 
-                {/* ── شريط التبويبات ───────────────────────────────── */}
+                {/* ── شريط التبويبات — التاب النشط أزرق، الباقي رمادي ─── */}
                 <div className="flex px-2 pb-2 gap-1">
                     {TABS.map((tab) => (
                         <button
@@ -179,8 +181,8 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                             className={`flex-1 min-w-[64px] flex items-center justify-center gap-1 px-2 py-1.5
                                         font-black transition-all rounded-xl whitespace-nowrap
                                         ${activeTab === tab.key
-                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-sm text-sm'
-                                    : 'text-white/75 hover:bg-white/15 hover:text-white text-xs'
+                                    ? 'bg-blue-600 text-white shadow-sm text-sm'
+                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs'
                                 }`}
                         >
                             <span className="text-sm leading-none">{tab.icon}</span>

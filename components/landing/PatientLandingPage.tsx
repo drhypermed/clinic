@@ -255,7 +255,9 @@ export const PatientLandingPage: React.FC = () => {
             </div>
           </A>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          {/* كرتين بس: "ابحث عن دكتور" و"حجوزاتي" — شلنا كرت "احجز موعدك"
+              لأنه كان مكرّر مع "ابحث عن دكتور" (الاتنين بيودّوا لنفس الصفحه /public) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {/* ابحث عن دكتور (الـCTA الأساسي) */}
             <A>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
@@ -278,30 +280,8 @@ export const PatientLandingPage: React.FC = () => {
                 </button>
               </div>
             </A>
-            {/* احجز موعدك */}
-            <A delay={80}>
-              <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center shadow-md">
-                    <HiOutlineCalendarDays className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-base font-black text-slate-900">احجز موعدك</h3>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
-                  اختار اليوم والوقت المناسب — حجز فوري إلكتروني بدون تليفونات ولا انتظار.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => go('/public')}
-                  className="self-start flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]"
-                >
-                  <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                  احجز الآن
-                </button>
-              </div>
-            </A>
             {/* حجوزاتي */}
-            <A delay={160}>
+            <A delay={80}>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 text-white flex items-center justify-center shadow-md">

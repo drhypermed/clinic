@@ -19,34 +19,24 @@ import { db } from '../../firebaseConfig';
 import { getDocsCacheFirst } from '../cacheFirst';
 import { isSlotExpired, normalizePublicSecret, sanitizeDocSegment } from './helpers';
 
-/** 
- * معالجة وتحويل المواعيد الخام من Firestore إلى كائنات برمجية.
- * تتضمن الوظيفة "تنظيفاً تلقائياً" (Auto-Cleanup) للمواعيد التي مر تاريخها لضمان نظافة قاعدة البيانات.
+/**
+ * معالجة وتحويل المواعيد الخام من Firestore إلى كائنات برمجيه.
+ *
+ * ملاحظه عن الـcleanup: الكود القديم كان كل client (مريض) بيحاول يحذف الـexpired
+ * slots عند كل onSnapshot. ده كان ضرر مزدوج:
+ *   • 100 مريض على الصفحه = 100 محاولة حذف على نفس slots (1 ينجح، 99 يفشلوا)
+ *   • معظم المرضى أصلاً مالهمش صلاحيه delete (rules للـowner) → spam في console
+ * دلوقت بنفلتر الـexpired فقط محلياً ـ الحذف الحقيقي مفروض من Cloud Function scheduled.
+ * (الـpublicBookingConfig بقت أصغر ـ بس مفيش ضرر فوري لو الـold slots اتراكمت).
  */
-const mapSlots = (secret: string, nowMs: number, rows: Array<{ id: string; dateTime: unknown; branchId?: unknown }>) => {
-  const normalizedSecret = normalizePublicSecret(secret);
-  const slots = rows
+const mapSlots = (_secret: string, nowMs: number, rows: Array<{ id: string; dateTime: unknown; branchId?: unknown }>) => {
+  return rows
     .map((row) => ({
       id: row.id,
       dateTime: typeof row.dateTime === 'string' ? row.dateTime : '',
       branchId: typeof row.branchId === 'string' && row.branchId ? row.branchId : undefined,
     }))
-    .filter((slot) => Boolean(slot.dateTime));
-
-  // حذف المواعيد منتهية الصلاحية تلقائياً من السيرفر
-  if (normalizedSecret) {
-    slots
-      .filter((slot) => isSlotExpired(slot.dateTime, nowMs))
-      .forEach((slot) => {
-        const slotRef = doc(db, 'publicBookingConfig', normalizedSecret, 'slots', slot.id);
-        deleteDoc(slotRef).catch(() => {
-          // تجاهل فشل الحذف التلقائي لتجنب تعطيل واجهة المستخدم
-        });
-      });
-  }
-
-  // إرجاع المواعيد الصالحة فقط (التي لم تنتهِ بعد)
-  return slots.filter((slot) => !isSlotExpired(slot.dateTime, nowMs));
+    .filter((slot) => Boolean(slot.dateTime) && !isSlotExpired(slot.dateTime, nowMs));
 };
 
 /** جلب كافة المواعيد المتاحة للجمهور لسر محدد */

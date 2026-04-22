@@ -181,6 +181,8 @@ export const getBookingConfigByUserId = async (
     secretaryPasswordHash = authData.secretaryPasswordHash;
   }
 
+  // Migration وحيد: لو فيه legacy plain password ومفيش hash → نهاجم لمره واحده.
+  // الـcondition `!secretaryPasswordHash && legacySecretaryPassword` بيضمن ما يتنفّذش غير مره أولى.
   if (!secretaryPasswordHash && legacySecretaryPassword) {
     try {
       secretaryPasswordHash = await hashPassword(legacySecretaryPassword);
@@ -207,23 +209,19 @@ export const getBookingConfigByUserId = async (
         await updateLegacyBookingConfigCleanup(bookingSecretValue, {
           secretaryAuthRequired: true,
         });
+        // الـindex بيتحدّث هنا فقط لأن الـhash اتغير فعلاً (migration حصل).
+        if (doctorEmailValue) {
+          await upsertSecretaryLoginIndex(doctorEmailValue, normalizedUserId, true).catch(() => undefined);
+        }
       }
     } catch (error) {
       console.warn('[Firestore] Failed migrating legacy secretary password to hash:', error);
     }
-  } else if (bookingSecretValue) {
-    await updateLegacyBookingConfigCleanup(bookingSecretValue, {
-      secretaryAuthRequired: Boolean(secretaryPasswordHash),
-    }).catch(() => undefined);
   }
 
-  if (doctorEmailValue && bookingSecretValue) {
-    try {
-      await upsertSecretaryLoginIndex(doctorEmailValue, normalizedUserId, Boolean(secretaryPasswordHash));
-    } catch (error) {
-      console.warn('[Firestore] Failed to sync secretary login index from user profile:', error);
-    }
-  }
+  // ملاحظه: شيلنا الـunconditional sync (updateLegacyBookingConfigCleanup + upsertSecretaryLoginIndex)
+  // اللي كان بيشتغل على كل قراءه. كان bug تكلفه: 2 writes زائده على كل getBookingConfigByUserId.
+  // الـsync دلوقت مسؤولية save functions (saveBookingCredentials / updateBookingSettings) فقط.
 
   return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryVitalsVisibility, secretaryVitalFields };
 };

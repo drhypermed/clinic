@@ -42,7 +42,7 @@ export const LegalDocumentModal: React.FC<LegalDocumentModalProps> = ({
       dir="rtl"
     >
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl ring-1 ring-slate-200/60 bg-white/85 backdrop-blur-xl text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_30px_80px_-20px_rgba(15,23,42,0.35)]">
-        <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 via-blue-500 to-emerald-500" />
+        <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400" />
 
         <div className="border-b border-slate-200 px-5 sm:px-7 pt-5 sm:pt-6 pb-4 flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
@@ -84,7 +84,7 @@ export const LegalDocumentModal: React.FC<LegalDocumentModalProps> = ({
               <ul className="space-y-2 text-sm sm:text-[15px] leading-relaxed text-slate-800">
                 {section.points.map((point) => (
                   <li key={point} className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-600 to-emerald-500 flex-shrink-0" />
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex-shrink-0" />
                     <span className="font-semibold">{point}</span>
                   </li>
                 ))}

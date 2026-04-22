@@ -9,25 +9,22 @@ export const DoctorAdHeader: React.FC<DoctorAdHeaderProps> = ({
   academicDegree,
 }) => {
   return (
-    // ترويسة الإعلان: نفس تدرج الأزرق الموحّد في باقي التطبيق (ReportsHeader / Sidebar)
-    <section className="bg-gradient-to-r from-blue-700 to-blue-600 rounded-3xl text-white p-6 shadow-lg shadow-blue-900/20">
-      <h2 className="text-2xl font-black">صفحة الإعلان</h2>
-      <p className="text-blue-100 mt-2 font-semibold">
-        هذه الصفحة هي التي تظهر للجمهور. كل تعديل هنا ينعكس مباشرة بعد النشر.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-        <div className="bg-white/15 rounded-xl p-3">
-          <p className="text-xs text-blue-100">اسم الطبيب</p>
-          <p className="font-black text-lg">{adDoctorName || 'غير محدد'}</p>
-        </div>
-        <div className="bg-white/15 rounded-xl p-3">
-          <p className="text-xs text-blue-100">التخصص الطبي</p>
-          <p className="font-black text-lg">{doctorSpecialty || 'غير محدد'}</p>
-        </div>
-        <div className="bg-white/15 rounded-xl p-3 sm:col-span-2">
-          <p className="text-xs text-blue-100">الدرجة العلمية</p>
-          <p className="font-black text-base">{academicDegree || 'غير محددة'}</p>
-        </div>
+    // ترويسة الإعلان: شلنا العنوان والوصف (توحيد مع باقي الصفحات النظيفه زي
+    // سجلات المرضى وملفات المرضى — الخلفيه بيضاء بدون حشو فوق).
+    // بقيت بس بطاقات ملخّص بيانات الطبيب بخلفيه بيضاء + حدود خفيفه
+    // بدل التدرّج الأزرق اللي كان واقف فوق.
+    <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 p-3">
+        <p className="text-xs text-slate-500">اسم الطبيب</p>
+        <p className="font-black text-lg text-slate-900">{adDoctorName || 'غير محدد'}</p>
+      </div>
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 p-3">
+        <p className="text-xs text-slate-500">التخصص الطبي</p>
+        <p className="font-black text-lg text-slate-900">{doctorSpecialty || 'غير محدد'}</p>
+      </div>
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 p-3 sm:col-span-2">
+        <p className="text-xs text-slate-500">الدرجة العلمية</p>
+        <p className="font-black text-base text-slate-900">{academicDegree || 'غير محددة'}</p>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 /**
  * صفحة دخول الجمهور (Public Login Page):
- * تصميم فيسبوك-style: كارد أبيض بسيط، زر أخضر عريض للدخول عبر Google.
+ * تصميم فيسبوك-style: كارد أبيض بسيط، زر أزرق عريض للدخول عبر Google.
+ * الألوان موحّده مع صفحة دخول الطبيب (أزرق) بدلاً من الأخضر القديم.
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -91,7 +92,7 @@ export const PublicLoginPage: React.FC = () => {
         </div>
 
         <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-emerald-600 to-teal-500" />
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 to-blue-500" />
           <div className="px-6 pt-6 pb-4 border-b border-slate-200">
             <h2 className="text-2xl font-black text-slate-900 leading-tight">دخول الجمهور</h2>
             <p className="text-sm text-slate-600 font-semibold mt-1">للاطلاع على دليل الأطباء وحجز المواعيد.</p>
@@ -108,7 +109,7 @@ export const PublicLoginPage: React.FC = () => {
             <button
               onClick={handleGoogleLogin}
               disabled={loading || !isLegalReady}
-              className="w-full py-3 px-4 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(5,150,105,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
+              className="w-full py-3 px-4 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
             >
               {loading ? (
                 <>

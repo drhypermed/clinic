@@ -362,7 +362,7 @@ export const DoctorSignupPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/login/public', { replace: true })}
-                    className="w-full py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-md transition"
+                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-md transition"
                   >
                     اذهب لتسجيل دخول الجمهور
                   </button>

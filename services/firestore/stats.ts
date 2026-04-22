@@ -11,28 +11,21 @@ import {
     doc,
     setDoc,
 } from 'firebase/firestore';
-import { getDocCacheFirst } from './cacheFirst';
+import { subscribeDocCacheFirst } from './cacheFirst';
 
 export const statsService = {
     /**
-     * الاشتراك في إحصائيات الاستخدام مع (Smart Cache).
-     * يعرض الأرقام من الكاش فوراً للداشبورد ثم يحدثها من السيرفر.
+     * الاشتراك اللحظي في إحصائيات الاستخدام (cache-first + onSnapshot حقيقي).
+     * كان قبل كده one-shot — الـUI ما كانش بيتحدث لمّا Cloud Function تحدّث usageStats
+     * بعد كل smart prescription، فالعدّاد كان يفضل ثابت لحد الـrefresh.
      */
     subscribeToStats: (userId: string, onUpdate: (stats: any) => void) => {
         const userRef = doc(db, 'users', userId);
-        let cancelled = false;
-
-        getDocCacheFirst(userRef).then((snap) => {
-            if (cancelled) return;
-            if (snap.exists()) {
-                const data = snap.data();
-                onUpdate(data.usageStats || {});
-            } else {
-                onUpdate({});
-            }
-        }).catch(() => {});
-
-        return () => { cancelled = true; };
+        return subscribeDocCacheFirst(userRef, {
+            next: (snap) => {
+                onUpdate(snap.exists() ? (snap.data()?.usageStats || {}) : {});
+            },
+        });
     },
 
     /**
