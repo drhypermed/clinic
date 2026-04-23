@@ -25,7 +25,7 @@ import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
 import {
   LuBookOpen,         // شعار الدليل
   LuArrowRight,       // زر الرجوع (RTL = سهم لليمين)
-  LuMenu,             // فتح القائمه الجانبيه على الموبايل
+  LuArrowLeft,        // فتح القائمه الجانبيه على الموبايل (سهم لليسار بدل الثلاث شرط)
   LuX,                // إغلاق القائمه الجانبيه
   LuLightbulb,        // نصيحه
   LuTriangleAlert,    // تحذير / خطأ شايع
@@ -275,14 +275,14 @@ export const UserGuidePage: React.FC = () => {
               </div>
             </div>
           </div>
-          {/* زر فتح القائمه على الموبايل */}
+          {/* زر فتح القائمه على الموبايل — سهم لليسار بدل الثلاث شرط */}
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
             className="md:hidden w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
             title="عرض المحتويات"
           >
-            <LuMenu className="w-5 h-5 text-slate-700" />
+            <LuArrowLeft className="w-5 h-5 text-slate-700" />
           </button>
         </div>
       </header>

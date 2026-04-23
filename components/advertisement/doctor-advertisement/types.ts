@@ -15,12 +15,6 @@ export interface DoctorSocialLink {
   url: string;
 }
 
-export interface DoctorAdHeaderProps {
-  adDoctorName: string;
-  doctorSpecialty: string;
-  academicDegree: string;
-}
-
 export interface DoctorAdInfoSectionProps {
   adDoctorName: string;
   yearsExperience: string;

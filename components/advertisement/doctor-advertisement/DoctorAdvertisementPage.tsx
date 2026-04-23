@@ -9,7 +9,6 @@ import React from 'react';
 
 import { LivePreviewModal } from './LivePreviewModal';
 import { ImageCropModal } from './ImageCropModal';
-import { DoctorAdHeader } from './DoctorAdHeader';
 import { DoctorAdPreviewButton } from './DoctorAdPreviewButton';
 import { DoctorAdInfoSection } from './DoctorAdInfoSection';
 import { DoctorAdBranchesSection } from './DoctorAdBranchesSection';
@@ -62,17 +61,21 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
 
   return (
     <div className="space-y-5" dir="rtl">
-      {message && (
+      {/* رسالة التنبيه المركزية: نجاح (أخضر) أو خطأ (أحمر) — بتظهر في نص الشاشة
+          بعد الضغط على "نشر" أو "تحديث" أو لو حصل خطأ. */}
+      {(message || error) && (
         <div className="fixed inset-0 z-[90] pointer-events-none flex items-center justify-center px-4">
-          <div className="max-w-md w-full bg-emerald-600/95 text-white rounded-2xl border border-emerald-300 shadow-2xl px-5 py-4 text-center font-black">
-            {message}
+          <div
+            className={`max-w-md w-full text-white rounded-2xl shadow-2xl px-5 py-4 text-center font-black border ${
+              error
+                ? 'bg-red-600/95 border-red-300'
+                : 'bg-emerald-600/95 border-emerald-300'
+            }`}
+          >
+            {error || message}
           </div>
         </div>
       )}
-
-      <DoctorAdHeader adDoctorName={adDoctorName} doctorSpecialty={doctorSpecialty} academicDegree={academicDegree} />
-
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 font-bold">{error}</div>}
 
       {/* المعلومات العامة عن الطبيب */}
       <DoctorAdInfoSection

@@ -90,6 +90,13 @@ export const useDoctorAdvertisementController = ({
     return () => window.clearTimeout(timeoutId);
   }, [message]);
 
+  // ─── إخفاء رسالة الخطأ أوتوماتيك (مدة أطول شوية عشان الطبيب يلحق يقراها) ───
+  useEffect(() => {
+    if (!error) return;
+    const timeoutId = window.setTimeout(() => setError(''), 4500);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
+
   // ─── مزامنة اسم الطبيب من البروب لما البروب يتغير فقط ───
   useEffect(() => {
     if (doctorName.trim()) {

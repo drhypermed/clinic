@@ -413,6 +413,15 @@ export const DoctorSignupPage: React.FC = () => {
               )}
             </button>
 
+            {/* رابط دليل المستخدم — تحت زر الإنشاء مباشرة عشان الطبيب يدخل الدليل بضغطه واحده */}
+            <button
+              type="button"
+              onClick={() => navigate('/user-guide')}
+              className="w-full py-2.5 px-4 bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+            >
+              <span>دليل استخدام التطبيق</span>
+            </button>
+
             <div className="pt-3 border-t border-slate-200 text-center space-y-2">
               <button
                 type="button"

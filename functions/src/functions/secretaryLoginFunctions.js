@@ -242,7 +242,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       userId,
       sessionToken: matchedSessionToken,
       branchId: matchedBranchId,
-      customAuthToken, // Firebase Custom Token Ù„Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù… Ù…Ø¹ signInWithCustomToken
+      customAuthToken, // Firebase Custom Token للاستخدام مع signInWithCustomToken
     };
   };
 
@@ -571,7 +571,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       source: 'secretary',
       appointmentType: isConsultation ? 'consultation' : 'exam',
       bookingSecret: secret,
-      branchId, // Ø±Ø¨Ø· Ø§Ù„Ù…ÙˆØ¹Ø¯ Ø¨ÙØ±Ø¹ Ø§Ù„Ø³ÙƒØ±ØªØ§Ø±ÙŠØ©
+      branchId, // ربط الموعد بفرع السكرتارية
       paymentType,
       patientSharePercent: paymentType === 'insurance' ? patientSharePercent : 0,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

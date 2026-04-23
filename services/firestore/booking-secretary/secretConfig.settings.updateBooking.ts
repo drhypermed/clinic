@@ -133,17 +133,10 @@ export const updateBookingSettings = async (
     if (secretaryPassword !== undefined) {
         const normalizedSecretaryPassword = String(secretaryPassword).trim();
         if (normalizedSecretaryPassword) {
-            // قراءة الـ hash الحالي حسب المسار (main أو branch)
-            let currentBranchHash = '';
-            if (isNonMainBranch && branchAuthRef) {
-                try {
-                    const s = await getDoc(branchAuthRef);
-                    currentBranchHash = typeof s.data()?.passwordHash === 'string' ? String(s.data()?.passwordHash).trim() : '';
-                } catch {
-                    currentBranchHash = '';
-                }
-            }
-            const hashToCompare = isNonMainBranch ? currentBranchHash : currentHash;
+            // قواعد Firestore بتمنع الكلاينت من قراءة secretaryAuth/{secret}/branches/{branchId}
+            // (الـ passwordHash سرّي — الـ Cloud Function فقط يقرأه بالـ Admin SDK).
+            // فللفرع الفرعي نعامل الـ hash القديم كأنه فاضي → كلمة السر بتتـ hash من جديد كل مرة.
+            const hashToCompare = isNonMainBranch ? '' : currentHash;
             const passwordMatchesCurrentHash =
                 hashToCompare &&
                 (await verifyPassword(normalizedSecretaryPassword, hashToCompare).catch(() => false));
@@ -246,22 +239,10 @@ export const updateBookingSettings = async (
     let hasPasswordHash = false;
     if (secretaryPassword !== undefined) {
         if (isNonMainBranch && branchAuthRef) {
-            // التحقق من الكتابة في subcollection للفرع الفرعي
-            const serverBranchAuthSnap = await getDocFromServer(branchAuthRef);
-            const serverBranchData = serverBranchAuthSnap.data();
-            const serverBranchHash =
-                typeof serverBranchData?.passwordHash === 'string'
-                    ? String(serverBranchData.passwordHash)
-                    : '';
-
-            if (expectedSecretaryHash) {
-                if (serverBranchHash !== expectedSecretaryHash) {
-                    throw new Error('Cloud save verification failed for branch secretary password hash.');
-                }
-                hasPasswordHash = true;
-            } else if (serverBranchHash) {
-                throw new Error('Cloud save verification failed for branch secretary password removal.');
-            }
+            // الفرع الفرعي: قواعد Firestore بتمنع قراءة secretaryAuth/{secret}/branches/{branchId}
+            // من الكلاينت (حماية للـ passwordHash). فبنعتمد على نجاح الـ setDoc فوق —
+            // لو رجع بدون throw، يبقى الحفظ اتم على السيرفر.
+            hasPasswordHash = Boolean(expectedSecretaryHash);
         } else {
             // الفرع الرئيسي: نفس التحقق القديم
             const serverAuthSnap = await getDocFromServer(authRef);

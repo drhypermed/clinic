@@ -169,6 +169,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // Use the resolved app profile image only, so explicit delete stays blank.
     const displayImage = profileImage;
 
+    // لو الصورة فشلت في التحميل، نرجع نعرض أول حرف من الاسم بدل أيقونه مكسوره.
+    // ده state واحد بنستخدمه للنسختين (ديسكتوب وموبايل) عشان أي URL بايظ يبان fallback فورًا.
+    const [profileImgFailed, setProfileImgFailed] = useState(false);
+
+    // لما الـURL نفسه يتغير، نعيد تفعيل محاولة التحميل (مش نعلّقه على الفشل السابق).
+    useEffect(() => { setProfileImgFailed(false); }, [displayImage]);
+
+    // أول حرف من اسم الحساب — بيتعرض كـ fallback بدل ما نسيب الدائرة بيضاء فاضيه.
+    // Array.from عشان نتعامل مع الحروف العربية صح (مش .charAt).
+    const initialLetter = (() => {
+        const trimmed = (displayName || '').trim();
+        if (!trimmed) return 'د';
+        return Array.from(trimmed)[0] || 'د';
+    })();
+
+    // هل نعرض الصورة فعلاً؟ شرط: فيه URL + الصورة ما فشلتش.
+    const showProfileImage = Boolean(displayImage) && !profileImgFailed;
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -244,14 +262,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className={`flex flex-col ${isMobile ? 'min-h-full' : 'h-full'}`}>
             {/* User Profile Section - TOP */}
             <div className={`border-b border-slate-100 flex flex-col items-center shrink-0 p-4`}>
-                {/* Profile Image (Read-only, Display) */}
+                {/* Profile Image (Read-only, Display)
+                    fallback: لو مفيش صورة أو الصورة فشلت، بنعرض أول حرف من الاسم في دايره ملوّنه
+                    بدل ما تبقى بيضا فاضيه (أو تطلع كلمة "Profile" من الـalt). */}
                 <div className="relative mb-3">
                     <div className={`mx-auto rounded-full p-[3px] bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100 w-24 h-24 shadow-lg`}>
                         <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
-                            {displayImage ? (
-                                <img src={displayImage} alt="Profile" className="w-full h-full object-cover" />
+                            {showProfileImage ? (
+                                <img
+                                    src={displayImage}
+                                    alt=""
+                                    onError={() => setProfileImgFailed(true)}
+                                    className="w-full h-full object-cover"
+                                />
                             ) : (
-                                <div className="w-full h-full bg-white" />
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-4xl select-none">
+                                    {initialLetter}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -424,16 +451,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         )}
                     </div>
 
-                    {/* User Avatar - Just opens profile */}
+                    {/* User Avatar - Just opens profile
+                        نفس منطق الديسكتوب: لو مفيش صورة/فشلت، أول حرف من الاسم. */}
                     <button
                         onClick={onShowProfile}
                         className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500"
                     >
                         <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
-                            {displayImage ? (
-                                <img src={displayImage} alt="Profile" className="w-full h-full object-cover" />
+                            {showProfileImage ? (
+                                <img
+                                    src={displayImage}
+                                    alt=""
+                                    onError={() => setProfileImgFailed(true)}
+                                    className="w-full h-full object-cover"
+                                />
                             ) : (
-                                <div className="w-full h-full bg-white" />
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-sm select-none">
+                                    {initialLetter}
+                                </div>
                             )}
                         </div>
                     </button>

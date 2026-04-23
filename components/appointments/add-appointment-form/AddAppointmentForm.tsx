@@ -363,22 +363,33 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                 {enabledSecretaryFields.map((field) => {
                   const fieldId = field.kind === 'vital' && field.key ? field.key : field.id;
                   const isBmi = field.key === 'bmi';
+                  // الضغط هو الحقل الوحيد اللي يسمح بالحروف والرموز (مثال: "120/80")
+                  // باقي الحقول (نبض، حرارة، سكر، أكسجين، تنفس، طول، وزن...) أرقام فقط
+                  const isBp = field.key === 'bp';
                   const currentValue = secretaryFieldValues[fieldId] || '';
                   return (
                     <div key={fieldId} className="flex flex-col">
                       <p className="text-[12px] font-black text-slate-700 mb-1.5 px-1">{field.labelAr || field.label}</p>
                       <input
-                        type={field.key === 'bp' ? 'text' : isBmi ? 'text' : 'number'}
-                        inputMode={field.key === 'bp' || isBmi ? 'text' : 'numeric'}
+                        // استخدام type="text" دايماً عشان المتصفح ما يمنعش الأرقام العربية أو الرموز
+                        // والفلترة الحقيقية تحصل في onChange حسب نوع الحقل
+                        type="text"
+                        // inputMode بيحدد شكل الكيبورد على الموبايل: رقمي للقياسات، نصي للضغط
+                        inputMode={isBp || isBmi ? 'text' : 'decimal'}
                         readOnly={isBmi}
                         value={currentValue}
                         onChange={(e) => {
-                          if (!isBmi) {
-                            if (field.kind === 'vital' && field.key) {
-                              updateSecretaryVitalFromVitalsSection(field.key, e.target.value);
-                            } else {
-                              updateSecretaryVital(fieldId, e.target.value);
-                            }
+                          if (isBmi) return;
+                          // الضغط: أي حاجة (أرقام + حروف + / -)
+                          // الباقي: أرقام إنجليزية أو عربية + نقطة عشرية فقط
+                          const rawValue = e.target.value;
+                          const nextValue = isBp
+                            ? rawValue
+                            : rawValue.replace(/[^0-9٠-٩.]/g, '');
+                          if (field.kind === 'vital' && field.key) {
+                            updateSecretaryVitalFromVitalsSection(field.key, nextValue);
+                          } else {
+                            updateSecretaryVital(fieldId, nextValue);
                           }
                         }}
                         placeholder={field.unit || '...'}

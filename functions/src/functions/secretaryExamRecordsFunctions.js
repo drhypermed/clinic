@@ -20,9 +20,9 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     const days = normalizeText(age.days);
     const parts = [];
 
-    if (years && years !== '0') parts.push(`${years} Ø³Ù†Ø©`);
-    if (months && months !== '0') parts.push(`${months} Ø´Ù‡Ø±`);
-    if (days && days !== '0') parts.push(`${days} ÙŠÙˆÙ…`);
+    if (years && years !== '0') parts.push(`${years} سنة`);
+    if (months && months !== '0') parts.push(`${months} شهر`);
+    if (days && days !== '0') parts.push(`${days} يوم`);
 
     return parts.join(' - ');
   };
@@ -143,7 +143,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
           return null;
         }
 
-        const patientName = normalizeOptionalText(data.patientName) || 'Ø¨Ø¯ÙˆÙ† Ø§Ø³Ù…';
+        const patientName = normalizeOptionalText(data.patientName) || 'بدون اسم';
         const age = buildAgeTextFromRecordAge(data.age);
         const phone = normalizeOptionalText(data.phone);
 
@@ -193,7 +193,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
 
       const current = patientDirectoryMap.get(key) || {
         id,
-        patientName: patientName || 'Ø¨Ø¯ÙˆÙ† Ø§Ø³Ù…',
+        patientName: patientName || 'بدون اسم',
         age: ageText || undefined,
         phone: phone || undefined,
         lastExamDate: undefined,
@@ -204,7 +204,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
 
       if (Number.isFinite(recordDateMs) && recordDateMs >= current._time) {
         current.id = id;
-        current.patientName = patientName || current.patientName || 'Ø¨Ø¯ÙˆÙ† Ø§Ø³Ù…';
+        current.patientName = patientName || current.patientName || 'بدون اسم';
         current.age = ageText || current.age;
         current.phone = phone || current.phone;
         if (patientFileNumber) current.patientFileNumber = patientFileNumber;
