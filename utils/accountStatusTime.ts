@@ -1,4 +1,4 @@
-export type EffectiveAccountType = 'free' | 'premium';
+export type EffectiveAccountType = 'free' | 'premium' | 'pro_max';
 
 import { parseIsoTimeMs } from './expiryTime';
 
@@ -6,26 +6,30 @@ type PremiumTimingLike = {
   accountType?: unknown;
   premiumStartDate?: unknown;
   premiumExpiryDate?: unknown;
-  lastPremiumExpiryDate?: unknown;
+  lastProExpiryDate?: unknown;
 };
 
 export const resolveEffectiveAccountTypeFromData = (
   data: PremiumTimingLike | null | undefined,
   nowMs: number,
 ): EffectiveAccountType => {
-  const rawType = data?.accountType === 'premium' ? 'premium' : 'free';
-  if (rawType !== 'premium') return 'free';
+  // نقبل premium (= برو) و pro_max كفئات مدفوعة، أي قيمة أخرى = free.
+  // Expiry بيطبق على الاتنين بنفس الطريقة — لسه ما فيش حقل expiry منفصل لبرو ماكس.
+  const raw = data?.accountType;
+  const paidType: 'premium' | 'pro_max' | null =
+    raw === 'premium' ? 'premium' : raw === 'pro_max' ? 'pro_max' : null;
+  if (!paidType) return 'free';
 
   const expiryMs = parseIsoTimeMs(data?.premiumExpiryDate);
   if (expiryMs !== null && nowMs >= expiryMs) {
     return 'free';
   }
 
-  return 'premium';
+  return paidType;
 };
 
 export const getKnownPremiumExpiryMs = (data: PremiumTimingLike | null | undefined): number | null => {
-  return parseIsoTimeMs(data?.premiumExpiryDate) ?? parseIsoTimeMs(data?.lastPremiumExpiryDate);
+  return parseIsoTimeMs(data?.premiumExpiryDate) ?? parseIsoTimeMs(data?.lastProExpiryDate);
 };
 
 export const getPremiumTimingSnapshot = (

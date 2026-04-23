@@ -8,7 +8,7 @@ interface PremiumExpiryWarningProps {
 }
 
 /**
- * إشعار تحذيري يظهر في أعلى الصفحة عند اقتراب انتهاء الاشتراك المميز
+ * إشعار تحذيري يظهر في أعلى الصفحة عند اقتراب انتهاء اشتراك برو
  */
 export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expiryDate, mode = 'expiring', onClose }) => {
   const isExpired = mode === 'expired';
@@ -24,11 +24,11 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
   }, 'ar-EG');
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = '201551020238'; // مع كود الدولة
+    const phoneNumber = '201092805293'; // مع كود الدولة
     const message = encodeURIComponent(
       isExpired
-        ? 'مرحباً، اشتراكي المميز انتهى وأرغب في التجديد'
-        : 'مرحباً، أريد تجديد اشتراكي المميز'
+        ? 'مرحباً، اشتراكي برو انتهى وأرغب في التجديد'
+        : 'مرحباً، أريد تجديد اشتراكي برو'
     );
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
@@ -38,11 +38,11 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
     ? 'from-rose-600 via-red-600 to-orange-500'
     : 'from-amber-500 via-orange-500 to-red-500';
   const title = isExpired
-    ? 'انتهى اشتراكك المميز'
-    : 'الاشتراك المميز سينتهي قريبًا';
+    ? 'انتهى اشتراكك برو'
+    : 'اشتراك برو سينتهي قريبًا';
   const bodyText = isExpired
-    ? 'يرجى إعادة تجديد الاشتراك للاستمرار في استخدام كل المميزات.'
-    : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة المميزات.';
+    ? 'يرجى إعادة تجديد الاشتراك للاستمرار في استخدام كل بروات.'
+    : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة بروات.';
 
   return (
     <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl animate-slideDown`}>
@@ -74,7 +74,7 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
                 </span>
                 <h3 className="text-base sm:text-lg font-black leading-tight mb-1.5">{title}</h3>
                 <p className="text-sm sm:text-[15px] leading-7 font-bold text-white/95">
-                  {isExpired ? 'انتهى اشتراكك المميز' : 'الاشتراك المميز سينتهي'} في <span className="font-black">{dateStr}</span> الساعة <span className="font-black">{timeStr}</span>. {bodyText}
+                  {isExpired ? 'انتهى اشتراكك برو' : 'اشتراك برو سينتهي'} في <span className="font-black">{dateStr}</span> الساعة <span className="font-black">{timeStr}</span>. {bodyText}
                 </p>
               </div>
             </div>

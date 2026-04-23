@@ -1,15 +1,5 @@
 import React from 'react';
-// شعارات البراندات الرسميه (Fa6) — مملوئه ومعروفه للكل
-// ملاحظه: Outline للبراندات غلط لأن المستخدم بيعرف الشعار المملوء (زي ستيكر الـapp)
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedinIn,
-  FaTiktok,
-  FaXTwitter,
-  FaYoutube,
-  FaWhatsapp,
-} from 'react-icons/fa6';
+import { FaWhatsapp } from 'react-icons/fa6';
 // أيقونات Lucide للعناصر اللي مش براندات (تقييم/عنوان/اتصال...)
 import {
   LuGraduationCap, // 🎓 → شهاده أكاديميه
@@ -18,7 +8,6 @@ import {
   LuStethoscope,   // 🩺 → خدمات طبّيه
   LuPhone,         // 📞 → اتصال هاتفي
   LuSearch,        // أيقونة البحث الفارغ (بديل الـinline svg القديمه)
-  LuLink,          // أيقونة افتراضيه لمنصّات السوشيال غير المعروفه
 } from 'react-icons/lu';
 import type { DoctorAdProfile } from '../../../types';
 import { LoadingText } from '../../ui/LoadingText';
@@ -33,6 +22,8 @@ import {
   normalizePhoneForWhatsApp,
   sanitizeBioForDisplay,
 } from './helpers';
+// ستايلات السوشيال موحّده مع DoctorDetailsModal — نفس الألوان والشعارات.
+import { getSocialStyle } from './socialStyles';
 
 interface DoctorsResultsSectionProps {
   filteredAds: DoctorAdProfile[];
@@ -44,66 +35,6 @@ interface DoctorsResultsSectionProps {
   hasMore?: boolean;
   loadingMore?: boolean;
 }
-
-// تصميم 2026 الاحترافي لأيقونات السوشيال — زرار دايري ملوّن بلون البراند الأصلي
-// كل براند عنده: الشعار المملوء + اللون الرسمي + label للـaccessibility
-// الـgradient الخاص بـInstagram دا شكله الرسمي (البرتقالي/الأحمر/البنفسجي/الأزرق)
-type SocialStyle = { icon: React.ReactNode; bg: string; label: string };
-
-// حجم الأيقونات كبّرته لـ w-5 h-5 (20px) داخل دايره 40px = نسبه 50% (شكل 2026 المألوف)
-const SOCIAL_STYLES: Record<string, SocialStyle> = {
-  facebook: {
-    icon: <FaFacebookF className="w-5 h-5" />,
-    bg: 'bg-[#1877F2]',                                                  // لون فيسبوك الرسمي
-    label: 'Facebook',
-  },
-  instagram: {
-    icon: <FaInstagram className="w-5 h-5" />,
-    // تدرّج الإنستاجرام الرسمي (أصفر→برتقالي→وردي→بنفسجي→أزرق) بقيم Tailwind arbitrary
-    bg: 'bg-[linear-gradient(45deg,#FEDA75_0%,#FA7E1E_25%,#D62976_50%,#962FBF_75%,#4F5BD5_100%)]',
-    label: 'Instagram',
-  },
-  tiktok: {
-    icon: <FaTiktok className="w-5 h-5" />,
-    bg: 'bg-black',                                                      // تيك توك أسود
-    label: 'TikTok',
-  },
-  youtube: {
-    icon: <FaYoutube className="w-5 h-5" />,
-    bg: 'bg-[#FF0000]',                                                  // يوتيوب أحمر
-    label: 'YouTube',
-  },
-  x: {
-    icon: <FaXTwitter className="w-5 h-5" />,
-    bg: 'bg-black',                                                      // X براند أسود بعد التحديث
-    label: 'X',
-  },
-  twitter: {
-    icon: <FaXTwitter className="w-5 h-5" />,
-    bg: 'bg-black',
-    label: 'X',
-  },
-  linkedin: {
-    icon: <FaLinkedinIn className="w-5 h-5" />,
-    bg: 'bg-[#0A66C2]',                                                  // لينكد إن أزرق
-    label: 'LinkedIn',
-  },
-};
-
-// Fallback لمنصّه غير معروفه — لون سلايت محايد
-const DEFAULT_SOCIAL_STYLE: SocialStyle = {
-  icon: <LuLink className="w-5 h-5" strokeWidth={2.25} />,
-  bg: 'bg-slate-600',
-  label: 'رابط',
-};
-
-const getSocialStyle = (platform?: string): SocialStyle => {
-  const key = (platform || '').toLowerCase();
-  for (const [name, style] of Object.entries(SOCIAL_STYLES)) {
-    if (key.includes(name)) return style;
-  }
-  return DEFAULT_SOCIAL_STYLE;
-};
 
 export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
   filteredAds,
@@ -118,16 +49,16 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
   if (filteredAds.length === 0) {
     return (
       <section className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/95 p-10 text-center shadow-[0_24px_60px_-48px_rgba(2,6,23,0.8)]">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center">
-          {/* أيقونة البحث لحالة "مفيش نتائج" — Lucide */}
-          <LuSearch className="w-10 h-10 text-teal-500" strokeWidth={2} />
+        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+          {/* أيقونة البحث لحالة "مفيش نتائج" */}
+          <LuSearch className="w-10 h-10 text-blue-500" strokeWidth={2} />
         </div>
         <h3 className="text-lg md:text-xl font-black text-slate-800">لا توجد نتائج مطابقة</h3>
         <p className="mt-2 text-slate-500 font-bold">جرّب تغيير معايير البحث أو مسح الفلاتر</p>
         <button
           type="button"
           onClick={onResetFilters}
-          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-black hover:shadow-lg transition-all"
+          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black hover:shadow-lg transition-all"
         >
           عرض كل الأطباء
         </button>
@@ -171,7 +102,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
         return (
           <article
             key={ad.doctorId}
-            className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(13,148,136,0.25)] hover:border-teal-200 transition-all duration-300"
+            className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(37,99,235,0.25)] hover:border-blue-200 transition-all duration-300"
           >
             {anyDiscount && (
               <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black shadow-lg">
@@ -214,7 +145,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                   </h3>
                 </div>
 
-                <p className="mt-1 inline-flex px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-black">
+                <p className="mt-1 inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-black">
                   {ad.doctorSpecialty || 'بدون تخصص'}
                 </p>
 
@@ -301,7 +232,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
               <div className="px-3 sm:px-4 mt-2">
                 {/* عدد الخدمات الطبّيه — سمّاعه بدل إيموجي 🩺 */}
                 <div className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[11px] font-black text-slate-700 flex items-center gap-1.5">
-                  <LuStethoscope className="w-3.5 h-3.5 shrink-0 text-teal-600" strokeWidth={2} />
+                  <LuStethoscope className="w-3.5 h-3.5 shrink-0 text-blue-600" strokeWidth={2} />
                   <span>{clinicServices.length} خدمة{hasDiscountedService ? ' • يوجد خصومات' : ''}</span>
                 </div>
               </div>
@@ -315,7 +246,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
               // - title بيبان لمّا المستخدم يحوّم (accessibility)
               <div className="px-3 sm:px-4 mt-2 flex flex-wrap gap-1.5">
                 {socialLinks.slice(0, 5).map((social) => {
-                  const { icon, bg, label } = getSocialStyle(social.platform);
+                  const { iconNode, bg, label } = getSocialStyle(social.platform);
                   return (
                     <a
                       key={social.id}
@@ -326,7 +257,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                       aria-label={label}
                       className={`w-10 h-10 rounded-full ${bg} text-white inline-flex items-center justify-center shadow-[0_2px_6px_-1px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_14px_-3px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 transition-all duration-200`}
                     >
-                      {icon}
+                      {iconNode('w-5 h-5')}
                     </a>
                   );
                 })}
@@ -377,7 +308,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onBookDoctor(ad.doctorId)}
-                  className="h-10 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-black text-xs hover:shadow-lg hover:from-teal-700 hover:to-cyan-700 transition-all"
+                  className="h-10 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-xs hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
                 >
                   احجز الآن
                 </button>
@@ -396,7 +327,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
             className={`px-8 py-3 rounded-2xl font-black text-sm transition-all ${
               loadingMore
                 ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-xl hover:from-teal-700 hover:to-cyan-700'
+                : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-xl hover:from-blue-700 hover:to-blue-800'
             }`}
           >
             {loadingMore ? <LoadingText>جاري التحميل</LoadingText> : 'عرض المزيد من الأطباء'}

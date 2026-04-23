@@ -22,7 +22,7 @@ import { OfflineIndicator } from '../common/OfflineIndicator';
  * 2. التحقق من صلاحيات المستخدم (Admin vs Doctor).
  * 3. متابعة حالة "إعداد الحساب" (Onboarding) للطبيب الجديد.
  * 4. إعادة التوجيه التلقائية (Redirects) بناءً على حالة الحساب (مثلاً: لو لم يكمل الطبيب بياناته، يتم توجيهه لصفحة الإكمال).
- * 5. مراقبة اشتراك العضوية الممتازة (Premium Subscription).
+ * 5. مراقبة اشتراك العضوية الممتازة (Pro Subscription).
  */
 
 export const App: React.FC = () => {

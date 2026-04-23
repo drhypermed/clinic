@@ -81,7 +81,8 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
           >
             <option value="all">الكل</option>
             <option value="free">مجاني</option>
-            <option value="premium">مميز</option>
+            <option value="premium">برو</option>
+            <option value="pro_max">برو ماكس</option>
           </select>
         </div>
 

@@ -53,7 +53,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     'tool', toolAsString, setToolAsString, '',
     ['', 'interactions', 'renal', 'pregnancy'] as const,
   );
-  const [accountType, setAccountType] = useState<'free' | 'premium'>('free');
+  const [accountType, setAccountType] = useState<'free' | 'premium' | 'pro_max'>('free');
   const [accountTypeResolved, setAccountTypeResolved] = useState(false);
   const [lockedNotice, setLockedNotice] = useState<{ title: string; message: string } | null>(null);
   const [accessControls, setAccessControls] = useState({
@@ -66,10 +66,10 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     premiumRenalToolDailyLimit: 5000,
     freePregnancyToolDailyLimit: 5000,
     premiumPregnancyToolDailyLimit: 5000,
-    interactionToolLockedMessage: 'هذه الأداة متاحة للحساب المميز فقط.',
-    renalToolLockedMessage: 'هذه الأداة متاحة للحساب المميز فقط.',
-    pregnancyToolLockedMessage: 'هذه الأداة متاحة للحساب المميز فقط.',
-    premiumTagLabel: 'Premium',
+    interactionToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
+    renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
+    pregnancyToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
+    premiumTagLabel: 'Pro',
     whatsappNumber: '',
   });
   const { user } = useAuth();
@@ -92,12 +92,12 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
           freePregnancyToolDailyLimit: Number(controls.freePregnancyToolDailyLimit || 0),
           premiumPregnancyToolDailyLimit: Number(controls.premiumPregnancyToolDailyLimit || 0),
           interactionToolLockedMessage:
-            String(controls.interactionToolLockedMessage || '').trim() || 'هذه الأداة متاحة للحساب المميز فقط.',
+            String(controls.interactionToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           renalToolLockedMessage:
-            String(controls.renalToolLockedMessage || '').trim() || 'هذه الأداة متاحة للحساب المميز فقط.',
+            String(controls.renalToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           pregnancyToolLockedMessage:
-            String(controls.pregnancyToolLockedMessage || '').trim() || 'هذه الأداة متاحة للحساب المميز فقط.',
-          premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Premium',
+            String(controls.pregnancyToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
+          premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Pro',
           whatsappNumber: String(controls.whatsappNumber || '').replace(/\D/g, ''),
         });
       } catch (error) {
@@ -142,7 +142,8 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     };
   }, [userId]);
 
-  const isPremium = accountType === 'premium';
+  // برو وبرو ماكس الاتنين "Pro" لأغراض فتح الأدوات (اللي كانت premiumOnly)
+  const isPro = accountType === 'premium' || accountType === 'pro_max';
   const toolRules = useMemo(
     () => ({
       interactions: {
@@ -166,10 +167,10 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
 
   const canOpenTool = async (tool: DrugToolKey): Promise<boolean> => {
     const rule = toolRules[tool];
-    if (rule.premiumOnly && !isPremium) {
+    if (rule.premiumOnly && !isPro) {
       setLockedNotice({
         title: rule.title,
-        message: rule.message || 'هذه الأداة متاحة للحساب المميز فقط.',
+        message: rule.message || 'هذه الأداة متاحة لحساب برو فقط.',
       });
       return false;
     }
@@ -177,20 +178,20 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     const feature = tool === 'interactions' ? 'interactionTool' : tool === 'renal' ? 'renalTool' : 'pregnancyTool';
     const configuredLimit =
       tool === 'interactions'
-        ? isPremium
+        ? isPro
           ? accessControls.premiumInteractionToolDailyLimit
           : accessControls.freeInteractionToolDailyLimit
         : tool === 'renal'
-          ? isPremium
+          ? isPro
             ? accessControls.premiumRenalToolDailyLimit
             : accessControls.freeRenalToolDailyLimit
-          : isPremium
+          : isPro
             ? accessControls.premiumPregnancyToolDailyLimit
             : accessControls.freePregnancyToolDailyLimit;
 
-    // حساب بريميوم + حد يومي عالي (≥500) = فتح فوري وتتبع الكوتا في الخلفية
+    // حساب برو + حد يومي عالي (≥500) = فتح فوري وتتبع الكوتا في الخلفية
     // بدل ما ننتظر الـCloud Function (1-3 ثانيه) — السيرفر لسه بيتحقق عند كل استخدام فعلي
-    if (isPremium && configuredLimit >= 500) {
+    if (isPro && configuredLimit >= 500) {
       void consumeDrugToolQuota(feature).catch(() => {});
       return true;
     }
@@ -205,7 +206,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
         const fallbackErrorMessage = errorMessage.trim();
         console.warn('[DrugToolsView] Quota check failed; denying tool access:', {
           tool,
-          isPremium,
+          isPro,
           error,
         });
 
@@ -251,7 +252,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
 
   const whatsappDigits = String(accessControls.whatsappNumber || '').replace(/\D/g, '');
   const premiumWhatsappUrl = whatsappDigits ? `https://wa.me/${whatsappDigits}` : '';
-  const premiumOnlyLine = 'هذه الميزة للحسابات المميزة فقط';
+  const premiumOnlyLine = 'هذه الميزة للحسابات بروة فقط';
 
   const activeToolTitle =
     activeTool === 'interactions'
@@ -271,7 +272,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               <div className="flex items-center justify-between gap-2 mb-1">
                 <h4 className="text-sm font-black text-white">{lockedNotice.title}</h4>
                 <span className="rounded-lg bg-white/20 px-2 py-0.5 text-[10px] font-black text-white">
-                  {accessControls.premiumTagLabel || 'Premium'}
+                  {accessControls.premiumTagLabel || 'Pro'}
                 </span>
               </div>
               <p className="text-xs font-bold text-white/90">{premiumOnlyLine}</p>
@@ -297,7 +298,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               description="فحص التداخلات بين الأدوية مع تقييم المخاطر"
               icon={<span className="text-lg">💊</span>}
               tone={TOOL_TONES.interactions}
-              badgeLabel={accountTypeResolved && toolRules.interactions.premiumOnly && !isPremium ? accessControls.premiumTagLabel || 'Premium' : undefined}
+              badgeLabel={accountTypeResolved && toolRules.interactions.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('interactions')) {
@@ -312,7 +313,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               description="تعديل الجرعات بناءً على وظائف الكلى"
               icon={<span className="text-lg">🧪</span>}
               tone={TOOL_TONES.renal}
-              badgeLabel={accountTypeResolved && toolRules.renal.premiumOnly && !isPremium ? accessControls.premiumTagLabel || 'Premium' : undefined}
+              badgeLabel={accountTypeResolved && toolRules.renal.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('renal')) {
@@ -327,7 +328,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               description="تصنيفات السلامة مع توجيهات عملية"
               icon={<span className="text-lg">🤰</span>}
               tone={TOOL_TONES.pregnancy}
-              badgeLabel={accountTypeResolved && toolRules.pregnancy.premiumOnly && !isPremium ? accessControls.premiumTagLabel || 'Premium' : undefined}
+              badgeLabel={accountTypeResolved && toolRules.pregnancy.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('pregnancy')) {

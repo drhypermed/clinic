@@ -65,13 +65,13 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
         </h3>
       </div>
 
-      {/* Unified input boxes — new exam page style (label above, input h-[44px]) */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
+      {/* Unified input boxes — 3 أعمدة: مجاني / برو / برو ماكس */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
         {/* Free */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5 px-1">
             <FaUser className="w-3 h-3 text-slate-500" />
-            <span className="text-[12px] font-black text-slate-700">مجاني</span>
+            <span className="text-[11px] sm:text-[12px] font-black text-slate-700">مجاني</span>
           </div>
           <input
             type="number"
@@ -79,15 +79,15 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             max={5000}
             value={form[group.free.limitKey]}
             onChange={(e) => updateLimit(group.free.limitKey, e.target.value)}
-            className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric"
+            className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric"
           />
         </div>
 
-        {/* Premium */}
+        {/* Pro (premium) */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5 px-1">
             <FaCrown className="w-3 h-3 text-amber-500" />
-            <span className="text-[12px] font-black text-amber-700">مميز</span>
+            <span className="text-[11px] sm:text-[12px] font-black text-amber-700">برو</span>
           </div>
           <input
             type="number"
@@ -95,9 +95,27 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             max={5000}
             value={form[group.premium.limitKey]}
             onChange={(e) => updateLimit(group.premium.limitKey, e.target.value)}
-            className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric"
+            className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric"
           />
         </div>
+
+        {/* Pro Max — ذهبي لامع (أغنى من برو) */}
+        {group.proMax && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5 px-1">
+              <FaCrown className="w-3 h-3 text-[#E65100] drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]" />
+              <span className="text-[11px] sm:text-[12px] font-black text-[#B45309]">برو ماكس</span>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={5000}
+              value={(form[group.proMax.limitKey] as number | undefined) ?? 0}
+              onChange={(e) => updateLimit(group.proMax!.limitKey, e.target.value)}
+              className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-[#FFE082] bg-gradient-to-br from-white to-[#FFFDE7] text-sm font-black text-slate-900 placeholder-slate-400 focus:border-[#FFB300] hover:border-[#FFD54F] focus:outline-none transition-colors font-numeric"
+            />
+          </div>
+        )}
       </div>
 
       {/* Toggle messages button */}
@@ -121,9 +139,12 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
           <p className="mb-2 text-[11px] font-bold text-slate-400">
             رسائل النظام تظهر عند الوصول للحد · رسائل الواتساب تُستخدم للتواصل للترقية.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             <PlanConfigCard plan={group.free} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
             <PlanConfigCard plan={group.premium} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
+            {group.proMax && (
+              <PlanConfigCard plan={group.proMax} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
+            )}
           </div>
         </div>
       )}

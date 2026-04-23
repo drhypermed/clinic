@@ -120,7 +120,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           valueColor="text-blue-700"
         />
         <StatCard
-          title="اشتراكات مميزة"
+          title="اشتراكات برو"
           value={stats.activeSubscriptions}
           unit="اشتراك نشط"
           icon={<FaCrown />}

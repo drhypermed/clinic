@@ -9,6 +9,7 @@ import { DirectoryHeroSection } from './DirectoryHeroSection';
 import { DirectoryFiltersSection } from './DirectoryFiltersSection';
 import { DoctorsResultsSection } from './DoctorsResultsSection';
 import { DoctorDetailsModal } from './DoctorDetailsModal';
+import { BranchPickerModal } from './BranchPickerModal';
 import { BookingsPanelModal } from './BookingsPanelModal';
 import { DoctorReviewsModal } from './DoctorReviewsModal';
 import { AdBanner } from '../../common/AdBanner';
@@ -42,7 +43,6 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
     filteredAds,
     ads,
     resetFilters,
-    stats,
     showAccountPanel,
     setShowAccountPanel,
     showBookingsPanel,
@@ -58,6 +58,10 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
     reviewSubmittingId,
     accountName,
     accountEmail,
+    accountPhone,
+    accountSaving,
+    accountSaveError,
+    saveAccountProfile,
     isTemporaryPublicAccount,
     isPublicEmailVerified,
     reviewsDoctor,
@@ -85,6 +89,10 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
     loadMore,
     hasMore,
     loadingMore,
+    branchPickerDoctor,
+    branchPickerBranches,
+    selectBranchAndGoToBooking,
+    closeBranchPicker,
   } = usePublicDoctorsDirectoryController(props);
 
   if (loading) {
@@ -103,12 +111,12 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
       className="min-h-screen relative"
       dir="rtl"
       style={{
-        // خلفيّه موحّده في عائلة teal/cyan فقط — شيلت اللون الـsky (كان rgba(14,165,233))
-        // cyan-500 = rgba(6,182,212) → أقرب لهويّة العلامه
+        // خلفيّه موحّده مع هويّة الطبيب (blue/indigo) — اتغيّرت من teal/cyan
+        // عشان الجمهور يتّحد مع لون السايد بار وأزرار الحجز.
         background:
-          'radial-gradient(1200px 320px at 85% -10%, rgba(6,182,212,0.28), transparent 58%),' +
-          'radial-gradient(900px 280px at -12% 0%, rgba(16,185,129,0.22), transparent 60%),' +
-          'linear-gradient(180deg, #cffafe 0%, #ecfeff 50%, #f0fdfa 100%)',
+          'radial-gradient(1200px 320px at 85% -10%, rgba(59,130,246,0.25), transparent 58%),' +
+          'radial-gradient(900px 280px at -12% 0%, rgba(99,102,241,0.20), transparent 60%),' +
+          'linear-gradient(180deg, #dbeafe 0%, #eff6ff 50%, #f5f3ff 100%)',
       }}
     >
       {/* Schema.org ItemList — ميظهرش في الـUI بس بيتحط في <head> لجوجل */}
@@ -134,13 +142,13 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         <main className="max-w-7xl mx-auto px-4 pt-20 pb-6 md:pt-6 md:pb-8">
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-600">
-            <span className="hover:text-teal-600 cursor-pointer transition-colors">الرئيسية</span>
+            <span className="hover:text-blue-600 cursor-pointer transition-colors">الرئيسية</span>
             <span className="text-slate-300">/</span>
             <span className="text-slate-900">دليل الأطباء</span>
             {selectedDoctor && (
               <>
                 <span className="text-slate-300">/</span>
-                <span className="text-teal-600 truncate max-w-[200px]">{selectedDoctor.doctorName}</span>
+                <span className="text-blue-600 truncate max-w-[200px]">{selectedDoctor.doctorName}</span>
               </>
             )}
           </div>
@@ -153,13 +161,13 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
                 items={banner.items || []}
                 altText={banner.title || 'إعلان'}
                 link={banner.targetUrl || undefined}
-                className="border border-cyan-100/70"
+                className="border border-blue-100/70"
                 displayHeight={banner.bannerHeight}
                 rotationSeconds={banner.rotationSeconds || 5}
               />
             )}
 
-            <DirectoryHeroSection stats={stats} />
+            <DirectoryHeroSection />
 
             {error && (
               <div className="rounded-2xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 font-black">
@@ -209,7 +217,6 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         selectedDoctorFilledSchedule={selectedDoctorFilledSchedule}
         selectedDoctorRatingStats={selectedDoctorRatingStats}
         onClose={closeDoctorModal}
-        onBookDoctor={goToPublicBookingForm}
         onPreviewAvatar={(url) => setAvatarPreviewUrl(url)}
         onPreviewGalleryImage={(url) => setAvatarPreviewUrl(url)}
         onOpenDoctorReviews={openDoctorReviews}
@@ -222,6 +229,15 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         authInfo={authInfo}
         authWorking={authWorking}
         onGoogleLogin={() => { void handlePublicGoogleLogin(); }}
+      />
+
+      {/* مودال اختيار الفرع — يفتح بس لما الطبيب عنده أكتر من فرع */}
+      <BranchPickerModal
+        open={Boolean(branchPickerDoctor)}
+        doctorName={branchPickerDoctor?.doctorName || ''}
+        branches={branchPickerBranches}
+        onClose={closeBranchPicker}
+        onSelectBranch={selectBranchAndGoToBooking}
       />
 
       <BookingsPanelModal
@@ -251,6 +267,10 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         open={showAccountPanel}
         onClose={() => setShowAccountPanel(false)}
         accountEmail={accountEmail}
+        accountName={accountName}
+        accountPhone={accountPhone}
+        accountSaving={accountSaving}
+        accountSaveError={accountSaveError}
         isTemporaryPublicAccount={isTemporaryPublicAccount}
         isPublicEmailVerified={isPublicEmailVerified}
         onOpenGoogleLogin={() => {
@@ -258,6 +278,7 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
           openAuthPrompt('');
         }}
         onLogout={() => { void handlePublicLogout(); }}
+        onSaveProfile={saveAccountProfile}
       />
     </div>
   );

@@ -376,7 +376,7 @@ export const ACID_RELATED_DISORDERS: Medication[] = [
     {
         id: 'zurcal-40-28',
         name: 'Zurcal 40mg 28 Gastro-resistant Tablets',
-        genericName: 'Pantoprazole', // [GREEN] Premium quality PPI - 28 Tabs Pack
+        genericName: 'Pantoprazole', // [GREEN] Pro quality PPI - 28 Tabs Pack
         concentration: '40mg',
         price: 192,
         matchKeywords: [
@@ -965,7 +965,7 @@ export const ACID_RELATED_DISORDERS: Medication[] = [
     {
         id: 'nexium-40-28',
         name: 'Nexium 40mg 28 Film-coated Tablets',
-        genericName: 'Esomeprazole', // [GREEN] Premium S-isomer of Omeprazole (PPI)
+        genericName: 'Esomeprazole', // [GREEN] Pro S-isomer of Omeprazole (PPI)
         concentration: '40mg',
         price: 488,
         matchKeywords: [
@@ -1083,7 +1083,7 @@ export const ACID_RELATED_DISORDERS: Medication[] = [
     {
         id: 'pantoloc-40-14',
         name: 'Pantoloc 40mg 14 Tablets',
-        genericName: 'Pantoprazole', // [GREEN] Premium original brand PPI
+        genericName: 'Pantoprazole', // [GREEN] Pro original brand PPI
         concentration: '40mg',
         price: 102,
         matchKeywords: [
@@ -1165,7 +1165,7 @@ export const ACID_RELATED_DISORDERS: Medication[] = [
     {
         id: 'zurcal-20-14',
         name: 'Zurcal 20mg 14 Gastro-resistant Tablets',
-        genericName: 'Pantoprazole', // [GREEN] Premium original brand (Maintenance Strength)
+        genericName: 'Pantoprazole', // [GREEN] Pro original brand (Maintenance Strength)
         concentration: '20mg',
         price: 81,
         matchKeywords: [

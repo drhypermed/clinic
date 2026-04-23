@@ -107,7 +107,7 @@ export function resetUsageTrackingBatch(): void {
 }
 
 export const usageTrackingService = {
-  resolveActiveAccountType: async (doctorId: string): Promise<'free' | 'premium'> => {
+  resolveActiveAccountType: async (doctorId: string): Promise<'free' | 'premium' | 'pro_max'> => {
     try {
       const userRef = doc(db, 'users', doctorId);
       const userSnap = await getDocCacheFirst(userRef);

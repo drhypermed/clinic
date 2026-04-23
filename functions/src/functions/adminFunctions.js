@@ -287,7 +287,12 @@ module.exports = ({
       }
 
       const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
-      const limit = accountType === 'premium' ? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit : DEFAULT_AI_PROXY_LIMITS.freeDailyLimit;
+      // برو وبرو ماكس نفس سقف الـ AI proxy (backstop) — الـ pro_max بيستخدم قيمة خاصة لو متوفرة
+      const limit = accountType === 'pro_max'
+        ? (DEFAULT_AI_PROXY_LIMITS.proMaxDailyLimit ?? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit)
+        : accountType === 'premium'
+          ? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit
+          : DEFAULT_AI_PROXY_LIMITS.freeDailyLimit;
 
       if (!doctorProfile.userSnap.exists) {
         tx.set(doctorProfile.userRef, buildDoctorUserProfilePayload({

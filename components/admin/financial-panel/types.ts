@@ -9,7 +9,15 @@
  * تحدد هياكل البيانات للإيرادات، المصروفات، أسعار الاشتراكات، والحالات المالية.
  */
 
+/** أسعار باقة برو (premium) — 3 مدد */
 export interface SubscriptionPrices {
+  monthly: number;
+  sixMonths: number;
+  yearly: number;
+}
+
+/** أسعار باقة برو ماكس (pro_max) — نفس المدد بس مفصولة */
+export interface ProMaxSubscriptionPrices {
   monthly: number;
   sixMonths: number;
   yearly: number;
@@ -18,6 +26,8 @@ export interface SubscriptionPrices {
 export interface MonthlyPrices {
   month: string;
   prices: SubscriptionPrices;
+  /** أسعار برو ماكس — optional عشان الشهور القديمة ما تكسرش */
+  proMaxPrices?: ProMaxSubscriptionPrices;
 }
 
 export interface MonthlyExpense {
@@ -32,6 +42,12 @@ export interface RevenueData {
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  // عدادات برو ماكس منفصلة — لكل مدة
+  proMaxMonthlyCount?: number;
+  proMaxSixMonthsCount?: number;
+  proMaxYearlyCount?: number;
+  /** إيرادات برو ماكس منفصلة — للعرض المفصّل */
+  proMaxRevenue?: number;
 }
 
 export interface NewExpenseInput {
@@ -52,4 +68,9 @@ export interface YearlyStats extends Totals {
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  // عدادات برو ماكس منفصلة
+  proMaxMonthlyCount?: number;
+  proMaxSixMonthsCount?: number;
+  proMaxYearlyCount?: number;
+  proMaxRevenue?: number;
 }

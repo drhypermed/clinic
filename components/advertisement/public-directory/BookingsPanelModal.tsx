@@ -78,10 +78,10 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-cyan-100 bg-cyan-50/40 p-3 space-y-1.5"
+                  className="rounded-2xl border border-blue-100 bg-blue-50/40 p-3 space-y-1.5"
                 >
                   <p className="text-slate-900 font-black">{booking.doctorName || 'طبيب'}</p>
-                  <p className="text-cyan-800 text-xs font-black">{booking.doctorSpecialty || 'بدون تخصص'}</p>
+                  <p className="text-blue-800 text-xs font-black">{booking.doctorSpecialty || 'بدون تخصص'}</p>
                   <p className="text-slate-700 text-xs font-bold">{formatBookingDateTime(booking.dateTime)}</p>
                   <p className="text-slate-500 text-xs font-bold">المريض: {booking.patientName || accountName}</p>
                   {booking.status === 'completed' ? (

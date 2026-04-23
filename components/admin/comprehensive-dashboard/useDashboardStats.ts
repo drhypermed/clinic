@@ -84,9 +84,11 @@ const mergeSummaryMetrics = (baseStats: DashboardStats, summaryRaw: RawDoc): Das
   const merged = { ...baseStats };
 
   merged.totalSmartRxFree = asNumber(summaryRaw?.totalSmartRxFree);
-  merged.totalSmartRxPremium = asNumber(summaryRaw?.totalSmartRxPremium);
+  merged.totalSmartRxPro = asNumber(summaryRaw?.totalSmartRxPro);
+  merged.totalSmartRxProMax = asNumber(summaryRaw?.totalSmartRxProMax);
   merged.totalPrintsFree = asNumber(summaryRaw?.totalPrintsFree);
-  merged.totalPrintsPremium = asNumber(summaryRaw?.totalPrintsPremium);
+  merged.totalPrintsPro = asNumber(summaryRaw?.totalPrintsPro);
+  merged.totalPrintsProMax = asNumber(summaryRaw?.totalPrintsProMax);
   merged.totalRevenue = asNumber(summaryRaw?.totalRevenue);
   merged.totalExpenses = asNumber(summaryRaw?.totalExpenses);
   merged.netProfit = asNumber(summaryRaw?.netProfit || merged.totalRevenue - merged.totalExpenses);
@@ -179,6 +181,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
         let approvedDoctors = asNumber(summaryRaw.approvedDoctors);
         let rejectedDoctors = asNumber(summaryRaw.rejectedDoctors);
         let premiumDocsCount = asNumber(summaryRaw.premiumDocsCount);
+        let proMaxDocsCount = asNumber(summaryRaw.proMaxDocsCount);
         let freeDocsCount = asNumber(summaryRaw.freeDocsCount);
         let totalPatients = asNumber(summaryRaw.totalPatients);
 
@@ -189,6 +192,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
             pendingLegacySnap,
             approvedDoctorsSnap,
             premiumDoctorsSnap,
+            proMaxDoctorsSnap,
             totalPatientsSnap,
           ] = await Promise.all([
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'))),
@@ -196,6 +200,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('verificationStatus', '==', 'pending'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('verificationStatus', '==', 'approved'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('accountType', '==', 'premium'))),
+            getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('accountType', '==', 'pro_max'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'public'))),
           ]);
 
@@ -203,9 +208,10 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           pendingDoctors = asNumber(pendingSubmittedSnap.data().count) + asNumber(pendingLegacySnap.data().count);
           approvedDoctors = asNumber(approvedDoctorsSnap.data().count);
           premiumDocsCount = asNumber(premiumDoctorsSnap.data().count);
+          proMaxDocsCount = asNumber(proMaxDoctorsSnap.data().count);
           totalPatients = asNumber(totalPatientsSnap.data().count);
           rejectedDoctors = Math.max(0, totalDoctors - approvedDoctors - pendingDoctors);
-          freeDocsCount = Math.max(0, totalDoctors - premiumDocsCount);
+          freeDocsCount = Math.max(0, totalDoctors - premiumDocsCount - proMaxDocsCount);
         }
 
         const doctorBlacklisted = blacklistCounts.doctorCount;
@@ -229,13 +235,17 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           doctorBlacklisted,
           publicBlacklisted,
           totalBlacklisted,
-          activeSubscriptions: premiumDocsCount,
+          // الاشتراكات النشطة = برو + برو ماكس (كلاهما مدفوع)
+          activeSubscriptions: premiumDocsCount + proMaxDocsCount,
           freeDocsCount,
           premiumDocsCount,
+          proMaxDocsCount,
           totalSmartRxFree: 0,
-          totalSmartRxPremium: 0,
+          totalSmartRxPro: 0,
+          totalSmartRxProMax: 0,
           totalPrintsFree: 0,
-          totalPrintsPremium: 0,
+          totalPrintsPro: 0,
+          totalPrintsProMax: 0,
           homeBannerItems,
           footerContacts,
           totalRevenue: 0,

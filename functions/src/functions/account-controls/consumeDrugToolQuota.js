@@ -13,6 +13,7 @@ module.exports = (context) => {
     getCairoDateKey,
     resolveDoctorAccountType,
     buildWhatsAppUrl,
+    pickTierValue,
   } = context;
   const consumeDrugToolQuota = async (request) => {
     const auth = request?.auth;
@@ -58,22 +59,26 @@ module.exports = (context) => {
         : feature === 'renalTool'
           ? 'جرعات الكلى'
           : 'الأمان في الحمل والرضاعة';
-      const planLabel = accountType === 'premium' ? 'المميز' : 'المجاني';
+      // 3 فئات: المجاني / برو / برو ماكس
+      const planLabel = accountType === 'pro_max' ? 'برو ماكس' : accountType === 'premium' ? 'برو' : 'المجاني';
       const limitReachedMessage = `تم استهلاك الحد اليومي لأداة ${toolTitle} ({limit}) للحساب ${planLabel}. للتواصل واتساب`;
-      const whatsappMessage = accountType === 'premium'
-        ? config.premiumAnalysisWhatsappMessage
-        : config.freeAnalysisWhatsappMessage;
+      const whatsappMessage = pickTierValue(accountType, config, {
+        freeKey: 'freeAnalysisWhatsappMessage',
+        premiumKey: 'premiumAnalysisWhatsappMessage',
+        proMaxKey: 'proMaxAnalysisWhatsappMessage',
+      });
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
 
-      // حماية server-side لعلم premiumOnly: لو الأداة مقفولة للحساب المجاني،
-      // نرفض الطلب فوراً بدلاً من الاعتماد على حاجز الواجهة فقط.
-      const isPremiumOnly = feature === 'interactionTool'
+      // حماية server-side: الأداة مقفولة للمجاني فقط — برو وبرو ماكس متاح لهم.
+      // (الـ flag في الـ config اسمه premiumOnly تاريخياً لكن معناه "مدفوع فقط")
+      const isProOnly = feature === 'interactionTool'
         ? Boolean(config.interactionToolPremiumOnly)
         : feature === 'renalTool'
           ? Boolean(config.renalToolPremiumOnly)
           : Boolean(config.pregnancyToolPremiumOnly);
 
-      if (isPremiumOnly && accountType !== 'premium') {
+      const isPaidTier = accountType === 'premium' || accountType === 'pro_max';
+      if (isProOnly && !isPaidTier) {
         const lockedMessage = feature === 'interactionTool'
           ? config.interactionToolLockedMessage
           : feature === 'renalTool'
@@ -91,10 +96,10 @@ module.exports = (context) => {
       }
 
       const limit = feature === 'interactionTool'
-        ? (accountType === 'premium' ? config.premiumInteractionToolDailyLimit : config.freeInteractionToolDailyLimit)
+        ? pickTierValue(accountType, config, { freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' })
         : feature === 'renalTool'
-          ? (accountType === 'premium' ? config.premiumRenalToolDailyLimit : config.freeRenalToolDailyLimit)
-          : (accountType === 'premium' ? config.premiumPregnancyToolDailyLimit : config.freePregnancyToolDailyLimit);
+          ? pickTierValue(accountType, config, { freeKey: 'freeRenalToolDailyLimit', premiumKey: 'premiumRenalToolDailyLimit', proMaxKey: 'proMaxRenalToolDailyLimit' })
+          : pickTierValue(accountType, config, { freeKey: 'freePregnancyToolDailyLimit', premiumKey: 'premiumPregnancyToolDailyLimit', proMaxKey: 'proMaxPregnancyToolDailyLimit' });
       const fieldName = feature === 'interactionTool'
         ? 'interactionToolCount'
         : feature === 'renalTool'

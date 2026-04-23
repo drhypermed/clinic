@@ -84,7 +84,9 @@ export const useAccountManagementActions = ({
       doctorSpecialty: target.doctorSpecialty || '',
       doctorEmail: normalizeEmail(target.doctorEmail),
       doctorWhatsApp: target.doctorWhatsApp || '',
-      accountType: target.accountType === 'premium' ? 'premium' : 'free',
+      accountType: target.accountType === 'premium' ? 'premium'
+        : target.accountType === 'pro_max' ? 'pro_max'
+        : 'free',
       premiumStartDate: target.premiumStartDate || '',
       premiumExpiryDate: target.premiumExpiryDate || '',
       subscriptionHistory: target.subscriptionHistory || [],
@@ -157,7 +159,11 @@ export const useAccountManagementActions = ({
     try {
       await ensureDoctorDocumentExists(doctorId);
       const doctor = approvedDoctors.find((d) => d.id === doctorId);
-      const currentPlan: UsagePlan = doctor?.accountType === 'premium' ? 'premium' : 'free';
+      // 3 فئات: مجاني / برو (premium داخلياً) / برو ماكس (pro_max)
+      const currentPlan: UsagePlan =
+        doctor?.accountType === 'premium' ? 'premium'
+        : doctor?.accountType === 'pro_max' ? 'pro_max'
+        : 'free';
       const updateData: any = { accountType: newType };
 
       if (doctor && currentPlan !== newType) {
@@ -174,7 +180,9 @@ export const useAccountManagementActions = ({
       if (newType === 'free') {
         updateData.premiumExpiryDate = null;
         updateData.premiumStartDate = null;
-      } else if (newType === 'premium') {
+      } else if (newType === 'premium' || newType === 'pro_max') {
+        // برو وبرو ماكس بيشاركوا نفس حقول الـ expiry (premiumStartDate/premiumExpiryDate)
+        // — الفرق بس في accountType. الأدمن بيضبط مميزات برو ماكس من AccountTypeControls.
         const days = durationDays || 30;
         const now = new Date();
         const expiryDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
@@ -196,7 +204,10 @@ export const useAccountManagementActions = ({
       setApprovedDoctors((prev) =>
         prev.map((d) => {
           if (d.id !== doctorId) return d;
-          const stateCurrentPlan: UsagePlan = d.accountType === 'premium' ? 'premium' : 'free';
+          const stateCurrentPlan: UsagePlan =
+            d.accountType === 'premium' ? 'premium'
+              : d.accountType === 'pro_max' ? 'pro_max'
+              : 'free';
           const switchUsageResult =
             stateCurrentPlan !== newType
               ? buildUsageStatsForPlanSwitch({

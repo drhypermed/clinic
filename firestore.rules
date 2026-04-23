@@ -308,6 +308,12 @@ service cloud.firestore {
       match /patientFileData/{fileId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+      // كاش تحليل الحالة السحابي (مدة 30 يوم):
+      // الطبيب بس هو اللي يقرأ/يكتب في كاشه — ما ينفعش طبيب تاني يشوف تحليلات مريض غيره.
+      // TTL على حقل `expiresAt` لازم يتفعل من Firebase Console يدوياً (مش في rules).
+      match /caseAnalysisCache/{cacheKey} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     // Booking config — قراءة للطبيب المالك، السكرتيرة المسجلة، أو أي شخص يعرف
     // الـ secret (الأخير ضروري لعرض شاشة تسجيل دخول السكرتيرة على أجهزة جديدة

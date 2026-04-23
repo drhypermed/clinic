@@ -88,7 +88,9 @@ const loadSubscriptionPricesByMonth = async (db) => {
 };
 
 const computeDoctorRevenueForCurrentYear = ({ doctorData, currentYear, pricesByMonth }) => {
-  if (String(doctorData?.accountType || '').trim().toLowerCase() !== 'premium') {
+  const accountType = String(doctorData?.accountType || '').trim().toLowerCase();
+  // برو وبرو ماكس بيدخلوا في الإيرادات (كل فئة بسعرها)
+  if (accountType !== 'premium' && accountType !== 'pro_max') {
     return { revenue: 0, planBucket: null };
   }
   if (!doctorData?.premiumStartDate || !doctorData?.premiumExpiryDate) {
@@ -114,13 +116,18 @@ const computeDoctorRevenueForCurrentYear = ({ doctorData, currentYear, pricesByM
     startDate.getMonth();
   const diffMonths = endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
 
+  const isProMax = accountType === 'pro_max';
+  // pro_max يستخدم أسعاره الخاصة (proMaxYearly, proMaxSixMonths, proMaxMonthly) مع fallback لأسعار برو
   if (diffMonths >= 12) {
-    return { revenue: toNumber(monthPrices?.yearly), planBucket: 'yearly' };
+    const price = isProMax ? (monthPrices?.proMaxYearly ?? monthPrices?.yearly) : monthPrices?.yearly;
+    return { revenue: toNumber(price), planBucket: 'yearly' };
   }
   if (diffMonths >= 6) {
-    return { revenue: toNumber(monthPrices?.sixMonths), planBucket: 'sixMonths' };
+    const price = isProMax ? (monthPrices?.proMaxSixMonths ?? monthPrices?.sixMonths) : monthPrices?.sixMonths;
+    return { revenue: toNumber(price), planBucket: 'sixMonths' };
   }
-  return { revenue: toNumber(monthPrices?.monthly), planBucket: 'monthly' };
+  const price = isProMax ? (monthPrices?.proMaxMonthly ?? monthPrices?.monthly) : monthPrices?.monthly;
+  return { revenue: toNumber(price), planBucket: 'monthly' };
 };
 
 const computeTotalExpensesForYear = async (db, currentYear) => {
@@ -143,14 +150,20 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
     rejectedDoctors: 0,
     freeDocsCount: 0,
     premiumDocsCount: 0,
+    proMaxDocsCount: 0,
     totalSmartRxFree: 0,
-    totalSmartRxPremium: 0,
+    totalSmartRxPro: 0,
+    totalSmartRxProMax: 0,
     totalPrintsFree: 0,
-    totalPrintsPremium: 0,
+    totalPrintsPro: 0,
+    totalPrintsProMax: 0,
     totalRevenue: 0,
     monthlyPlansCount: 0,
     sixMonthsPlansCount: 0,
     yearlyPlansCount: 0,
+    proMaxMonthlyPlansCount: 0,
+    proMaxSixMonthsPlansCount: 0,
+    proMaxYearlyPlansCount: 0,
   };
 
   let lastDoctorId = null;
@@ -179,11 +192,14 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
       else if (verificationStatus === 'rejected') aggregate.rejectedDoctors += 1;
       else aggregate.pendingDoctors += 1;
 
-      const accountType = String(doctorData?.accountType || '').trim().toLowerCase() === 'premium'
-        ? 'premium'
-        : 'free';
+      // كل فئة في bucket منفصل
+      const rawAccountType = String(doctorData?.accountType || '').trim().toLowerCase();
+      const isProMax = rawAccountType === 'pro_max';
+      const isPremium = rawAccountType === 'premium';
 
-      if (accountType === 'premium') {
+      if (isProMax) {
+        aggregate.proMaxDocsCount += 1;
+      } else if (isPremium) {
         aggregate.premiumDocsCount += 1;
       } else {
         aggregate.freeDocsCount += 1;
@@ -191,9 +207,11 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
 
       const usage = getUsageByPlan(doctorData);
       aggregate.totalSmartRxFree += usage.freeUsage.smartPrescriptionCount;
-      aggregate.totalSmartRxPremium += usage.premiumUsage.smartPrescriptionCount;
+      aggregate.totalSmartRxPro += usage.premiumUsage.smartPrescriptionCount;
+      aggregate.totalSmartRxProMax += (usage.proMaxUsage?.smartPrescriptionCount || 0);
       aggregate.totalPrintsFree += usage.freeUsage.printCount;
-      aggregate.totalPrintsPremium += usage.premiumUsage.printCount;
+      aggregate.totalPrintsPro += usage.premiumUsage.printCount;
+      aggregate.totalPrintsProMax += (usage.proMaxUsage?.printCount || 0);
 
       const revenueContribution = computeDoctorRevenueForCurrentYear({
         doctorData,
@@ -201,9 +219,16 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
         pricesByMonth,
       });
       aggregate.totalRevenue += revenueContribution.revenue;
-      if (revenueContribution.planBucket === 'yearly') aggregate.yearlyPlansCount += 1;
-      else if (revenueContribution.planBucket === 'sixMonths') aggregate.sixMonthsPlansCount += 1;
-      else if (revenueContribution.planBucket === 'monthly') aggregate.monthlyPlansCount += 1;
+      // عدادات الباقات مفصولة حسب الفئة
+      if (isProMax) {
+        if (revenueContribution.planBucket === 'yearly') aggregate.proMaxYearlyPlansCount += 1;
+        else if (revenueContribution.planBucket === 'sixMonths') aggregate.proMaxSixMonthsPlansCount += 1;
+        else if (revenueContribution.planBucket === 'monthly') aggregate.proMaxMonthlyPlansCount += 1;
+      } else {
+        if (revenueContribution.planBucket === 'yearly') aggregate.yearlyPlansCount += 1;
+        else if (revenueContribution.planBucket === 'sixMonths') aggregate.sixMonthsPlansCount += 1;
+        else if (revenueContribution.planBucket === 'monthly') aggregate.monthlyPlansCount += 1;
+      }
     });
 
     lastDoctorId = doctorsSnap.docs[doctorsSnap.docs.length - 1]?.id || null;
@@ -264,16 +289,23 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
       doctorBlacklisted,
       publicBlacklisted,
       totalBlacklisted: doctorBlacklisted + publicBlacklisted,
-      activeSubscriptions: doctorAggregate.premiumDocsCount,
+      // الاشتراكات النشطة = برو + برو ماكس
+      activeSubscriptions: doctorAggregate.premiumDocsCount + doctorAggregate.proMaxDocsCount,
       freeDocsCount: doctorAggregate.freeDocsCount,
       premiumDocsCount: doctorAggregate.premiumDocsCount,
+      proMaxDocsCount: doctorAggregate.proMaxDocsCount,
       totalSmartRxFree: doctorAggregate.totalSmartRxFree,
-      totalSmartRxPremium: doctorAggregate.totalSmartRxPremium,
+      totalSmartRxPro: doctorAggregate.totalSmartRxPro,
+      totalSmartRxProMax: doctorAggregate.totalSmartRxProMax,
       totalPrintsFree: doctorAggregate.totalPrintsFree,
-      totalPrintsPremium: doctorAggregate.totalPrintsPremium,
+      totalPrintsPro: doctorAggregate.totalPrintsPro,
+      totalPrintsProMax: doctorAggregate.totalPrintsProMax,
       monthlyPlansCount: doctorAggregate.monthlyPlansCount,
       sixMonthsPlansCount: doctorAggregate.sixMonthsPlansCount,
       yearlyPlansCount: doctorAggregate.yearlyPlansCount,
+      proMaxMonthlyPlansCount: doctorAggregate.proMaxMonthlyPlansCount,
+      proMaxSixMonthsPlansCount: doctorAggregate.proMaxSixMonthsPlansCount,
+      proMaxYearlyPlansCount: doctorAggregate.proMaxYearlyPlansCount,
       homeBannerItems,
       footerContacts,
       totalRevenue: doctorAggregate.totalRevenue,

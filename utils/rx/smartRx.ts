@@ -20,6 +20,12 @@ type SmartRxInput = {
     totalAgeInMonths: number;
     vitals: VitalSigns;         // العلامات الحيوية (حرارة، نبض، إلخ)
     records?: PatientRecord[];  // سجلات سابقة للمقارنة
+    /**
+     * لو true — نتخطى استدعاء analyzeComplaint نهائياً (نوفر نداء AI كامل)
+     * ونخلي diagnosisEn فاضي للطبيب يكتبه بنفسه أو يضيفه من نافذة التحليل.
+     * مصمم لفلو "تحليل الحالة الغني" اللي فيه popup بالتشخيصات التفريقية.
+     */
+    skipDiagnosis?: boolean;
 };
 
 /** مخرجات المحرك الذكي */
@@ -73,27 +79,37 @@ export const runSmartRx = async (input: SmartRxInput): Promise<SmartRxOutput> =>
     };
 
     let result: any = null;
-    try {
-        /**
-         * الاتصال بـ Gemini AI:
-         * يرسل مدخلات الطبيب ويستقبل تحليلاً شاملاً للحالة.
-         */
-        result = await analyzeComplaint(
-            input.complaint,
-            input.medicalHistory,
-            input.examination,
-            input.investigations,
-            ageDetails,
-            Number.isFinite(input.weightKg) ? input.weightKg : 0,
-            input.vitals
-        );
-    } catch (e) {
-        console.error('SmartRx AI Analysis failed:', e);
-        result = null;
+    // لو skipDiagnosis=true نتخطى استدعاء analyzeComplaint بالكامل (توفير نداء AI كامل).
+    // بيستخدم لما فلو "تحليل الحالة الغني" شغال لأنه عنده نداء AI منفصل (analyzeCaseDeeply)
+    // بيرجع قائمة تشخيصات تفريقية، مش تشخيص واحد.
+    if (!input.skipDiagnosis) {
+        try {
+            /**
+             * الاتصال بـ Gemini AI:
+             * يرسل مدخلات الطبيب ويستقبل تحليلاً شاملاً للحالة.
+             */
+            result = await analyzeComplaint(
+                input.complaint,
+                input.medicalHistory,
+                input.examination,
+                input.investigations,
+                ageDetails,
+                Number.isFinite(input.weightKg) ? input.weightKg : 0,
+                input.vitals
+            );
+        } catch (e) {
+            console.error('SmartRx AI Analysis failed:', e);
+            result = null;
+        }
     }
 
-    const diagnosisForTranslation = pickText(result?.diagnosisAr, result?.diagnosisEn, input.diagnosisEn);
-    const diagnosisFallbackEn = pickText(result?.diagnosisEn, input.diagnosisEn);
+    // لو تخطينا التشخيص نعدّي diagnosisEn الأصلي كما هو (ممكن يكون فاضي)
+    const diagnosisForTranslation = input.skipDiagnosis
+        ? (input.diagnosisEn || '')
+        : pickText(result?.diagnosisAr, result?.diagnosisEn, input.diagnosisEn);
+    const diagnosisFallbackEn = input.skipDiagnosis
+        ? (input.diagnosisEn || '')
+        : pickText(result?.diagnosisEn, input.diagnosisEn);
 
     /**
      * ترجمة البيانات السريرية (Translation Layer):

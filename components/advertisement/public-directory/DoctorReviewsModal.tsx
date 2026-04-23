@@ -64,8 +64,8 @@ export const DoctorReviewsModal: React.FC<DoctorReviewsModalProps> = ({
         ) : (
           <div className="space-y-3">
             {textCommentsCount === 0 && (
-              <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-center">
-                <p className="text-cyan-800 text-xs font-black">يوجد تقييمات بالنجوم، لكن لم يضف الزوار تعليقات نصية بعد.</p>
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-3 text-center">
+                <p className="text-blue-800 text-xs font-black">يوجد تقييمات بالنجوم، لكن لم يضف الزوار تعليقات نصية بعد.</p>
               </div>
             )}
             {reviews.map((review) => (

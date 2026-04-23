@@ -106,13 +106,21 @@ export const MainApp: React.FC = () => {
     complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations,
     complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
     rxItems, generalAdvice, labInvestigations, usageStats,
+    // setters المباشرة المضافة لمودال تحليل الحالة (إضافة فحوصات/نصائح)
+    setGeneralAdvice, setLabInvestigations,
     historyStack, futureStack, analyzing, setAnalyzing, errorMsg, smartQuotaNotice, smartQuotaModalOpen, selectedMed, setSelectedMed, isDataOnlyMode, setIsDataOnlyMode, prescriptionRef,
+    // state نافذة تحليل الحالة الغنية
+    caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
+    addedDiagnosesFromModal, setAddedDiagnosesFromModal,
+    addedInvestigationsFromModal, setAddedInvestigationsFromModal,
+    addedInstructionsFromModal, setAddedInstructionsFromModal,
+    needsManualDxHint,
     records, totalAgeInMonths,
     readyPrescriptions,
     handleUndo, handleRedo, handleReset, handleSaveRecord, handleLoadRecord, handleLoadConsultation, handleOpenConsultation,
     handleNewExamFromRecord, handleDeleteRecord, handleDeleteConsultation, handleDeleteExam,
     handleSaveReadyPrescription, handleUpdateReadyPrescription, handleCreateReadyPrescription, handleDeleteReadyPrescription, handleApplyReadyPrescription,
-    handleFullAutomatedRX, handleAddManualMedication, handleAddEmptyMedication, handleAddCustomItem, handleAddManualLab, handleAddManualAdvice,
+    handleFullAutomatedRX, handleQuickAddToRx, handleDeepAnalyzeWithPopup, handleAddManualMedication, handleAddEmptyMedication, handleAddCustomItem, handleAddManualLab, handleAddManualAdvice,
     removeItem, updateItemName, updateItemInstruction, updateItemFontSize, handleSwapItem, selectMedicationForItem,
     updateAdvice, removeAdvice, updateLab, removeLab,
     dismissNotification,
@@ -509,6 +517,21 @@ export const MainApp: React.FC = () => {
               examination={examination} setExamination={setExamination}
               investigations={investigations} setInvestigations={setInvestigations}
               handleFullAutomatedRX={handleFullAutomatedRX}
+              handleQuickAddToRx={handleQuickAddToRx}
+              handleDeepAnalyzeWithPopup={handleDeepAnalyzeWithPopup}
+              caseAnalysisOpen={caseAnalysisOpen}
+              setCaseAnalysisOpen={setCaseAnalysisOpen}
+              caseAnalysisResult={caseAnalysisResult}
+              caseAnalysisLoading={caseAnalysisLoading}
+              addedDiagnosesFromModal={addedDiagnosesFromModal}
+              setAddedDiagnosesFromModal={setAddedDiagnosesFromModal}
+              addedInvestigationsFromModal={addedInvestigationsFromModal}
+              setAddedInvestigationsFromModal={setAddedInvestigationsFromModal}
+              addedInstructionsFromModal={addedInstructionsFromModal}
+              setAddedInstructionsFromModal={setAddedInstructionsFromModal}
+              needsManualDxHint={needsManualDxHint}
+              setGeneralAdvice={setGeneralAdvice}
+              setLabInvestigations={setLabInvestigations}
               smartQuotaNotice={smartQuotaNotice}
               isQuotaLimitError={isQuotaLimitError} errorMsg={errorMsg}
               weight={weight} setWeight={setWeight}

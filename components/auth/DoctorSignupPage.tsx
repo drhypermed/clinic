@@ -370,7 +370,7 @@ export const DoctorSignupPage: React.FC = () => {
 
                 {(mergedError.includes('تم تعطيل') || mergedError.includes('تم رفض') || mergedError.includes('تم حظر') || mergedError.includes('حساب جمهور')) && (
                   <a
-                    href="https://wa.me/201551020238"
+                    href="https://wa.me/201092805293"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-md transition"

@@ -39,6 +39,11 @@ interface ClinicalDetailsProps {
   clinicalBoxBorderWidthPx?: number;
   isDataOnlyMode: boolean;   // وضع البيانات فقط (يخفي التنسيقات الخلفية)
   isPrintMode: boolean;      // وضع الطباعة (يخفي أزرار المسح ويجعل الحقول للقراءة فقط)
+  /**
+   * إجبار عرض صف التشخيص (Dx) حتى لو فاضي — يُستخدم بعد تحليل الحالة
+   * لتنبيه الطبيب إن يكتبه يدوياً بدلاً من إخفاء الصف تماماً.
+   */
+  forceShowDx?: boolean;
 }
 
 export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
@@ -65,6 +70,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
   clinicalBoxBorderWidthPx,
   isDataOnlyMode,
   isPrintMode,
+  forceShowDx = false,
 }) => {
   const clinicalContainerStyle = {
     ...(clinicalInfoPx ? { fontSize: `${clinicalInfoPx}px` } : {}),
@@ -122,7 +128,11 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
   const showHistory = historyVisible && isMeaningful(historyEn);
   const showExam = examVisible && isMeaningful(examEn);
   const showInvestigations = investigationsVisible && isMeaningful(investigationsEn);
-  const showDx = dxVisible && isMeaningful(diagnosisEn);
+  // forceShowDx يُجبر عرض صف Dx حتى لو فاضي (بعد تحليل الحالة — ما نخفيش الصف
+  // عشان الطبيب يشوف خانة فاضية ويكتب التشخيص يدوياً). في وضع الطباعة نخفيه لو فاضي
+  // عشان ما يطلعش سطر فاضي في الروشتة المطبوعة.
+  const showDx = (dxVisible && isMeaningful(diagnosisEn))
+    || (forceShowDx && !isPrintMode);
   const hasVisibleSection = showComplaint || showHistory || showExam || showInvestigations || showDx;
 
   const handleDeleteField = (clearValue: () => void) => { clearValue(); };
@@ -232,8 +242,10 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
         )}
 
         {/* قسم التشخيص (Dx) - يظهر دائماً في سطر مستقل لضمان وضوحه */}
+        {/* لو التشخيص فاضي (صف التنبيه بس) نحط no-print عشان الصف كله ما يطلعش */}
+        {/* في الطباعة حتى لو المستخدم طبع بـ Ctrl+P (مش زر التطبيق اللي بيفعّل isPrintMode) */}
         {showDx && (
-          <div className="group grid grid-cols-[30px_1fr_auto] gap-0.5 items-start" style={{ minHeight: '0px', marginBottom: '0px' }}>
+          <div className={`group grid grid-cols-[30px_1fr_auto] gap-0.5 items-start ${!diagnosisEn ? 'no-print' : ''}`} style={{ minHeight: '0px', marginBottom: '0px' }}>
             <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0">Dx:</span>
             <div className="flex-1 min-w-0">
               <AutoResizeTextarea
@@ -243,6 +255,8 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
                 style={{ lineHeight: '1.1', minHeight: '0px', textAlign: 'left' }}
                 dir="ltr"
                 readOnlyMode={isPrintMode}
+                // placeholder للتنبيه فقط — نخفيه في isPrintMode احترازياً بجانب no-print
+                placeholder={!isPrintMode && forceShowDx && !diagnosisEn ? 'اكتب التشخيص هنا يدوياً…' : undefined}
               />
             </div>
             {!isPrintMode && (

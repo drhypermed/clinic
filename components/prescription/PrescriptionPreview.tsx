@@ -64,6 +64,8 @@ interface PrescriptionPreviewProps {
   actionsBar?: React.ReactNode;  // شريط الأزرار فوق الروشتة (حفظ، طباعة، الخ)
   consultationDate?: string | null;
   prescriptionSettings?: PrescriptionSettings; // إعدادات الطبيب المخصصة من قاعدة البيانات
+  /** إجبار عرض صف Dx فاضي لتنبيه الطبيب بعد تحليل الحالة (بدون اختيار DDx) */
+  forceShowDx?: boolean;
 }
 
 const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
@@ -97,7 +99,8 @@ export const PrescriptionPreview = forwardRef<HTMLDivElement, PrescriptionPrevie
   isPrintMode = false,
   actionsBar,
   consultationDate,
-  prescriptionSettings
+  prescriptionSettings,
+  forceShowDx = false,
 }, ref) => {
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -294,8 +297,9 @@ export const PrescriptionPreview = forwardRef<HTMLDivElement, PrescriptionPrevie
   }, [prescriptionSettings?.vitals, weight, height, bmi, vitals]);
 
   const showClinicalSection = useMemo(() => {
-    return !!(complaintEn?.trim() || historyEn?.trim() || examEn?.trim() || diagnosisEn?.trim() || investigationsEn?.trim());
-  }, [complaintEn, historyEn, examEn, diagnosisEn, investigationsEn]);
+    // forceShowDx يفعّل ظهور القسم حتى لو Dx فاضي (لتنبيه الطبيب بعد التحليل)
+    return !!(complaintEn?.trim() || historyEn?.trim() || examEn?.trim() || diagnosisEn?.trim() || investigationsEn?.trim() || forceShowDx);
+  }, [complaintEn, historyEn, examEn, diagnosisEn, investigationsEn, forceShowDx]);
 
   const middleBackgroundColor = prescriptionSettings?.middle?.middleBgColor
     ? `${prescriptionSettings.middle.middleBgColor}${Math.round((prescriptionSettings.middle.middleBgColorOpacity ?? 0) * 255).toString(16).padStart(2, '0')}`
@@ -399,6 +403,7 @@ export const PrescriptionPreview = forwardRef<HTMLDivElement, PrescriptionPrevie
                         clinicalBoxBorderColor={typo?.clinicalBoxBorderColor}
                         clinicalBoxBorderWidthPx={typo?.clinicalBoxBorderWidthPx}
                         isDataOnlyMode={isDataOnlyMode} isPrintMode={isPrintMode}
+                        forceShowDx={forceShowDx}
                       />
                     </div>
                   )}

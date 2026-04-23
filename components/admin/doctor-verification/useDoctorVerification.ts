@@ -43,7 +43,7 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
 
   // ── حالة التعديل على مستوى كل كارد (بدل global) ──
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
-  const [accountTypes, setAccountTypes] = useState<Record<string, 'free' | 'premium'>>({});
+  const [accountTypes, setAccountTypes] = useState<Record<string, 'free' | 'premium' | 'pro_max'>>({});
   const [subscriptionDurations, setSubscriptionDurations] = useState<Record<string, number>>({});
   const [actionLoading, setActionLoading] = useState<Record<string, 'approving' | 'rejecting' | null>>({});
   const [cardError, setCardError] = useState<Record<string, string>>({});
@@ -114,7 +114,9 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
               doctorEmail: item?.doctorEmail || item?.email || '',
               verificationDocUrl: item?.verificationDocUrl || '',
               verificationStatus: normalizeDoctorVerificationStatus(item?.verificationStatus),
-              accountType: item?.accountType === 'premium' ? 'premium' : 'free',
+              accountType: item?.accountType === 'premium' ? 'premium'
+                : item?.accountType === 'pro_max' ? 'pro_max'
+                : 'free',
               createdAt: item?.createdAt || '',
             } as DoctorVerificationItem;
             if (isDoctorPendingVerification(mapped.verificationStatus)) {
@@ -173,8 +175,8 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
         reviewedBy: userEmail || 'admin',
       };
 
-      // للحسابات المميزة: نحسب تاريخ البداية والانتهاء من المدة المختارة
-      if (accountType === 'premium') {
+      // للحسابات المدفوعة (برو أو برو ماكس): نحسب تاريخ البداية والانتهاء من المدة المختارة
+      if (accountType === 'premium' || accountType === 'pro_max') {
         const now = new Date();
         const expiryDate = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
         applyData = {

@@ -51,15 +51,27 @@ const MedsBlock: React.FC<{ items: PatientRecord['rxItems']; term: string; title
 );
 
 /** مكون عرض حقل مزدوج (للنسخ المترجمة أو المعالجة بواسطة الذكاء الاصطناعي) */
-const DualField: React.FC<{ title: string; aiValue: string; term: string; titleTone?: string }> = ({ title, aiValue, term, titleTone = 'border-slate-200 bg-slate-50 text-slate-600' }) => {
+// arValue = نص عربي خام كتبه الطبيب، aiValue = الترجمة الإنجليزية الناتجة عن "تحليل الحالة"
+// نعرض الإنجليزي لو موجود، ولو الطبيب حفظ من غير ما يشغّل التحليل نعرض العربي كـ fallback
+// علشان بيانات الكشف اللي اتكتبت بس في "المعلومات السريرية" ما تضيعش من العرض.
+const DualField: React.FC<{ title: string; aiValue: string; arValue?: string; term: string; titleTone?: string }> = ({ title, aiValue, arValue, term, titleTone = 'border-slate-200 bg-slate-50 text-slate-600' }) => {
     const isNoInfo = (aiValue || '').trim() === NO_PERTINENT_EN;
-    if (!hasText(aiValue) && !isNoInfo) return null;
+    // نختار أفضل نص متاح حسب الأولوية:
+    //   1) لو الـAI قال "No pertinent information" والطبيب كاتب عربي → نعرض العربي (مش رسالة AI السلبية)
+    //   2) لو الإنجليزي موجود ومفيد → نعرضه (حالة التحليل الكامل)
+    //   3) لو الإنجليزي فاضي والعربي موجود → نعرض العربي (حالة الحفظ بدون AI)
+    //   4) لو كلاهما فاضي والـAI ما قالش "لا يوجد" نخفي الحقل
+    const hasEn = hasText(aiValue);
+    const hasAr = hasText(arValue);
+    const useArabicFallback = (isNoInfo || !hasEn) && hasAr;
+    const displayValue = useArabicFallback ? (arValue || '') : (hasEn ? aiValue : '');
+    if (!hasEn && !hasAr && !isNoInfo) return null;
     return (
         <div className="rounded-xl bg-white border border-slate-100 p-2.5">
             <div className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black mb-1.5 ${titleTone}`}>{title}</div>
-            {isNoInfo
+            {isNoInfo && !hasAr
                 ? <div className="text-xs text-slate-400 italic py-0.5">{getFieldFallback(title)}</div>
-                : <div className="text-sm font-semibold text-slate-700 whitespace-pre-wrap leading-relaxed">{highlight((aiValue || '').trim(), term)}</div>
+                : <div className="text-sm font-semibold text-slate-700 whitespace-pre-wrap leading-relaxed">{highlight(displayValue.trim(), term)}</div>
             }
         </div>
     );
@@ -123,10 +135,11 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
                         <SecretaryVitalsPills vitals={vitals} compact separator=" | " title="" />
                     </div>
                 )}
-                <DualField title="الشكوى" aiValue={data.complaintEn} term={term} titleTone={titleTone} />
-                <DualField title="التاريخ المرضي" aiValue={data.historyEn} term={term} titleTone={titleTone} />
-                <DualField title="ملاحظات الكشف" aiValue={data.examEn} term={term} titleTone={titleTone} />
-                <DualField title="الفحوصات الموجودة" aiValue={data.investigationsEn} term={term} titleTone={titleTone} />
+                {/* نمرّر النسخة العربية كـ fallback للعرض — لما يحفظ بدون "تحليل الحالة" نعرض اللي كتبه بايده */}
+                <DualField title="الشكوى" aiValue={data.complaintEn} arValue={data.complaintAr} term={term} titleTone={titleTone} />
+                <DualField title="التاريخ المرضي" aiValue={data.historyEn} arValue={data.historyAr} term={term} titleTone={titleTone} />
+                <DualField title="ملاحظات الكشف" aiValue={data.examEn} arValue={data.examAr} term={term} titleTone={titleTone} />
+                <DualField title="الفحوصات الموجودة" aiValue={data.investigationsEn} arValue={data.investigationsAr} term={term} titleTone={titleTone} />
                 {(hasText(data.diagnosisEn) || (data.diagnosisEn || '').trim() === NO_PERTINENT_EN) && (
                     <div className="md:col-span-2"><Field title="التشخيص" value={data.diagnosisEn} term={term} titleTone={titleTone} /></div>
                 )}

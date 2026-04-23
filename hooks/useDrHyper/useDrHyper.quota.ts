@@ -66,9 +66,9 @@ const internalExtractSmartQuotaErrorDetails = (error: any): SmartQuotaLimitError
     const details = error?.details;
     if (!details || typeof details !== 'object') return null;
     const d = details as Record<string, unknown>;
-    if (d.accountType !== 'free' && d.accountType !== 'premium') return null;
+    if (d.accountType !== 'free' && d.accountType !== 'premium' && d.accountType !== 'pro_max') return null;
     return {
-        accountType: d.accountType as 'free' | 'premium',
+        accountType: d.accountType as 'free' | 'premium' | 'pro_max',
         limit: Number(d.limit || 0),
         used: Number(d.used || 0),
         remaining: Number(d.remaining || 0),

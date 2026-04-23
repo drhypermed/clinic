@@ -32,7 +32,7 @@ const invalidateCustomizationsCache = (userId: string): void => {
     customizationsCache.delete(userId);
 };
 
-const resolveEffectiveAccountType = async (userId: string): Promise<'free' | 'premium'> => {
+const resolveEffectiveAccountType = async (userId: string): Promise<'free' | 'premium' | 'pro_max'> => {
     // قراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
     const snap = await getDocCacheFirst(getUserProfileDocRef(userId));
     const data = snap.exists() ? (snap.data() as Record<string, unknown>) : {};
@@ -139,21 +139,28 @@ export const medicationCustomizationService = {
                     getAccountTypeControls(),
                     resolveEffectiveAccountType(userId),
                 ]);
-                const limit = accountType === 'premium'
-                    ? controls.premiumMedicationCustomizationsMaxCount
-                    : controls.freeMedicationCustomizationsMaxCount;
+                // 3 فئات: free | premium (برو) | pro_max (برو ماكس).
+                // pro_max يرث من premium لو الأدمن ما حددش قيمة خاصة به.
+                const limit = accountType === 'pro_max'
+                    ? (controls.proMaxMedicationCustomizationsMaxCount ?? controls.premiumMedicationCustomizationsMaxCount)
+                    : accountType === 'premium'
+                        ? controls.premiumMedicationCustomizationsMaxCount
+                        : controls.freeMedicationCustomizationsMaxCount;
                 const used = Object.keys(currentCustomizations).length;
 
                 if (used >= limit) {
-                    const messageTemplate = accountType === 'premium'
-                        ? controls.premiumMedicationCustomizationsCapacityMessage
-                        : controls.freeMedicationCustomizationsCapacityMessage;
-                    const fallbackMessage = accountType === 'premium'
-                        ? `وصلت للحد الأقصى لتخزين الأدوية المعدلة (${limit}) للحساب المميز.`
-                        : `وصلت للحد الأقصى لتخزين الأدوية المعدلة (${limit}) للحساب المجاني.`;
-                    const whatsappTemplate = accountType === 'premium'
-                        ? controls.premiumMedicationCustomizationsCapacityWhatsappMessage
-                        : controls.freeMedicationCustomizationsCapacityWhatsappMessage;
+                    const messageTemplate = accountType === 'pro_max'
+                        ? (controls.proMaxMedicationCustomizationsCapacityMessage ?? controls.premiumMedicationCustomizationsCapacityMessage)
+                        : accountType === 'premium'
+                            ? controls.premiumMedicationCustomizationsCapacityMessage
+                            : controls.freeMedicationCustomizationsCapacityMessage;
+                    const tierLabel = accountType === 'pro_max' ? 'برو ماكس' : accountType === 'premium' ? 'برو' : 'المجاني';
+                    const fallbackMessage = `وصلت للحد الأقصى لتخزين الأدوية المعدلة (${limit}) لحساب ${tierLabel}.`;
+                    const whatsappTemplate = accountType === 'pro_max'
+                        ? (controls.proMaxMedicationCustomizationsCapacityWhatsappMessage ?? controls.premiumMedicationCustomizationsCapacityWhatsappMessage)
+                        : accountType === 'premium'
+                            ? controls.premiumMedicationCustomizationsCapacityWhatsappMessage
+                            : controls.freeMedicationCustomizationsCapacityWhatsappMessage;
                     const limitReachedMessage = applyLimitPlaceholder(messageTemplate, limit, fallbackMessage);
 
                     const error = new Error('MEDICATION_CUSTOMIZATION_CAPACITY_REACHED') as Error & {

@@ -186,36 +186,37 @@ module.exports = (context) => {
     return Number.isFinite(parsed) ? parsed : NaN;
   };
 
-  const isPremiumActiveDoctor = (doctorData, nowMs) => {
+  // طبيب نشط في باقة مدفوعة (برو أو برو ماكس) — الاتنين يحسبوا "Pro Active"
+  const isProActiveDoctor = (doctorData, nowMs) => {
     const accountType = normalizeText(doctorData?.accountType).toLowerCase();
-    if (accountType !== 'premium') return false;
+    if (accountType !== 'premium' && accountType !== 'pro_max') return false;
     const expiryMs = parseDateMs(doctorData?.premiumExpiryDate);
     if (!Number.isFinite(expiryMs)) return true;
     return expiryMs >= nowMs;
   };
 
-  const isFreeNeverPremiumDoctor = (doctorData) => {
+  const isFreeNeverProDoctor = (doctorData) => {
     const accountType = normalizeText(doctorData?.accountType).toLowerCase();
     if (accountType !== 'free') return false;
 
     const premiumStartDate = normalizeText(doctorData?.premiumStartDate);
     const premiumExpiryDate = normalizeText(doctorData?.premiumExpiryDate);
-    const lastPremiumExpiryDate = normalizeText(doctorData?.lastPremiumExpiryDate);
+    const lastProExpiryDate = normalizeText(doctorData?.lastProExpiryDate);
 
-    return !premiumStartDate && !premiumExpiryDate && !lastPremiumExpiryDate;
+    return !premiumStartDate && !premiumExpiryDate && !lastProExpiryDate;
   };
 
-  const isFreeExpiredPremiumDoctor = (doctorData, nowMs) => {
+  const isFreeExpiredProDoctor = (doctorData, nowMs) => {
     const accountType = normalizeText(doctorData?.accountType).toLowerCase();
     if (accountType !== 'free') return false;
 
     const premiumStartDate = normalizeText(doctorData?.premiumStartDate);
-    const lastPremiumExpiryDate = normalizeText(doctorData?.lastPremiumExpiryDate);
+    const lastProExpiryDate = normalizeText(doctorData?.lastProExpiryDate);
     const premiumExpiryMs = parseDateMs(doctorData?.premiumExpiryDate);
 
     return Boolean(
       premiumStartDate ||
-      lastPremiumExpiryDate ||
+      lastProExpiryDate ||
       (Number.isFinite(premiumExpiryMs) && premiumExpiryMs < nowMs)
     );
   };
@@ -258,14 +259,14 @@ module.exports = (context) => {
     return Array.from(doctorDataById.entries())
       .filter(([, data]) => {
         if (normalizedAudience === 'doctors_premium_active') {
-          return isPremiumActiveDoctor(data, nowMs);
+          return isProActiveDoctor(data, nowMs);
         }
 
         if (normalizedAudience === 'doctors_free_never_premium') {
-          return isFreeNeverPremiumDoctor(data);
+          return isFreeNeverProDoctor(data);
         }
 
-        return isFreeExpiredPremiumDoctor(data, nowMs);
+        return isFreeExpiredProDoctor(data, nowMs);
       })
       .map(([userId]) => userId);
   };

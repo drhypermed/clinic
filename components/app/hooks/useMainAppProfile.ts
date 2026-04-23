@@ -46,8 +46,8 @@ export const useMainAppProfile = ({ user, userId, updateUserProfile }: UseMainAp
   const [doctorWhatsApp, setDoctorWhatsApp] = useState(() => {
     return userId ? safeStorageGetItem(getDoctorWhatsAppCacheKey(userId)) : '';
   });
-  const [accountType, setAccountType] = useState<'free' | 'premium'>(() => {
-    return (userId ? safeStorageGetItem(getAccountTypeCacheKey(userId)) : 'free') as 'free' | 'premium' || 'free';
+  const [accountType, setAccountType] = useState<'free' | 'premium' | 'pro_max'>(() => {
+    return (userId ? safeStorageGetItem(getAccountTypeCacheKey(userId)) : 'free') as 'free' | 'premium' | 'pro_max' || 'free';
   });
   const [premiumExpiryDate, setPremiumExpiryDate] = useState(() => {
     return userId ? safeStorageGetItem(getPremiumExpiryCacheKey(userId)) : '';
@@ -65,7 +65,7 @@ export const useMainAppProfile = ({ user, userId, updateUserProfile }: UseMainAp
     setDoctorName(safeStorageGetItem(getDoctorNameCacheKey(uid)) || '');
     setDoctorSpecialty(safeStorageGetItem(getDoctorSpecialtyCacheKey(uid)) || '');
     setDoctorWhatsApp(safeStorageGetItem(getDoctorWhatsAppCacheKey(uid)) || '');
-    setAccountType((safeStorageGetItem(getAccountTypeCacheKey(uid)) as 'free' | 'premium') || 'free');
+    setAccountType((safeStorageGetItem(getAccountTypeCacheKey(uid)) as 'free' | 'premium' | 'pro_max') || 'free');
     setPremiumExpiryDate(safeStorageGetItem(getPremiumExpiryCacheKey(uid)) || '');
   }, [user?.uid]);
 

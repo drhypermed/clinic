@@ -1193,7 +1193,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
   },
 
   // ==========================================
-// Section: Premium Antiemetics & ODT Corticosteroids (31-33)
+// Section: Pro Antiemetics & ODT Corticosteroids (31-33)
 // ==========================================
 
 // 31. Zofran 4mg/2ml 5 Ampoules (The Original Brand)

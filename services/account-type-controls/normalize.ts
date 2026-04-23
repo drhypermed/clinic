@@ -265,10 +265,52 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     firstDefined(raw?.pregnancyToolLockedMessage, legacyMessage),
     DEFAULT_CONTROLS.pregnancyToolLockedMessage
   );
-  const premiumTagLabel = normalizeMessageAllowEmpty(
-    raw?.premiumTagLabel,
-    DEFAULT_CONTROLS.premiumTagLabel
-  );
+  // نعمل force override للقيم القديمة المحفوظة في Firestore من قبل إعادة التسمية.
+  // لو الأدمن اتحفظ عنده 'Premium' أو 'premium' أو 'بريميوم' قديماً، نستخدم 'Pro'.
+  const rawTagLabel = String(raw?.premiumTagLabel || '').trim();
+  const isLegacyTag = rawTagLabel === 'Premium' || rawTagLabel === 'premium' || rawTagLabel === 'بريميوم' || rawTagLabel === 'مميز';
+  const premiumTagLabel = (!rawTagLabel || isLegacyTag)
+    ? DEFAULT_CONTROLS.premiumTagLabel
+    : normalizeMessageAllowEmpty(rawTagLabel, DEFAULT_CONTROLS.premiumTagLabel);
+
+  // ═══ برو ماكس — القيم المحفوظة من الأدمن (مع fallback لـ DEFAULT_CONTROLS) ═══
+  const proMaxDefaults = DEFAULT_CONTROLS as Required<AccountTypeControls>;
+  const proMaxDailyLimit = toSafeLimit(raw?.proMaxDailyLimit, proMaxDefaults.proMaxDailyLimit);
+  const proMaxRecordDailyLimit = toSafeLimit(raw?.proMaxRecordDailyLimit, proMaxDefaults.proMaxRecordDailyLimit);
+  const proMaxPublicBookingDailyLimit = toSafeLimit(raw?.proMaxPublicBookingDailyLimit, proMaxDefaults.proMaxPublicBookingDailyLimit);
+  const proMaxPublicFormBookingDailyLimit = toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, proMaxDefaults.proMaxPublicFormBookingDailyLimit);
+  const proMaxSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, proMaxDefaults.proMaxSecretaryEntryRequestDailyLimit);
+  const proMaxReadyPrescriptionDailyLimit = toSafeLimit(raw?.proMaxReadyPrescriptionDailyLimit, proMaxDefaults.proMaxReadyPrescriptionDailyLimit);
+  const proMaxMedicalReportDailyLimit = toSafeLimit(raw?.proMaxMedicalReportDailyLimit, proMaxDefaults.proMaxMedicalReportDailyLimit);
+  const proMaxReadyPrescriptionsMaxCount = toSafeLimit(raw?.proMaxReadyPrescriptionsMaxCount, proMaxDefaults.proMaxReadyPrescriptionsMaxCount);
+  const proMaxMedicationCustomizationsMaxCount = toSafeLimit(raw?.proMaxMedicationCustomizationsMaxCount, proMaxDefaults.proMaxMedicationCustomizationsMaxCount);
+  const proMaxInteractionToolDailyLimit = toSafeLimit(raw?.proMaxInteractionToolDailyLimit, proMaxDefaults.proMaxInteractionToolDailyLimit);
+  const proMaxRenalToolDailyLimit = toSafeLimit(raw?.proMaxRenalToolDailyLimit, proMaxDefaults.proMaxRenalToolDailyLimit);
+  const proMaxPregnancyToolDailyLimit = toSafeLimit(raw?.proMaxPregnancyToolDailyLimit, proMaxDefaults.proMaxPregnancyToolDailyLimit);
+  const proMaxAnalysisLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxAnalysisLimitMessage, proMaxDefaults.proMaxAnalysisLimitMessage);
+  const proMaxRecordLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxRecordLimitMessage, proMaxDefaults.proMaxRecordLimitMessage);
+  const proMaxPublicBookingLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, proMaxDefaults.proMaxPublicBookingLimitMessage);
+  const proMaxPublicFormBookingLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingLimitMessage, proMaxDefaults.proMaxPublicFormBookingLimitMessage);
+  const proMaxSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, proMaxDefaults.proMaxSecretaryEntryRequestLimitMessage);
+  const proMaxReadyPrescriptionDailyLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, proMaxDefaults.proMaxReadyPrescriptionDailyLimitMessage);
+  const proMaxMedicalReportLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportLimitMessage, proMaxDefaults.proMaxMedicalReportLimitMessage);
+  const proMaxReadyPrescriptionsCapacityMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityMessage, proMaxDefaults.proMaxReadyPrescriptionsCapacityMessage);
+  const proMaxMedicationCustomizationsCapacityMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityMessage, proMaxDefaults.proMaxMedicationCustomizationsCapacityMessage);
+  const proMaxAnalysisWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxAnalysisWhatsappMessage, proMaxDefaults.proMaxAnalysisWhatsappMessage);
+  const proMaxRecordWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxRecordWhatsappMessage, proMaxDefaults.proMaxRecordWhatsappMessage);
+  const proMaxPublicBookingWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, proMaxDefaults.proMaxPublicBookingWhatsappMessage);
+  const proMaxPublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingWhatsappMessage, proMaxDefaults.proMaxPublicFormBookingWhatsappMessage);
+  const proMaxSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, proMaxDefaults.proMaxSecretaryEntryRequestWhatsappMessage);
+  const proMaxReadyPrescriptionWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionWhatsappMessage, proMaxDefaults.proMaxReadyPrescriptionWhatsappMessage);
+  const proMaxMedicalReportWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportWhatsappMessage, proMaxDefaults.proMaxMedicalReportWhatsappMessage);
+  const proMaxReadyPrescriptionsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityWhatsappMessage, proMaxDefaults.proMaxReadyPrescriptionsCapacityWhatsappMessage);
+  const proMaxMedicationCustomizationsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityWhatsappMessage, proMaxDefaults.proMaxMedicationCustomizationsCapacityWhatsappMessage);
+  // نفس الـ override للـ pro_max
+  const rawProMaxTagLabel = String(raw?.proMaxTagLabel || '').trim();
+  const isLegacyProMaxTag = rawProMaxTagLabel === 'Premium' || rawProMaxTagLabel === 'premium' || rawProMaxTagLabel === 'بريميوم' || rawProMaxTagLabel === 'مميز';
+  const proMaxTagLabel = (!rawProMaxTagLabel || isLegacyProMaxTag)
+    ? proMaxDefaults.proMaxTagLabel
+    : normalizeMessageAllowEmpty(rawProMaxTagLabel, proMaxDefaults.proMaxTagLabel);
 
   return {
     freeDailyLimit,
@@ -340,6 +382,38 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     pregnancyToolLockedMessage,
     premiumTagLabel,
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
+    // برو ماكس
+    proMaxDailyLimit,
+    proMaxRecordDailyLimit,
+    proMaxPublicBookingDailyLimit,
+    proMaxPublicFormBookingDailyLimit,
+    proMaxSecretaryEntryRequestDailyLimit,
+    proMaxReadyPrescriptionDailyLimit,
+    proMaxMedicalReportDailyLimit,
+    proMaxReadyPrescriptionsMaxCount,
+    proMaxMedicationCustomizationsMaxCount,
+    proMaxInteractionToolDailyLimit,
+    proMaxRenalToolDailyLimit,
+    proMaxPregnancyToolDailyLimit,
+    proMaxAnalysisLimitMessage,
+    proMaxRecordLimitMessage,
+    proMaxPublicBookingLimitMessage,
+    proMaxPublicFormBookingLimitMessage,
+    proMaxSecretaryEntryRequestLimitMessage,
+    proMaxReadyPrescriptionDailyLimitMessage,
+    proMaxMedicalReportLimitMessage,
+    proMaxReadyPrescriptionsCapacityMessage,
+    proMaxMedicationCustomizationsCapacityMessage,
+    proMaxAnalysisWhatsappMessage,
+    proMaxRecordWhatsappMessage,
+    proMaxPublicBookingWhatsappMessage,
+    proMaxPublicFormBookingWhatsappMessage,
+    proMaxSecretaryEntryRequestWhatsappMessage,
+    proMaxReadyPrescriptionWhatsappMessage,
+    proMaxMedicalReportWhatsappMessage,
+    proMaxReadyPrescriptionsCapacityWhatsappMessage,
+    proMaxMedicationCustomizationsCapacityWhatsappMessage,
+    proMaxTagLabel,
   };
 };
 

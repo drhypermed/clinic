@@ -1,88 +1,50 @@
 import React from 'react';
-// أيقونات Lucide — بديل موحّد للإيموجي (بتبان نفس الشكل على كل الأجهزه)
-import { LuUsersRound, LuStethoscope, LuMapPin } from 'react-icons/lu';
+import { HiOutlineSparkles } from 'react-icons/hi2';
+import { BrandLogo } from '../../common/BrandLogo';
 
-interface DirectoryHeroSectionProps {
-  stats: {
-    doctors: number;
-    specialties: number;
-    governorates: number;
-  };
-}
+/**
+ * Hero دليل الأطباء — اتوحّد مع Hero الصفحة التعريفية للجمهور (PatientLandingPage)
+ * بناءً على طلب المالك:
+ *   • شعار Dr Hyper بنفس الـglow + lighting effect.
+ *   • اسم "Dr Hyper" بالـshimmer animation (.dh-sh) بألوان blue/indigo (موحّده مع الطبيب).
+ *   • نفس الـgradient في الخلفيّه (blue-50/40 → white).
+ *   • شيلت كروت الإحصائيّات (أطباء/تخصصات/محافظات) — كانت مكرّره ومش محتاجه.
+ */
+export const DirectoryHeroSection: React.FC = () => (
+  <section className="relative overflow-hidden rounded-3xl border border-blue-100/80 bg-gradient-to-b from-blue-50/40 to-white shadow-[0_20px_50px_-24px_rgba(37,99,235,0.25)] p-6 md:p-10">
+    {/* keyframes الـshimmer — اتغيّرت ألوانه لـblue/indigo عشان توحيد الجمهور
+        مع هويّة الطبيب (blue) بناءً على طلب المالك. */}
+    <style>{`
+      @keyframes dh-shimmer{0%{background-position:200% 50%}100%{background-position:-200% 50%}}
+      .dh-sh{background:linear-gradient(110deg,#1d4ed8,#2563eb 30%,#1d4ed8 50%,#4f46e5 75%,#1d4ed8);background-size:400% 100%;animation:dh-shimmer 5s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    `}</style>
 
-// مصفوفة ثابته خارج الكومبوننت — الأيقونه دلوقتي Component مش string
-// كل كرت فيه: تسميته + أيقونه Lucide + تدرّج لوني مميّز للشريط العلوي + تدرّج خفيف لخلفية الأيقونه
-const HERO_STATS = [
-  {
-    key: 'doctors',
-    label: 'أطباء متاحون',
-    Icon: LuUsersRound,           // مجموعه أطباء = مستخدمين متعدّدين
-    topBar: 'from-teal-500 to-cyan-500',
-    iconBg: 'from-teal-50 to-cyan-50',
-    iconColor: 'text-teal-600',
-  },
-  {
-    key: 'specialties',
-    label: 'تخصصات',
-    Icon: LuStethoscope,          // السمّاعه = رمز التخصّص الطبّي الكلاسيكي
-    // توحيد: نقلت اللون من عائلة sky/blue (كانت غريبه عن هويّة العلامه) لعائلة cyan
-    topBar: 'from-cyan-500 to-cyan-600',
-    iconBg: 'from-cyan-50 to-cyan-100',
-    iconColor: 'text-cyan-600',
-  },
-  {
-    key: 'governorates',
-    label: 'محافظات',
-    Icon: LuMapPin,               // دبّوس الخريطه = تغطيه جغرافيه
-    topBar: 'from-emerald-500 to-teal-500',
-    iconBg: 'from-emerald-50 to-teal-50',
-    iconColor: 'text-emerald-600',
-  },
-] as const;
+    {/* بلوبات الخلفيّه الزخرفيّه — اتوحّدت بـblue/indigo */}
+    <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-blue-300/40 to-indigo-300/30 blur-3xl" />
+    <div className="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-indigo-300/30 to-blue-300/30 blur-3xl" />
 
-export const DirectoryHeroSection: React.FC<DirectoryHeroSectionProps> = ({ stats }) => (
-  <section className="relative overflow-hidden rounded-3xl border border-cyan-100/80 bg-white/80 backdrop-blur-xl shadow-[0_20px_50px_-24px_rgba(13,148,136,0.25)] p-6 md:p-10">
-    {/* بلوبات الخلفيّه الزخرفيّه — اتوحّدت عائلة الألوان (شيلت sky وخلّيتها كلها داخل teal/cyan/emerald) */}
-    <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-teal-300/40 to-cyan-300/30 blur-3xl" />
-    <div className="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-cyan-300/30 to-emerald-300/30 blur-3xl" />
+    <div className="relative flex flex-col items-center gap-3 text-center">
+      {/* الشعار = نفس BrandLogo اللي في الصفحة التعريفية (مع glow). */}
+      <BrandLogo
+        className="w-32 h-32 sm:w-40 sm:h-40"
+        size={160}
+        fetchPriority="high"
+      />
 
-    <div className="relative text-center">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-[11px] md:text-xs font-black mb-4">
-        <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-        منصة الأطباء الأسرع نموًا في مصر
+      {/* "دليل الأطباء وحجز المواعيد" + sparkle */}
+      <div className="flex items-center gap-2">
+        <p className="text-sm sm:text-lg font-bold text-slate-800">دليل الأطباء وحجز المواعيد</p>
+        <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 shrink-0" aria-hidden="true" />
       </div>
 
-      <h1 className="dh-hyper-animated-gradient inline-block text-4xl md:text-7xl font-black leading-none tracking-[0.08em] bg-clip-text text-transparent">
-        DR HYPER
+      {/* اسم Dr Hyper بشكله المتأنّق المتحرّك — مطابق للصفحة التعريفية */}
+      <h1 className="dh-sh inline-block text-4xl sm:text-6xl md:text-7xl font-black leading-none tracking-[0.06em]">
+        Dr Hyper
       </h1>
-      <p className="mt-3 text-slate-700 font-black text-base md:text-2xl max-w-4xl mx-auto leading-relaxed">
-        ابحث عن طبيبك واحجز موعدك الآن بشكل سلس وسريع
-      </p>
-      <p className="mt-2 text-slate-500 font-bold text-sm md:text-base max-w-2xl mx-auto">
-        آلاف الأطباء المعتمدين في جميع التخصصات، حجز فوري بدون عناء
-      </p>
 
-      <div className="grid grid-cols-3 gap-3 md:gap-4 mt-7 max-w-2xl mx-auto">
-        {HERO_STATS.map(({ key, label, Icon, topBar, iconBg, iconColor }) => {
-          // القيم مرتبطه بترتيب الـkey في stats (doctors / specialties / governorates)
-          const value = stats[key as keyof typeof stats];
-          return (
-            <div
-              key={key}
-              className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-3 md:p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all"
-            >
-              {/* الشريط الملوّن العلوي — يحدّد هويّة الكرت */}
-              <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${topBar}`} />
-              {/* دايره خلفيه ناعمه حوالين الأيقونه — بتدّي شكل "محترف" بدل الإيموجي العائم */}
-              <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br ${iconBg} flex items-center justify-center mb-1.5`}>
-                <Icon className={`w-5 h-5 md:w-6 md:h-6 ${iconColor}`} strokeWidth={2} />
-              </div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-500 mb-0.5">{label}</p>
-              <p className="text-xl md:text-3xl font-black text-slate-800">{value}</p>
-            </div>
-          );
-        })}
-      </div>
+      <p className="text-slate-600 text-sm sm:text-base font-semibold max-w-xl leading-relaxed">
+        لاقي دكتورك واحجز موعدك في دقيقتين بدون انتظار ولا تليفونات.
+      </p>
     </div>
   </section>
 );

@@ -21,7 +21,10 @@ export interface SubscriptionPeriod {
   modifiedAt?: string;
 }
 
-export type AccountType = 'free' | 'premium';
+// ثلاث فئات: مجاني / برو (كان اسمه premium داخلياً للتوافق العكسي) / برو ماكس
+// ملاحظة: `premium` ما اتغيرش في الـ storage عشان ما نكسرش الحسابات القديمة —
+// بس العرض في الـ UI بقى "برو". برو ماكس فئة جديدة للأدمن يضبط مميزاتها لاحقاً.
+export type AccountType = 'free' | 'premium' | 'pro_max';
 export type SubscriptionUnit = 'day' | 'week' | 'month' | 'year' | 'hour';
 export type EditMode = 'duration' | 'dates';
 

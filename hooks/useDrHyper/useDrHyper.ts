@@ -176,6 +176,8 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         handleOpenConsultation,
         handleNewExamFromRecord,
         handleFullAutomatedRX,
+        handleDeepAnalyzeWithPopup,
+        handleQuickAddToRx,
         handleAddManualMedication,
         handleAddEmptyMedication,
         handleAddCustomItem,
@@ -292,6 +294,9 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         rxItems,
         generalAdvice,
         labInvestigations,
+        // نمرّر الـ setters المباشرة لنستخدمهم من مودال تحليل الحالة (إضافة فحوصات/نصائح)
+        setGeneralAdvice: patientState.setGeneralAdvice,
+        setLabInvestigations: patientState.setLabInvestigations,
         historyStack,
         futureStack,
         analyzing,
@@ -302,6 +307,18 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         selectedMed, setSelectedMed,
         isDataOnlyMode, setIsDataOnlyMode,
         prescriptionRef,
+        // state نافذة تحليل الحالة الغنية — نمرّرها للـ router عشان يوصّلها للمكون
+        caseAnalysisOpen: patientState.caseAnalysisOpen,
+        setCaseAnalysisOpen: patientState.setCaseAnalysisOpen,
+        caseAnalysisResult: patientState.caseAnalysisResult,
+        caseAnalysisLoading: patientState.caseAnalysisLoading,
+        addedDiagnosesFromModal: patientState.addedDiagnosesFromModal,
+        setAddedDiagnosesFromModal: patientState.setAddedDiagnosesFromModal,
+        addedInvestigationsFromModal: patientState.addedInvestigationsFromModal,
+        setAddedInvestigationsFromModal: patientState.setAddedInvestigationsFromModal,
+        addedInstructionsFromModal: patientState.addedInstructionsFromModal,
+        setAddedInstructionsFromModal: patientState.setAddedInstructionsFromModal,
+        needsManualDxHint: patientState.needsManualDxHint,
     };
 
     const recordsAndUsageBindings = {
@@ -316,7 +333,7 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         handleLoadRecord, handleLoadConsultation, handleOpenConsultation, handleNewExamFromRecord,
         handleDeleteRecord, handleDeleteConsultation, handleDeleteExam,
         handleSaveReadyPrescription, handleRenameReadyPrescription, handleUpdateReadyPrescription, handleCreateReadyPrescription, handleDeleteReadyPrescription, handleApplyReadyPrescription,
-        handleFullAutomatedRX, handleAddManualMedication, handleAddEmptyMedication, handleAddCustomItem, handleAddManualLab, handleAddManualAdvice,
+        handleFullAutomatedRX, handleDeepAnalyzeWithPopup, handleQuickAddToRx, handleAddManualMedication, handleAddEmptyMedication, handleAddCustomItem, handleAddManualLab, handleAddManualAdvice,
         removeItem, updateItemName, updateItemInstruction, updateItemFontSize, handleSwapItem, selectMedicationForItem,
         updateAdvice, removeAdvice, updateLab, removeLab,
     };

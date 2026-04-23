@@ -13,6 +13,7 @@ module.exports = (context) => {
     getCairoDateKey,
     resolveDoctorAccountType,
     buildWhatsAppUrl,
+    pickTierValue,
   } = context;
   const consumeStorageQuota = async (request) => {
     const auth = request?.auth;
@@ -53,45 +54,33 @@ module.exports = (context) => {
         }), { merge: true });
       }
 
-      const featureConfig = feature === 'recordSave'
+      // مفاتيح الـ config لكل feature × tier — نستخدم pickTierValue للاختيار الصحيح
+      const keysByFeature = feature === 'recordSave'
         ? {
-          freeLimit: config.freeRecordDailyLimit,
-          premiumLimit: config.premiumRecordDailyLimit,
-          freeLimitMessage: config.freeRecordLimitMessage,
-          premiumLimitMessage: config.premiumRecordLimitMessage,
-          freeWhatsappMessage: config.freeRecordWhatsappMessage,
-          premiumWhatsappMessage: config.premiumRecordWhatsappMessage,
+          limit: { freeKey: 'freeRecordDailyLimit', premiumKey: 'premiumRecordDailyLimit', proMaxKey: 'proMaxRecordDailyLimit' },
+          msg: { freeKey: 'freeRecordLimitMessage', premiumKey: 'premiumRecordLimitMessage', proMaxKey: 'proMaxRecordLimitMessage' },
+          wa: { freeKey: 'freeRecordWhatsappMessage', premiumKey: 'premiumRecordWhatsappMessage', proMaxKey: 'proMaxRecordWhatsappMessage' },
           fieldName: 'recordSaveCount',
         }
         : feature === 'readyPrescriptionSave'
           ? {
-            freeLimit: config.freeReadyPrescriptionDailyLimit,
-            premiumLimit: config.premiumReadyPrescriptionDailyLimit,
-            freeLimitMessage: config.freeReadyPrescriptionDailyLimitMessage,
-            premiumLimitMessage: config.premiumReadyPrescriptionDailyLimitMessage,
-            freeWhatsappMessage: config.freeReadyPrescriptionWhatsappMessage,
-            premiumWhatsappMessage: config.premiumReadyPrescriptionWhatsappMessage,
+            limit: { freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
+            msg: { freeKey: 'freeReadyPrescriptionDailyLimitMessage', premiumKey: 'premiumReadyPrescriptionDailyLimitMessage', proMaxKey: 'proMaxReadyPrescriptionDailyLimitMessage' },
+            wa: { freeKey: 'freeReadyPrescriptionWhatsappMessage', premiumKey: 'premiumReadyPrescriptionWhatsappMessage', proMaxKey: 'proMaxReadyPrescriptionWhatsappMessage' },
             fieldName: 'readyPrescriptionSaveCount',
           }
           : {
-            freeLimit: config.freeMedicalReportDailyLimit,
-            premiumLimit: config.premiumMedicalReportDailyLimit,
-            freeLimitMessage: config.freeMedicalReportLimitMessage,
-            premiumLimitMessage: config.premiumMedicalReportLimitMessage,
-            freeWhatsappMessage: config.freeMedicalReportWhatsappMessage,
-            premiumWhatsappMessage: config.premiumMedicalReportWhatsappMessage,
+            limit: { freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
+            msg: { freeKey: 'freeMedicalReportLimitMessage', premiumKey: 'premiumMedicalReportLimitMessage', proMaxKey: 'proMaxMedicalReportLimitMessage' },
+            wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
             fieldName: 'medicalReportPrintCount',
           };
 
-      const limitReachedMessage = accountType === 'premium'
-        ? featureConfig.premiumLimitMessage
-        : featureConfig.freeLimitMessage;
-      const whatsappMessage = accountType === 'premium'
-        ? featureConfig.premiumWhatsappMessage
-        : featureConfig.freeWhatsappMessage;
+      const featureConfig = { fieldName: keysByFeature.fieldName };
+      const limitReachedMessage = pickTierValue(accountType, config, keysByFeature.msg);
+      const whatsappMessage = pickTierValue(accountType, config, keysByFeature.wa);
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
-
-      const limit = accountType === 'premium' ? featureConfig.premiumLimit : featureConfig.freeLimit;
+      const limit = pickTierValue(accountType, config, keysByFeature.limit);
 
       const fieldName = featureConfig.fieldName;
       const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });

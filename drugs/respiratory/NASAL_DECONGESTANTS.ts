@@ -504,7 +504,7 @@ const RAW_NASAL_DECONGESTANTS: Medication[] = [
     genericName: 'Isotonic seawater (sterile saline)',
     concentration: 'Isotonic (Natural pH)',
     price: 400, // UPDATED: Price as per request
-    // UPDATED: Keywords focus on Premium & Gentle Mist
+    // UPDATED: Keywords focus on Pro & Gentle Mist
     matchKeywords: [
         'physiomer', 'baby mist', 'gentle spray', 'nasal hygiene', 'sea water', 'premium',
         'فيزيومير', 'بيبي ميست', 'رذاذ ناعم', 'ماء بحر', 'غسيل أنف', 'تنظيف يومي', 'رضع'
@@ -522,7 +522,7 @@ const RAW_NASAL_DECONGESTANTS: Medication[] = [
     
     // UPDATED: Instructions for "Mist" application
     
-    // ADDED: Premium Features Warnings
+    // ADDED: Pro Features Warnings
     warnings: [
       ...W_SALINE_COMMON,
       'تنظيف الفوهة بعد كل استخدام مهم.',

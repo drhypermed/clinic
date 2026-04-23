@@ -41,9 +41,9 @@ export const AUDIENCE_OPTIONS: Array<{ value: ExternalNotificationAudience; labe
     { value: 'public', label: 'الجمهور فقط' },
     { value: 'doctor_secretaries', label: 'الأطباء + السكرتارية' },
     { value: 'doctor_public', label: 'الأطباء + الجمهور' },
-    { value: 'doctors_premium_active', label: 'أطباء مميزون حاليا' },
+    { value: 'doctors_premium_active', label: 'أطباء برو حاليا' },
     { value: 'doctors_free_never_premium', label: 'أطباء مجانيون لم يشتركوا من قبل' },
-    { value: 'doctors_free_expired_premium', label: 'أطباء عادوا للمجاني بعد انتهاء المميز' },
+    { value: 'doctors_free_expired_premium', label: 'أطباء عادوا للمجاني بعد انتهاء برو' },
     { value: 'all', label: 'الجميع' },
     { value: 'custom', label: 'مخصص (إيميل محدد)' },
 ];

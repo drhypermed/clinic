@@ -47,7 +47,9 @@ export const FinancialPanel: React.FC = () => {
 
   // ── استيراد كل البيانات والعمليات من الـ hook ──
   const {
-    prices, tempPrices, setTempPrices, editingPrices, setEditingPrices,
+    prices, tempPrices, setTempPrices,
+    proMaxPrices, tempProMaxPrices, setTempProMaxPrices,
+    editingPrices, setEditingPrices,
     allMonthlyPrices, showPriceHistory, setShowPriceHistory,
     expenses, newExpense, setNewExpense,
     revenueData, currentYearSummary, doctorsMissingExpiry,
@@ -74,7 +76,7 @@ export const FinancialPanel: React.FC = () => {
     return { totalRevenue, totalExpenses, netProfit };
   };
 
-  /** إحصائيات سنوية تفصيلية (عدد الاشتراكات لكل خطة + الأرقام المالية). */
+  /** إحصائيات سنوية تفصيلية — 3 أعمدة لبرو + 3 أعمدة لبرو ماكس + إيرادات برو ماكس منفصلة. */
   const getYearlyStats = (): YearlyStats => {
     const canUseSummaryTotals =
       selectedYear === currentCalendarYear && viewMode === 'yearly' && !!currentYearSummary;
@@ -87,6 +89,11 @@ export const FinancialPanel: React.FC = () => {
     const yearlyCount = canUseSummaryTotals
       ? currentYearSummary?.yearlyCount || 0
       : revenueData.reduce((sum, item) => sum + item.yearlyCount, 0);
+    // عدادات برو ماكس منفصلة — تُحسب من revenueData (المجموع الفعلي عبر الشهور)
+    const proMaxMonthlyCount = revenueData.reduce((sum, item) => sum + (item.proMaxMonthlyCount || 0), 0);
+    const proMaxSixMonthsCount = revenueData.reduce((sum, item) => sum + (item.proMaxSixMonthsCount || 0), 0);
+    const proMaxYearlyCount = revenueData.reduce((sum, item) => sum + (item.proMaxYearlyCount || 0), 0);
+    const proMaxRevenue = revenueData.reduce((sum, item) => sum + (item.proMaxRevenue || 0), 0);
     const totalRevenue = canUseSummaryTotals
       ? currentYearSummary?.totalRevenue || 0
       : revenueData.reduce((sum, item) => sum + item.revenue, 0);
@@ -95,7 +102,11 @@ export const FinancialPanel: React.FC = () => {
       .reduce((sum, expense) => sum + expense.amount, 0);
     const netProfit = totalRevenue - totalExpenses;
 
-    return { monthlyCount, sixMonthsCount, yearlyCount, totalRevenue, totalExpenses, netProfit };
+    return {
+      monthlyCount, sixMonthsCount, yearlyCount,
+      proMaxMonthlyCount, proMaxSixMonthsCount, proMaxYearlyCount, proMaxRevenue,
+      totalRevenue, totalExpenses, netProfit,
+    };
   };
 
   // مصفوفة السنوات المتاحة للاختيار (من بداية العمليات لغاية السنة الحالية)
@@ -134,7 +145,9 @@ export const FinancialPanel: React.FC = () => {
       <div className="dh-stagger-2"><PricingSection
         selectedPriceMonth={selectedPriceMonth}
         prices={prices}
+        proMaxPrices={proMaxPrices}
         tempPrices={tempPrices}
+        tempProMaxPrices={tempProMaxPrices}
         editingPrices={editingPrices}
         showPriceHistory={showPriceHistory}
         allMonthlyPrices={allMonthlyPrices}
@@ -143,10 +156,12 @@ export const FinancialPanel: React.FC = () => {
         onCancelEditingPrices={() => {
           setEditingPrices(false);
           setTempPrices(prices);
+          setTempProMaxPrices(proMaxPrices);
         }}
         onSavePrices={savePrices}
         onChangeSelectedPriceMonth={setSelectedPriceMonth}
         onChangeTempPrices={setTempPrices}
+        onChangeTempProMaxPrices={setTempProMaxPrices}
       /></div>
 
       <div className="dh-stagger-3"><ExpenseSection
@@ -160,7 +175,7 @@ export const FinancialPanel: React.FC = () => {
       {/* تحذير للأدمن: بيانات اشتراك ناقصة قد تؤثر على دقة الإيراد */}
       {doctorsMissingExpiry > 0 && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-700">
-          ⚠️ يوجد {doctorsMissingExpiry.toLocaleString('ar-EG')} طبيب Premium في سنة {selectedYear} ببيانات اشتراك ناقصة (بدون تاريخ انتهاء). تم استبعادهم من حساب الإيراد لهذه السنة. يُرجى تصحيح بياناتهم من "إدارة الأطباء".
+          ⚠️ يوجد {doctorsMissingExpiry.toLocaleString('ar-EG')} طبيب Pro في سنة {selectedYear} ببيانات اشتراك ناقصة (بدون تاريخ انتهاء). تم استبعادهم من حساب الإيراد لهذه السنة. يُرجى تصحيح بياناتهم من "إدارة الأطباء".
         </div>
       )}
 

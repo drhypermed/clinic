@@ -62,10 +62,13 @@ export async function runPreSaveQuotaCheck({
 
     // (1) انتهاء الحصة فعلاً → افتح نافذة التنبيه
     if (isDailyLimit && details) {
+      // 3 فئات: مجاني / برو / برو ماكس — ممنوع الاعتماد على ternary ثنائي هنا
       const fallback =
         details.accountType === 'free'
           ? 'تم استهلاك حد حفظ السجلات اليومي للحساب المجاني'
-          : 'تم استهلاك حد حفظ السجلات اليومي للحساب المميز';
+          : details.accountType === 'pro_max'
+            ? 'تم استهلاك حد حفظ السجلات اليومي لحساب برو ماكس'
+            : 'تم استهلاك حد حفظ السجلات اليومي لحساب برو';
       openQuotaNoticeModal({
         message: getQuotaReachedMessage(details, fallback),
         whatsappNumber: details.whatsappNumber,

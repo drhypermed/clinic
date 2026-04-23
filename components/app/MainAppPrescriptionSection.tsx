@@ -5,6 +5,8 @@ import { ClinicalInsightSection } from '../consultation/ClinicalInsightSection';
 import { VitalSignsSection } from '../consultation/VitalSignsSection';
 import { QuickSearchSection } from '../consultation/QuickSearchSection';
 import { PrescriptionPreview } from '../prescription/PrescriptionPreview';
+import { CaseAnalysisModal } from './CaseAnalysisModal';
+import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
 import type {
   AlternativeMed,
   CustomBox,
@@ -73,10 +75,26 @@ interface MainAppPrescriptionSectionProps {
   setInvestigations: (value: string) => void;
   
   // التحكم في الذكاء الاصطناعي
-  onAnalyze: () => void;
+  onAnalyze: () => void;                  // زر "تحليل الحالة" — الغني (بالـ popup)
+  onQuickAddToRx: () => void;             // زر "إضافة إلى الروشتة والسجلات" — بدون popup
   smartQuotaNotice: { message: string } | null;
   isQuotaLimitError: boolean;
   errorMsg: string | null;
+  // state نافذة تحليل الحالة
+  caseAnalysisOpen: boolean;
+  setCaseAnalysisOpen: (v: boolean) => void;
+  caseAnalysisResult: CaseAnalysisResult | null;
+  caseAnalysisLoading: boolean;
+  addedDiagnosesFromModal: string[];
+  setAddedDiagnosesFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  addedInvestigationsFromModal: string[];
+  setAddedInvestigationsFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  addedInstructionsFromModal: string[];
+  setAddedInstructionsFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  needsManualDxHint: boolean;
+  // setters للنصائح/الفحوصات (تُستخدم من مودال التحليل للإضافة)
+  setGeneralAdvice: React.Dispatch<React.SetStateAction<string[]>>;
+  setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
   
   // العلامات الحيوية
   weight: string;
@@ -182,7 +200,12 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
   gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
-  complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, smartQuotaNotice, isQuotaLimitError, errorMsg,
+  complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
+  caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
+  addedDiagnosesFromModal, setAddedDiagnosesFromModal,
+  addedInvestigationsFromModal, setAddedInvestigationsFromModal,
+  addedInstructionsFromModal, setAddedInstructionsFromModal,
+  needsManualDxHint, setGeneralAdvice, setLabInvestigations,
   weight, setWeight, height, setHeight, bmi, vitals, updateVital, customBoxes = [], customBoxValues = {}, onCustomBoxValueChange, prescriptionSettings, totalAgeInMonths, parsedWeight, onAddManualMedication, onAddEmptyMedication, onAddCustomItem, onAddManualLab, onAddManualAdvice, onOpenReadyPrescriptions,
   consultationDate, rxItems, generalAdvice, labInvestigations, complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
   onRemoveItem, onUpdateItemName, onUpdateItemInstruction, onUpdateItemFontSize, onSwapItem, onSelectMedication, onMedicationClick, onUpdateAdvice, onRemoveAdvice, onUpdateLab, onRemoveLab,
@@ -193,6 +216,13 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
 }) => {
   const [isSavingRecord, setIsSavingRecord] = React.useState(false);
   const [showInlineCancelHint, setShowInlineCancelHint] = React.useState(false);
+  // تتبّع أي زر اتضغط عشان الـ spinner يظهر عليه هو بس مش على الزر التاني
+  // (quick = إضافة للروشتة، deep = تحليل الحالة)
+  const [activeAnalyzeMode, setActiveAnalyzeMode] = React.useState<'quick' | 'deep' | null>(null);
+  // لما التحليل يخلص (analyzing يرجع false) نصفّر الـ mode تلقائياً
+  React.useEffect(() => {
+    if (!analyzing) setActiveAnalyzeMode(null);
+  }, [analyzing]);
   const handlePaymentTypeChange = React.useCallback((nextPaymentType: PaymentType) => {
     setPaymentType(nextPaymentType);
 
@@ -249,8 +279,69 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
 
   const handleAnalyzeAction = () => {
     if (analyzing) return;
+    setActiveAnalyzeMode('deep');
     onAnalyze();
   };
+
+  const handleQuickAddAction = () => {
+    if (analyzing) return;
+    setActiveAnalyzeMode('quick');
+    onQuickAddToRx();
+  };
+
+  // ─── handlers لمودال تحليل الحالة ─────────────────────────────────────
+  // إضافة تشخيص (DDx) كتشخيص للروشتة. يُفرغ hint الكتابة اليدوية تلقائياً
+  // لأن setDiagnosisEn بيغيّر diagnosisEn → useEffect في patientState بيطفي الـ hint.
+  const handleModalAddDiagnosis = React.useCallback((dx: string) => {
+    setDiagnosisEn(dx);
+    setAddedDiagnosesFromModal((prev) => prev.includes(dx) ? prev : [...prev, dx]);
+  }, [setDiagnosisEn, setAddedDiagnosesFromModal]);
+
+  // إضافة فحص للروشتة بصيغة "Name (سبب الطلب)" — الطبيب طلب إن السبب يتضاف في
+  // نفس السطر مش تحته عشان يتكتب في الروشتة المطبوعة زي الاسم والفحوصات القياسية.
+  const handleModalAddInvestigation = React.useCallback((nameEn: string, reasonAr: string) => {
+    const name = nameEn.trim();
+    const reason = (reasonAr || '').trim();
+    // النص النهائي اللي هيتكتب في الروشتة — اسم إنجليزي متبوع بالسبب بين قوسين
+    const combinedText = reason ? `${name} (${reason})` : name;
+    setLabInvestigations((prev) => {
+      // تجنب التكرار بالاسم الإنجليزي فقط (مش بالنص كامل) عشان ما يبقاش عندنا
+      // CBC + CBC (سبب) بنفس الوقت لو المستخدم كان ضغط إضافة قبل كده
+      const existsByName = prev.some((item) => {
+        const itemName = item.split('(')[0].trim().toLowerCase();
+        return itemName === name.toLowerCase();
+      });
+      if (existsByName) return prev;
+      return [...prev, combinedText];
+    });
+    setAddedInvestigationsFromModal((prev) => prev.includes(name) ? prev : [...prev, name]);
+  }, [setLabInvestigations, setAddedInvestigationsFromModal]);
+
+  // إضافة تعليمة/نصيحة عربية للنصائح العامة في الروشتة
+  const handleModalAddInstruction = React.useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setGeneralAdvice((prev) => {
+      if (prev.some((item) => item.trim() === trimmed)) return prev;
+      return [...prev, trimmed];
+    });
+    setAddedInstructionsFromModal((prev) => prev.includes(trimmed) ? prev : [...prev, trimmed]);
+  }, [setGeneralAdvice, setAddedInstructionsFromModal]);
+
+  // إغلاق المودال — ما نمسحش الحالة عشان الطبيب لو قفل بالغلط يفتحها تاني
+  // الحالة بتتصفر تلقائياً لما تحليل جديد يتعمل (setCaseAnalysisResult(null))
+  const handleModalClose = React.useCallback(() => {
+    setCaseAnalysisOpen(false);
+  }, [setCaseAnalysisOpen]);
+
+  // تصفير المتتبّعين لما تحليل جديد يبدأ (عشان أزرار "إضافة" ترجع متاحة)
+  React.useEffect(() => {
+    if (caseAnalysisLoading) {
+      setAddedDiagnosesFromModal([]);
+      setAddedInvestigationsFromModal([]);
+      setAddedInstructionsFromModal([]);
+    }
+  }, [caseAnalysisLoading, setAddedDiagnosesFromModal, setAddedInvestigationsFromModal, setAddedInstructionsFromModal]);
 
   return (
     <>
@@ -374,28 +465,86 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
               </div>
 
               <div className="editor-block editor-block--analyze dh-stagger-4">
-                <section className="apple-action-card">
-                  <button
-                    onClick={handleAnalyzeAction}
-                    disabled={analyzing}
-                    aria-busy={analyzing}
-                    className={`apple-action-btn analyze-ai-btn flex items-center justify-center gap-2.5 ${analyzing ? 'is-analyzing' : ''}`}
-                  >
-                    {analyzing ? (
-                      <>
-                        <span className="analyze-ai-btn__spinner-circle" aria-hidden />
-                        <span className="text-[0.96rem] sm:text-[1.02rem] font-black">جاري التحليل</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[1.02rem] sm:text-[1.12rem] font-black">تحليل الحالة</span>
-                        <span className="relative top-[1px] inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/25">
-                          <svg className="h-[18px] w-[18px] text-emerald-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
+                <section className="apple-action-card flex flex-col gap-2.5">
+                  {/* ─── زر Quick "إضافة للروشتة" (tier: PRO — تصميم أبسط وأقل إبرازاً) ─── */}
+                  <div className="relative">
+                    {/* شارة PRO — ذهبية ناعمة على الركن العلوي اليمين */}
+                    <span className="absolute -top-2 right-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-l from-amber-400 to-amber-500 text-amber-950 text-[9px] font-black tracking-widest shadow-sm ring-1 ring-amber-300/60 uppercase">
+                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
+                      </svg>
+                      Pro
+                    </span>
+                    <button
+                      onClick={handleQuickAddAction}
+                      disabled={analyzing}
+                      aria-busy={analyzing && activeAnalyzeMode === 'quick'}
+                      className="apple-action-btn flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-[0.7rem] font-black text-[0.84rem] sm:text-[0.92rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
+                    >
+                      {analyzing && activeAnalyzeMode === 'quick' ? (
+                        <>
+                          <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.5px] border-white/30 border-t-white animate-spin" aria-hidden />
+                          <span>جاري الإضافة…</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="relative top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                            <svg className="h-[15px] w-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
+                          </span>
+                          <span>إضافة إلى الروشتة والسجلات بدون تحليل الحالة</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* ─── زر Deep "تحليل الحالة" (tier: PRO MAX — مميز بصرياً + shine + badge مضيء) ─── */}
+                  <div className="relative">
+                    {/* Glow halo خفيف حوالين الزر (للتمييز البرو) */}
+                    <span
+                      className="pointer-events-none absolute -inset-[3px] rounded-[1.2rem] bg-gradient-to-r from-amber-300/50 via-yellow-400/50 to-amber-500/50 blur-md opacity-75"
+                      aria-hidden
+                    />
+                    {/* شارة PRO MAX — ذهبية مضيئة مع أيقونة الذكاء */}
+                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+                      </svg>
+                      Pro Max
+                    </span>
+                    <button
+                      onClick={handleAnalyzeAction}
+                      disabled={analyzing}
+                      aria-busy={analyzing && activeAnalyzeMode === 'deep'}
+                      className={`apple-action-btn analyze-ai-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] ring-1 ring-emerald-300/40 shadow-[0_6px_20px_-4px_rgba(16,185,129,0.45)] ${analyzing && activeAnalyzeMode === 'deep' ? 'is-analyzing' : ''}`}
+                    >
+                      {/* shimmer سطح خفيف — بيظهر بس في الحالة العادية (مش أثناء التحليل) */}
+                      {!(analyzing && activeAnalyzeMode === 'deep') && (
+                        <span
+                          className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden"
+                          aria-hidden
+                        >
+                          <span className="absolute -top-1/2 -left-full h-[200%] w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/18 to-transparent animate-[dh-btn-shine_3.5s_ease-in-out_infinite]" />
                         </span>
-                      </>
-                    )}
-                  </button>
-                  {analyzing && showInlineCancelHint && (
+                      )}
+                      {analyzing && activeAnalyzeMode === 'deep' ? (
+                        <>
+                          <span className="analyze-ai-btn__spinner-circle" aria-hidden />
+                          <span className="text-[0.96rem] sm:text-[1.02rem] font-black">جاري التحليل</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[1.04rem] sm:text-[1.16rem] font-black tracking-tight">تحليل الحالة</span>
+                          <span className="relative top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/30 shadow-inner">
+                            <svg className="h-[19px] w-[19px] text-emerald-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {/* زر "إيقاف التحليل" يظهر فقط لما زر "تحليل الحالة" شغّال (مش الـ quick) */}
+                  {analyzing && activeAnalyzeMode === 'deep' && showInlineCancelHint && (
                     <button
                       type="button"
                       onClick={onCancelAnalyze}
@@ -436,6 +585,8 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
             onRemoveItem={onRemoveItem} onUpdateItemName={onUpdateItemName} onUpdateItemInstruction={onUpdateItemInstruction} onUpdateItemFontSize={onUpdateItemFontSize} onSwapItem={onSwapItem} onSelectMedication={onSelectMedication} onMedicationClick={onMedicationClick}
             onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice} onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab}
             isPrintMode={isPrintMode} isDataOnlyMode={isDataOnlyMode} ref={prescriptionRef} usageStats={usageStats} prescriptionSettings={prescriptionSettings ?? undefined}
+            // forceShowDx يُجبر ظهور صف Dx فاضي بعد التحليل لتنبيه الطبيب بالكتابة اليدوية
+            forceShowDx={needsManualDxHint && !diagnosisEn.trim()}
             actionsBar={
               <div className="prescription-actions-wrapper">
                 <div className="prescription-actions-print-row">
@@ -507,6 +658,21 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
         </div>
       </div>
 
+      {/* ─── نافذة تحليل الحالة الغنية (DDx + Must-Not-Miss + فحوصات + تعليمات + ...) ─── */}
+      {/* تفتح فقط عند الضغط على زر "تحليل الحالة"، وتغلق بالـ X/ESC/الخلفية/زر الإغلاق. */}
+      {/* لا تحفظ أي شيء تلقائياً — فقط ما يضغط الطبيب "إضافة" يدخل الروشتة. */}
+      <CaseAnalysisModal
+        isOpen={caseAnalysisOpen}
+        onClose={handleModalClose}
+        result={caseAnalysisResult}
+        loading={caseAnalysisLoading}
+        onAddDiagnosis={handleModalAddDiagnosis}
+        onAddInvestigation={handleModalAddInvestigation}
+        onAddInstruction={handleModalAddInstruction}
+        addedDiagnoses={addedDiagnosesFromModal}
+        addedInvestigations={addedInvestigationsFromModal}
+        addedInstructions={addedInstructionsFromModal}
+      />
     </>
   );
 };

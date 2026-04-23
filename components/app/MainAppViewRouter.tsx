@@ -131,6 +131,22 @@ export interface MainAppViewRouterProps {
   examination: string; setExamination: (v: string) => void;
   investigations: string; setInvestigations: (v: string) => void;
   handleFullAutomatedRX: () => Promise<void>;
+  /** زر "إضافة إلى الروشتة والسجلات" — يضيف البيانات بدون popup ويسيب Dx فاضي */
+  handleQuickAddToRx: () => Promise<void>;
+  /** زر "تحليل الحالة" — يضيف للروشتة + يفتح popup بالـ DDx/Must-Not-Miss */
+  handleDeepAnalyzeWithPopup: () => Promise<void>;
+  // state نافذة تحليل الحالة — أنواع any للتبسيط (بنستخدمها internally بس)
+  caseAnalysisOpen: boolean;
+  setCaseAnalysisOpen: (v: boolean) => void;
+  caseAnalysisResult: any;
+  caseAnalysisLoading: boolean;
+  addedDiagnosesFromModal: string[];
+  setAddedDiagnosesFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  addedInvestigationsFromModal: string[];
+  setAddedInvestigationsFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  addedInstructionsFromModal: string[];
+  setAddedInstructionsFromModal: React.Dispatch<React.SetStateAction<string[]>>;
+  needsManualDxHint: boolean;
   smartQuotaNotice: any; isQuotaLimitError: boolean; errorMsg: string | null;
   weight: string; setWeight: (v: string) => void;
   height: string; setHeight: (v: string) => void;
@@ -147,6 +163,9 @@ export interface MainAppViewRouterProps {
   /** rxItems شكلها PrescriptionItem — any للمرونة عند التمرير */
   rxItems: any;
   generalAdvice: string[]; labInvestigations: string[];
+  // setters مباشرة للنصائح والفحوصات — يستخدمها مودال تحليل الحالة للإضافة
+  setGeneralAdvice: React.Dispatch<React.SetStateAction<string[]>>;
+  setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
   complaintEn: string; setComplaintEn: (v: string) => void;
   historyEn: string; setHistoryEn: (v: string) => void;
   examEn: string; setExamEn: (v: string) => void;
@@ -260,7 +279,23 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           medicalHistory={p.medicalHistory} setMedicalHistory={p.setMedicalHistory}
           examination={p.examination} setExamination={p.setExamination}
           investigations={p.investigations} setInvestigations={p.setInvestigations}
-          onAnalyze={p.handleFullAutomatedRX}
+          onAnalyze={p.handleDeepAnalyzeWithPopup}
+          onQuickAddToRx={p.handleQuickAddToRx}
+          // state نافذة تحليل الحالة الغنية
+          caseAnalysisOpen={p.caseAnalysisOpen}
+          setCaseAnalysisOpen={p.setCaseAnalysisOpen}
+          caseAnalysisResult={p.caseAnalysisResult}
+          caseAnalysisLoading={p.caseAnalysisLoading}
+          addedDiagnosesFromModal={p.addedDiagnosesFromModal}
+          setAddedDiagnosesFromModal={p.setAddedDiagnosesFromModal}
+          addedInvestigationsFromModal={p.addedInvestigationsFromModal}
+          setAddedInvestigationsFromModal={p.setAddedInvestigationsFromModal}
+          addedInstructionsFromModal={p.addedInstructionsFromModal}
+          setAddedInstructionsFromModal={p.setAddedInstructionsFromModal}
+          needsManualDxHint={p.needsManualDxHint}
+          // تمرير setters للنصائح والفحوصات من MainApp prop chain
+          setGeneralAdvice={p.setGeneralAdvice}
+          setLabInvestigations={p.setLabInvestigations}
           smartQuotaNotice={p.smartQuotaNotice}
           isQuotaLimitError={p.isQuotaLimitError} errorMsg={p.errorMsg}
           weight={p.weight} setWeight={p.setWeight}

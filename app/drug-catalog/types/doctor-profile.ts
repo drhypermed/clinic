@@ -127,7 +127,8 @@ export interface DoctorAdProfile {
   updatedAt: string;
 
   // ─── نوع الحساب والاشتراك ───
-  accountType?: 'free' | 'premium';
+  // free = مجاني | premium = برو (بيظهر "برو" في الـ UI) | pro_max = برو ماكس
+  accountType?: 'free' | 'premium' | 'pro_max';
   premiumStartDate?: string;
   premiumExpiryDate?: string;
   premiumNotificationSent?: boolean; // هل اتبعت له إشعار تجديد

@@ -4,7 +4,7 @@ import React from 'react';
  * مكون المعلومات السريرية (Clinical Insight Section)
  * يمثل هذا القسم واجهة إدخال البيانات الطبية الأساسية للمريض (الشكوى، التاريخ المرضي، الفحص، الفحوصات).
  * 
- * المميزات:
+ * بروات:
  * 1. يدعم الإدخال باللغة العربية والعامية.
  * 2. يتميز بخاصية التوسيع التلقائي لصناديق النصوص (Auto-resize) لتوفير مساحة رؤية أفضل.
  * 3. يحتوي على نظام ذكي للتعرف على رسائل "الكوتا" (Quota) الخاصة بالذكاء الاصطناعي.
@@ -35,7 +35,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
     typeof errorMsg === 'string' &&
     (errorMsg.includes('تم استهلاك الحد اليومي') ||
       errorMsg.includes('النسخة المجانية') ||
-      errorMsg.includes('الحساب المميز'));
+      errorMsg.includes('الحساب برو'));
 
   /** 
    * وظيفة التوسيع التلقائي (Auto-resize):

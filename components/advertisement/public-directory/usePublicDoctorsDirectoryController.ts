@@ -27,7 +27,7 @@ import {
   SESSION_ROLE_STORAGE_KEY, signInWithGoogle, } from '../../../services/auth-service';
 import { useHomepageBanner } from '../../../hooks/useHomepageBanner';
 import {
-  getDoctorRatingStats, getFilledClinicSchedule, generateDoctorSlug, findDoctorBySlug, } from './helpers';
+  getDoctorRatingStats, getFilledClinicSchedule, generateDoctorSlug, findDoctorBySlug, getAdBranches, } from './helpers';
 import type { PublicDoctorsDirectoryPageProps } from '../../../types';
 import { useDirectoryFilters } from './useDirectoryFilters';
 import { usePublicBookingReviews } from './usePublicBookingReviews';
@@ -69,8 +69,15 @@ export const usePublicDoctorsDirectoryController = ({
   const [accountSnapshot, setAccountSnapshot] = useState<{ name?: string; email?: string; phone?: string }>(
     profile || {}
   );
+  // حالة حفظ بانل "حسابي" — للسبينر داخل الزر ورسالة الخطأ.
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountSaveError, setAccountSaveError] = useState('');
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authPromptDoctorId, setAuthPromptDoctorId] = useState('');
+  // ─── حالة مودال اختيار الفرع ───
+  // لما المريض يضغط "احجز الآن" على طبيب عنده أكثر من فرع، بنخزّن الـid هنا
+  // عشان يفتح مودال BranchPickerModal. لو فرع واحد بنروح للفورم على طول.
+  const [branchPickerDoctorId, setBranchPickerDoctorId] = useState<string>('');
   const [publicAccountVerified, setPublicAccountVerified] = useState(false);
   const [authWorking, setAuthWorking] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -103,24 +110,36 @@ export const usePublicDoctorsDirectoryController = ({
     // يدوس على زر فعلي (submitReview/deleteReview) واللي محتاج تسجيل دخول أصلاً.
   } = usePublicBookingReviews(user?.uid || '');
 
-  const buildSiteBookingUrl = async (doctorId: string): Promise<string | null> => {
-    const secret = await firestoreService.getPublicSecretByUserId(doctorId);
-    if (secret) {
-      return `/book-public/s/${secret}?entry=public-site`;
-    }
-    setError('تعذر إنشاء رابط الحجز لهذا الطبيب حاليًا.');
-    return null;
+  // بناء رابط الفورم العام من معرّف الطبيب (مع تمرير الفرع لو الطبيب عنده أكتر من واحد).
+  // كنّا قبل كده بنجيب الـsecret هنا وبنرجع رسالة "تعذر إنشاء رابط الحجز" لو مفقود،
+  // وده كان بيمنع المريض من الحجز. دلوقتي بنستخدم مسار /book-public/:userId مباشرة،
+  // والـbootstrap في فورم الحجز هو اللي بيعمل lookup للـsecret داخلياً ويعرض شاشه واضحه
+  // لو الرابط فعلاً غير صالح.
+  const buildSiteBookingUrl = (doctorId: string, branchId = ''): string => {
+    const params = new URLSearchParams({ entry: 'public-site' });
+    if (branchId) params.set('branch', branchId);
+    return `/book-public/${encodeURIComponent(doctorId)}?${params.toString()}`;
   };
 
+  // مزامنة الـmodal مع query string في اتجاهين:
+  //   • وجود ?doctor=slug → فتح مودال الطبيب المطابق
+  //   • غياب الـquery → قفل المودال
+  // ده بيخلي الـURL هي مصدر الحقيقة الوحيد، فمفيش race condition بين
+  // setSelectedDoctorId و setSearchParams (اللي كانت بتسبب رعشة في الإغلاق
+  // وبتخلي الكليك الأول برّا المودال ميقفلش — نضطر نضغط مرتين).
   useEffect(() => {
     const doctorSlug = searchParams.get('doctor');
-    if (doctorSlug && ads.length > 0) {
-      const doctorId = findDoctorBySlug(ads, doctorSlug);
-      if (doctorId && doctorId !== selectedDoctorId) {
-        setSelectedDoctorId(doctorId);
-      }
+    if (!doctorSlug) {
+      // مش بنعمل setState إلا لو القيمه فعلاً متغيره — لمنع re-renders فاضيه.
+      setSelectedDoctorId((prev) => (prev === null ? prev : null));
+      return;
     }
-  }, [searchParams, ads, selectedDoctorId]);
+    if (ads.length === 0) return;
+    const doctorId = findDoctorBySlug(ads, doctorSlug);
+    if (doctorId) {
+      setSelectedDoctorId((prev) => (prev === doctorId ? prev : doctorId));
+    }
+  }, [searchParams, ads]);
 
   // تحسين التكلفه (Priority 2 من خطّة التوفير):
   // كل filter change كان = 20 قراءه جديده. مع الكاش المحلّي (sessionStorage):
@@ -269,8 +288,12 @@ export const usePublicDoctorsDirectoryController = ({
 
   useEffect(() => {
     // الـuser ممكن يكون null (ضيف) — نتعامل مع ده بـoptional chaining.
+    // الاسم الافتراضي بقى = displayName من جوجل أو الجزء قبل @ في الإيميل
+    // (بدل "مستخدم عام")، عشان المريض يلاقي اسم معقول مكتوب من أوّل تسجيل دخول.
+    const fallbackEmail = (profile?.email || user?.email || '').trim().toLowerCase();
+    const emailLocalPart = fallbackEmail ? fallbackEmail.split('@')[0] : '';
     setAccountSnapshot((prev) => ({
-      name: (profile?.name || prev.name || user?.displayName || '').trim() || 'مستخدم عام',
+      name: (profile?.name || prev.name || user?.displayName || emailLocalPart || '').trim(),
       email: (profile?.email || prev.email || user?.email || '').trim().toLowerCase(),
       phone: (profile?.phone || prev.phone || '').trim(),
     }));
@@ -327,13 +350,23 @@ export const usePublicDoctorsDirectoryController = ({
     setShowAuthPrompt(true);
   };
 
-  const continueBookingFlow = async (doctorId?: string) => {
+  // استكمال خطوات الحجز بعد تسجيل الدخول. لو الطبيب عنده فرع واحد بنروح للفورم
+  // مباشرة، ولو عنده أكتر من فرع بنفتح المريض على مودال اختيار الفرع.
+  const continueBookingFlow = (doctorId?: string) => {
     const targetDoctorId = doctorId || authPromptDoctorId;
     closeAuthPrompt();
-    if (targetDoctorId) {
-      const bookingUrl = await buildSiteBookingUrl(targetDoctorId);
-      if (bookingUrl) navigate(bookingUrl);
+    if (!targetDoctorId) return;
+
+    const targetDoctor = ads.find((ad) => ad.doctorId === targetDoctorId);
+    const branches = targetDoctor ? getAdBranches(targetDoctor) : [];
+
+    if (branches.length > 1) {
+      // فروع متعددة → مودال الاختيار يفتح؛ اللي بعد كده بيكمّل goToBookingFormWithBranch.
+      setBranchPickerDoctorId(targetDoctorId);
+      return;
     }
+    // فرع واحد (أو طبيب قديم بدون branches) → روحلة الفورم على طول.
+    navigate(buildSiteBookingUrl(targetDoctorId));
   };
 
   const handlePublicGoogleLogin = async () => {
@@ -345,7 +378,7 @@ export const usePublicDoctorsDirectoryController = ({
       const email = (credential.user.email || '').trim().toLowerCase();
       await upsertPublicAccountProfile(credential.user, email);
       setPublicAccountVerified(true);
-      await continueBookingFlow();
+      continueBookingFlow();
     } catch (err: any) {
       setAuthError(err?.message || 'تعذر تسجيل الدخول عبر Google.');
     } finally {
@@ -353,7 +386,7 @@ export const usePublicDoctorsDirectoryController = ({
     }
   };
 
-  const goToPublicBookingForm = async (doctorId: string) => {
+  const goToPublicBookingForm = (doctorId: string) => {
     if (!doctorId) return;
     const currentUser = auth.currentUser || user;
     const hasVerifiedEmail = Boolean(
@@ -363,26 +396,36 @@ export const usePublicDoctorsDirectoryController = ({
       (currentUser.emailVerified || publicAccountVerified)
     );
 
+    // المريض لازم يكون مسجّل دخول قبل الحجز — لو لأ بنفتحله المودال،
+    // وبعد الـlogin بنرجع لـcontinueBookingFlow اللي بيقرّر فرع/مباشر.
     if (!hasVerifiedEmail) {
       openAuthPrompt(doctorId);
       return;
     }
 
-    const bookingUrl = await buildSiteBookingUrl(doctorId);
-    if (bookingUrl) navigate(bookingUrl);
+    continueBookingFlow(doctorId);
   };
 
+  // المريض اختار فرع من المودال → نقفل المودال ونروح للفورم محدّداً الفرع مسبقاً.
+  const selectBranchAndGoToBooking = (branchId: string) => {
+    const targetDoctorId = branchPickerDoctorId;
+    setBranchPickerDoctorId('');
+    if (targetDoctorId && branchId) {
+      navigate(buildSiteBookingUrl(targetDoctorId, branchId));
+    }
+  };
+
+  const closeBranchPicker = () => setBranchPickerDoctorId('');
+
+  // فتح/قفل المودال بنغيّر الـURL بس — الـeffect فوق هو اللي بيحدّث selectedDoctorId.
   const openDoctorModal = (doctorId: string) => {
     const doctor = ads.find((ad) => ad.doctorId === doctorId);
     if (!doctor) return;
-
     const slug = doctor.publicSlug || generateDoctorSlug(doctor);
-    setSelectedDoctorId(doctorId);
     setSearchParams({ doctor: slug });
   };
 
   const closeDoctorModal = () => {
-    setSelectedDoctorId(null);
     setAvatarPreviewUrl(null);
     setSearchParams({});
   };
@@ -402,8 +445,17 @@ export const usePublicDoctorsDirectoryController = ({
 
   // الـactivePublicUser ممكن يكون null للضيف — كل الـchecks تحت باستخدام optional chaining.
   const activePublicUser: User | null = auth.currentUser || user;
-  const accountName = (accountSnapshot.name || activePublicUser?.displayName || '').trim() || 'مستخدم عام';
   const accountEmail = (activePublicUser?.email || accountSnapshot.email || '').trim().toLowerCase();
+  // الاسم: snapshot ← displayName من جوجل ← الجزء قبل @ في الإيميل ← "مستخدم".
+  // ده بيخلي السايد بار يعرض اسم معقول دايماً بدل "مستخدم عام".
+  const emailLocalForName = accountEmail ? accountEmail.split('@')[0] : '';
+  const accountName = (
+    accountSnapshot.name ||
+    activePublicUser?.displayName ||
+    emailLocalForName ||
+    ''
+  ).trim() || 'مستخدم';
+  const accountPhone = (accountSnapshot.phone || '').trim();
   // الضيف مش حساب مؤقّت (غير مسجّل أصلاً) — الـtemporary بيوصف الـanonymous Firebase session.
   const isTemporaryPublicAccount = Boolean(activePublicUser?.isAnonymous);
   const isPublicEmailVerified = Boolean(
@@ -412,6 +464,50 @@ export const usePublicDoctorsDirectoryController = ({
     activePublicUser.email &&
     (activePublicUser.emailVerified || publicAccountVerified)
   );
+
+  // حفظ الاسم/التليفون من بانل "حسابي". بنحفظ في users/{uid}.publicProfile.
+  // المستخدم لازم يكون مسجّل دخول (مش ضيف) عشان يقدر يحفظ — لو مش مسجّل، بنرجع
+  // رسالة خطأ بدل ما نفتح Firestore call فاشلة.
+  const saveAccountProfile = async (nextName: string, nextPhone: string): Promise<boolean> => {
+    setAccountSaveError('');
+    const currentUser = auth.currentUser || user;
+    if (!currentUser?.uid) {
+      setAccountSaveError('سجّل دخول أولاً عشان نقدر نحفظ بياناتك.');
+      return false;
+    }
+
+    const trimmedName = nextName.trim();
+    const trimmedPhone = nextPhone.trim();
+    setAccountSaving(true);
+    try {
+      await setDoc(
+        doc(db, 'users', currentUser.uid),
+        {
+          authRole: 'public',
+          publicProfile: {
+            name: trimmedName,
+            email: accountEmail,
+            phone: trimmedPhone,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+      // نحدّث الـsnapshot المحلّي عشان السايد بار يعكس التغيير فوراً
+      setAccountSnapshot((prev) => ({
+        ...prev,
+        name: trimmedName,
+        phone: trimmedPhone,
+        email: accountEmail,
+      }));
+      return true;
+    } catch (err: any) {
+      setAccountSaveError(err?.message || 'تعذر حفظ البيانات، جرّب تاني.');
+      return false;
+    } finally {
+      setAccountSaving(false);
+    }
+  };
 
   const handlePublicLogout = async () => {
     try {
@@ -462,7 +558,7 @@ export const usePublicDoctorsDirectoryController = ({
   };
 
   const handleContactWhatsApp = () => {
-    const phone = '01551020238';
+    const phone = '01092805293';
     const digitsOnly = phone.replace(/\D/g, '');
     const whatsappNumber = digitsOnly.startsWith('0') ? `2${digitsOnly}` : digitsOnly;
     const whatsappUrl = `https://wa.me/${whatsappNumber}`;
@@ -474,6 +570,15 @@ export const usePublicDoctorsDirectoryController = ({
   const selectedDoctor = useMemo(
     () => (selectedDoctorId ? ads.find((ad) => ad.doctorId === selectedDoctorId) || null : null),
     [ads, selectedDoctorId]
+  );
+  // الطبيب اللي اتفتحله مودال اختيار الفرع — بنحسب اسمه وفروعه للـUI.
+  const branchPickerDoctor = useMemo(
+    () => (branchPickerDoctorId ? ads.find((ad) => ad.doctorId === branchPickerDoctorId) || null : null),
+    [ads, branchPickerDoctorId]
+  );
+  const branchPickerBranches = useMemo(
+    () => (branchPickerDoctor ? getAdBranches(branchPickerDoctor) : []),
+    [branchPickerDoctor]
   );
   const selectedDoctorFilledSchedule = useMemo(
     () => (selectedDoctor ? getFilledClinicSchedule(selectedDoctor) : []),
@@ -521,6 +626,10 @@ export const usePublicDoctorsDirectoryController = ({
     reviewSubmittingId,
     accountName,
     accountEmail,
+    accountPhone,
+    accountSaving,
+    accountSaveError,
+    saveAccountProfile,
     isTemporaryPublicAccount,
     isPublicEmailVerified,
     reviewsDoctor,
@@ -549,6 +658,11 @@ export const usePublicDoctorsDirectoryController = ({
     loadMore,
     hasMore,
     loadingMore,
+    // مودال اختيار الفرع
+    branchPickerDoctor,
+    branchPickerBranches,
+    selectBranchAndGoToBooking,
+    closeBranchPicker,
   };
 };
 

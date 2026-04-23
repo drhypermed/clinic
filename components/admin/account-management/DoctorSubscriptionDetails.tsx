@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// قسم تفاصيل الاشتراك المميز (DoctorSubscriptionDetails)
+// قسم تفاصيل اشتراك برو (DoctorSubscriptionDetails)
 // ─────────────────────────────────────────────────────────────────────────────
 // الجزء الأكبر من كارد الطبيب — يعرض:
 //   • تواريخ بداية ونهاية الاشتراك (مع الوقت)
@@ -51,7 +51,7 @@ interface DoctorSubscriptionDetailsProps {
   editingEndDate: Record<string, string>;
   editingStartTime: Record<string, string>;
   editingEndTime: Record<string, string>;
-  durationPicker: 'new' | 'extend' | null;
+  durationPicker: 'new' | 'new-max' | 'extend' | null;
 
   // setters
   setEditingDurationId: React.Dispatch<React.SetStateAction<string>>;
@@ -60,7 +60,7 @@ interface DoctorSubscriptionDetailsProps {
   setEditingStartTime: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setEditingEndTime: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setEditMode: React.Dispatch<React.SetStateAction<Record<string, EditMode>>>;
-  setDurationPicker: (value: 'new' | 'extend' | null) => void;
+  setDurationPicker: (value: 'new' | 'new-max' | 'extend' | null) => void;
   clearEditor: () => void;
 
   // الإجراءات
@@ -91,7 +91,7 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
 }) => {
   return (
     <div className="rounded-xl border border-sky-100 bg-sky-50/40 p-3 space-y-3">
-      <p className="text-[11px] font-black text-sky-700">تفاصيل الاشتراك المميز</p>
+      <p className="text-[11px] font-black text-sky-700">تفاصيل اشتراك برو</p>
 
       {/* التواريخ: بداية ونهاية */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

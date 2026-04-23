@@ -38,11 +38,14 @@ export interface DashboardStats {
   totalBlacklisted: number;
   activeSubscriptions: number;
   freeDocsCount: number;
-  premiumDocsCount: number;
+  premiumDocsCount: number;       // عدد حسابات برو (premium)
+  proMaxDocsCount: number;        // عدد حسابات برو ماكس (جديد)
   totalSmartRxFree: number;
-  totalSmartRxPremium: number;
+  totalSmartRxPro: number;        // تحليلات الحسابات المدفوعة (برو + برو ماكس)
+  totalSmartRxProMax: number;     // تحليلات برو ماكس فقط (جديد)
   totalPrintsFree: number;
-  totalPrintsPremium: number;
+  totalPrintsPro: number;
+  totalPrintsProMax: number;      // طباعات برو ماكس فقط (جديد)
   homeBannerItems: number;
   footerContacts: number;
   totalRevenue: number;

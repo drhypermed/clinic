@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaWhatsapp, FaYoutube, FaXTwitter } from 'react-icons/fa6';
-import { FaLink } from 'react-icons/fa';
+import { FaWhatsapp } from 'react-icons/fa6';
 import type { DoctorAdProfile, DoctorClinicScheduleRow } from '../../../types';
 import { useCopyFeedback } from '../../../hooks/useCopyFeedback';
 import {
@@ -13,28 +12,22 @@ import {
   sanitizeBioForDisplay,
 } from './helpers';
 import { BranchPublicView, BranchTabs } from './BranchPublicView';
+// ستايلات السوشيال المشتركه = نفس الألوان والأيقونات اللي بتظهر في كرت الطبيب،
+// عشان الجمهور يشوف الفيسبوك أزرق والإنستا gradient واليوتيوب أحمر زي الواقع.
+import { getSocialStyle } from './socialStyles';
 
 interface DoctorDetailsModalProps {
   selectedDoctor: DoctorAdProfile | null;
   selectedDoctorFilledSchedule: DoctorClinicScheduleRow[];
   selectedDoctorRatingStats: { count: number; average: number };
   onClose: () => void;
-  onBookDoctor: (doctorId: string) => void;
+  // ملاحظة: حذفنا prop onBookDoctor — زر "احجز موعد" اتشال من الصفحة التعريفيّه
+  // بناءً على طلب المالك. الحجز بقى يبدأ بس من زر "احجز الآن" الموجود في كرت
+  // النتائج (DoctorsResultsSection).
   onPreviewAvatar: (url: string) => void;
   onPreviewGalleryImage: (url: string) => void;
   onOpenDoctorReviews: (doctor: DoctorAdProfile) => void;
 }
-
-const getSocialIcon = (platform?: string) => {
-  const p = (platform || '').toLowerCase();
-  if (p.includes('facebook')) return <FaFacebook className="w-3.5 h-3.5" />;
-  if (p.includes('instagram')) return <FaInstagram className="w-3.5 h-3.5" />;
-  if (p.includes('tiktok')) return <FaTiktok className="w-3.5 h-3.5" />;
-  if (p.includes('youtube')) return <FaYoutube className="w-3.5 h-3.5" />;
-  if (p === 'x' || p.includes('twitter')) return <FaXTwitter className="w-3.5 h-3.5" />;
-  if (p.includes('linkedin')) return <FaLinkedin className="w-3.5 h-3.5" />;
-  return <FaLink className="w-3.5 h-3.5" />;
-};
 
 interface BioItem { label: string; value: string; accent: string; }
 
@@ -43,7 +36,6 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
   selectedDoctorFilledSchedule,
   selectedDoctorRatingStats,
   onClose,
-  onBookDoctor,
   onPreviewAvatar,
   onPreviewGalleryImage,
   onOpenDoctorReviews,
@@ -139,10 +131,10 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
-        {/* Sticky Header */}
-        <div className="relative shrink-0 border-b border-slate-200 bg-gradient-to-l from-cyan-50 via-teal-50/80 to-white">
-          <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-cyan-200/40 blur-3xl" />
-          <div className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full bg-amber-200/30 blur-3xl" />
+        {/* Sticky Header — اتوحّدت ألوانه بـblue/indigo مع باقي واجهة الجمهور */}
+        <div className="relative shrink-0 border-b border-slate-200 bg-gradient-to-l from-blue-50 via-indigo-50/80 to-white">
+          <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full bg-indigo-200/30 blur-3xl" />
 
           <button
             type="button"
@@ -154,24 +146,26 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
           </button>
 
           <div className="relative px-4 md:px-6 py-4 md:py-5 flex items-center gap-3 md:gap-4">
+            {/* صورة الطبيب — دايره خالصه بدون إطار مربع.
+                المستخدم طلب يبقى الشكل دايره صريحه (rounded-full) من غير أي
+                مربع شفاف أو حواف مستديره مزدوجه ورا الصوره. */}
             <button
               type="button"
               onClick={() => { if (avatarImage) onPreviewAvatar(avatarImage); }}
-              className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 border-white bg-slate-100 overflow-hidden shadow-lg ring-2 ring-cyan-200"
+              className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 overflow-hidden shadow-lg ring-2 ring-blue-200"
               title="عرض الصورة بالحجم الكامل"
             >
               {avatarImage ? (
-                // تحسينات أداء: decoding async + width/height لمنع Layout Shift
                 <img
                   src={avatarImage}
                   alt={selectedDoctor.doctorName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-full"
                   decoding="async"
                   width={96}
                   height={96}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-white font-black text-xl">
+                <div className="w-full h-full flex items-center justify-center rounded-full bg-slate-800 text-white font-black text-xl">
                   {getInitials(selectedDoctor.doctorName)}
                 </div>
               )}
@@ -179,7 +173,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
 
             <div className="flex-1 min-w-0">
               <h3 className="text-lg md:text-2xl font-black text-slate-900 leading-tight truncate">{selectedDoctor.doctorName}</h3>
-              <p className="text-xs md:text-sm font-black text-teal-700 mt-0.5 truncate">{selectedDoctor.doctorSpecialty || 'بدون تخصص'}</p>
+              <p className="text-xs md:text-sm font-black text-blue-700 mt-0.5 truncate">{selectedDoctor.doctorSpecialty || 'بدون تخصص'}</p>
               <p className="text-[11px] md:text-xs font-bold text-slate-600 mt-0.5 truncate">📍 {locationText}</p>
 
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -203,15 +197,9 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             </div>
           </div>
 
-          {/* Action Bar */}
-          <div className="relative px-4 md:px-6 pb-4 flex gap-2">
-            <button
-              type="button"
-              onClick={() => onBookDoctor(selectedDoctor.doctorId)}
-              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-black text-sm hover:shadow-lg hover:from-teal-700 hover:to-cyan-700 transition-all"
-            >
-              احجز موعد الآن
-            </button>
+          {/* شريط الإجراءات — حذفنا زر "احجز موعد الآن" بناءً على طلب المالك.
+              الحجز بقى من كرت الطبيب في صفحة النتائج فقط. */}
+          <div className="relative px-4 md:px-6 pb-4 flex gap-2 flex-wrap">
             {callPhone && (
               <a
                 href={`tel:${callPhone}`}
@@ -233,7 +221,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="h-11 px-3 rounded-xl border border-teal-200 bg-teal-50 text-teal-700 font-black text-sm hover:bg-teal-100 transition-colors"
+              className="h-11 px-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-black text-sm hover:bg-blue-100 transition-colors"
               title="نسخ الرابط"
             >
               {linkCopied ? '✓' : '↗'}
@@ -274,23 +262,29 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             )}
           </div>
 
-          {/* Social Links */}
+          {/* Social Links — كل لينك بلون البراند الرسمي + الشعار والاسم بأبيض،
+              عشان الفيسبوك يبان أزرق واليوتيوب أحمر زي ما المريض متعوّد عليهم. */}
           {socialLinks.length > 0 && (
             <div className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
               <p className="text-xs font-black text-slate-700 mb-2">🔗 روابط التواصل الاجتماعي</p>
-              <div className="flex flex-wrap gap-1.5">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="h-8 px-2.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-800 font-black text-[11px] inline-flex items-center gap-1.5 hover:bg-indigo-100 transition-colors"
-                  >
-                    {getSocialIcon(social.platform)}
-                    <span>{social.platform || 'Social'}</span>
-                  </a>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {socialLinks.map((social) => {
+                  const { iconNode, bg, label } = getSocialStyle(social.platform);
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={label}
+                      aria-label={label}
+                      className={`h-9 px-3 rounded-full ${bg} text-white font-black text-[12px] inline-flex items-center gap-1.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+                    >
+                      {iconNode('w-4 h-4')}
+                      <span>{label}</span>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}

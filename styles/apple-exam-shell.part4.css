@@ -64,6 +64,16 @@
   }
 }
 
+/* Shine/shimmer animation — يعبر سطح زر "تحليل الحالة" Pro Max كل 3.5 ثانية */
+@keyframes dh-btn-shine {
+  0% {
+    transform: translateX(0) rotate(12deg);
+  }
+  60%, 100% {
+    transform: translateX(900%) rotate(12deg);
+  }
+}
+
 @keyframes dh-reveal-up {
   0% {
     opacity: 0;

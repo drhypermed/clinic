@@ -82,14 +82,19 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
   onOpenActionModal,
   onUpdateAccountType, onUpdateSubscriptionDates, onUpdateSubscriptionDuration,
 }) => {
-  // state محلي: أي duration picker مفتوح لهذا الكارد (new = اشتراك جديد، extend = تمديد)
-  const [durationPicker, setDurationPicker] = useState<'new' | 'extend' | null>(null);
+  // state محلي: أي duration picker مفتوح لهذا الكارد
+  //   new = اشتراك برو جديد | new-max = اشتراك برو ماكس جديد | extend = تمديد الاشتراك الحالي
+  const [durationPicker, setDurationPicker] = useState<'new' | 'new-max' | 'extend' | null>(null);
   const { nowMs } = useTrustedNow();
 
   const statusCfg = getStatusConfig(doctor.verificationStatus);
-  const isPremium = doctor.accountType === 'premium';
+  // Pro = premium (القيمة الداخلية ما تغيرتش — الـ label بقى "برو" في الـ UI)
+  const isPro = doctor.accountType === 'premium';
+  const isProMax = doctor.accountType === 'pro_max';
+  // حساب مدفوع = برو أو برو ماكس (الاتنين لهم expiry وتحذيرات)
+  const isPaid = isPro || isProMax;
 
-  // ── حسابات الاشتراك المميز (تاريخ البداية، النهاية، المتبقي) ──
+  // ── حسابات اشتراك برو (تاريخ البداية، النهاية، المتبقي) ──
   const premiumStartMs = parseIsoTimeMs(doctor.premiumStartDate);
   const premiumStatus = getExpiryStatus(doctor.premiumExpiryDate, nowMs);
   const premiumExpiryMs = premiumStatus.expiryMs;
@@ -106,7 +111,7 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
   const isEditingThis = editingDurationId === doctor.id;
   // حساب الأدمن بيكون له premium ينتهي في 9999 (فعلياً مدى الحياة)
   const isAdminAccount = isAdmin && doctor.premiumExpiryDate?.startsWith('9999');
-  const isExpiringSoon = isPremium && !isAdminAccount && !isExpired && premiumExpiryMs !== null
+  const isExpiringSoon = isPro && !isAdminAccount && !isExpired && premiumExpiryMs !== null
     && (premiumExpiryMs - nowMs) < SEVEN_DAYS_MS;
 
   // ── دالة تنظيف: تفرغ كل state التعديل عند الإلغاء ──
@@ -157,9 +162,30 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
             <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusCfg.cls}`}>
               {statusCfg.icon} {statusCfg.label}
             </span>
-            {isPremium ? (
-              <span className="inline-flex items-center gap-0.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                <FaCrown className="w-2 h-2" /> مميز
+            {(isProMax || isAdmin) ? (
+              // برو ماكس (أو الأدمن = دايماً برو ماكس مدى الحياة): ذهبي لامع + علامة صح
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#FF8F00] bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] px-2 py-0.5 text-[10px] font-black text-[#B45309] shadow-[0_1px_4px_rgba(255,193,7,0.55)]">
+                <FaCrown className="w-2.5 h-2.5 text-[#E65100]" /> برو ماكس
+                {/* الأدمن دايماً نشط — لغير الأدمن نعرض الصح بس لو مش منتهي */}
+                {(isAdmin || !isExpired) && (
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-emerald-500 text-white" aria-label="مفعّل">
+                    <svg className="w-2 h-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  </span>
+                )}
+              </span>
+            ) : isPro ? (
+              // برو: ذهبي هادئ + علامة صح
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                <FaCrown className="w-2 h-2" /> برو
+                {!isExpired && (
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-emerald-500 text-white" aria-label="مفعّل">
+                    <svg className="w-2 h-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  </span>
+                )}
               </span>
             ) : (
               <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-500">
@@ -167,7 +193,7 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
               </span>
             )}
             {/* تحذير انتهاء الاشتراك */}
-            {isPremium && isExpired && !isAdminAccount && (
+            {isPaid && isExpired && !isAdminAccount && (
               <span className="inline-flex items-center gap-0.5 rounded-full border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600 animate-pulse">
                 <FaClock className="w-2 h-2" /> منتهي
               </span>
@@ -183,8 +209,8 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
           <FaChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* زر تجديد سريع خارج زر التوسيع (للحسابات المنتهية فقط) */}
-        {isPremium && isExpired && !isAdminAccount && !isAdmin && (
+        {/* زر تجديد سريع خارج زر التوسيع (للحسابات المنتهية فقط — برو أو برو ماكس) */}
+        {isPaid && isExpired && !isAdminAccount && !isAdmin && (
           <button
             type="button"
             onClick={(e) => {
@@ -220,53 +246,82 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
             )}
           </div>
 
-          {/* ── اختيار نوع الحساب (أدمن = مميز مدى الحياة / غير أدمن = مجاني أو مميز) ── */}
+          {/* ── اختيار نوع الحساب (أدمن = برو ماكس مدى الحياة / غير أدمن = مجاني/برو/برو ماكس) ── */}
           {isAdmin ? (
-            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
-              <FaCrown className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-black text-amber-700">مميز مدى الحياة</span>
+            // ستايل ذهبي لامع للأدمن (برو ماكس مدى الحياة)
+            <div className="relative flex items-center gap-2 rounded-xl border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] px-4 py-3 shadow-[0_2px_8px_rgba(255,193,7,0.35)] overflow-hidden">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-50"
+                style={{ background: 'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)' }}
+              />
+              <FaCrown className="relative w-4 h-4 text-[#E65100] drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]" />
+              <span className="relative text-sm font-black text-[#B45309]">برو ماكس مدى الحياة</span>
             </div>
           ) : (
             <div className="rounded-xl border border-slate-100 bg-white p-3 space-y-2">
               <label className="block text-[11px] font-black text-slate-500">نوع الحساب</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => { onUpdateAccountType(doctor.id, 'free'); setDurationPicker(null); }}
-                  disabled={!isPremium}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    !isPremium
+                  disabled={!isPaid}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-[11px] font-bold transition ${
+                    !isPaid
                       ? 'border-2 border-slate-600 bg-slate-600 text-white shadow-sm'
                       : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >مجاني</button>
                 <button
                   type="button"
-                  onClick={() => { if (!isPremium) setDurationPicker('new'); }}
-                  disabled={isPremium}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    isPremium
+                  onClick={() => { if (!isPro) setDurationPicker('new'); }}
+                  disabled={isPro}
+                  className={`flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-bold transition ${
+                    isPro
                       ? 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm'
                       : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
-                ><FaCrown className="w-3 h-3" /> مميز</button>
+                ><FaCrown className="w-3 h-3" /> برو</button>
+                <button
+                  type="button"
+                  onClick={() => { if (!isProMax) setDurationPicker('new-max'); }}
+                  disabled={isProMax}
+                  className={`flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-black transition ${
+                    isProMax
+                      ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_6px_rgba(255,193,7,0.4)]'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:border-amber-200'
+                  }`}
+                ><FaCrown className={`w-3 h-3 ${isProMax ? 'text-[#E65100]' : ''}`} /> برو ماكس</button>
               </div>
 
-              {/* اختيار مدة للاشتراك الجديد (بعد ما يختار "مميز") */}
-              {durationPicker === 'new' && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 space-y-2">
-                  <p className="text-[11px] font-black text-amber-700">اختر مدة الاشتراك المميز</p>
+              {/* اختيار مدة للاشتراك الجديد (بعد ما يختار "برو" أو "برو ماكس") — الاتنين ذهبي */}
+              {(durationPicker === 'new' || durationPicker === 'new-max') && (
+                <div className={`rounded-xl border p-3 space-y-2 ${
+                  durationPicker === 'new-max'
+                    ? 'border-[#FFB300] bg-gradient-to-r from-[#FFF8E1] via-[#FFF3C4] to-[#FFF8E1]'
+                    : 'border-amber-200 bg-amber-50/60'
+                }`}>
+                  <p className={`text-[11px] font-black ${
+                    durationPicker === 'new-max' ? 'text-[#B45309]' : 'text-amber-700'
+                  }`}>
+                    اختر مدة الاشتراك {durationPicker === 'new-max' ? 'برو ماكس' : 'برو'}
+                  </p>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATION_PRESETS.map((opt) => (
                       <button
                         key={opt.days}
                         type="button"
                         onClick={() => {
-                          onUpdateAccountType(doctor.id, 'premium', opt.days);
+                          const targetType = durationPicker === 'new-max' ? 'pro_max' : 'premium';
+                          onUpdateAccountType(doctor.id, targetType, opt.days);
                           setDurationPicker(null);
                         }}
                         disabled={actionInProgress}
-                        className="rounded-xl border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
+                        className={`rounded-xl border bg-white px-3 py-2.5 text-xs font-bold transition disabled:opacity-50 ${
+                          durationPicker === 'new-max'
+                            ? 'border-purple-300 text-purple-700 hover:bg-purple-100'
+                            : 'border-amber-300 text-amber-700 hover:bg-amber-100'
+                        }`}
                       >
                         {opt.label}
                       </button>
@@ -284,8 +339,8 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
             </div>
           )}
 
-          {/* ── تفاصيل الاشتراك المميز (للأطباء المميزين فقط) ── */}
-          {isPremium && (
+          {/* ── تفاصيل الاشتراك (للأطباء المدفوعين: برو أو برو ماكس) ── */}
+          {isPaid && (
             <DoctorSubscriptionDetails
               doctor={doctor}
               isAdmin={isAdmin}

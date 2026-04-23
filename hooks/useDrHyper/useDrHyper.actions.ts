@@ -23,7 +23,7 @@ interface UseDrHyperActionsArgs {
   realtimeData: DrHyperRealtimeData;
   setCurrentView: DrHyperViewAndUsageState['setCurrentView'];
   trackMedUsage: DrHyperViewAndUsageState['trackMedUsage'];
-  resolveCurrentUserAccountType: () => Promise<'free' | 'premium'>;
+  resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
   getAccountTypeControls: () => Promise<any>;
   consumeStorageQuota: (feature: 'recordSave' | 'readyPrescriptionSave') => Promise<unknown>;
   consumeSmartPrescriptionQuota: () => Promise<unknown>;
@@ -388,6 +388,11 @@ export const useDrHyperActions = ({
     ageMonths,
     ageDays,
     weight,
+    height,
+    // حقول الهوية الجديدة (مهمة للتحليل الغني بالنوع/الحمل/الرضاعة)
+    gender,
+    pregnant,
+    breastfeeding,
     totalAgeInMonths,
     vitals,
     userId: user?.uid,
@@ -406,6 +411,11 @@ export const useDrHyperActions = ({
     setInvestigationsEn,
     setDiagnosisEn,
     setRxItems,
+    // state نافذة التحليل الغنية
+    setCaseAnalysisOpen: patientState.setCaseAnalysisOpen,
+    setCaseAnalysisResult: patientState.setCaseAnalysisResult,
+    setCaseAnalysisLoading: patientState.setCaseAnalysisLoading,
+    setNeedsManualDxHint: patientState.setNeedsManualDxHint,
     prescriptionRef,
     lastAddedItemIdRef,
     onTrackSmartPrescription,

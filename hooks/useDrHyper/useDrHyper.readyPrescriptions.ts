@@ -37,7 +37,7 @@ interface CreateReadyPrescriptionActionsParams {
     sanitizeForFirestore: (value: unknown) => unknown;
     showNotification: ShowNotification;
     getAccountTypeControls: () => Promise<any>;
-    resolveCurrentUserAccountType: () => Promise<'free' | 'premium'>;
+    resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
     applyLimitPlaceholder: (template: string, limit: number, fallback: string) => string;
     dismissNotification: (id?: string, manual?: boolean) => void;
     openQuotaNoticeModal: (payload: { message: string; whatsappNumber?: string; whatsappUrl?: string; dayKey?: string; persist?: boolean }) => void;
@@ -148,22 +148,29 @@ export const createReadyPrescriptionActions = ({
                 resolveCurrentUserAccountType(),
             ]);
 
-            const maxReady = accountType === 'premium'
-                ? controls.premiumReadyPrescriptionsMaxCount
-                : controls.freeReadyPrescriptionsMaxCount;
+            // 3 فئات: pro_max يرث من premium لو الأدمن ما حددش حدود خاصة
+            const maxReady = accountType === 'pro_max'
+                ? (controls.proMaxReadyPrescriptionsMaxCount ?? controls.premiumReadyPrescriptionsMaxCount)
+                : accountType === 'premium'
+                    ? controls.premiumReadyPrescriptionsMaxCount
+                    : controls.freeReadyPrescriptionsMaxCount;
 
             if ((readyPrescriptions || []).length < maxReady) {
                 return true;
             }
 
             const fallbackMsg = `تم الوصول إلى الحد الأقصى للروشتات الجاهزة (${maxReady}). احذف عنصرًا قديمًا لإضافة جديد.`;
-            const template = accountType === 'premium'
-                ? controls.premiumReadyPrescriptionsCapacityMessage
-                : controls.freeReadyPrescriptionsCapacityMessage;
+            const template = accountType === 'pro_max'
+                ? (controls.proMaxReadyPrescriptionsCapacityMessage ?? controls.premiumReadyPrescriptionsCapacityMessage)
+                : accountType === 'premium'
+                    ? controls.premiumReadyPrescriptionsCapacityMessage
+                    : controls.freeReadyPrescriptionsCapacityMessage;
             const capacityMessage = applyLimitPlaceholder(template, maxReady, fallbackMsg);
-            const capacityWhatsAppMessage = accountType === 'premium'
-                ? controls.premiumReadyPrescriptionsCapacityWhatsappMessage
-                : controls.freeReadyPrescriptionsCapacityWhatsappMessage;
+            const capacityWhatsAppMessage = accountType === 'pro_max'
+                ? (controls.proMaxReadyPrescriptionsCapacityWhatsappMessage ?? controls.premiumReadyPrescriptionsCapacityWhatsappMessage)
+                : accountType === 'premium'
+                    ? controls.premiumReadyPrescriptionsCapacityWhatsappMessage
+                    : controls.freeReadyPrescriptionsCapacityWhatsappMessage;
 
             dismissNotification();
             openQuotaNoticeModal({
@@ -191,7 +198,9 @@ export const createReadyPrescriptionActions = ({
             if (isDailyLimit && details) {
                 const fallback = details.accountType === 'free'
                     ? 'تم استهلاك حد حفظ الروشتات الجاهزة اليومي (مجاني)'
-                    : 'تم استهلاك حد حفظ الروشتات الجاهزة اليومي (مميز)';
+                    : details.accountType === 'pro_max'
+                    ? 'تم استهلاك حد حفظ الروشتات الجاهزة اليومي (برو ماكس)'
+                    : 'تم استهلاك حد حفظ الروشتات الجاهزة اليومي (برو)';
 
                 dismissNotification();
                 openQuotaNoticeModal({

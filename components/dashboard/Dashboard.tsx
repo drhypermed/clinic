@@ -313,7 +313,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     />
                 )}
 
-                {/* ─── Premium Warning ─── */}
+                {/* ─── Pro Warning ─── */}
                 {expiryWarning.isExpired && expiryWarning.expiryDate ? (
                     <PremiumExpiryWarning expiryDate={expiryWarning.expiryDate} mode="expired" />
                 ) : expiryWarning.show && expiryWarning.expiryDate ? (

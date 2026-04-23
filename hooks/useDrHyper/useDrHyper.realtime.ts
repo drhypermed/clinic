@@ -497,10 +497,10 @@ export const useDrHyperRealtimeData = ({
         // نركز فقط على الإشعارات الجديدة المضافة (Added)
         if (change.type === 'added') {
           const data = change.doc.data();
-          // تذكير انتهاء الاشتراك المميز له شريط ثابت داخل الصفحة الرئيسية
+          // تذكير انتهاء اشتراك برو له شريط ثابت داخل الصفحة الرئيسية
           // لذلك لا نعرضه كـ Toast عائم في منتصف الشاشة.
           const rawMessage = String(data?.message || '');
-          if (data.type === 'premium-expiry' || rawMessage.includes('الاشتراك المميز سينتهي')) return;
+          if (data.type === 'premium-expiry' || rawMessage.includes('اشتراك برو سينتهي')) return;
 
           showNotificationRef.current(
             data.message || 'إشعار جديد',

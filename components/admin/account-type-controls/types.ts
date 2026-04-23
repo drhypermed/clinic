@@ -1,7 +1,7 @@
 /**
  * الملف: types.ts
  * الوصف: "قاموس إعدادات الباقات". 
- * يحتوي على تعريفات الجداول والأنواع المستخدمة في التحكم في مميزات الحسابات (Free/Premium): 
+ * يحتوي على تعريفات الجداول والأنواع المستخدمة في التحكم في مميزات الحسابات (Free/Pro): 
  * - PlanConfig: إعدادات الباقة (الاسم، السعر، المميزات المتاحة). 
  * - FeatureFlag: مفاتيح التحكم في تفعيل أو تعطيل ميزة معينة. 
  * - DrugToolConfig: إعدادات أدوات الأدوية المتاحة لكل باقة.
@@ -13,6 +13,7 @@ import type { AccountTypeControls } from '../../../services/accountTypeControlsS
 export type AccountTypeControlsForm = AccountTypeControls;
 
 export type LimitKey =
+  // ─── free + premium (=برو) موجودين من الأول ───
   | 'freeDailyLimit'
   | 'premiumDailyLimit'
   | 'freeRecordDailyLimit'
@@ -30,7 +31,17 @@ export type LimitKey =
   | 'freeReadyPrescriptionsMaxCount'
   | 'premiumReadyPrescriptionsMaxCount'
   | 'freeMedicationCustomizationsMaxCount'
-  | 'premiumMedicationCustomizationsMaxCount';
+  | 'premiumMedicationCustomizationsMaxCount'
+  // ─── برو ماكس (جديد) — الأدمن يضبط قيمها لاحقاً ───
+  | 'proMaxDailyLimit'
+  | 'proMaxRecordDailyLimit'
+  | 'proMaxPublicBookingDailyLimit'
+  | 'proMaxPublicFormBookingDailyLimit'
+  | 'proMaxSecretaryEntryRequestDailyLimit'
+  | 'proMaxReadyPrescriptionDailyLimit'
+  | 'proMaxMedicalReportDailyLimit'
+  | 'proMaxReadyPrescriptionsMaxCount'
+  | 'proMaxMedicationCustomizationsMaxCount';
 
 export type MessageKey =
   | 'freeAnalysisLimitMessage'
@@ -50,7 +61,17 @@ export type MessageKey =
   | 'freeReadyPrescriptionsCapacityMessage'
   | 'premiumReadyPrescriptionsCapacityMessage'
   | 'freeMedicationCustomizationsCapacityMessage'
-  | 'premiumMedicationCustomizationsCapacityMessage';
+  | 'premiumMedicationCustomizationsCapacityMessage'
+  // ─── برو ماكس ───
+  | 'proMaxAnalysisLimitMessage'
+  | 'proMaxRecordLimitMessage'
+  | 'proMaxPublicBookingLimitMessage'
+  | 'proMaxPublicFormBookingLimitMessage'
+  | 'proMaxSecretaryEntryRequestLimitMessage'
+  | 'proMaxReadyPrescriptionDailyLimitMessage'
+  | 'proMaxMedicalReportLimitMessage'
+  | 'proMaxReadyPrescriptionsCapacityMessage'
+  | 'proMaxMedicationCustomizationsCapacityMessage';
 
 export type WhatsappMessageKey =
   | 'freeAnalysisWhatsappMessage'
@@ -70,10 +91,21 @@ export type WhatsappMessageKey =
   | 'freeReadyPrescriptionsCapacityWhatsappMessage'
   | 'premiumReadyPrescriptionsCapacityWhatsappMessage'
   | 'freeMedicationCustomizationsCapacityWhatsappMessage'
-  | 'premiumMedicationCustomizationsCapacityWhatsappMessage';
+  | 'premiumMedicationCustomizationsCapacityWhatsappMessage'
+  // ─── برو ماكس ───
+  | 'proMaxAnalysisWhatsappMessage'
+  | 'proMaxRecordWhatsappMessage'
+  | 'proMaxPublicBookingWhatsappMessage'
+  | 'proMaxPublicFormBookingWhatsappMessage'
+  | 'proMaxSecretaryEntryRequestWhatsappMessage'
+  | 'proMaxReadyPrescriptionWhatsappMessage'
+  | 'proMaxMedicalReportWhatsappMessage'
+  | 'proMaxReadyPrescriptionsCapacityWhatsappMessage'
+  | 'proMaxMedicationCustomizationsCapacityWhatsappMessage';
 
 export type PlanConfig = {
-  name: 'مجاني' | 'مميز';
+  // الأسماء التجارية في الـ UI: "مجاني" / "برو" / "برو ماكس"
+  name: 'مجاني' | 'برو' | 'برو ماكس';
   limitLabel: string;
   messageLabel: string;
   whatsappLabel: string;
@@ -90,4 +122,6 @@ export type GroupConfig = {
   title: string;
   free: PlanConfig;
   premium: PlanConfig;
+  // برو ماكس اختياري — مش كل الجروبات لسه محدد ليها حدود خاصة
+  proMax?: PlanConfig;
 };

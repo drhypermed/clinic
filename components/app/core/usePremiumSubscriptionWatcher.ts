@@ -12,19 +12,19 @@ import {
 } from '../../../services/firestore/profileRoles';
 
 /**
- * Hook متابعة اشتراكات العضوية الممتازة (Premium Subscription Watcher)
+ * Hook متابعة اشتراكات العضوية الممتازة (Pro Subscription Watcher)
  * وظيفته:
- * 1. فحص حالة اشتراك الطبيب (هل هو Premium؟).
+ * 1. فحص حالة اشتراك الطبيب (هل هو Pro؟).
  * 2. إذا كان الاشتراك سينتهي خلال (24 ساعة) أو أقل، يتم إرسال إشعار داخلي للطبيب للتذكير بالتجديد.
  * 3. تحديث قاعدة البيانات لضمان عدم تكرار الإشعار.
  * ملاحظة: تخفيض مستوى الحساب (Downgrade) يتم عبر Cloud Functions وليس من الكود البرمجي للمتصفح لدواعي الأمان والحماية.
  */
 
-type UsePremiumSubscriptionWatcherParams = {
+type UseProSubscriptionWatcherParams = {
   user: ExtendedUser | null;
 };
 
-export const usePremiumSubscriptionWatcher = ({ user }: UsePremiumSubscriptionWatcherParams) => {
+export const usePremiumSubscriptionWatcher = ({ user }: UseProSubscriptionWatcherParams) => {
   useEffect(() => {
     if (!user) return;
 
@@ -45,8 +45,8 @@ export const usePremiumSubscriptionWatcher = ({ user }: UsePremiumSubscriptionWa
         const premiumExpiryDate = data?.premiumExpiryDate; // تاريخ انتهاء الاشتراك
         const premiumNotificationSent = data?.premiumNotificationSent; // هل تم إرسال تنبيه سابقاً؟
 
-        // إذا كان الحساب "مميز" وله تاريخ انتهاء
-        if (accountType === 'premium' && premiumExpiryDate) {
+        // إذا كان الحساب "برو" أو "برو ماكس" وله تاريخ انتهاء — نتابع تنبيهات الانتهاء
+        if ((accountType === 'premium' || accountType === 'pro_max') && premiumExpiryDate) {
           await syncTrustedTime();
           const expiryTime = parseIsoTimeMs(premiumExpiryDate);
           if (expiryTime === null) return;
@@ -65,8 +65,8 @@ export const usePremiumSubscriptionWatcher = ({ user }: UsePremiumSubscriptionWa
             // أ. إضافة إشعار جديد في مجموعة الإشعارات الخاصة بالطبيب
             await addDoc(getDoctorNotificationsCollectionRef(user.uid), {
               type: 'premium-expiry',
-              title: '⏰ اشتراكك المميز سينتهي قريبًا',
-              message: `الاشتراك المميز سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة المميزات.`,
+              title: '⏰ اشتراكك برو سينتهي قريبًا',
+              message: `اشتراك برو سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة بروات.`,
               actionUrl: '/admin',
               actionLabel: 'تجديد الآن',
               createdAt: new Date(now).toISOString(),
@@ -82,7 +82,7 @@ export const usePremiumSubscriptionWatcher = ({ user }: UsePremiumSubscriptionWa
 
           // ج. إشعار بانتهاء الاشتراك الفعلي (Cloud Functions تتولى سحب الصلاحيات)
           if (now >= expiryTime) {
-            console.log('[Subscription] Premium expired. Cloud Function will handle downgrade.');
+            console.log('[Subscription] Pro expired. Cloud Function will handle downgrade.');
           }
         }
       } catch (err) {

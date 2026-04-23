@@ -1,7 +1,8 @@
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Medication, PatientGender, PaymentType, PrescriptionItem } from '../../types';
 import type { AppStateSnapshot } from './useDrHyper.types';
+import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
 import { getCairoDayKey } from '../../utils/cairoTime';
 
 export type VisitType = 'exam' | 'consultation';
@@ -77,6 +78,17 @@ export const useDrHyperPatientState = () => {
 
   const [analyzing, setAnalyzing] = useState(false); // هل الذكاء الاصطناعي يقوم بالتحليل الآن؟
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // رسالة الخطأ الحالية
+
+  // ── state نافذة تحليل الحالة الغنية (DDx + Must-Not-Miss + Investigations + ...)
+  const [caseAnalysisOpen, setCaseAnalysisOpen] = useState(false);
+  const [caseAnalysisResult, setCaseAnalysisResult] = useState<CaseAnalysisResult | null>(null);
+  const [caseAnalysisLoading, setCaseAnalysisLoading] = useState(false);
+  // ما تمت إضافته من المودال (لتعطيل أزرار "إضافة" بعد الضغط ومنع التكرار)
+  const [addedDiagnosesFromModal, setAddedDiagnosesFromModal] = useState<string[]>([]);
+  const [addedInvestigationsFromModal, setAddedInvestigationsFromModal] = useState<string[]>([]);
+  const [addedInstructionsFromModal, setAddedInstructionsFromModal] = useState<string[]>([]);
+  // علامة لإجبار عرض صف Dx فاضي بعد التحليل (تنبيه الطبيب بالكتابة اليدوية)
+  const [needsManualDxHint, setNeedsManualDxHint] = useState(false);
   const [selectedMed, setSelectedMed] = useState<Medication | null>(null); // الدواء المختار حالياً للتعديل
   const [isDataOnlyMode, setIsDataOnlyMode] = useState(false); // وضع "البيانات فقط" (بدون واجهة اختيار)
   const [lastSavedHash, setLastSavedHash] = useState<string>(''); // بصمة آخر حفظ لمقارنة التغييرات
@@ -90,6 +102,14 @@ export const useDrHyperPatientState = () => {
   const totalAgeInMonths = useMemo(() => {
     return (parseInt(ageYears) || 0) * 12 + (parseInt(ageMonths) || 0) + (parseInt(ageDays) || 0) / 30;
   }, [ageYears, ageMonths, ageDays]);
+
+  // لو الطبيب كتب تشخيص (يدوياً أو من المودال) نطفي الـ hint تلقائياً
+  // عشان ما يستمرش يظهر placeholder "اكتب التشخيص" بعد ما اتكتب فعلاً
+  useEffect(() => {
+    if (needsManualDxHint && diagnosisEn.trim().length > 0) {
+      setNeedsManualDxHint(false);
+    }
+  }, [diagnosisEn, needsManualDxHint]);
 
   const demographicsState = {
     patientName,
@@ -188,6 +208,21 @@ export const useDrHyperPatientState = () => {
     isConsultationMode,
     setIsConsultationMode,
     totalAgeInMonths,
+    // state نافذة تحليل الحالة الغنية
+    caseAnalysisOpen,
+    setCaseAnalysisOpen,
+    caseAnalysisResult,
+    setCaseAnalysisResult,
+    caseAnalysisLoading,
+    setCaseAnalysisLoading,
+    addedDiagnosesFromModal,
+    setAddedDiagnosesFromModal,
+    addedInvestigationsFromModal,
+    setAddedInvestigationsFromModal,
+    addedInstructionsFromModal,
+    setAddedInstructionsFromModal,
+    needsManualDxHint,
+    setNeedsManualDxHint,
   };
 
   const insuranceState = {

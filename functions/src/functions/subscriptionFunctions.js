@@ -27,7 +27,7 @@ module.exports = ({
     batch.set(docRef, buildDoctorUserProfilePayload({
       accountType: 'free',
       premiumNotificationSent: false,
-      lastPremiumExpiryDate: expiryIso,
+      lastProExpiryDate: expiryIso,
       subscriptionUpdatedAt: nowIso,
     }), { merge: true });
   };
@@ -63,12 +63,12 @@ module.exports = ({
     return converted;
   };
 
-  const checkExpiredPremiumSubscriptions = async () => {
+  const checkExpiredProSubscriptions = async () => {
     try {
       const db = getDb();
       const now = new Date();
       const nowIso = now.toISOString();
-      console.log('[checkExpiredPremiumSubscriptions] Running at:', nowIso);
+      console.log('[checkExpiredProSubscriptions] Running at:', nowIso);
 
       const expiredDoctorsSnap = await db.collection('users')
         .where('authRole', '==', 'doctor')
@@ -77,7 +77,7 @@ module.exports = ({
         .get();
 
       if (expiredDoctorsSnap.empty) {
-        console.log('[checkExpiredPremiumSubscriptions] No expired subscriptions found.');
+        console.log('[checkExpiredProSubscriptions] No expired subscriptions found.');
         return { success: true, converted: 0 };
       }
 
@@ -85,13 +85,13 @@ module.exports = ({
         db,
         expiredDoctorDocs: expiredDoctorsSnap.docs,
         nowIso,
-        logPrefix: '[checkExpiredPremiumSubscriptions]',
+        logPrefix: '[checkExpiredProSubscriptions]',
       });
-      console.log(`[checkExpiredPremiumSubscriptions] Converted ${count} expired premium account(s) to free.`);
+      console.log(`[checkExpiredProSubscriptions] Converted ${count} expired premium account(s) to free.`);
 
       return { success: true, converted: count };
     } catch (err) {
-      console.error('[checkExpiredPremiumSubscriptions] Error:', err);
+      console.error('[checkExpiredProSubscriptions] Error:', err);
       throw err;
     }
   };
@@ -133,7 +133,7 @@ module.exports = ({
   };
 
   return {
-    checkExpiredPremiumSubscriptions,
+    checkExpiredProSubscriptions,
     runExpiredSubscriptionsCheckNow,
   };
 };

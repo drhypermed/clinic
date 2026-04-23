@@ -28,6 +28,7 @@ import type {
   MonthlyExpense,
   MonthlyPrices,
   NewExpenseInput,
+  ProMaxSubscriptionPrices,
   RevenueData,
   SubscriptionPrices,
 } from '../../../types';
@@ -37,6 +38,7 @@ import {
   normalizeMonthDocId,
   sanitizeExpenseDescription,
   sanitizePrices,
+  sanitizeProMaxPrices,
 } from './securityUtils';
 import { computeRevenueFromDoctors } from './revenueCalculator';
 
@@ -74,9 +76,11 @@ export const useFinancialData = ({
   const cairoNowParts = getCairoDateParts(new Date());
   const currentCalendarYear = cairoNowParts.year;
 
-  // ── حالة الأسعار ──
+  // ── حالة الأسعار: برو + برو ماكس بشكل منفصل ──
   const [prices, setPrices] = useState<SubscriptionPrices>({ monthly: 0, sixMonths: 0, yearly: 0 });
   const [tempPrices, setTempPrices] = useState<SubscriptionPrices>(prices);
+  const [proMaxPrices, setProMaxPrices] = useState<ProMaxSubscriptionPrices>({ monthly: 0, sixMonths: 0, yearly: 0 });
+  const [tempProMaxPrices, setTempProMaxPrices] = useState<ProMaxSubscriptionPrices>(proMaxPrices);
   const [editingPrices, setEditingPrices] = useState(false);
   const [allMonthlyPrices, setAllMonthlyPrices] = useState<MonthlyPrices[]>([]);
   const [showPriceHistory, setShowPriceHistory] = useState(false);
@@ -88,7 +92,7 @@ export const useFinancialData = ({
   // ── حالة الإيراد ──
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [currentYearSummary, setCurrentYearSummary] = useState<CurrentYearSummarySnapshot | null>(null);
-  // عدد أطباء Premium في السنة المختارة ببيانات ناقصة (بلا premiumExpiryDate).
+  // عدد أطباء Pro في السنة المختارة ببيانات ناقصة (بلا premiumExpiryDate).
   // يُعرض كتحذير حتى يعرف الأدمن أن الأرقام قد لا تعكس الواقع.
   const [doctorsMissingExpiry, setDoctorsMissingExpiry] = useState(0);
 
@@ -144,22 +148,30 @@ export const useFinancialData = ({
     if (!isAdminUser) return;
 
     const normalizedMonth = normalizeMonthDocId(month);
+    const zero = { monthly: 0, sixMonths: 0, yearly: 0 };
     if (!isValidMonthDocId(normalizedMonth)) {
-      setPrices({ monthly: 0, sixMonths: 0, yearly: 0 });
-      setTempPrices({ monthly: 0, sixMonths: 0, yearly: 0 });
+      setPrices(zero);
+      setTempPrices(zero);
+      setProMaxPrices(zero);
+      setTempProMaxPrices(zero);
       return;
     }
 
     try {
       const pricesDoc = await getDocCacheFirst(doc(db, 'subscriptionPrices', normalizedMonth));
       if (pricesDoc.exists()) {
-        const data = sanitizePrices(pricesDoc.data() as SubscriptionPrices);
+        const raw = pricesDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
+        const data = sanitizePrices(raw);
+        const proMaxData = sanitizeProMaxPrices(raw.proMaxPrices);
         setPrices(data);
         setTempPrices(data);
+        setProMaxPrices(proMaxData);
+        setTempProMaxPrices(proMaxData);
       } else {
-        const defaultPrices = { monthly: 0, sixMonths: 0, yearly: 0 };
-        setPrices(defaultPrices);
-        setTempPrices(defaultPrices);
+        setPrices(zero);
+        setTempPrices(zero);
+        setProMaxPrices(zero);
+        setTempProMaxPrices(zero);
       }
     } catch (error) {
       console.warn('Error loading prices for month:', error);
@@ -175,9 +187,11 @@ export const useFinancialData = ({
       const allPrices: MonthlyPrices[] = [];
       pricesSnap.forEach((snapshotDoc) => {
         if (!isValidMonthDocId(snapshotDoc.id)) return;
+        const raw = snapshotDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
         allPrices.push({
           month: snapshotDoc.id,
-          prices: sanitizePrices(snapshotDoc.data() as SubscriptionPrices),
+          prices: sanitizePrices(raw),
+          proMaxPrices: raw.proMaxPrices ? sanitizeProMaxPrices(raw.proMaxPrices) : undefined,
         });
       });
       // الأحدث أولاً
@@ -237,17 +251,22 @@ export const useFinancialData = ({
         return;
       }
 
-      // غير ذلك: نحمل أطباء Premium + الأسعار، ثم نستدعي الحاسبة النقية
+      // غير ذلك: نحمل أطباء Pro + الأسعار، ثم نستدعي الحاسبة النقية
       const doctorUsersSnap = await getDocsCacheFirst(getDoctorUsersQuery());
       const doctors = doctorUsersSnap.docs.map(
         (snapshotDoc) => snapshotDoc.data() as Record<string, any>
       );
 
       const pricesSnap = await getDocsCacheFirst(query(collection(db, 'subscriptionPrices')));
-      const pricesByMonth: Record<string, SubscriptionPrices> = {};
+      // خريطة مركبة: لكل شهر { prices: برو, proMaxPrices: برو ماكس }
+      const pricesByMonth: Record<string, { prices: SubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices }> = {};
       pricesSnap.forEach((snapshotDoc) => {
         if (!isValidMonthDocId(snapshotDoc.id)) return;
-        pricesByMonth[snapshotDoc.id] = sanitizePrices(snapshotDoc.data() as SubscriptionPrices);
+        const raw = snapshotDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
+        pricesByMonth[snapshotDoc.id] = {
+          prices: sanitizePrices(raw),
+          proMaxPrices: raw.proMaxPrices ? sanitizeProMaxPrices(raw.proMaxPrices) : undefined,
+        };
       });
 
       const { revenueData: computed, doctorsMissingExpiry: missing } = computeRevenueFromDoctors({
@@ -300,19 +319,30 @@ export const useFinancialData = ({
     }
 
     const safePrices = sanitizePrices(tempPrices);
+    const safeProMaxPrices = sanitizeProMaxPrices(tempProMaxPrices);
 
-    // تأكيد قبل الكتابة فوق الأسعار الحالية (تفادي الضغط الخاطئ على الحفظ).
+    // تأكيد قبل الكتابة فوق الأسعار الحالية — يعرض الأسعار الجديدة للفئتين.
     const confirmMessage =
       `هل تريد حفظ أسعار شهر ${normalizedMonth}؟\n\n` +
+      `═══ باقة برو ═══\n` +
       `• شهري: ${safePrices.monthly.toLocaleString('ar-EG')} ج.م\n` +
       `• 6 شهور: ${safePrices.sixMonths.toLocaleString('ar-EG')} ج.م\n` +
       `• سنوي: ${safePrices.yearly.toLocaleString('ar-EG')} ج.م\n\n` +
+      `═══ باقة برو ماكس ═══\n` +
+      `• شهري: ${safeProMaxPrices.monthly.toLocaleString('ar-EG')} ج.م\n` +
+      `• 6 شهور: ${safeProMaxPrices.sixMonths.toLocaleString('ar-EG')} ج.م\n` +
+      `• سنوي: ${safeProMaxPrices.yearly.toLocaleString('ar-EG')} ج.م\n\n` +
       `سيتم استبدال الأسعار الحالية لهذا الشهر.`;
     if (!window.confirm(confirmMessage)) return;
 
     try {
-      await setDoc(doc(db, 'subscriptionPrices', normalizedMonth), safePrices);
+      // نحفظ في نفس document: أسعار برو في الحقول الأساسية + proMaxPrices كحقل داخلي
+      await setDoc(doc(db, 'subscriptionPrices', normalizedMonth), {
+        ...safePrices,
+        proMaxPrices: safeProMaxPrices,
+      });
       setPrices(safePrices);
+      setProMaxPrices(safeProMaxPrices);
       setEditingPrices(false);
       await loadAllPrices();
       alert('✅ تم حفظ الأسعار بنجاح');
@@ -381,10 +411,14 @@ export const useFinancialData = ({
   }, [selectedPriceMonth, isAdminUser]);
 
   return {
-    // بيانات الأسعار
+    // بيانات أسعار برو
     prices,
     tempPrices,
     setTempPrices,
+    // بيانات أسعار برو ماكس
+    proMaxPrices,
+    tempProMaxPrices,
+    setTempProMaxPrices,
     editingPrices,
     setEditingPrices,
     allMonthlyPrices,

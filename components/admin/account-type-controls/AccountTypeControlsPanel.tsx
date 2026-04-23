@@ -194,7 +194,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
             onChange={(e) =>
               setFormAndMarkDirty((prev) => ({ ...prev, whatsappNumber: digitsOnly(e.target.value) }))
             }
-            placeholder="201551020238"
+            placeholder="201092805293"
             dir="ltr"
             className="w-full max-w-md h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors"
           />

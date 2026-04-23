@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
 
-export type DoctorAccountType = 'free' | 'premium';
+export type DoctorAccountType = 'free' | 'premium' | 'pro_max';
 
 interface HookArgs {
   isOpen: boolean;
@@ -55,8 +55,8 @@ export function useDoctorProfileData({
 
   // حالات الاشتراك (للعرض فقط)
   const [accountType, setAccountType] = useState<DoctorAccountType>('free');
-  const [premiumStartDate, setPremiumStartDate] = useState('');
-  const [premiumEndDate, setPremiumEndDate] = useState('');
+  const [premiumStartDate, setProStartDate] = useState('');
+  const [premiumEndDate, setProEndDate] = useState('');
 
   // علم قراءه للتحقق إذا الطبيب استهلك فرصة تعديل التخصص مسبقًا
   const [specialtyEditedOnce, setSpecialtyEditedOnce] = useState<boolean>(false);
@@ -68,8 +68,8 @@ export function useDoctorProfileData({
     const applyData = (data: Record<string, unknown> | null) => {
       if (!data || Object.keys(data).length === 0) {
         setAccountType('free');
-        setPremiumStartDate('');
-        setPremiumEndDate('');
+        setProStartDate('');
+        setProEndDate('');
         setSpecialtyEditedOnce(false);
         return;
       }
@@ -78,14 +78,16 @@ export function useDoctorProfileData({
         ? (data.profileImage as string) || ''
         : currentProfileImage || '';
       const resolvedAccountType: DoctorAccountType =
-        data.accountType === 'premium' ? 'premium' : 'free';
-      const resolvedPremiumStartDate =
+        data.accountType === 'premium' ? 'premium'
+          : data.accountType === 'pro_max' ? 'pro_max'
+          : 'free';
+      const resolvedProStartDate =
         typeof data.premiumStartDate === 'string' ? data.premiumStartDate : '';
-      const resolvedPremiumEndDate =
+      const resolvedProEndDate =
         typeof data.premiumExpiryDate === 'string'
           ? data.premiumExpiryDate
-          : typeof data.lastPremiumExpiryDate === 'string'
-            ? data.lastPremiumExpiryDate
+          : typeof data.lastProExpiryDate === 'string'
+            ? data.lastProExpiryDate
             : '';
 
       setName((data.doctorName as string) || currentName);
@@ -93,8 +95,8 @@ export function useDoctorProfileData({
       setWhatsapp((data.doctorWhatsApp as string) || '');
       setProfileImage(resolvedProfileImage);
       setAccountType(resolvedAccountType);
-      setPremiumStartDate(resolvedPremiumStartDate);
-      setPremiumEndDate(resolvedPremiumEndDate);
+      setProStartDate(resolvedProStartDate);
+      setProEndDate(resolvedProEndDate);
       // قراءه علم استهلاك فرصة تعديل التخصص (الحسابات القديمة بدون تخصص تحصل على فرصة واحدة)
       setSpecialtyEditedOnce(data.specialtyEditedOnce === true);
     };

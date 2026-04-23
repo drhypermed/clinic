@@ -52,7 +52,9 @@ const mapDoctorSnapshot = (snapshotDoc: DoctorDocSnapshot): ApprovedDoctor => {
     doctorSpecialty: userData?.doctorSpecialty || '',
     doctorEmail: normalizeEmail(userData?.doctorEmail || userData?.email),
     doctorWhatsApp: userData?.doctorWhatsApp || '',
-    accountType: userData?.accountType === 'premium' ? 'premium' : 'free',
+    accountType: userData?.accountType === 'premium' ? 'premium'
+      : userData?.accountType === 'pro_max' ? 'pro_max'
+      : 'free',
     premiumExpiryDate: userData?.premiumExpiryDate || '',
     premiumStartDate: userData?.premiumStartDate || '',
     subscriptionHistory: Array.isArray(userData?.subscriptionHistory) ? userData.subscriptionHistory : [],
@@ -132,15 +134,16 @@ export const useDoctorsPagination = ({
       }
     }
 
-    // 2) تحويل حساب الأدمن لـ premium مدى الحياة
+    // 2) تحويل حساب الأدمن لـ برو ماكس مدى الحياة (أعلى فئة)
     const PERMANENT_EXPIRY = '9999-12-31T23:59:59.000Z';
     const adminDoctor = nextDoctors.find((doctor) => isAdminDoctorEmail(doctor.doctorEmail));
-    if (adminDoctor && (adminDoctor.accountType !== 'premium' || !adminDoctor.premiumExpiryDate?.startsWith('9999'))) {
+    // نغير الأدمن لبرو ماكس لو مش عنده الفئة دي أو انتهائه مش دائم
+    if (adminDoctor && (adminDoctor.accountType !== 'pro_max' || !adminDoctor.premiumExpiryDate?.startsWith('9999'))) {
       try {
         await setDoc(
           doc(db, 'users', adminDoctor.id),
           buildDoctorUserProfilePayload({
-            accountType: 'premium',
+            accountType: 'pro_max',
             premiumStartDate: adminDoctor.premiumStartDate || new Date().toISOString(),
             premiumExpiryDate: PERMANENT_EXPIRY,
           }),
@@ -150,14 +153,14 @@ export const useDoctorsPagination = ({
           doctor.id === adminDoctor.id
             ? {
               ...doctor,
-              accountType: 'premium',
+              accountType: 'pro_max',
               premiumExpiryDate: PERMANENT_EXPIRY,
               premiumStartDate: doctor.premiumStartDate || new Date().toISOString(),
             }
             : doctor,
         );
-      } catch (adminPremiumErr) {
-        console.error('Error setting admin permanent premium:', adminPremiumErr);
+      } catch (adminProErr) {
+        console.error('Error setting admin permanent pro_max:', adminProErr);
       }
     }
 

@@ -13,6 +13,7 @@ module.exports = (context) => {
     getCairoDateKey,
     resolveDoctorAccountType,
     buildWhatsAppUrl,
+    pickTierValue,
   } = context;
   const consumeSmartPrescriptionQuota = async (request) => {
     const auth = request?.auth;
@@ -47,15 +48,24 @@ module.exports = (context) => {
           syncedFromLegacyDoctorAt: admin.firestore.FieldValue.serverTimestamp(),
         }), { merge: true });
       }
-      const limitReachedMessage = accountType === 'premium'
-        ? config.premiumAnalysisLimitMessage
-        : config.freeAnalysisLimitMessage;
-      const whatsappMessage = accountType === 'premium'
-        ? config.premiumAnalysisWhatsappMessage
-        : config.freeAnalysisWhatsappMessage;
+      // 3 فئات: free/premium/pro_max — pro_max بيرث من premium لحد ما الأدمن يضبط حدود خاصة
+      const limitReachedMessage = pickTierValue(accountType, config, {
+        freeKey: 'freeAnalysisLimitMessage',
+        premiumKey: 'premiumAnalysisLimitMessage',
+        proMaxKey: 'proMaxAnalysisLimitMessage',
+      });
+      const whatsappMessage = pickTierValue(accountType, config, {
+        freeKey: 'freeAnalysisWhatsappMessage',
+        premiumKey: 'premiumAnalysisWhatsappMessage',
+        proMaxKey: 'proMaxAnalysisWhatsappMessage',
+      });
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
 
-      const limit = accountType === 'premium' ? config.premiumDailyLimit : config.freeDailyLimit;
+      const limit = pickTierValue(accountType, config, {
+        freeKey: 'freeDailyLimit',
+        premiumKey: 'premiumDailyLimit',
+        proMaxKey: 'proMaxDailyLimit',
+      });
   const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
   const used = Number(usageDoc.mergedUsageData?.smartPrescriptionCount || 0);
 

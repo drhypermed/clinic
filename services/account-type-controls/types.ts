@@ -91,11 +91,44 @@ export interface AccountTypeControls {
   // وسوم وملصقات الترقية
   premiumTagLabel: string;
   whatsappUrl: string;
+
+  // ═══ فئة "برو ماكس" الجديدة — كل الحقول optional لأن الأدمن بيضبطها لاحقاً ═══
+  proMaxDailyLimit?: number;
+  proMaxRecordDailyLimit?: number;
+  proMaxPublicBookingDailyLimit?: number;
+  proMaxPublicFormBookingDailyLimit?: number;
+  proMaxSecretaryEntryRequestDailyLimit?: number;
+  proMaxReadyPrescriptionDailyLimit?: number;
+  proMaxMedicalReportDailyLimit?: number;
+  proMaxReadyPrescriptionsMaxCount?: number;
+  proMaxMedicationCustomizationsMaxCount?: number;
+  proMaxInteractionToolDailyLimit?: number;
+  proMaxRenalToolDailyLimit?: number;
+  proMaxPregnancyToolDailyLimit?: number;
+  proMaxAnalysisLimitMessage?: string;
+  proMaxRecordLimitMessage?: string;
+  proMaxPublicBookingLimitMessage?: string;
+  proMaxPublicFormBookingLimitMessage?: string;
+  proMaxSecretaryEntryRequestLimitMessage?: string;
+  proMaxReadyPrescriptionDailyLimitMessage?: string;
+  proMaxMedicalReportLimitMessage?: string;
+  proMaxReadyPrescriptionsCapacityMessage?: string;
+  proMaxMedicationCustomizationsCapacityMessage?: string;
+  proMaxAnalysisWhatsappMessage?: string;
+  proMaxRecordWhatsappMessage?: string;
+  proMaxPublicBookingWhatsappMessage?: string;
+  proMaxPublicFormBookingWhatsappMessage?: string;
+  proMaxSecretaryEntryRequestWhatsappMessage?: string;
+  proMaxReadyPrescriptionWhatsappMessage?: string;
+  proMaxMedicalReportWhatsappMessage?: string;
+  proMaxReadyPrescriptionsCapacityWhatsappMessage?: string;
+  proMaxMedicationCustomizationsCapacityWhatsappMessage?: string;
+  proMaxTagLabel?: string;
 }
 
 /** نتيجة فحص الكوتة للتحليل الذكي للروشتة */
 export interface SmartPrescriptionQuotaResult {
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   limit: number;
   used: number;
   remaining: number;
@@ -110,7 +143,7 @@ export type StorageQuotaFeature = 'recordSave' | 'readyPrescriptionSave' | 'medi
 
 /** نتيجة فحص الكوتة لعمليات التخزين (سجلات/روشتات جاهزة) */
 export interface StorageQuotaResult {
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   feature: StorageQuotaFeature;
   limit: number;
   used: number;
@@ -126,7 +159,7 @@ export type BookingQuotaFeature = 'publicBooking' | 'publicFormBooking' | 'secre
 
 /** نتيجة فحص الكوتة لعمليات الحجز والمواعيد */
 export interface BookingQuotaResult {
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   feature: BookingQuotaFeature;
   limit: number;
   used: number;
@@ -142,7 +175,7 @@ export type DrugToolQuotaFeature = 'interactionTool' | 'renalTool' | 'pregnancyT
 
 /** نتيجة فحص الكوتة للأدوات الدوائية */
 export interface DrugToolQuotaResult {
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   feature: DrugToolQuotaFeature;
   limit: number;
   used: number;
@@ -156,7 +189,7 @@ export interface DrugToolQuotaResult {
 
 /** هيكل تفاصيل خطأ تجاوز الحد (Quota Limit Error) */
 export interface SmartQuotaLimitErrorDetails {
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   limit: number;
   used: number;
   remaining: number;

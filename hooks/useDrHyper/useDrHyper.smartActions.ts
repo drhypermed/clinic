@@ -11,12 +11,23 @@
  */
 
 import React from 'react';
-import { Medication, PrescriptionItem, VitalSigns } from '../../types';
+import { Medication, PatientGender, PrescriptionItem, VitalSigns } from '../../types';
 import { runSmartRx } from '../../utils/rx/smartRx';
 import { buildAlternativesSameScientific, sanitizeDosageText } from '../../utils/rx/rxUtils';
 import type { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
 import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
 import { SMART_QUOTA_NOTICE_STORAGE_KEY } from './useDrHyper.helpers';
+// خدمة التحليل الغني (DDx + Must-Not-Miss + Investigations + ...)
+// منفصلة عن runSmartRx عشان كل فلو ياخد نداء AI مستقل ومناسب
+import { analyzeCaseDeeply, type CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
+// كاش سحابي للتحليل — يحفظ النتيجة شهر ويرجعها فوراً لنفس الكشف
+// (توفير ضخم في الكوتا والتكلفة لو الطبيب فتح نفس الكشف مرة تانية)
+import {
+  computeCaseAnalysisCacheKey,
+  getCachedCaseAnalysis,
+  saveCaseAnalysisToCache,
+  type CachedTranslations,
+} from '../../services/caseAnalysisCacheService';
 
 interface CreateSmartRxActionsParams {
   complaint: string;
@@ -32,6 +43,11 @@ interface CreateSmartRxActionsParams {
   ageMonths: string;
   ageDays: string;
   weight: string;
+  height: string;
+  // حقول الهوية الجديدة: حرجة للتحليل الغني لأنها تحدد الـ DDx في الإناث
+  gender: PatientGender | '';
+  pregnant: boolean | null;
+  breastfeeding: boolean | null;
   totalAgeInMonths: number;
   vitals: VitalSigns;
   userId?: string;
@@ -62,6 +78,12 @@ interface CreateSmartRxActionsParams {
   setInvestigationsEn: React.Dispatch<React.SetStateAction<string>>;
   setDiagnosisEn: React.Dispatch<React.SetStateAction<string>>;
   setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
+  // state الخاص بنافذة تحليل الحالة الغنية (DDx + Must-Not-Miss + ...)
+  setCaseAnalysisOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setCaseAnalysisResult: React.Dispatch<React.SetStateAction<CaseAnalysisResult | null>>;
+  setCaseAnalysisLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  // علامة لإجبار عرض صف Dx فاضي بعد التحليل (تنبيه الطبيب للإضافة اليدوية)
+  setNeedsManualDxHint: React.Dispatch<React.SetStateAction<boolean>>;
   prescriptionRef: React.RefObject<HTMLDivElement | null>;
   lastAddedItemIdRef: React.RefObject<string | null>;
   onTrackSmartPrescription?: (complaint: string) => void;
@@ -108,6 +130,10 @@ export const createSmartRxActions = ({
   ageMonths,
   ageDays,
   weight,
+  height,
+  gender,
+  pregnant,
+  breastfeeding,
   totalAgeInMonths,
   vitals,
   userId,
@@ -126,6 +152,10 @@ export const createSmartRxActions = ({
   setInvestigationsEn,
   setDiagnosisEn,
   setRxItems,
+  setCaseAnalysisOpen,
+  setCaseAnalysisResult,
+  setCaseAnalysisLoading,
+  setNeedsManualDxHint,
   prescriptionRef,
   lastAddedItemIdRef,
   onTrackSmartPrescription,
@@ -134,23 +164,14 @@ export const createSmartRxActions = ({
   buildRxInstructions,
   medications,
 }: CreateSmartRxActionsParams) => {
-  /** تحليل الحالة تلقائياً باستخدام الذكاء الاصطناعي */
-  const handleFullAutomatedRX = async (e?: React.MouseEvent<any>) => {
-    // الشكوى ضرورية للتحليل
-    if (!complaint.trim()) {
-      showNotification('يرجى إدخال الشكوى قبل تحليل الحالة', 'error', e);
-      return;
-    }
-
-    setAnalyzing(true);
-    setErrorMsg(null);
-    setSmartQuotaNotice(null);
-    setSmartQuotaModalOpen(false);
-    clearSmartQuotaStorage();
-
+  /**
+   * تشغيل التحقق من الكوتا — دالة مشتركة بين الزرّين.
+   * ترجع true لو نقدر نكمل، false لو الكوتا انتهت (وبتفتح مودال الكوتا لوحدها).
+   */
+  const checkQuotaBeforeAnalyze = async (e?: React.MouseEvent<any>): Promise<boolean> => {
     try {
-      // التحقق من الحد اليومي لاستخدام الذكاء الاصطناعي
       await consumeSmartPrescriptionQuota();
+      return true;
     } catch (error: unknown) {
       const details = extractSmartQuotaErrorDetails(error);
       const typed = (error && typeof error === 'object' ? error as {
@@ -174,102 +195,376 @@ export const createSmartRxActions = ({
           dayKey: details.dayKey,
           persist: true,
         });
-        setAnalyzing(false);
-        return;
+        return false;
       }
 
       if (isQuotaTransientError(error)) {
-        console.warn('Smart Rx quota check transient/offline failure, continuing with local/offline-first analysis path:', error);
-      } else {
-        console.error('Case analysis quota check failed:', error);
-        showNotification('حدث خطأ أثناء التحقق من حد التحليل اليومي. حاول مرة أخرى.', 'error', e);
-        setAnalyzing(false);
-        return;
+        // خطأ شبكة مؤقت — نكمل (offline-first approach)
+        console.warn('Smart Rx quota check transient/offline failure, continuing:', error);
+        return true;
+      }
+
+      console.error('Case analysis quota check failed:', error);
+      showNotification('حدث خطأ أثناء التحقق من حد التحليل اليومي. حاول مرة أخرى.', 'error', e);
+      return false;
+    }
+  };
+
+  /**
+   * المرحلة المشتركة: ترجمة البيانات السريرية من عربي لإنجليزي طبي مع تخطي
+   * حساب التشخيص (skipDiagnosis=true) — الزرّين الجدد يتركا Dx فاضي عشان
+   * يُضاف يدوياً أو من نافذة DDx.
+   * ترجع الترجمات المحفوظة عشان يتم كاشها.
+   */
+  const runTranslationPass = async (): Promise<CachedTranslations> => {
+    const weightNum = parseFloat(weight);
+    const weightValue = Number.isNaN(weightNum) ? 0 : weightNum;
+
+    const out = await runSmartRx({
+      complaint,
+      medicalHistory,
+      examination,
+      investigations,
+      complaintEn,
+      historyEn,
+      examEn,
+      investigationsEn,
+      diagnosisEn,
+      ageYears,
+      ageMonths,
+      ageDays,
+      weightKg: weightValue,
+      totalAgeInMonths,
+      vitals,
+      skipDiagnosis: true, // ← مهم: لا نستدعي analyzeComplaint (توفير نداء AI كامل)
+    });
+
+    // ملء الحقول الإنجليزية في الروشتة (الشكوى، التاريخ، الفحص، الفحوصات)
+    setComplaintEn(out.translated.complaintEn);
+    setHistoryEn(out.translated.historyEn);
+    setExamEn(out.translated.examEn);
+    setInvestigationsEn(out.translated.investigationsEn);
+    // ⚠️ نترك diagnosisEn فاضي حسب طلب المستخدم — الطبيب يكتبه يدوياً أو من popup
+    setDiagnosisEn('');
+    setRxItems(out.rxItems);
+
+    return {
+      complaintEn: out.translated.complaintEn,
+      historyEn: out.translated.historyEn,
+      examEn: out.translated.examEn,
+      investigationsEn: out.translated.investigationsEn,
+    };
+  };
+
+  /**
+   * تطبيق ترجمة من الكاش مباشرة بدون أي نداء AI.
+   * يحدّث الحقول في الـ state عشان تظهر في الروشتة زي اللي بيحصل بعد نداء AI.
+   */
+  const applyCachedTranslations = (translations: CachedTranslations) => {
+    setComplaintEn(translations.complaintEn);
+    setHistoryEn(translations.historyEn);
+    setExamEn(translations.examEn);
+    setInvestigationsEn(translations.investigationsEn);
+    setDiagnosisEn('');
+  };
+
+  /**
+   * إضافة سطر فارغ وتمرير تلقائي للروشتة — سلوك UI مشترك بين الزرّين.
+   * (نفس منطق الزر القديم عشان تجربة الطبيب ما تتغيرش)
+   */
+  const scheduleUiPolish = () => {
+    setTimeout(() => prescriptionRef.current?.scrollIntoView({ behavior: 'smooth' }), 300);
+    setTimeout(() => {
+      const newId = `empty-${Date.now()}`;
+      lastAddedItemIdRef.current = newId;
+      setRxItems((prev) => [
+        ...prev,
+        {
+          id: newId,
+          type: 'medication',
+          medication: undefined,
+          dosage: '',
+          instructions: '',
+          reasonForUse: 'Manual entry',
+          source: 'Local Database',
+          alternatives: [],
+        },
+      ]);
+      setTimeout(() => {
+        if (!lastAddedItemIdRef.current) return;
+        const lastItem = getElementByRxItemId(lastAddedItemIdRef.current);
+        if (lastItem) {
+          lastItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+          const input = lastItem.querySelector(
+            'input[placeholder*="اسم الدواء"], input[placeholder*="Medication"]'
+          );
+          if (input instanceof HTMLInputElement) input.focus();
+        }
+      }, 150);
+    }, 450);
+  };
+
+  /**
+   * زر "إضافة إلى الروشتة والسجلات" (السريع — بدون popup):
+   * يترجم البيانات السريرية ويملّي الحقول الإنجليزية، ويترك Dx فاضي
+   * لتنبيه الطبيب بكتابته يدوياً. لا يستدعي التحليل الغني (DDx) ولا يفتح نافذة.
+   *
+   * يستخدم الكاش السحابي للترجمة (نفس الكاش بتاع زر تحليل الحالة) — لو الطبيب
+   * ضغط نفس الكشف قبل كده من أي زر، الترجمة تيجي جاهزة = صفر نداء AI = صفر تكلفة.
+   */
+  const handleQuickAddToRx = async (e?: React.MouseEvent<any>) => {
+    if (!complaint.trim()) {
+      showNotification('يرجى إدخال الشكوى قبل إضافة البيانات للروشتة', 'error', e);
+      return;
+    }
+
+    // بيانات الكاش (نفس شكل إدخال deep analyze عشان نفس cacheKey = يستفيد من الكاش
+    // السابق لو الطبيب ضغط "تحليل الحالة" قبل كده على نفس البيانات)
+    const weightNum = parseFloat(weight);
+    const heightNum = parseFloat(height);
+    const cacheInput = {
+      complaint,
+      medicalHistory,
+      examination,
+      investigations,
+      ageYears: parseInt(ageYears) || 0,
+      ageMonths: parseInt(ageMonths) || 0,
+      ageDays: parseInt(ageDays) || 0,
+      weightKg: Number.isNaN(weightNum) ? 0 : weightNum,
+      heightCm: Number.isNaN(heightNum) ? undefined : heightNum,
+      gender,
+      pregnant,
+      breastfeeding,
+      vitals,
+    };
+
+    setAnalyzing(true);
+    setErrorMsg(null);
+    setSmartQuotaNotice(null);
+    setSmartQuotaModalOpen(false);
+    clearSmartQuotaStorage();
+
+    // ─── 1) محاولة الكاش أولاً — لو ترجمة محفوظة نستخدمها مباشرة بدون AI ───
+    let cacheKey = '';
+    if (userId) {
+      try {
+        cacheKey = await computeCaseAnalysisCacheKey(cacheInput);
+        const cached = await getCachedCaseAnalysis(userId, cacheKey);
+        if (cached.hit && cached.translations) {
+          // ⚡ Cache hit مع ترجمة — صفر نداء AI
+          saveHistory();
+          applyCachedTranslations(cached.translations);
+          setNeedsManualDxHint(true);
+          if (userId && onTrackSmartPrescription) onTrackSmartPrescription(complaint);
+          scheduleUiPolish();
+          showNotification('تمت الإضافة للروشتة — اكتب التشخيص يدوياً في حقل Dx', 'success', e);
+          setAnalyzing(false);
+          return;
+        }
+      } catch (cacheError) {
+        // فشل الكاش = نكمل بنداء AI عادي
+        console.warn('Quick add cache lookup failed:', cacheError);
       }
     }
 
-    const weightNum = parseFloat(weight);
-    const weightValue = Number.isNaN(weightNum) ? 0 : weightNum;
+    // ─── 2) Cache miss — نشيّك الكوتا ثم نعمل الترجمة ───
+    const canProceed = await checkQuotaBeforeAnalyze(e);
+    if (!canProceed) {
+      setAnalyzing(false);
+      return;
+    }
 
     saveHistory();
 
     try {
-      // إرسال البيانات للمحرك الذكي (Gemini)
-      const out = await runSmartRx({
-        complaint,
-        medicalHistory,
-        examination,
-        investigations,
-        complaintEn,
-        historyEn,
-        examEn,
-        investigationsEn,
-        diagnosisEn,
-        ageYears,
-        ageMonths,
-        ageDays,
-        weightKg: weightValue,
-        totalAgeInMonths,
-        vitals,
-      });
+      const freshTranslations = await runTranslationPass();
+      // تفعيل الـ hint لإظهار صف Dx فاضي في الروشتة (علامة للطبيب إن يكتبه)
+      setNeedsManualDxHint(true);
 
-      // استقبال النتائج وتعبئة الحقول المترجمة والأدوية المقترحة
-      setComplaintEn(out.translated.complaintEn);
-      setHistoryEn(out.translated.historyEn);
-      setExamEn(out.translated.examEn);
-      setInvestigationsEn(out.translated.investigationsEn);
-      setDiagnosisEn(out.translated.diagnosisEn);
-      setRxItems(out.rxItems);
+      // ─── 3) حفظ الترجمة في الكاش — الضغطة الجاية مجانية ───
+      // merge:true بيحفظ translations بدون ما يمسح result لو كان موجود من deep analyze
+      if (userId && cacheKey) {
+        void saveCaseAnalysisToCache(userId, cacheKey, { translations: freshTranslations });
+      }
 
       if (userId && onTrackSmartPrescription) {
         onTrackSmartPrescription(complaint);
       }
 
-      // التمرير التلقائي لأسفل لرؤية الروشتة
-      setTimeout(() => prescriptionRef.current?.scrollIntoView({ behavior: 'smooth' }), 300);
-
-      // إضافة سطر فارغ في النهاية لتسهيل الإضافة اليدوية
-      setTimeout(() => {
-        const newId = `empty-${Date.now()}`;
-        lastAddedItemIdRef.current = newId;
-        setRxItems((prev) => [
-          ...prev,
-          {
-            id: newId,
-            type: 'medication',
-            medication: undefined,
-            dosage: '',
-            instructions: '',
-            reasonForUse: 'Manual entry',
-            source: 'Local Database',
-            alternatives: [],
-          },
-        ]);
-        setTimeout(() => {
-          if (!lastAddedItemIdRef.current) return;
-          const lastItem = getElementByRxItemId(lastAddedItemIdRef.current);
-          if (lastItem) {
-            lastItem.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest',
-              inline: 'nearest',
-            });
-            const input = lastItem.querySelector(
-              'input[placeholder*="اسم الدواء"], input[placeholder*="Medication"]'
-            );
-            if (input instanceof HTMLInputElement) input.focus();
-          }
-        }, 150);
-      }, 450);
-
-      showNotification('تم تحليل الحالة بنجاح', 'success', e);
+      scheduleUiPolish();
+      showNotification('تمت الإضافة للروشتة — اكتب التشخيص يدوياً في حقل Dx', 'success', e);
     } catch (error: unknown) {
+      setErrorMsg(getErrorMessage(error));
+      showNotification('حدث خطأ أثناء الإضافة للروشتة', 'error');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  /**
+   * زر "تحليل الحالة" (الغني — بالـ popup):
+   * يعمل نفس "إضافة سريعة" (ترجمة + Dx فاضي + سطر أدوية فاضي) زائد:
+   *   - يفتح نافذة منبثقة بالـ DDx / Must-Not-Miss / Investigations / Instructions / ...
+   *   - يحلل بالذكاء الاصطناعي مع الأخذ في الاعتبار: النوع، الحمل، الرضاعة،
+   *     السن، الوزن، العلامات الحيوية، وكل البيانات السريرية.
+   *   - يتحقق من كاش سحابي لنفس المدخلات الأول (30 يوم) — لو لقى نتيجة محفوظة
+   *     يفتح النافذة فوراً بدون نداء AI (توفير كوتا + سرعة ~20x).
+   * الترجمة + التحليل يجريان بالتوازي عشان نوفر وقت.
+   */
+  const handleDeepAnalyzeWithPopup = async (e?: React.MouseEvent<any>) => {
+    if (!complaint.trim()) {
+      showNotification('يرجى إدخال الشكوى قبل تحليل الحالة', 'error', e);
+      return;
+    }
+
+    // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة (مطلب المستخدم الأساسي)
+    const weightNum = parseFloat(weight);
+    const heightNum = parseFloat(height);
+    const deepInput = {
+      complaint,
+      medicalHistory,
+      examination,
+      investigations,
+      ageYears: parseInt(ageYears) || 0,
+      ageMonths: parseInt(ageMonths) || 0,
+      ageDays: parseInt(ageDays) || 0,
+      weightKg: Number.isNaN(weightNum) ? 0 : weightNum,
+      heightCm: Number.isNaN(heightNum) ? undefined : heightNum,
+      gender,
+      pregnant,
+      breastfeeding,
+      vitals,
+    };
+
+    setAnalyzing(true);
+    setErrorMsg(null);
+    setSmartQuotaNotice(null);
+    setSmartQuotaModalOpen(false);
+    clearSmartQuotaStorage();
+
+    // افتح المودال فوراً في وضع "جاري التحميل" (تحقق الكاش سريع لكن مش فوري)
+    setCaseAnalysisResult(null);
+    setCaseAnalysisLoading(true);
+    setCaseAnalysisOpen(true);
+
+    // ─── 1) محاولة الكاش أولاً (قبل أي نداء AI أو استهلاك كوتا) ───
+    // الكاش ممكن يرجع 4 حالات:
+    //   (أ) miss تماماً → نشغل AI كامل (تحليل + ترجمة)
+    //   (ب) hit بترجمة فقط (من زر Quick سابق) → نشغل AI للتحليل بس، نوفّر الترجمة
+    //   (ج) hit بتحليل فقط (كاش قديم قبل إضافة الترجمة) → نشغل AI للترجمة بس
+    //   (د) hit كامل (تحليل + ترجمة) → صفر نداء AI، فوري
+    let cacheKey = '';
+    let cachedTranslationsForReuse: CachedTranslations | null = null;
+    let needsAnalysisCall = true;   // هل نحتاج نشغل analyzeCaseDeeply؟
+    let needsTranslationCall = true; // هل نحتاج نشغل runTranslationPass؟
+
+    if (userId) {
+      try {
+        cacheKey = await computeCaseAnalysisCacheKey(deepInput);
+        const cached = await getCachedCaseAnalysis(userId, cacheKey);
+        if (cached.hit) {
+          // حالة (د): كل شيء موجود → فوري بدون أي AI
+          if (cached.result && cached.translations) {
+            setCaseAnalysisResult(cached.result);
+            setCaseAnalysisLoading(false);
+            saveHistory();
+            applyCachedTranslations(cached.translations);
+            setNeedsManualDxHint(true);
+            scheduleUiPolish();
+            showNotification('اكتمل تحليل الحالة — راجع الاقتراحات في النافذة', 'success', e);
+            setAnalyzing(false);
+            return;
+          }
+
+          // حالة (ج): تحليل موجود، ترجمة لا → نعرض التحليل + نشغل ترجمة فقط
+          if (cached.result && !cached.translations) {
+            setCaseAnalysisResult(cached.result);
+            setCaseAnalysisLoading(false);
+            needsAnalysisCall = false;  // التحليل محفوظ، مش محتاج AI
+          }
+
+          // حالة (ب): ترجمة موجودة، تحليل لا (من زر Quick) → نوفر الترجمة فقط
+          if (cached.translations && !cached.result) {
+            cachedTranslationsForReuse = cached.translations;
+            needsTranslationCall = false; // الترجمة محفوظة، مش محتاج AI
+          }
+        }
+      } catch (cacheError) {
+        console.warn('Case analysis cache lookup failed:', cacheError);
+      }
+    }
+
+    // ─── 2) نحتاج نداء AI جديد (أي حالة غير الكاش الكامل) ───
+    const canProceed = await checkQuotaBeforeAnalyze(e);
+    if (!canProceed) {
+      setAnalyzing(false);
+      setCaseAnalysisLoading(false);
+      setCaseAnalysisOpen(false);
+      return;
+    }
+
+    saveHistory();
+
+    // لو الترجمة جاية من الكاش نطبّقها فوراً عشان الطبيب يشوف الحقول ممتلئة
+    // حتى أثناء تشغيل التحليل الغني
+    if (cachedTranslationsForReuse) {
+      applyCachedTranslations(cachedTranslationsForReuse);
+    }
+
+    try {
+      // نشغل بس اللي محتاجينه: الترجمة و/أو التحليل. لو كلاهما → بالتوازي
+      const tasks: Array<Promise<unknown>> = [];
+      if (needsTranslationCall) tasks.push(runTranslationPass());
+      if (needsAnalysisCall) tasks.push(analyzeCaseDeeply(deepInput));
+      const results = await Promise.all(tasks);
+
+      // نفك النتائج حسب الـ order اللي ضفناها بيه
+      let freshTranslations: CachedTranslations | null = null;
+      let deepResult: CaseAnalysisResult | null = null;
+      let idx = 0;
+      if (needsTranslationCall) freshTranslations = results[idx++] as CachedTranslations;
+      if (needsAnalysisCall) deepResult = results[idx++] as CaseAnalysisResult;
+
+      // لو التحليل اتعمل دلوقتي نعرضه؛ لو كان من الكاش فـ state متحدّث أصلاً
+      if (deepResult) {
+        setCaseAnalysisResult(deepResult);
+        setCaseAnalysisLoading(false);
+      }
+      setNeedsManualDxHint(true);
+
+      // ─── 3) حفظ الجديد في الكاش (merge: ما يمسحش الحاجات القديمة الموجودة) ───
+      // بنحفظ بس اللي اتعمل جديد — والـ merge في saveCaseAnalysisToCache بيضمن
+      // إن الحاجات الموجودة (من الكاش) ما تتمسحش.
+      if (userId && cacheKey) {
+        const patch: { result?: CaseAnalysisResult; translations?: CachedTranslations } = {};
+        if (deepResult && !deepResult.insufficientData) patch.result = deepResult;
+        if (freshTranslations) patch.translations = freshTranslations;
+        if (patch.result || patch.translations) {
+          void saveCaseAnalysisToCache(userId, cacheKey, patch);
+        }
+      }
+
+      if (userId && onTrackSmartPrescription) {
+        onTrackSmartPrescription(complaint);
+      }
+
+      scheduleUiPolish();
+      showNotification('اكتمل تحليل الحالة — راجع الاقتراحات في النافذة', 'success', e);
+    } catch (error: unknown) {
+      setCaseAnalysisLoading(false);
       setErrorMsg(getErrorMessage(error));
       showNotification('حدث خطأ أثناء تحليل الحالة', 'error');
     } finally {
       setAnalyzing(false);
     }
   };
+
+  /**
+   * توافق عكسي (backward compat): اسم الدالة القديم `handleFullAutomatedRX`
+   * لسه مُستعمل في useDrHyper.ts و MainAppViewRouter. نوجّهه للدالة الغنية
+   * الجديدة (التحليل الكامل مع popup) لأنه ده المطلب الأساسي من المستخدم.
+   */
+  const handleFullAutomatedRX = handleDeepAnalyzeWithPopup;
 
   /** إضافة دواء يدوياً من قاعدة البيانات المحلية للجهاز */
   const handleAddManualMedication = (med: Medication, dosage: string) => {
@@ -384,7 +679,9 @@ export const createSmartRxActions = ({
   };
 
   return {
-    handleFullAutomatedRX,
+    handleFullAutomatedRX,          // يعمل handleDeepAnalyzeWithPopup (توافق عكسي)
+    handleDeepAnalyzeWithPopup,     // زر "تحليل الحالة" — بالـ popup
+    handleQuickAddToRx,             // زر "إضافة إلى الروشتة والسجلات" — بدون popup
     handleAddManualMedication,
   };
 };

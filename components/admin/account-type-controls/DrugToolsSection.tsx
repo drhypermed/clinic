@@ -24,12 +24,12 @@ type ToolFreeLimitKey =
   | 'freeRenalToolDailyLimit'
   | 'freePregnancyToolDailyLimit';
 
-type ToolPremiumLimitKey =
+type ToolProLimitKey =
   | 'premiumInteractionToolDailyLimit'
   | 'premiumRenalToolDailyLimit'
   | 'premiumPregnancyToolDailyLimit';
 
-type ToolPremiumOnlyKey =
+type ToolProOnlyKey =
   | 'interactionToolPremiumOnly'
   | 'renalToolPremiumOnly'
   | 'pregnancyToolPremiumOnly';
@@ -43,10 +43,10 @@ type DrugToolConfig = {
   id: 'interaction' | 'renal' | 'pregnancy';
   title: string;
   freeLimitKey: ToolFreeLimitKey;
-  premiumLimitKey: ToolPremiumLimitKey;
-  premiumOnlyKey: ToolPremiumOnlyKey;
+  premiumLimitKey: ToolProLimitKey;
+  premiumOnlyKey: ToolProOnlyKey;
   lockedMessageKey: ToolLockedMessageKey;
-  showPremiumTagField?: boolean;
+  showProTagField?: boolean;
   icon: React.ReactElement;
 };
 
@@ -58,7 +58,7 @@ const DRUG_TOOL_CONFIGS: DrugToolConfig[] = [
     premiumLimitKey: 'premiumInteractionToolDailyLimit',
     premiumOnlyKey: 'interactionToolPremiumOnly',
     lockedMessageKey: 'interactionToolLockedMessage',
-    showPremiumTagField: true,
+    showProTagField: true,
     icon: <FaPills />,
   },
   {
@@ -158,13 +158,13 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                     }`}
                   >
                     <FaLock className="w-3 h-3" />
-                    لا للمميز فقط
+                    لا لبرو فقط
                   </button>
                 </div>
                 <p className="mt-2 text-[10px] font-bold text-slate-500 px-1 leading-relaxed">
                   {isAllowedForFree
-                    ? '• المجاني: يستخدمها في حدود يومي (الرقم تحت) · المميز: متاح له دايما'
-                    : '• المجاني: مقفولة تماما (هتظهرله رسالة القفل) · المميز: متاح له دايما'}
+                    ? '• المجاني: يستخدمها في حدود يومي (الرقم تحت) · برو: متاح له دايما'
+                    : '• المجاني: مقفولة تماما (هتظهرله رسالة القفل) · برو: متاح له دايما'}
                 </p>
               </div>
 
@@ -196,7 +196,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                 <div>
                   <div className="flex items-center gap-1.5 mb-1.5 px-1">
                     <FaCrown className="w-3 h-3 text-amber-500" />
-                    <span className="text-[12px] font-black text-amber-700">مميز</span>
+                    <span className="text-[12px] font-black text-amber-700">برو</span>
                   </div>
                   <input
                     type="number"
@@ -226,7 +226,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
               >
                 <FaPenToSquare className="w-3 h-3" />
                 {isExpanded ? 'إخفاء الرسائل' : 'تعديل رسالة القفل'}
-                {tool.showPremiumTagField && <span className="text-slate-400">+ تاج المميز</span>}
+                {tool.showProTagField && <span className="text-slate-400">+ تاج برو</span>}
                 <FaChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
               </button>
 
@@ -254,9 +254,9 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                     </p>
                   </div>
 
-                  {tool.showPremiumTagField && (
+                  {tool.showProTagField && (
                     <div>
-                      <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1">تاج المميز في التحذير</label>
+                      <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1">تاج برو في التحذير</label>
                       <input
                         type="text"
                         value={form.premiumTagLabel}
@@ -266,7 +266,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                             e.target.value.slice(0, 40) as AccountTypeControlsForm['premiumTagLabel'],
                           )
                         }
-                        placeholder="Premium"
+                        placeholder="Pro"
                         className="w-full h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors"
                       />
                     </div>

@@ -218,7 +218,12 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.pregnancyToolLockedMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.pregnancyToolLockedMessage
   );
-  const premiumTagLabel = normalizeMessageAllowEmpty(raw?.premiumTagLabel, DEFAULT_SMART_RX_CONFIG.premiumTagLabel);
+  // override للقيم القديمة ('Premium'/'بريميوم'/'مميز') المحفوظة قبل إعادة التسمية
+  const _rawTagLabel = String(raw?.premiumTagLabel || '').trim();
+  const _isLegacyTag = _rawTagLabel === 'Premium' || _rawTagLabel === 'premium' || _rawTagLabel === 'بريميوم' || _rawTagLabel === 'مميز';
+  const premiumTagLabel = (!_rawTagLabel || _isLegacyTag)
+    ? DEFAULT_SMART_RX_CONFIG.premiumTagLabel
+    : normalizeMessageAllowEmpty(_rawTagLabel, DEFAULT_SMART_RX_CONFIG.premiumTagLabel);
 
   return {
     freeDailyLimit,
@@ -290,6 +295,42 @@ const normalizeSmartRxConfig = (raw) => {
     pregnancyToolLockedMessage,
     premiumTagLabel,
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
+    // ═══ حقول الفئة الجديدة "برو ماكس" — pass-through مع fallback للـ defaults ═══
+    proMaxDailyLimit: toSafeLimit(raw?.proMaxDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxDailyLimit),
+    proMaxRecordDailyLimit: toSafeLimit(raw?.proMaxRecordDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxRecordDailyLimit),
+    proMaxPublicBookingDailyLimit: toSafeLimit(raw?.proMaxPublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingDailyLimit),
+    proMaxPublicFormBookingDailyLimit: toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingDailyLimit),
+    proMaxSecretaryEntryRequestDailyLimit: toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestDailyLimit),
+    proMaxReadyPrescriptionDailyLimit: toSafeLimit(raw?.proMaxReadyPrescriptionDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionDailyLimit),
+    proMaxMedicalReportDailyLimit: toSafeLimit(raw?.proMaxMedicalReportDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportDailyLimit),
+    proMaxReadyPrescriptionsMaxCount: toSafeLimit(raw?.proMaxReadyPrescriptionsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionsMaxCount),
+    proMaxMedicationCustomizationsMaxCount: toSafeLimit(raw?.proMaxMedicationCustomizationsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxMedicationCustomizationsMaxCount),
+    proMaxInteractionToolDailyLimit: toSafeLimit(raw?.proMaxInteractionToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxInteractionToolDailyLimit),
+    proMaxRenalToolDailyLimit: toSafeLimit(raw?.proMaxRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxRenalToolDailyLimit),
+    proMaxPregnancyToolDailyLimit: toSafeLimit(raw?.proMaxPregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPregnancyToolDailyLimit),
+    proMaxAnalysisLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxAnalysisLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxAnalysisLimitMessage),
+    proMaxRecordLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxRecordLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxRecordLimitMessage),
+    proMaxPublicBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingLimitMessage),
+    proMaxPublicFormBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingLimitMessage),
+    proMaxSecretaryEntryRequestLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestLimitMessage),
+    proMaxReadyPrescriptionDailyLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionDailyLimitMessage),
+    proMaxMedicalReportLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicalReportLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportLimitMessage),
+    proMaxReadyPrescriptionsCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionsCapacityMessage),
+    proMaxMedicationCustomizationsCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicationCustomizationsCapacityMessage),
+    proMaxAnalysisWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxAnalysisWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxAnalysisWhatsappMessage),
+    proMaxRecordWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxRecordWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxRecordWhatsappMessage),
+    proMaxPublicBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingWhatsappMessage),
+    proMaxPublicFormBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingWhatsappMessage),
+    proMaxSecretaryEntryRequestWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestWhatsappMessage),
+    proMaxReadyPrescriptionWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionWhatsappMessage),
+    proMaxMedicalReportWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicalReportWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportWhatsappMessage),
+    proMaxReadyPrescriptionsCapacityWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionsCapacityWhatsappMessage),
+    proMaxMedicationCustomizationsCapacityWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicationCustomizationsCapacityWhatsappMessage),
+    proMaxTagLabel: (() => {
+      const _raw = String(raw?.proMaxTagLabel || '').trim();
+      const _isLegacy = _raw === 'Premium' || _raw === 'premium' || _raw === 'بريميوم' || _raw === 'مميز';
+      return (!_raw || _isLegacy) ? DEFAULT_SMART_RX_CONFIG.proMaxTagLabel : normalizeMessageAllowEmpty(_raw, DEFAULT_SMART_RX_CONFIG.proMaxTagLabel);
+    })(),
   };
 };
 
@@ -310,15 +351,35 @@ const getSmartRxConfig = async (db) => {
 
 
 const resolveDoctorAccountType = (doctorData) => {
-  let accountType = doctorData?.accountType === 'premium' ? 'premium' : 'free';
+  const raw = doctorData?.accountType;
+  // 3 فئات مدعومة: free | premium (برو) | pro_max (برو ماكس).
+  // برو وبرو ماكس بيشاركوا نفس حقل premiumExpiryDate للانتهاء.
+  let accountType = raw === 'premium' ? 'premium' : raw === 'pro_max' ? 'pro_max' : 'free';
   const premiumExpiryDate = typeof doctorData?.premiumExpiryDate === 'string' ? doctorData.premiumExpiryDate : '';
-  if (accountType === 'premium' && premiumExpiryDate) {
+  if ((accountType === 'premium' || accountType === 'pro_max') && premiumExpiryDate) {
     const expiryMs = new Date(premiumExpiryDate).getTime();
     if (Number.isFinite(expiryMs) && Date.now() >= expiryMs) {
       accountType = 'free';
     }
   }
   return accountType;
+};
+
+/**
+ * Helper: يختار القيمة المناسبة من الـ config حسب الفئة.
+ * pro_max: لو عنده قيمة خاصة نستخدمها، لو لأ نرجع لقيمة برو (fallback).
+ * premium: قيمة برو.
+ * free: قيمة المجاني.
+ * ملاحظة: proMax بيرث من premium كـ default لحد ما الأدمن يضبط حدود مختلفة.
+ */
+const pickTierValue = (accountType, config, { freeKey, premiumKey, proMaxKey }) => {
+  if (accountType === 'pro_max') {
+    const v = config[proMaxKey];
+    if (v !== undefined && v !== null && v !== '') return v;
+    return config[premiumKey];
+  }
+  if (accountType === 'premium') return config[premiumKey];
+  return config[freeKey];
 };
 
 module.exports = {
@@ -328,4 +389,5 @@ module.exports = {
   getCairoDateKey,
   getSmartRxConfig,
   resolveDoctorAccountType,
+  pickTierValue,
 };

@@ -45,6 +45,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  // إضافي: نتتبّع إذا كانت الصورة الحالية تحمّلت فعلاً — علشان ما نرسمش
+  // الحاوية بالـ aspect-ratio قبل التحميل (ده كان بيخلق فراغاً لو الصوره فشلت بصمت)
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { nowMs } = useTrustedNow();
   const safeHeight = Math.max(120, Number(displayHeight) || 500);
   const bannerAspectRatio = 1600 / safeHeight;
@@ -68,10 +71,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     : (link || '').trim();
   const resolvedAlt = currentItem?.title || altText;
 
+  const currentImage = allImages[activeIndex] || '';
+
   React.useEffect(() => {
     setActiveIndex(0);
     setImageError(false);
+    // نعيد imageLoaded لـfalse لما مصدر الصور يتغير — البانر الجديد ما يظهرش حتى يتأكد التحميل
+    setImageLoaded(false);
   }, [imagesKey]);
+
+  // لو الصورة ما تحمّلتش خلال 10 ثواني (مثلاً CORS يمنعها بصمت) نعتبرها فشلت
+  // بدل ما نسيب فراغ بدون onError. ده بيحمي من "البانر مش بيظهر بس مساحته موجودة".
+  React.useEffect(() => {
+    if (!currentImage || imageLoaded || imageError) return;
+    const timer = window.setTimeout(() => setImageError(true), 10000);
+    return () => window.clearTimeout(timer);
+  }, [currentImage, imageLoaded, imageError]);
 
   React.useEffect(() => {
     if (allImages.length <= 1) return;
@@ -82,9 +97,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return () => window.clearTimeout(timeout);
   }, [allImages.length, rotationSeconds, activeIndex, imagesKey]);
 
-  const currentImage = allImages[activeIndex] || '';
-
   if (imageError || !currentImage) return null;
+
+  // لو الصورة لسه ما تحمّلتش: نرسم img خفي خارج الـlayout — بس يشغل onLoad
+  // بدون ما ياخد مساحه في الصفحه. ده بيمنع الفراغ اللي كان بيظهر لما الصورة تفشل بصمت.
+  if (!imageLoaded) {
+    return (
+      <img
+        src={currentImage}
+        alt=""
+        aria-hidden="true"
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+      />
+    );
+  }
 
   const BannerContent = (
     <div className={`relative w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}>
@@ -94,10 +122,11 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           aspectRatio: `${bannerAspectRatio}`,
         }}
       >
-      <img 
-        src={currentImage} 
+      <img
+        src={currentImage}
         alt={resolvedAlt}
         className="w-full h-full object-cover"
+        onLoad={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
         loading="lazy"
       />

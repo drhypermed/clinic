@@ -27,13 +27,13 @@ import {
 
 interface DoctorVerificationCardProps {
   item: DoctorVerificationItem;
-  accountType: 'free' | 'premium';
+  accountType: 'free' | 'premium' | 'pro_max';
   subscriptionDuration: number;
   rejectNote: string;
   actionLoading: 'approving' | 'rejecting' | null;
   cardError: string;
   cardSuccess: string;
-  onAccountTypeChange: (type: 'free' | 'premium') => void;
+  onAccountTypeChange: (type: 'free' | 'premium' | 'pro_max') => void;
   onDurationChange: (duration: number) => void;
   onRejectNoteChange: (note: string) => void;
   onApprove: () => void;
@@ -138,15 +138,15 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           </div>
         )}
 
-        {/* اختيار نوع الحساب (مجاني/مميز) */}
+        {/* اختيار نوع الحساب (مجاني/برو/برو ماكس) — 3 أزرار */}
         <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
           <label className="mb-2 block text-xs font-black text-slate-600">نوع الحساب</label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => onAccountTypeChange('free')}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold transition ${
-                accountType !== 'premium'
+              className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-bold transition ${
+                accountType !== 'premium' && accountType !== 'pro_max'
                   ? 'border-2 border-slate-600 bg-slate-600 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
@@ -156,37 +156,63 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
             <button
               type="button"
               onClick={() => onAccountTypeChange('premium')}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold transition ${
+              className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-bold transition ${
                 accountType === 'premium'
                   ? 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
               <FaCrown className="w-3 h-3" />
-              مميز
+              برو
+            </button>
+            <button
+              type="button"
+              onClick={() => onAccountTypeChange('pro_max')}
+              className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-black transition ${
+                accountType === 'pro_max'
+                  ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_8px_rgba(255,193,7,0.45)]'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:border-amber-200'
+              }`}
+            >
+              <FaCrown className={`w-3 h-3 ${accountType === 'pro_max' ? 'text-[#E65100]' : ''}`} />
+              برو ماكس
             </button>
           </div>
         </div>
 
-        {/* مدة الاشتراك (تظهر فقط لو مميز) */}
-        {accountType === 'premium' && (
-          <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-3">
-            <label className="mb-2 block text-xs font-black text-amber-700">مدة الاشتراك المميز</label>
+        {/* مدة الاشتراك (تظهر لو برو أو برو ماكس) — الاتنين ذهبي، ماكس أعمق */}
+        {(accountType === 'premium' || accountType === 'pro_max') && (
+          <div className={`rounded-xl border p-3 ${
+            accountType === 'pro_max'
+              ? 'border-[#FFB300] bg-gradient-to-r from-[#FFF8E1] via-[#FFF3C4] to-[#FFF8E1]'
+              : 'border-amber-100 bg-amber-50/60'
+          }`}>
+            <label className={`mb-2 block text-xs font-black ${
+              accountType === 'pro_max' ? 'text-[#B45309]' : 'text-amber-700'
+            }`}>
+              مدة اشتراك {accountType === 'pro_max' ? 'برو ماكس' : 'برو'}
+            </label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {DURATION_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => onDurationChange(opt.value)}
-                  className={`rounded-xl px-3 py-2 text-xs sm:text-sm font-bold transition ${
-                    (subscriptionDuration || 30) === opt.value
-                      ? 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm'
-                      : 'border border-amber-200 bg-white text-amber-700 hover:bg-amber-50'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {DURATION_OPTIONS.map((opt) => {
+                const isActive = (subscriptionDuration || 30) === opt.value;
+                // برو ماكس ذهبي لامع، برو ذهبي هادئ
+                const activeClass = accountType === 'pro_max'
+                  ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_6px_rgba(255,193,7,0.45)]'
+                  : 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm';
+                const inactiveClass = accountType === 'pro_max'
+                  ? 'border border-[#FFE082] bg-white text-[#B45309] hover:bg-[#FFF8E1]'
+                  : 'border border-amber-200 bg-white text-amber-700 hover:bg-amber-50';
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onDurationChange(opt.value)}
+                    className={`rounded-xl px-3 py-2 text-xs sm:text-sm font-bold transition ${isActive ? activeClass : inactiveClass}`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

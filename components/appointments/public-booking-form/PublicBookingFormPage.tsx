@@ -49,6 +49,9 @@ export const PublicBookingFormPage: React.FC = () => {
   const { slug: slugParam = '', secret: secretParam = '', userId: userIdRouteParam = '' } = useParams<{ slug: string; secret: string; userId: string }>();
   const { user, loading: authLoading, signInGoogle } = useAuth();
   const isFromPublicSite = new URLSearchParams(location.search).get('entry') === 'public-site';
+  // الفرع المرسل من الديركتوري — لو المريض اختار فرع من مودال اختيار الفرع،
+  // بنحدّده هنا مسبّقاً عشان مايشوفش شاشه اختيار تانيه جوّه الفورم.
+  const preselectedBranchId = new URLSearchParams(location.search).get('branch') || '';
 
   const {
     userId,
@@ -62,7 +65,7 @@ export const PublicBookingFormPage: React.FC = () => {
     branches,
   } = usePublicBookingBootstrap(slugParam, secretParam, userIdRouteParam);
 
-  const [selectedBranchId, setSelectedBranchId] = useState<string>('');
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(preselectedBranchId);
 
   // ─── نظام تسجيل الدخول بعد ملء الفورم (بدل قبله) ───
   // لو المريض ضغط "حجز" وهو غير مسجل → نفتح Google popup ثم نُكمل الحجز تلقائياً
@@ -71,9 +74,19 @@ export const PublicBookingFormPage: React.FC = () => {
   const pendingSlotIdRef = React.useRef<string>('');
 
   // لو في فرع واحد فقط، نثبّته تلقائياً حتى يُحفظ الحجز بـ branchId صحيح وليس undefined.
+  // لو المريض جاي من الديركتوري بفرع محدّد مسبّقاً (preselectedBranchId)، بنتأكّد إنه
+  // فعلاً موجود في فروع الطبيب — لو مش موجود (لأي سبب) بنفضّيه ونرجّع شاشه الاختيار.
   useEffect(() => {
     if (branches.length === 1 && !selectedBranchId) {
       setSelectedBranchId(branches[0].id);
+      return;
+    }
+    if (
+      selectedBranchId &&
+      branches.length > 0 &&
+      !branches.some((b) => b.id === selectedBranchId)
+    ) {
+      setSelectedBranchId('');
     }
   }, [branches, selectedBranchId]);
 
@@ -299,13 +312,9 @@ export const PublicBookingFormPage: React.FC = () => {
         window.open('https://www.drhypermed.com', '_blank', 'noopener,noreferrer');
       }
     };
-    // رابط تقييم الزيارة: يوجه المريض لصفحة التقييمات في دليل الأطباء
-    const handleRateVisit = () => {
-      window.open('https://www.drhypermed.com', '_blank', 'noopener,noreferrer');
-    };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-2xl space-y-4">
           <BookingSuccessCard
             clinicName={config?.title}
@@ -315,30 +324,17 @@ export const PublicBookingFormPage: React.FC = () => {
             appointmentType={appointmentType}
           />
 
-          {/* أزرار ما بعد التأكيد */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* الذهاب لدليل الأطباء */}
+          {/* زر العودة لدليل الأطباء — حذفنا زر "تقييم الزيارة" بناءً على طلب المالك */}
+          <div className="flex">
             <button
               type="button"
               onClick={handleGotoDirectory}
-              className="flex-1 h-12 rounded-xl border-2 border-amber-400 bg-white text-amber-800 font-black text-sm hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-xl border-2 border-blue-400 bg-white text-blue-800 font-black text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
               دليل الأطباء
-            </button>
-
-            {/* تقييم الزيارة */}
-            <button
-              type="button"
-              onClick={handleRateVisit}
-              className="flex-1 h-12 rounded-xl border-2 border-emerald-400 bg-white text-emerald-800 font-black text-sm hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg>
-              تقييم الزيارة
             </button>
           </div>
         </div>
@@ -347,7 +343,7 @@ export const PublicBookingFormPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8 px-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4" dir="rtl">
       <div className="max-w-xl mx-auto">
         <AppUpdateBroadcastBanner
           audience="public"

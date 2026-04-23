@@ -20,7 +20,10 @@ export const extractQuotaErrorDetails = (error: unknown): SmartQuotaLimitErrorDe
   if (!details || typeof details !== 'object') return null;
 
   const raw = details as Record<string, unknown>;
-  const accountType = raw.accountType === 'premium' ? 'premium' : raw.accountType === 'free' ? 'free' : null;
+  const accountType = raw.accountType === 'premium' ? 'premium'
+    : raw.accountType === 'pro_max' ? 'pro_max'
+    : raw.accountType === 'free' ? 'free'
+    : null;
   if (!accountType) return null;
 
   return {

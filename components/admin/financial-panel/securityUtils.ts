@@ -10,7 +10,7 @@
  * وتطهير البيانات قبل حفظها في سجلات الإيرادات والمصروفات.
  */
 
-import { SubscriptionPrices } from './types';
+import { ProMaxSubscriptionPrices, SubscriptionPrices } from './types';
 import { mapFirebaseActionError } from '../../../utils/firebaseErrorMap';
 import { CONTROL_CHARS_REGEX } from '../../../utils/controlChars';
 
@@ -26,6 +26,13 @@ export const sanitizePrices = (input: SubscriptionPrices): SubscriptionPrices =>
   monthly: Number.isFinite(input.monthly) && input.monthly >= 0 ? input.monthly : 0,
   sixMonths: Number.isFinite(input.sixMonths) && input.sixMonths >= 0 ? input.sixMonths : 0,
   yearly: Number.isFinite(input.yearly) && input.yearly >= 0 ? input.yearly : 0,
+});
+
+/** تطهير أسعار باقة برو ماكس — نفس المنطق لكن نوع منفصل */
+export const sanitizeProMaxPrices = (input: ProMaxSubscriptionPrices | undefined): ProMaxSubscriptionPrices => ({
+  monthly: input && Number.isFinite(input.monthly) && input.monthly >= 0 ? input.monthly : 0,
+  sixMonths: input && Number.isFinite(input.sixMonths) && input.sixMonths >= 0 ? input.sixMonths : 0,
+  yearly: input && Number.isFinite(input.yearly) && input.yearly >= 0 ? input.yearly : 0,
 });
 
 /** تنظيف وصف المصروفات من الرموز غير المرغوب فيها وتقييد الطول */

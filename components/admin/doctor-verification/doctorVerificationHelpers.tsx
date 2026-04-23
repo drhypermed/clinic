@@ -49,7 +49,7 @@ export const formatRegistrationDate = (isoDate: string): string => {
   }
 };
 
-/** مدد الاشتراك الجاهزة اللي بيعرضها الأدمن للطبيب المميز الجديد. */
+/** مدد الاشتراك الجاهزة اللي بيعرضها الأدمن للطبيب برو الجديد. */
 export const DURATION_OPTIONS = [
   { value: 30, label: '30 يوم' },
   { value: 90, label: '90 يوم' },

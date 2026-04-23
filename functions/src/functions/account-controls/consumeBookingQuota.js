@@ -14,6 +14,7 @@ module.exports = (context) => {
     getCairoDateKey,
     resolveDoctorAccountType,
     buildWhatsAppUrl,
+    pickTierValue,
   } = context;
   const BOOKING_QUOTA_RATE_LIMIT_COLLECTION = 'bookingQuotaRateLimit';
   const BOOKING_QUOTA_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -155,35 +156,29 @@ module.exports = (context) => {
           syncedFromLegacyDoctorAt: admin.firestore.FieldValue.serverTimestamp(),
         }), { merge: true });
       }
-      const limitReachedMessage = accountType === 'premium'
-        ? (feature === 'publicBooking'
-          ? config.premiumPublicBookingLimitMessage
-          : feature === 'publicFormBooking'
-            ? config.premiumPublicFormBookingLimitMessage
-            : config.premiumSecretaryEntryRequestLimitMessage)
-        : (feature === 'publicBooking'
-          ? config.freePublicBookingLimitMessage
-          : feature === 'publicFormBooking'
-            ? config.freePublicFormBookingLimitMessage
-            : config.freeSecretaryEntryRequestLimitMessage);
-      const whatsappMessage = accountType === 'premium'
-        ? (feature === 'publicBooking'
-          ? config.premiumPublicBookingWhatsappMessage
-          : feature === 'publicFormBooking'
-            ? config.premiumPublicFormBookingWhatsappMessage
-            : config.premiumSecretaryEntryRequestWhatsappMessage)
-        : (feature === 'publicBooking'
-          ? config.freePublicBookingWhatsappMessage
-          : feature === 'publicFormBooking'
-            ? config.freePublicFormBookingWhatsappMessage
-            : config.freeSecretaryEntryRequestWhatsappMessage);
-      const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
-
-      const limit = feature === 'publicBooking'
-        ? (accountType === 'premium' ? config.premiumPublicBookingDailyLimit : config.freePublicBookingDailyLimit)
+      // 3 features × 3 tiers — pickTierValue يختار القيمة المناسبة مع fallback من pro_max إلى premium
+      const tierKeys = feature === 'publicBooking'
+        ? {
+          msg: { freeKey: 'freePublicBookingLimitMessage', premiumKey: 'premiumPublicBookingLimitMessage', proMaxKey: 'proMaxPublicBookingLimitMessage' },
+          wa: { freeKey: 'freePublicBookingWhatsappMessage', premiumKey: 'premiumPublicBookingWhatsappMessage', proMaxKey: 'proMaxPublicBookingWhatsappMessage' },
+          limit: { freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
+        }
         : feature === 'publicFormBooking'
-          ? (accountType === 'premium' ? config.premiumPublicFormBookingDailyLimit : config.freePublicFormBookingDailyLimit)
-          : (accountType === 'premium' ? config.premiumSecretaryEntryRequestDailyLimit : config.freeSecretaryEntryRequestDailyLimit);
+          ? {
+            msg: { freeKey: 'freePublicFormBookingLimitMessage', premiumKey: 'premiumPublicFormBookingLimitMessage', proMaxKey: 'proMaxPublicFormBookingLimitMessage' },
+            wa: { freeKey: 'freePublicFormBookingWhatsappMessage', premiumKey: 'premiumPublicFormBookingWhatsappMessage', proMaxKey: 'proMaxPublicFormBookingWhatsappMessage' },
+            limit: { freeKey: 'freePublicFormBookingDailyLimit', premiumKey: 'premiumPublicFormBookingDailyLimit', proMaxKey: 'proMaxPublicFormBookingDailyLimit' },
+          }
+          : {
+            msg: { freeKey: 'freeSecretaryEntryRequestLimitMessage', premiumKey: 'premiumSecretaryEntryRequestLimitMessage', proMaxKey: 'proMaxSecretaryEntryRequestLimitMessage' },
+            wa: { freeKey: 'freeSecretaryEntryRequestWhatsappMessage', premiumKey: 'premiumSecretaryEntryRequestWhatsappMessage', proMaxKey: 'proMaxSecretaryEntryRequestWhatsappMessage' },
+            limit: { freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
+          };
+
+      const limitReachedMessage = pickTierValue(accountType, config, tierKeys.msg);
+      const whatsappMessage = pickTierValue(accountType, config, tierKeys.wa);
+      const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
+      const limit = pickTierValue(accountType, config, tierKeys.limit);
 
       const fieldName = feature === 'publicBooking'
         ? 'publicBookingCount'

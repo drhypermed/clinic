@@ -41,13 +41,6 @@ const normalizeEmptyClinicalPlaceholder = (value: any, source: string): string =
 };
 
 
-const isMostlyEnglish = (s: string): boolean => {
-  const text = (s || '').toString();
-  const letters = text.match(/[A-Za-z]/g)?.length || 0;
-  const arabic = text.match(/[\u0600-\u06FF]/g)?.length || 0;
-  return letters > 0 && letters >= arabic * 2;
-};
-
 /**
  * ترجمة سريعة (أوفلاين) لبعض المصطلحات العامة إلى مصطلحات طبية بالإنجليزية
  * تساعد في تسريع عملية التحليل وجعلها أدق بدون الاعتماد الكلي على الذكاء الاصطناعي
@@ -162,8 +155,10 @@ Return STRICT JSON ONLY:
 `;
 
   try {
-    // إرسال الطلب للذكاء الاصطناعي واستقبال النتيجة بصيغة JSON
-    const stage1 = await generateJson(stage1Prompt, { temperature: 0.25 });
+    // thinking=200: تشخيص مفرد (اسم مرض واحد) محتاج تفكير خفيف بس. الدالة
+    // دي مش مستخدمة حالياً (الفلو الحالي يستعمل analyzeCaseDeeply للتحليل الغني)
+    // بس لو حد استدعاها مستقبلاً، الإعداد ده بيخليها رخيصة.
+    const stage1 = await generateJson(stage1Prompt, { temperature: 0.25, thinkingBudget: 200 });
     return sanitizeAnalysisResult(stage1);
   } catch (error) {
     console.error('Gemini Rx Error:', error);
@@ -197,35 +192,45 @@ export const translateClinicalData = async (
     const m = (text || '').match(re);
     return (m?.[1] || '').trim();
   };
-  // If user already entered English (or mostly English), keep it as-is to avoid "over-translation".
   const complaintText = toText(complaint).trim();
   const historyText = toText(history).trim();
   const examText = toText(exam).trim();
   const invText = toText(investigations).trim();
   const dxText = toText(diagnosis).trim();
 
-  if ([complaintText, historyText, examText, invText, dxText].every(x => !x || isMostlyEnglish(x))) {
-    return {
-      complaintEn: complaintText,
-      historyEn: historyText,
-      examEn: examText,
-      investigationsEn: invText,
-      diagnosisEn: dxText
-    };
+  // لو كل الحقول فاضية — ما نعملش نداء AI من الأساس (توفير تكلفة).
+  // ملاحظة: شيلنا الـ shortcut القديم اللي كان بيرجع النص الإنجليزي "زي ما هو"،
+  // لأن المستخدم عاوز النص الإنجليزي برضه يتنضف ويتصاغ طبياً حتى لو فيه أخطاء
+  // إملائية أو ترتيب غير طبي (request explicit).
+  if (!complaintText && !historyText && !examText && !invText && !dxText) {
+    return { complaintEn: '', historyEn: '', examEn: '', investigationsEn: '', diagnosisEn: '' };
   }
 
   const prompt = `You are a bilingual clinician and medical editor.
-TASK: Convert the following mixed Arabic/English clinical notes into accurate, professional medical English.
-GOAL: Not literal translation - use correct clinical terminology while preserving meaning. Do NOT add new symptoms, findings, diagnoses, or tests.
+TASK: Produce accurate, professional medical English for the fields below.
+Input may be Arabic, English, or mixed — and may contain spelling mistakes, abbreviations, shorthand, or unstructured phrasing.
+GOAL: Not just translation or passthrough. You must also CLEAN UP and NORMALIZE English input so the output reads like proper medical documentation.
 
-STRICT RULES:
+CLEANUP REQUIREMENTS (for English-heavy input):
+A) Fix spelling mistakes (e.g., "dyspnia" → "dyspnea", "diarhea" → "diarrhea", "headche" → "headache").
+B) Fix capitalization (sentence-case; uppercase standard abbreviations like CBC, CRP, HbA1c, BP, RBS, ECG, CXR, U/S).
+C) Normalize punctuation and spacing; join broken phrases into coherent short clinical statements.
+D) Replace colloquial/shorthand with proper clinical terms (e.g., "belly pain" → "abdominal pain", "SOB" → "dyspnea", "temp high" → "fever").
+E) Re-order fragments into logical clinical flow when the input is unstructured (e.g., symptom + duration + severity).
+F) Deduplicate redundant phrasing.
+
+STRICT PRESERVATION RULES (never modify these):
 1) Preserve all numbers, units, durations, dates, and measurements exactly.
-2) Preserve drug names and brand names as-is (do not translate medication names).
-3) Preserve and standardize common test abbreviations in uppercase when appropriate (CBC, CRP, ESR, RBS, HbA1c, LFTs, RFTs, UA, CXR, ECG, U/S).
-4) Keep negations intact (e.g., "لا يوجد" -> "no ...").
-5) Expand colloquial Arabic into proper clinical terms (e.g., "حرقان بول" -> "dysuria", "نهجان" -> "dyspnea").
-6) Use abbreviations ONLY if very common: DM, HTN, COPD, URTI, UTI. Otherwise, write in full.
-7) Keep each field focused and concise; do not add labels like "C/O:".
+2) Preserve drug names and brand names as-is (never translate or "correct" medication names).
+3) Preserve common test abbreviations in uppercase (CBC, CRP, ESR, RBS, HbA1c, LFTs, RFTs, UA, CXR, ECG, U/S, MRI, CT).
+4) Keep negations intact ("لا يوجد" → "no ..."; "denies ..." stays "denies ...").
+5) Keep each field focused and concise; do not add labels like "C/O:" or "Dx:".
+6) Use abbreviations ONLY if very common (DM, HTN, COPD, URTI, UTI). Otherwise, write in full.
+
+DO NOT:
+- Add new symptoms, findings, diagnoses, or tests that weren't in the input.
+- Invent severity, duration, or laterality if not stated.
+- Change the meaning; only clarify the wording.
 
 INPUT:
 Complaint: """${complaintText}"""
@@ -241,7 +246,10 @@ Return STRICT JSON ONLY:
     const responseText = await generateContentWithSecurity(prompt, {
       model: GEMINI_MODEL,
       responseMimeType: 'application/json',
-      temperature: 0
+      temperature: 0,
+      // thinking=0: الترجمة شغلة ميكانيكية (ألم بطن → abdominal pain) مش محتاجة
+      // تفكير عميق — تشييله بيوفر ~50-60% من تكلفة الترجمة بدون أي فقد في الجودة.
+      thinkingBudget: 0,
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};
@@ -286,7 +294,9 @@ Diagnosis: ${dxText}`;
       const textResponse = await generateContentWithSecurity(textPrompt, {
         model: GEMINI_MODEL,
         responseMimeType: 'text/plain',
-        temperature: 0
+        temperature: 0,
+        // نفس الـ fallback — ترجمة لا تحتاج تفكير
+        thinkingBudget: 0,
       });
 
       const out = {

@@ -27,7 +27,7 @@ interface SecureGeminiResponse {
   text: string;           // النص المولد من الذكاء الاصطناعي
   model: string;          // اسم الموديل الفعلي المستخدم
   responseMimeType: string;
-  accountType: 'free' | 'premium'; // نوع حساب الطبيب المكتشف
+  accountType: 'free' | 'premium' | 'pro_max'; // نوع حساب الطبيب المكتشف
   dayKey: string;         // مفتاح اليوم الحالي (لأغراض الحصص اليومية)
   remaining: number;      // عدد المرات المتبقية للطبيب اليوم
 }
@@ -150,7 +150,9 @@ export const generateGeminiContentSecure = async (params: SecureGeminiParams): P
     // الـ fallback القديم كان 'gemini-1.5-pro' — تحديث لأحدث موديل نستخدمه.
     model: String(data.model || params.model || 'gemini-2.5-flash'),
     responseMimeType: String(data.responseMimeType || params.responseMimeType || 'application/json'),
-    accountType: data.accountType === 'premium' ? 'premium' : 'free',
+    accountType: data.accountType === 'premium' ? 'premium'
+      : data.accountType === 'pro_max' ? 'pro_max'
+      : 'free',
     dayKey: String(data.dayKey || ''),
     remaining: Number(data.remaining || 0),
   };

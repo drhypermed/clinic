@@ -11,7 +11,9 @@ interface ExpiryWarning {
   show: boolean;                 // هل يجب إظهار شريط التحذير في واجهة التطبيق؟
   expiryDate: Date | null;        // تاريخ الانتهاء الدقيق
   remainingPercentage: number;   // النسبة المئوية المتبقية من الاشتراك
-  isPremium: boolean;            // هل الحساب "مميز" حالياً؟
+  isPro: boolean;                // هل الحساب مدفوع (برو أو برو ماكس) حالياً؟
+  /** الفئة الفعلية النشطة دلوقتي — null لو الحساب مجاني/منتهي */
+  tier: 'pro' | 'pro_max' | null;
   isExpired: boolean;            // هل انتهى الاشتراك بالفعل؟
 }
 
@@ -19,7 +21,7 @@ const PREMIUM_WARNING_THRESHOLD_PERCENT = 5;
 
 /**
  * Hook مراقب انتهاء الاشتراك (usePremiumExpiryCheck):
- * يقوم بمتابعة صلاحية اشتراك الطبيب المميز (Premium) وحساب المدة المنقضية.
+ * يقوم بمتابعة صلاحية اشتراك الطبيب برو (Pro) وحساب المدة المنقضية.
  * الهدف: تنبيه الطبيب عندما يصبح المتبقي أقل من أو يساوي 5% من إجمالي مدة الاشتراك.
  */
 export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
@@ -31,7 +33,8 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
     show: false,
     expiryDate: null,
     remainingPercentage: 100,
-    isPremium: false,
+    isPro: false,
+    tier: null,
     isExpired: false,
   }), []);
 
@@ -65,26 +68,43 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
   return useMemo<ExpiryWarning>(() => {
     if (!accountData) return defaultWarning;
 
-    const rawAccountType = accountData.accountType === 'premium' ? 'premium' : 'free';
+    // برو وبرو ماكس الاتنين يحسبوا Pro لأغراض تنبيه الانتهاء
+    const rawAccountType: 'paid' | 'free' =
+      accountData.accountType === 'premium' || accountData.accountType === 'pro_max'
+        ? 'paid'
+        : 'free';
     const snapshot = getPremiumTimingSnapshot(accountData, nowMs);
     const knownExpiryDate = snapshot.knownExpiryMs !== null ? new Date(snapshot.knownExpiryMs) : null;
+
+    // الفئة الفعلية من raw accountType (قبل فحص الانتهاء) — للحالة المؤقتة قبل sync
+    const rawTier: 'pro' | 'pro_max' | null =
+      accountData.accountType === 'pro_max' ? 'pro_max'
+      : accountData.accountType === 'premium' ? 'pro'
+      : null;
 
     if (!isSynchronized) {
       return {
         show: false,
         expiryDate: knownExpiryDate,
-        remainingPercentage: rawAccountType === 'premium' ? 100 : 0,
-        isPremium: rawAccountType === 'premium',
+        remainingPercentage: rawAccountType === 'paid' ? 100 : 0,
+        isPro: rawAccountType === 'paid',
+        tier: rawTier,
         isExpired: false,
       };
     }
 
-    if (snapshot.effectiveAccountType !== 'premium') {
+    // effectiveAccountType ممكن يكون premium أو pro_max (الاتنين مدفوع). free = مجاني.
+    const effectiveTier: 'pro' | 'pro_max' | null =
+      snapshot.effectiveAccountType === 'pro_max' ? 'pro_max'
+      : snapshot.effectiveAccountType === 'premium' ? 'pro'
+      : null;
+    if (!effectiveTier) {
       return {
         show: false,
         expiryDate: knownExpiryDate,
         remainingPercentage: snapshot.isExpired ? 0 : 100,
-        isPremium: false,
+        isPro: false,
+        tier: null,
         isExpired: snapshot.isExpired,
       };
     }
@@ -98,7 +118,8 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
         show: false,
         expiryDate: knownExpiryDate,
         remainingPercentage: 100,
-        isPremium: true,
+        isPro: true,
+        tier: effectiveTier,
         isExpired: false,
       };
     }
@@ -111,7 +132,8 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
       show: remainingPercentage <= PREMIUM_WARNING_THRESHOLD_PERCENT,
       expiryDate: new Date(snapshot.premiumExpiryMs),
       remainingPercentage,
-      isPremium: true,
+      isPro: true,
+      tier: effectiveTier,
       isExpired: false,
     };
   }, [accountData, defaultWarning, isSynchronized, nowMs]);

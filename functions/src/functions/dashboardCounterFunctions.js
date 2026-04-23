@@ -6,14 +6,20 @@ const COUNTER_FIELDS = [
   'totalPatients',
   'freeDocsCount',
   'premiumDocsCount',
+  'proMaxDocsCount',
   'totalSmartRxFree',
-  'totalSmartRxPremium',
+  'totalSmartRxPro',
+  'totalSmartRxProMax',
   'totalPrintsFree',
-  'totalPrintsPremium',
+  'totalPrintsPro',
+  'totalPrintsProMax',
   'totalRevenue',
   'monthlyPlansCount',
   'sixMonthsPlansCount',
   'yearlyPlansCount',
+  'proMaxMonthlyPlansCount',
+  'proMaxSixMonthsPlansCount',
+  'proMaxYearlyPlansCount',
 ];
 
 const COUNTER_BASELINE_DOC_ID = 'adminDashboardStatsBaseline';
@@ -41,14 +47,20 @@ const createZeroCounters = () => ({
   totalPatients: 0,
   freeDocsCount: 0,
   premiumDocsCount: 0,
+  proMaxDocsCount: 0,
   totalSmartRxFree: 0,
-  totalSmartRxPremium: 0,
+  totalSmartRxPro: 0,
+  totalSmartRxProMax: 0,
   totalPrintsFree: 0,
-  totalPrintsPremium: 0,
+  totalPrintsPro: 0,
+  totalPrintsProMax: 0,
   totalRevenue: 0,
   monthlyPlansCount: 0,
   sixMonthsPlansCount: 0,
   yearlyPlansCount: 0,
+  proMaxMonthlyPlansCount: 0,
+  proMaxSixMonthsPlansCount: 0,
+  proMaxYearlyPlansCount: 0,
 });
 
 const normalizeCounterSet = (raw) => {
@@ -89,24 +101,30 @@ const getUsageByPlan = (userData) => {
 
   let freeUsage = normalizeUsageCounters(usageStatsByPlan?.free);
   let premiumUsage = normalizeUsageCounters(usageStatsByPlan?.premium);
+  let proMaxUsage = normalizeUsageCounters(usageStatsByPlan?.pro_max);
 
   const hasPlanUsage =
     freeUsage.smartPrescriptionCount > 0 ||
     freeUsage.printCount > 0 ||
     premiumUsage.smartPrescriptionCount > 0 ||
-    premiumUsage.printCount > 0;
+    premiumUsage.printCount > 0 ||
+    proMaxUsage.smartPrescriptionCount > 0 ||
+    proMaxUsage.printCount > 0;
 
   if (!hasPlanUsage) {
     const fallbackUsage = normalizeUsageCounters(userData?.usageStats || {});
     const accountType = String(userData?.accountType || '').trim().toLowerCase();
-    if (accountType === 'premium') {
+    // كل فئة لها bucket منفصل: free / premium / pro_max
+    if (accountType === 'pro_max') {
+      proMaxUsage = fallbackUsage;
+    } else if (accountType === 'premium') {
       premiumUsage = fallbackUsage;
     } else {
       freeUsage = fallbackUsage;
     }
   }
 
-  return { freeUsage, premiumUsage };
+  return { freeUsage, premiumUsage, proMaxUsage };
 };
 
 const normalizeVerificationStatus = (value) => {
@@ -116,7 +134,11 @@ const normalizeVerificationStatus = (value) => {
   return 'submitted';
 };
 
-const getSubscriptionPlanRevenue = ({ monthPrices, startDate, endDate }) => {
+/**
+ * حساب إيراد الاشتراك حسب المدة + الفئة.
+ * pro_max بياخد من monthPrices.proMax* (لو موجود)، وإلا fallback لأسعار برو.
+ */
+const getSubscriptionPlanRevenue = ({ monthPrices, startDate, endDate, tier }) => {
   if (!monthPrices) return 0;
 
   const rawMonths =
@@ -125,9 +147,21 @@ const getSubscriptionPlanRevenue = ({ monthPrices, startDate, endDate }) => {
     startDate.getMonth();
   const diffMonths = endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
 
-  if (diffMonths >= 12) return toNumber(monthPrices?.yearly);
-  if (diffMonths >= 6) return toNumber(monthPrices?.sixMonths);
-  return toNumber(monthPrices?.monthly);
+  const isProMax = tier === 'pro_max';
+
+  if (diffMonths >= 12) {
+    return isProMax
+      ? toNumber(monthPrices?.proMaxYearly ?? monthPrices?.yearly)
+      : toNumber(monthPrices?.yearly);
+  }
+  if (diffMonths >= 6) {
+    return isProMax
+      ? toNumber(monthPrices?.proMaxSixMonths ?? monthPrices?.sixMonths)
+      : toNumber(monthPrices?.sixMonths);
+  }
+  return isProMax
+    ? toNumber(monthPrices?.proMaxMonthly ?? monthPrices?.monthly)
+    : toNumber(monthPrices?.monthly);
 };
 
 const getSubscriptionPlanBucket = ({ startDate, endDate }) => {
@@ -149,7 +183,9 @@ const buildDoctorRevenueContribution = async ({ userData, currentYear, getMonthP
   };
 
   const accountType = String(userData?.accountType || '').trim().toLowerCase();
-  if (accountType !== 'premium') return {
+  // برو وبرو ماكس الاتنين يحسبوا في الإيرادات (pro_max حالياً بنفس pricing الـ premium
+  // لحد ما الأدمن يضبط pricing مختلف — يتعالج من getMonthPrices لاحقاً)
+  if (accountType !== 'premium' && accountType !== 'pro_max') return {
     revenue: 0,
     planBucket: null,
   };
@@ -172,7 +208,7 @@ const buildDoctorRevenueContribution = async ({ userData, currentYear, getMonthP
   const monthId = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
   const monthPrices = await getMonthPrices(monthId);
   return {
-    revenue: getSubscriptionPlanRevenue({ monthPrices, startDate, endDate }),
+    revenue: getSubscriptionPlanRevenue({ monthPrices, startDate, endDate, tier: accountType }),
     planBucket: getSubscriptionPlanBucket({ startDate, endDate }),
   };
 };
@@ -199,7 +235,10 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
   else if (rawVerificationStatus === 'submitted' || rawVerificationStatus === 'pending') counters.pendingDoctors = 1;
 
   const accountType = String(userData?.accountType || '').trim().toLowerCase();
-  if (accountType === 'premium') {
+  // كل فئة في bucket منفصل
+  if (accountType === 'pro_max') {
+    counters.proMaxDocsCount = 1;
+  } else if (accountType === 'premium') {
     counters.premiumDocsCount = 1;
   } else {
     counters.freeDocsCount = 1;
@@ -207,14 +246,23 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
 
   const usage = getUsageByPlan(userData);
   counters.totalSmartRxFree = usage.freeUsage.smartPrescriptionCount;
-  counters.totalSmartRxPremium = usage.premiumUsage.smartPrescriptionCount;
+  counters.totalSmartRxPro = usage.premiumUsage.smartPrescriptionCount;
+  counters.totalSmartRxProMax = usage.proMaxUsage.smartPrescriptionCount;
   counters.totalPrintsFree = usage.freeUsage.printCount;
-  counters.totalPrintsPremium = usage.premiumUsage.printCount;
+  counters.totalPrintsPro = usage.premiumUsage.printCount;
+  counters.totalPrintsProMax = usage.proMaxUsage.printCount;
   const revenueContribution = await buildDoctorRevenueContribution({ userData, currentYear, getMonthPrices });
   counters.totalRevenue = revenueContribution.revenue;
-  if (revenueContribution.planBucket === 'yearly') counters.yearlyPlansCount = 1;
-  else if (revenueContribution.planBucket === 'sixMonths') counters.sixMonthsPlansCount = 1;
-  else if (revenueContribution.planBucket === 'monthly') counters.monthlyPlansCount = 1;
+  // عدادات الباقات منفصلة لـ برو وبرو ماكس
+  if (accountType === 'pro_max') {
+    if (revenueContribution.planBucket === 'yearly') counters.proMaxYearlyPlansCount = 1;
+    else if (revenueContribution.planBucket === 'sixMonths') counters.proMaxSixMonthsPlansCount = 1;
+    else if (revenueContribution.planBucket === 'monthly') counters.proMaxMonthlyPlansCount = 1;
+  } else {
+    if (revenueContribution.planBucket === 'yearly') counters.yearlyPlansCount = 1;
+    else if (revenueContribution.planBucket === 'sixMonths') counters.sixMonthsPlansCount = 1;
+    else if (revenueContribution.planBucket === 'monthly') counters.monthlyPlansCount = 1;
+  }
 
   return counters;
 };

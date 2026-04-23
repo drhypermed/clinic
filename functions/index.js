@@ -247,7 +247,7 @@ exports.consumeBookingQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./
 exports.consumeDrugToolQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeDrugToolQuota'));
 
 // --- Subscription Functions ---
-exports.checkExpiredPremiumSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredPremiumSubscriptions'));
+exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredProSubscriptions'));
 exports.runExpiredSubscriptionsCheckNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/subscriptionFunctions', 'runExpiredSubscriptionsCheckNow'));
 
 // --- SEO Functions (sitemap + robots) ---

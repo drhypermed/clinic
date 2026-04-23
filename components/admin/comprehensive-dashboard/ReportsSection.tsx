@@ -3,7 +3,7 @@
  *
  * يعرض:
  *   1. إجمالي الأطباء الجدد شهرياً (آخر 12 شهر) — رسم بياني خطي
- *   2. توزيع الأطباء حسب نوع الحساب (Free/Premium) — رسم دائري
+ *   2. توزيع الأطباء حسب نوع الحساب (Free/Pro) — رسم دائري
  *   3. أعلى 10 أطباء نشاطاً (حسب usage counters) — رسم أعمدة
  *   4. زر تصدير CSV لكل جدول
  *
@@ -179,16 +179,19 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
     () => [
       { label: 'إجمالي الأطباء', value: stats.totalDoctors, color: 'text-cyan-700' },
       { label: 'مقبولون', value: stats.approvedDoctors, color: 'text-emerald-700' },
-      { label: 'مرفوضون', value: stats.rejectedDoctors, color: 'text-rose-700' },
-      { label: 'مميزون', value: stats.activeSubscriptions, color: 'text-amber-700' },
+      // برو لوحده + برو ماكس لوحده — بطاقات منفصلة
+      { label: 'برو', value: stats.premiumDocsCount || 0, color: 'text-amber-700' },
+      { label: 'برو ماكس', value: stats.proMaxDocsCount || 0, color: 'text-[#B45309]' },
     ],
     [stats],
   );
 
+  // الـ pie chart — 3 شرائح: مجاني / برو / برو ماكس
   const accountTypeData = useMemo(
     () => [
       { name: 'مجاني', value: stats.freeDocsCount || 0 },
-      { name: 'مميز', value: stats.premiumDocsCount || 0 },
+      { name: 'برو', value: stats.premiumDocsCount || 0 },
+      { name: 'برو ماكس', value: stats.proMaxDocsCount || 0 },
     ],
     [stats],
   );
@@ -285,9 +288,14 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
                   outerRadius={80}
                   dataKey="value"
                 >
-                  {accountTypeData.map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
+                  {/* ألوان مخصصة: مجاني=أزرق، برو=ذهبي، برو ماكس=ذهبي لامع */}
+                  {accountTypeData.map((entry, i) => {
+                    const color = entry.name === 'برو ماكس' ? '#FFB300'
+                      : entry.name === 'برو' ? '#F59E0B'
+                      : entry.name === 'مجاني' ? '#06B6D4'
+                      : CHART_COLORS[i % CHART_COLORS.length];
+                    return <Cell key={i} fill={color} />;
+                  })}
                 </Pie>
                 <Tooltip contentStyle={{ fontSize: '12px', direction: 'rtl' }} />
               </PieChart>
