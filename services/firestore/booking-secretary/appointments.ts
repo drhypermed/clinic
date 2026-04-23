@@ -25,6 +25,11 @@ interface CreateAppointmentFromSecretPayload {
   consultationSourceAppointmentId?: string;
   consultationSourceCompletedAt?: string;
   consultationSourceRecordId?: string;
+  // ─── بيانات الهوية الثابتة + الحالة المؤقتة ───
+  gender?: 'male' | 'female';
+  dateOfBirth?: string;
+  pregnant?: boolean;
+  breastfeeding?: boolean;
   paymentType?: PaymentType;
   insuranceCompanyId?: string;
   insuranceCompanyName?: string;
@@ -139,6 +144,11 @@ export const createAppointmentFromSecret = async (
     consultationSourceCompletedAt: data.consultationSourceCompletedAt,
     consultationSourceRecordId: data.consultationSourceRecordId,
     bookingSecret: normalizedBookingSecret,
+    // بيانات الهوية — تُحفظ عشان الطبيب يشوفها لما يفتح الموعد
+    gender: data.gender || undefined,
+    dateOfBirth: data.dateOfBirth || undefined,
+    pregnant: typeof data.pregnant === 'boolean' ? data.pregnant : undefined,
+    breastfeeding: typeof data.breastfeeding === 'boolean' ? data.breastfeeding : undefined,
     paymentType: data.paymentType ?? 'cash',
     insuranceCompanyId: data.insuranceCompanyId,
     insuranceCompanyName: data.insuranceCompanyName,

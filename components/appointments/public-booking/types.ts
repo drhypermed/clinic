@@ -9,6 +9,7 @@
  */
 import type { AppointmentType, PatientSuggestionOption, RecentExamPatientOption } from '../AddAppointmentForm';
 import type {
+  PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
   SecretaryVitalsInput,
@@ -79,6 +80,14 @@ export type TodayAppointment = {
   examCompletedAt?: string;
   /** الفرع المرتبط بالموعد - مهم للفلترة الصحيحة بين الفروع */
   branchId?: string;
+  /** جنس المريض — ينتقل من فورم الحجز للطبيب */
+  gender?: PatientGender;
+  /** تاريخ الميلاد — لحساب السن تلقائياً */
+  dateOfBirth?: string;
+  /** حامل؟ snapshot لهذا الموعد */
+  pregnant?: boolean;
+  /** مرضعة؟ snapshot لهذا الموعد */
+  breastfeeding?: boolean;
 };
 
 // هيكل رد الطبيب على طلب السكرتارية بدخول المريض

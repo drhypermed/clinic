@@ -6,6 +6,7 @@
  * - حفظ كمسودة / نشر / معاينة.
  */
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { LivePreviewModal } from './LivePreviewModal';
 import { ImageCropModal } from './ImageCropModal';
@@ -38,7 +39,7 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
     deletingImageIndex, addImageFromFile,
     pendingCropImage, crop, zoom, cropAspect, uploadingImage,
     setCrop, setZoom, onCropComplete, handleCancelCrop,
-    handleSaveCroppedImage, handleSaveOriginalImage,
+    handleSaveCroppedImage,
 
     // معاينة/حفظ
     previewData, isPublished, saveAd,
@@ -62,8 +63,11 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
   return (
     <div className="space-y-5" dir="rtl">
       {/* رسالة التنبيه المركزية: نجاح (أخضر) أو خطأ (أحمر) — بتظهر في نص الشاشة
-          بعد الضغط على "نشر" أو "تحديث" أو لو حصل خطأ. */}
-      {(message || error) && (
+          بعد الضغط على "نشر" أو "تحديث" أو لو حصل خطأ.
+          بنعمل Portal لـdocument.body عشان نهرب من أي عنصر أب عنده
+          transform/animation (زي dh-stagger-1) — العناصر دي بتكسر position:fixed
+          وبتخلّي التنبيه يظهر فوق الصفحه بدل ما يظهر في نص الشاشه. */}
+      {(message || error) && createPortal(
         <div className="fixed inset-0 z-[90] pointer-events-none flex items-center justify-center px-4">
           <div
             className={`max-w-md w-full text-white rounded-2xl shadow-2xl px-5 py-4 text-center font-black border ${
@@ -74,7 +78,8 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
           >
             {error || message}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* المعلومات العامة عن الطبيب */}
@@ -154,7 +159,6 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
         onCropComplete={onCropComplete}
         onCancel={handleCancelCrop}
         onSaveEdited={handleSaveCroppedImage}
-        onSaveOriginal={handleSaveOriginalImage}
       />
 
       <DoctorAdActionsBar

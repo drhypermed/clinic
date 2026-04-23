@@ -9,12 +9,18 @@ import type {
   AlternativeMed,
   CustomBox,
   Medication,
+  PatientGender,
   PaymentType,
   PrescriptionItem,
   PrescriptionSettings,
   VitalSigns,
 } from '../../types';
 import { InsurancePaymentSelector } from '../prescription/InsurancePaymentSelector';
+// دوال هوية المريض: تطبيع الجنس + حساب السن الجديد من آخر زيارة
+import {
+  advanceAgeByElapsedTime,
+  normalizeGender,
+} from '../../utils/patientIdentity';
 
 /**
  * مكون قسم الروشتة الرئيسي (Main App Prescription Section Component)
@@ -39,6 +45,13 @@ interface MainAppPrescriptionSectionProps {
   setAgeMonths: (value: string) => void;
   ageDays: string;
   setAgeDays: (value: string) => void;
+  // حقول الهوية الجديدة: الجنس ثابت للمريض، والحمل والرضاعة snapshot للزيارة
+  gender: PatientGender | '';
+  setGender: (value: PatientGender | '') => void;
+  pregnant: boolean | null;
+  setPregnant: (value: boolean | null) => void;
+  breastfeeding: boolean | null;
+  setBreastfeeding: (value: boolean | null) => void;
   setActivePatientFileId: (value: string | null) => void;
   setActivePatientFileNumber: (value: number | null) => void;
   setActivePatientFileNameKey: (value: string | null) => void;
@@ -166,7 +179,9 @@ interface MainAppPrescriptionSectionProps {
 
 
 export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProps> = ({
-  analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
+  analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+  gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
+  setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
   complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, smartQuotaNotice, isQuotaLimitError, errorMsg,
   weight, setWeight, height, setHeight, bmi, vitals, updateVital, customBoxes = [], customBoxValues = {}, onCustomBoxValueChange, prescriptionSettings, totalAgeInMonths, parsedWeight, onAddManualMedication, onAddEmptyMedication, onAddCustomItem, onAddManualLab, onAddManualAdvice, onOpenReadyPrescriptions,
   consultationDate, rxItems, generalAdvice, labInvestigations, complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
@@ -250,17 +265,49 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   ageYears={ageYears} setAgeYears={setAgeYears}
                   ageMonths={ageMonths} setAgeMonths={setAgeMonths}
                   ageDays={ageDays} setAgeDays={setAgeDays}
+                  gender={gender} setGender={setGender}
+                  pregnant={pregnant} setPregnant={setPregnant}
+                  breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
                   patientSuggestions={patientSuggestions}
                   onSelectPatientSuggestion={(item) => {
                     const parsedFileNumber = Number(item.patientFileNumber);
                     setPatientName(item.patientName || '');
                     setPhone(item.phone || '');
-                    setAgeYears(item.ageYears || '');
-                    setAgeMonths(item.ageMonths || '');
-                    setAgeDays(item.ageDays || '');
+                    // نقل الجنس (ثابت) + حساب السن الحالي تلقائياً من السن القديم + فرق الوقت
+                    setGender(normalizeGender(item.gender) ?? '');
+                    const lastVisit = item.lastExamDate || item.lastConsultationDate;
+                    if (lastVisit) {
+                      const advanced = advanceAgeByElapsedTime(
+                        { years: item.ageYears, months: item.ageMonths, days: item.ageDays },
+                        lastVisit,
+                      );
+                      // لو حسبنا قيم أكبر من صفر نستخدمها، وإلا نرجع للسن القديم كما هو
+                      if (advanced.years || advanced.months || advanced.days) {
+                        setAgeYears(advanced.years);
+                        setAgeMonths(advanced.months);
+                        setAgeDays(advanced.days);
+                      } else {
+                        setAgeYears(item.ageYears || '');
+                        setAgeMonths(item.ageMonths || '');
+                        setAgeDays(item.ageDays || '');
+                      }
+                    } else {
+                      setAgeYears(item.ageYears || '');
+                      setAgeMonths(item.ageMonths || '');
+                      setAgeDays(item.ageDays || '');
+                    }
+                    // الحمل/الرضاعة لا يُنقلا — بنسأل كل زيارة من الصفر
+                    setPregnant(null);
+                    setBreastfeeding(null);
                     setActivePatientFileId(null);
                     setActivePatientFileNumber(Number.isFinite(parsedFileNumber) && parsedFileNumber > 0 ? Math.floor(parsedFileNumber) : null);
                     setActivePatientFileNameKey((item.patientName || '').trim() || null);
+                    // في الاستشارة بس: نجلب آخر وزن/طول تلقائياً من سجلات المريض
+                    // الكشف بيقاس من جديد في كل زيارة، والاستشارة بتبني على قياسات الكشف السابق
+                    if (visitType === 'consultation') {
+                      if (item.lastWeight) setWeight(item.lastWeight);
+                      if (item.lastHeight) setHeight(item.lastHeight);
+                    }
                   }}
                   visitDate={visitDate} setVisitDate={setVisitDate}
                   visitType={visitType}

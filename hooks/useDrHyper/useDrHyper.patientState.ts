@@ -1,6 +1,6 @@
 
 import { useMemo, useRef, useState } from 'react';
-import type { Medication, PaymentType, PrescriptionItem } from '../../types';
+import type { Medication, PatientGender, PaymentType, PrescriptionItem } from '../../types';
 import type { AppStateSnapshot } from './useDrHyper.types';
 import { getCairoDayKey } from '../../utils/cairoTime';
 
@@ -12,6 +12,10 @@ export const useDrHyperPatientState = () => {
   const [ageYears, setAgeYears] = useState('');
   const [ageMonths, setAgeMonths] = useState('');
   const [ageDays, setAgeDays] = useState('');
+  // حقول هوية المريض الجديدة: الجنس ثابت، والحمل + الرضاعة snapshot لكل زيارة
+  const [gender, setGender] = useState<PatientGender | ''>('');
+  const [pregnant, setPregnant] = useState<boolean | null>(null);
+  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   
@@ -98,6 +102,12 @@ export const useDrHyperPatientState = () => {
     setAgeMonths,
     ageDays,
     setAgeDays,
+    gender,
+    setGender,
+    pregnant,
+    setPregnant,
+    breastfeeding,
+    setBreastfeeding,
     weight,
     setWeight,
     height,

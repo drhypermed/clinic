@@ -8,12 +8,19 @@
  * - التحقق من أطوال النصوص (Max Length) لمنع إدخال بيانات ضخمة غير مبررة. 
  * - استخدام مكون AgeUnitInput لتوحيد تنسيق العمر.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { AgeUnitInput } from '../AgeUnitInput';
 import type { PatientSuggestionOption } from '../AddAppointmentForm';
 import type { AppointmentType } from '../AddAppointmentForm';
 import { formatUserDate } from '../../../utils/cairoTime';
+import type { PatientGender } from '../../../types';
+import { parseAgeToYearsMonthsDays } from '../utils';
+// قرار سؤال الحمل/الرضاعة
+import {
+  bestGuessAgeYears,
+  shouldAskFertilityQuestions,
+} from '../../../utils/patientIdentity';
 
 type PublicBookingPatientFieldsProps = {
   selectedSlotId: string;
@@ -21,6 +28,9 @@ type PublicBookingPatientFieldsProps = {
   phone: string;
   patientName: string;
   age: string;
+  gender: PatientGender | '';
+  pregnant: boolean | null;
+  breastfeeding: boolean | null;
   visitReason: string;
   isFirstVisit: boolean | null;
   activeSuggestionField: 'name' | 'phone' | null;
@@ -35,6 +45,9 @@ type PublicBookingPatientFieldsProps = {
   onPhoneChange: (value: string) => void;
   onPatientNameChange: (value: string) => void;
   onAgeChange: (value: string) => void;
+  onGenderChange: (value: PatientGender | '') => void;
+  onPregnantChange: (value: boolean | null) => void;
+  onBreastfeedingChange: (value: boolean | null) => void;
   onVisitReasonChange: (value: string) => void;
   onIsFirstVisitChange: (value: boolean) => void;
   applyPhoneSuggestion: (item: PatientSuggestionOption) => void;
@@ -46,6 +59,9 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
   phone,
   patientName,
   age,
+  gender,
+  pregnant,
+  breastfeeding,
   visitReason,
   isFirstVisit,
   activeSuggestionField,
@@ -59,11 +75,22 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
   onPhoneChange,
   onPatientNameChange,
   onAgeChange,
+  onGenderChange,
+  onPregnantChange,
+  onBreastfeedingChange,
   onVisitReasonChange,
   onIsFirstVisitChange,
   applyPhoneSuggestion,
   normalizePhone,
 }) => {
+  // قرار ظهور الحمل/الرضاعة: أنثى + 18-50 سنة (من السن المدخل)
+  // ملاحظة: hooks لازم تكون قبل أي early return عشان يفضل ترتيبها ثابت بين renders
+  const effectiveAgeYears = useMemo(() => {
+    const ageParts = parseAgeToYearsMonthsDays(age);
+    return bestGuessAgeYears({ ageParts, ageText: age });
+  }, [age]);
+  const askFertility = shouldAskFertilityQuestions(gender, effectiveAgeYears);
+
   if (!selectedSlotId) return null;
 
   return (
@@ -126,16 +153,101 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
         />
       </div>
 
-      <div>
-        <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
-        <AgeUnitInput
-          ageString={age}
-          onAgeChange={onAgeChange}
-          placeholder="0"
-          inputClassName="focus:ring-amber-500 focus:border-amber-500"
-          selectClassName="focus:ring-amber-500"
-        />
+      {/* السن ثم النوع في صف واحد على الشاشات الأكبر من الموبايل (بدون فراغات) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
+          <AgeUnitInput
+            ageString={age}
+            onAgeChange={onAgeChange}
+            placeholder="0"
+            inputClassName="focus:ring-amber-500 focus:border-amber-500"
+            selectClassName="focus:ring-amber-500"
+          />
+        </div>
+        {/* النوع بعد السن مباشرة — ثابت للمريض، ينتقل تلقائي في الحجوزات القادمة */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1.5">النوع</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onGenderChange('male')}
+              className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
+                gender === 'male'
+                  ? 'bg-sky-600 text-white border-sky-700 shadow-md'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              ذكر
+            </button>
+            <button
+              type="button"
+              onClick={() => onGenderChange('female')}
+              className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
+                gender === 'female'
+                  ? 'bg-pink-600 text-white border-pink-700 shadow-md'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              أنثى
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* حمل/رضاعة — مباشرة تحت النوع، يظهر بس للإناث 18-50 */}
+      {askFertility && (
+        <div className="rounded-2xl border border-pink-200 bg-pink-50/60 p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5">هل حضرتك حامل؟</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onPregnantChange(true)}
+                  className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                    pregnant === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  نعم، حامل
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPregnantChange(false)}
+                  className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                    pregnant === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  لا
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5">هل حضرتك مرضعة؟</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onBreastfeedingChange(true)}
+                  className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                    breastfeeding === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  نعم، مرضعة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onBreastfeedingChange(false)}
+                  className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                    breastfeeding === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  لا
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
@@ -180,6 +292,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           </button>
         </div>
       </div>
+
     </>
   );
 };

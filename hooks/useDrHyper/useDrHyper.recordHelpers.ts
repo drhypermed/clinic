@@ -16,6 +16,11 @@ interface PatientDemographicsSetters {
   setAgeYears: SetString;
   setAgeMonths: SetString;
   setAgeDays: SetString;
+  // setters الهوية الجديدة — اختياريّة لضمان backward compatibility
+  setDateOfBirth?: SetString;
+  setGender?: React.Dispatch<React.SetStateAction<any>>;
+  setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
 }
 
 interface ClinicalStateSetters {
@@ -56,6 +61,11 @@ interface ResetPatientFormSetters {
   setAgeYears: SetString;
   setAgeMonths: SetString;
   setAgeDays: SetString;
+  // setters الجديدة لحقول الهوية — اختيارية لتفادي كسر أي مستدعٍ قديم
+  setDateOfBirth?: SetString;
+  setGender?: React.Dispatch<React.SetStateAction<any>>;
+  setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
   setVitals: React.Dispatch<React.SetStateAction<VitalSigns>>;
   setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
   setGeneralAdvice: SetStringArray;
@@ -150,6 +160,10 @@ export const applyPatientDemographicsFromRecord = (
     setAgeYears,
     setAgeMonths,
     setAgeDays,
+    setDateOfBirth,
+    setGender,
+    setPregnant,
+    setBreastfeeding,
   }: PatientDemographicsSetters
 ) => {
   setPatientName(record.patientName);
@@ -157,6 +171,12 @@ export const applyPatientDemographicsFromRecord = (
   setAgeYears(record.age?.years || '');
   setAgeMonths(record.age?.months || '');
   setAgeDays(record.age?.days || '');
+  // الجنس ثابت — ينتقل لو السجل القديم محفوظ بيه (السجلات الأقدم قد لا تحتوي)
+  if (setGender) setGender(record.gender ?? '');
+  // ملاحظة: الحمل/الرضاعة يُعاد سؤالهم كل زيارة — بنمسحهم عند تحميل السجل القديم
+  // (القيم القديمة ممكن تكون تغيرت)
+  if (setPregnant) setPregnant(null);
+  if (setBreastfeeding) setBreastfeeding(null);
 };
 
 export const applyRecordPhysicalFromRecord = (
@@ -258,6 +278,10 @@ export const resetPatientFormState = ({
   setAgeYears,
   setAgeMonths,
   setAgeDays,
+  setDateOfBirth,
+  setGender,
+  setPregnant,
+  setBreastfeeding,
   setVitals,
   setRxItems,
   setGeneralAdvice,
@@ -307,6 +331,11 @@ export const resetPatientFormState = ({
   setAgeYears('');
   setAgeMonths('');
   setAgeDays('');
+  // تصفير الهوية الجديدة — "مريض جديد" يعني كله من الصفر
+  if (setDateOfBirth) setDateOfBirth('');
+  if (setGender) setGender('');
+  if (setPregnant) setPregnant(null);
+  if (setBreastfeeding) setBreastfeeding(null);
   setVitals(EMPTY_VITALS);
   setRxItems([]);
   setGeneralAdvice([]);

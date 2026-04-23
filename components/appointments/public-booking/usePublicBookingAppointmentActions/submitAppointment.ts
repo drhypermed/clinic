@@ -19,6 +19,7 @@ import { sanitizePublicText } from '../securityUtils';
 import { sanitizeSecretaryVitalsInput } from '../../../../utils/secretaryVitals';
 import type {
     AppointmentType,
+    PatientGender,
     PaymentType,
     SecretaryVitalFieldDefinition,
     SecretaryVitalsInput,
@@ -87,6 +88,10 @@ interface SubmitAppointmentInput {
     discountPercent: number;
     normalizedDiscountReasonId: string;
     normalizedDiscountReasonLabel: string;
+    // الحقول الجديدة: الجنس (ثابت) + الحمل والرضاعة (snapshot للموعد)
+    gender?: PatientGender;
+    pregnant?: boolean;
+    breastfeeding?: boolean;
 }
 
 type AppointmentPayload = {
@@ -110,6 +115,9 @@ type AppointmentPayload = {
     discountPercent: number;
     discountReasonId?: string;
     discountReasonLabel?: string;
+    gender?: PatientGender;
+    pregnant?: boolean;
+    breastfeeding?: boolean;
 };
 
 /** استدعاء Cloud Function لإنشاء/تحديث موعد وإرجاع الـ appointmentId */
@@ -135,6 +143,9 @@ export const submitAppointment = async (input: SubmitAppointmentInput): Promise<
         discountPercent: input.discountPercent,
         discountReasonId: input.paymentType === 'discount' ? input.normalizedDiscountReasonId : '',
         discountReasonLabel: input.paymentType === 'discount' ? input.normalizedDiscountReasonLabel : '',
+        gender: input.gender,
+        pregnant: input.pregnant,
+        breastfeeding: input.breastfeeding,
     };
 
     if (input.editingAppointment) {
@@ -211,6 +222,9 @@ interface BuildMergedAppointmentInput {
     discountPercent: number;
     normalizedDiscountReasonId: string;
     normalizedDiscountReasonLabel: string;
+    gender?: PatientGender;
+    pregnant?: boolean;
+    breastfeeding?: boolean;
 }
 
 /** بناء TodayAppointment من نتيجة الحفظ لضمه إلى قائمة اليوم محلياً */
@@ -245,6 +259,10 @@ export const buildMergedTodayAppointment = (
             : undefined,
     // الفرع: نستخدم الـ branchId الجديد، أو نحتفظ بـ branchId القديم من الـ editing appointment
     branchId: input.branchId || input.editingAppointment?.branchId || 'main',
+    // الحقول الجديدة — تُعرض للطبيب في قائمة مواعيد اليوم وتصل معه للكشف
+    gender: input.gender,
+    pregnant: input.pregnant,
+    breastfeeding: input.breastfeeding,
 });
 
 // re-export sanitizeSecretaryVitalsInput for convenience

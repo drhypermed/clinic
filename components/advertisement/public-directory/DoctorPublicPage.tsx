@@ -32,6 +32,7 @@ import { LoadingStateScreen } from '../../app/LoadingStateScreen';
 import { JsonLdTag } from '../../common/JsonLdTag';
 import { buildDoctorPhysicianSchema } from '../../../utils/doctorSchema';
 import {
+  getAdBranches,
   getPrimaryBranch,
   getAvatarImage,
   getInitials,
@@ -110,6 +111,8 @@ export const DoctorPublicPage: React.FC = () => {
   const [doctor, setDoctor] = useState<DoctorAdProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // الفرع النشط — يتغير لما المريض يضغط تبويب فرع
+  const [activeBranchIdx, setActiveBranchIdx] = useState(0);
   useHideBootSplash('doctor-public-page-mounted');
 
   // تحميل بيانات الدكتور من Firestore حسب الـslug
@@ -164,14 +167,16 @@ export const DoctorPublicPage: React.FC = () => {
     );
   }
 
-  const primary = getPrimaryBranch(doctor);
+  const branches = getAdBranches(doctor);
+  // الفرع النشط — بتبدأ بالفرع الأول وبتتغير لما المريض يضغط التبويب
+  const activeBranch = branches[Math.min(activeBranchIdx, branches.length - 1)] ?? getPrimaryBranch(doctor);
   const { count: ratingCount, average: ratingAvg } = getDoctorRatingStats(doctor);
   const avatar = getAvatarImage(doctor);
   const initials = getInitials(doctor.doctorName);
-  const location = [primary.governorate, primary.city].filter(Boolean).join(' - ');
-  const price = formatPrice(primary.discountedExaminationPrice ?? primary.examinationPrice);
-  const consultationPrice = formatPrice(primary.discountedConsultationPrice ?? primary.consultationPrice);
-  const phoneForTel = normalizePhoneForTel(primary.contactPhone || doctor.contactPhone);
+  const location = [activeBranch.governorate, activeBranch.city].filter(Boolean).join(' - ');
+  const price = formatPrice(activeBranch.discountedExaminationPrice ?? activeBranch.examinationPrice);
+  const consultationPrice = formatPrice(activeBranch.discountedConsultationPrice ?? activeBranch.consultationPrice);
+  const phoneForTel = normalizePhoneForTel(activeBranch.contactPhone || doctor.contactPhone);
   const cleanBio = sanitizeBioForDisplay(doctor.bio);
 
   // الـJSON-LD لجوجل — بيظهر النجوم والسعر في نتايج البحث
@@ -236,6 +241,27 @@ export const DoctorPublicPage: React.FC = () => {
             </div>
           </div>
 
+          {/* تبويبات الفروع — تظهر فقط لو الطبيب عنده أكتر من فرع */}
+          {branches.length > 1 && (
+            <div className="flex gap-2 mt-4 flex-wrap border-t border-slate-100 pt-4">
+              <span className="text-xs text-slate-500 font-bold self-center ml-1">اختر الفرع:</span>
+              {branches.map((branch, idx) => (
+                <button
+                  key={branch.id}
+                  type="button"
+                  onClick={() => setActiveBranchIdx(idx)}
+                  className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-colors ${
+                    activeBranchIdx === idx
+                      ? 'bg-teal-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {branch.name || `فرع ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* الموقع والتواصل والـCTA */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
             {location && (
@@ -298,11 +324,18 @@ export const DoctorPublicPage: React.FC = () => {
           </section>
         )}
 
-        {/* العنوان التفصيلي */}
-        {primary.addressDetails && (
+        {/* العنوان التفصيلي للفرع النشط */}
+        {activeBranch.addressDetails && (
           <section className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200/70 p-5">
-            <h2 className="text-base font-black text-slate-900 mb-2">عنوان العياده</h2>
-            <p className="text-sm text-slate-700 font-semibold">{primary.addressDetails}</p>
+            <h2 className="text-base font-black text-slate-900 mb-2">
+              عنوان العياده
+              {branches.length > 1 && (
+                <span className="mr-2 text-xs text-teal-600 font-bold">
+                  ({activeBranch.name || `فرع ${activeBranchIdx + 1}`})
+                </span>
+              )}
+            </h2>
+            <p className="text-sm text-slate-700 font-semibold">{activeBranch.addressDetails}</p>
           </section>
         )}
 

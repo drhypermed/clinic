@@ -25,6 +25,9 @@ interface SaveArgs {
   whatsapp: string;
   profileImage: string;
   currentProfileImage?: string;
+  // ─── دعم تعديل التخصص لمرة واحدة للحسابات القديمة ───
+  // لو الحساب قديم بدون تخصص → حقل قابل للتعديل → نحفظ العلم بعد أول حفظ ناجح
+  shouldMarkSpecialtyEdited?: boolean;
   onNameUpdate: (name: string) => void;
   onSpecialtyUpdate?: (specialty: string) => void;
   onProfileImageUpdate: (base64: string) => void;
@@ -38,12 +41,15 @@ export async function saveDoctorProfile({
   whatsapp,
   profileImage,
   currentProfileImage,
+  shouldMarkSpecialtyEdited,
   onNameUpdate,
   onSpecialtyUpdate,
   onProfileImageUpdate,
 }: SaveArgs): Promise<void> {
   let finalImageUrl = profileImage;
   const resolvedSpecialty = (specialty || '').trim() || (currentSpecialty || '').trim();
+  // نحفظ العلم فقط لو الطبيب استهلك الفرصة فعلاً (قدّم تخصصاً غير فارغ والحساب كان بدون تخصص)
+  const markSpecialtyEdited = Boolean(shouldMarkSpecialtyEdited && resolvedSpecialty);
 
   // (1) رفع الصورة الجديدة أو حذف القديمة
   if (
@@ -67,6 +73,8 @@ export async function saveDoctorProfile({
       doctorWhatsApp: whatsapp.trim(),
       profileImage: finalImageUrl || '',
       updatedAt: new Date().toISOString(),
+      // نختم الحساب بـ specialtyEditedOnce لمنع أي تعديل لاحق على التخصص
+      ...(markSpecialtyEdited ? { specialtyEditedOnce: true } : {}),
     }),
     { merge: true },
   );

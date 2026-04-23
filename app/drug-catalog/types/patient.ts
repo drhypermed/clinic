@@ -66,6 +66,12 @@ export type SecretaryVitalsVisibility = Record<string, boolean>;
 export type PaymentType = 'cash' | 'insurance' | 'discount';
 
 /**
+ * جنس المريض — ثابت مدى الحياة، يُخزَّن في ملف المريض الموحد ويُنقل تلقائياً
+ * لكل حجز/استشارة جديدة لنفس المريض (مفتاح البحث: الاسم/الهاتف/patientFileId).
+ */
+export type PatientGender = 'male' | 'female';
+
+/**
  * سجل كشف كامل لمريض — ده أهم entity في النظام.
  * بيحتوي على كل تفاصيل الزيارة: بيانات المريض، الشكوى، الفحص، الوصفة، الدفع.
  * الحقول الاختيارية (?) منها اللي أضفناه لاحقاً، ومنها اللي ظهر مع التأمين/الفروع.
@@ -75,7 +81,24 @@ export interface PatientRecord {
   date: string;
   patientName: string;
   phone?: string;
+  /**
+   * سن المريض وقت الزيارة (snapshot ثابت) — لا يتغير بعد حفظ السجل.
+   * ده أساس حساب السن التلقائي: لما ندور على المريض في زيارة جاية،
+   * بنضيف الفرق بين date اللي تحت وتاريخ اليوم على السن ده.
+   */
   age: { years: string; months: string; days: string };
+  /** جنس المريض — ثابت لكل سجلات/مواعيد نفس المريض الموحد */
+  gender?: PatientGender;
+  /**
+   * حامل أم لا — يُسأل كل زيارة للإناث من 18 إلى 50 سنة.
+   * لا يُنقل من سجل سابق (متغير طبيعي يتغير من زيارة لأخرى).
+   */
+  pregnant?: boolean;
+  /**
+   * مرضعة أم لا — يُسأل كل زيارة للإناث من 18 إلى 50 سنة.
+   * لا يُنقل من سجل سابق (متغير طبيعي يتغير من زيارة لأخرى).
+   */
+  breastfeeding?: boolean;
   weight: string;
   height?: string;
   bmi?: string;
@@ -168,6 +191,15 @@ export interface ConsultationData {
   historyAr?: string;
   examAr?: string;
   investigationsAr?: string;
+  /**
+   * سن المريض وقت الاستشارة (snapshot). لا يتغير بعد الحفظ حتى لو زاد العمر لاحقاً.
+   * الهدف: ثبات السجلات التاريخية بالسن اللي كان وقت الاستشارة فعلياً.
+   */
+  ageAtVisit?: { years: string; months: string; days: string };
+  /** حالة الحمل وقت هذه الاستشارة (snapshot) */
+  pregnant?: boolean;
+  /** حالة الرضاعة وقت هذه الاستشارة (snapshot) */
+  breastfeeding?: boolean;
 }
 
 /**

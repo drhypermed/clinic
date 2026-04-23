@@ -16,8 +16,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DoctorAdProfile } from '../../../types';
 import { DoctorSocialLink } from './types';
 import { firestoreService } from '../../../services/firestore';
+import { financialDataService } from '../../../services/financial-data';
 import {
-  deleteDoctorAdImageByUrl, uploadDoctorAdImageBase64, uploadDoctorAdImageFile,
+  deleteDoctorAdImageByUrl, uploadDoctorAdImageBase64,
 } from '../../../services/storageService';
 import { getRectCroppedImg } from '../../../utils/rectCropImage';
 import {
@@ -69,7 +70,6 @@ export const useDoctorAdvertisementController = ({
 
   // ─── حالة رفع الصور (مشتركة — كل صورة بتروح للفرع النشط) ───
   const [pendingCropImage, setPendingCropImage] = useState<string | null>(null);
-  const [pendingOriginalFile, setPendingOriginalFile] = useState<File | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [cropAspect, setCropAspect] = useState<number | undefined>(4 / 3);
@@ -131,7 +131,7 @@ export const useDoctorAdvertisementController = ({
     ]
   );
 
-  // ─── تحميل الإعلان من Firestore + ترحيل البيانات القديمة ───
+  // ─── تحميل الإعلان من Firestore + الأسعار من التقارير المالية ───
   useEffect(() => {
     if (!safeDoctorId) {
       setLoading(true);
@@ -139,10 +139,33 @@ export const useDoctorAdvertisementController = ({
     }
     let cancelled = false;
     setLoading(true);
-    firestoreService
-      .getDoctorAdByDoctorId(safeDoctorId)
-      .then((ad) => {
-        if (cancelled || !ad) return;
+
+    // نجلب الإعلان والأسعار المالية بالتوازي
+    Promise.all([
+      firestoreService.getDoctorAdByDoctorId(safeDoctorId),
+      financialDataService.getPrices(safeDoctorId).catch(() => null),
+    ])
+      .then(([ad, financialPrices]) => {
+        if (cancelled) return;
+
+        // سعر الكشف والاستشارة من إعدادات التقارير المالية (يُستخدم fallback للفروع بدون أسعار)
+        const examFin = financialPrices?.examinationPrice ? Number(financialPrices.examinationPrice) : null;
+        const consultFin = financialPrices?.consultationPrice ? Number(financialPrices.consultationPrice) : null;
+
+        if (!ad) {
+          // إعلان جديد — طبّق الأسعار المالية على الفرع الافتراضي
+          if (examFin !== null || consultFin !== null) {
+            branchesApi.setBranches((prev) =>
+              prev.map((b, i) =>
+                i === 0
+                  ? { ...b, examinationPrice: b.examinationPrice ?? examFin, consultationPrice: b.consultationPrice ?? consultFin }
+                  : b
+              )
+            );
+          }
+          return;
+        }
+
         // الحقول العالمية
         setAdDoctorName(ad.doctorName || doctorName || '');
         setAcademicDegree(ad.academicDegree || '');
@@ -152,7 +175,7 @@ export const useDoctorAdvertisementController = ({
         setExtraInfo(ad.extraInfo || ad.bio || '');
         setYearsExperience(ad.yearsExperience != null ? String(ad.yearsExperience) : '');
 
-        // السوشيال (نفس المنطق القديم)
+        // السوشيال
         if (Array.isArray(ad.socialLinks) && ad.socialLinks.length > 0) {
           setSocialLinks(sanitizeSocialLinks(
             ad.socialLinks.map((item, index) => ({
@@ -170,15 +193,22 @@ export const useDoctorAdvertisementController = ({
         }
 
         // الفروع: لو المستند فيه branches جاهز، نستخدمه. غير كده
-        // نبني فرع واحد من الحقول القديمة (top-level) اللي كانت بتستخدم
-        // قبل ما ندعم تعدد الفروع.
-        const loadedBranches = Array.isArray(ad.branches) && ad.branches.length > 0
+        // نبني فرع واحد من الحقول القديمة (قبل دعم تعدد الفروع).
+        const rawBranches = Array.isArray(ad.branches) && ad.branches.length > 0
           ? ad.branches.map((b, idx) => normalizeBranch(b, `فرع ${idx + 1}`))
           : [migrateLegacyFieldsToBranch(ad)];
+
+        // تطبيق الأسعار المالية على الفروع التي ليس لها أسعار مسجّلة بعد
+        const loadedBranches = rawBranches.map((b) => ({
+          ...b,
+          examinationPrice: b.examinationPrice ?? examFin,
+          consultationPrice: b.consultationPrice ?? consultFin,
+        }));
+
         branchesApi.setBranches(loadedBranches);
         branchesApi.setActiveBranchId(loadedBranches[0]?.id || '');
 
-        // تتبع كل الصور المحفوظة (عبر كل الفروع) — نحتاجها لحذف Storage بعد Save
+        // تتبع كل الصور المحفوظة — نحتاجها لحذف Storage بعد Save
         const allPersistedImages = loadedBranches.flatMap((b) => b.imageUrls);
         setPersistedImageUrls(allPersistedImages);
 
@@ -208,7 +238,6 @@ export const useDoctorAdvertisementController = ({
     try {
       const originalDataUrl = await fileToDataUrl(file);
       setPendingCropImage(originalDataUrl);
-      setPendingOriginalFile(file);
       const aspect = await getImageAspect(originalDataUrl);
       setCropAspect(aspect);
       setCrop({ x: 0, y: 0 });
@@ -230,26 +259,10 @@ export const useDoctorAdvertisementController = ({
 
   const handleCancelCrop = () => {
     setPendingCropImage(null);
-    setPendingOriginalFile(null);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setCropAspect(4 / 3);
     setCroppedAreaPixels(null);
-  };
-
-  const handleSaveOriginalImage = async () => {
-    if (!safeDoctorId || !pendingOriginalFile || !activeBranch) return;
-    setUploadingImage(true);
-    try {
-      const cloudUrl = await uploadDoctorAdImageFile(safeDoctorId, pendingOriginalFile);
-      branchesApi.appendBranchImage(activeBranch.id, cloudUrl);
-      setError('');
-      handleCancelCrop();
-    } catch (err: unknown) {
-      setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
-    } finally {
-      setUploadingImage(false);
-    }
   };
 
   const handleSaveCroppedImage = async () => {
@@ -419,7 +432,7 @@ export const useDoctorAdvertisementController = ({
     // صور (رفع وقص)
     deletingImageIndex, addImageFromFile,
     pendingCropImage, crop, zoom, cropAspect, uploadingImage, setCrop, setZoom,
-    onCropComplete, handleCancelCrop, handleSaveCroppedImage, handleSaveOriginalImage,
+    onCropComplete, handleCancelCrop, handleSaveCroppedImage,
     // معاينة وحفظ ونشر
     previewData, isPublished, saveAd,
   };

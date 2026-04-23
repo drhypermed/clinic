@@ -9,7 +9,7 @@
  */
 import React from 'react';
 
-import type { PublicBookingSlot } from '../../../types';
+import type { PatientGender, PublicBookingSlot } from '../../../types';
 import type { AppointmentType } from '../add-appointment-form/types';
 import type { PatientSuggestionOption } from '../AddAppointmentForm';
 import { PublicBookingSlotSelector } from './PublicBookingSlotSelector';
@@ -31,6 +31,11 @@ type PublicBookingFormCardProps = {
   phone: string;
   patientName: string;
   age: string;
+  dateOfBirth?: string;
+  onDateOfBirthChange?: (value: string) => void;
+  gender: PatientGender | '';
+  pregnant: boolean | null;
+  breastfeeding: boolean | null;
   visitReason: string;
   isFirstVisit: boolean | null;
   activeSuggestionField: 'name' | 'phone' | null;
@@ -45,6 +50,9 @@ type PublicBookingFormCardProps = {
   onPhoneChange: (value: string) => void;
   onPatientNameChange: (value: string) => void;
   onAgeChange: (value: string) => void;
+  onGenderChange: (value: PatientGender | '') => void;
+  onPregnantChange: (value: boolean | null) => void;
+  onBreastfeedingChange: (value: boolean | null) => void;
   onVisitReasonChange: (value: string) => void;
   onIsFirstVisitChange: (value: boolean) => void;
   applyPhoneSuggestion: (item: PatientSuggestionOption) => void;
@@ -53,6 +61,10 @@ type PublicBookingFormCardProps = {
   bookingQuotaNotice: BookingQuotaNotice | null;
   alertRef: React.RefObject<HTMLDivElement | null>;
   submitting: boolean;
+  // ─── دعم تسجيل الدخول بعد ملء الفورم ───
+  // لو المريض غير مسجل → زر "سجّل دخول بـ Google وأكمل الحجز" بدلاً من submit مباشر
+  isLoggedIn?: boolean;
+  onLoginToBook?: (selectedSlotId: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 };
 
@@ -70,6 +82,9 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   phone,
   patientName,
   age,
+  gender,
+  pregnant,
+  breastfeeding,
   visitReason,
   isFirstVisit,
   activeSuggestionField,
@@ -84,6 +99,9 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   onPhoneChange,
   onPatientNameChange,
   onAgeChange,
+  onGenderChange,
+  onPregnantChange,
+  onBreastfeedingChange,
   onVisitReasonChange,
   onIsFirstVisitChange,
   applyPhoneSuggestion,
@@ -92,6 +110,8 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   bookingQuotaNotice,
   alertRef,
   submitting,
+  isLoggedIn = true,
+  onLoginToBook,
   onSubmit,
 }) => {
   return (
@@ -152,6 +172,9 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
           phone={phone}
           patientName={patientName}
           age={age}
+          gender={gender}
+          pregnant={pregnant}
+          breastfeeding={breastfeeding}
           visitReason={visitReason}
           isFirstVisit={isFirstVisit}
           activeSuggestionField={activeSuggestionField}
@@ -166,6 +189,9 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
           onPhoneChange={onPhoneChange}
           onPatientNameChange={onPatientNameChange}
           onAgeChange={onAgeChange}
+          onGenderChange={onGenderChange}
+          onPregnantChange={onPregnantChange}
+          onBreastfeedingChange={onBreastfeedingChange}
           onVisitReasonChange={onVisitReasonChange}
           onIsFirstVisitChange={onIsFirstVisitChange}
           applyPhoneSuggestion={applyPhoneSuggestion}
@@ -175,13 +201,39 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
         <PublicBookingAlerts formError={formError} bookingQuotaNotice={bookingQuotaNotice} alertRef={alertRef} />
 
         {slots.length > 0 && !slotsLoading && (
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black shadow-md hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-60"
-          >
-            {submitting ? 'جاري الحجز' : 'حجز ميعاد عند الطبيب'}
-          </button>
+          isLoggedIn ? (
+            // مسجّل دخوله → submit عادي
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black shadow-md hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-60"
+            >
+              {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
+            </button>
+          ) : (
+            // غير مسجّل → زر Google login ثم يكمل الحجز تلقائياً
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => onLoginToBook?.(selectedSlotId)}
+              className="w-full py-3 rounded-xl bg-white border-2 border-amber-500 text-amber-700 font-black shadow-md hover:bg-amber-50 transition-all disabled:opacity-60 flex items-center justify-center gap-3"
+            >
+              {submitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                  <span>جاري تسجيل الدخول والحجز...</span>
+                </>
+              ) : (
+                <>
+                  {/* Google Icon */}
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21.35 11.1H12v2.9h5.33c-.23 1.47-1.77 4.3-5.33 4.3-3.2 0-5.8-2.64-5.8-5.9s2.6-5.9 5.8-5.9c1.82 0 3.04.77 3.74 1.44l2.55-2.46C16.96 3.6 14.72 2.5 12 2.5 7.58 2.5 4 6.08 4 10.5S7.58 18.5 12 18.5c4.62 0 7.68-3.25 7.68-7.83 0-.53-.06-.93-.13-1.57z" />
+                  </svg>
+                  <span>سجّل دخول بـ Google وأكمل الحجز</span>
+                </>
+              )}
+            </button>
+          )
         )}
       </form>
 

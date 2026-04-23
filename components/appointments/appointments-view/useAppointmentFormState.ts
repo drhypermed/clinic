@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { ClinicAppointment, PatientRecord } from '../../../types';
+import type { ClinicAppointment, PatientGender, PatientRecord } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
 import { consumeBookingQuota } from '../../../services/accountTypeControlsService';
 import { isQuotaTransientError } from '../../../services/account-type-controls/quotaErrors';
@@ -18,6 +18,12 @@ import {
   extractBookingQuotaNotice,
 } from './helpers';
 import { branchesService } from '../../../services/firestore/branches';
+// دوال هوية المريض: حساب السن الجديد من آخر زيارة + تطبيع الجنس
+import {
+  advanceAgeByElapsedTime,
+  normalizeGender,
+} from '../../../utils/patientIdentity';
+import { formatAgeForStorage } from '../utils';
 
 /**
  * الملف: useAppointmentFormState.ts (Hook)
@@ -41,6 +47,10 @@ export const useAppointmentFormState = ({
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
+  // حقول الهوية الجديدة: الجنس ثابت، الحمل/الرضاعة متغيرين لكل زيارة
+  const [gender, setGender] = useState<PatientGender | ''>('');
+  const [pregnant, setPregnant] = useState<boolean | null>(null);
+  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [currentDayStr, setCurrentDayStr] = useState(() => toLocalDateStr(new Date()));
   const [dateStr, setDateStr] = useState(() => toLocalDateStr(new Date()));
   const [timeStr, setTimeStr] = useState(() => currentTimeMin());
@@ -125,19 +135,56 @@ export const useAppointmentFormState = ({
     }
   };
 
+  /**
+   * حساب السن الجديد من السن القديم + فرق الوقت بين آخر زيارة واليوم.
+   * لو ما عندناش تاريخ زيارة، نستخدم السن القديم كما هو.
+   */
+  const resolveAdvancedAgeText = (candidate: { age?: string; lastExamDate?: string; lastConsultationDate?: string }): string => {
+    const lastVisit = candidate.lastExamDate || candidate.lastConsultationDate;
+    if (!lastVisit || !candidate.age) return candidate.age ?? '';
+    // نحلل السن النصي القديم ("10 سنة") لأجزاء years/months/days
+    const ageText = candidate.age;
+    const isMonth = /شهر/.test(ageText);
+    const isDay = /يوم/.test(ageText);
+    const match = ageText.replace(/[٠-٩]/g, (d) => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).match(/(\d+)/);
+    const num = match ? String(parseInt(match[1] || '0', 10) || 0) : '';
+    const oldAge = isDay
+      ? { years: '', months: '', days: num }
+      : isMonth
+        ? { years: '', months: num, days: '' }
+        : { years: num, months: '', days: '' };
+    const advanced = advanceAgeByElapsedTime(oldAge, lastVisit);
+    // نرجع نص سن بأكبر وحدة غير صفرية
+    const y = parseInt(advanced.years || '0', 10);
+    const m = parseInt(advanced.months || '0', 10);
+    const d = parseInt(advanced.days || '0', 10);
+    if (y > 0) return formatAgeForStorage(String(y), 'year');
+    if (m > 0) return formatAgeForStorage(String(m), 'month');
+    if (d > 0) return formatAgeForStorage(String(d), 'day');
+    return candidate.age ?? '';
+  };
+
   /** ملء البيانات عند اختيار مريض من قائمة الاستشارات */
   const handleSelectConsultationCandidate = (candidate: RecentExamPatientOption) => {
     setSelectedConsultationCandidateId(candidate.id);
     setPatientName(candidate.patientName ?? '');
-    setAge(candidate.age ?? '');
     setPhone(candidate.phone ?? '');
+    // نقل الجنس (ثابت) + حساب السن الحالي من فرق الوقت
+    setGender(normalizeGender(candidate.gender) ?? '');
+    setAge(resolveAdvancedAgeText({ age: candidate.age, lastExamDate: candidate.examCompletedAt }));
+    // الحمل/الرضاعة يُسألوا من الصفر (متغيرين لكل زيارة)
+    setPregnant(null);
+    setBreastfeeding(null);
   };
 
   /** ملء البيانات عند اختيار مريض من قائمة الاقتراحات */
   const handleSelectPatientSuggestion = (candidate: PatientSuggestionOption) => {
     setPatientName(candidate.patientName ?? '');
-    setAge(candidate.age ?? '');
     setPhone(candidate.phone ?? '');
+    setGender(normalizeGender(candidate.gender) ?? '');
+    setAge(resolveAdvancedAgeText(candidate));
+    setPregnant(null);
+    setBreastfeeding(null);
   };
 
   /** دخول وضع تعديل موعد موجود */
@@ -156,6 +203,10 @@ export const useAppointmentFormState = ({
     setVisitReason(apt.visitReason ?? '');
     setDateStr(toLocalDateStr(dt));
     setTimeStr(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
+    // تحميل حقول الهوية لو الموعد القديم محفوظ بها
+    setGender(normalizeGender(apt.gender) ?? '');
+    setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
+    setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
 
     // استعادة بيانات التأمين المحفوظة في الموعد
     setPaymentType(apt.paymentType ?? 'cash');
@@ -216,16 +267,27 @@ export const useAppointmentFormState = ({
 
     const editingAppointment = editingAppointmentId ? appointments.find(a => a.id === editingAppointmentId) : null;
     
+    // تطبيع الحقول الجديدة قبل الحفظ (undefined لو فاضي عشان Firestore ما يحفظش قيم فارغة)
+    const genderForPayload = normalizeGender(gender);
+    const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;
+    const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+
     // بناء كائن الموعد (Payload)
     const basePayload: ClinicAppointment = editingAppointment ? {
       ...editingAppointment,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
-      age: ageVal, visitReason: reasonVal, appointmentType: resolvedType
+      age: ageVal, visitReason: reasonVal, appointmentType: resolvedType,
+      gender: genderForPayload,
+      pregnant: pregnantForPayload,
+      breastfeeding: breastfeedingForPayload,
     } : {
       id: `apt-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
       createdAt: new Date().toISOString(), age: ageVal, visitReason: reasonVal,
       source: 'clinic', appointmentType: resolvedType,
+      gender: genderForPayload,
+      pregnant: pregnantForPayload,
+      breastfeeding: breastfeedingForPayload,
       // استخدم الفرع المثبّت وقت فتح النموذج لا وقت الحفظ (تفادي التضارب)
       branchId: formBranchIdRef.current
         || (userId ? branchesService.getActiveBranchId(userId) : undefined)
@@ -287,6 +349,7 @@ export const useAppointmentFormState = ({
       
       // 4. تصفير النموذج
       setPatientName(''); setAge(''); setPhone(''); setVisitReason('');
+      setGender(''); setPregnant(null); setBreastfeeding(null);
       setAppointmentType('exam'); setSelectedConsultationCandidateId('');
       setEditingAppointmentId(null); setAddSuccessToast(true);
       // تصفير الفرع المثبّت بعد نجاح الحفظ
@@ -327,6 +390,7 @@ export const useAppointmentFormState = ({
 
   return {
     patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
+    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
     formError, bookingQuotaNotice, saving, addSuccessToast, addAppointmentFormOpen,

@@ -9,12 +9,13 @@
  */
 import { useState } from 'react';
 
-import type { PublicBookingSlot } from '../../../types';
+import type { PatientGender, PublicBookingSlot } from '../../../types';
 import { auth } from '../../../services/firebaseConfig';
 import { firestoreService } from '../../../services/firestore';
 import type { AppointmentType, RecentExamPatientOption } from '../AddAppointmentForm';
 import type { BookingQuotaNotice } from '../../../types';
 import { extractBookingQuotaNotice, sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
+import { normalizeGender } from '../../../utils/patientIdentity';
 import {
   MAX_PUBLIC_AGE_LENGTH,
   MAX_PUBLIC_NAME_LENGTH,
@@ -37,6 +38,9 @@ type UsePublicBookingSubmitParams = {
   patientName: string;
   age: string;
   phone: string;
+  gender: PatientGender | '';
+  pregnant: boolean | null;
+  breastfeeding: boolean | null;
   visitReason: string;
   isFirstVisit: boolean | null;
   selectedBranchId?: string;
@@ -56,6 +60,9 @@ export const usePublicBookingSubmit = ({
   patientName,
   age,
   phone,
+  gender,
+  pregnant,
+  breastfeeding,
   visitReason,
   isFirstVisit,
   selectedBranchId,
@@ -139,6 +146,11 @@ export const usePublicBookingSubmit = ({
       // غير كده استخدم الفرع المختار من المريض (لو موجود)
       const resolvedBranchId = slot.branchId || (selectedBranchId && selectedBranchId.trim()) || undefined;
 
+      // تطبيع الحقول الجديدة (إزالة القيم الفارغة/غير الصالحة)
+      const genderForPayload = normalizeGender(gender);
+      const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;
+      const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+
       await firestoreService.createAppointmentFromPublic(
         userId,
         secret,
@@ -155,6 +167,9 @@ export const usePublicBookingSubmit = ({
           consultationSourceCompletedAt: resolvedAppointmentType === 'consultation' ? selectedConsultationCandidate?.examCompletedAt : undefined,
           consultationSourceRecordId: resolvedAppointmentType === 'consultation' ? selectedConsultationCandidate?.consultationSourceRecordId : undefined,
           branchId: resolvedBranchId,
+          gender: genderForPayload,
+          pregnant: pregnantForPayload,
+          breastfeeding: breastfeedingForPayload,
         },
         {
           publicUserId,

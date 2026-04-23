@@ -14,6 +14,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BookingSuccessCard } from '../BookingSuccessCard';
 import type { AppointmentType, PatientSuggestionOption, RecentExamPatientOption } from '../AddAppointmentForm';
+import type { PatientGender } from '../../../types';
+import {
+  advancedAgeText,
+  normalizeGender,
+} from '../../../utils/patientIdentity';
+import { parseAgeToYearsMonthsDays } from '../utils';
 import { AppUpdateBroadcastBanner } from '../../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../../common/InAppAudienceNotificationPopup';
 import { PublicBookingTopBar } from './PublicBookingTopBar';
@@ -57,6 +63,12 @@ export const PublicBookingFormPage: React.FC = () => {
   } = usePublicBookingBootstrap(slugParam, secretParam, userIdRouteParam);
 
   const [selectedBranchId, setSelectedBranchId] = useState<string>('');
+
+  // ─── نظام تسجيل الدخول بعد ملء الفورم (بدل قبله) ───
+  // لو المريض ضغط "حجز" وهو غير مسجل → نفتح Google popup ثم نُكمل الحجز تلقائياً
+  // pendingSubmit: علم لتشغيل handleSubmit تلقائياً بعد نجاح تسجيل الدخول
+  const [pendingSubmit, setPendingSubmit] = useState(false);
+  const pendingSlotIdRef = React.useRef<string>('');
 
   // لو في فرع واحد فقط، نثبّته تلقائياً حتى يُحفظ الحجز بـ branchId صحيح وليس undefined.
   useEffect(() => {
@@ -110,6 +122,10 @@ export const PublicBookingFormPage: React.FC = () => {
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
+  // حقول الهوية الجديدة (الجنس ثابت، الحمل والرضاعة متغيران لكل زيارة)
+  const [gender, setGender] = useState<PatientGender | ''>('');
+  const [pregnant, setPregnant] = useState<boolean | null>(null);
+  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [visitReason, setVisitReason] = useState('');
   const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
@@ -161,6 +177,9 @@ export const PublicBookingFormPage: React.FC = () => {
     patientName,
     age,
     phone,
+    gender,
+    pregnant,
+    breastfeeding,
     visitReason,
     isFirstVisit,
     selectedBranchId,
@@ -185,8 +204,23 @@ export const PublicBookingFormPage: React.FC = () => {
    */
   const applyPhoneSuggestion = (item: PatientSuggestionOption) => {
     setPatientName(sanitizePublicText(item.patientName || '', MAX_PUBLIC_NAME_LENGTH));
-    setAge(sanitizePublicText(item.age || '', MAX_PUBLIC_AGE_LENGTH));
     setPhone(sanitizePhoneDigits(item.phone || '', MAX_PUBLIC_PHONE_LENGTH));
+
+    // نقل الجنس (ثابت) + حساب السن الحالي من السن القديم + فرق الوقت من آخر زيارة
+    setGender(normalizeGender(item.gender) ?? '');
+    const lastVisit = item.lastExamDate || item.lastConsultationDate;
+    if (lastVisit && item.age) {
+      const advanced = advancedAgeText(
+        parseAgeToYearsMonthsDays(item.age),
+        lastVisit,
+      );
+      setAge(sanitizePublicText(advanced || item.age, MAX_PUBLIC_AGE_LENGTH));
+    } else {
+      setAge(sanitizePublicText(item.age || '', MAX_PUBLIC_AGE_LENGTH));
+    }
+    // الحمل/الرضاعة لا تُنقل من المريض القديم (بنسأل كل زيارة)
+    setPregnant(null);
+    setBreastfeeding(null);
 
     if (appointmentType === 'consultation') {
       const matched = consultationCandidatesPool.find((candidate) => {
@@ -227,17 +261,21 @@ export const PublicBookingFormPage: React.FC = () => {
     );
   };
 
+  // بعد تسجيل الدخول بنجاح (popup أو redirect) → ننفذ الحجز المعلّق تلقائياً
+  useEffect(() => {
+    if (!user || !pendingSubmit || !pendingSlotIdRef.current) return;
+    setPendingSubmit(false);
+    // إنشاء submit event وهمي لاستدعاء handleSubmit
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    void handleSubmit(fakeEvent, pendingSlotIdRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pendingSubmit]);
+
   if (configLoading || resolvingSecret || authLoading) return <PublicBookingLoadingView />;
   if (!userId) return <PublicBookingInvalidLinkView />;
 
-  if (!user) {
-    return (
-      <PublicBookingLoginRequiredView
-        onLogin={() => signInGoogle('public')}
-        loading={authLoading}
-      />
-    );
-  }
+  // ⬇️ الـguard القديم "تسجيل دخول مطلوب أولاً" اتشال —
+  //    المريض بيملأ الفورم أولاً، وعند الضغط "حجز" يظهر طلب Google login
 
   // شاشة اختيار الفرع: تظهر لو عنده أكثر من فرع نشط ولم يتم الاختيار بعد
   if (branches.length > 1 && !selectedBranchId && !success) {
@@ -253,20 +291,22 @@ export const PublicBookingFormPage: React.FC = () => {
 
   if (success) {
     const bookedSlot = slots.find((s) => s.id === selectedSlotId);
+    // رابط دليل الأطباء: لو من الموقع العام نروح للرئيسية، غير كده نفتح الموقع في تبويب جديد
+    const handleGotoDirectory = () => {
+      if (isFromPublicSite) {
+        navigate('/');
+      } else {
+        window.open('https://www.drhypermed.com', '_blank', 'noopener,noreferrer');
+      }
+    };
+    // رابط تقييم الزيارة: يوجه المريض لصفحة التقييمات في دليل الأطباء
+    const handleRateVisit = () => {
+      window.open('https://www.drhypermed.com', '_blank', 'noopener,noreferrer');
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-2xl space-y-4">
-          {isFromPublicSite && (
-            <div className="flex justify-start">
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="h-10 px-4 rounded-xl border border-slate-300 bg-white text-slate-800 font-black text-sm hover:bg-slate-50"
-              >
-                رجوع للصفحة الرئيسية
-              </button>
-            </div>
-          )}
           <BookingSuccessCard
             clinicName={config?.title}
             patientName={patientName}
@@ -274,6 +314,33 @@ export const PublicBookingFormPage: React.FC = () => {
             clinicContact={config?.contactInfo}
             appointmentType={appointmentType}
           />
+
+          {/* أزرار ما بعد التأكيد */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* الذهاب لدليل الأطباء */}
+            <button
+              type="button"
+              onClick={handleGotoDirectory}
+              className="flex-1 h-12 rounded-xl border-2 border-amber-400 bg-white text-amber-800 font-black text-sm hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              دليل الأطباء
+            </button>
+
+            {/* تقييم الزيارة */}
+            <button
+              type="button"
+              onClick={handleRateVisit}
+              className="flex-1 h-12 rounded-xl border-2 border-emerald-400 bg-white text-emerald-800 font-black text-sm hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              تقييم الزيارة
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -318,6 +385,9 @@ export const PublicBookingFormPage: React.FC = () => {
           phone={phone}
           patientName={patientName}
           age={age}
+          gender={gender}
+          pregnant={pregnant}
+          breastfeeding={breastfeeding}
           visitReason={visitReason}
           isFirstVisit={isFirstVisit}
           activeSuggestionField={activeSuggestionField}
@@ -338,6 +408,9 @@ export const PublicBookingFormPage: React.FC = () => {
             if (appointmentType === 'consultation') setSelectedConsultationCandidateId('');
           }}
           onAgeChange={(value) => setAge(sanitizePublicText(value, MAX_PUBLIC_AGE_LENGTH))}
+          onGenderChange={setGender}
+          onPregnantChange={setPregnant}
+          onBreastfeedingChange={setBreastfeeding}
           onVisitReasonChange={(value) => setVisitReason(sanitizePublicText(value, MAX_PUBLIC_REASON_LENGTH))}
           onIsFirstVisitChange={setIsFirstVisit}
           applyPhoneSuggestion={applyPhoneSuggestion}
@@ -346,6 +419,19 @@ export const PublicBookingFormPage: React.FC = () => {
           bookingQuotaNotice={bookingQuotaNotice}
           alertRef={alertRef}
           submitting={submitting}
+          isLoggedIn={Boolean(user)}
+          onLoginToBook={async (slotId) => {
+            // احفظ الـ slotId وارفع علم الانتظار قبل فتح Google login
+            pendingSlotIdRef.current = slotId;
+            setPendingSubmit(true);
+            try {
+              await signInGoogle('public');
+            } catch {
+              // المريض أغلق الـpopup أو رفض — نعيد الزر لحالته الطبيعية
+              setPendingSubmit(false);
+              pendingSlotIdRef.current = '';
+            }
+          }}
           onSubmit={(e) => handleSubmit(e, selectedSlotId)}
         />
       </div>

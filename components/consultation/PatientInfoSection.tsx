@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { PaymentType } from '../../types';
+import type { PatientGender, PaymentType } from '../../types';
 import { buildCairoDateWithCurrentTime, formatUserDate, formatUserTime } from '../../utils/cairoTime';
+// قرار سؤال الحمل/الرضاعة
+import { shouldAskFertilityQuestions } from '../../utils/patientIdentity';
 
 /**
  * واجهة بيانات المريض المقترحة (Basic Patient Suggestion)
@@ -17,6 +19,12 @@ export interface BasicPatientSuggestion {
   lastExamDate?: string;    // تاريخ آخر كشف طبي
   lastConsultationDate?: string; // تاريخ آخر استشارة
   patientFileNumber?: number; // رقم ملف المريض الثابت
+  // ─── قياسات آخر زيارة — تُستخدم لجلبها تلقائياً في الاستشارة ───
+  // الوزن والطول نسبياً ثابتان بين الزيارات المتقاربة، فنعرضهم مبدئياً والطبيب يعدّل لو احتاج
+  lastWeight?: string;
+  lastHeight?: string;
+  /** جنس المريض (ثابت مدى الحياة) — يُعرض في dropdown الاقتراحات */
+  gender?: PatientGender;
 }
 
 const toPositiveFileNumber = (value: unknown): number | undefined => {
@@ -38,6 +46,15 @@ interface PatientInfoSectionProps {
   ageYears: string; setAgeYears: (v: string) => void;               // السن (سنوات) ودالة التحديث
   ageMonths: string; setAgeMonths: (v: string) => void;             // السن (شهور) ودالة التحديث
   ageDays: string; setAgeDays: (v: string) => void;                 // السن (أيام) ودالة التحديث
+  /** جنس المريض — ثابت لكل زياراته */
+  gender?: PatientGender | '';
+  setGender?: (v: PatientGender | '') => void;
+  /** حامل؟ — يظهر بس للإناث 18-50 (snapshot للزيارة الحالية) */
+  pregnant?: boolean | null;
+  setPregnant?: (v: boolean | null) => void;
+  /** مرضعة؟ — يظهر بس للإناث 18-50 */
+  breastfeeding?: boolean | null;
+  setBreastfeeding?: (v: boolean | null) => void;
   patientSuggestions?: BasicPatientSuggestion[];                   // قائمة المرضى المسجلين مسبقاً للبحث
   onSelectPatientSuggestion?: (item: BasicPatientSuggestion) => void; // دالة عند اختيار مريض من المقترحات
   visitDate: string; setVisitDate: (v: string) => void;           // تاريخ الزيارة الحالي
@@ -49,12 +66,23 @@ interface PatientInfoSectionProps {
 }
 
 export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
-  patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, patientSuggestions = [], onSelectPatientSuggestion, visitDate, setVisitDate, visitType, setVisitType, paymentType, setPaymentType, onReset
+  patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+  gender = '', setGender,
+  pregnant = null, setPregnant,
+  breastfeeding = null, setBreastfeeding,
+  patientSuggestions = [], onSelectPatientSuggestion, visitDate, setVisitDate, visitType, setVisitType, paymentType, setPaymentType, onReset
 }) => {
   
   // تتبع الحقل النشط (اسم أم هاتف) لعرض قائمة المقترحات المناسبة أسفله
   const [activeSuggestionField, setActiveSuggestionField] = useState<'name' | 'phone' | null>(null);
   const [liveClockSeed, setLiveClockSeed] = useState<number>(() => Date.now());
+
+  // قرار ظهور حقول الحمل/الرضاعة: أنثى + 18-50 سنة (من السن المدخل)
+  const effectiveAgeYears = useMemo(() => {
+    const fromParts = parseInt(ageYears || '0', 10);
+    return Number.isFinite(fromParts) ? fromParts : 0;
+  }, [ageYears]);
+  const askFertility = shouldAskFertilityQuestions(gender, effectiveAgeYears);
 
   useEffect(() => {
     const timerId = window.setInterval(() => {
@@ -292,12 +320,18 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           </div>
         </div>
 
-        {/* الصف الثاني: العمر | نوع الزيارة | الدفع — 3 أعمدة على الشاشات الكبيرة */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-stretch">
-          {/* شبكة مدخلات العمر */}
+        {/* الصف الثاني: العمر | النوع | نوع الزيارة | الدفع
+            الأعمدة بتتغير حسب وجود حقل الدفع: 4 أعمدة مع الدفع، 3 بدونه، عشان
+            ما نسيبش فراغات ع الديسكتوب. على الموبايل: كل حاجة فوق بعض. */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${
+          paymentType !== undefined && setPaymentType
+            ? (setGender ? 'lg:grid-cols-4' : 'lg:grid-cols-3')
+            : (setGender ? 'lg:grid-cols-3' : 'md:grid-cols-2')
+        } gap-3 items-stretch`}>
+          {/* شبكة مدخلات العمر (3 حقول فرعية: سنة/شهر/يوم) */}
           <div>
             <p className={fieldTitleClass}>العمر</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {ageFieldConfigs.map((field) => (
                 <div key={field.key} className={ageFieldWrapperClass} dir="ltr">
                   <input
@@ -316,6 +350,94 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
               ))}
             </div>
           </div>
+
+          {/* النوع — بعد العمر مباشرة عشان قرار سؤال الحمل/الرضاعة يبقى جنب السن منطقياً */}
+          {setGender && (
+            <div>
+              <p className={fieldTitleClass}>النوع</p>
+              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow">
+                <div className="grid grid-cols-2 gap-1.5 h-full">
+                  <button
+                    type="button"
+                    onClick={() => setGender('male')}
+                    className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                      gender === 'male' ? 'bg-sky-600 text-white shadow-md' : 'clinic-toggle-btn--idle'
+                    }`}
+                  >
+                    ذكر
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGender('female')}
+                    className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                      gender === 'female' ? 'bg-pink-600 text-white shadow-md' : 'clinic-toggle-btn--idle'
+                    }`}
+                  >
+                    أنثى
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* الحمل/الرضاعة — على الموبايل والتابلت يظهر بعد النوع مباشرة (ترتيب DOM).
+              على الديسكتوب بنستخدم lg:order-5 + lg:col-span-full عشان يبقى آخر سطر بعرض كامل. */}
+          {askFertility && (setPregnant || setBreastfeeding) && (
+            <div className="sm:col-span-2 lg:col-span-full lg:order-5 rounded-2xl border-2 border-pink-200 bg-pink-50/60 p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {setPregnant && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-600 mb-1.5">هل حامل؟</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPregnant(true)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          pregnant === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        نعم، حامل
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPregnant(false)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          pregnant === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        لا
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {setBreastfeeding && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-600 mb-1.5">هل مرضعة؟</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBreastfeeding(true)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          breastfeeding === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        نعم، مرضعة
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBreastfeeding(false)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          breastfeeding === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        لا
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* نوع الزيارة */}
           <div>
@@ -372,6 +494,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
             </div>
           )}
         </div>
+
       </div>
     </section>
   );

@@ -22,7 +22,8 @@ import {
   CONSULTATION_RECORD_PREFIX,
   buildGeneratedConsultationRecordId,
 } from './useDrHyper.consultationRecords';
-import { buildCairoDateWithCurrentTime } from '../../utils/cairoTime';
+import { buildCairoDateWithCurrentTime, buildCairoDateTime, getCairoDayKey } from '../../utils/cairoTime';
+import type { PatientRecord } from '../../types';
 import { buildPatientFileNameKey } from '../../services/patient-files';
 import type { CreateSaveRecordActionParams, SaveRecordResult } from './useDrHyper.saveRecord.types';
 import {
@@ -39,6 +40,33 @@ import { buildPaymentPayload } from './useDrHyper.saveRecord.paymentPayload';
 
 export type { CreateSaveRecordActionParams, SaveRecordResult } from './useDrHyper.saveRecord.types';
 
+// يجد تاريخ الكشف المصدر من قائمة السجلات — لحفظ sourceExamDate صراحةً
+const findSourceExamDate = (records: PatientRecord[], sourceExamRecordId: string): string | undefined => {
+  if (!sourceExamRecordId) return undefined;
+  return records.find((r) => !r.isConsultationOnly && r.id === sourceExamRecordId)?.date;
+};
+
+// يجد آخر كشف للمريض بالاسم أو التليفون — للاستشارة المستقلة (بدون كشف محدد)
+const findLatestExamForPatient = (
+  records: PatientRecord[],
+  patientName: string,
+  phone: string,
+): PatientRecord | undefined => {
+  const normalizedPhone = (phone || '').replace(/\D/g, '');
+  const normalizedName = (patientName || '').trim().toLowerCase();
+  if (!normalizedPhone && !normalizedName) return undefined;
+
+  const exams = records.filter((r) => {
+    if (r.isConsultationOnly) return false;
+    if (normalizedPhone && (r.phone || '').replace(/\D/g, '') === normalizedPhone) return true;
+    if (normalizedName && (r.patientName || '').trim().toLowerCase() === normalizedName) return true;
+    return false;
+  });
+
+  if (!exams.length) return undefined;
+  return [...exams].sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
+};
+
 export const createSaveRecordAction = ({
   user,
   patientName,
@@ -46,6 +74,9 @@ export const createSaveRecordAction = ({
   ageYears,
   ageMonths,
   ageDays,
+  gender,
+  pregnant,
+  breastfeeding,
   weight,
   height,
   bmi,
@@ -100,6 +131,7 @@ export const createSaveRecordAction = ({
   discountReasonId,
   discountReasonLabel,
   activeBranchId,
+  records,
 }: CreateSaveRecordActionParams) => {
   // تنبيه بنتيجة الحفظ — رسالة أوفلاين أو نجاح عادي
   const notifySaveResult = (offlineMessage: string, onlineMessage: string) => {
@@ -140,7 +172,12 @@ export const createSaveRecordAction = ({
           return new Date(preservedTs).toISOString();
         }
       }
-      const cairoDate = buildCairoDateWithCurrentTime(visitDate);
+      // السجلات الفائتة (تاريخ قديم) نحطلها الظهر عشان ما تأخدش
+      // وقت الحفظ الحالي — ده بيخلي السجل يظهر بتاريخه الصحيح في السجلات
+      const todayKey = getCairoDayKey();
+      const cairoDate = visitDate === todayKey
+        ? buildCairoDateWithCurrentTime(visitDate)
+        : buildCairoDateTime(visitDate, '12:00:00');
       if (Number.isNaN(cairoDate.getTime())) return new Date().toISOString();
       return cairoDate.toISOString();
     };
@@ -191,10 +228,18 @@ export const createSaveRecordAction = ({
       discountReasonLabel,
     });
 
+    // تطبيع حقول الهوية الجديدة قبل الحفظ (undefined لو فاضي)
+    const genderForSave = gender === 'male' || gender === 'female' ? gender : undefined;
+    const pregnantForSave = typeof pregnant === 'boolean' ? pregnant : undefined;
+    const breastfeedingForSave = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+
     const currentData = {
       patientName,
       phone: phone || undefined,
       age: { years: ageYears, months: ageMonths, days: ageDays },
+      gender: genderForSave,
+      pregnant: pregnantForSave,
+      breastfeeding: breastfeedingForSave,
       weight,
       height: height || undefined,
       bmi: bmi || undefined,
@@ -332,10 +377,16 @@ export const createSaveRecordAction = ({
           ? await getPersistedBranchId(user.uid, consultationDocId)
           : undefined;
 
+        // نجيب تاريخ الكشف الأصلي لحفظه صراحةً — بيحمي العرض لو الكشف في branch مختلف
+        const resolvedSourceExamDate = findSourceExamDate(records, sourceExamRecordId);
+
         const consultationUpdate = sanitizeForFirestore({
           patientName,
           phone: phone || undefined,
           age: { years: ageYears, months: ageMonths, days: ageDays },
+          gender: genderForSave,
+          pregnant: pregnantForSave,
+          breastfeeding: breastfeedingForSave,
           weight,
           height: height || undefined,
           bmi: bmi || undefined,
@@ -346,6 +397,7 @@ export const createSaveRecordAction = ({
           isConsultationOnly: true,
           branchId: persistedConsultationBranchId || activeBranchId || DEFAULT_BRANCH_ID,
           sourceExamRecordId: sourceExamRecordId || undefined,
+          sourceExamDate: resolvedSourceExamDate || undefined,
           ...patientFilePayload,
           ...paymentPayload,
           serviceBasePrice: Number.isFinite(Number(persistedConsultationServiceBasePrice))
@@ -407,11 +459,18 @@ export const createSaveRecordAction = ({
           'تم تحديث السجل بنجاح',
         );
       } else if (shouldSaveAsConsultation) {
-        // استشارة جديدة مستقلة (بدون كشف مرتبط)
+        // استشارة جديدة مستقلة — نحاول نربطها بآخر كشف للمريض تلقائياً
+        const latestExam = findLatestExamForPatient(records, patientName, phone);
+        const standaloneSourceExamId = latestExam?.id || undefined;
+        const standaloneSourceExamDate = latestExam?.date || undefined;
+
         const minimalRecordRaw = {
           patientName,
           phone: phone || undefined,
           age: { years: ageYears, months: ageMonths, days: ageDays },
+          gender: genderForSave,
+          pregnant: pregnantForSave,
+          breastfeeding: breastfeedingForSave,
           weight,
           height: height || undefined,
           bmi: bmi || undefined,
@@ -421,6 +480,8 @@ export const createSaveRecordAction = ({
           ...clinicalPayload,
           isConsultationOnly: true,
           branchId: activeBranchId || DEFAULT_BRANCH_ID,
+          sourceExamRecordId: standaloneSourceExamId,
+          sourceExamDate: standaloneSourceExamDate,
           ...patientFilePayload,
           ...paymentPayload,
           serviceBasePrice: Number.isFinite(Number(resolvedConsultServicePrice))
@@ -473,6 +534,7 @@ export const createSaveRecordAction = ({
       }
 
       // مزامنة هوية المريض عبر كل السجلات/المواعيد (helper مستخرج)
+      // نمرر الجنس كمان عشان ينتشر على كل سجلات ومواعيد المريض (الجنس ثابت)
       const syncResult = await syncPatientIdentityAfterSave({
         userId: user.uid,
         patientName,
@@ -480,6 +542,7 @@ export const createSaveRecordAction = ({
         ageYears,
         ageMonths,
         ageDays,
+        gender: genderForSave,
         patientFileReference,
         normalizedActivePatientFileId,
         parsedActivePatientFileNumber,

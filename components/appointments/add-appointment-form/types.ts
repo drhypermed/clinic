@@ -1,5 +1,6 @@
 import type React from 'react';
 import type {
+  PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
   SecretaryVitalsInput,
@@ -22,6 +23,8 @@ export interface RecentExamPatientOption {
   consultationCompletedAt?: string; // تاريخ ووقت تنفيذ الاستشارة (إن وجدت)
   consultationCompletedDates?: string[]; // كل تواريخ الاستشارات المنفذة (أحدث أولا)
   consultationSourceRecordId?: string; // معرّف الكشف الذي تبنى عليه الاستشارة
+  /** جنس المريض (ثابت) — ينتقل تلقائياً لفورم الاستشارة */
+  gender?: PatientGender;
 }
 
 /** مريض مقترح (عند البحث في قاعدة البيانات الحالية) */
@@ -33,6 +36,10 @@ export interface PatientSuggestionOption {
   lastExamDate?: string;
   lastConsultationDate?: string;
   patientFileNumber?: number;
+  /** جنس المريض — ثابت، يُنقل لفورم الحجز تلقائياً عند اختيار هذا المريض */
+  gender?: PatientGender;
+  /** تاريخ الميلاد (YYYY-MM-DD) — ثابت، يُستخدم لحساب السن تلقائياً */
+  dateOfBirth?: string;
 }
 
 /** أنواع الحجوزات المتاحة */
@@ -53,6 +60,18 @@ export interface AddAppointmentFormProps {
   onAgeChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
+  /** جنس المريض — ثابت لكل زياراته (يُحفظ في ملف المريض الموحد) */
+  gender?: PatientGender | '';
+  onGenderChange?: (value: PatientGender | '') => void;
+  /** تاريخ الميلاد (YYYY-MM-DD) — ثابت، يُستخدم لحساب السن تلقائياً */
+  dateOfBirth?: string;
+  onDateOfBirthChange?: (value: string) => void;
+  /** حامل؟ — يظهر بس لو أنثى وسنها 18-50، ويُسأل كل زيارة */
+  pregnant?: boolean | null;
+  onPregnantChange?: (value: boolean | null) => void;
+  /** مرضعة؟ — يظهر بس لو أنثى وسنها 18-50، ويُسأل كل زيارة */
+  breastfeeding?: boolean | null;
+  onBreastfeedingChange?: (value: boolean | null) => void;
   dateStr: string;
   onDateStrChange: (value: string) => void;
   timeStr: string;

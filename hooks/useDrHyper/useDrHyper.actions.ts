@@ -89,6 +89,10 @@ export const useDrHyperActions = ({
     setAgeYears,
     setAgeMonths,
     setAgeDays,
+    // setters الهوية الجديدة — منصمّمين من patientState عشان نمرّرهم لأنظمه الـ history/records
+    setGender,
+    setPregnant,
+    setBreastfeeding,
     setVitals,
     setErrorMsg,
     setSelectedMed,
@@ -119,6 +123,9 @@ export const useDrHyperActions = ({
     ageYears,
     ageMonths,
     ageDays,
+    gender,
+    pregnant,
+    breastfeeding,
     weight,
     height,
     bmi,
@@ -184,6 +191,10 @@ export const useDrHyperActions = ({
     setAgeYears,
     setAgeMonths,
     setAgeDays,
+    // setters الهوية الجديدة — تُمرَّر تلقائياً لـ history/records/smartActions
+    setGender,
+    setPregnant,
+    setBreastfeeding,
   };
 
   const patientClinicalSetterBindings = {
@@ -254,6 +265,9 @@ export const useDrHyperActions = ({
     ageYears,
     ageMonths,
     ageDays,
+    gender,
+    pregnant,
+    breastfeeding,
     weight,
     height,
     bmi,
@@ -308,6 +322,7 @@ export const useDrHyperActions = ({
     discountReasonId,
     discountReasonLabel,
     activeBranchId,
+    records: realtimeData.records,
   });
 
   const readyPrescriptionActions = createReadyPrescriptionActions({

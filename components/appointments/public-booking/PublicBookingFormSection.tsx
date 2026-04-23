@@ -15,6 +15,7 @@ import { RecentExamPatientOption } from './types';
 import { AddAppointmentForm } from '../AddAppointmentForm';
 import type {
   AppointmentType,
+  PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
   SecretaryVitalsInput,
@@ -39,6 +40,12 @@ type PublicBookingFormSectionProps = {
   onAgeChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
+  gender: PatientGender | '';
+  onGenderChange: (value: PatientGender | '') => void;
+  pregnant: boolean | null;
+  onPregnantChange: (value: boolean | null) => void;
+  breastfeeding: boolean | null;
+  onBreastfeedingChange: (value: boolean | null) => void;
   dateStr: string;
   onDateStrChange: (value: string) => void;
   timeStr: string;
@@ -112,6 +119,12 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   onAgeChange,
   phone,
   onPhoneChange,
+  gender,
+  onGenderChange,
+  pregnant,
+  onPregnantChange,
+  breastfeeding,
+  onBreastfeedingChange,
   dateStr,
   onDateStrChange,
   timeStr,
@@ -195,6 +208,12 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               onAgeChange={onAgeChange}
               phone={phone}
               onPhoneChange={onPhoneChange}
+              gender={gender}
+              onGenderChange={onGenderChange}
+              pregnant={pregnant}
+              onPregnantChange={onPregnantChange}
+              breastfeeding={breastfeeding}
+              onBreastfeedingChange={onBreastfeedingChange}
               dateStr={dateStr}
               onDateStrChange={onDateStrChange}
               timeStr={timeStr}

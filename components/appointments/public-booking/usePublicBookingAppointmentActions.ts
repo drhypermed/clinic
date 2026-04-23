@@ -21,6 +21,7 @@ import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
 import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
+import { normalizeGender } from '../../../utils/patientIdentity';
 import type { TodayAppointment } from './types';
 import type { EntryRequestAppointment, UsePublicBookingAppointmentActionsParams } from './usePublicBookingAppointmentActions/types';
 import { callWithSessionRetry, isInvalidSecretarySessionError } from './usePublicBookingAppointmentActions/sessionHelpers';
@@ -43,6 +44,9 @@ export const usePublicBookingAppointmentActions = ({
   patientName,
   age,
   phone,
+  gender,
+  pregnant,
+  breastfeeding,
   dateStr,
   timeStr,
   visitReason,
@@ -81,6 +85,9 @@ export const usePublicBookingAppointmentActions = ({
   setPatientName,
   setAge,
   setPhone,
+  setGender,
+  setPregnant,
+  setBreastfeeding,
   setDateStr,
   setTimeStr,
   setVisitReason,
@@ -109,6 +116,15 @@ export const usePublicBookingAppointmentActions = ({
     setBookingQuotaNotice(null);
     try {
       const resolvedType = resolveAppointmentType(apt);
+      // نبحث عن الموعد الكامل في قائمة مواعيد اليوم لجلب gender/pregnant/breastfeeding
+      // (الـ EntryRequestAppointment معندوش الحقول دي — بنجيبها من الـ state)
+      const fullAppt = todayAppointments.find((item) => item.id === apt.id);
+      const aptGender = fullAppt?.gender === 'male' || fullAppt?.gender === 'female'
+        ? fullAppt.gender
+        : undefined;
+      const aptPregnant = typeof fullAppt?.pregnant === 'boolean' ? fullAppt.pregnant : undefined;
+      const aptBreastfeeding = typeof fullAppt?.breastfeeding === 'boolean' ? fullAppt.breastfeeding : undefined;
+
       await firestoreService.setSecretaryEntryRequest(
         secret,
         {
@@ -122,6 +138,10 @@ export const usePublicBookingAppointmentActions = ({
           consultationSourceRecordId: apt.consultationSourceRecordId,
           // تمرير الفرع الحالي للسكرتيرة — للعزل بين الفروع عند إرسال الطلب للطبيب
           branchId: sessionBranchId,
+          // الهوية الثابتة + الحالة المؤقتة — تظهر في إشعار الطبيب
+          gender: aptGender,
+          pregnant: aptPregnant,
+          breastfeeding: aptBreastfeeding,
         },
         userId
       );
@@ -192,6 +212,10 @@ export const usePublicBookingAppointmentActions = ({
     setPatientName(apt.patientName || '');
     setAge(apt.age || '');
     setPhone(apt.phone || '');
+    // تحميل حقول الهوية لو الموعد محفوظ بها (الموعد القديم قد لا يحتوي عليها)
+    setGender(normalizeGender((apt as any).gender) ?? '');
+    setPregnant(typeof (apt as any).pregnant === 'boolean' ? (apt as any).pregnant : null);
+    setBreastfeeding(typeof (apt as any).breastfeeding === 'boolean' ? (apt as any).breastfeeding : null);
     setVisitReason(apt.visitReason || '');
     setSecretaryVitals(
       sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
@@ -286,6 +310,11 @@ export const usePublicBookingAppointmentActions = ({
       }
     }
 
+    // تطبيع حقول الهوية الجديدة قبل الإرسال
+    const genderForPayload = normalizeGender(gender);
+    const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;
+    const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+
     setSubmitting(true);
     try {
       const savedAppointmentId = await submitAppointment({
@@ -312,6 +341,9 @@ export const usePublicBookingAppointmentActions = ({
         discountPercent,
         normalizedDiscountReasonId,
         normalizedDiscountReasonLabel,
+        gender: genderForPayload,
+        pregnant: pregnantForPayload,
+        breastfeeding: breastfeedingForPayload,
       });
 
       if (savedAppointmentId) {
@@ -337,6 +369,9 @@ export const usePublicBookingAppointmentActions = ({
           discountPercent,
           normalizedDiscountReasonId,
           normalizedDiscountReasonLabel,
+          gender: genderForPayload,
+          pregnant: pregnantForPayload,
+          breastfeeding: breastfeedingForPayload,
         });
         const currentDayStr = toLocalDateStr(new Date());
         const cleanedCurrentDayAppointments = todayAppointments.filter((apt) =>
@@ -356,6 +391,9 @@ export const usePublicBookingAppointmentActions = ({
       setPatientName('');
       setAge('');
       setPhone('');
+      setGender('');
+      setPregnant(null);
+      setBreastfeeding(null);
       setDateStr(toLocalDateStr(new Date()));
       setTimeStr(currentTimeMin());
       setVisitReason('');
@@ -403,6 +441,9 @@ export const usePublicBookingAppointmentActions = ({
     setPatientName('');
     setAge('');
     setPhone('');
+    setGender('');
+    setPregnant(null);
+    setBreastfeeding(null);
     setDateStr(toLocalDateStr(new Date()));
     setTimeStr(currentTimeMin());
     setVisitReason('');

@@ -8,7 +8,7 @@
 //   - PublicBranchInfo: بيانات فرع منشورة للعرض في فورم الحجز العام
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { SecretaryVitalsInput, PaymentType } from './patient';
+import type { PatientGender, SecretaryVitalsInput, PaymentType } from './patient';
 
 /**
  * موعد حجز في العيادة.
@@ -37,6 +37,16 @@ export interface ClinicAppointment {
   appointmentType?: 'exam' | 'consultation';
   /** قياسات السكرتارية قبل دخول الطبيب */
   secretaryVitals?: SecretaryVitalsInput;
+
+  // ─── بيانات الهوية الثابتة + الحالة المؤقتة ───
+  /** جنس المريض (ثابت مدى الحياة) — يظهر للطبيب في شاشة الكشف */
+  gender?: PatientGender;
+  /** تاريخ الميلاد (YYYY-MM-DD) — ثابت، يُستخدم لحساب السن تلقائياً في الزيارات القادمة */
+  dateOfBirth?: string;
+  /** حامل؟ snapshot لهذا الموعد فقط (يُسأل كل مرة) */
+  pregnant?: boolean;
+  /** مرضعة؟ snapshot لهذا الموعد فقط */
+  breastfeeding?: boolean;
 
   // ─── ربط الموعد بملف المريض الموحد ───
   /** معرّف ملف المريض المرتبط بالموعد */

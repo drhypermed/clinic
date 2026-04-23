@@ -33,6 +33,10 @@ interface CreateRecordActionsParams {
     setAgeYears: React.Dispatch<React.SetStateAction<string>>;
     setAgeMonths: React.Dispatch<React.SetStateAction<string>>;
     setAgeDays: React.Dispatch<React.SetStateAction<string>>;
+    setDateOfBirth?: React.Dispatch<React.SetStateAction<string>>;
+    setGender?: React.Dispatch<React.SetStateAction<any>>;
+    setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+    setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
     setWeight: React.Dispatch<React.SetStateAction<string>>;
     setHeight: React.Dispatch<React.SetStateAction<string>>;
     setVitals: React.Dispatch<React.SetStateAction<{ bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string }>>;
@@ -84,6 +88,10 @@ export const createRecordActions = ({
     setAgeYears,
     setAgeMonths,
     setAgeDays,
+    setDateOfBirth,
+    setGender,
+    setPregnant,
+    setBreastfeeding,
     setWeight,
     setHeight,
     setVitals,
@@ -132,6 +140,11 @@ export const createRecordActions = ({
             setAgeYears,
             setAgeMonths,
             setAgeDays,
+            // تمرير setters الهوية الجديدة من patientDemographicsSetterBindings (spread في الـ bindings)
+            setDateOfBirth,
+            setGender,
+            setPregnant,
+            setBreastfeeding,
         });
     };
 

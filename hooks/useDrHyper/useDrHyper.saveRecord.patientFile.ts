@@ -109,6 +109,8 @@ interface SyncPatientIdentityAfterSaveInput {
     ageYears: string;
     ageMonths: string;
     ageDays: string;
+    /** جنس المريض — ينتشر على كل سجلاته/مواعيده لأنه ثابت مدى الحياة */
+    gender?: 'male' | 'female';
     patientFileReference: ResolvedPatientFileReference | null;
     normalizedActivePatientFileId: string;
     parsedActivePatientFileNumber: number;
@@ -135,6 +137,7 @@ export const syncPatientIdentityAfterSave = async (
                 months: input.ageMonths,
                 days: input.ageDays,
             },
+            gender: input.gender,
             patientFileId:
                 input.patientFileReference?.patientFileId || input.normalizedActivePatientFileId || undefined,
             patientFileNumber: input.patientFileReference?.patientFileNumber || fallbackPatientFileNumber,

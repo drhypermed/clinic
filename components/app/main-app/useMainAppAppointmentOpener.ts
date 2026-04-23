@@ -52,6 +52,10 @@ interface UseMainAppAppointmentOpenerParams {
   setAgeYears: (v: string) => void;
   setAgeMonths: (v: string) => void;
   setAgeDays: (v: string) => void;
+  // setters الهوية الجديدة — الجنس (ثابت) + الحمل/الرضاعة (snapshot)
+  setGender: (v: import('../../../types').PatientGender | '') => void;
+  setPregnant: (v: boolean | null) => void;
+  setBreastfeeding: (v: boolean | null) => void;
   setVisitDate: (v: string) => void;
   setVisitType: (v: 'exam' | 'consultation') => void;
   setIsPastConsultationMode: (v: boolean) => void;
@@ -131,6 +135,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     handleOpenConsultation,
     navigateToView,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
+    setGender, setPregnant, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setWeight, setHeight, setVitals,
@@ -171,6 +176,10 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // بيانات المريض الأساسية
     setPatientName(apt.patientName || '');
     setPhone(apt.phone || '');
+    // تحميل الهوية المحفوظة مع الموعد (السكرتارية قد تكون دخلتها)
+    setGender((apt.gender === 'male' || apt.gender === 'female') ? apt.gender : '');
+    setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
+    setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
     const { years, months, days } = parseAgeToYearsMonthsDays(apt.age || '');
     setAgeYears(years);
     setAgeMonths(months);
@@ -200,6 +209,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleResetAndClearOpenedAppointment,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
+    setGender, setPregnant, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setWeight, setHeight, setVitals,

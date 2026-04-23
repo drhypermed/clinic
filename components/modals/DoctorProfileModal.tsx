@@ -22,6 +22,7 @@ import { ProfileImageCropperOverlay } from './doctor-profile/ProfileImageCropper
 import { useDoctorProfileData } from './doctor-profile/useDoctorProfileData';
 import { useProfileImageCropper } from './doctor-profile/useProfileImageCropper';
 import { saveDoctorProfile } from './doctor-profile/saveDoctorProfile';
+import { MEDICAL_SPECIALTIES } from '../auth/medicalSpecialties';
 
 interface DoctorProfileModalProps {
   isOpen: boolean;
@@ -56,7 +57,6 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
   const [success, setSuccess] = useState('');
 
   // تحميل بيانات الطبيب + حالة الاشتراك (مستخرج في hook)
-  // ملاحظة: setSpecialty غير مستعمل هنا (التخصص عرض فقط في هذه النافذة)
   const {
     isLoading,
     loadError,
@@ -67,7 +67,9 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
     premiumStartDate,
     premiumEndDate,
     accountType,
+    specialtyEditedOnce,
     setName,
+    setSpecialty,
     setWhatsapp,
     setProfileImage,
   } = useDoctorProfileData({
@@ -77,6 +79,13 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
     currentSpecialty,
     currentProfileImage,
   });
+
+  // ─── تعديل التخصص لمرة واحدة للحسابات القديمة ───
+  // الحساب الجديد: التخصص مطلوب في signup → لا يدخل هذا الفرع (currentSpecialty موجود)
+  // الحساب القديم بدون تخصص: يحصل على فرصة واحدة للتعديل من داخل الملف الشخصي
+  // بعد أول حفظ تخصص → يُقفل الحقل للأبد عبر specialtyEditedOnce في Firestore
+  const resolvedSpecialty = (specialty || '').trim() || (currentSpecialty || '').trim();
+  const canEditSpecialty = !resolvedSpecialty && !specialtyEditedOnce;
 
   // حالة القص (مستخرجة في hook)
   const cropper = useProfileImageCropper({
@@ -191,6 +200,8 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
         whatsapp,
         profileImage,
         currentProfileImage,
+        // نطلب ختم specialtyEditedOnce فقط لو الحقل كان قابل للتعديل وتم إدخال تخصص فعلاً
+        shouldMarkSpecialtyEdited: canEditSpecialty && Boolean((specialty || '').trim()),
         onNameUpdate,
         onSpecialtyUpdate,
         onProfileImageUpdate,
@@ -372,12 +383,35 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   التخصص الطبي <span className="text-red-500">*</span>
                 </label>
-                <div className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-600 font-semibold">
-                  {specialty || currentSpecialty || 'غير محدد'}
-                </div>
-                <p className="text-xs text-slate-500 mt-1 font-semibold">
-                  التخصص غير قابل للتعديل من الملف الشخصي
-                </p>
+                {canEditSpecialty ? (
+                  // حساب قديم بدون تخصص: dropdown قابل للتعديل مرة واحدة
+                  <>
+                    <select
+                      value={specialty}
+                      onChange={(e) => setSpecialty(e.target.value)}
+                      className="w-full px-4 py-3 border border-amber-300 rounded-xl bg-amber-50 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      dir="rtl"
+                    >
+                      <option value="">اختر التخصص</option>
+                      {MEDICAL_SPECIALTIES.map((spec) => (
+                        <option key={spec} value={spec}>{spec}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-amber-700 mt-1 font-bold">
+                      ⚠️ فرصة واحدة فقط: حسابك القديم بدون تخصص — اختر تخصصك دلوقتي وبعد الحفظ لن يُمكن التعديل مرة أخرى.
+                    </p>
+                  </>
+                ) : (
+                  // التخصص محفوظ بالفعل → عرض فقط
+                  <>
+                    <div className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-600 font-semibold">
+                      {resolvedSpecialty || 'غير محدد'}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 font-semibold">
+                      التخصص غير قابل للتعديل من الملف الشخصي
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* WhatsApp Field */}

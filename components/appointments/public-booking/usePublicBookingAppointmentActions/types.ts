@@ -13,6 +13,7 @@ import type { TodayAppointment } from '../types';
 import type { Dispatch, SetStateAction } from 'react';
 import type {
     AppointmentType,
+    PatientGender,
     PaymentType,
     SecretaryVitalFieldDefinition,
     SecretaryVitalsInput,
@@ -43,6 +44,9 @@ export type UsePublicBookingAppointmentActionsParams = {
     patientName: string;
     age: string;
     phone: string;
+    gender: PatientGender | '';
+    pregnant: boolean | null;
+    breastfeeding: boolean | null;
     dateStr: string;
     timeStr: string;
     visitReason: string;
@@ -81,6 +85,9 @@ export type UsePublicBookingAppointmentActionsParams = {
     setPatientName: Dispatch<SetStateAction<string>>;
     setAge: Dispatch<SetStateAction<string>>;
     setPhone: Dispatch<SetStateAction<string>>;
+    setGender: Dispatch<SetStateAction<PatientGender | ''>>;
+    setPregnant: Dispatch<SetStateAction<boolean | null>>;
+    setBreastfeeding: Dispatch<SetStateAction<boolean | null>>;
     setDateStr: Dispatch<SetStateAction<string>>;
     setTimeStr: Dispatch<SetStateAction<string>>;
     setVisitReason: Dispatch<SetStateAction<string>>;

@@ -3,12 +3,12 @@ import { hasAppointmentTypeHint, isConsultationAppointment } from '../../utils/a
 
 /**
  * الملف: SecretaryEntryNotification.tsx
- * الوصف: نافذة "طلب دخول مريض" التي تظهر للطبيب. 
- * يُعتبر هذا المكون هو قلب التواصل اللحظي بين السكرتير والطبيب؛ 
- * فعندما يكون المريض جاهزاً في الخارج، ترسل السكرتارية هذا الطلب، 
- * ويظهر للطبيب نافذة منبثقة ملونة بالبنفسجي (Violet) تحتوي على: 
- * - بيانات المريض الجاهز للدخول. 
- * - زر "دخول" (Approve) للسماح له بالدخول فوراً. 
+ * الوصف: نافذة "طلب دخول مريض" التي تظهر للطبيب.
+ * يُعتبر هذا المكون هو قلب التواصل اللحظي بين السكرتير والطبيب؛
+ * فعندما يكون المريض جاهزاً في الخارج، ترسل السكرتارية هذا الطلب،
+ * ويظهر للطبيب نافذة منبثقة ملونة بالبنفسجي (Violet) تحتوي على:
+ * - بيانات المريض الجاهز للدخول.
+ * - زر "دخول" (Approve) للسماح له بالدخول فوراً.
  * - زر "انتظار" (Reject) لإخبار السكرتير بالانتظار لفترة أطول.
  */
 
@@ -19,6 +19,12 @@ interface SecretaryEntryRequest {
   visitReason?: string;
   appointmentType?: 'exam' | 'consultation';
   createdAt: string;
+  /** جنس المريض — لو ذكر/أنثى يظهر في الإشعار */
+  gender?: 'male' | 'female';
+  /** حامل؟ للإناث 18-50 */
+  pregnant?: boolean;
+  /** مرضعة؟ للإناث 18-50 */
+  breastfeeding?: boolean;
 }
 
 interface SecretaryEntryNotificationProps {
@@ -53,6 +59,25 @@ export const SecretaryEntryNotification: React.FC<SecretaryEntryNotificationProp
         <div className="min-w-0 text-right">
           <p className="font-black text-slate-800 text-sm sm:text-base leading-snug">السكرتارية تطلب دخول حالة:</p>
           <p className="font-bold text-slate-700 text-sm sm:text-base leading-snug mt-0.5">{request.patientName}</p>
+
+          {/* Badges للنوع + الحمل + الرضاعة (لو موجودين) — سطر ملون يلفت نظر الطبيب */}
+          {(request.gender || typeof request.pregnant === 'boolean' || typeof request.breastfeeding === 'boolean') && (
+            <div className="flex flex-wrap items-center gap-1 mt-1">
+              {request.gender === 'male' && (
+                <span className="rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-[10px] font-black text-sky-800">ذكر</span>
+              )}
+              {request.gender === 'female' && (
+                <span className="rounded-full border border-pink-300 bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-800">أنثى</span>
+              )}
+              {request.pregnant === true && (
+                <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤰 حامل</span>
+              )}
+              {request.breastfeeding === true && (
+                <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤱 مرضعة</span>
+              )}
+            </div>
+          )}
+
           <p className="text-xs sm:text-sm font-bold text-slate-500 leading-snug mt-0.5">السن: {(request.age || '').trim() || 'غير متوفر'}</p>
           {request.visitReason && (<p className="text-xs sm:text-sm font-bold text-slate-500 leading-snug mt-0.5">سبب الزيارة: {request.visitReason}</p>)}
           {hasAppointmentTypeHint(request) && (

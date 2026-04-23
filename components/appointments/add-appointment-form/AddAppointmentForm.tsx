@@ -8,6 +8,12 @@ import { getVisiblePatientSuggestions, normalizePhoneDigits, toPositiveFileNumbe
 import { sanitizeExternalHttpUrl } from './securityUtils';
 import type { AddAppointmentFormProps } from './types';
 import type { CustomBox } from '../../../types';
+import { parseAgeToYearsMonthsDays } from '../utils';
+// دوال هوية المريض: قرار سؤال الحمل/الرضاعة
+import {
+  bestGuessAgeYears,
+  shouldAskFertilityQuestions,
+} from '../../../utils/patientIdentity';
 import {
   computeSecretaryBmiValue,
   isSecretaryFieldEnabled,
@@ -32,6 +38,9 @@ import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSel
 
 export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   patientName, onPatientNameChange, age, onAgeChange, phone, onPhoneChange,
+  gender = '', onGenderChange,
+  pregnant = null, onPregnantChange,
+  breastfeeding = null, onBreastfeedingChange,
   dateStr, onDateStrChange, timeStr, onTimeStrChange, visitReason, onVisitReasonChange,
   secretaryVitals = {}, secretaryVitalFields = [], secretaryVitalsVisibility, onSecretaryVitalsChange,
   todayStr, timeMin, saving, formError, bookingQuotaNotice, onSubmit,
@@ -59,6 +68,13 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   const alertRef = useRef<HTMLDivElement | null>(null);
   const [activeSuggestionField, setActiveSuggestionField] = useState<'name' | 'phone' | null>(null);
   const isConsultationMode = appointmentType === 'consultation';
+
+  // قرار ظهور سؤال الحمل/الرضاعة: أنثى + سن 18-50 (من السن المدخل)
+  const effectiveAgeYears = useMemo(() => {
+    const ageParts = parseAgeToYearsMonthsDays(age);
+    return bestGuessAgeYears({ ageParts, ageText: age });
+  }, [age]);
+  const askFertility = shouldAskFertilityQuestions(gender || '', effectiveAgeYears);
 
   // التمرير التلقائي للتنبيهات عند حدوث خطأ أو تنبيه كوتا
   useEffect(() => {
@@ -318,10 +334,113 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             {activeSuggestionField === 'name' && <PatientSuggestionsDropdown suggestions={visiblePatientSuggestions} onApplySuggestion={applyPatientSuggestion} />}
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-1 relative">
+          <div className="sm:col-span-1 lg:col-span-1 relative">
             <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
-            <AgeUnitInput ageString={age} onAgeChange={onAgeChange} placeholder="مثال: 30" inputClassName="focus:ring-teal-500" selectClassName="focus:ring-teal-500" />
+            <AgeUnitInput
+              ageString={age}
+              onAgeChange={onAgeChange}
+              placeholder="مثال: 30"
+              inputClassName="focus:ring-teal-500"
+              selectClassName="focus:ring-teal-500"
+            />
           </div>
+
+          {/* النوع: بعد السن مباشرة عشان قرار سؤال الحمل/الرضاعة يبقى جنبه منطقياً */}
+          {onGenderChange && (
+            <div className="sm:col-span-1 lg:col-span-1">
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">النوع</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onGenderChange('male')}
+                  className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
+                    gender === 'male'
+                      ? 'bg-sky-600 text-white border-sky-700 shadow-md'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  ذكر
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onGenderChange('female')}
+                  className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
+                    gender === 'female'
+                      ? 'bg-pink-600 text-white border-pink-700 shadow-md'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  أنثى
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* الحمل/الرضاعة — تحت النوع مباشرة على كل الشاشات (موبايل/تابلت/ديسكتوب) */}
+          {askFertility && (onPregnantChange || onBreastfeedingChange) && (
+            <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border border-pink-200 bg-pink-50/50 p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {onPregnantChange && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">هل هي حامل؟</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onPregnantChange(true)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          pregnant === true
+                            ? 'bg-pink-600 text-white border-pink-700'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-pink-50'
+                        }`}
+                      >
+                        نعم، حامل
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onPregnantChange(false)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          pregnant === false
+                            ? 'bg-slate-700 text-white border-slate-800'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        لا
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {onBreastfeedingChange && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">هل هي مرضعة؟</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onBreastfeedingChange(true)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          breastfeeding === true
+                            ? 'bg-pink-600 text-white border-pink-700'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-pink-50'
+                        }`}
+                      >
+                        نعم، مرضعة
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onBreastfeedingChange(false)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
+                          breastfeeding === false
+                            ? 'bg-slate-700 text-white border-slate-800'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        لا
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className={`sm:col-span-2 lg:col-span-1 relative ${activeSuggestionField === 'phone' ? 'z-[140]' : 'z-10'}`}>
             <label className="block text-xs font-bold text-slate-500 mb-1.5">رقم التليفون (اختياري)</label>
@@ -359,7 +478,8 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
           {shouldShowSecretaryVitalsFields && (
             <div className="sm:col-span-2 lg:col-span-4">
               <label className="block text-xs font-bold text-slate-500 mb-2">القياسات والعلامات الحيوية</label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-2 sm:gap-x-3 gap-y-4">
+              {/* الموبايل: عمودان فاسحان للإدخال — 3 على التابلت — 4 على الشاشات الكبيرة */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-2 sm:gap-x-3 gap-y-4">
                 {enabledSecretaryFields.map((field) => {
                   const fieldId = field.kind === 'vital' && field.key ? field.key : field.id;
                   const isBmi = field.key === 'bmi';

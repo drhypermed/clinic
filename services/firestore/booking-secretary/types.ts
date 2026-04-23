@@ -8,6 +8,7 @@
  */
 
 import type {
+  PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
   SecretaryVitalsInput,
@@ -69,6 +70,12 @@ export interface BookingConfigTodayAppointment {
   examCompletedAt?: string;
   /** معرف الفرع الذي ينتمي إليه الموعد (للعزل بين الفروع). المفتاح 'main' للفرع الرئيسي. */
   branchId?: string;
+  /** جنس المريض — يُنقل مع الموعد من السكرتارية للطبيب */
+  gender?: PatientGender;
+  /** حامل أم لا — snapshot وقت هذا الموعد (يُسأل كل مرة للإناث 18-50) */
+  pregnant?: boolean;
+  /** مرضعة أم لا — snapshot وقت هذا الموعد */
+  breastfeeding?: boolean;
 }
 
 /** بيانات المريض الذي أتم الكشف مؤخراً */
@@ -81,6 +88,8 @@ export interface RecentExamPatient {
   consultationCompletedAt?: string;
   consultationCompletedDates?: string[];
   consultationSourceRecordId?: string;
+  /** جنس المريض (ثابت مدى الحياة) — يُستخدم ل auto-fill في الاستشارة */
+  gender?: PatientGender;
 }
 
 /** عنصر في دليل المرضى للبحث السريع */
@@ -92,6 +101,8 @@ export interface PatientDirectoryItem {
   lastExamDate?: string;
   lastConsultationDate?: string;
   patientFileNumber?: number;
+  /** جنس المريض — ثابت، يُنقل تلقائياً عند اختيار المريض */
+  gender?: PatientGender;
 }
 
 /** هيكل طلب الدخول المرسل من السكرتير للطبيب */
@@ -107,6 +118,12 @@ export interface SecretaryEntryRequest {
   createdAt: string;
   /** معرّف الفرع الذي أرسلت منه السكرتيرة الطلب — للعزل بين الفروع. */
   branchId?: string;
+  /** جنس المريض (في إشعار الدخول) — للتأكيد البصري للطبيب */
+  gender?: PatientGender;
+  /** حالة الحمل وقت هذا الموعد (snapshot) — للإناث 18-50 فقط */
+  pregnant?: boolean;
+  /** حالة الرضاعة وقت هذا الموعد — للإناث 18-50 فقط */
+  breastfeeding?: boolean;
 }
 
 /** بيانات جلسة تسجيل دخول السكرتير */

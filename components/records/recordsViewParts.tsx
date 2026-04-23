@@ -283,7 +283,8 @@ export const DailyGroup: React.FC<{
                     </div>
 
                     {examCase && <CasePanel data={examCase} term={term} onDeleteCase={() => onDeleteExam(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} />}
-                    {consultationCase && <CasePanel data={consultationCase} term={term} onDeleteCase={() => onDeleteConsultation(rec)} />}
+                    {/* الاستشارة تعرض نفس القياسات والعلامات الحيوية المحفوظة في السجل — بنفس منطق الكشف */}
+                    {consultationCase && <CasePanel data={consultationCase} term={term} onDeleteCase={() => onDeleteConsultation(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} />}
                   </div>
                 )}
               </div>

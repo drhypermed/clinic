@@ -395,7 +395,16 @@ export const DoctorSignupPage: React.FC = () => {
                 clearError();
                 void handleGoogleSignup();
               }}
-              disabled={loading || isChecking || !isLegalReady}
+              // تعطيل الزر لو أي حقل إجباري ناقص — خط دفاع أول قبل فاليديشن handleGoogleSignup
+              disabled={
+                loading ||
+                isChecking ||
+                !isLegalReady ||
+                !doctorName.trim() ||
+                !specialty ||
+                !whatsapp.trim() ||
+                !licenseImage
+              }
               className="w-full py-3 px-4 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
             >
               {(loading || isChecking) ? (

@@ -40,6 +40,8 @@ export interface SyncPatientIdentityByFileInput {
     patientFileId?: string;
     patientFileNumber?: number;
     patientFileNameKey?: string;
+    /** جنس المريض — يُنشر على كل سجلات/مواعيد ملف المريض لو تم إدخاله */
+    gender?: 'male' | 'female';
 }
 
 /** نتيجة عملية مزامنة الهوية (عدد ما تم تحديثه) */

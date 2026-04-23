@@ -23,6 +23,7 @@ import {
 } from '../../../utils/secretaryVitals';
 import type {
   AppointmentType,
+  PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
   SecretaryVitalsInput,
@@ -38,6 +39,10 @@ export const usePublicBookingPageState = () => {
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
+  // حقول الهوية الجديدة: الجنس ثابت، الحمل والرضاعة متغيرين لكل زيارة
+  const [gender, setGender] = useState<PatientGender | ''>('');
+  const [pregnant, setPregnant] = useState<boolean | null>(null);
+  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [dateStr, setDateStr] = useState(() => toLocalDateStr(new Date()));
   const [timeStr, setTimeStr] = useState(() => getDefaultTimeStr());
   const [visitReason, setVisitReason] = useState('');
@@ -120,6 +125,12 @@ export const usePublicBookingPageState = () => {
     setAge,
     phone,
     setPhone,
+    gender,
+    setGender,
+    pregnant,
+    setPregnant,
+    breastfeeding,
+    setBreastfeeding,
     dateStr,
     setDateStr,
     timeStr,

@@ -48,7 +48,12 @@ export const useDoctorOnboardingStatus = ({
     }
 
     let isMounted = true;
-    setDoctorOnboardingStatus('loading');
+    // نضع 'loading' بس لو ده أول فحص لهذا الـUID — مع refresh التوكن user
+    // object بياخد reference جديد بنفس الـUID، وده كان بيعمل فلاشة loading
+    // داخل التطبيق. نتجنبها بحفظ آخر uid فحصناه.
+    if (doctorOnboardingStatus === 'idle') {
+      setDoctorOnboardingStatus('loading');
+    }
 
     // 3. قراءه واحده من users/{uid} بـcache-first — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
     getDocCacheFirst(getUserProfileDocRef(user.uid))
@@ -80,7 +85,10 @@ export const useDoctorOnboardingStatus = ({
     return () => {
       isMounted = false;
     };
-  }, [user, isAdminUser]);
+    // deps على uid + authRole فقط — مش على reference الـuser object كله
+    // عشان refresh التوكن (بيغير الـreference بدون تغيير uid) ما يعيدش التشغيل
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, user?.authRole, isAdminUser]);
 
   return doctorOnboardingStatus;
 };

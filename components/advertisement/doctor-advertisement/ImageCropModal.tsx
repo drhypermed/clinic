@@ -16,8 +16,8 @@ interface ImageCropModalProps {
     croppedPixels: { x: number; y: number; width: number; height: number }
   ) => void;
   onCancel: () => void;
+  // onSaveEdited = يحفظ النسخة المقصوصة بعد القص والتكبير/التصغير
   onSaveEdited: () => void | Promise<void>;
-  onSaveOriginal: () => void | Promise<void>;
 }
 
 export const ImageCropModal: React.FC<ImageCropModalProps> = ({
@@ -31,7 +31,6 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
   onCropComplete,
   onCancel,
   onSaveEdited,
-  onSaveOriginal,
 }) => {
   return (
     <ImageCropperShell
@@ -47,21 +46,23 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
       onCropComplete={onCropComplete}
       footer={
         <>
+          {/* إلغاء = إغلاق بدون رفع */}
           <button
             type="button"
-            onClick={() => void onSaveOriginal()}
+            onClick={onCancel}
             disabled={uploading}
             className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-60"
           >
-            رفع الأصل كما هي
+            إلغاء
           </button>
+          {/* حفظ = رفع النسخة المقصوصة بعد القص/التكبير/التصغير */}
           <button
             type="button"
             onClick={() => void onSaveEdited()}
             disabled={uploading}
             className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
           >
-            {uploading ? 'جاري الرفع' : 'تعديل ثم رفع'}
+            {uploading ? 'جاري الرفع…' : 'حفظ'}
           </button>
         </>
       }

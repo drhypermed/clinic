@@ -101,6 +101,7 @@ export const MainApp: React.FC = () => {
     notifications,
     showNotification,
     patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
     weight, setWeight, height, setHeight, bmi, vitals, setVitals, updateVital,
     complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations,
     complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
@@ -413,6 +414,7 @@ export const MainApp: React.FC = () => {
     handleOpenConsultation,
     navigateToView,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
+    setGender, setPregnant, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setPaymentType, setInsuranceCompanyId, setInsuranceCompanyName,
@@ -492,6 +494,9 @@ export const MainApp: React.FC = () => {
               ageYears={ageYears} setAgeYears={setAgeYears}
               ageMonths={ageMonths} setAgeMonths={setAgeMonths}
               ageDays={ageDays} setAgeDays={setAgeDays}
+              gender={gender} setGender={setGender}
+              pregnant={pregnant} setPregnant={setPregnant}
+              breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
               setActivePatientFileId={setActivePatientFileId}
               setActivePatientFileNumber={setActivePatientFileNumber}
               setActivePatientFileNameKey={setActivePatientFileNameKey}

@@ -106,6 +106,12 @@ export const PublicBookingPage: React.FC = () => {
     setAge,
     phone,
     setPhone,
+    gender,
+    setGender,
+    pregnant,
+    setPregnant,
+    breastfeeding,
+    setBreastfeeding,
     dateStr,
     setDateStr,
     timeStr,
@@ -371,6 +377,12 @@ export const PublicBookingPage: React.FC = () => {
                 onAgeChange={setAge}
                 phone={phone}
                 onPhoneChange={setPhone}
+                gender={gender}
+                onGenderChange={setGender}
+                pregnant={pregnant}
+                onPregnantChange={setPregnant}
+                breastfeeding={breastfeeding}
+                onBreastfeedingChange={setBreastfeeding}
                 dateStr={dateStr}
                 onDateStrChange={setDateStr}
                 timeStr={timeStr}

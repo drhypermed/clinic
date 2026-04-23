@@ -44,6 +44,14 @@ interface PublicBookingPayload {
   discountReasonLabel?: string;
   /** معرّف الفرع */
   branchId?: string;
+  /** جنس المريض (ثابت) — ينتقل من فورم الجمهور للموعد */
+  gender?: 'male' | 'female';
+  /** تاريخ الميلاد — ثابت، لحساب السن تلقائياً في الزيارات القادمة */
+  dateOfBirth?: string;
+  /** حامل؟ snapshot لهذا الموعد (يُسأل كل زيارة) */
+  pregnant?: boolean;
+  /** مرضعة؟ snapshot لهذا الموعد */
+  breastfeeding?: boolean;
 }
 
 /** بيانات إضافية عن الطبيب والمريض لربط الحسابات */
@@ -125,6 +133,11 @@ export const createAppointmentFromPublic = async (
     discountReasonId: data.discountReasonId,
     discountReasonLabel: data.discountReasonLabel,
     branchId: data.branchId,
+    // حقول الهوية الجديدة — تنتشر مع الموعد للسكرتارية والطبيب
+    gender: data.gender,
+    dateOfBirth: data.dateOfBirth,
+    pregnant: data.pregnant,
+    breastfeeding: data.breastfeeding,
   };
 
   // الـ Slot يبقى متاحاً لباقي الجمهور بعد الحجز — الإخفاء لمن حجز يتم client-side

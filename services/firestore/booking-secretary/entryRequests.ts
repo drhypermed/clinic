@@ -54,6 +54,12 @@ interface SetSecretaryEntryRequestPayload {
   consultationSourceRecordId?: string;
   /** الفرع المرسِل للطلب — للعزل بين الفروع. */
   branchId?: string;
+  /** جنس المريض — يظهر في الإشعار عند الطبيب */
+  gender?: 'male' | 'female';
+  /** حالة الحمل وقت هذا الموعد */
+  pregnant?: boolean;
+  /** حالة الرضاعة وقت هذا الموعد */
+  breastfeeding?: boolean;
 }
 
 /**
@@ -97,6 +103,11 @@ export const setSecretaryEntryRequest = async (
   const age = data.age ? toOptionalText(data.age) : undefined;
   const visitReason = data.visitReason ? toOptionalText(data.visitReason) : undefined;
 
+  // تطبيع الحقول الجديدة — undefined بتنشال من الـ payload عبر omitUndefined
+  const genderForPayload = data.gender === 'male' || data.gender === 'female' ? data.gender : undefined;
+  const pregnantForPayload = typeof data.pregnant === 'boolean' ? data.pregnant : undefined;
+  const breastfeedingForPayload = typeof data.breastfeeding === 'boolean' ? data.breastfeeding : undefined;
+
   const branchPayload = omitUndefined({
     doctorId: targetDoctorId,
     appointmentId: normalizedAppointmentId,
@@ -109,6 +120,10 @@ export const setSecretaryEntryRequest = async (
     consultationSourceRecordId: data.consultationSourceRecordId,
     createdAt: new Date().toISOString(),
     branchId: normalizedBranch,
+    // الحقول الجديدة: الجنس + الحمل/الرضاعة — تظهر للطبيب في الإشعار
+    gender: genderForPayload,
+    pregnant: pregnantForPayload,
+    breastfeeding: breastfeedingForPayload,
   });
 
   // نستخدم merge: true مع dot-notation — تحديث فرع واحد فقط بدون مسح باقي الفروع
@@ -150,6 +165,11 @@ const mapSecretaryEntryRequest = (raw: Record<string, unknown>): SecretaryEntryR
     consultationSourceRecordId,
   });
 
+  // قراءة الحقول الجديدة بحذر من Firestore — قد تكون مفقودة في طلبات قديمة
+  const gender = raw.gender === 'male' || raw.gender === 'female' ? raw.gender : undefined;
+  const pregnant = typeof raw.pregnant === 'boolean' ? raw.pregnant : undefined;
+  const breastfeeding = typeof raw.breastfeeding === 'boolean' ? raw.breastfeeding : undefined;
+
   return {
     appointmentId: raw.appointmentId,
     patientName: toOptionalText(raw.patientName) || '',
@@ -161,6 +181,9 @@ const mapSecretaryEntryRequest = (raw: Record<string, unknown>): SecretaryEntryR
     consultationSourceRecordId,
     createdAt: raw.createdAt,
     branchId: typeof raw.branchId === 'string' ? raw.branchId : undefined,
+    gender,
+    pregnant,
+    breastfeeding,
   };
 };
 

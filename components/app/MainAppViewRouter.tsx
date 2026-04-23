@@ -114,6 +114,10 @@ export interface MainAppViewRouterProps {
   ageYears: string; setAgeYears: (v: string) => void;
   ageMonths: string; setAgeMonths: (v: string) => void;
   ageDays: string; setAgeDays: (v: string) => void;
+  // حقول الهوية الجديدة: الجنس ثابت + الحمل/الرضاعة snapshot
+  gender: import('../../types').PatientGender | ''; setGender: (v: import('../../types').PatientGender | '') => void;
+  pregnant: boolean | null; setPregnant: (v: boolean | null) => void;
+  breastfeeding: boolean | null; setBreastfeeding: (v: boolean | null) => void;
   setActivePatientFileId: (v: string | null) => void;
   setActivePatientFileNumber: (v: number | null) => void;
   setActivePatientFileNameKey: (v: string | null) => void;
@@ -242,6 +246,9 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           ageYears={p.ageYears} setAgeYears={p.setAgeYears}
           ageMonths={p.ageMonths} setAgeMonths={p.setAgeMonths}
           ageDays={p.ageDays} setAgeDays={p.setAgeDays}
+          gender={p.gender} setGender={p.setGender}
+          pregnant={p.pregnant} setPregnant={p.setPregnant}
+          breastfeeding={p.breastfeeding} setBreastfeeding={p.setBreastfeeding}
           setActivePatientFileId={p.setActivePatientFileId}
           setActivePatientFileNumber={p.setActivePatientFileNumber}
           setActivePatientFileNameKey={p.setActivePatientFileNameKey}

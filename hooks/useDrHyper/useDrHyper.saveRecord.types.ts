@@ -8,7 +8,7 @@
  */
 
 import type React from 'react';
-import type { PaymentType, PrescriptionItem, VitalSigns } from '../../types';
+import type { PatientGender, PatientRecord, PaymentType, PrescriptionItem, VitalSigns } from '../../types';
 import type { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
 
 export interface CreateSaveRecordActionParams {
@@ -18,6 +18,10 @@ export interface CreateSaveRecordActionParams {
     ageYears: string;
     ageMonths: string;
     ageDays: string;
+    // حقول الهوية الجديدة: الجنس ثابت للمريض، والحمل والرضاعة snapshot للزيارة
+    gender: PatientGender | '';
+    pregnant: boolean | null;
+    breastfeeding: boolean | null;
     weight: string;
     height: string;
     bmi: string;
@@ -83,6 +87,8 @@ export interface CreateSaveRecordActionParams {
     discountReasonLabel: string;
     /** معرّف الفرع النشط لحفظه مع السجل */
     activeBranchId?: string;
+    /** السجلات المحمّلة — تُستخدم لربط الاستشارة بكشفها الأصلي وتحديد sourceExamDate */
+    records: PatientRecord[];
 }
 
 export interface SaveRecordResult {

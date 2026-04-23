@@ -188,6 +188,13 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
             ? accessControls.premiumPregnancyToolDailyLimit
             : accessControls.freePregnancyToolDailyLimit;
 
+    // حساب بريميوم + حد يومي عالي (≥500) = فتح فوري وتتبع الكوتا في الخلفية
+    // بدل ما ننتظر الـCloud Function (1-3 ثانيه) — السيرفر لسه بيتحقق عند كل استخدام فعلي
+    if (isPremium && configuredLimit >= 500) {
+      void consumeDrugToolQuota(feature).catch(() => {});
+      return true;
+    }
+
     try {
       await consumeDrugToolQuota(feature);
       return true;

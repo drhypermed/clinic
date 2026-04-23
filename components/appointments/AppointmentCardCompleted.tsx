@@ -78,6 +78,19 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
               {discountReasonSummary}
             </span>
           )}
+          {/* الجنس + الحمل + الرضاعة — تظهر لو كانت محفوظة على الموعد */}
+          {apt.gender === 'male' && (
+            <span className="rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-[10px] font-black text-sky-800">ذكر</span>
+          )}
+          {apt.gender === 'female' && (
+            <span className="rounded-full border border-pink-300 bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-800">أنثى</span>
+          )}
+          {apt.pregnant === true && (
+            <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤰 حامل</span>
+          )}
+          {apt.breastfeeding === true && (
+            <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤱 مرضعة</span>
+          )}
         </div>
 
         {/* Row 3: execution time */}

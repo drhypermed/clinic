@@ -27,6 +27,10 @@ interface HookReturn {
   accountType: DoctorAccountType;
   premiumStartDate: string;
   premiumEndDate: string;
+  // ─── تعديل التخصص لمرة واحدة للحسابات القديمة ───
+  // لو التخصص فاضي في Firestore والحساب قديم → نسمح بتعديله مرة واحدة
+  // بعد أول حفظ → نخزن specialtyEditedOnce: true ونقفل الحقل نهائياً
+  specialtyEditedOnce: boolean;
   setName: (v: string) => void;
   setSpecialty: (v: string) => void;
   setWhatsapp: (v: string) => void;
@@ -54,6 +58,9 @@ export function useDoctorProfileData({
   const [premiumStartDate, setPremiumStartDate] = useState('');
   const [premiumEndDate, setPremiumEndDate] = useState('');
 
+  // علم قراءه للتحقق إذا الطبيب استهلك فرصة تعديل التخصص مسبقًا
+  const [specialtyEditedOnce, setSpecialtyEditedOnce] = useState<boolean>(false);
+
   useEffect(() => {
     if (!isOpen || !userId) return;
 
@@ -63,6 +70,7 @@ export function useDoctorProfileData({
         setAccountType('free');
         setPremiumStartDate('');
         setPremiumEndDate('');
+        setSpecialtyEditedOnce(false);
         return;
       }
       const hasProfileImageField = Object.prototype.hasOwnProperty.call(data, 'profileImage');
@@ -87,6 +95,8 @@ export function useDoctorProfileData({
       setAccountType(resolvedAccountType);
       setPremiumStartDate(resolvedPremiumStartDate);
       setPremiumEndDate(resolvedPremiumEndDate);
+      // قراءه علم استهلاك فرصة تعديل التخصص (الحسابات القديمة بدون تخصص تحصل على فرصة واحدة)
+      setSpecialtyEditedOnce(data.specialtyEditedOnce === true);
     };
 
     const loadDoctorData = async () => {
@@ -121,6 +131,7 @@ export function useDoctorProfileData({
     accountType,
     premiumStartDate,
     premiumEndDate,
+    specialtyEditedOnce,
     setName,
     setSpecialty,
     setWhatsapp,

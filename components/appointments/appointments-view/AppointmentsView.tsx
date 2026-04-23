@@ -59,6 +59,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
    */
   const {
     patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
+    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
     formError, bookingQuotaNotice, saving, addSuccessToast, addAppointmentFormOpen,
@@ -241,7 +242,11 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         <div className="dh-stagger-2"><AddAppointmentForm
           bookingSecret={bookingSecret}
           patientName={patientName} onPatientNameChange={setPatientName} age={age} onAgeChange={setAge}
-          phone={phone} onPhoneChange={setPhone} dateStr={dateStr} onDateStrChange={setDateStr}
+          phone={phone} onPhoneChange={setPhone}
+          gender={gender} onGenderChange={setGender}
+          pregnant={pregnant} onPregnantChange={setPregnant}
+          breastfeeding={breastfeeding} onBreastfeedingChange={setBreastfeeding}
+          dateStr={dateStr} onDateStrChange={setDateStr}
           timeStr={timeStr} onTimeStrChange={setTimeStr} visitReason={visitReason} onVisitReasonChange={setVisitReason}
           todayStr={todayStr} timeMin={timeMin} saving={saving} formError={formError}
           bookingQuotaNotice={bookingQuotaNotice} appointmentType={appointmentType}

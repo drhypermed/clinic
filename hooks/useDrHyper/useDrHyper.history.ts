@@ -38,6 +38,11 @@ interface CreateHistoryActionsParams {
     setAgeYears: SetString;
     setAgeMonths: SetString;
     setAgeDays: SetString;
+    // setters الجديدة للهوية (اختياريّة لضمان backward compatibility)
+    setDateOfBirth?: SetString;
+    setGender?: React.Dispatch<React.SetStateAction<any>>;
+    setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+    setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
     setVitals: React.Dispatch<React.SetStateAction<{ bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string }>>;
     setErrorMsg: SetNullableString;
     setSmartQuotaModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -99,6 +104,10 @@ export const createHistoryActions = ({
     setAgeYears,
     setAgeMonths,
     setAgeDays,
+    setDateOfBirth,
+    setGender,
+    setPregnant,
+    setBreastfeeding,
     setVitals,
     setErrorMsg,
     setSmartQuotaModalOpen,
@@ -174,6 +183,10 @@ export const createHistoryActions = ({
             setAgeYears,
             setAgeMonths,
             setAgeDays,
+            setDateOfBirth,
+            setGender,
+            setPregnant,
+            setBreastfeeding,
             setVitals,
             setRxItems,
             setGeneralAdvice,

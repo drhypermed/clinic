@@ -43,6 +43,12 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
       .filter((value): value is string => !!value)
       .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
 
+    // نختار أحدث قياس وزن/طول متاح من السجلات (حتى لو السجل الأحدث فاضي القياسات)
+    const firstWithWeight = sorted.find((item) => String(item.weight || '').trim());
+    const firstWithHeight = sorted.find((item) => String(item.height || '').trim());
+    // أحدث gender/dateOfBirth متاحين — ثابتان، ما يتغيروش بين سجلات نفس المريض
+    const genderFromRecords = sorted.map((item) => item.gender).find((value) => Boolean(value));
+
     suggestions.push({
       id: latest.id,
       patientName: latest.patientName,
@@ -56,6 +62,11 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
       patientFileNumber:
         toPositiveFileNumber(latest.patientFileNumber)
         ?? sorted.map((item) => toPositiveFileNumber(item.patientFileNumber)).find((value) => Boolean(value)),
+      // آخر وزن/طول متاح — يُستخدم لجلبهم تلقائياً في الاستشارة
+      lastWeight: String(firstWithWeight?.weight || '').trim() || undefined,
+      lastHeight: String(firstWithHeight?.height || '').trim() || undefined,
+      // الهوية الثابتة — للـ auto-fill عند اختيار المريض
+      gender: genderFromRecords,
     });
   });
 
