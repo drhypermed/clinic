@@ -171,14 +171,16 @@ interface AddButtonProps {
   added: boolean;
   label?: string;                // نص الزر قبل الإضافة (افتراضي: "إضافة")
   addedLabel?: string;           // نص الزر بعد الإضافة (افتراضي: "✓ مضاف")
+  /** يمد الزر على عرض السطر كامل في الموبايل — للحالات اللي نص الزر طويل */
+  fullWidthOnMobile?: boolean;
 }
 
-const AddButton: React.FC<AddButtonProps> = ({ onClick, added, label = 'إضافة', addedLabel = '✓ مضاف' }) => (
+const AddButton: React.FC<AddButtonProps> = ({ onClick, added, label = 'إضافة', addedLabel = '✓ مضاف', fullWidthOnMobile = false }) => (
   <button
     type="button"
     onClick={onClick}
     disabled={added}
-    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-[11.5px] font-black transition-all active:scale-95 ${
+    className={`${fullWidthOnMobile ? 'w-full sm:w-auto sm:shrink-0' : 'shrink-0'} px-3.5 py-1.5 rounded-xl text-[11.5px] font-black transition-all active:scale-95 ${
       added
         ? 'bg-slate-100 text-slate-400 cursor-not-allowed ring-1 ring-slate-200'
         : 'bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_4px_12px_-2px_rgba(5,150,105,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(5,150,105,0.55)] ring-1 ring-emerald-400/50'
@@ -233,7 +235,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
         className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/80"
       />
 
-      {/* ═══ رأس النافذة (بريميوم: gradient عميق + pattern خفيف + شارة Pro Max) ═══ */}
+      {/* ═══ رأس النافذة (بريميوم: gradient عميق + pattern خفيف) ═══ */}
       <div
         className="relative px-5 sm:px-7 py-5 text-white overflow-hidden"
         dir="rtl"
@@ -271,16 +273,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 id="case-analysis-title" className="text-[1.15rem] sm:text-[1.3rem] font-black tracking-tight">تحليل الحالة</h2>
-              {/* شارة Pro Max الذهبية */}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-                </svg>
-                Pro Max
-              </span>
-            </div>
+            <h2 id="case-analysis-title" className="text-[1.15rem] sm:text-[1.3rem] font-black tracking-tight">تحليل الحالة</h2>
             <p className="text-[11px] sm:text-[12px] text-white/80 font-bold mt-1 leading-relaxed">
               تحليل سريري استشاري مدعوم بالذكاء الاصطناعي — لن يُضاف للروشتة إلا ما تختاره
             </p>
@@ -363,7 +356,9 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                         : 'bg-white ring-slate-200 hover:ring-violet-200 hover:shadow-sm'
                     }`}
                   >
-                    <div className="flex items-start gap-3">
+                    {/* موبايل: كل العناصر فوق بعض (اسم التشخيص ياخد عرض السطر كامل).
+                        ديسكتوب (sm+): زر "اختر كتشخيص" جنب المحتوى على اليمين. */}
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                       <div className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-2 flex-wrap">
                           {/* رقم محاط بدائرة بلون القسم */}
@@ -372,7 +367,8 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                           }`}>
                             {idx + 1}
                           </span>
-                          <span className="font-black text-slate-800 text-[14px] tracking-tight">
+                          {/* break-words عشان اسم تشخيص طويل ما يطلعش من الكارت على الموبايل */}
+                          <span className="font-black text-slate-800 text-[14px] tracking-tight break-words">
                             {dd.diagnosis}
                           </span>
                           {dd.isMostLikely && (
@@ -390,13 +386,14 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                           </p>
                         )}
                       </div>
-                      {/* زر إضافة DDx كتشخيص — نص الزر عربي فنخليه rtl محلياً */}
-                      <div dir="rtl" className="shrink-0">
+                      {/* زر إضافة DDx كتشخيص — الزرار نفسه بيتحكم في عرضه عبر prop fullWidthOnMobile */}
+                      <div dir="rtl">
                         <AddButton
                           onClick={() => onAddDiagnosis(dd.diagnosis)}
                           added={isAdded}
                           label="اختر كتشخيص"
                           addedLabel="✓ تم الاختيار"
+                          fullWidthOnMobile
                         />
                       </div>
                     </div>

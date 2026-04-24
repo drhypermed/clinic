@@ -6,7 +6,18 @@ import { VitalSignsSection } from '../consultation/VitalSignsSection';
 import { QuickSearchSection } from '../consultation/QuickSearchSection';
 import { PrescriptionPreview } from '../prescription/PrescriptionPreview';
 import { CaseAnalysisModal } from './CaseAnalysisModal';
+import { DrugInteractionsModal } from './DrugInteractionsModal';
+import { PregnancySafetyModal } from './PregnancySafetyModal';
 import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
+// خدمتين جديدتين: فحص التداخلات الدوائية + فحص سلامة الحمل (بريميوم ذهبي)
+import {
+  checkDrugInteractions,
+  type DrugInteractionsResult,
+} from '../../services/geminiDrugInteractionsService';
+import {
+  checkPregnancySafety,
+  type PregnancySafetyResult,
+} from '../../services/geminiPregnancySafetyService';
 import type {
   AlternativeMed,
   CustomBox,
@@ -23,6 +34,8 @@ import {
   advanceAgeByElapsedTime,
   normalizeGender,
 } from '../../utils/patientIdentity';
+// سقف قوائم الروشتة المتفق عليه: 15 عنصر لكل قائمة (أدوية/فحوصات/تعليمات)
+import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
 
 /**
  * مكون قسم الروشتة الرئيسي (Main App Prescription Section Component)
@@ -193,6 +206,8 @@ interface MainAppPrescriptionSectionProps {
   setDiscountReasonId: (v: string) => void;
   discountReasonLabel: string;
   setDiscountReasonLabel: (v: string) => void;
+  // تنبيه الطبيب عند الوصول للحد الأقصى 15 عنصر في قوائم الروشتة
+  showNotification: (message: string, type?: unknown, options?: unknown) => void;
 }
 
 
@@ -213,12 +228,45 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   onDownloadPdf, isDownloadingPdf, onShareWhatsApp, isSharingViaWhatsApp,
   onSaveRecord, onOpenSaveReadyPrescriptionModal, onUndo, onRedo, historyLength, futureLength,
   userId, activeBranchId, paymentType, setPaymentType, insuranceCompanyId, setInsuranceCompanyId, insuranceCompanyName, setInsuranceCompanyName, insuranceApprovalCode, setInsuranceApprovalCode, insuranceMembershipId, setInsuranceMembershipId, patientSharePercent, setPatientSharePercent, discountAmount, setDiscountAmount, discountPercent, setDiscountPercent, discountReasonId, setDiscountReasonId, discountReasonLabel, setDiscountReasonLabel,
+  showNotification,
 }) => {
   const [isSavingRecord, setIsSavingRecord] = React.useState(false);
   const [showInlineCancelHint, setShowInlineCancelHint] = React.useState(false);
   // تتبّع أي زر اتضغط عشان الـ spinner يظهر عليه هو بس مش على الزر التاني
   // (quick = إضافة للروشتة، deep = تحليل الحالة)
   const [activeAnalyzeMode, setActiveAnalyzeMode] = React.useState<'quick' | 'deep' | null>(null);
+
+  // ─── حالة مودال فحص التداخلات الدوائية ──────────────────────────────────
+  // الحالة محلية في المكون لأنها featured zone مستقلة — لا تحتاج رفعها للـ parent.
+  const [interactionsOpen, setInteractionsOpen] = React.useState(false);
+  const [interactionsLoading, setInteractionsLoading] = React.useState(false);
+  const [interactionsResult, setInteractionsResult] = React.useState<DrugInteractionsResult | null>(null);
+  // عدد الأدوية اللي اتبعتت (للعرض في هيدر المودال)
+  const [interactionsDrugCount, setInteractionsDrugCount] = React.useState(0);
+
+  // ─── حالة مودال فحص سلامة الحمل ──────────────────────────────────────────
+  const [pregnancyOpen, setPregnancyOpen] = React.useState(false);
+  const [pregnancyLoading, setPregnancyLoading] = React.useState(false);
+  const [pregnancyResult, setPregnancyResult] = React.useState<PregnancySafetyResult | null>(null);
+
+  // ─── استخراج أسماء الأدوية من عناصر الروشتة ─────────────────────────────
+  // نستخدم اسم الدواء المخصص لو الطبيب عدّل، وإلا الاسم الأصلي من قاعدة الأدوية.
+  // نتجاهل عناصر "note" (الملاحظات) لأنها مش أدوية، ونتجاهل الفاضي/المكرر.
+  const prescriptionDrugNames = React.useMemo<string[]>(() => {
+    const seen = new Set<string>();
+    const names: string[] = [];
+    rxItems.forEach((item) => {
+      if (item.type !== 'medication') return;
+      // الاسم قد يجي من ثلاثة مصادر: customName على العنصر، Medication.name، أو فارغ
+      const name = (item.medication?.name || '').trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      names.push(name);
+    });
+    return names;
+  }, [rxItems]);
   // لما التحليل يخلص (analyzing يرجع false) نصفّر الـ mode تلقائياً
   React.useEffect(() => {
     if (!analyzing) setActiveAnalyzeMode(null);
@@ -292,9 +340,11 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   // ─── handlers لمودال تحليل الحالة ─────────────────────────────────────
   // إضافة تشخيص (DDx) كتشخيص للروشتة. يُفرغ hint الكتابة اليدوية تلقائياً
   // لأن setDiagnosisEn بيغيّر diagnosisEn → useEffect في patientState بيطفي الـ hint.
+  // ملاحظة: حقل التشخيص واحد (مش متعدد)، فلو الطبيب اختار تشخيص تاني لازم
+  // السابق يرجع قابل للضغط. علشان كده نحتفظ فقط بآخر اختيار واحد في القائمة.
   const handleModalAddDiagnosis = React.useCallback((dx: string) => {
     setDiagnosisEn(dx);
-    setAddedDiagnosesFromModal((prev) => prev.includes(dx) ? prev : [...prev, dx]);
+    setAddedDiagnosesFromModal([dx]);
   }, [setDiagnosisEn, setAddedDiagnosesFromModal]);
 
   // إضافة فحص للروشتة بصيغة "Name (سبب الطلب)" — الطبيب طلب إن السبب يتضاف في
@@ -304,35 +354,112 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     const reason = (reasonAr || '').trim();
     // النص النهائي اللي هيتكتب في الروشتة — اسم إنجليزي متبوع بالسبب بين قوسين
     const combinedText = reason ? `${name} (${reason})` : name;
-    setLabInvestigations((prev) => {
-      // تجنب التكرار بالاسم الإنجليزي فقط (مش بالنص كامل) عشان ما يبقاش عندنا
-      // CBC + CBC (سبب) بنفس الوقت لو المستخدم كان ضغط إضافة قبل كده
-      const existsByName = prev.some((item) => {
-        const itemName = item.split('(')[0].trim().toLowerCase();
-        return itemName === name.toLowerCase();
-      });
-      if (existsByName) return prev;
-      return [...prev, combinedText];
+
+    // 1) فحص التكرار أولاً — لو الفحص موجود بالفعل، نعلمه كـ"مُضاف" في المودال بدون رسالة
+    //    (ترتيب مهم: لو عملنا فحص السقف الأول، المستخدم يشوف رسالة "الحد الأقصى" غلط
+    //    لما بيضغط على فحص مكرر وقائمته 15)
+    const existsByName = labInvestigations.some((item) => {
+      const itemName = item.split('(')[0].trim().toLowerCase();
+      return itemName === name.toLowerCase();
     });
+    if (existsByName) {
+      setAddedInvestigationsFromModal((prev) => prev.includes(name) ? prev : [...prev, name]);
+      return;
+    }
+
+    // 2) فحص السقف — الإضافة الحقيقية فقط هي اللي تترفض لو 15
+    if (labInvestigations.length >= MAX_PRESCRIPTION_ITEMS_PER_LIST) {
+      showNotification(`الحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} فحص في قائمة الفحوصات`, 'error');
+      return;
+    }
+
+    // 3) إضافة فعلية + تعليم الفحص كمُضاف في المودال
+    setLabInvestigations((prev) => [...prev, combinedText]);
     setAddedInvestigationsFromModal((prev) => prev.includes(name) ? prev : [...prev, name]);
-  }, [setLabInvestigations, setAddedInvestigationsFromModal]);
+  }, [setLabInvestigations, setAddedInvestigationsFromModal, labInvestigations, showNotification]);
 
   // إضافة تعليمة/نصيحة عربية للنصائح العامة في الروشتة
   const handleModalAddInstruction = React.useCallback((text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    setGeneralAdvice((prev) => {
-      if (prev.some((item) => item.trim() === trimmed)) return prev;
-      return [...prev, trimmed];
-    });
+
+    // نفس منطق الفحوصات: تكرار أولاً، سقف ثانياً، حتى لا نظهر رسالة "الحد الأقصى" غلط
+    const alreadyExists = generalAdvice.some((item) => item.trim() === trimmed);
+    if (alreadyExists) {
+      setAddedInstructionsFromModal((prev) => prev.includes(trimmed) ? prev : [...prev, trimmed]);
+      return;
+    }
+
+    if (generalAdvice.length >= MAX_PRESCRIPTION_ITEMS_PER_LIST) {
+      showNotification(`الحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} تعليمة في قائمة التعليمات`, 'error');
+      return;
+    }
+
+    setGeneralAdvice((prev) => [...prev, trimmed]);
     setAddedInstructionsFromModal((prev) => prev.includes(trimmed) ? prev : [...prev, trimmed]);
-  }, [setGeneralAdvice, setAddedInstructionsFromModal]);
+  }, [setGeneralAdvice, setAddedInstructionsFromModal, generalAdvice, showNotification]);
 
   // إغلاق المودال — ما نمسحش الحالة عشان الطبيب لو قفل بالغلط يفتحها تاني
   // الحالة بتتصفر تلقائياً لما تحليل جديد يتعمل (setCaseAnalysisResult(null))
   const handleModalClose = React.useCallback(() => {
     setCaseAnalysisOpen(false);
   }, [setCaseAnalysisOpen]);
+
+  // ─── handlers فحص التداخلات الدوائية ───────────────────────────────────
+  // ضغط زر الفحص: يفتح المودال ويستدعي الـ API (مع استشارة الكاش per-user)
+  // نفس مجموعة الأدوية تانية → الكاش يرجعها فوراً بدون استهلاك quota.
+  const handleOpenInteractionsCheck = React.useCallback(async () => {
+    if (interactionsLoading) return;
+    setInteractionsOpen(true);
+    setInteractionsLoading(true);
+    setInteractionsResult(null);
+    setInteractionsDrugCount(prescriptionDrugNames.length);
+    try {
+      const res = await checkDrugInteractions(prescriptionDrugNames, userId);
+      setInteractionsResult(res);
+    } finally {
+      setInteractionsLoading(false);
+    }
+  }, [interactionsLoading, prescriptionDrugNames, userId]);
+
+  const handleInteractionsModalClose = React.useCallback(() => {
+    setInteractionsOpen(false);
+    // نمسح result من state المحلي عشان المودال يبدأ في حالة تحميل نظيفة.
+    // ملحوظة: الكاش في localStorage ما بيتأثّرش — لو الأدوية نفسها، النتيجة
+    // هترجع من الكاش فوراً في المرة الجاية بدون أي استدعاء Gemini.
+    setInteractionsResult(null);
+  }, []);
+
+  // ─── handlers فحص سلامة الحمل ───────────────────────────────────────────
+  // فتح المودال (بيفتح مباشرة على مرحلة الاختيار — مش بيستدعي API لحد ما الطبيب يختار)
+  const handleOpenPregnancyCheck = React.useCallback(() => {
+    setPregnancyResult(null);
+    setPregnancyOpen(true);
+  }, []);
+
+  // الطبيب اختار أدوية وضغط "ابدأ الفحص" → نستدعي الـ API (مع كاش per-user
+  // لكل دواء منفرد — الأدوية اللي اتفحصت قبل كدا بترجع من الكاش فوراً، والأدوية
+  // الجديدة بس هي اللي بتتبعت لـ Gemini → توفير كبير في التكلفة عند التكرار).
+  const handlePregnancyStartCheck = React.useCallback(async (selectedDrugs: string[]) => {
+    if (pregnancyLoading) return;
+    setPregnancyLoading(true);
+    setPregnancyResult(null);
+    try {
+      const res = await checkPregnancySafety(selectedDrugs, userId);
+      setPregnancyResult(res);
+    } finally {
+      setPregnancyLoading(false);
+    }
+  }, [pregnancyLoading, userId]);
+
+  const handlePregnancyReset = React.useCallback(() => {
+    setPregnancyResult(null);
+  }, []);
+
+  const handlePregnancyModalClose = React.useCallback(() => {
+    setPregnancyOpen(false);
+    setPregnancyResult(null);
+  }, []);
 
   // تصفير المتتبّعين لما تحليل جديد يبدأ (عشان أزرار "إضافة" ترجع متاحة)
   React.useEffect(() => {
@@ -466,83 +593,60 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
 
               <div className="editor-block editor-block--analyze dh-stagger-4">
                 <section className="apple-action-card flex flex-col gap-2.5">
-                  {/* ─── زر Quick "إضافة للروشتة" (tier: PRO — تصميم أبسط وأقل إبرازاً) ─── */}
+                  {/* ─── زر Quick "إضافة للروشتة" ─── */}
+                  <button
+                    onClick={handleQuickAddAction}
+                    disabled={analyzing}
+                    aria-busy={analyzing && activeAnalyzeMode === 'quick'}
+                    className="apple-action-btn flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-[0.7rem] font-black text-[0.84rem] sm:text-[0.92rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
+                  >
+                    {analyzing && activeAnalyzeMode === 'quick' ? (
+                      <>
+                        <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.5px] border-white/30 border-t-white animate-spin" aria-hidden />
+                        <span>جاري الإضافة…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="relative top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                          <svg className="h-[15px] w-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                        </span>
+                        <span>إضافة إلى الروشتة والسجلات بدون تحليل الحالة</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* ─── زر Deep "تحليل الحالة" (Gold Premium — ذهبي لامع بريميوم) ─── */}
                   <div className="relative">
-                    {/* شارة PRO — ذهبية ناعمة على الركن العلوي اليمين */}
-                    <span className="absolute -top-2 right-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-l from-amber-400 to-amber-500 text-amber-950 text-[9px] font-black tracking-widest shadow-sm ring-1 ring-amber-300/60 uppercase">
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
-                      </svg>
-                      Pro
-                    </span>
+                    {/* Halo ذهبي خارجي — يقوّي مظهر البريميوم */}
+                    <span className="gold-premium-halo" aria-hidden />
                     <button
-                      onClick={handleQuickAddAction}
+                      onClick={handleAnalyzeAction}
                       disabled={analyzing}
-                      aria-busy={analyzing && activeAnalyzeMode === 'quick'}
-                      className="apple-action-btn flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-[0.7rem] font-black text-[0.84rem] sm:text-[0.92rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
+                      aria-busy={analyzing && activeAnalyzeMode === 'deep'}
+                      className={`apple-action-btn gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl ${analyzing && activeAnalyzeMode === 'deep' ? 'is-analyzing' : ''}`}
                     >
-                      {analyzing && activeAnalyzeMode === 'quick' ? (
+                      {/* shimmer ذهبي — بيظهر بس في الحالة العادية */}
+                      {!(analyzing && activeAnalyzeMode === 'deep') && (
+                        <span className="gold-premium-shimmer" aria-hidden />
+                      )}
+                      {analyzing && activeAnalyzeMode === 'deep' ? (
                         <>
-                          <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.5px] border-white/30 border-t-white animate-spin" aria-hidden />
-                          <span>جاري الإضافة…</span>
+                          <span className="inline-block h-[1.15rem] w-[1.15rem] shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                          <span className="relative z-10 text-[0.96rem] sm:text-[1.02rem] font-black">جاري التحليل</span>
                         </>
                       ) : (
                         <>
-                          <span className="relative top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
-                            <svg className="h-[15px] w-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                              <path d="M12 5v14M5 12h14" />
-                            </svg>
+                          <span className="relative z-10 text-[1.04rem] sm:text-[1.16rem] font-black tracking-tight">تحليل الحالة</span>
+                          <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
+                            <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
                           </span>
-                          <span>إضافة إلى الروشتة والسجلات بدون تحليل الحالة</span>
                         </>
                       )}
                     </button>
                   </div>
 
-                  {/* ─── زر Deep "تحليل الحالة" (tier: PRO MAX — مميز بصرياً + shine + badge مضيء) ─── */}
-                  <div className="relative">
-                    {/* Glow halo خفيف حوالين الزر (للتمييز البرو) */}
-                    <span
-                      className="pointer-events-none absolute -inset-[3px] rounded-[1.2rem] bg-gradient-to-r from-amber-300/50 via-yellow-400/50 to-amber-500/50 blur-md opacity-75"
-                      aria-hidden
-                    />
-                    {/* شارة PRO MAX — ذهبية مضيئة مع أيقونة الذكاء */}
-                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                        <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-                      </svg>
-                      Pro Max
-                    </span>
-                    <button
-                      onClick={handleAnalyzeAction}
-                      disabled={analyzing}
-                      aria-busy={analyzing && activeAnalyzeMode === 'deep'}
-                      className={`apple-action-btn analyze-ai-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] ring-1 ring-emerald-300/40 shadow-[0_6px_20px_-4px_rgba(16,185,129,0.45)] ${analyzing && activeAnalyzeMode === 'deep' ? 'is-analyzing' : ''}`}
-                    >
-                      {/* shimmer سطح خفيف — بيظهر بس في الحالة العادية (مش أثناء التحليل) */}
-                      {!(analyzing && activeAnalyzeMode === 'deep') && (
-                        <span
-                          className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden"
-                          aria-hidden
-                        >
-                          <span className="absolute -top-1/2 -left-full h-[200%] w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/18 to-transparent animate-[dh-btn-shine_3.5s_ease-in-out_infinite]" />
-                        </span>
-                      )}
-                      {analyzing && activeAnalyzeMode === 'deep' ? (
-                        <>
-                          <span className="analyze-ai-btn__spinner-circle" aria-hidden />
-                          <span className="text-[0.96rem] sm:text-[1.02rem] font-black">جاري التحليل</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[1.04rem] sm:text-[1.16rem] font-black tracking-tight">تحليل الحالة</span>
-                          <span className="relative top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/30 shadow-inner">
-                            <svg className="h-[19px] w-[19px] text-emerald-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  </div>
                   {/* زر "إيقاف التحليل" يظهر فقط لما زر "تحليل الحالة" شغّال (مش الـ quick) */}
                   {analyzing && activeAnalyzeMode === 'deep' && showInlineCancelHint && (
                     <button
@@ -652,6 +756,79 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     </button>
                   </div>
                 </div>
+
+                {/* ─── صف أزرار الذكاء الاصطناعي الذهبية (تحت الروشتة مباشرة) ─── */}
+                {/* الزرين جنب بعض على الديسكتوب، فوق بعض على الموبايل. */}
+                {/* كلاهما مدعوم بكاش per-user عشان يوفر تكلفة API عند التكرار. */}
+                <div className="prescription-actions-ai-row">
+                  {/* ─── زر "فحص التداخلات الدوائية" ─── */}
+                  {/* disabled لو فيه أقل من دوائين — بيفحص كل أدوية الروشتة دلوقتي */}
+                  <div className="relative flex-1 min-w-0">
+                    <span className="gold-premium-halo" aria-hidden />
+                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
+                      </svg>
+                      AI
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleOpenInteractionsCheck}
+                      disabled={interactionsLoading || prescriptionDrugNames.length < 2}
+                      aria-busy={interactionsLoading}
+                      title={prescriptionDrugNames.length < 2 ? 'محتاج على الأقل دوائين في الروشتة لفحص التداخلات' : 'فحص التداخلات الدوائية'}
+                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl font-black text-[0.95rem] sm:text-[1.05rem]"
+                    >
+                      {!interactionsLoading && <span className="gold-premium-shimmer" aria-hidden />}
+                      {interactionsLoading ? (
+                        <>
+                          <span className="inline-block h-[1.15rem] w-[1.15rem] shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                          <span className="relative z-10">جاري الفحص</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="relative z-10 tracking-tight">فحص التداخلات الدوائية</span>
+                          <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
+                            {/* أيقونة: كبسولتين متقاطعتين */}
+                            <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10.5 20.5a4.95 4.95 0 01-7-7l7-7a4.95 4.95 0 017 7l-7 7z" />
+                              <path d="M8.5 8.5l7 7" />
+                            </svg>
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* ─── زر "فحص الدواء أثناء الحمل" ─── */}
+                  {/* متاح دائماً — المودال بيتعامل مع الحالة الفاضية */}
+                  <div className="relative flex-1 min-w-0">
+                    <span className="gold-premium-halo" aria-hidden />
+                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
+                      </svg>
+                      AI
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleOpenPregnancyCheck}
+                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl font-black text-[0.95rem] sm:text-[1.05rem]"
+                    >
+                      <span className="gold-premium-shimmer" aria-hidden />
+                      <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل</span>
+                      <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
+                        {/* أيقونة: امرأة حامل */}
+                        <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="5" r="2.5" />
+                          <path d="M9 11a3 3 0 016 0v3a5 5 0 01-1 3.5" />
+                          <path d="M12 15c-2 1.5-3 3-3 5" />
+                          <path d="M14 18c.8-.6 1.5-1.4 2-2.4" />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             }
           />
@@ -672,6 +849,30 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
         addedDiagnoses={addedDiagnosesFromModal}
         addedInvestigations={addedInvestigationsFromModal}
         addedInstructions={addedInstructionsFromModal}
+      />
+
+      {/* ─── نافذة فحص التداخلات الدوائية (Gold Premium AI) ─── */}
+      {/* تفتح عند الضغط على زر "فحص التداخلات الدوائية" وتستدعي Gemini مباشرة */}
+      {/* بكل الأدوية المكتوبة في الروشتة. عرض فقط، لا حفظ. */}
+      <DrugInteractionsModal
+        isOpen={interactionsOpen}
+        onClose={handleInteractionsModalClose}
+        result={interactionsResult}
+        loading={interactionsLoading}
+        drugCount={interactionsDrugCount}
+      />
+
+      {/* ─── نافذة فحص سلامة الدواء أثناء الحمل (Gold Premium AI) ─── */}
+      {/* نافذة مرحلية: اختيار الأدوية → استدعاء الـ API → عرض النتيجة. */}
+      {/* الطبيب يختار واحد/أكتر/الكل، ثم يضغط "ابدأ الفحص". */}
+      <PregnancySafetyModal
+        isOpen={pregnancyOpen}
+        onClose={handlePregnancyModalClose}
+        availableDrugs={prescriptionDrugNames}
+        result={pregnancyResult}
+        loading={pregnancyLoading}
+        onStartCheck={handlePregnancyStartCheck}
+        onReset={handlePregnancyReset}
       />
     </>
   );

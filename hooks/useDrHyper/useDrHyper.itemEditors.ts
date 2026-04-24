@@ -13,10 +13,17 @@
 
 import React from 'react';
 import { AlternativeMed, Medication, PrescriptionItem } from '../../types';
-import { buildAlternativesSameScientific, sanitizeDosageText } from '../../utils/rx/rxUtils';
+import { buildAlternativesSameScientific, MAX_PRESCRIPTION_ITEMS_PER_LIST, sanitizeDosageText } from '../../utils/rx/rxUtils';
 
 type SetRxItems = React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
 type SetStringArray = React.Dispatch<React.SetStateAction<string[]>>;
+
+// نوع دالة الإشعار لعرض تنبيه "تم الوصول للحد الأقصى"
+type ShowNotification = (
+    message: string,
+    type?: 'success' | 'error' | 'info',
+    options?: any
+) => void;
 
 interface CreateItemEditorsParams {
     saveHistory: () => void;
@@ -32,6 +39,8 @@ interface CreateItemEditorsParams {
     medications: Medication[];
     generalAdvice: string[];
     labInvestigations: string[];
+    // مطلوب لإظهار رسالة "الحد الأقصى 15" عند محاولة تجاوز الحد
+    showNotification: ShowNotification;
 }
 
 export const createItemEditors = ({
@@ -48,10 +57,16 @@ export const createItemEditors = ({
     medications,
     generalAdvice,
     labInvestigations,
+    showNotification,
 }: CreateItemEditorsParams) => {
-    
+
     /** إضافة سطر تحليل طبي (Lab Investigation) يدوياً */
     const handleAddManualLab = () => {
+        // منع تجاوز 15 فحص في قائمة الفحوصات
+        if ((labInvestigations?.length || 0) >= MAX_PRESCRIPTION_ITEMS_PER_LIST) {
+            showNotification(`الحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} فحص في قائمة الفحوصات`, 'error');
+            return;
+        }
         saveHistory();
         setLabInvestigations(prev => [...prev, '']);
         setTimeout(() => {
@@ -63,6 +78,11 @@ export const createItemEditors = ({
 
     /** إضافة سطر نصيحة عامة (General Advice) يدوياً */
     const handleAddManualAdvice = () => {
+        // منع تجاوز 15 تعليمة في قائمة التعليمات
+        if ((generalAdvice?.length || 0) >= MAX_PRESCRIPTION_ITEMS_PER_LIST) {
+            showNotification(`الحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} تعليمة في قائمة التعليمات`, 'error');
+            return;
+        }
         saveHistory();
         setGeneralAdvice(prev => ([...(prev || []).map(x => (x ?? '').toString()), '']));
         setTimeout(() => {
@@ -115,8 +135,9 @@ export const createItemEditors = ({
                 alternatives
             };
 
-            // إضافة سطر فارغ تلقائياً إذا كان هذا هو آخر سطر (بحد أقصى 4 أدوية)
-            if (index === prev.length - 1 && prev.length < 4) {
+            // إضافة سطر فارغ تلقائياً إذا كان هذا هو آخر سطر
+            // (بحد أقصى 4 سطور أثناء الكتابة السريعة، وعدم تجاوز السقف الكلي 15)
+            if (index === prev.length - 1 && prev.length < 4 && prev.length < MAX_PRESCRIPTION_ITEMS_PER_LIST) {
                 const emptyId = `empty-${Date.now()}`;
                 newArr.push({
                     id: emptyId,

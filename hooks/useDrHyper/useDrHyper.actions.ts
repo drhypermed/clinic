@@ -430,6 +430,9 @@ export const useDrHyperActions = ({
     lastAddedItemIdRef,
     setRxItems,
     prescriptionRef,
+    // مطلوبين لفرض سقف 15 عنصر + تنبيه المستخدم عند تجاوزه
+    rxItems,
+    showNotification,
   });
 
   const itemEditorActions = createItemEditors({
@@ -446,6 +449,8 @@ export const useDrHyperActions = ({
     medications,
     generalAdvice,
     labInvestigations,
+    // مطلوب لتنبيه الطبيب لما يحاول يعدي الحد (15 فحص/تعليمة)
+    showNotification,
   });
 
   return {

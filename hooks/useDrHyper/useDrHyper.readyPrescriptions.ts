@@ -11,7 +11,7 @@
 import React from 'react';
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { PrescriptionItem, ReadyPrescription } from '../../types';
-import { normalizeAdviceList } from '../../utils/rx/rxUtils';
+import { MAX_PRESCRIPTION_ITEMS_PER_LIST, normalizeAdviceList } from '../../utils/rx/rxUtils';
 import { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
 import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
 import {
@@ -450,31 +450,58 @@ export const createReadyPrescriptionActions = ({
             } as PrescriptionItem;
         });
 
+        // تحذير للطبيب لو القالب نفسه يتخطى الحد الأقصى
+        // (في وضع replace: القائمة الجديدة لازم تتقص لـ15، في وضع merge: الدمج كله يتقص لـ15)
+        let trimmedAny = false;
+
         if (medicationsMode === 'replace') {
-            setRxItems(clonedItems);
+            // قص القالب لـ15 عنصر فقط عند الاستبدال
+            const capped = clonedItems.slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (capped.length < clonedItems.length) trimmedAny = true;
+            setRxItems(capped);
         } else {
             // تنظيف السطر الفارغ الذكي قبل دمج القالب
             const filteredCurrent = (rxItems || []).filter(
                 item => !(item.type === 'medication' && !item.medication && !String(item.dosage || '').trim() && !String(item.instructions || '').trim())
             );
-            setRxItems(() => [...filteredCurrent, ...clonedItems]);
+            // المجموع بعد الدمج لا يتعدى 15 عنصر
+            const merged = [...filteredCurrent, ...clonedItems].slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (merged.length < filteredCurrent.length + clonedItems.length) trimmedAny = true;
+            setRxItems(() => merged);
         }
 
         const presetAdvice = normalizeAdviceList((preset.generalAdvice || []).filter(v => !!String(v || '').trim()));
         const presetLabs = (preset.labInvestigations || []).map(v => String(v || '').trim()).filter(v => !!v);
 
         if (adviceMode === 'replace') {
-            setGeneralAdvice(presetAdvice);
+            const cappedAdvice = presetAdvice.slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (cappedAdvice.length < presetAdvice.length) trimmedAny = true;
+            setGeneralAdvice(cappedAdvice);
         } else {
             const currentAdvice = (generalAdvice || []).filter(v => !!String(v || '').trim());
-            setGeneralAdvice(() => uniqTextList([...currentAdvice, ...presetAdvice]));
+            // نقارن بعد إزالة التكرار لتفادي إنذار كاذب بالقص لما السبب هو dedup فقط
+            const uniqAdvice = uniqTextList([...currentAdvice, ...presetAdvice]);
+            const mergedAdvice = uniqAdvice.slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (mergedAdvice.length < uniqAdvice.length) trimmedAny = true;
+            setGeneralAdvice(() => mergedAdvice);
         }
 
         if (labsMode === 'replace') {
-            setLabInvestigations(presetLabs);
+            const cappedLabs = presetLabs.slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (cappedLabs.length < presetLabs.length) trimmedAny = true;
+            setLabInvestigations(cappedLabs);
         } else {
             const currentLabs = (labInvestigations || []).filter(v => !!String(v || '').trim());
-            setLabInvestigations(() => uniqTextList([...currentLabs, ...presetLabs]));
+            // نفس المنطق: المقارنة بعد dedup حتى لا نظهر "تم قص" من غير قص فعلي
+            const uniqLabs = uniqTextList([...currentLabs, ...presetLabs]);
+            const mergedLabs = uniqLabs.slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST);
+            if (mergedLabs.length < uniqLabs.length) trimmedAny = true;
+            setLabInvestigations(() => mergedLabs);
+        }
+
+        // إشعار الطبيب إن بعض العناصر انقصت عشان الحد الأقصى
+        if (trimmedAny) {
+            showNotification(`تم قص بعض العناصر للوصول للحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} لكل قائمة`, 'info');
         }
         setLastSavedHash('');
 

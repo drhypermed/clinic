@@ -349,6 +349,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           discountPercent={p.discountPercent} setDiscountPercent={p.setDiscountPercent}
           discountReasonId={p.discountReasonId} setDiscountReasonId={p.setDiscountReasonId}
           discountReasonLabel={p.discountReasonLabel} setDiscountReasonLabel={p.setDiscountReasonLabel}
+          showNotification={p.showNotification}
         />
       )}
 

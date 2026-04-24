@@ -13,7 +13,7 @@
 import React from 'react';
 import { Medication, PatientGender, PrescriptionItem, VitalSigns } from '../../types';
 import { runSmartRx } from '../../utils/rx/smartRx';
-import { buildAlternativesSameScientific, sanitizeDosageText } from '../../utils/rx/rxUtils';
+import { buildAlternativesSameScientific, MAX_PRESCRIPTION_ITEMS_PER_LIST, sanitizeDosageText } from '../../utils/rx/rxUtils';
 import type { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
 import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
 import { SMART_QUOTA_NOTICE_STORAGE_KEY } from './useDrHyper.helpers';
@@ -246,7 +246,8 @@ export const createSmartRxActions = ({
     setInvestigationsEn(out.translated.investigationsEn);
     // ⚠️ نترك diagnosisEn فاضي حسب طلب المستخدم — الطبيب يكتبه يدوياً أو من popup
     setDiagnosisEn('');
-    setRxItems(out.rxItems);
+    // قص مخرجات الذكاء الاصطناعي لـ15 عنصر كحد أقصى حتى لا يتجاوز السقف المتفق عليه
+    setRxItems((out.rxItems || []).slice(0, MAX_PRESCRIPTION_ITEMS_PER_LIST));
 
     return {
       complaintEn: out.translated.complaintEn,
@@ -277,7 +278,10 @@ export const createSmartRxActions = ({
     setTimeout(() => {
       const newId = `empty-${Date.now()}`;
       lastAddedItemIdRef.current = newId;
-      setRxItems((prev) => [
+      setRxItems((prev) => {
+        // عدم إضافة السطر الفارغ لو وصلنا للحد الأقصى 15 عنصر
+        if ((prev?.length || 0) >= MAX_PRESCRIPTION_ITEMS_PER_LIST) return prev;
+        return [
         ...prev,
         {
           id: newId,
@@ -289,7 +293,8 @@ export const createSmartRxActions = ({
           source: 'Local Database',
           alternatives: [],
         },
-      ]);
+      ];
+      });
       setTimeout(() => {
         if (!lastAddedItemIdRef.current) return;
         const lastItem = getElementByRxItemId(lastAddedItemIdRef.current);
@@ -568,6 +573,11 @@ export const createSmartRxActions = ({
 
   /** إضافة دواء يدوياً من قاعدة البيانات المحلية للجهاز */
   const handleAddManualMedication = (med: Medication, dosage: string) => {
+    // منع تجاوز الحد الأقصى 15 دواء/ملاحظة في الروشتة
+    if ((rxItems?.length || 0) >= MAX_PRESCRIPTION_ITEMS_PER_LIST) {
+      showNotification(`الحد الأقصى ${MAX_PRESCRIPTION_ITEMS_PER_LIST} عنصر في قائمة الأدوية`, 'error');
+      return;
+    }
     saveHistory();
     trackMedUsage(med.id);
     const safeDosage = sanitizeDosageText(dosage);

@@ -483,6 +483,79 @@
   transform: scale(0.98);
 }
 
+/* === أزرار البريميوم الذهبية اللامعة (Gold Premium Buttons) === */
+/* تُستخدم لأزرار الذكاء الاصطناعي المميزة: تحليل الحالة، التداخلات الدوائية، الحمل */
+/* التصميم: gradient ذهبي غني + نص غامق + ظل ذهبي + شيمر */
+.gold-premium-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #d97706 70%, #b45309 100%) !important;
+  background-size: 180% 180% !important;
+  color: #3b2703 !important;
+  /* ظل ذهبي + حواف مضيئة */
+  box-shadow:
+    0 10px 28px -10px rgba(217, 119, 6, 0.65),
+    0 4px 10px -2px rgba(180, 83, 9, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(120, 53, 15, 0.25) !important;
+  text-shadow: 0 1px 0 rgba(255, 251, 235, 0.55);
+  border: 1px solid rgba(252, 211, 77, 0.6) !important;
+  transition: background-position 0.28s ease, filter 0.24s ease, box-shadow 0.24s ease, transform 0.18s ease;
+}
+
+.gold-premium-btn:hover:not(:disabled) {
+  background-position: 100% 50% !important;
+  filter: saturate(1.15) brightness(1.06);
+  box-shadow:
+    0 14px 34px -10px rgba(217, 119, 6, 0.8),
+    0 6px 14px -4px rgba(180, 83, 9, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+.gold-premium-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.gold-premium-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Halo ذهبي حوالين الزر (اختياري — بيتحط كـ span قبل الزر) */
+.gold-premium-halo {
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.55) 0%, rgba(245, 158, 11, 0.55) 50%, rgba(217, 119, 6, 0.55) 100%);
+  filter: blur(8px);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* شريط shimmer بيمر على سطح الزر كل 3.5 ثانية */
+.gold-premium-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gold-premium-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  height: 200%;
+  width: 33%;
+  transform: rotate(12deg);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.55) 50%, transparent 100%);
+  animation: dh-btn-shine 3.5s ease-in-out infinite;
+}
+
 /* === تحليل الحالة: زر inline أنيق === */
 .analyze-action-btn {
   background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
@@ -519,6 +592,26 @@
   align-items: center;
   width: 100%;
   min-width: 0;
+}
+
+/* صف أزرار الذكاء الاصطناعي الذهبية (تحت الروشتة) — فحص التداخلات + فحص الحمل */
+/* الزرين جنب بعض على الديسكتوب، فوق بعض على الموبايل عشان النص ما يتقطعش */
+.prescription-actions-ai-row {
+  display: flex;
+  gap: 0.7rem;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0.35rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed rgba(148, 163, 184, 0.35);
+}
+
+/* على الموبايل: الزرين فوق بعض (عمود) عشان كل زر ياخد عرض كامل ويبان النص */
+@media (max-width: 767px) {
+  .prescription-actions-ai-row {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
 }
 
 /* الموبايل */

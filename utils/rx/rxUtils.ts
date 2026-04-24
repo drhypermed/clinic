@@ -1,6 +1,10 @@
 import { AlternativeMed, Medication } from '../../types';
 import { FOLLOWUP_WITHIN_WEEK_NOTE_AR_VARIANTS } from '../prescriptionText';
 
+// الحد الأقصى لعدد العناصر في كل قائمة من قوائم الروشتة (أدوية/فحوصات/تعليمات)
+// القيمة ثابتة ومتفق عليها مع المستخدم: 15 عنصر لكل قائمة كحد أقصى
+export const MAX_PRESCRIPTION_ITEMS_PER_LIST = 15;
+
 /**
  * وظيفة تطهير نص الجرعة (Sanitize Dosage):
  * تضمن عدم عرض قيم برمجية خاطئة (مثل NaN أو undefined) في الروشتة النهائية.
