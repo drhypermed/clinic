@@ -61,7 +61,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                 <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 mb-1">النوع</label>
+                            <label className="block text-[10px] font-black text-slate-400 mb-1">الجنس</label>
                             <div className="flex rounded-xl overflow-hidden">
                                 <button
                                     onClick={() => setGender('male')}

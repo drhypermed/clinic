@@ -236,6 +236,7 @@ export const createSmartRxActions = ({
       weightKg: weightValue,
       totalAgeInMonths,
       vitals,
+      userId, // للكاش per-doctor في الترجمة السريرية
       skipDiagnosis: true, // ← مهم: لا نستدعي analyzeComplaint (توفير نداء AI كامل)
     });
 

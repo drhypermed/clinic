@@ -81,6 +81,7 @@ export const usePublicBookingPushNotifications = ({
   const secretaryActionToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // هل يمكن عرض التنبيه الآن بناءً على وقت التأجيل المخزن؟
+  // بعد الأسبوع ترجع تلقائياً للتذكير لحد ما السكرتيرة تفعّل الإشعارات.
   const canShowSecretaryPushPrompt = showSecretaryPushPrompt && Date.now() >= hideSecretaryPushPromptUntil;
 
   /**
@@ -260,7 +261,8 @@ export const usePublicBookingPushNotifications = ({
   };
 
   /**
-   * تأجيل ظهور رسالة تفعيل الإشعارات لفترة زمنية محددة
+   * تأجيل ظهور رسالة تفعيل الإشعارات — البطاقة تختفي أسبوع كامل ثم ترجع
+   * تلقائياً للتذكير لحد ما السكرتيرة تفعّل الإشعارات فعلاً.
    */
   const handleSecretaryPushPromptLater = () => {
     const until = Date.now() + SECRETARY_PUSH_PROMPT_HIDE_MS;

@@ -8,6 +8,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 const NOTIFICATION_PERMISSION_SNAPSHOT_KEY = 'dh_notification_permission_snapshot';
+// تاريخ "لا تعرض قبل" — لما المستخدم يضغط "ليس الآن" نخزن timestamp بعد أسبوع
+// والبطاقة ما تظهرش لحد التاريخ ده. بعد الأسبوع بترجع تلقائياً للتذكير بالتفعيل.
+const NOTIFICATION_PROMPT_HIDE_UNTIL_KEY = 'dh_notification_prompt_hide_until';
+const NOTIFICATION_PROMPT_HIDE_MS = 7 * 24 * 60 * 60 * 1000; // أسبوع
 type MessagingModule = typeof import('../services/messagingService');
 
 export const NotificationTogglePrompt: React.FC = () => {
@@ -28,6 +32,21 @@ export const NotificationTogglePrompt: React.FC = () => {
 
   // التحقق من دعم الإشعارات والإذن الحالي
   const checkNotificationStatus = async () => {
+    // لو المستخدم ضغط "ليس الآن" قبل كده، نخفي البطاقة لحد ما يعدّي الأسبوع.
+    // بعد كده ترجع تلقائياً للتذكير — لحد ما المستخدم يفعّل الإشعارات فعلاً.
+    try {
+      const hideUntilRaw = localStorage.getItem(NOTIFICATION_PROMPT_HIDE_UNTIL_KEY);
+      const hideUntil = hideUntilRaw ? parseInt(hideUntilRaw, 10) : 0;
+      if (hideUntil && Date.now() < hideUntil) {
+        setShowNotificationCard(false);
+        return;
+      }
+      // لو التاريخ عدّى، نمسحه عشان ما يفضلش في localStorage للأبد
+      if (hideUntil && Date.now() >= hideUntil) {
+        localStorage.removeItem(NOTIFICATION_PROMPT_HIDE_UNTIL_KEY);
+      }
+    } catch { /* localStorage معطل → كمّل عادي */ }
+
     // التحقق من دعم الإشعارات من قبل المتصفح
     let pushSupport: ReturnType<MessagingModule['getPushSupportInfo']>;
     try {
@@ -39,7 +58,7 @@ export const NotificationTogglePrompt: React.FC = () => {
     }
     const isIosPendingPwa = pushSupport.reason === 'ios-install-required';
     setIosWarningMode(isIosPendingPwa);
-    
+
     if (!pushSupport.supported && !isIosPendingPwa) {
       setShowNotificationCard(false);
       return;
@@ -148,8 +167,14 @@ export const NotificationTogglePrompt: React.FC = () => {
   };
 
   const handleDismiss = () => {
-    // حفظ أن المستخدم أغلق البطاقة في هذه الجلسة
-    // البطاقة لن تظهر مرة أخرى إلا عند Refresh
+    // تأجيل البطاقة لمدة أسبوع — تظهر تاني بعد كده لو الإشعارات لسه مش مفعّلة.
+    // ده مقصود عشان نحافظ على تذكير دوري لحد ما الطبيب يفعّل الإشعارات.
+    try {
+      localStorage.setItem(
+        NOTIFICATION_PROMPT_HIDE_UNTIL_KEY,
+        String(Date.now() + NOTIFICATION_PROMPT_HIDE_MS)
+      );
+    } catch { /* ignore */ }
     setDismissedInSession(true);
     setShowNotificationCard(false);
   };
@@ -173,9 +198,10 @@ export const NotificationTogglePrompt: React.FC = () => {
                 : 'تلقَّ إشعارات فورية بالحجوزات والتحديثات المهمة والتنبيهات المخصصة.'}
             </p>
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
               {!iosWarningMode ? (
                 <>
+                  {/* "ليس الآن" = تأجيل البطاقة أسبوع كامل، بعد كده ترجع للتذكير */}
                   <button
                     type="button"
                     onClick={handleDismiss}

@@ -18,15 +18,17 @@ import {
 } from 'react-icons/fa6';
 
 /* ═════════════════════ COLOR MAP ═════════════════════ */
-/** خريطة الألوان لكل نوع إحصائية — بنستخدمها لتوحيد شكل MiniStat في كل الفلترات. */
-const COLOR_MAP: Record<string, { bg: string; text: string; icon: string; glow: string }> = {
-  blue:    { bg: 'bg-blue-50',    text: 'text-blue-700',    icon: 'text-blue-500',    glow: 'shadow-blue-100/50' },
-  violet:  { bg: 'bg-violet-50',  text: 'text-violet-700',  icon: 'text-violet-500',  glow: 'shadow-violet-100/50' },
-  emerald: { bg: 'bg-emerald-50', text: 'text-emerald-700', icon: 'text-emerald-500', glow: 'shadow-emerald-100/50' },
-  amber:   { bg: 'bg-amber-50',   text: 'text-amber-700',   icon: 'text-amber-500',   glow: 'shadow-amber-100/50' },
-  sky:     { bg: 'bg-sky-50',     text: 'text-sky-700',     icon: 'text-sky-500',     glow: 'shadow-sky-100/50' },
-  teal:    { bg: 'bg-teal-50',    text: 'text-teal-700',    icon: 'text-teal-500',    glow: 'shadow-teal-100/50' },
-  rose:    { bg: 'bg-rose-50',    text: 'text-rose-700',    icon: 'text-rose-500',    glow: 'shadow-rose-100/50' },
+// خريطة الألوان — بعد تبسيطها:
+//   - الأرقام كلها text-slate-900 (تباين قوي على الأبيض) بدل ألوان باهتة
+//   - الألوان اتحصرت في الأيقونات فقط + خلفية خفيفة لتمييزها
+//   - دلالة الألوان: emerald=إيراد/موجب، rose=مصروفات/سالب، teal=primary (طبي)،
+//     slate=محايد للأرقام العادية (كشوف/استشارات)
+const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
+  slate:   { bg: 'bg-slate-100',   icon: 'text-slate-600' },   // محايد (كشوف/استشارات/دخل آخر)
+  teal:    { bg: 'bg-teal-50',     icon: 'text-teal-600' },    // primary (تداخلات)
+  emerald: { bg: 'bg-emerald-50',  icon: 'text-emerald-600' }, // حالة موجبة (إيراد)
+  rose:    { bg: 'bg-rose-50',     icon: 'text-rose-600' },    // حالة سالبة (مصروفات)
+  sky:     { bg: 'bg-sky-50',      icon: 'text-sky-600' },     // معلومة ثانوية (تأمين)
 };
 
 /* ═════════════════════ MINI STAT ═════════════════════ */
@@ -39,20 +41,22 @@ interface MiniStatProps {
   className?: string;
 }
 
-/** عنصر إحصائي صغير — يظهر مع أيقونة ملونة وقيمة رقمية (أحياناً بوحدة "ج.م"). */
+/** عنصر إحصائي صغير — أيقونة ملونة + قيمة رقمية بتباين قوي (slate-900). */
 const MiniStat: React.FC<MiniStatProps> = ({ icon, label, value, color, isMoney, className = '' }) => {
-  const c = COLOR_MAP[color] || COLOR_MAP.blue;
+  const c = COLOR_MAP[color] || COLOR_MAP.slate;
   return (
-    <div className={`group rounded-xl border border-slate-100/80 bg-white/60 p-2.5 sm:p-3 hover:border-slate-200/80 hover:shadow-sm transition-all duration-200 ${className}`}>
+    // الخلفية بقت white صريح (مش white/60) عشان الأرقام تبان أوضح
+    <div className={`group rounded-xl border border-slate-200/70 bg-white p-2.5 sm:p-3 hover:border-slate-300 hover:shadow-sm transition-all duration-200 ${className}`}>
       <div className="flex items-center gap-1.5 mb-1.5">
-        <div className={`${c.bg} ${c.icon} rounded-lg p-1.5 shadow-sm ${c.glow}`}>
+        <div className={`${c.bg} ${c.icon} rounded-lg p-1.5`}>
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-2.5 h-2.5 sm:w-3 sm:h-3' })}
         </div>
-        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
+        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
       </div>
-      <div className={`text-base sm:text-lg font-black font-numeric ${c.text} tracking-tight leading-none`}>
+      {/* الأرقام كلها slate-900 لتباين عالي، بحجم ثابت للإحصائيات الثانوية */}
+      <div className="text-base sm:text-lg font-black font-numeric text-slate-900 tracking-tight leading-none">
         {typeof value === 'number' ? value.toLocaleString('ar-EG') : value}
-        {isMoney && <span className="text-[9px] sm:text-[10px] font-bold opacity-50 mr-0.5">ج.م</span>}
+        {isMoney && <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 mr-0.5">ج.م</span>}
       </div>
     </div>
   );
@@ -66,27 +70,31 @@ const MiniStat: React.FC<MiniStatProps> = ({ icon, label, value, color, isMoney,
  */
 const NetProfitStat: React.FC<{ value: number; fmtMoney: (n: number) => string }> = ({ value, fmtMoney }) => {
   const isPositive = value >= 0;
+  // تدرج قوي شوية عشان يبان إنه البطل في الكرت
   const gradient = isPositive
-    ? 'from-emerald-50 via-emerald-50 to-teal-50 border-emerald-200/70'
-    : 'from-rose-50 via-rose-50 to-red-50 border-rose-200/70';
+    ? 'from-emerald-100 via-emerald-50 to-teal-50 border-emerald-300/80'
+    : 'from-rose-100 via-rose-50 to-red-50 border-rose-300/80';
   const iconGradient = isPositive
-    ? 'from-emerald-400 to-teal-600'
-    : 'from-rose-400 to-red-600';
-  const textColor = isPositive ? 'text-emerald-700' : 'text-rose-700';
+    ? 'from-emerald-500 to-teal-600'
+    : 'from-rose-500 to-red-600';
+  // الأرقام slate-900 للتباين العالي، اللون يتلون على التسمية فقط (أوضح دلاليًا)
+  const accentText = isPositive ? 'text-emerald-700' : 'text-rose-700';
   return (
-    <div className={`col-span-2 rounded-xl border bg-gradient-to-l ${gradient} p-3 sm:p-3.5 shadow-sm`}>
+    // padding أكبر + ظل أوضح عشان يتميّز بصرياً عن MiniStat العادي
+    <div className={`col-span-2 rounded-xl border bg-gradient-to-l ${gradient} p-3.5 sm:p-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${iconGradient} flex items-center justify-center shadow-sm`}>
-            <FaScaleBalanced className="w-3 h-3 text-white" />
+          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br ${iconGradient} flex items-center justify-center shadow-sm`}>
+            <FaScaleBalanced className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
           </div>
-          <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wider ${textColor}`}>
+          <span className={`text-[11px] sm:text-xs font-black uppercase tracking-wider ${accentText}`}>
             صافي الربح
           </span>
         </div>
-        <div className={`text-base sm:text-lg font-black font-numeric ${textColor} tracking-tight leading-none`}>
+        {/* الرقم أكبر من MiniStat بدرجة متوسطة (xl→2xl) — يبان أهم بدون ما يبقى فاقع */}
+        <div className="text-xl sm:text-2xl font-black font-numeric text-slate-900 tracking-tight leading-none">
           {fmtMoney(value)}
-          <span className="text-[9px] sm:text-[10px] font-bold opacity-50 mr-0.5">ج.م</span>
+          <span className="text-[10px] sm:text-xs font-bold text-slate-500 mr-1">ج.م</span>
         </div>
       </div>
     </div>
@@ -110,6 +118,10 @@ interface PeriodCardProps {
   title: string;
   accentFrom?: string;
   accentTo?: string;
+  // iconFrom/iconTo اختيارية — لو مش متوفرة بنرجع للـaccent.
+  // فائدتها: لما الـheader نفسه dark، الأيقونة لازم تكون بدرجة مختلفة (مضيئة) عشان تتباين.
+  iconFrom?: string;
+  iconTo?: string;
   headerBg: string;
   headerBorder: string;
   headerIcon: string;
@@ -129,25 +141,30 @@ interface PeriodCardProps {
  */
 export const PeriodCard: React.FC<PeriodCardProps> = ({
   icon, title, accentFrom = 'from-teal-400', accentTo = 'to-teal-600',
+  iconFrom, iconTo,
   headerBg, headerBorder, headerText, data, fmtMoney, labels, className = '',
 }) => {
   const interventionsLabel = labels?.interventionsLabel || 'التداخلات';
   const otherRevenueLabel = labels?.otherRevenueLabel || 'دخل آخر';
+  // gradient الأيقونة: لو فيه override بنستخدمه (للـheader الغامق)، وإلا نرجع للـaccent العادي
+  const iconBgFrom = iconFrom || accentFrom;
+  const iconBgTo = iconTo || accentTo;
   return (
     <div className={`group bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_-4px_rgba(0,0,0,0.06)] overflow-hidden hover:shadow-[0_1px_3px_rgba(0,0,0,0.04),0_12px_32px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${className}`}>
       {/* شريط اللون العلوي */}
       <div className={`h-1 bg-gradient-to-l ${accentFrom} ${accentTo}`} />
       <div className={`flex items-center gap-2.5 px-4 py-3 ${headerBg} border-b ${headerBorder}`}>
-        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${accentFrom} ${accentTo} flex items-center justify-center shadow-sm`}>
+        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${iconBgFrom} ${iconBgTo} flex items-center justify-center shadow-sm`}>
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3 h-3 text-white' })}
         </div>
         <h2 className={`text-xs sm:text-sm font-black ${headerText}`}>{title}</h2>
       </div>
       <div className="p-3 sm:p-4 grid grid-cols-2 gap-2 sm:gap-3">
-        <MiniStat icon={<FaStethoscope />} label="كشوفات" value={data.exams} color="blue" />
-        <MiniStat icon={<FaUserGroup />} label="استشارات" value={data.consults} color="violet" />
+        {/* محايد (slate) للأعداد العادية — الإيراد/المصروفات بس هما اللي ملونين دلالياً */}
+        <MiniStat icon={<FaStethoscope />} label="كشوفات" value={data.exams} color="slate" />
+        <MiniStat icon={<FaUserGroup />} label="استشارات" value={data.consults} color="slate" />
         <MiniStat icon={<FaSyringe />} label={interventionsLabel} value={fmtMoney(data.interventions)} color="teal" isMoney />
-        <MiniStat icon={<FaSackDollar />} label={otherRevenueLabel} value={fmtMoney(data.other)} color="sky" isMoney />
+        <MiniStat icon={<FaSackDollar />} label={otherRevenueLabel} value={fmtMoney(data.other)} color="slate" isMoney />
         <MiniStat icon={<FaMoneyBillWave />} label="إجمالي الإيراد" value={fmtMoney(data.revenue)} color="emerald" isMoney />
         <MiniStat icon={<FaReceipt />} label="المصروفات" value={fmtMoney(data.expenses)} color="rose" isMoney />
         <NetProfitStat value={data.revenue - data.expenses} fmtMoney={fmtMoney} />

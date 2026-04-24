@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
+import { doc } from 'firebase/firestore';
 import { getPremiumTimingSnapshot } from '../utils/accountStatusTime';
 import { useTrustedNow } from './useTrustedNow';
 import {
   getUserProfileDocRef,
 } from '../services/firestore/profileRoles';
 import { getDocCacheFirst } from '../services/firestore/cacheFirst';
+import { db } from '../services/firebaseConfig';
+import { ROOT_ADMIN_UID } from '../app/drug-catalog/admin';
 
 /** هيكل بيانات تحذير انتهاء الصلاحية */
 interface ExpiryWarning {
@@ -24,8 +27,11 @@ const PREMIUM_WARNING_THRESHOLD_PERCENT = 5;
  * يقوم بمتابعة صلاحية اشتراك الطبيب برو (Pro) وحساب المدة المنقضية.
  * الهدف: تنبيه الطبيب عندما يصبح المتبقي أقل من أو يساوي 5% من إجمالي مدة الاشتراك.
  */
-export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
+export const usePremiumExpiryCheck = (user: { uid?: string; email?: string | null } | null) => {
   const [accountData, setAccountData] = useState<Record<string, unknown> | null>(null);
+  // isAdmin state منفصل — بيتحدد إما من الـ UID الجذري أو من /admins/{email}
+  // لو المستخدم أدمن → نـ override الـ tier لـ pro_max في الـ return (بدون ما نعدل Firestore هنا)
+  const [isAdmin, setIsAdmin] = useState(false);
   // الاشتراك ينتهي بالأيام وليس الثواني، 5 دقائق كافية لإعادة حساب نسبة المتبقي
   const { nowMs, isSynchronized } = useTrustedNow({ tickMs: 5 * 60 * 1000, syncIntervalMs: 30 * 60 * 1000 });
 
@@ -41,6 +47,7 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
   useEffect(() => {
     if (!user?.uid) {
       setAccountData(null);
+      setIsAdmin(false);
       return;
     }
 
@@ -65,7 +72,46 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
     return () => { cancelled = true; };
   }, [user?.uid]);
 
+  // ─── فحص الأدمن (UID الجذري أو /admins/{email}) ─────────────────────────
+  // منفصل عن قراءة accountData عشان يشتغل حتى لو لسه accountData ما وصلش
+  useEffect(() => {
+    if (!user?.uid) {
+      setIsAdmin(false);
+      return;
+    }
+    // الـ UID الجذري أسرع فحص — بدون I/O
+    if (user.uid === ROOT_ADMIN_UID) {
+      setIsAdmin(true);
+      return;
+    }
+    const normalizedEmail = (user.email || '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    getDocCacheFirst(doc(db, 'admins', normalizedEmail))
+      .then((snap) => {
+        if (!cancelled) setIsAdmin(snap.exists());
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => { cancelled = true; };
+  }, [user?.uid, user?.email]);
+
   return useMemo<ExpiryWarning>(() => {
+    // Admin override: الأدمن دايماً برو ماكس مدى الحياة — بغض النظر عن Firestore
+    if (isAdmin) {
+      return {
+        show: false,
+        expiryDate: null,
+        remainingPercentage: 100,
+        isPro: true,
+        tier: 'pro_max',
+        isExpired: false,
+      };
+    }
     if (!accountData) return defaultWarning;
 
     // برو وبرو ماكس الاتنين يحسبوا Pro لأغراض تنبيه الانتهاء
@@ -136,5 +182,5 @@ export const usePremiumExpiryCheck = (user: { uid?: string } | null) => {
       tier: effectiveTier,
       isExpired: false,
     };
-  }, [accountData, defaultWarning, isSynchronized, nowMs]);
+  }, [accountData, defaultWarning, isSynchronized, nowMs, isAdmin]);
 };

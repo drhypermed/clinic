@@ -50,6 +50,10 @@ const hasSummaryDoctorCounters = (summaryRaw: RawDoc): boolean =>
     'totalPatients',
     'freeDocsCount',
     'premiumDocsCount',
+    // proMaxDocsCount لازم يكون موجود في الـ summary عشان نعتبره كافٍ.
+    // لو الـ summary قديم (قبل ما تضاف برو ماكس) الحقل ده هيكون ناقص،
+    // فنرجع live-counters تلقائياً عشان نجيب القيمة الصحيحة من Firestore.
+    'proMaxDocsCount',
   ].every((key) => hasSummaryCounter(summaryRaw, key));
 
 const countBannerItems = (raw: RawDoc): number => {

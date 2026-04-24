@@ -1,7 +1,11 @@
 /**
  * عرض أدوات الأدوية الذكية (Drug Tools View):
- * المكون الرئيسي الذي يجمع ويحمي الوصول إلى أدوات الصيدلة الإكلينيكية (التفاعلات، جرعات الكلى، الأمان في الحمل).
- * يتضمن منطق فحص "الكوتة" (Quota) ونوع الحساب (مجاني/مميز) لضمان استدامة موارد النظام.
+ * بقى فيه أداة واحدة بس: جرعات الكلى — مع اختصار لتعديل معلومات الأدوية.
+ *
+ * ملاحظة (2026-04): فحص التداخلات الدوائية وفحص الحمل/الرضاعة اتنقلوا لشاشة
+ * "كشف جديد" (تحت الروشتة مباشرة) كأزرار ذهبية بريميوم مع كاش per-user.
+ * الملفات القديمة (DrugInteractions.tsx + PregnancySafety.tsx) اتحذفت.
+ * access controls الخاصة بيهم في Firestore فضلت للتوافق الخلفي لكن مش مستخدمة.
  */
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -18,14 +22,10 @@ import { ToolCard } from './ToolCard';
 import { TOOL_TONES } from './toolTones';
 import { getDocCacheFirst } from '../../services/firestore/cacheFirst';
 import { getUserProfileDocRef } from '../../services/firestore/profileRoles';
-const DrugInteractions = React.lazy(() =>
-  import('./DrugInteractions').then((mod) => ({ default: mod.DrugInteractions }))
-);
+
+// أداة الكلى بس — الأدوات التانية (التداخلات، الحمل) انتقلوا لشاشة الكشف
 const RenalDoseAdjustment = React.lazy(() =>
   import('./RenalDoseAdjustment').then((mod) => ({ default: mod.RenalDoseAdjustment }))
-);
-const PregnancySafety = React.lazy(() =>
-  import('./PregnancySafety').then((mod) => ({ default: mod.PregnancySafety }))
 );
 
 interface DrugToolsViewProps {
@@ -33,7 +33,8 @@ interface DrugToolsViewProps {
   onOpenMedicationEdit: () => void;
 }
 
-type DrugToolKey = 'interactions' | 'renal' | 'pregnancy';
+// بعد حذف التداخلات والحمل، لم يتبقَ إلا أداة واحدة مدعومة بكوتا
+type DrugToolKey = 'renal';
 type ViewTool = DrugToolKey | null;
 
 export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMedicationEdit }) => {
@@ -41,34 +42,26 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
   const [searchParams] = useSearchParams();
   const [activeTool, setActiveTool] = useState<ViewTool>(
     () => {
+      // ?tool=renal بس — أي قيمة تانية بتترجم null (عشان تعاني الروابط القديمة)
       const urlTool = searchParams.get('tool');
-      const valid: DrugToolKey[] = ['interactions', 'renal', 'pregnancy'];
-      return urlTool && valid.includes(urlTool as DrugToolKey) ? urlTool as DrugToolKey : null;
+      return urlTool === 'renal' ? 'renal' : null;
     },
   );
   // وسيط لتحويل null <-> '' للمزامنة مع الـ URL
   const toolAsString = activeTool ?? '';
-  const setToolAsString = (val: string) => setActiveTool(val === '' ? null : val as DrugToolKey);
+  const setToolAsString = (val: string) => setActiveTool(val === 'renal' ? 'renal' : null);
   const { setTabWithUrl: setToolWithUrl } = useTabSync<string>(
     'tool', toolAsString, setToolAsString, '',
-    ['', 'interactions', 'renal', 'pregnancy'] as const,
+    ['', 'renal'] as const,
   );
   const [accountType, setAccountType] = useState<'free' | 'premium' | 'pro_max'>('free');
   const [accountTypeResolved, setAccountTypeResolved] = useState(false);
   const [lockedNotice, setLockedNotice] = useState<{ title: string; message: string } | null>(null);
   const [accessControls, setAccessControls] = useState({
-    interactionToolPremiumOnly: true,
     renalToolPremiumOnly: true,
-    pregnancyToolPremiumOnly: true,
-    freeInteractionToolDailyLimit: 5000,
-    premiumInteractionToolDailyLimit: 5000,
     freeRenalToolDailyLimit: 5000,
     premiumRenalToolDailyLimit: 5000,
-    freePregnancyToolDailyLimit: 5000,
-    premiumPregnancyToolDailyLimit: 5000,
-    interactionToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
     renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
-    pregnancyToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
     premiumTagLabel: 'Pro',
     whatsappNumber: '',
   });
@@ -82,21 +75,11 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
         const controls = await getAccountTypeControls();
         if (!mounted) return;
         setAccessControls({
-          interactionToolPremiumOnly: !!controls.interactionToolPremiumOnly,
           renalToolPremiumOnly: !!controls.renalToolPremiumOnly,
-          pregnancyToolPremiumOnly: !!controls.pregnancyToolPremiumOnly,
-          freeInteractionToolDailyLimit: Number(controls.freeInteractionToolDailyLimit || 0),
-          premiumInteractionToolDailyLimit: Number(controls.premiumInteractionToolDailyLimit || 0),
           freeRenalToolDailyLimit: Number(controls.freeRenalToolDailyLimit || 0),
           premiumRenalToolDailyLimit: Number(controls.premiumRenalToolDailyLimit || 0),
-          freePregnancyToolDailyLimit: Number(controls.freePregnancyToolDailyLimit || 0),
-          premiumPregnancyToolDailyLimit: Number(controls.premiumPregnancyToolDailyLimit || 0),
-          interactionToolLockedMessage:
-            String(controls.interactionToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           renalToolLockedMessage:
             String(controls.renalToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
-          pregnancyToolLockedMessage:
-            String(controls.pregnancyToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Pro',
           whatsappNumber: String(controls.whatsappNumber || '').replace(/\D/g, ''),
         });
@@ -120,7 +103,6 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
       try {
         // كاش أولاً للاستجابه الفوريه — البيانات محمّله بالفعل من جلسة الدخول.
         // الأمان مضمون لأن Cloud Function (consumeDrugToolQuota) تتحقق من السيرفر عند كل استخدام فعلي.
-        // قراءه واحده — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
         const userSnap = await getDocCacheFirst(getUserProfileDocRef(userId));
         const data = userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : {};
         await syncTrustedTime();
@@ -146,20 +128,10 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
   const isPro = accountType === 'premium' || accountType === 'pro_max';
   const toolRules = useMemo(
     () => ({
-      interactions: {
-        premiumOnly: accessControls.interactionToolPremiumOnly,
-        message: accessControls.interactionToolLockedMessage,
-        title: 'التفاعلات الدوائية',
-      },
       renal: {
         premiumOnly: accessControls.renalToolPremiumOnly,
         message: accessControls.renalToolLockedMessage,
         title: 'جرعات الكلى',
-      },
-      pregnancy: {
-        premiumOnly: accessControls.pregnancyToolPremiumOnly,
-        message: accessControls.pregnancyToolLockedMessage,
-        title: 'الأمان في الحمل والرضاعة',
       },
     }),
     [accessControls]
@@ -175,19 +147,10 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
       return false;
     }
 
-    const feature = tool === 'interactions' ? 'interactionTool' : tool === 'renal' ? 'renalTool' : 'pregnancyTool';
-    const configuredLimit =
-      tool === 'interactions'
-        ? isPro
-          ? accessControls.premiumInteractionToolDailyLimit
-          : accessControls.freeInteractionToolDailyLimit
-        : tool === 'renal'
-          ? isPro
-            ? accessControls.premiumRenalToolDailyLimit
-            : accessControls.freeRenalToolDailyLimit
-          : isPro
-            ? accessControls.premiumPregnancyToolDailyLimit
-            : accessControls.freePregnancyToolDailyLimit;
+    const feature = 'renalTool';
+    const configuredLimit = isPro
+      ? accessControls.premiumRenalToolDailyLimit
+      : accessControls.freeRenalToolDailyLimit;
 
     // حساب برو + حد يومي عالي (≥500) = فتح فوري وتتبع الكوتا في الخلفية
     // بدل ما ننتظر الـCloud Function (1-3 ثانيه) — السيرفر لسه بيتحقق عند كل استخدام فعلي
@@ -236,32 +199,23 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     }
   };
 
-  const handleToolClick = (toolName: 'interactionChecker' | 'drugSearch' | 'contraIndications') => {
-    if (userId) {
-      usageTrackingService
-        .trackEvent({
-          doctorId: userId,
-          eventType: toolName,
-          metadata: {
-            tool: toolName,
-          },
-        })
-        .catch((err) => console.error('Failed to track tool event:', err));
-    }
+  // تتبع استخدام أداة البحث (أداة الكلى بتُحسب على drugSearch في usageTrackingService)
+  const trackRenalOpen = () => {
+    if (!userId) return;
+    usageTrackingService
+      .trackEvent({
+        doctorId: userId,
+        eventType: 'drugSearch',
+        metadata: { tool: 'renal' },
+      })
+      .catch((err) => console.error('Failed to track tool event:', err));
   };
 
   const whatsappDigits = String(accessControls.whatsappNumber || '').replace(/\D/g, '');
   const premiumWhatsappUrl = whatsappDigits ? `https://wa.me/${whatsappDigits}` : '';
   const premiumOnlyLine = 'هذه الميزة للحسابات بروة فقط';
 
-  const activeToolTitle =
-    activeTool === 'interactions'
-      ? 'التفاعلات الدوائية'
-      : activeTool === 'renal'
-        ? 'جرعات الكلى'
-        : activeTool === 'pregnancy'
-          ? 'الأمان في الحمل والرضاعة'
-          : 'أدوات الأدوية الذكية';
+  const activeToolTitle = activeTool === 'renal' ? 'جرعات الكلى' : 'أدوات الأدوية الذكية';
 
   return (
     <div data-no-reveal className="px-2 py-2 sm:px-4 sm:py-3 space-y-2" dir="rtl">
@@ -292,22 +246,15 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 dh-stagger-1">
-            <ToolCard
-              title="التفاعلات الدوائية"
-              description="فحص التداخلات بين الأدوية مع تقييم المخاطر"
-              icon={<span className="text-lg">💊</span>}
-              tone={TOOL_TONES.interactions}
-              badgeLabel={accountTypeResolved && toolRules.interactions.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
-              onClick={async () => {
-                setLockedNotice(null);
-                if (await canOpenTool('interactions')) {
-                  handleToolClick('interactionChecker');
-                  setToolWithUrl('interactions');
-                }
-              }}
-            />
+          {/* ملاحظة توجيهية للطبيب: فحص التداخلات والحمل اتنقلوا لشاشة الكشف */}
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-3">
+            <p className="text-[12px] sm:text-[13px] font-bold text-amber-900 leading-relaxed">
+              💡 <span className="font-black">ملاحظة:</span> فحص التداخلات الدوائية وفحص الدواء أثناء الحمل
+              اتنقلوا لشاشة <span className="font-black">«كشف جديد»</span> — هتلاقيهم كأزرار ذهبية تحت الروشتة مباشرة.
+            </p>
+          </div>
 
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 dh-stagger-1">
             <ToolCard
               title="جرعات الكلى"
               description="تعديل الجرعات بناءً على وظائف الكلى"
@@ -317,23 +264,8 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('renal')) {
-                  handleToolClick('drugSearch');
+                  trackRenalOpen();
                   setToolWithUrl('renal');
-                }
-              }}
-            />
-
-            <ToolCard
-              title="الأمان في الحمل والرضاعة"
-              description="تصنيفات السلامة مع توجيهات عملية"
-              icon={<span className="text-lg">🤰</span>}
-              tone={TOOL_TONES.pregnancy}
-              badgeLabel={accountTypeResolved && toolRules.pregnancy.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
-              onClick={async () => {
-                setLockedNotice(null);
-                if (await canOpenTool('pregnancy')) {
-                  handleToolClick('contraIndications');
-                  setToolWithUrl('pregnancy');
                 }
               }}
             />
@@ -361,9 +293,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
 
           <div className="rounded-2xl border border-slate-100 dh-stagger-2">
             <Suspense fallback={<LoadingStateScreen message="جاري تحميل الأداة" />}>
-              {activeTool === 'interactions' && <DrugInteractions />}
               {activeTool === 'renal' && <RenalDoseAdjustment />}
-              {activeTool === 'pregnancy' && <PregnancySafety />}
             </Suspense>
           </div>
         </>

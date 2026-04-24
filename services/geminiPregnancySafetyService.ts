@@ -1,18 +1,17 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// خدمة فحص سلامة الدواء أثناء الحمل (Pregnancy Drug Safety Service)
+// خدمة فحص سلامة الدواء أثناء الحمل والرضاعة (Pregnancy + Lactation Safety)
 // ───────────────────────────────────────────────────────────────────────────
 // الغرض: إرسال قائمة أدوية مختارة (يحددها الطبيب من الروشتة) لـ Gemini ليُرجع
-// تقريراً مختصراً طبياً عن سلامة كل دواء في الحمل، مستنداً على المراجع العلمية
-// المعتمدة (FDA, TGA, ACOG, LactMed). بدون هلوسة — كل حكم مبني على أدلة.
+// تقريراً علمياً دقيقاً ومختصراً (سطر-سطرين) عن سلامة كل دواء في الحمل والرضاعة،
+// مستنداً على المراجع العلمية المعتمدة (FDA, ACOG, Briggs, LactMed/NIH, TGA).
+// بدون هلوسة — كل حكم مبني على أدلة من مصدر محدد.
 //
 // التقرير يشمل لكل دواء:
-//   1) تصنيف السلامة (FDA Category لو متوفر + تصنيف بسيط: آمن / حذر / تجنب / ممنوع)
-//   2) الأدلة / الآلية (مختصرة)
-//   3) التوصية السريرية (عربي بسيط — هل يُعطى؟ بديل؟ متى؟)
-//   4) الثلث الأخطر من الحمل (إن وُجد)
-//
-// التكلفة: Gemini 2.5 Flash + thinkingBudget=500 (أعلى من التداخلات لأن الاعتماد
-// على المراجع يحتاج دقة أكتر). روشتة الحامل نادراً تعدي 5 أدوية → رخيص.
+//   1) تصنيف الحمل (FDA Category A/B/C/D/X — المعيار الأوسع إكلينيكياً)
+//   2) تصنيف الرضاعة (LactMed L1-L5 من NIH — المعيار الموثوق للرضاعة)
+//   3) المستوى العام (آمن/حذر/تجنب/ممنوع) — يعكس الأسوأ بين الحمل والرضاعة
+//   4) السبب العلمي المختصر جداً (سطر واحد ≤20 كلمة) — يجمع الحمل+الرضاعة
+//   5) المصدر العلمي الموثوق (1-2 مرجع max)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { generateContentWithSecurity, GEMINI_MODEL, tryParseJson } from './geminiUtils';
@@ -31,15 +30,16 @@ export type PregnancySafetyLevel = 'safe' | 'caution' | 'avoid' | 'contraindicat
 /** الثلث الأخطر من الحمل — لو الموديل قدر يحدده */
 export type RiskTrimester = 'first' | 'second' | 'third' | 'all' | 'unknown';
 
-/** تقييم سلامة دواء واحد */
+/** تقييم سلامة دواء واحد (حمل + رضاعة) */
 export interface PregnancyDrugAssessment {
   drugName: string;               // اسم الدواء (كما كتبه الطبيب)
-  level: PregnancySafetyLevel;    // التصنيف العام
-  fdaCategory?: string;           // A / B / C / D / X — لو الموديل عرفها
-  evidence: string;               // الأدلة/الآلية (عربي بسيط ≤30 كلمة)
-  recommendation: string;         // التوصية السريرية (عربي بسيط ≤25 كلمة)
-  riskTrimester: RiskTrimester;   // الثلث الأكثر خطورة
-  references: string[];           // المراجع (FDA, ACOG, LactMed, Briggs...)
+  level: PregnancySafetyLevel;    // التصنيف العام = الأسوأ بين الحمل والرضاعة
+  fdaCategory?: string;           // A / B / C / D / X — تصنيف الحمل FDA
+  lactationCategory?: string;     // L1 / L2 / L3 / L4 / L5 — تصنيف الرضاعة LactMed
+  evidence: string;               // السبب العلمي المختصر (≤20 كلمة، سطر-سطرين)
+  recommendation: string;         // مُحتفظ به للتوافق مع الكاش القديم (90 يوم)
+  riskTrimester: RiskTrimester;   // الثلث الأكثر خطورة في الحمل
+  references: string[];           // المصادر (FDA, ACOG, Briggs, LactMed)
 }
 
 /** نتيجة الفحص الكاملة */
@@ -61,6 +61,20 @@ const normalizeLevel = (v: unknown): PregnancySafetyLevel => {
     return s;
   }
   return 'caution';
+};
+
+/** تطبيع تصنيف الحمل FDA — قيم مقبولة فقط A/B/C/D/X */
+const normalizeFdaCategory = (v: unknown): string | undefined => {
+  const s = toTrimmed(v).toUpperCase();
+  if (s === 'A' || s === 'B' || s === 'C' || s === 'D' || s === 'X') return s;
+  return undefined; // أي قيمة غريبة تتشال لتجنب إظهار شارة مضللة
+};
+
+/** تطبيع تصنيف الرضاعة LactMed/Hale — قيم مقبولة فقط L1..L5 */
+const normalizeLactationCategory = (v: unknown): string | undefined => {
+  const s = toTrimmed(v).toUpperCase();
+  if (s === 'L1' || s === 'L2' || s === 'L3' || s === 'L4' || s === 'L5') return s;
+  return undefined;
 };
 
 /** تطبيع الثلث — أي قيمة غير معروفة → "unknown" */
@@ -95,11 +109,14 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResul
       return {
         drugName: toTrimmed(it.drugName),
         level: normalizeLevel(it.level),
-        fdaCategory: toTrimmed(it.fdaCategory) || undefined,
+        // القيم المقيدة A/B/C/D/X و L1..L5 فقط — أي هلوسة تترفض لتفادي شارة مضللة
+        fdaCategory: normalizeFdaCategory(it.fdaCategory),
+        lactationCategory: normalizeLactationCategory(it.lactationCategory),
         evidence: toTrimmed(it.evidence),
         recommendation: toTrimmed(it.recommendation),
         riskTrimester: normalizeTrimester(it.riskTrimester),
-        references: toStringArray(it.references, 4),
+        // نقتصر على مصدرين max لإبقاء البطاقة مرتبة (قبل كان 4)
+        references: toStringArray(it.references, 2),
       };
     })
     // حماية من الهلوسة: الاسم لازم يكون واحد من اللي الطبيب اختاره
@@ -145,16 +162,22 @@ export const checkPregnancySafety = async (
   // كل دواء ليه entry منفصل في الكاش (لأن تقييم كل دواء مستقل عن الباقي).
   // كدا لو الطبيب فحص Panadol + Augmentin قبل كدا، ودلوقتي بيفحص Panadol + Zyrtec،
   // Panadol هييجي من الكاش و Zyrtec هو اللي يتبعت لـ Gemini.
+  // بنعمل الـ lookups كلها بالـ parallel عشان ما نستنّاش لكل دواء ديسكه.
+  const cacheLookups = await Promise.all(
+    cleaned.map(async (drug) => {
+      const subkey = normalizeDrugForKey(drug);
+      const cached = await getCache<PregnancyDrugAssessment>(
+        CACHE_KIND_PREGNANCY_SAFETY,
+        userId,
+        subkey,
+        TTL_PREGNANCY_SAFETY,
+      );
+      return { drug, cached };
+    }),
+  );
   const cachedAssessments: PregnancyDrugAssessment[] = [];
   const drugsToFetch: string[] = [];
-  for (const drug of cleaned) {
-    const subkey = normalizeDrugForKey(drug);
-    const cached = getCache<PregnancyDrugAssessment>(
-      CACHE_KIND_PREGNANCY_SAFETY,
-      userId,
-      subkey,
-      TTL_PREGNANCY_SAFETY,
-    );
+  for (const { drug, cached } of cacheLookups) {
     if (cached) {
       // نرجع الاسم كما كتبه الطبيب دلوقتي (مش كما كان في الكاش) عشان الـ UI
       // يعرض الاسم المتسق مع الروشتة الحالية
@@ -176,24 +199,29 @@ export const checkPregnancySafety = async (
   // قائمة مرقّمة — فقط الأدوية اللي مش في الكاش
   const drugList = drugsToFetch.map((d, i) => `${i + 1}. ${d}`).join('\n');
 
-  const prompt = `You are a senior obstetric clinical pharmacist. Assess the safety of the following drugs during pregnancy. Base EVERY assessment on established references (FDA, ACOG, Briggs Drugs in Pregnancy, LactMed, TGA). DO NOT speculate or invent data.
+  const prompt = `You are a senior obstetric + lactation clinical pharmacist. Assess the safety of each drug BOTH in pregnancy AND in lactation. Base EVERY assessment on established references (FDA Pregnancy Category, ACOG, Briggs Drugs in Pregnancy & Lactation, LactMed/NIH, TGA). DO NOT speculate, guess, or invent data.
 
 DRUGS (exactly as written in prescription):
 ${drugList}
 
-RULES
-- Produce ONE assessment per drug in the list. Use the EXACT drug name from the list (copy verbatim).
-- If a drug is unknown or too ambiguous to assess safely, still include it with level="caution" and note the ambiguity in "evidence".
-- Evidence and recommendation must be simple professional Arabic (Egyptian medical tone acceptable), no jargon.
-- "references" should list 1-3 source names only (e.g., "FDA", "Briggs", "ACOG Committee Opinion", "LactMed"). No URLs, no invented paper titles.
-- Keep recommendation actionable: "آمن في الحمل", "تجنب في الثلث الأول — البديل: X", "ممنوع تماماً", etc.
-- riskTrimester: pick the trimester where risk is highest; "all" if risky throughout; "unknown" if no specific trimester data.
+CATEGORIZATION STANDARDS (USE THESE EXACT SCALES)
+- Pregnancy → FDA Category: A | B | C | D | X  (empty only if truly unknown)
+- Lactation → Hale's LactMed Risk Category: L1 | L2 | L3 | L4 | L5
+  · L1 Safest · L2 Safer · L3 Moderately safe · L4 Possibly hazardous · L5 Contraindicated
+- Overall "level" = THE WORSE of the two:
+  · safe: FDA A/B AND L1/L2
+  · caution: FDA C OR L3 (acceptable short-term with monitoring)
+  · avoid: FDA D OR L4 (prefer alternative)
+  · contraindicated: FDA X OR L5 (never use)
 
-SAFETY LEVELS
-- safe: أدلة كافية تدعم الأمان (FDA A/B, known safe profile)
-- caution: يمكن استعماله بحذر مع مراقبة أو لفترات قصيرة (FDA C غالباً)
-- avoid: يُفضّل تجنبه ويُستبدل لو أمكن (FDA D أو بيانات غير كافية)
-- contraindicated: ممنوع تماماً — تيراتوجين مثبت (FDA X)
+CRITICAL WRITING RULES
+- "evidence" is the SINGLE scientific reason covering BOTH pregnancy AND lactation, in simple Arabic, STRICTLY ≤20 words (1-2 lines max). Be precise and mechanistic — no filler words. Example good style:
+  · "Teratogenic (cardiac defects, 1st trimester). ينتقل بكمية كبيرة في اللبن ويسبب خمول للرضيع."
+  · "آمن — لا يعبر المشيمة بكميات ذات دلالة، ولا يظهر في اللبن."
+- "recommendation" can repeat the action concisely (≤15 words) or be the same as evidence if it already implies action. Keep it short.
+- "references" MUST be 1-2 source names ONLY, from trusted references. Preferred: "FDA", "LactMed (NIH)", "Briggs", "ACOG". No URLs, no invented paper titles, no generic "medical literature".
+- riskTrimester: pick the trimester where pregnancy risk peaks; "all" if risky throughout; "unknown" if no trimester-specific data.
+- If the drug name is ambiguous/unknown, return level="caution", empty categories, and put "بيانات غير كافية — راجع المرجع" in evidence.
 
 OUTPUT (strict JSON, no fences, no prose):
 {
@@ -202,25 +230,33 @@ OUTPUT (strict JSON, no fences, no prose):
       "drugName": "<exact name from list>",
       "level": "safe|caution|avoid|contraindicated",
       "fdaCategory": "<A|B|C|D|X or empty>",
-      "evidence": "<Arabic ≤30 words — الأدلة/الآلية>",
-      "recommendation": "<Arabic ≤25 words — التوصية>",
+      "lactationCategory": "<L1|L2|L3|L4|L5 or empty>",
+      "evidence": "<Arabic ≤20 words covering BOTH pregnancy and lactation>",
+      "recommendation": "<Arabic ≤15 words actionable verdict>",
       "riskTrimester": "first|second|third|all|unknown",
-      "references": ["<source name>", "<source name>"]
+      "references": ["<FDA|LactMed (NIH)|Briggs|ACOG>", "<optional 2nd source>"]
     }
   ],
-  "overallSummaryAr": "<Arabic 1-2 sentences — overall safety verdict>",
+  "overallSummaryAr": "<Arabic 1 sentence — overall verdict for pregnancy+lactation>",
   "insufficientData": false,
   "insufficientDataNote": ""
 }`;
 
   try {
-    // temperature=0.1: ثبات عالي جداً — سلامة الحمل مجال لا يحتمل تخمين
-    // thinkingBudget=500: أعلى شوية من التداخلات لأن الاعتماد على مراجع متعددة
+    // ⚙️ إعدادات متوازنة (Balanced Quality/Cost) — الحمل والرضاعة
+    // ─────────────────────────────────────────────────────────────────────
+    // temperature=0: ثبات مطلق — صفر عشوائية. مجال سلامة الحامل لا يحتمل تخمين.
+    //
+    // thinkingBudget=1000: نقطة التوازن المثلى (Sweet Spot)
+    //   • كافي لمراجعة FDA Category + LactMed + Briggs في ~3 أدوية متوسط
+    //   • الزيادة لـ 2000 بتجيب تحسين < 5% لكن بتضاعف التكلفة
+    //   • مع الكاش per-drug (90 يوم TTL)، نفس الدواء بيفحص مرة واحدة فقط
+    //     طول عمره — فالتكلفة الفعلية على المدى البعيد بتتآكل سريع.
     const responseText = await generateContentWithSecurity(prompt, {
       model: GEMINI_MODEL,
       responseMimeType: 'application/json',
-      temperature: 0.1,
-      thinkingBudget: 500,
+      temperature: 0,
+      thinkingBudget: 1000,
     });
 
     const parsed = tryParseJson(responseText || '{}');
@@ -248,9 +284,10 @@ OUTPUT (strict JSON, no fences, no prose):
     // ─── حفظ كل دواء جديد في الكاش ────────────────────────────────────────
     // نحفظ كل assessment بمفتاح منفصل = normalized drug name → قابل لإعادة
     // الاستخدام لأي روشتة مستقبلية فيها نفس الدواء.
+    // setCache أصبح async (IndexedDB) فنستخدم void — الحفظ في الخلفية ما يعطلش الـ return.
     for (const assessment of apiResult.assessments) {
       const subkey = normalizeDrugForKey(assessment.drugName);
-      setCache(CACHE_KIND_PREGNANCY_SAFETY, userId, subkey, assessment);
+      void setCache(CACHE_KIND_PREGNANCY_SAFETY, userId, subkey, assessment);
     }
 
     // ─── دمج الكاش + النتائج الجديدة ──────────────────────────────────────

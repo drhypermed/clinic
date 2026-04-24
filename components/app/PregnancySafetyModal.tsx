@@ -1,11 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// نافذة فحص الدواء أثناء الحمل (Pregnancy Safety Modal)
+// نافذة فحص الدواء أثناء الحمل والرضاعة (Pregnancy + Lactation Safety Modal)
 // ───────────────────────────────────────────────────────────────────────────
 // نافذة متعددة المراحل:
 //   المرحلة 1 (selection): تعرض قائمة الأدوية من الروشتة — الطبيب يختار
 //     واحد / أكتر / الكل باستخدام checkboxes.
 //   المرحلة 2 (loading): جاري الفحص.
-//   المرحلة 3 (result): عرض تقييم كل دواء (مستوى الأمان + الأدلة + التوصية).
+//   المرحلة 3 (result): بطاقة علمية مختصرة لكل دواء:
+//     - اسم الدواء + شارة المستوى العام (آمن/حذر/تجنب/ممنوع)
+//     - FDA Category (الحمل) + LactMed L1-L5 (الرضاعة)
+//     - سطر واحد-اتنين فيهم السبب العلمي (≤20 كلمة)
+//     - مصدر موثوق واحد-اتنين (FDA/LactMed/Briggs/ACOG)
 // لا تحفظ أي حاجة — عرض فقط. الطبيب يقرأ ويقرر.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -110,33 +114,45 @@ const TRIMESTER_LABELS: Record<RiskTrimester, string> = {
   unknown: 'غير محدد',
 };
 
-// ─── بطاقة تقييم دواء واحد ──────────────────────────────────────────────
+// ─── بطاقة تقييم دواء واحد (مختصرة — سطر سبب + مصدر) ──────────────────────
 const AssessmentCard: React.FC<{ item: PregnancyDrugAssessment }> = ({ item }) => {
   const style = LEVEL_STYLES[item.level];
   return (
-    <div className={`rounded-2xl border ${style.border} ${style.bg} p-3.5 shadow-sm`}>
-      {/* شريط علوي: أيقونة + اسم الدواء + badge المستوى */}
-      <div className="flex items-start gap-2.5 mb-2">
-        <span className={`shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-xl ${style.badge} shadow-sm`}>
+    <div className={`rounded-xl border ${style.border} ${style.bg} p-3 shadow-sm`}>
+      {/* شريط علوي: أيقونة + اسم + شارات التصنيف (حمل + رضاعة) */}
+      <div className="flex items-start gap-2 mb-1.5">
+        <span className={`shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-lg ${style.badge} shadow-sm`}>
           {style.icon}
         </span>
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <h3 className="font-black text-slate-900 text-[0.98rem] leading-tight">{item.drugName}</h3>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide ${style.badge} shadow-sm`}>
+          <div className="flex flex-wrap items-center gap-1">
+            {/* اسم الدواء */}
+            <h3 className="font-black text-slate-900 text-[0.92rem] leading-tight">{item.drugName}</h3>
+            {/* شارة المستوى العام */}
+            <span className={`inline-flex items-center px-1.5 py-[1px] rounded-full text-[9.5px] font-black tracking-wide ${style.badge} shadow-sm`}>
               {style.labelAr}
             </span>
+            {/* تصنيف الحمل (FDA) — لون داكن مميز */}
             {item.fdaCategory && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-slate-800 text-white">
-                FDA {item.fdaCategory}
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9.5px] font-black tracking-wide bg-slate-800 text-white"
+                title="تصنيف الحمل حسب FDA"
+              >
+                حمل FDA {item.fdaCategory}
               </span>
             )}
-            {item.riskTrimester !== 'unknown' && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
+            {/* تصنيف الرضاعة (LactMed L1-L5) — لون هادي مختلف */}
+            {item.lactationCategory && (
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9.5px] font-black tracking-wide bg-indigo-700 text-white"
+                title="تصنيف الرضاعة حسب LactMed/Hale"
+              >
+                رضاعة {item.lactationCategory}
+              </span>
+            )}
+            {/* الثلث الأخطر — يظهر فقط لو فيه خطر محدد */}
+            {item.riskTrimester !== 'unknown' && item.level !== 'safe' && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9.5px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                 {TRIMESTER_LABELS[item.riskTrimester]}
               </span>
             )}
@@ -144,33 +160,22 @@ const AssessmentCard: React.FC<{ item: PregnancyDrugAssessment }> = ({ item }) =
         </div>
       </div>
 
-      {/* الأدلة */}
+      {/* السبب العلمي المختصر — سطر أو سطرين كحد أقصى */}
       {item.evidence && (
-        <div className={`${style.text} text-[0.82rem] leading-relaxed mb-1.5`}>
-          <span className="font-bold">الأدلة: </span>
-          <span>{item.evidence}</span>
-        </div>
+        <p className={`${style.text} text-[0.82rem] leading-snug`}>
+          {item.evidence}
+        </p>
       )}
 
-      {/* التوصية */}
-      {item.recommendation && (
-        <div className={`${style.text} text-[0.84rem] leading-relaxed font-bold`}>
-          <span>التوصية: </span>
-          <span className="font-semibold">{item.recommendation}</span>
-        </div>
-      )}
-
-      {/* المراجع */}
+      {/* المصادر الموثوقة (FDA / LactMed / Briggs / ACOG) */}
       {item.references.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          <span className="text-[10px] text-slate-500 font-bold">المصدر:</span>
           {item.references.map((ref, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/70 text-slate-700 border border-slate-200"
+              className="inline-flex items-center px-1.5 py-[1px] rounded-md text-[10px] font-bold bg-white/80 text-slate-700 border border-slate-200"
             >
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19.5V4.5a2 2 0 012-2h12a2 2 0 012 2v15M4 19.5a2 2 0 002 2h12a2 2 0 002-2M4 19.5L8 17l4 2 4-2 4 2.5" />
-              </svg>
               {ref}
             </span>
           ))}
@@ -285,7 +290,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
             </span>
             <div>
               <h2 id="pregnancy-safety-modal-title" className="text-lg sm:text-xl font-black leading-tight">
-                فحص الدواء أثناء الحمل
+                فحص الدواء أثناء الحمل والرضاعة
               </h2>
               <p className="text-xs sm:text-[13px] font-bold mt-0.5 opacity-90">
                 {inSelectionPhase && 'اختر الأدوية المراد فحصها'}

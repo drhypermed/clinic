@@ -339,9 +339,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 <span className="hidden sm:inline text-slate-500">{dateStr}</span>
                             </div>
                         </div>
+                        {/* زر كشف جديد — ظل teal أعمق + scale خفيف على الـhover عشان يبان CTA أقوى */}
                         <button
                             onClick={onStartNewExam}
-                            className="group flex items-center gap-2 bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 active:from-teal-800 active:to-teal-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold text-xs sm:text-sm shadow-[0_2px_8px_-2px_rgba(13,148,136,0.4)] hover:shadow-[0_4px_16px_-2px_rgba(13,148,136,0.5)] transition-all duration-200 shrink-0"
+                            className="group flex items-center gap-2 bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 active:from-teal-800 active:to-teal-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold text-xs sm:text-sm shadow-[0_6px_20px_-4px_rgba(13,148,136,0.55),0_2px_6px_-2px_rgba(13,148,136,0.35)] hover:shadow-[0_10px_28px_-6px_rgba(13,148,136,0.65),0_4px_10px_-2px_rgba(13,148,136,0.45)] hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-100 transition-all duration-200 shrink-0"
                         >
                             <FaPlus className="w-3 h-3 transition-transform duration-200 group-hover:rotate-90" />
                             <span className="hidden sm:inline">كشف جديد</span>
@@ -397,16 +398,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
 
                     {/* ─── TODAY ─── */}
+                    {/* اليوم: teal أعمق ومشبع (primary) — بدل 400→600 بقى 500→700 عشان feel premium */}
                     <div className="dh-stagger-4">
                         <PeriodCard
                             icon={<FaCalendarDay />}
                             title="إحصائيات اليوم"
-                            accentFrom="from-teal-400"
-                            accentTo="to-teal-600"
-                            headerBg="bg-teal-50/60"
-                            headerBorder="border-teal-100/60"
-                            headerIcon="text-teal-600"
-                            headerText="text-teal-800"
+                            accentFrom="from-teal-500"
+                            accentTo="to-teal-700"
+                            headerBg="bg-gradient-to-l from-teal-50 via-white to-teal-50/40"
+                            headerBorder="border-teal-100"
+                            headerIcon="text-teal-700"
+                            headerText="text-teal-900"
                             data={periodStats.today}
                             fmtMoney={fmtMoney}
                             labels={labels}
@@ -414,16 +416,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
 
                     {/* ─── THIS MONTH ─── */}
+                    {/* الشهر: لمسة ناعمة من slate مع tint خفيف (Linear/Vercel feel) */}
                     <div className="dh-stagger-5">
                         <PeriodCard
                             icon={<FaCalendar />}
                             title="إحصائيات الشهر"
-                            accentFrom="from-indigo-400"
-                            accentTo="to-indigo-600"
-                            headerBg="bg-indigo-50/60"
-                            headerBorder="border-indigo-100/60"
-                            headerIcon="text-indigo-600"
-                            headerText="text-indigo-800"
+                            accentFrom="from-slate-500"
+                            accentTo="to-slate-700"
+                            headerBg="bg-gradient-to-l from-slate-50 via-white to-slate-50/40"
+                            headerBorder="border-slate-200/80"
+                            headerIcon="text-slate-700"
+                            headerText="text-slate-900"
                             data={periodStats.month}
                             fmtMoney={fmtMoney}
                             labels={labels}
@@ -431,16 +434,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
 
                     {/* ─── THIS YEAR ─── */}
+                    {/* السنة: obsidian/dark premium — الـheader كله غامق زي dashboards الـSaaS */}
+                    {/* الأيقونة teal مضيئة عشان تتباين مع الخلفية الغامقة (accent على dark) */}
                     <div className="dh-stagger-6 md:col-span-2 xl:col-span-1">
                         <PeriodCard
                             icon={<FaChartLine />}
                             title={`إحصائيات ${currentYear}`}
-                            accentFrom="from-rose-400"
-                            accentTo="to-violet-600"
-                            headerBg="bg-rose-50/60"
-                            headerBorder="border-rose-100/60"
-                            headerIcon="text-rose-600"
-                            headerText="text-rose-800"
+                            accentFrom="from-slate-700"
+                            accentTo="to-slate-900"
+                            iconFrom="from-teal-400"
+                            iconTo="to-teal-600"
+                            headerBg="bg-gradient-to-l from-slate-900 via-slate-800 to-slate-900"
+                            headerBorder="border-slate-900/60"
+                            headerIcon="text-white"
+                            headerText="text-white"
                             data={periodStats.year}
                             fmtMoney={fmtMoney}
                             labels={labels}

@@ -1,6 +1,13 @@
 // استيراد أنواع البيانات والمرافق الخاصة بـ Gemini AI
 import { VitalSigns } from '../types';
 import { generateContentWithSecurity, generateJson, GEMINI_MODEL, tryParseJson } from './geminiUtils';
+import {
+  CACHE_KIND_TRANSLATION,
+  TTL_TRANSLATION,
+  getCache,
+  hashText,
+  setCache,
+} from './aiResultsCache';
 
 // واجهة برمجية لنتائج التحليل (التشخيص بالعربية والإنجليزية)
 interface AnalysisResult {
@@ -168,16 +175,29 @@ Return STRICT JSON ONLY:
 };
 
 
+/** حقول الترجمة الخمسة — بنستخدمها عشان ما نكررش أسماء الحقول في الكود */
+type TranslationField = 'complaintEn' | 'historyEn' | 'examEn' | 'investigationsEn' | 'diagnosisEn';
+
+/** سطر واحد في الـ prompt — اسم الحقل كما يظهر لـ Gemini + النص العربي */
+interface FieldSpec { field: TranslationField; label: string; inputText: string; }
+
 /**
- * وظيفة لتحويل المصطلحات السريرية من العربية (أو خليط) إلى الإنجليزية الطبية
- * تساعد هذه الوظيفة الطبيب في كتابة روشتة احترافية تترجم "نهجان" إلى "dyspnea" و"كحة" إلى "cough" إلخ
+ * وظيفة لتحويل المصطلحات السريرية من العربية (أو خليط) إلى الإنجليزية الطبية.
+ * تساعد الطبيب في كتابة روشتة احترافية تترجم "نهجان" إلى "dyspnea" و"كحة" إلى "cough" إلخ.
+ *
+ * الكاش per-field (IndexedDB):
+ *   كل حقل (شكوى، تاريخ، فحص، فحوصات، تشخيص) ليه entry منفصل في الكاش
+ *   مفتاحه = hash للنص العربي بتاعه. لو الطبيب عدّل الشكوى وسيب الباقي،
+ *   بنسأل Gemini عن الشكوى فقط — نوفر ~80% من الـ tokens في المكالمات اللاحقة.
  */
 export const translateClinicalData = async (
   complaint: string,
   history: string,
   exam: string,
   diagnosis: string,
-  investigations: string
+  investigations: string,
+  /** userId اختياري للكاش per-doctor. لو undefined بنتعدى الكاش. */
+  userId?: string | null
 ): Promise<{ complaintEn: string; historyEn: string; examEn: string; investigationsEn: string; diagnosisEn: string }> => {
 
   const pickText = (...values: Array<string | undefined | null>): string => {
@@ -199,12 +219,62 @@ export const translateClinicalData = async (
   const dxText = toText(diagnosis).trim();
 
   // لو كل الحقول فاضية — ما نعملش نداء AI من الأساس (توفير تكلفة).
-  // ملاحظة: شيلنا الـ shortcut القديم اللي كان بيرجع النص الإنجليزي "زي ما هو"،
-  // لأن المستخدم عاوز النص الإنجليزي برضه يتنضف ويتصاغ طبياً حتى لو فيه أخطاء
-  // إملائية أو ترتيب غير طبي (request explicit).
   if (!complaintText && !historyText && !examText && !invText && !dxText) {
     return { complaintEn: '', historyEn: '', examEn: '', investigationsEn: '', diagnosisEn: '' };
   }
+
+  // ─── فحص الكاش لكل حقل على حدة ──────────────────────────────────────────
+  const allFields: FieldSpec[] = [
+    { field: 'complaintEn',      label: 'Complaint',      inputText: complaintText },
+    { field: 'historyEn',        label: 'History',        inputText: historyText   },
+    { field: 'examEn',           label: 'Examination',    inputText: examText      },
+    { field: 'investigationsEn', label: 'Investigations', inputText: invText       },
+    { field: 'diagnosisEn',      label: 'Diagnosis',      inputText: dxText        },
+  ];
+
+  // نبني cache subkey لكل حقل = "field:hash(input)"
+  const cacheSubkey = (field: TranslationField, text: string): string =>
+    `${field}:${hashText(text)}`;
+
+  // قراءة متوازية للكاش (كل الحقول مع بعض) — IndexedDB أسرع بكتير من التتابع
+  const cacheResults = await Promise.all(
+    allFields.map(async (spec) => {
+      if (!spec.inputText) return { field: spec.field, cached: '' };
+      const cached = await getCache<string>(
+        CACHE_KIND_TRANSLATION,
+        userId,
+        cacheSubkey(spec.field, spec.inputText),
+        TTL_TRANSLATION,
+      );
+      return { field: spec.field, cached: cached || '' };
+    }),
+  );
+  const cacheByField = new Map<TranslationField, string>(
+    cacheResults.map((r) => [r.field, r.cached]),
+  );
+
+  // الحقول اللي محتاجة استدعاء Gemini (فاضية في الكاش، ولها نص مدخل)
+  const missingFields = allFields.filter(
+    (spec) => spec.inputText && !cacheByField.get(spec.field),
+  );
+
+  // لو كل الحقول المليانة طلعت من الكاش → نرجع فوراً بدون أي استدعاء
+  if (missingFields.length === 0) {
+    return {
+      complaintEn: cacheByField.get('complaintEn') || '',
+      historyEn: cacheByField.get('historyEn') || '',
+      examEn: cacheByField.get('examEn') || '',
+      investigationsEn: cacheByField.get('investigationsEn') || '',
+      diagnosisEn: cacheByField.get('diagnosisEn') || '',
+    };
+  }
+
+  // ─── prompt ديناميكي — فيه فقط الحقول المفقودة من الكاش ─────────────────
+  // كدا بنقلل tokens الـ input المُرسلة لـ Gemini في كل مرة الطبيب يعدّل حقل واحد.
+  const inputSection = missingFields
+    .map((spec) => `${spec.label}: """${spec.inputText}"""`)
+    .join('\n');
+  const jsonKeys = missingFields.map((spec) => `"${spec.field}": "..."`).join(', ');
 
   const prompt = `You are a bilingual clinician and medical editor.
 TASK: Produce accurate, professional medical English for the fields below.
@@ -233,14 +303,10 @@ DO NOT:
 - Change the meaning; only clarify the wording.
 
 INPUT:
-Complaint: """${complaintText}"""
-History: """${historyText}"""
-Examination: """${examText}"""
-Investigations: """${invText}"""
-Diagnosis: """${dxText}"""
+${inputSection}
 
-Return STRICT JSON ONLY:
-{ "complaintEn": "...", "historyEn": "...", "examEn": "...", "investigationsEn": "...", "diagnosisEn": "..." }`;
+Return STRICT JSON ONLY with these keys only:
+{ ${jsonKeys} }`;
 
   try {
     const responseText = await generateContentWithSecurity(prompt, {
@@ -253,13 +319,35 @@ Return STRICT JSON ONLY:
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};
-    const normalized = {
-      complaintEn: normalizeEmptyClinicalPlaceholder(parsed.complaintEn, complaintText),
-      historyEn: normalizeEmptyClinicalPlaceholder(parsed.historyEn, historyText),
-      examEn: normalizeEmptyClinicalPlaceholder(parsed.examEn, examText),
-      investigationsEn: normalizeEmptyClinicalPlaceholder(parsed.investigationsEn, invText),
-      diagnosisEn: normalizeEmptyClinicalPlaceholder(parsed.diagnosisEn, dxText)
+
+    // نبني النتيجة: الحقول من الكاش + الحقول الجديدة من Gemini
+    const getNewOrCached = (field: TranslationField, inputText: string): string => {
+      const fromCache = cacheByField.get(field) || '';
+      if (fromCache) return fromCache;
+      return normalizeEmptyClinicalPlaceholder(parsed[field], inputText);
     };
+
+    const normalized = {
+      complaintEn: getNewOrCached('complaintEn', complaintText),
+      historyEn: getNewOrCached('historyEn', historyText),
+      examEn: getNewOrCached('examEn', examText),
+      investigationsEn: getNewOrCached('investigationsEn', invText),
+      diagnosisEn: getNewOrCached('diagnosisEn', dxText),
+    };
+
+    // ─── حفظ الحقول الجديدة في الكاش للاستخدام المستقبلي ─────────────────
+    // void: الحفظ في الخلفية ما يأخرش الـ return للـ UI.
+    for (const spec of missingFields) {
+      const translatedValue = normalized[spec.field];
+      if (translatedValue) {
+        void setCache(
+          CACHE_KIND_TRANSLATION,
+          userId,
+          cacheSubkey(spec.field, spec.inputText),
+          translatedValue,
+        );
+      }
+    }
 
     // If model returned unusable empty output, fallback instead of propagating blanks.
     const hasAnyOutput =

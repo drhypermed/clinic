@@ -12,6 +12,7 @@ interface NotificationPermissionPromptProps {
   description: string;
   enableLabel: string;
   onEnable: () => void;
+  /** "لاحقًا" — يخفي البطاقة أسبوع ثم ترجع تلقائياً للتذكير. */
   onLater: () => void;
 }
 
@@ -37,7 +38,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
           <div className="min-w-0 flex-1">
             <p className="text-slate-900 font-black text-sm sm:text-base">{title}</p>
             <p className="text-slate-600 font-bold text-xs sm:text-sm mt-1 leading-relaxed">{description}</p>
-            <div className="mt-3 flex items-center justify-end gap-2">
+            <div className="mt-3 flex items-center justify-end gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={onLater}

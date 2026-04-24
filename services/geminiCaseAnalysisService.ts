@@ -207,7 +207,7 @@ export const analyzeCaseDeeply = async (
 
   // Prompt محسّن (تقليص ~40%): شلنا الفواصل الزخرفية والشرح المكرر — حافظنا على
   // كل القواعد الأمنية الحرجة (حمل/رضاعة/أطفال/علامات حيوية/ممنوع أدوية) والـ schema.
-  const prompt = `Senior Family Medicine Consultant. Produce a structured case workup from ONLY the data below. Don't invent symptoms/findings/history.
+  const prompt = `Senior Family Medicine Consultant (MD, board-certified). Produce a structured case workup based ONLY on the patient data below. Zero tolerance for hallucination.
 
 PATIENT
 Gender: ${genderLabel}
@@ -219,12 +219,19 @@ History: ${toTrimmed(input.medicalHistory) || 'NOT PROVIDED'}
 Exam: ${toTrimmed(input.examination) || 'NOT PROVIDED'}
 Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}
 
-SAFETY RULES
-- If pregnant/breastfeeding → reflect in DDx and must-not-miss (ectopic, preeclampsia, mastitis, etc).
+═══ ABSOLUTE ANTI-HALLUCINATION RULES ═══
+1. Use ONLY the data provided above. NEVER invent symptoms, findings, history, or vital signs not stated.
+2. If the stated symptoms don't fit a common disease pattern → say so in missingInformation. Don't force a diagnosis.
+3. Every DDx reasoning MUST cite at least one specific symptom/finding from the data above. NO generic statements like "common in adults."
+4. Every "Must Not Miss" entry MUST be clinically plausible for THIS patient (age/gender/pregnancy state) — not a generic textbook list.
+5. If the data is ambiguous or sparse → set insufficientData=true with a brief Arabic note. Don't compensate with speculation.
+6. NEVER suggest treatments, medications, doses, or drug brands — only diagnostic reasoning.
+
+═══ CLINICAL SAFETY RULES ═══
+- If pregnant/breastfeeding → reflect in DDx and must-not-miss (ectopic, preeclampsia, HELLP, mastitis, etc).
 - If age<18 → pediatric-aware reasoning (weight-based, age-specific conditions).
-- Vital red flags (e.g., fever+tachycardia+hypotension→sepsis) MUST surface in Red Flags or Must-Not-Miss.
-- Never propose medications, doses, or brands.
-- If data too sparse for meaningful workup: set insufficientData=true, keep arrays short/empty, write brief Arabic note in insufficientDataNote.
+- Vital red flags (e.g., fever+tachycardia+hypotension→sepsis; chest pain+ECG findings→MI) MUST surface in Red Flags or Must-Not-Miss.
+- Investigations must be confirmatory/exclusionary for the DDx or Must-Not-Miss — no routine filler.
 
 OUTPUT (strict JSON, no fences, no prose):
 {
@@ -252,15 +259,22 @@ COUNTS
 - redFlags: 0-5.`;
 
   try {
-    // thinking=500: سقف متوسط للتفكير — يديلنا جودة سريرية (ترتيب DDx،
-    // اكتشاف Must-Not-Miss، ربط الأعراض) بدون تضخم التكلفة. الاختبارات بتظهر
-    // إن أغلب الحالات بتحتاج ~300-500 token تفكير، والباقي زيادة هدر.
-    // temperature منخفضة (0.2) لثبات المخرجات السريرية.
+    // ⚙️ إعدادات متوازنة (Balanced Quality/Cost) — تحليل الحالة السريرية
+    // ─────────────────────────────────────────────────────────────────────
+    // temperature=0: صفر عشوائية — نفس المعيار اللي في التداخلات والحمل. التحليل
+    // السريري مجال يحتمل تكرار منطقي، مش عشوائية. مع قواعد anti-hallucination
+    // الصارمة في الـ prompt، الموديل هيبقى محكوم على البيانات المقدّمة فقط.
+    //
+    // thinkingBudget=1000: نقطة التوازن المثلى (Sweet Spot)
+    //   • يسمح للموديل يبني سلسلة منطقية: أعراض → DDx → Must-Not-Miss → فحوصات
+    //   • يراعى حالة الحمل/الرضاعة/العمر عند الترتيب
+    //   • يكتشف الـ red flags الخفية في العلامات الحيوية
+    //   • الزيادة لـ 2000 بتجيب تحسين < 5% بتكلفة ضعف.
     const responseText = await generateContentWithSecurity(prompt, {
       model: GEMINI_MODEL,
       responseMimeType: 'application/json',
-      temperature: 0.2,
-      thinkingBudget: 500,
+      temperature: 0,
+      thinkingBudget: 1000,
     });
 
     const parsed = tryParseJson(responseText || '{}');

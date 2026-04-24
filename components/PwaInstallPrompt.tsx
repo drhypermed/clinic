@@ -22,7 +22,7 @@ interface BeforeInstallPromptEvent extends Event {
 // ورجع للمتصفح، لازم رسالة التثبيت تظهر تاني بدون أي ذاكرة سابقة.
 // كمان بنمسح flags قديمة لو موجودة من نُسخ سابقة (legacy cleanup).
 const LEGACY_INSTALL_FLAG_KEYS = ['dh_pwa_installed', 'dh_pwa_installed_main', 'dh_pwa_installed_secretary'] as const;
-// ⚠️ استثناء: flag منفصل لاختيار المستخدم "إخفاء للأبد" — بطلب صريح من المستخدم.
+// ⚠️ استثناء: flag منفصل لاختيار المستخدم "إخفاء مطلقًا" — بطلب صريح من المستخدم.
 // لو وجد في localStorage، الكارت ما يظهرش. بيتمسح لما المستخدم يمسح الكاش أو ينزل التطبيق من جديد.
 const HIDE_FOREVER_KEY = 'dh_pwa_install_hidden_forever';
 const DEFAULT_MANIFEST_PATH = '/manifest.webmanifest';
@@ -121,7 +121,7 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    // لو المستخدم اختار "إخفاء للأبد" قبل كده، ما نعرضش الكارت
+    // لو المستخدم اختار "إخفاء مطلقًا" قبل كده، ما نعرضش الكارت
     // — حتى يمسح الكاش أو ينزل التطبيق من جديد (flag في localStorage).
     let hiddenForever = false;
     try {
@@ -264,24 +264,22 @@ export const PwaInstallPrompt: React.FC = () => {
             )}
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              {/* زر "إخفاء للأبد" — للديسكتوب فقط (مش الموبايل) بطلب المستخدم */}
-              {!mobileDevice && (
-                <button
-                  type="button"
-                  onClick={handleHideForever}
-                  style={{
-                    border: '1px solid #fca5a5',
-                    background: '#fff',
-                    color: '#b91c1c',
-                    borderRadius: '10px',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  إخفاء للأبد
-                </button>
-              )}
+              {/* زر "إخفاء مطلقًا" — يظهر على كل الأجهزة (ديسكتوب وموبايل) بطلب المستخدم */}
+              <button
+                type="button"
+                onClick={handleHideForever}
+                style={{
+                  border: '1px solid #fca5a5',
+                  background: '#fff',
+                  color: '#b91c1c',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                إخفاء مطلقًا
+              </button>
               <button
                 type="button"
                 onClick={dismissAll}

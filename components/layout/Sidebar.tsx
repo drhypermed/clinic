@@ -65,7 +65,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const pendingDoctorsCount = usePendingDoctorsCount();
     const isAdminUser = useIsAdmin(user);
     const verificationStatus = (user as any)?.verificationStatus;
-    const isAdminVerified = Boolean((user as any)?.isVerified || verificationStatus === 'approved');
+    // الأدمن verified تلقائياً — عشان البادج (التاج + برو ماكس) يظهر جنب اسمه
+    // بدون ما نعتمد على حقل isVerified اللي ممكن يكون ناقص في مستند الأدمن.
+    const isAdminVerified = Boolean(isAdminUser || (user as any)?.isVerified || verificationStatus === 'approved');
 
     const navItems = [
         {

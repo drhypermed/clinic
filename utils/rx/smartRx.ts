@@ -20,6 +20,8 @@ type SmartRxInput = {
     totalAgeInMonths: number;
     vitals: VitalSigns;         // العلامات الحيوية (حرارة، نبض، إلخ)
     records?: PatientRecord[];  // سجلات سابقة للمقارنة
+    /** userId اختياري — يُمرَّر للكاش per-doctor في ترجمة الحقول السريرية */
+    userId?: string | null;
     /**
      * لو true — نتخطى استدعاء analyzeComplaint نهائياً (نوفر نداء AI كامل)
      * ونخلي diagnosisEn فاضي للطبيب يكتبه بنفسه أو يضيفه من نافذة التحليل.
@@ -114,13 +116,16 @@ export const runSmartRx = async (input: SmartRxInput): Promise<SmartRxOutput> =>
     /**
      * ترجمة البيانات السريرية (Translation Layer):
      * تقوم بتحويل مدخلات الطبيب العربية السريعة إلى مصطلحات طبية إنجليزية رصينة.
+     * userId بنمرره للكاش per-doctor — لو الطبيب كتب نفس الشكوى قبل كده، الترجمة
+     * بترجع فوراً من IndexedDB بدون استدعاء Gemini.
      */
     const translations = await translateClinicalData(
         input.complaint,
         input.medicalHistory,
         input.examination,
         diagnosisForTranslation,
-        input.investigations
+        input.investigations,
+        input.userId,
     );
 
     return {

@@ -2,12 +2,40 @@
  * useDoctorProfileData:
  * hook لتحميل بيانات الطبيب من Firestore (بيانات أساسيه + حالة الاشتراك).
  * بقى بقراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
+ *
+ * Admin override: لو المستخدم أدمن (ROOT_ADMIN_UID أو موجود في /admins)، بنعرض
+ * tier="pro_max" مدى الحياة في الملف الشخصي — حتى لو Firestore لسه ما اتحدّثش.
+ * ده بيصلح bug إن الأدمن كان بيشوف "مجاني" في بروفايله لو ما فتحش لوحة الإدارة
+ * قبل كده (لوحة الإدارة هي اللي كانت بتـ sync الـ tier في Firestore).
  */
 import { useEffect, useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../../../services/firebaseConfig';
 import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
+import { ROOT_ADMIN_UID } from '../../../app/drug-catalog/admin';
 
 export type DoctorAccountType = 'free' | 'premium' | 'pro_max';
+
+// نفس PERMANENT_EXPIRY المستخدمة في useDoctorsPagination — الأدمن تيره "مدى الحياة"
+const ADMIN_PERMANENT_EXPIRY = '9999-12-31T23:59:59.000Z';
+
+/** فحص هل المستخدم أدمن — UID جذري أو بريده في /admins collection */
+const checkIsAdminUser = async (userId: string, email: string): Promise<boolean> => {
+  // 1) الـ UID الجذري — طبقة حماية ثابتة (نفس القيمة في firestore.rules)
+  if (userId === ROOT_ADMIN_UID) return true;
+
+  // 2) فحص /admins/<normalizedEmail> — قائمة أدمن ديناميكية
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  if (!normalizedEmail) return false;
+  try {
+    const adminDoc = await getDocCacheFirst(doc(db, 'admins', normalizedEmail));
+    return adminDoc.exists();
+  } catch {
+    // فشل الوصول لـ /admins (صلاحيات/شبكة) — نعتبره مش أدمن بدل ما نكسر البروفايل
+    return false;
+  }
+};
 
 interface HookArgs {
   isOpen: boolean;
@@ -65,11 +93,13 @@ export function useDoctorProfileData({
     if (!isOpen || !userId) return;
 
     // تحديث الحالة من بيانات Firestore المجمَّعة
-    const applyData = (data: Record<string, unknown> | null) => {
+    // isAdmin: لو true نـ override الـ tier لـ pro_max مدى الحياة
+    const applyData = (data: Record<string, unknown> | null, isAdmin: boolean) => {
       if (!data || Object.keys(data).length === 0) {
-        setAccountType('free');
+        // حتى لو المستند فاضي، الأدمن يشوف pro_max في الـ UI
+        setAccountType(isAdmin ? 'pro_max' : 'free');
         setProStartDate('');
-        setProEndDate('');
+        setProEndDate(isAdmin ? ADMIN_PERMANENT_EXPIRY : '');
         setSpecialtyEditedOnce(false);
         return;
       }
@@ -77,18 +107,26 @@ export function useDoctorProfileData({
       const resolvedProfileImage = hasProfileImageField
         ? (data.profileImage as string) || ''
         : currentProfileImage || '';
-      const resolvedAccountType: DoctorAccountType =
+      // الـ tier الأصلي من Firestore — نستخدمه لو المستخدم عادي
+      const firestoreAccountType: DoctorAccountType =
         data.accountType === 'premium' ? 'premium'
           : data.accountType === 'pro_max' ? 'pro_max'
           : 'free';
-      const resolvedProStartDate =
+      const firestoreProStartDate =
         typeof data.premiumStartDate === 'string' ? data.premiumStartDate : '';
-      const resolvedProEndDate =
+      const firestoreProEndDate =
         typeof data.premiumExpiryDate === 'string'
           ? data.premiumExpiryDate
           : typeof data.lastProExpiryDate === 'string'
             ? data.lastProExpiryDate
             : '';
+
+      // Admin override: الأدمن دايماً pro_max مدى الحياة — بغض النظر عن Firestore
+      const resolvedAccountType = isAdmin ? 'pro_max' : firestoreAccountType;
+      const resolvedProStartDate = isAdmin
+        ? (firestoreProStartDate || new Date().toISOString())
+        : firestoreProStartDate;
+      const resolvedProEndDate = isAdmin ? ADMIN_PERMANENT_EXPIRY : firestoreProEndDate;
 
       setName((data.doctorName as string) || currentName);
       setSpecialty((data.doctorSpecialty as string) || currentSpecialty);
@@ -99,6 +137,28 @@ export function useDoctorProfileData({
       setProEndDate(resolvedProEndDate);
       // قراءه علم استهلاك فرصة تعديل التخصص (الحسابات القديمة بدون تخصص تحصل على فرصة واحدة)
       setSpecialtyEditedOnce(data.specialtyEditedOnce === true);
+
+      // Sync في الخلفية: لو الأدمن لسه ما اتعدّلش في Firestore، نعدله دلوقتي
+      // عشان لوحة الإدارة وأي screen تاني يقروا نفس الحالة. مش ننتظر الـ promise
+      // عشان الـ UI يظهر فوراً.
+      const needsSync = isAdmin && (
+        firestoreAccountType !== 'pro_max' ||
+        !firestoreProEndDate.startsWith('9999')
+      );
+      if (needsSync) {
+        setDoc(
+          doc(db, 'users', userId),
+          {
+            accountType: 'pro_max',
+            premiumStartDate: resolvedProStartDate,
+            premiumExpiryDate: ADMIN_PERMANENT_EXPIRY,
+          },
+          { merge: true },
+        ).catch((syncErr) => {
+          // لو فشل الـ sync (صلاحيات/شبكة) ما نكسرش البروفايل — الـ UI override كافٍ
+          console.warn('[useDoctorProfileData] admin tier sync failed:', syncErr);
+        });
+      }
     };
 
     const loadDoctorData = async () => {
@@ -111,7 +171,11 @@ export function useDoctorProfileData({
         // قراءه واحده من users/{uid}
         const userDoc = await getDocCacheFirst(getUserProfileDocRef(userId));
         const data = userDoc.exists() ? (userDoc.data() as Record<string, unknown>) : null;
-        applyData(data);
+        // نفحص لو المستخدم أدمن عشان نـ override الـ tier بـ pro_max في الـ UI
+        // (بدل ما ننتظر الطبيب يفتح لوحة الإدارة عشان الحالة تتعدّل)
+        const email = (data?.doctorEmail as string) || '';
+        const isAdmin = await checkIsAdminUser(userId, email);
+        applyData(data, isAdmin);
       } catch (err) {
         console.error('Error loading doctor data:', err);
         setLoadError('فشل تحميل البيانات');

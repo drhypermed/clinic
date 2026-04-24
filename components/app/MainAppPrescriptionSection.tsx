@@ -593,58 +593,60 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
 
               <div className="editor-block editor-block--analyze dh-stagger-4">
                 <section className="apple-action-card flex flex-col gap-2.5">
-                  {/* ─── زر Quick "إضافة للروشتة" ─── */}
-                  <button
-                    onClick={handleQuickAddAction}
-                    disabled={analyzing}
-                    aria-busy={analyzing && activeAnalyzeMode === 'quick'}
-                    className="apple-action-btn flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-[0.7rem] font-black text-[0.84rem] sm:text-[0.92rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
-                  >
-                    {analyzing && activeAnalyzeMode === 'quick' ? (
-                      <>
-                        <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.5px] border-white/30 border-t-white animate-spin" aria-hidden />
-                        <span>جاري الإضافة…</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="relative top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
-                          <svg className="h-[15px] w-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                            <path d="M12 5v14M5 12h14" />
-                          </svg>
-                        </span>
-                        <span>إضافة إلى الروشتة والسجلات بدون تحليل الحالة</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* ─── زر Deep "تحليل الحالة" (Gold Premium — ذهبي لامع بريميوم) ─── */}
-                  <div className="relative">
-                    {/* Halo ذهبي خارجي — يقوّي مظهر البريميوم */}
-                    <span className="gold-premium-halo" aria-hidden />
+                  {/* الزرّين جنب بعض على الديسكتوب (md+)، فوق بعض على الموبايل */}
+                  <div className="flex flex-col md:flex-row gap-2.5">
+                    {/* ─── زر Quick "إضافة للروشتة" — الأزرق ─── */}
                     <button
-                      onClick={handleAnalyzeAction}
+                      onClick={handleQuickAddAction}
                       disabled={analyzing}
-                      aria-busy={analyzing && activeAnalyzeMode === 'deep'}
-                      className={`apple-action-btn gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl ${analyzing && activeAnalyzeMode === 'deep' ? 'is-analyzing' : ''}`}
+                      aria-busy={analyzing && activeAnalyzeMode === 'quick'}
+                      className="apple-action-btn flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl px-3 py-[0.85rem] font-black text-[0.8rem] sm:text-[0.88rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
                     >
-                      {/* shimmer ذهبي — بيظهر بس في الحالة العادية */}
-                      {!(analyzing && activeAnalyzeMode === 'deep') && (
-                        <span className="gold-premium-shimmer" aria-hidden />
-                      )}
-                      {analyzing && activeAnalyzeMode === 'deep' ? (
+                      {analyzing && activeAnalyzeMode === 'quick' ? (
                         <>
-                          <span className="inline-block h-[1.15rem] w-[1.15rem] shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
-                          <span className="relative z-10 text-[0.96rem] sm:text-[1.02rem] font-black">جاري التحليل</span>
+                          <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.5px] border-white/30 border-t-white animate-spin" aria-hidden />
+                          <span>جاري الإضافة…</span>
                         </>
                       ) : (
                         <>
-                          <span className="relative z-10 text-[1.04rem] sm:text-[1.16rem] font-black tracking-tight">تحليل الحالة</span>
-                          <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
-                            <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
+                          <span className="relative top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                            <svg className="h-[15px] w-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
                           </span>
+                          <span>إضافة إلى الروشتة والسجلات بدون تحليل الحالة</span>
                         </>
                       )}
                     </button>
+
+                    {/* ─── زر Deep "إضافة + تحليل الحالة" — الذهبي البريميوم ─── */}
+                    {/* شلنا apple-action-btn عشان ما يطغاش على ستايل gold-premium-btn */}
+                    <div className="relative flex-1 min-w-0">
+                      <span className="gold-premium-halo" aria-hidden />
+                      <button
+                        onClick={handleAnalyzeAction}
+                        disabled={analyzing}
+                        aria-busy={analyzing && activeAnalyzeMode === 'deep'}
+                        className={`gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.85rem] px-3 rounded-2xl font-black text-[0.8rem] sm:text-[0.88rem] leading-tight ${analyzing && activeAnalyzeMode === 'deep' ? 'is-analyzing' : ''}`}
+                      >
+                        {!(analyzing && activeAnalyzeMode === 'deep') && (
+                          <span className="gold-premium-shimmer" aria-hidden />
+                        )}
+                        {analyzing && activeAnalyzeMode === 'deep' ? (
+                          <>
+                            <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                            <span className="relative z-10">جاري التحليل…</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="relative z-10 top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
+                              <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
+                            </span>
+                            <span className="relative z-10 tracking-tight">إضافة إلى الروشتة والسجلات مع تحليل الحالة</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* زر "إيقاف التحليل" يظهر فقط لما زر "تحليل الحالة" شغّال (مش الـ quick) */}
@@ -763,10 +765,11 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                 <div className="prescription-actions-ai-row">
                   {/* ─── زر "فحص التداخلات الدوائية" ─── */}
                   {/* disabled لو فيه أقل من دوائين — بيفحص كل أدوية الروشتة دلوقتي */}
+                  {/* مقاسات مصغرة (py/نص/أيقونة/بادج AI) حسب طلب الطبيب لتوفير مساحة */}
                   <div className="relative flex-1 min-w-0">
                     <span className="gold-premium-halo" aria-hidden />
-                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <span className="absolute -top-2 right-2.5 z-10 inline-flex items-center gap-0.5 px-2 py-[1px] rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[8.5px] font-black tracking-widest shadow-[0_2px_6px_rgba(251,191,36,0.5)] ring-1 ring-amber-200 uppercase">
+                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                         <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
                       </svg>
                       AI
@@ -777,20 +780,20 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                       disabled={interactionsLoading || prescriptionDrugNames.length < 2}
                       aria-busy={interactionsLoading}
                       title={prescriptionDrugNames.length < 2 ? 'محتاج على الأقل دوائين في الروشتة لفحص التداخلات' : 'فحص التداخلات الدوائية'}
-                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl font-black text-[0.95rem] sm:text-[1.05rem]"
+                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
                     >
                       {!interactionsLoading && <span className="gold-premium-shimmer" aria-hidden />}
                       {interactionsLoading ? (
                         <>
-                          <span className="inline-block h-[1.15rem] w-[1.15rem] shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                          <span className="inline-block h-[0.95rem] w-[0.95rem] shrink-0 rounded-full border-[2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
                           <span className="relative z-10">جاري الفحص</span>
                         </>
                       ) : (
                         <>
                           <span className="relative z-10 tracking-tight">فحص التداخلات الدوائية</span>
-                          <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
+                          <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
                             {/* أيقونة: كبسولتين متقاطعتين */}
-                            <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M10.5 20.5a4.95 4.95 0 01-7-7l7-7a4.95 4.95 0 017 7l-7 7z" />
                               <path d="M8.5 8.5l7 7" />
                             </svg>
@@ -800,12 +803,12 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     </button>
                   </div>
 
-                  {/* ─── زر "فحص الدواء أثناء الحمل" ─── */}
+                  {/* ─── زر "فحص الدواء أثناء الحمل والرضاعة" ─── */}
                   {/* متاح دائماً — المودال بيتعامل مع الحالة الفاضية */}
                   <div className="relative flex-1 min-w-0">
                     <span className="gold-premium-halo" aria-hidden />
-                    <span className="absolute -top-2.5 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[9.5px] font-black tracking-widest shadow-[0_2px_8px_rgba(251,191,36,0.55)] ring-1 ring-amber-200 uppercase">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <span className="absolute -top-2 right-2.5 z-10 inline-flex items-center gap-0.5 px-2 py-[1px] rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[8.5px] font-black tracking-widest shadow-[0_2px_6px_rgba(251,191,36,0.5)] ring-1 ring-amber-200 uppercase">
+                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                         <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
                       </svg>
                       AI
@@ -813,13 +816,13 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     <button
                       type="button"
                       onClick={handleOpenPregnancyCheck}
-                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2.5 py-[0.95rem] rounded-2xl font-black text-[0.95rem] sm:text-[1.05rem]"
+                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
                     >
                       <span className="gold-premium-shimmer" aria-hidden />
-                      <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل</span>
-                      <span className="relative z-10 top-[1px] inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner">
+                      <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل والرضاعة</span>
+                      <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
                         {/* أيقونة: امرأة حامل */}
-                        <svg className="h-[19px] w-[19px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="5" r="2.5" />
                           <path d="M9 11a3 3 0 016 0v3a5 5 0 01-1 3.5" />
                           <path d="M12 15c-2 1.5-3 3-3 5" />

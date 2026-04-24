@@ -153,7 +153,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
         />
       </div>
 
-      {/* السن ثم النوع في صف واحد على الشاشات الأكبر من الموبايل (بدون فراغات) */}
+      {/* السن ثم الجنس في صف واحد على الشاشات الأكبر من الموبايل (بدون فراغات) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
@@ -165,9 +165,9 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
             selectClassName="focus:ring-amber-500"
           />
         </div>
-        {/* النوع بعد السن مباشرة — ثابت للمريض، ينتقل تلقائي في الحجوزات القادمة */}
+        {/* الجنس بعد السن مباشرة — ثابت للمريض، ينتقل تلقائي في الحجوزات القادمة */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5">النوع</label>
+          <label className="block text-xs font-bold text-slate-500 mb-1.5">الجنس</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -195,7 +195,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
         </div>
       </div>
 
-      {/* حمل/رضاعة — مباشرة تحت النوع، يظهر بس للإناث 18-50 */}
+      {/* حمل/رضاعة — مباشرة تحت الجنس، يظهر بس للإناث 18-50 */}
       {askFertility && (
         <div className="rounded-2xl border border-pink-200 bg-pink-50/60 p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

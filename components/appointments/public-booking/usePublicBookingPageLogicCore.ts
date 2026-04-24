@@ -77,7 +77,10 @@ export const usePublicBookingPageLogic = () => {
     consultationCandidatesVisibleCount: state.consultationCandidatesVisibleCount,
   });
 
-  const branchesHook = useBranches(userId || null);
+  // ننتظر اكتمال signInWithCustomToken قبل الاشتراك في قائمة الفروع.
+  // لو اشتركنا قبل الـ auth، الـ rule بيرفض لأن request.auth = null أو
+  // uid مش بالشكل `secretary:secret:branchId` → permission denied في الكونسول.
+  const branchesHook = useBranches(auth.isAuthenticated ? (userId || null) : null);
 
   // للسكرتارية: استخدم الفرع المرتبط بـ session بدل الفرع النشط المحلي.
   // `sessionBranchId` = 'main' افتراضياً (قبل الـ login أو للـ legacy).

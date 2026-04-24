@@ -167,11 +167,19 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     const normalizedFieldId = String(fieldId || '').trim();
     if (!normalizedFieldId) return '';
 
+    // الـ vital field له id = "vital:weight" لكن التخزين بيحصل في secretaryVitals.weight
+    // فلازم نحاول نقرأ بالـ key المباشر (بدون prefix) عشان الـ input ما يظهرش فاضي
+    // رغم أن الكتابة نجحت. ده السبب اللي كان خلي السكرتيرة تحس إن الحقول "مقفولة".
+    const vitalKey = normalizedFieldId.startsWith('vital:')
+      ? normalizedFieldId.slice('vital:'.length)
+      : '';
+
     const normalizedCustomBoxId = String(customBoxId || '').trim();
     const maybeCustomFieldId = normalizedCustomBoxId ? toSecretaryCustomFieldId(normalizedCustomBoxId) : '';
 
     return normalizeSecretaryVitalValue(
       secretaryVitals?.[normalizedFieldId] ??
+        (vitalKey ? secretaryVitals?.[vitalKey] : undefined) ??
         (maybeCustomFieldId ? secretaryVitals?.[maybeCustomFieldId] : undefined) ??
         (normalizedCustomBoxId ? secretaryVitals?.[normalizedCustomBoxId] : undefined)
     );
@@ -258,20 +266,11 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     onSecretaryVitalsChange(nextVitals);
   };
 
-  const updateSecretaryVitalFromVitalsSection = (field: string, nextValue: string) => {
-    if (
-      field !== 'bp' &&
-      field !== 'pulse' &&
-      field !== 'temp' &&
-      field !== 'rbs' &&
-      field !== 'spo2' &&
-      field !== 'rr'
-    ) {
-      return;
-    }
-
-    updateSecretaryVital(field, nextValue);
-  };
+  // كان فيه gate قديم هنا كان بيسمح بـ 6 مفاتيح فقط (bp/pulse/temp/rbs/spo2/rr)
+  // وبيرفض weight وheight صامتاً — فالسكرتيرة كانت بتكتب الوزن والطول ومحدش بيتحفظ.
+  // دلوقتي بنعتمد على validation الموجود جوّه updateSecretaryVital نفسها:
+  // - بترفض BMI (بيُحسب تلقائياً من الوزن والطول).
+  // - بتتحقق من أن المفتاح vital معروف أو custom box صالح عبر resolveSecretaryVitalStorageKey.
 
   const applyPatientSuggestion = (candidate: PatientSuggestionOption) => {
     onSelectPatientSuggestion?.(candidate);
@@ -345,10 +344,10 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             />
           </div>
 
-          {/* النوع: بعد السن مباشرة عشان قرار سؤال الحمل/الرضاعة يبقى جنبه منطقياً */}
+          {/* الجنس: بعد السن مباشرة عشان قرار سؤال الحمل/الرضاعة يبقى جنبه منطقياً */}
           {onGenderChange && (
             <div className="sm:col-span-1 lg:col-span-1">
-              <label className="block text-xs font-bold text-slate-500 mb-1.5">النوع</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">الجنس</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -376,7 +375,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             </div>
           )}
 
-          {/* الحمل/الرضاعة — تحت النوع مباشرة على كل الشاشات (موبايل/تابلت/ديسكتوب) */}
+          {/* الحمل/الرضاعة — تحت الجنس مباشرة على كل الشاشات (موبايل/تابلت/ديسكتوب) */}
           {askFertility && (onPregnantChange || onBreastfeedingChange) && (
             <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border border-pink-200 bg-pink-50/50 p-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -506,11 +505,9 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                           const nextValue = isBp
                             ? rawValue
                             : rawValue.replace(/[^0-9٠-٩.]/g, '');
-                          if (field.kind === 'vital' && field.key) {
-                            updateSecretaryVitalFromVitalsSection(field.key, nextValue);
-                          } else {
-                            updateSecretaryVital(fieldId, nextValue);
-                          }
+                          // fieldId هو مفتاح التخزين الصحيح (إما key للـ vital أو id للـ customBox)
+                          // updateSecretaryVital بتتكفّل بالتحقق من الصلاحية ومنع BMI تلقائياً
+                          updateSecretaryVital(fieldId, nextValue);
                         }}
                         placeholder={field.unit || '...'}
                         className={`w-full h-[44px] px-2 rounded-xl font-bold text-center text-sm outline-none transition-all ${
