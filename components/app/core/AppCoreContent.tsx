@@ -258,7 +258,9 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
     return <ComprehensiveAdminDashboard user={user} onLogout={signOut} />;
   }
 
-  if (!userRole) return null;
+  // مستخدم مسجَّل بدون دور — useAppRedirectEffect هيوجّهه لـ/login في useEffect
+  // التالي. نعرض شاشة تحميل بدل الـnull عشان نتجنّب وميض أبيض لحظي.
+  if (!userRole) return <LoadingStateScreen />;
 
   // 9. التطبيق الرئيسي للطبيب أو السكرتير
   return <MainApp />;

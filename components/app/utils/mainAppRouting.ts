@@ -60,8 +60,14 @@ const ARABIC_PATH_MAP: Record<string, AppView> = {
 };
 
 export const resolveViewFromPath = (pathname: string): AppView | null => {
-  if (ARABIC_PATH_MAP[pathname]) {
-    return ARABIC_PATH_MAP[pathname];
+  // فك الترميز قبل المطابقة — لو URL اتلصق من واتساب أو رسالة بصيغة %D8%A7%D9...
+  // الـlocation.pathname بيرجع encoded في الحاله دي، فالمطابقه المباشره مع المفتاح
+  // العربي بتفشل. decodeURIComponent بترجع النص العربي الأصلي.
+  let normalized = pathname;
+  try { normalized = decodeURIComponent(pathname); } catch { /* تجاهل: invalid sequence */ }
+
+  if (ARABIC_PATH_MAP[normalized]) {
+    return ARABIC_PATH_MAP[normalized];
   }
 
   switch (pathname) {

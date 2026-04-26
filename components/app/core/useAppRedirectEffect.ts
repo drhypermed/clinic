@@ -3,6 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import type { ExtendedUser } from '../../../hooks/useAuth';
 import { PUBLIC_AUTH_ERROR_KEY } from '../../../services/auth-service';
 import { safeStorageGetItem } from '../../../services/auth-service/storage';
+import { isPublicGuestPathname } from './constants';
 import type { DoctorOnboardingStatus } from './useDoctorOnboardingStatus';
 
 /**
@@ -89,11 +90,9 @@ export const useAppRedirectEffect = ({
         return;
       }
 
-      // دليل المستخدم (/user-guide) صفحه عامّه بدون تسجيل دخول — الدكتور الجديد
-      // يقدر يقراها قبل ما يسجّل عشان يفهم التطبيق.
-      const isPublicStaticPath = pathname === '/user-guide';
-
-      if (!isAuthPath && pathname !== '/' && !isPublicStaticPath) {
+      // المسارات المفتوحة للزائر (دليل الأطباء، الحجز، الـlanding، دليل المستخدم)
+      // مصدر حقيقة موحَّد — يضمن إن الزائر يقدر يصفّح ويحجز بدون redirect مفاجئ.
+      if (!isAuthPath && !isPublicGuestPathname(pathname)) {
         if (hasLocalBlacklistMessage) {
           if (lastRedirectPathRef.current !== '/login/doctor') {
             lastRedirectPathRef.current = '/login/doctor';
@@ -113,7 +112,18 @@ export const useAppRedirectEffect = ({
     const userRole = user.authRole === 'doctor' || user.authRole === 'public' ? user.authRole : null;
 
     if (!userRole) {
-      // الانتظار حتى يتم تحديد الدور من السيرفر
+      // مستخدم مسجّل دخول لكن بدون دور معروف — حالات ممكنة:
+      //   • Google login جديد بدون profile في Firestore
+      //   • فشل تحميل البيانات (شبكة أو صلاحيات)
+      //   • بروفايل قديم اتمسح من قاعدة البيانات
+      // لو هو في صفحة auth (login/signup) أو صفحة عامّه، نخليه يكمل عادي.
+      // غير كده، نوجّهه لـ/login عشان ميقعدش على شاشة بيضاء كاملة.
+      if (!isAuthPath && !isPublicGuestPathname(pathname)) {
+        if (lastRedirectPathRef.current !== '/login') {
+          lastRedirectPathRef.current = '/login';
+          navigate('/login', { replace: true });
+        }
+      }
       return;
     }
 

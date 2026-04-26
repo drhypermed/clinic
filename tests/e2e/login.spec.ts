@@ -5,8 +5,9 @@ test.describe('Login entry', () => {
     await page.goto('/login');
   });
 
+  // العنوان بيتغيّر حسب الدومين (clinic vs patient). الـregex بيغطّي الاتنين.
   test('shows the current app title', async ({ page }) => {
-    await expect(page).toHaveTitle(/إدارة العيادة الذكية/i);
+    await expect(page).toHaveTitle(/دكتور هايبر|Dr Hyper/i);
   });
 
   test('shows doctor login button with Google', async ({ page }) => {
@@ -19,8 +20,11 @@ test.describe('Login entry', () => {
     await expect(secretaryOption).toBeVisible();
   });
 
+  // الزائر اللي يحاول يفتح /home (مسار داخلي محمي) لازم يتحوّل لـ/login.
+  // ملاحظه: '/' دلوقتي بقت landing page عامّه (مش redirect)، فالاختبار اتغيّر
+  // لـ/home عشان يتحقّق من حماية المسارات الداخليّه فعلاً.
   test('does not allow unauthenticated access to home route', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/home');
     await expect(page).not.toHaveURL(/\/home(?:\/|$)/);
     await expect(page.getByRole('button', { name: /google/i })).toBeVisible();
   });

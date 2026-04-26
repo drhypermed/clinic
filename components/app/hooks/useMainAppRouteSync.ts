@@ -76,7 +76,11 @@ export const useMainAppRouteSync = ({
         return;
       }
 
-      if (pathname.startsWith('/book') || pathname.startsWith('/p') || pathname.startsWith('/book-public')) {
+      // مسارات عامّه لها معالجه خاصّه (الحجز ودليل الأطباء) — منسيبها تعدّي بدون
+      // تصحيح. ملاحظه: '/book' بيغطّي '/book-public/' كمان، و'/public' بيغطّي
+      // '/public' و '/public/...'. الشرط '/p' الواسع القديم اتشال لأنه كان
+      // بيطابق أي مسار يبدأ بـp (مثل /profile لو اتضاف).
+      if (pathname.startsWith('/book') || pathname.startsWith('/public')) {
         return;
       }
 
