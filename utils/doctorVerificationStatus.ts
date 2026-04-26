@@ -1,4 +1,4 @@
-export type DoctorVerificationStatus = 'submitted' | 'approved' | 'rejected';
+type DoctorVerificationStatus = 'submitted' | 'approved' | 'rejected';
 
 const normalizeRawStatus = (value: unknown): string => String(value || '').trim().toLowerCase();
 
@@ -20,9 +20,3 @@ export const isDoctorApprovedVerification = (value: unknown): boolean =>
 export const isDoctorRejectedVerification = (value: unknown): boolean =>
   normalizeDoctorVerificationStatus(value) === 'rejected';
 
-export const getDoctorVerificationStatusLabel = (value: unknown): string => {
-  const status = normalizeDoctorVerificationStatus(value);
-  if (status === 'approved') return 'مقبول';
-  if (status === 'rejected') return 'مرفوض';
-  return 'قيد المراجعة';
-};

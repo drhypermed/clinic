@@ -77,7 +77,7 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                                             max="500"
                                             value={header.logoWidth ?? 80}
                                             onChange={e => updateHeader({ logoWidth: parseInt(e.target.value) })}
-                                            className="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                     {/* التحكم في الإزاحة الأفقية */}
@@ -89,7 +89,7 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                                             max="100"
                                             value={100 - (header.logoPosX ?? 50)}
                                             onChange={e => updateHeader({ logoPosX: 100 - parseInt(e.target.value) })}
-                                            className="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                     {/* التحكم في الإزاحة الرأسية */}
@@ -101,7 +101,7 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                                             max="100"
                                             value={header.logoPosY ?? 55}
                                             onChange={e => updateHeader({ logoPosY: parseInt(e.target.value) })}
-                                            className="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                     {/* التحكم في درجة الشفافية */}
@@ -113,7 +113,7 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                                             max="100"
                                             value={Math.round((header.logoOpacity ?? 1) * 100)}
                                             onChange={e => updateHeader({ logoOpacity: parseInt(e.target.value) / 100 })}
-                                            className="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                 </div>
@@ -126,13 +126,13 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                             <div className="flex gap-2 w-full max-w-[250px] justify-center">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="flex-1 px-2 py-2.5 bg-blue-50 text-blue-600 text-sm font-bold rounded-lg hover:bg-blue-100 transition-colors active:scale-95"
+                                    className="flex-1 px-2 py-2.5 bg-brand-50 text-brand-600 text-sm font-bold rounded-lg hover:bg-brand-100 transition-colors active:scale-95"
                                 >
                                     تغيير
                                 </button>
                                 <button
                                     onClick={() => updateHeader({ logoBase64: undefined })}
-                                    className="flex-1 px-2 py-2.5 bg-red-50 text-red-600 text-sm font-bold rounded-lg hover:bg-red-100 transition-colors active:scale-95"
+                                    className="flex-1 px-2 py-2.5 bg-danger-50 text-danger-600 text-sm font-bold rounded-lg hover:bg-danger-100 transition-colors active:scale-95"
                                 >
                                     حذف
                                 </button>

@@ -48,7 +48,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
           <select
             value={governorate}
             onChange={(event) => onGovernorateChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
           >
             <option value="">اختر المحافظة</option>
             {governorates.map((gov) => (
@@ -61,7 +61,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
           <select
             value={city}
             onChange={(event) => onCityChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
           >
             <option value="">اختر المدينة</option>
             {cityOptions.map((cityOption) => (
@@ -75,7 +75,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
             <input
               value={otherCity}
               onChange={(event) => onOtherCityChange(event.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
               placeholder="اكتب اسم المدينة"
             />
           </div>
@@ -85,7 +85,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
           <textarea
             value={addressDetails}
             onChange={(event) => onAddressDetailsChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all min-h-[90px]"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all min-h-[90px]"
             placeholder="الشارع، رقم العمارة، الدور، علامة مميزة..."
           />
         </div>
@@ -94,7 +94,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
           <input
             value={contactPhone}
             onChange={(event) => onContactPhoneChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
             placeholder="01xxxxxxxxx"
             dir="ltr"
           />
@@ -104,7 +104,7 @@ export const DoctorAdContactSection: React.FC<DoctorAdContactSectionProps> = ({
           <input
             value={whatsapp}
             onChange={(event) => onWhatsappChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
             placeholder="01xxxxxxxxx"
             dir="ltr"
           />

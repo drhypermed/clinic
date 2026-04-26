@@ -25,7 +25,7 @@ export const LoadingStateScreen: React.FC<LoadingStateScreenProps> = ({ message 
     >
       {/* الدائرة الزرقاء الدوّارة */}
       <div className="relative w-14 h-14" aria-hidden="true">
-        <div className="absolute inset-0 rounded-full border-[3px] border-blue-100" />
+        <div className="absolute inset-0 rounded-full border-[3px] border-brand-100" />
         <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-600 border-r-blue-500 animate-spin" />
       </div>
 

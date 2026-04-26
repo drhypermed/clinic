@@ -45,7 +45,7 @@ export const DayGroup: React.FC<DayGroupProps> = ({
           <span className="text-[11px] font-bold bg-white/20 text-white rounded-full px-2.5 py-1">
             {appointments.length} موعد
           </span>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${isOpen ? 'bg-white text-blue-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${isOpen ? 'bg-white text-brand-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
             {isOpen ? 'طي' : 'عرض'}
             <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />

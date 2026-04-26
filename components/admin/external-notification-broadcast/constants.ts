@@ -60,22 +60,22 @@ export const CUSTOM_EMAIL_ROLE_MODE_OPTIONS: Array<{ value: CustomEmailRoleMode;
 ];
 
 /** تسميات حالات البث (ألوان + عربي) */
-export const STATUS_LABELS: Record<string, { label: string; className: string }> = {
+const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     sending: {
         label: 'جارٍ الإرسال',
-        className: 'bg-amber-700/30 border-amber-500 text-amber-200',
+        className: 'bg-warning-700/30 border-warning-500 text-warning-200',
     },
     sent: {
         label: 'تم الإرسال',
-        className: 'bg-emerald-700/30 border-emerald-500 text-emerald-200',
+        className: 'bg-success-700/30 border-success-500 text-success-200',
     },
     partial: {
         label: 'إرسال جزئي',
-        className: 'bg-blue-700/30 border-blue-500 text-blue-200',
+        className: 'bg-brand-700/30 border-brand-500 text-brand-200',
     },
     failed: {
         label: 'فشل الإرسال',
-        className: 'bg-red-700/30 border-red-500 text-red-200',
+        className: 'bg-danger-700/30 border-danger-500 text-danger-200',
     },
 };
 

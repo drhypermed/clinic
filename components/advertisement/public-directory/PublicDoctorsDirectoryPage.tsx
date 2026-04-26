@@ -142,13 +142,13 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         <main className="max-w-7xl mx-auto px-4 pt-20 pb-6 md:pt-6 md:pb-8">
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-600">
-            <span className="hover:text-blue-600 cursor-pointer transition-colors">الرئيسية</span>
+            <span className="hover:text-brand-600 cursor-pointer transition-colors">الرئيسية</span>
             <span className="text-slate-300">/</span>
             <span className="text-slate-900">دليل الأطباء</span>
             {selectedDoctor && (
               <>
                 <span className="text-slate-300">/</span>
-                <span className="text-blue-600 truncate max-w-[200px]">{selectedDoctor.doctorName}</span>
+                <span className="text-brand-600 truncate max-w-[200px]">{selectedDoctor.doctorName}</span>
               </>
             )}
           </div>
@@ -161,7 +161,7 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
                 items={banner.items || []}
                 altText={banner.title || 'إعلان'}
                 link={banner.targetUrl || undefined}
-                className="border border-blue-100/70"
+                className="border border-brand-100/70"
                 displayHeight={banner.bannerHeight}
                 rotationSeconds={banner.rotationSeconds || 5}
               />
@@ -170,7 +170,7 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
             <DirectoryHeroSection />
 
             {error && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 font-black">
+              <div className="rounded-2xl border border-danger-200 bg-danger-50 text-danger-700 px-4 py-3 font-black">
                 {error}
               </div>
             )}

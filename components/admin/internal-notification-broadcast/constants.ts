@@ -45,14 +45,14 @@ export interface NotificationBroadcastRecord {
 }
 
 /** حالات البث الداخلي (تختلف عن الخارجي: active/failed فقط) */
-export const STATUS_LABELS: Record<string, { label: string; className: string }> = {
+const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     active: {
         label: 'نشط',
-        className: 'bg-emerald-700/30 border-emerald-500 text-emerald-200',
+        className: 'bg-success-700/30 border-success-500 text-success-200',
     },
     failed: {
         label: 'فشل',
-        className: 'bg-red-700/30 border-red-500 text-red-200',
+        className: 'bg-danger-700/30 border-danger-500 text-danger-200',
     },
 };
 

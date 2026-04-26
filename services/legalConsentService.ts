@@ -1,10 +1,10 @@
 import { getLegalPoliciesForAudience } from '../app/legal/policies';
 import type { LegalAudience, LegalDocumentDefinition, LegalDocumentKind } from '../app/legal/types';
 
-export const buildLegalConsentVersionKey = (audience: LegalAudience, kind: LegalDocumentKind) =>
+const buildLegalConsentVersionKey = (audience: LegalAudience, kind: LegalDocumentKind) =>
   `dh_legal_${audience}_${kind}_version`;
 
-export const buildLegalConsentAtKey = (audience: LegalAudience, kind: LegalDocumentKind) =>
+const buildLegalConsentAtKey = (audience: LegalAudience, kind: LegalDocumentKind) =>
   `dh_legal_${audience}_${kind}_accepted_at`;
 
 const readStoredValue = (key: string): string => {
@@ -60,7 +60,7 @@ export const persistLegalDocumentConsent = (
   writeStoredValue(acceptedAtKey, new Date().toISOString());
 };
 
-export const isAudienceLegalConsentComplete = (audience: LegalAudience): boolean => {
+const isAudienceLegalConsentComplete = (audience: LegalAudience): boolean => {
   const policies = getLegalPoliciesForAudience(audience);
   return (
     hasAcceptedLegalDocumentVersion(audience, policies.terms) &&

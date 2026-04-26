@@ -78,14 +78,14 @@ export const InternalBroadcastRecordCard: React.FC<InternalBroadcastRecordCardPr
         <button
           onClick={() => onResend(record)}
           disabled={isResendingThis || sending || isDeletingThis}
-          className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white text-xs font-black"
+          className="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white text-xs font-black"
         >
           {isResendingThis ? 'جارٍ إعادة النشر' : 'إعادة إرسال'}
         </button>
         <button
           onClick={() => onDelete(record)}
           disabled={isDeletingThis || sending || isResendingThis}
-          className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-black"
+          className="px-3 py-1.5 rounded-lg bg-danger-600 hover:bg-danger-700 disabled:opacity-60 text-white text-xs font-black"
         >
           {isDeletingThis ? 'جارٍ الحذف' : '🗑️ حذف نهائي'}
         </button>
@@ -95,24 +95,13 @@ export const InternalBroadcastRecordCard: React.FC<InternalBroadcastRecordCardPr
       <h5 className="text-white font-black text-sm sm:text-base">{record.title}</h5>
       <p className="text-slate-200 text-sm mt-1 whitespace-pre-wrap">{record.body}</p>
 
-      {/* إحصائيات التوصيل */}
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs sm:text-sm">
+      {/* إحصائيات تقديرية — البث الداخلي ما يرسل push، فلا توجد أرقام توصيل حقيقية.
+          الأرقام تحت تعبّر عن حجم الجمهور المستهدف وقت النشر فقط. */}
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
         <div className="rounded-lg bg-slate-700/70 border border-slate-500 px-3 py-2 text-slate-100">
           أجهزة متوقعة: <span className="font-black">{record.tokenCount}</span>
         </div>
-        <div className="rounded-lg bg-emerald-900/25 border border-emerald-500 px-3 py-2 text-emerald-200">
-          مطابق: <span className="font-black">{record.successCount}</span>
-        </div>
-        <div className="rounded-lg bg-red-900/25 border border-red-500 px-3 py-2 text-red-200">
-          غير مطابق: <span className="font-black">{record.failureCount}</span>
-        </div>
-        <div className="rounded-lg bg-amber-900/25 border border-amber-500 px-3 py-2 text-amber-200">
-          دفعات فاشلة: <span className="font-black">{record.failedBatchesCount}</span>
-        </div>
-        <div className="rounded-lg bg-purple-900/25 border border-purple-500 px-3 py-2 text-purple-200 sm:col-span-2">
-          استبعاد تداخل: <span className="font-black">{record.excludedDueToOverlapCount}</span>
-        </div>
-        <div className="rounded-lg bg-sky-900/25 border border-sky-500 px-3 py-2 text-sky-200 sm:col-span-2">
+        <div className="rounded-lg bg-brand-900/25 border border-brand-500 px-3 py-2 text-brand-200">
           مستخدمون مطابقون: <span className="font-black">{record.matchedUserIdsCount}</span>
         </div>
       </div>

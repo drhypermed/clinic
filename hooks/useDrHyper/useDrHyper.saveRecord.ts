@@ -38,8 +38,6 @@ import {
 import { runPreSaveQuotaCheck } from './useDrHyper.saveRecord.quotaCheck';
 import { buildPaymentPayload } from './useDrHyper.saveRecord.paymentPayload';
 
-export type { CreateSaveRecordActionParams, SaveRecordResult } from './useDrHyper.saveRecord.types';
-
 // يجد تاريخ الكشف المصدر من قائمة السجلات — لحفظ sourceExamDate صراحةً
 const findSourceExamDate = (records: PatientRecord[], sourceExamRecordId: string): string | undefined => {
   if (!sourceExamRecordId) return undefined;
@@ -114,9 +112,7 @@ export const createSaveRecordAction = ({
   setLastSavedHash,
   sanitizeRxItemsForSave,
   sanitizeForFirestore,
-  consumeStorageQuota,
-  extractSmartQuotaErrorDetails,
-  getQuotaReachedMessage,
+  // saveRecord مش بيستخدم الـquota helpers بعد التحول لـcapacity check
   openQuotaNoticeModal,
   showNotification,
   markOfflineSyncPendingIfNeeded,
@@ -261,11 +257,28 @@ export const createSaveRecordAction = ({
       return { ok: false, reason: 'no-changes' };
     }
 
-    // ─── فحص الحصة اليومية قبل الحفظ (helper مستخرج) ──────────────────
+    // ─── فحص "السعة الكلية" للسجلات قبل الحفظ ──────────────────────
+    // ملاحظة: تغيّر السلوك من حد يومي لحد كلي 2026-04 — السيرفر بيعد السجلات
+    // الفعلية ويقارنها بحد الباقة. لو ده تعديل لسجل موجود (نفس الـid، عدد ثابت)
+    // بنمرّر الـrecordId للسيرفر عشان يتجاوز فحص الحد — لأن طبيب عند الحد
+    // لازم يقدر يعدّل سجلاته القديمة، الحد المفروض يمنع الإضافة بس.
+    const recordIdForUpdate = (() => {
+      const activeId = String(activeRecordId || '').trim();
+      if (!activeId) return undefined;
+      // تحويل استشارة لكشف: حذف ثم إضافة → عدد نهائي ثابت → نعتبره تعديل
+      if (isConsultationMode && visitType === 'exam') return activeId;
+      // تعديل استشارة: الـid بيبدأ بالـconsultation prefix
+      if (isConsultationMode && activeId.startsWith(CONSULTATION_RECORD_PREFIX)) return activeId;
+      // تعديل كشف: activeRecordId موجود وما اتحوّلش لاستشارة جديدة مستقلة
+      if (!isConsultationMode && visitType !== 'consultation') return activeId;
+      // غير كده (مثلاً consultation جديدة) → إنشاء جديد، نفحص الحد
+      return undefined;
+    })();
+
     const quotaResult = await runPreSaveQuotaCheck({
-      consumeStorageQuota,
-      extractSmartQuotaErrorDetails,
-      getQuotaReachedMessage,
+      user,
+      currentRecordsCount: records.length,
+      recordIdForUpdate,
       openQuotaNoticeModal,
       showNotification,
       e,

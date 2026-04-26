@@ -33,13 +33,13 @@ export const PublicBookingSlotSelector: React.FC<PublicBookingSlotSelectorProps>
       {slotsLoading ? (
         <p className="text-slate-500 font-bold text-sm"><LoadingText>جاري تحميل المواعيد</LoadingText></p>
       ) : slots.length === 0 ? (
-        <p className="text-amber-600 font-bold text-sm">لا توجد مواعيد متاحة حاليًا. يرجى المحاولة لاحقًا.</p>
+        <p className="text-warning-600 font-bold text-sm">لا توجد مواعيد متاحة حاليًا. يرجى المحاولة لاحقًا.</p>
       ) : (
         <div className="space-y-2 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
           {slots.map((slot) => (
             <label
               key={slot.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white border border-transparent hover:border-amber-200 cursor-pointer transition-all"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white border border-transparent hover:border-warning-200 cursor-pointer transition-all"
             >
               <input
                 type="radio"
@@ -47,7 +47,7 @@ export const PublicBookingSlotSelector: React.FC<PublicBookingSlotSelectorProps>
                 value={slot.id}
                 checked={selectedSlotId === slot.id}
                 onChange={() => onSelectSlot(slot.id)}
-                className="w-4 h-4 text-amber-600"
+                className="w-4 h-4 text-warning-600"
               />
               <span className="font-bold text-slate-700 text-sm">{formatSlotLabel(slot.dateTime)}</span>
             </label>

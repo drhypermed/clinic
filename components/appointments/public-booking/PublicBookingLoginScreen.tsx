@@ -38,8 +38,8 @@ export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> =
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-slate-100">
         <div className="text-center mb-6">
           {/* أيقونة القفل للدلالة على الأمان */}
-          <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -59,7 +59,7 @@ export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> =
               value={doctorEmailInput}
               onChange={(e) => onDoctorEmailInputChange(e.target.value)}
               placeholder="إيميل الطبيب"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all text-center text-lg placeholder:tracking-normal font-sans mb-4"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-center text-lg placeholder:tracking-normal font-sans mb-4"
               dir="ltr"
               autoFocus
             />
@@ -71,19 +71,19 @@ export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> =
               value={passwordInput}
               onChange={(e) => onPasswordInputChange(e.target.value)}
               placeholder="كلمة المرور"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all text-center text-lg tracking-widest placeholder:tracking-normal font-sans"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-center text-lg tracking-widest placeholder:tracking-normal font-sans"
               dir="ltr"
             />
           </div>
           {/* عرض رسالة خطأ في حال كانت البيانات غير صحيحة */}
           {authError && (
-            <p className="text-red-500 text-sm font-bold text-center bg-red-50 py-2 rounded-lg border border-red-100">
+            <p className="text-danger-500 text-sm font-bold text-center bg-danger-50 py-2 rounded-lg border border-danger-100">
               {authError}
             </p>
           )}
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-md"
+            className="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-md"
           >
             دخول
           </button>

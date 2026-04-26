@@ -15,10 +15,10 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocCacheFirst } from '../firestore/cacheFirst';
 
-export type ReportLanguagePref = 'ar' | 'en';
-export type ReportPageSizePref = 'A4' | 'A5';
+type ReportLanguagePref = 'ar' | 'en';
+type ReportPageSizePref = 'A4' | 'A5';
 
-export interface ReportPreferences {
+interface ReportPreferences {
     language: ReportLanguagePref;
     pageSize: ReportPageSizePref;
     fontSize: number;

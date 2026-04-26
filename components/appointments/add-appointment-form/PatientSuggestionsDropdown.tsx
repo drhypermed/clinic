@@ -44,7 +44,7 @@ export const PatientSuggestionsDropdown: React.FC<PatientSuggestionsDropdownProp
                 {display.patientName}
               </div>
               {display.fileNumber && (
-                <span className="shrink-0 rounded-full border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[10px] font-black text-indigo-700">
+                <span className="shrink-0 rounded-full border border-brand-200 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-700">
                   ملف #{display.fileNumber}
                 </span>
               )}
@@ -52,7 +52,7 @@ export const PatientSuggestionsDropdown: React.FC<PatientSuggestionsDropdownProp
 
             <div className="mt-1.5 space-y-0.5">
               {display.lines.map((line) => (
-                <div key={line.key} className={`text-[11px] leading-5 ${line.key === 'fileNumber' ? 'text-indigo-700' : 'text-slate-600'}`}>
+                <div key={line.key} className={`text-[11px] leading-5 ${line.key === 'fileNumber' ? 'text-brand-700' : 'text-slate-600'}`}>
                   <span className="font-black">{line.label}: </span>
                   <span className="font-bold">{line.value}</span>
                 </div>

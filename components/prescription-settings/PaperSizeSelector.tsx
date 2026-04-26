@@ -50,7 +50,7 @@ const DimInput: React.FC<{
                         setText(String(clamped));
                         onChange(clamped);
                     }}
-                    className="w-16 text-center text-xs font-bold border-2 border-amber-300 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                    className="w-16 text-center text-xs font-bold border-2 border-warning-300 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-warning-400 bg-white"
                 />
                 <span className="text-[10px] text-slate-400 font-semibold">mm</span>
             </div>
@@ -68,20 +68,20 @@ const SizeCard: React.FC<{
     return (
         <button type="button" onClick={onClick}
             className={`flex flex-col items-center gap-2 px-4 py-3 rounded-2xl border-2 transition-all cursor-pointer select-none ${selected
-                ? 'border-amber-500 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg shadow-amber-100'
-                : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/40 hover:shadow-md'}`}
+                ? 'border-warning-500 bg-gradient-to-br from-warning-50 to-warning-50 shadow-lg shadow-warning-100'
+                : 'border-slate-200 bg-white hover:border-warning-300 hover:bg-warning-50/40 hover:shadow-md'}`}
         >
             <div className={`rounded-md flex items-center justify-center transition-all ${selected
-                ? 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-sm'
+                ? 'bg-gradient-to-br from-warning-500 to-warning-500 shadow-sm'
                 : 'bg-slate-100 border border-slate-200'}`}
                 style={{ width: cardW, height: cardH }}>
                 <span className={`text-[9px] font-black ${selected ? 'text-white' : 'text-slate-400'}`}>{label}</span>
             </div>
             <div className="text-center leading-tight">
-                <div className={`text-xs font-black ${selected ? 'text-amber-700' : 'text-slate-600'}`}>{label}</div>
+                <div className={`text-xs font-black ${selected ? 'text-warning-700' : 'text-slate-600'}`}>{label}</div>
                 <div className="text-[9px] text-slate-400">{subLabel}</div>
             </div>
-            {selected && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+            {selected && <div className="w-1.5 h-1.5 rounded-full bg-warning-500" />}
         </button>
     );
 };
@@ -96,7 +96,7 @@ const MmInput: React.FC<{
         <div className="flex items-center gap-1">
             <input type="number" min={min} max={max} step={0.5} value={value ?? 0}
                 onChange={e => onChange(Math.max(min, Math.min(max, parseFloat(e.target.value) || 0)))}
-                className="w-14 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white transition-all"
+                className="w-14 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-warning-400 focus:border-warning-400 bg-white transition-all"
             />
             <span className="text-[9px] text-slate-400 font-semibold">mm</span>
         </div>
@@ -132,8 +132,8 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                 </div>
 
                 {size === 'custom' && (
-                    <div className="mt-3 p-4 bg-amber-50 rounded-2xl border-2 border-amber-200">
-                        <p className="text-xs font-black text-amber-700 mb-3">أبعاد الورقة المخصصة (بالـ mm):</p>
+                    <div className="mt-3 p-4 bg-warning-50 rounded-2xl border-2 border-warning-200">
+                        <p className="text-xs font-black text-warning-700 mb-3">أبعاد الورقة المخصصة (بالـ mm):</p>
                         <div className="flex flex-wrap gap-4 items-center">
                             <DimInput label="العرض" value={customWidth ?? 148} min={50}
                                 onChange={v => onChange({ customWidth: v })} />
@@ -149,7 +149,7 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                     {(() => {
                         const w = size === 'A5' ? 148 : size === 'A4' ? 210 : (customWidth ?? 148);
                         const h = size === 'A5' ? 210 : size === 'A4' ? 297 : (customHeight ?? 210);
-                        return <span className="text-[11px] text-amber-700 font-black bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">الورقة: {w} × {h} mm</span>;
+                        return <span className="text-[11px] text-warning-700 font-black bg-warning-50 border border-warning-200 px-3 py-1 rounded-full">الورقة: {w} × {h} mm</span>;
                     })()}
                 </div>
             </div>
@@ -185,11 +185,11 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                     badge={hasPrintAdjust ? 'مُخصَّص' : undefined} badgeColor="blue" />
 
                 {/* شرح المشكلة والحل */}
-                <div className="mt-3 mb-4 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                    <p className="text-[11px] text-blue-800 font-bold mb-1">
+                <div className="mt-3 mb-4 p-3 bg-brand-50 rounded-xl border border-brand-200">
+                    <p className="text-[11px] text-brand-800 font-bold mb-1">
                         لو المحتوى مقصوص من الأطراف عند الطباعة:
                     </p>
-                    <p className="text-[10px] text-blue-700 leading-relaxed">
+                    <p className="text-[10px] text-brand-700 leading-relaxed">
                         كل طابعة لها منطقة غير قابلة للطباعة في الأطراف. قلّل <strong>نسبة المحتوى</strong>
                         قليلاً (مثلاً 95%) حتى يظهر الكل داخل منطقة الطباعة بدون قص.
                     </p>
@@ -200,13 +200,13 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-xs font-black text-slate-700 flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <svg className="w-3.5 h-3.5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                 </svg>
                                 نسبة حجم المحتوى عند الطباعة
                             </label>
                             <div className="flex items-center gap-2">
-                                <span className={`text-sm font-black px-2 py-0.5 rounded-lg ${scalePercent < 100 ? 'text-blue-700 bg-blue-100' : 'text-slate-500 bg-slate-100'}`}>
+                                <span className={`text-sm font-black px-2 py-0.5 rounded-lg ${scalePercent < 100 ? 'text-brand-700 bg-brand-100' : 'text-slate-500 bg-slate-100'}`}>
                                     {scalePercent}%
                                 </span>
                                 {scalePercent !== 95 && (
@@ -222,7 +222,7 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                         <input type="range" min={70} max={100} step={1}
                             value={scalePercent}
                             onChange={e => onChange({ printScale: parseInt(e.target.value) / 100 })}
-                            className="w-full h-2 rounded-full appearance-none cursor-pointer accent-blue-500 bg-gradient-to-r from-blue-200 to-slate-200"
+                            className="w-full h-2 rounded-full appearance-none cursor-pointer accent-brand-500 bg-gradient-to-r from-brand-200 to-slate-200"
                         />
 
                         <div className="flex justify-between text-[9px] text-slate-400 mt-1 px-0.5">
@@ -237,8 +237,8 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                                 <button key={v} type="button"
                                     onClick={() => onChange({ printScale: v / 100 })}
                                     className={`text-[10px] px-2.5 py-1 rounded-lg border font-bold transition-all ${scalePercent === v
-                                        ? 'border-blue-500 bg-blue-500 text-white shadow-sm'
-                                        : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'}`}>
+                                        ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
+                                        : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300'}`}>
                                     {label}
                                 </button>
                             ))}
@@ -262,7 +262,7 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                                 <div className="flex items-center gap-1">
                                     <input type="number" min={-20} max={20} step={0.5} value={printOffsetX ?? 0}
                                         onChange={e => onChange({ printOffsetX: Math.max(-20, Math.min(20, parseFloat(e.target.value) || 0)) })}
-                                        className="w-16 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" />
+                                        className="w-16 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white" />
                                     <span className="text-[9px] text-slate-400 font-semibold">mm</span>
                                 </div>
                                 <span className="text-[9px] text-slate-400">سالب=يسار / موجب=يمين</span>
@@ -272,7 +272,7 @@ export const PaperSizeSelector: React.FC<PaperSizeSelectorProps> = ({ paperSize,
                                 <div className="flex items-center gap-1">
                                     <input type="number" min={-20} max={20} step={0.5} value={printOffsetY ?? 0}
                                         onChange={e => onChange({ printOffsetY: Math.max(-20, Math.min(20, parseFloat(e.target.value) || 0)) })}
-                                        className="w-16 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" />
+                                        className="w-16 text-center text-xs font-bold border-2 border-slate-200 rounded-xl py-1.5 px-1 focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white" />
                                     <span className="text-[9px] text-slate-400 font-semibold">mm</span>
                                 </div>
                                 <span className="text-[9px] text-slate-400">سالب=أعلى / موجب=أسفل</span>
@@ -320,10 +320,10 @@ const SectionTitle: React.FC<{
             </svg>
         ),
     };
-    const gradients = { paper: 'from-amber-500 to-orange-500', margin: 'from-slate-500 to-slate-600', 'print-fix': 'from-blue-500 to-indigo-600' };
+    const gradients = { paper: 'from-warning-500 to-warning-500', margin: 'from-slate-500 to-slate-600', 'print-fix': 'from-brand-500 to-brand-600' };
     const badgeStyles = {
-        amber: 'text-amber-600 bg-amber-100 border-amber-200',
-        blue: 'text-blue-600 bg-blue-100 border-blue-200',
+        amber: 'text-warning-600 bg-warning-100 border-warning-200',
+        blue: 'text-brand-600 bg-brand-100 border-brand-200',
     };
     return (
         <div className="flex items-center gap-2">

@@ -37,34 +37,34 @@ interface SeverityStyle {
 const SEVERITY_STYLES: Record<InteractionSeverity, SeverityStyle> = {
   contraindicated: {
     labelAr: 'ممنوع',
-    bg: 'bg-rose-50',
-    border: 'border-rose-300',
-    iconBg: 'bg-rose-600 text-white',
-    text: 'text-rose-900',
+    bg: 'bg-danger-50',
+    border: 'border-danger-300',
+    iconBg: 'bg-danger-600 text-white',
+    text: 'text-danger-900',
     order: 1,
   },
   major: {
     labelAr: 'خطر كبير',
-    bg: 'bg-orange-50',
-    border: 'border-orange-300',
-    iconBg: 'bg-orange-500 text-white',
-    text: 'text-orange-900',
+    bg: 'bg-warning-50',
+    border: 'border-warning-300',
+    iconBg: 'bg-warning-500 text-white',
+    text: 'text-warning-900',
     order: 2,
   },
   moderate: {
     labelAr: 'متوسط',
-    bg: 'bg-amber-50',
-    border: 'border-amber-300',
-    iconBg: 'bg-amber-500 text-white',
-    text: 'text-amber-900',
+    bg: 'bg-warning-50',
+    border: 'border-warning-300',
+    iconBg: 'bg-warning-500 text-white',
+    text: 'text-warning-900',
     order: 3,
   },
   minor: {
     labelAr: 'بسيط',
-    bg: 'bg-sky-50',
-    border: 'border-sky-300',
-    iconBg: 'bg-sky-500 text-white',
-    text: 'text-sky-900',
+    bg: 'bg-brand-50',
+    border: 'border-brand-300',
+    iconBg: 'bg-brand-500 text-white',
+    text: 'text-brand-900',
     order: 4,
   },
 };
@@ -138,7 +138,7 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
       labelledBy="drug-interactions-modal-title"
     >
       {/* ─── الهيدر الذهبي البريميوم ─── */}
-      <div className="relative overflow-hidden bg-gradient-to-l from-amber-500 via-yellow-500 to-amber-600 px-5 py-4 text-amber-950">
+      <div className="relative overflow-hidden bg-gradient-to-l from-warning-500 via-warning-500 to-warning-600 px-5 py-4 text-warning-950">
         {/* shimmer ذهبي خلفي */}
         <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
           <span className="absolute -top-1/2 -left-full h-[200%] w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[dh-btn-shine_4s_ease-in-out_infinite]" />
@@ -166,7 +166,7 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/25 hover:bg-white/40 active:scale-95 transition text-amber-950"
+            className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/25 hover:bg-white/40 active:scale-95 transition text-warning-950"
             aria-label="إغلاق"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -182,7 +182,7 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
         {loading && (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <div className="relative w-14 h-14 mb-3">
-              <span className="absolute inset-0 rounded-full border-4 border-amber-200" />
+              <span className="absolute inset-0 rounded-full border-4 border-warning-200" />
               <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-600 animate-spin" />
             </div>
             <p className="text-slate-700 font-bold text-sm">الذكاء الاصطناعي بيفحص التداخلات…</p>
@@ -192,14 +192,14 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
 
         {/* حالة البيانات غير كافية / خطأ */}
         {!loading && result?.insufficientData && (
-          <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-5 text-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 mb-2">
-              <svg className="w-6 h-6 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="rounded-2xl border-2 border-dashed border-warning-300 bg-warning-50 p-5 text-center">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-warning-100 mb-2">
+              <svg className="w-6 h-6 text-warning-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 8v4M12 16h.01" />
               </svg>
             </div>
-            <p className="text-amber-900 font-bold text-sm">
+            <p className="text-warning-900 font-bold text-sm">
               {result.insufficientDataNote || 'محتاج على الأقل دوائين في الروشتة.'}
             </p>
           </div>
@@ -207,15 +207,15 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
 
         {/* حالة "لا يوجد تداخلات" */}
         {!loading && result && !result.insufficientData && !result.hasInteractions && (
-          <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 text-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white mb-2 shadow-md">
+          <div className="rounded-2xl border-2 border-success-300 bg-success-50 p-5 text-center">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-success-500 text-white mb-2 shadow-md">
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-emerald-900 font-black text-base mb-1">لا توجد تداخلات ذات أهمية إكلينيكية</p>
+            <p className="text-success-900 font-black text-base mb-1">لا توجد تداخلات ذات أهمية إكلينيكية</p>
             {result.summaryAr && (
-              <p className="text-emerald-800 text-sm leading-relaxed">{result.summaryAr}</p>
+              <p className="text-success-800 text-sm leading-relaxed">{result.summaryAr}</p>
             )}
           </div>
         )}

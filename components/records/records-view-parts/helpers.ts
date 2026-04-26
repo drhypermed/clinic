@@ -13,7 +13,7 @@
 import type { PatientRecord } from '../../../types';
 import { formatUserDate, formatUserDateTime, formatUserTime, getCairoDayKey } from '../../../utils/cairoTime';
 
-export type CaseType = 'exam' | 'consultation';
+type CaseType = 'exam' | 'consultation';
 
 /** entry في الخط الزمني للسجلات (كشف أو استشارة) */
 export interface RecordTimelineEntry {

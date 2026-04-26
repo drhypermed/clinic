@@ -18,7 +18,7 @@ export type TimelineSortOrder = 'newestToOldest' | 'oldestToNewest';
 export type TimelineDateFilterMode = 'all' | 'singleDay' | 'dateRange';
 
 /** توحيد جزء من مفتاح هوية المريض (lowercase + trim) */
-export const normalizePatientKeyPart = (value?: string): string => String(value || '').trim().toLowerCase();
+const normalizePatientKeyPart = (value?: string): string => String(value || '').trim().toLowerCase();
 
 /** بناء مفتاح هوية فريد للمريض يُستخدم في تجميع الاستشارات */
 export const buildPatientTimelineKey = (record: PatientRecord): string => {

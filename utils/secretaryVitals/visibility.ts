@@ -128,11 +128,3 @@ export const isSecretaryVitalEnabled = (
     visibility: SecretaryVitalsVisibility | undefined,
     key: SecretaryVitalKey
 ): boolean => resolveVisibilityByField(visibility, toSecretaryVitalFieldId(key), key);
-
-/** قائمة مفاتيح العلامات الحيوية المفعّلة فقط */
-export const getEnabledSecretaryVitalKeys = (
-    visibility: SecretaryVitalsVisibility | undefined
-): SecretaryVitalKey[] => {
-    if (!visibility) return [];
-    return SECRETARY_VITAL_KEYS.filter((key) => isSecretaryVitalEnabled(visibility, key));
-};

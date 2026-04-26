@@ -49,16 +49,16 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
   if (filteredAds.length === 0) {
     return (
       <section className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/95 p-10 text-center shadow-[0_24px_60px_-48px_rgba(2,6,23,0.8)]">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-brand-50 to-brand-50 flex items-center justify-center">
           {/* أيقونة البحث لحالة "مفيش نتائج" */}
-          <LuSearch className="w-10 h-10 text-blue-500" strokeWidth={2} />
+          <LuSearch className="w-10 h-10 text-brand-500" strokeWidth={2} />
         </div>
         <h3 className="text-lg md:text-xl font-black text-slate-800">لا توجد نتائج مطابقة</h3>
         <p className="mt-2 text-slate-500 font-bold">جرّب تغيير معايير البحث أو مسح الفلاتر</p>
         <button
           type="button"
           onClick={onResetFilters}
-          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black hover:shadow-lg transition-all"
+          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black hover:shadow-lg transition-all"
         >
           عرض كل الأطباء
         </button>
@@ -102,10 +102,10 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
         return (
           <article
             key={ad.doctorId}
-            className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(37,99,235,0.25)] hover:border-blue-200 transition-all duration-300"
+            className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(37,99,235,0.25)] hover:border-brand-200 transition-all duration-300"
           >
             {anyDiscount && (
-              <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black shadow-lg">
+              <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-danger-500 to-slate-500 text-white text-[10px] font-black shadow-lg">
                 عرض خاص
               </div>
             )}
@@ -145,13 +145,13 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                   </h3>
                 </div>
 
-                <p className="mt-1 inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-black">
+                <p className="mt-1 inline-flex px-2 py-0.5 rounded-full bg-brand-50 text-brand-800 border border-brand-200 text-[11px] font-black">
                   {ad.doctorSpecialty || 'بدون تخصص'}
                 </p>
 
                 {ad.academicDegree && (
                   // الشهاده الأكاديميه — أيقونة قبّعة تخرّج بدل إيموجي 🎓
-                  <p className="mt-1.5 flex items-center gap-1 text-[11px] font-black text-indigo-700 truncate" title={ad.academicDegree}>
+                  <p className="mt-1.5 flex items-center gap-1 text-[11px] font-black text-brand-700 truncate" title={ad.academicDegree}>
                     <LuGraduationCap className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
                     <span className="truncate">{ad.academicDegree}</span>
                   </p>
@@ -162,17 +162,17 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenDoctorReviews(ad)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-black hover:bg-amber-100 transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-50 text-warning-800 border border-warning-200 text-[11px] font-black hover:bg-warning-100 transition-colors"
                     >
                       {/* نجمه ممتلئه للتقييم — بديل إيموجي ⭐ */}
-                      <LuStar className="w-3 h-3 fill-amber-500 text-amber-500" strokeWidth={2} />
+                      <LuStar className="w-3 h-3 fill-warning-500 text-warning-500" strokeWidth={2} />
                       {ratingStats.average.toFixed(1)} ({ratingStats.count})
                     </button>
                   ) : (
                     <span className="text-[11px] font-bold text-slate-400">بدون تقييمات</span>
                   )}
                   {ad.yearsExperience != null && ad.yearsExperience > 0 && (
-                    <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 text-[11px] font-black px-2 py-0.5">
+                    <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 text-brand-700 text-[11px] font-black px-2 py-0.5">
                       خبرة {ad.yearsExperience} سنة
                     </span>
                   )}
@@ -200,8 +200,8 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
 
             {/* Prices row */}
             <div className="px-3 sm:px-4 grid grid-cols-2 gap-2 text-[11px] font-black">
-              <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 text-emerald-800">
-                <div className="text-[10px] font-bold text-emerald-600">الكشف</div>
+              <div className="rounded-lg bg-success-50 border border-success-100 px-2.5 py-1.5 text-success-800">
+                <div className="text-[10px] font-bold text-success-600">الكشف</div>
                 {hasExamDiscount ? (
                   <div className="flex items-baseline gap-1 flex-wrap">
                     <span className="font-black">{formatPrice(primaryBranch.discountedExaminationPrice ?? null)}</span>
@@ -213,8 +213,8 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                   <div>{formatPrice(primaryBranch.examinationPrice ?? null)}</div>
                 )}
               </div>
-              <div className="rounded-lg bg-sky-50 border border-sky-100 px-2.5 py-1.5 text-sky-800">
-                <div className="text-[10px] font-bold text-sky-600">الاستشارة</div>
+              <div className="rounded-lg bg-brand-50 border border-brand-100 px-2.5 py-1.5 text-brand-800">
+                <div className="text-[10px] font-bold text-brand-600">الاستشارة</div>
                 {hasConsultDiscount ? (
                   <div className="flex items-baseline gap-1 flex-wrap">
                     <span className="font-black">{formatPrice(primaryBranch.discountedConsultationPrice ?? null)}</span>
@@ -232,7 +232,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
               <div className="px-3 sm:px-4 mt-2">
                 {/* عدد الخدمات الطبّيه — سمّاعه بدل إيموجي 🩺 */}
                 <div className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1.5 text-[11px] font-black text-slate-700 flex items-center gap-1.5">
-                  <LuStethoscope className="w-3.5 h-3.5 shrink-0 text-blue-600" strokeWidth={2} />
+                  <LuStethoscope className="w-3.5 h-3.5 shrink-0 text-brand-600" strokeWidth={2} />
                   <span>{clinicServices.length} خدمة{hasDiscountedService ? ' • يوجد خصومات' : ''}</span>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                     href={callPhone ? `tel:${callPhone}` : undefined}
                     className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1.5 transition-all ${
                       callPhone
-                        ? 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'
+                        ? 'border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100'
                         : 'border-slate-200 bg-slate-50 text-slate-400 pointer-events-none'
                     }`}
                   >
@@ -287,7 +287,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                     rel="noopener noreferrer"
                     className={`h-9 rounded-lg border font-black text-[11px] inline-flex items-center justify-center gap-1.5 transition-all ${
                       whatsappPhone
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                        ? 'border-success-200 bg-success-50 text-success-800 hover:bg-success-100'
                         : 'border-slate-200 bg-slate-50 text-slate-400 pointer-events-none'
                     }`}
                   >
@@ -308,7 +308,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onBookDoctor(ad.doctorId)}
-                  className="h-10 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-xs hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
+                  className="h-10 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black text-xs hover:shadow-lg hover:from-brand-700 hover:to-brand-800 transition-all"
                 >
                   احجز الآن
                 </button>
@@ -327,7 +327,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
             className={`px-8 py-3 rounded-2xl font-black text-sm transition-all ${
               loadingMore
                 ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-xl hover:from-blue-700 hover:to-blue-800'
+                : 'bg-gradient-to-r from-brand-600 to-brand-700 text-white hover:shadow-xl hover:from-brand-700 hover:to-brand-800'
             }`}
           >
             {loadingMore ? <LoadingText>جاري التحميل</LoadingText> : 'عرض المزيد من الأطباء'}

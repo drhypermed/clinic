@@ -90,13 +90,13 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
   onUpdateSubscriptionDates, onUpdateSubscriptionDuration,
 }) => {
   return (
-    <div className="rounded-xl border border-sky-100 bg-sky-50/40 p-3 space-y-3">
-      <p className="text-[11px] font-black text-sky-700">تفاصيل اشتراك برو</p>
+    <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-3 space-y-3">
+      <p className="text-[11px] font-black text-brand-700">تفاصيل اشتراك برو</p>
 
       {/* التواريخ: بداية ونهاية */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className="flex items-center gap-2 rounded-lg border border-sky-100 bg-white px-3 py-2">
-          <FaCalendarDay className="w-3 h-3 text-sky-500 shrink-0" />
+        <div className="flex items-center gap-2 rounded-lg border border-brand-100 bg-white px-3 py-2">
+          <FaCalendarDay className="w-3 h-3 text-brand-500 shrink-0" />
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-slate-400">البداية</p>
             {premiumStartDate ? (
@@ -109,12 +109,12 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
             ) : <p className="text-xs text-slate-400">-</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border border-sky-100 bg-white px-3 py-2">
+        <div className="flex items-center gap-2 rounded-lg border border-brand-100 bg-white px-3 py-2">
           <FaClock className="w-3 h-3 shrink-0" style={{ color: isExpired ? '#ef4444' : '#22c55e' }} />
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-slate-400">النهاية</p>
             {expiryDate ? (
-              <p className={`text-xs font-black ${isExpired ? 'text-red-600' : 'text-emerald-700'}`}>
+              <p className={`text-xs font-black ${isExpired ? 'text-danger-600' : 'text-success-700'}`}>
                 {formatUserDate(expiryDate, undefined, 'ar-EG')}
                 <span className="text-slate-400 font-bold mr-1">
                   {formatUserTime(expiryDate, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
@@ -127,9 +127,9 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
 
       {/* إجمالي المدة بصيغة قابلة للقراءة */}
       {premiumStartIso && premiumEndIso && (
-        <div className="flex items-center gap-2 rounded-lg border border-sky-100 bg-white px-3 py-2">
+        <div className="flex items-center gap-2 rounded-lg border border-brand-100 bg-white px-3 py-2">
           <span className="text-[11px] font-bold text-slate-400 shrink-0">المدة:</span>
-          <span className="text-xs font-black text-sky-700">{formatDuration(premiumStartIso, premiumEndIso)}</span>
+          <span className="text-xs font-black text-brand-700">{formatDuration(premiumStartIso, premiumEndIso)}</span>
         </div>
       )}
 
@@ -138,12 +138,12 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
         <div className="flex items-center flex-wrap gap-1.5">
           <span className="text-[11px] font-bold text-slate-400">المتبقي:</span>
           {isExpired ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-bold text-red-600">
+            <span className="inline-flex items-center gap-1 rounded-full border border-danger-200 bg-danger-50 px-2.5 py-1 text-[10px] font-bold text-danger-600">
               <FaClock className="w-2.5 h-2.5" /> منتهي
             </span>
           ) : (
             remainingTimeParts.map((part) => (
-              <span key={part.key} className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700">
+              <span key={part.key} className="inline-flex rounded-full border border-brand-200 bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">
                 {part.value} {part.label}
               </span>
             ))
@@ -156,8 +156,8 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
         <div className="space-y-2">
           {isEditingThis && editMode[doctor.id] === 'dates' ? (
             /* ── محرر التواريخ: 4 حقول ── */
-            <div className="rounded-xl border border-indigo-100 bg-white p-3 space-y-2">
-              <p className="text-[11px] font-black text-indigo-700">تعديل التواريخ</p>
+            <div className="rounded-xl border border-brand-100 bg-white p-3 space-y-2">
+              <p className="text-[11px] font-black text-brand-700">تعديل التواريخ</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-bold text-slate-400 block mb-1">تاريخ البداية</label>
@@ -193,7 +193,7 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
                   if (sd && ed) onUpdateSubscriptionDates(doctor.id, sd, ed, st, et);
                   else alert('يرجى ملء جميع الحقول');
                 }}
-                  className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition">
+                  className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-success-600 px-3 py-2 text-xs font-bold text-white hover:bg-success-700 transition">
                   <FaCheck className="w-2.5 h-2.5" /> حفظ
                 </button>
                 <button onClick={clearEditor}
@@ -204,8 +204,8 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
             </div>
           ) : durationPicker === 'extend' ? (
             /* ── تمديد بمدد جاهزة (شهر / 6 شهور / سنة) ── */
-            <div className="rounded-xl border border-blue-100 bg-white p-3 space-y-2">
-              <p className="text-[11px] font-black text-blue-700">تمديد الاشتراك</p>
+            <div className="rounded-xl border border-brand-100 bg-white p-3 space-y-2">
+              <p className="text-[11px] font-black text-brand-700">تمديد الاشتراك</p>
               <div className="grid grid-cols-3 gap-2">
                 {DURATION_PRESETS.map((opt) => (
                   <button
@@ -216,7 +216,7 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
                       setDurationPicker(null);
                     }}
                     disabled={actionInProgress}
-                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                    className="rounded-xl border border-brand-200 bg-brand-50 px-3 py-2.5 text-xs font-bold text-brand-700 transition hover:bg-brand-100 disabled:opacity-50"
                   >
                     {opt.label}
                   </button>
@@ -234,11 +234,11 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
             /* ── الحالة الافتراضية: زرين (تعديل التواريخ / تمديد) ── */
             <div className="flex gap-2">
               <button onClick={() => { setEditingDurationId(doctor.id); setEditMode((p) => ({ ...p, [doctor.id]: 'dates' })); }}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition">
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-[11px] font-bold text-brand-700 hover:bg-brand-100 transition">
                 <FaPen className="w-2.5 h-2.5" /> تعديل التواريخ
               </button>
               <button onClick={() => setDurationPicker('extend')}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700 hover:bg-blue-100 transition">
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-[11px] font-bold text-brand-700 hover:bg-brand-100 transition">
                 <FaPlus className="w-2.5 h-2.5" /> تمديد
               </button>
             </div>
@@ -266,9 +266,9 @@ export const DoctorSubscriptionDetails: React.FC<DoctorSubscriptionDetailsProps>
                       {typeLabel.label}
                     </span>
                     <span className="text-slate-400">من</span>
-                    <span className="font-bold text-sky-700">{formatUserDate(start, undefined, 'ar-EG')}</span>
+                    <span className="font-bold text-brand-700">{formatUserDate(start, undefined, 'ar-EG')}</span>
                     <span className="text-slate-400">إلى</span>
-                    <span className="font-bold text-indigo-700">{formatUserDate(end, undefined, 'ar-EG')}</span>
+                    <span className="font-bold text-brand-700">{formatUserDate(end, undefined, 'ar-EG')}</span>
                   </div>
                   {period.modifiedBy && (
                     <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">

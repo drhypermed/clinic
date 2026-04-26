@@ -50,10 +50,10 @@ interface LevelStyle {
 const LEVEL_STYLES: Record<PregnancySafetyLevel, LevelStyle> = {
   contraindicated: {
     labelAr: 'ممنوع تماماً',
-    bg: 'bg-rose-50',
-    border: 'border-rose-300',
-    badge: 'bg-rose-600 text-white',
-    text: 'text-rose-900',
+    bg: 'bg-danger-50',
+    border: 'border-danger-300',
+    badge: 'bg-danger-600 text-white',
+    text: 'text-danger-900',
     order: 1,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -64,10 +64,10 @@ const LEVEL_STYLES: Record<PregnancySafetyLevel, LevelStyle> = {
   },
   avoid: {
     labelAr: 'يُفضّل التجنب',
-    bg: 'bg-orange-50',
-    border: 'border-orange-300',
-    badge: 'bg-orange-500 text-white',
-    text: 'text-orange-900',
+    bg: 'bg-warning-50',
+    border: 'border-warning-300',
+    badge: 'bg-warning-500 text-white',
+    text: 'text-warning-900',
     order: 2,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -78,10 +78,10 @@ const LEVEL_STYLES: Record<PregnancySafetyLevel, LevelStyle> = {
   },
   caution: {
     labelAr: 'بحذر',
-    bg: 'bg-amber-50',
-    border: 'border-amber-300',
-    badge: 'bg-amber-500 text-white',
-    text: 'text-amber-900',
+    bg: 'bg-warning-50',
+    border: 'border-warning-300',
+    badge: 'bg-warning-500 text-white',
+    text: 'text-warning-900',
     order: 3,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -92,10 +92,10 @@ const LEVEL_STYLES: Record<PregnancySafetyLevel, LevelStyle> = {
   },
   safe: {
     labelAr: 'آمن',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-300',
-    badge: 'bg-emerald-500 text-white',
-    text: 'text-emerald-900',
+    bg: 'bg-success-50',
+    border: 'border-success-300',
+    badge: 'bg-success-500 text-white',
+    text: 'text-success-900',
     order: 4,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +144,7 @@ const AssessmentCard: React.FC<{ item: PregnancyDrugAssessment }> = ({ item }) =
             {/* تصنيف الرضاعة (LactMed L1-L5) — لون هادي مختلف */}
             {item.lactationCategory && (
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9.5px] font-black tracking-wide bg-indigo-700 text-white"
+                className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[9.5px] font-black tracking-wide bg-brand-700 text-white"
                 title="تصنيف الرضاعة حسب LactMed/Hale"
               >
                 رضاعة {item.lactationCategory}
@@ -273,7 +273,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
       labelledBy="pregnancy-safety-modal-title"
     >
       {/* ─── الهيدر الذهبي البريميوم ─── */}
-      <div className="relative overflow-hidden bg-gradient-to-l from-amber-500 via-yellow-500 to-amber-600 px-5 py-4 text-amber-950">
+      <div className="relative overflow-hidden bg-gradient-to-l from-warning-500 via-warning-500 to-warning-600 px-5 py-4 text-warning-950">
         <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
           <span className="absolute -top-1/2 -left-full h-[200%] w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[dh-btn-shine_4s_ease-in-out_infinite]" />
         </span>
@@ -302,7 +302,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/25 hover:bg-white/40 active:scale-95 transition text-amber-950"
+            className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/25 hover:bg-white/40 active:scale-95 transition text-warning-950"
             aria-label="إغلاق"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -318,14 +318,14 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
         {inSelectionPhase && (
           <>
             {availableDrugs.length === 0 ? (
-              <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-5 text-center">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 mb-2">
-                  <svg className="w-6 h-6 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="rounded-2xl border-2 border-dashed border-warning-300 bg-warning-50 p-5 text-center">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-warning-100 mb-2">
+                  <svg className="w-6 h-6 text-warning-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 8v4M12 16h.01" />
                   </svg>
                 </div>
-                <p className="text-amber-900 font-bold text-sm">
+                <p className="text-warning-900 font-bold text-sm">
                   لا توجد أدوية في الروشتة. اكتب على الأقل دواء واحد ثم افتح الفحص.
                 </p>
               </div>
@@ -340,7 +340,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
                     <button
                       type="button"
                       onClick={selectAll}
-                      className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] transition active:scale-95"
+                      className="px-2.5 py-1 rounded-lg bg-warning-100 hover:bg-warning-200 text-warning-900 font-bold text-[11px] transition active:scale-95"
                     >
                       اختر الكل
                     </button>
@@ -365,8 +365,8 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
                         key={drug}
                         className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl border-2 cursor-pointer transition active:scale-[0.99] ${
                           isChecked
-                            ? 'border-amber-400 bg-amber-50 shadow-sm'
-                            : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/50'
+                            ? 'border-warning-400 bg-warning-50 shadow-sm'
+                            : 'border-slate-200 bg-white hover:border-warning-300 hover:bg-warning-50/50'
                         }`}
                       >
                         <input
@@ -379,7 +379,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
                         <span
                           className={`shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-md border-2 transition ${
                             isChecked
-                              ? 'bg-amber-500 border-amber-500 text-white'
+                              ? 'bg-warning-500 border-warning-500 text-white'
                               : 'bg-white border-slate-300'
                           }`}
                         >
@@ -389,7 +389,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
                             </svg>
                           )}
                         </span>
-                        <span className={`flex-1 text-[0.92rem] font-bold ${isChecked ? 'text-amber-900' : 'text-slate-800'}`}>
+                        <span className={`flex-1 text-[0.92rem] font-bold ${isChecked ? 'text-warning-900' : 'text-slate-800'}`}>
                           {drug}
                         </span>
                       </label>
@@ -405,7 +405,7 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
         {inLoadingPhase && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="relative w-14 h-14 mb-3">
-              <span className="absolute inset-0 rounded-full border-4 border-amber-200" />
+              <span className="absolute inset-0 rounded-full border-4 border-warning-200" />
               <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-600 animate-spin" />
             </div>
             <p className="text-slate-700 font-bold text-sm">جاري مراجعة الأدلة العلمية…</p>
@@ -417,8 +417,8 @@ export const PregnancySafetyModal: React.FC<PregnancySafetyModalProps> = ({
         {inResultPhase && result && (
           <>
             {result.insufficientData ? (
-              <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-5 text-center">
-                <p className="text-amber-900 font-bold text-sm">
+              <div className="rounded-2xl border-2 border-dashed border-warning-300 bg-warning-50 p-5 text-center">
+                <p className="text-warning-900 font-bold text-sm">
                   {result.insufficientDataNote || 'تعذّر إجراء الفحص. حاول مرة أخرى.'}
                 </p>
               </div>

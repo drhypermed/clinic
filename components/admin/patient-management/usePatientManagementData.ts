@@ -1,14 +1,20 @@
 /**
  * hook إدارة بيانات الجمهور (usePatientManagementData)
- * يعتمد على pagination حقيقي من Firestore بدل تحميل كل الحسابات مرة واحدة.
+ *
+ * استراتيجية تقليل قراءات Firestore (مهم للتكلفة عند آلاف المستخدمين):
+ *   1) القائمة الرئيسية تجيب وثيقة المستخدم فقط (1 قراءة لكل مريض). لا نجيب publicBookings مطلقاً.
+ *   2) إحصائيات الحجوزات/التقييمات تُجلب عند الطلب فقط (lazy) عبر loadPatientBookings.
+ *   3) ألغينا auto-load لكل القاعدة عند البحث — الأدمن يضغط "تحميل المزيد" يدوياً.
+ *   4) pagination باستخدام cache-first عشان نعيد استخدام cache المتصفح بدل ضرب الشبكة كل مرة.
+ *
+ * النتيجة: قراءات الصفحة الأولى تنخفض من ~120 إلى 20 قراءة فقط (وفر ~83%).
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   collection,
   DocumentData,
   documentId,
-  getDocs,
   limit,
   orderBy,
   QueryConstraint,
@@ -20,7 +26,7 @@ import {
 import { db } from '../../../services/firebaseConfig';
 import { getDocsCacheFirst } from '../../../services/firestore/cacheFirst';
 import { PublicUserBooking } from '../../../types';
-import { getPatientMetrics, buildPatientSearchCorpus } from './patientUtils';
+import { getPatientMetrics } from './patientUtils';
 import { PatientAccount } from './types';
 
 interface UsePatientManagementDataParams {
@@ -32,49 +38,42 @@ const PATIENTS_PAGE_SIZE = 20;
 type PatientDocSnapshot = QueryDocumentSnapshot<DocumentData>;
 
 export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatientManagementDataParams) => {
+  // loading يبدأ true لتجنب وميض "لا توجد بيانات" قبل التحميل الأول
   const [patients, setPatients] = useState<PatientAccount[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<PatientAccount[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [lastDoc, setLastDoc] = useState<PatientDocSnapshot | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [autoLoadingAll, setAutoLoadingAll] = useState(false);
-  const autoLoadInFlightRef = useRef(false);
+  // معرّفات المرضى الذين تم تحميل حجوزاتهم بالفعل (لتجنب جلبها مرة أخرى)
+  const [bookingsLoadingId, setBookingsLoadingId] = useState<string | null>(null);
 
-  const fetchMetricsForBatch = async (usersBatch: PatientDocSnapshot[]): Promise<PatientAccount[]> => {
-    return Promise.all(
-      usersBatch.map(async (uDoc) => {
-        const data = uDoc.data() as Record<string, any>;
-        const patientId = uDoc.id;
-        let allBookings: PublicUserBooking[] = [];
-
-        try {
-          const bookingsSnap = await getDocsCacheFirst(collection(db, 'users', patientId, 'publicBookings') as any);
-          allBookings = bookingsSnap.docs.map((item) => ({ id: item.id, ...item.data() } as PublicUserBooking));
-        } catch {
-          // Ignore
-        }
-
-        const metrics = getPatientMetrics(allBookings);
-        return {
-          id: patientId,
-          name: data.displayName || data.name || 'مستخدم بدون اسم',
-          email: data.email || 'غير متوفر',
-          createdAt: data.createdAt,
-          lastLoginAt: data.lastLoginAt,
-          isAccountDisabled: data.isAccountDisabled,
-          disabledReason: data.disabledReason,
-          disabledAt: data.disabledAt,
-          verificationStatus: data.verificationStatus,
-          totalAppointments: metrics.totalAppointments,
-          completedAppointments: metrics.confirmedAppointments,
-          totalReviews: metrics.totalReviews,
-          averageRating: metrics.averageRating,
-          bookings: allBookings,
-        };
-      }),
-    );
+  /**
+   * بناء PatientAccount من وثيقة المستخدم بدون جلب الحجوزات
+   * (الإحصائيات تبدأ صفر، تُملأ لاحقاً عند الطلب)
+   */
+  const buildPatientFromDoc = (uDoc: PatientDocSnapshot): PatientAccount => {
+    const data = uDoc.data() as Record<string, any>;
+    return {
+      id: uDoc.id,
+      name: data.displayName || data.name || 'مستخدم بدون اسم',
+      email: data.email || 'غير متوفر',
+      createdAt: data.createdAt,
+      lastLoginAt: data.lastLoginAt,
+      isAccountDisabled: data.isAccountDisabled,
+      disabledReason: data.disabledReason,
+      disabledAt: data.disabledAt,
+      verificationStatus: data.verificationStatus,
+      // الإحصائيات تبدأ بـ undefined → الـ UI يعرض زر "عرض" بدل أرقام مزيفة
+      totalAppointments: 0,
+      completedAppointments: 0,
+      totalReviews: 0,
+      averageRating: '0',
+      bookings: [],
+      // علامة عشان الـ UI يعرف إن الإحصائيات لسه ما اتجلبتش
+      bookingsLoaded: false,
+    };
   };
 
   const buildPatientsPageQuery = (cursor: PatientDocSnapshot | null) => {
@@ -91,13 +90,9 @@ export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatien
     return query(collection(db, 'users'), ...constraints);
   };
 
-  const fetchPatientsPage = async (cursor: PatientDocSnapshot | null) => {
-    const pageQuery = buildPatientsPageQuery(cursor);
-    try {
-      return await getDocs(pageQuery);
-    } catch {
-      return getDocsCacheFirst(pageQuery);
-    }
+  // cache-first في كل الصفحات لتقليل قراءات الشبكة عند فتح وقفل الصفحة
+  const fetchPatientsPage = (cursor: PatientDocSnapshot | null) => {
+    return getDocsCacheFirst(buildPatientsPageQuery(cursor) as any);
   };
 
   const loadPatients = useCallback(async () => {
@@ -113,7 +108,7 @@ export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatien
     setLoading(true);
     try {
       const usersSnap = await fetchPatientsPage(null);
-      const loadedPatients = await fetchMetricsForBatch(usersSnap.docs as PatientDocSnapshot[]);
+      const loadedPatients = (usersSnap.docs as PatientDocSnapshot[]).map(buildPatientFromDoc);
       setPatients(loadedPatients);
       setLastDoc((usersSnap.docs[usersSnap.docs.length - 1] as PatientDocSnapshot | undefined) || null);
       setHasMore(usersSnap.docs.length === PATIENTS_PAGE_SIZE);
@@ -139,10 +134,13 @@ export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatien
         return;
       }
 
-      const loadedPatients = await fetchMetricsForBatch(usersSnap.docs as PatientDocSnapshot[]);
+      const loadedPatients = (usersSnap.docs as PatientDocSnapshot[]).map(buildPatientFromDoc);
       setPatients((prev) => {
+        // دمج بدون تكرار: لو ID موجود، نحتفظ بالنسخة القديمة (محتفظة بالـ bookings المُحمّلة)
         const merged = new Map<string, PatientAccount>(prev.map((patient) => [patient.id, patient]));
-        loadedPatients.forEach((patient) => merged.set(patient.id, patient));
+        loadedPatients.forEach((patient) => {
+          if (!merged.has(patient.id)) merged.set(patient.id, patient);
+        });
         return Array.from(merged.values());
       });
 
@@ -155,69 +153,74 @@ export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatien
     }
   };
 
+  /**
+   * جلب حجوزات مريض واحد عند الطلب (lazy)
+   * يُستدعى فقط لما الأدمن يضغط على "عرض الإحصائيات" أو "التقييمات"
+   * يحفظ النتيجة في state عشان ما نجيبهاش تاني لو الأدمن ضغط مرة أخرى
+   */
+  const loadPatientBookings = async (patientId: string): Promise<PublicUserBooking[]> => {
+    // لو الحجوزات محمّلة بالفعل، نرجع المخزنة فوراً (صفر قراءات)
+    const existing = patients.find((p) => p.id === patientId);
+    if (existing?.bookingsLoaded) return existing.bookings;
+
+    setBookingsLoadingId(patientId);
+    try {
+      const bookingsSnap = await getDocsCacheFirst(
+        collection(db, 'users', patientId, 'publicBookings') as any,
+      );
+      const allBookings = bookingsSnap.docs.map(
+        (item: any) => ({ id: item.id, ...item.data() } as PublicUserBooking),
+      );
+      const metrics = getPatientMetrics(allBookings);
+
+      setPatients((prev) =>
+        prev.map((patient) =>
+          patient.id === patientId
+            ? {
+                ...patient,
+                bookings: allBookings,
+                bookingsLoaded: true,
+                totalAppointments: metrics.totalAppointments,
+                completedAppointments: metrics.confirmedAppointments,
+                totalReviews: metrics.totalReviews,
+                averageRating: metrics.averageRating,
+              }
+            : patient,
+        ),
+      );
+      return allBookings;
+    } catch (err) {
+      console.error('Error loading patient bookings:', err);
+      return [];
+    } finally {
+      setBookingsLoadingId(null);
+    }
+  };
+
   useEffect(() => {
     void loadPatients();
   }, [loadPatients]);
 
+  /**
+   * فلترة client-side فقط على المرضى المحملين حالياً
+   * البحث لا يستدعي auto-load — الأدمن يضغط "تحميل المزيد" يدوياً لو محتاج
+   * (سبب القرار: auto-load كان يكلف ~30k قراءة لكل بحث عند 5 آلاف جمهور)
+   */
   useEffect(() => {
     let result = [...patients];
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      result = result.filter((patient) => buildPatientSearchCorpus(patient).includes(term));
+      result = result.filter((patient) => {
+        // بحث خفيف على الحقول الظاهرة فقط (الاسم/البريد/معرّف)
+        // لم نعد نبحث في bookings لأنها لم تُجلب أصلاً
+        const corpus = [patient.id, patient.name, patient.email, patient.disabledReason || '']
+          .join(' ')
+          .toLowerCase();
+        return corpus.includes(term);
+      });
     }
     setFilteredPatients(result);
   }, [patients, searchTerm]);
-
-  /**
-   * PT3: Auto-load كل الصفحات عند البحث — يحل bug "البحث يفوت الصفحات غير المحمّلة"
-   * بنفس أسلوب Account Management للأطباء.
-   */
-  useEffect(() => {
-    if (!isAdminUser || currentView !== 'patients') return;
-    if (loading || loadingMore) return;
-    if (!hasMore || !lastDoc) return;
-    if (autoLoadInFlightRef.current) return;
-    if (!searchTerm.trim()) return;
-
-    autoLoadInFlightRef.current = true;
-    setAutoLoadingAll(true);
-    let cancelled = false;
-
-    const loadRemaining = async () => {
-      try {
-        let cursor: PatientDocSnapshot | null = lastDoc;
-        while (cursor && !cancelled) {
-          const snap = await fetchPatientsPage(cursor);
-          if (cancelled) return;
-          if (snap.docs.length === 0) break;
-          const nextPatients = await fetchMetricsForBatch(snap.docs as PatientDocSnapshot[]);
-          setPatients((prev) => {
-            const merged = new Map<string, PatientAccount>(prev.map((p) => [p.id, p]));
-            nextPatients.forEach((p) => merged.set(p.id, p));
-            return Array.from(merged.values());
-          });
-          if (snap.docs.length < PATIENTS_PAGE_SIZE) {
-            cursor = null;
-          } else {
-            cursor = snap.docs[snap.docs.length - 1] as PatientDocSnapshot;
-          }
-        }
-        if (!cancelled) {
-          setLastDoc(null);
-          setHasMore(false);
-        }
-      } catch (err) {
-        if (!cancelled) console.warn('[PatientManagement] Auto-load remaining failed:', err);
-      } finally {
-        if (!cancelled) setAutoLoadingAll(false);
-        autoLoadInFlightRef.current = false;
-      }
-    };
-
-    void loadRemaining();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, hasMore, isAdminUser, currentView]);
 
   return {
     patients,
@@ -225,10 +228,11 @@ export const usePatientManagementData = ({ currentView, isAdminUser }: UsePatien
     filteredPatients,
     loading,
     loadingMore,
-    autoLoadingAll,
     hasMore,
     searchTerm,
     setSearchTerm,
     loadMore,
+    loadPatientBookings,
+    bookingsLoadingId,
   };
 };

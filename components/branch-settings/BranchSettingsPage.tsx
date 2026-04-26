@@ -24,12 +24,12 @@ interface BranchSettingsPageProps {
 }
 
 const BRANCH_COLORS = [
-    'from-amber-500 to-orange-600',
-    'from-blue-500 to-indigo-600',
-    'from-emerald-500 to-teal-600',
-    'from-purple-500 to-violet-600',
-    'from-rose-500 to-pink-600',
-    'from-cyan-500 to-sky-600',
+    'from-warning-500 to-warning-600',
+    'from-brand-500 to-brand-600',
+    'from-success-500 to-brand-600',
+    'from-slate-500 to-slate-600',
+    'from-danger-500 to-slate-600',
+    'from-brand-500 to-brand-600',
 ];
 
 export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
@@ -209,7 +209,7 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                     <div className="relative overflow-hidden" style={cardStyle}>
                         <div style={accentBar('linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)')} />
                         <div className="flex items-center justify-center py-8 gap-3">
-                            <svg className="w-5 h-5 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                            <svg className="w-5 h-5 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                             <p className="text-sm font-bold text-slate-400">جاري تحميل الفروع...</p>
                         </div>
                     </div>
@@ -222,7 +222,7 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                     <div className="flex items-center gap-2 mb-2 mt-0.5">
                         <div style={sideBar('linear-gradient(135deg, #059669 0%, #10b981 100%)')} />
                         <h2 className="text-[0.95rem] font-black text-slate-900 tracking-tight">الفرع النشط</h2>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-[10px] font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full border border-success-200">
                             {branches.find(b => b.id === activeBranchId)?.name || ''}
                         </span>
                     </div>
@@ -263,10 +263,10 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                                             {branch.name}
                                         </p>
                                         {branch.address && (
-                                            <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{branch.address}</p>
+                                            <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-brand-100' : 'text-slate-400'}`}>{branch.address}</p>
                                         )}
                                         {branch.phone && (
-                                            <p className={`text-[11px] mt-0.5 ${isActive ? 'text-blue-200' : 'text-slate-400'}`} dir="ltr">{branch.phone}</p>
+                                            <p className={`text-[11px] mt-0.5 ${isActive ? 'text-brand-200' : 'text-slate-400'}`} dir="ltr">{branch.phone}</p>
                                         )}
                                     </div>
                                     <div className="shrink-0">
@@ -324,7 +324,7 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                         <p className="font-bold text-sm text-slate-800">{branch.name}</p>
                                         {branch.id === activeBranchId && (
-                                            <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">نشط</span>
+                                            <span className="text-[9px] font-black text-success-600 bg-success-50 px-1.5 py-0.5 rounded-md border border-success-200">نشط</span>
                                         )}
                                         {branch.id === DEFAULT_BRANCH_ID && (
                                             <span className="text-[9px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">رئيسي</span>
@@ -333,7 +333,7 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                                     {branch.address ? (
                                         <p className="text-xs text-slate-400 truncate mt-0.5">{branch.address}</p>
                                     ) : (
-                                        <p className="text-xs text-amber-500 mt-0.5 flex items-center gap-1">
+                                        <p className="text-xs text-warning-500 mt-0.5 flex items-center gap-1">
                                             <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z" />
                                             </svg>
@@ -376,10 +376,10 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                                             ) : (
                                                 <button
                                                     onClick={() => setDeleteConfirmId(branch.id)}
-                                                    className="w-8 h-8 rounded-[10px] hover:bg-red-50 hover:shadow-sm flex items-center justify-center transition-all"
+                                                    className="w-8 h-8 rounded-[10px] hover:bg-danger-50 hover:shadow-sm flex items-center justify-center transition-all"
                                                     title="حذف"
                                                 >
-                                                    <svg className="w-4 h-4 text-slate-400 group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <svg className="w-4 h-4 text-slate-400 group-hover:text-danger-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                 </button>

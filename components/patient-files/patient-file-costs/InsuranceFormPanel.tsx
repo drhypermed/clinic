@@ -15,6 +15,8 @@ interface Props {
   insFormMembership: string;
   insFormApproval: string;
   insFormNote: string;
+  /** نسبة تحمل المريض % كنص — بتتعبأ افتراضياً من الشركة، الطبيب يقدر يعدّلها */
+  insFormSharePercent: string;
   setInsFormCompanyId: (v: string) => void;
   setInsFormDate: (v: string) => void;
   setInsFormAmount: (v: string) => void;
@@ -22,6 +24,7 @@ interface Props {
   setInsFormMembership: (v: string) => void;
   setInsFormApproval: (v: string) => void;
   setInsFormNote: (v: string) => void;
+  setInsFormSharePercent: (v: string) => void;
   onCancel: () => void;
   onSave: () => void;
 }
@@ -36,6 +39,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
   insFormMembership,
   insFormApproval,
   insFormNote,
+  insFormSharePercent,
   setInsFormCompanyId,
   setInsFormDate,
   setInsFormAmount,
@@ -43,11 +47,12 @@ export const InsuranceFormPanel: React.FC<Props> = ({
   setInsFormMembership,
   setInsFormApproval,
   setInsFormNote,
+  setInsFormSharePercent,
   onCancel,
   onSave,
 }) => (
-  <div className="rounded-xl bg-violet-50 border border-violet-200 p-3 space-y-2">
-    <div className="text-[11px] font-black text-violet-700">
+  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
+    <div className="text-[11px] font-black text-slate-700">
       {editingInsId ? 'تعديل مطالبة تأمين' : 'إضافة مطالبة تأمين'}
     </div>
     <div className="grid grid-cols-2 gap-2">
@@ -56,7 +61,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
         <select
           value={insFormCompanyId}
           onChange={(e) => setInsFormCompanyId(e.target.value)}
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         >
           <option value="">-- اختر الشركة --</option>
           {insuranceCompanies.map((c) => (
@@ -66,7 +71,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           ))}
         </select>
         {insuranceCompanies.length === 0 && (
-          <p className="mt-0.5 text-[10px] text-violet-400">
+          <p className="mt-0.5 text-[10px] text-slate-400">
             أضف شركات التأمين من قسم التقارير المالية أولاً
           </p>
         )}
@@ -78,7 +83,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           value={insFormDate}
           onChange={(e) => setInsFormDate(e.target.value)}
           dir="ltr"
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         />
       </div>
       <div>
@@ -91,7 +96,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           onChange={(e) => setInsFormAmount(e.target.value)}
           placeholder="0.00"
           dir="ltr"
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         />
       </div>
       <div>
@@ -99,7 +104,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
         <select
           value={insFormType}
           onChange={(e) => setInsFormType(e.target.value as 'interventions' | 'other')}
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         >
           <option value="interventions">التداخلات</option>
           <option value="other">دخل آخر</option>
@@ -112,7 +117,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           value={insFormMembership}
           onChange={(e) => setInsFormMembership(e.target.value)}
           placeholder="اختياري"
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         />
       </div>
       <div>
@@ -122,8 +127,28 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           value={insFormApproval}
           onChange={(e) => setInsFormApproval(e.target.value)}
           placeholder="اختياري"
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         />
+      </div>
+      {/* نسبة تحمل المريض — بتتعبأ تلقائياً من الشركة، الطبيب يعدّلها لو لازم */}
+      <div className="col-span-2">
+        <label className="mb-0.5 block text-[10px] font-black text-slate-500">
+          نسبة تحمل المريض (%)
+        </label>
+        <input
+          type="number"
+          min={0}
+          max={100}
+          step={1}
+          value={insFormSharePercent}
+          onChange={(e) => setInsFormSharePercent(e.target.value)}
+          placeholder="0"
+          dir="ltr"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
+        />
+        <p className="mt-0.5 text-[9px] text-slate-400">
+          بتتعبأ تلقائياً من الشركة وقت اختيارها. غيّرها لو الحالة دي ليها نسبة مختلفة.
+        </p>
       </div>
       <div className="col-span-2">
         <label className="mb-0.5 block text-[10px] font-black text-slate-500">ملاحظة (اختياري)</label>
@@ -132,7 +157,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
           value={insFormNote}
           onChange={(e) => setInsFormNote(e.target.value)}
           placeholder="تفاصيل إضافية..."
-          className="w-full rounded-lg border border-violet-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-slate-500 focus:outline-none"
         />
       </div>
     </div>
@@ -147,7 +172,7 @@ export const InsuranceFormPanel: React.FC<Props> = ({
       <button
         type="button"
         onClick={onSave}
-        className="rounded-lg bg-violet-600 px-4 py-1.5 text-[11px] font-black text-white hover:bg-violet-700"
+        className="rounded-lg bg-slate-600 px-4 py-1.5 text-[11px] font-black text-white hover:bg-slate-700"
       >
         {editingInsId ? 'حفظ التعديل' : 'حفظ'}
       </button>

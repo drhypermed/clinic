@@ -372,7 +372,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="ابحث بالاسم أو رقم الملف أو الهاتف..."
-            className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
           />
         </div>
 
@@ -382,7 +382,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
             <select
               value={sortOption}
               onChange={(event) => setSortOption(event.target.value as PatientFilesSortOption)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
             >
               <option value="fileNumberNewestToOldest">رقم الملف: من الأحدث للأقدم</option>
               <option value="fileNumberOldestToNewest">رقم الملف: من الأقدم للأحدث</option>
@@ -430,7 +430,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
                       {isPositiveFileNumber(file.fileNumber) ? `#${file.fileNumber}` : 'قيد التوليد'}
                     </span>
                   </div>
-                  <div className="mt-1 text-[12px] font-medium text-blue-100">
+                  <div className="mt-1 text-[12px] font-medium text-brand-100">
                     <span className="truncate block">{file.phones.length > 0 ? file.phones.join(' | ') : 'لا يوجد هاتف مسجل'}</span>
                     {file.phones.length > 0 && (
                       <div className="mt-1">
@@ -449,7 +449,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
                   <span className="text-[11px] font-bold bg-white/15 text-white rounded-full px-2.5 py-1">
                     {file.consultationCount} استشارة
                   </span>
-                  <span className="inline-flex items-center bg-white text-blue-700 rounded-full px-4 py-1.5 text-[11px] font-black shadow-sm hover:shadow-md transition-shadow ring-2 ring-white/60">
+                  <span className="inline-flex items-center bg-white text-brand-700 rounded-full px-4 py-1.5 text-[11px] font-black shadow-sm hover:shadow-md transition-shadow ring-2 ring-white/60">
                     التفاصيل
                   </span>
                 </div>

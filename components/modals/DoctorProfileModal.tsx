@@ -236,8 +236,8 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-t-3xl flex items-center justify-between z-10">
+        {/* Header — أزرق متدرج فقط (blue-only premium) بدل brand→slate المخلوط */}
+        <div className="sticky top-0 bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500 text-white px-6 py-4 rounded-t-3xl flex items-center justify-between z-10 shadow-[0_2px_12px_-2px_rgba(8,112,184,0.4)]">
           <h2 className="text-2xl font-black">الملف الشخصي</h2>
           <button
             onClick={onClose}
@@ -258,6 +258,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
         <div className="p-6 space-y-6">
           {isLoading && (
             <div className="text-center py-8">
+              {/* spinner أزرق فقط */}
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="text-slate-600 mt-2 font-bold">
                 <LoadingText>جاري التحميل</LoadingText>
@@ -265,12 +266,14 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
             </div>
           )}
 
+          {/* خطأ — أحمر دلالي (rose) — استثناء مقبول (الـerror لازم يبان واضح) */}
           {error && (
-            <div className="bg-red-50 border-r-4 border-red-500 p-4 rounded-lg">
-              <p className="text-red-700 font-bold">{error}</p>
+            <div className="bg-rose-50 border-r-4 border-rose-500 p-4 rounded-lg">
+              <p className="text-rose-700 font-bold">{error}</p>
             </div>
           )}
 
+          {/* نجاح — أخضر متدرج فقط (emerald) */}
           {success && (
             <div className="bg-emerald-50 border-r-4 border-emerald-500 p-4 rounded-lg">
               <p className="text-emerald-700 font-bold">{success}</p>
@@ -283,10 +286,12 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
               <div className="flex flex-col items-center">
                 <div className="relative mb-3">
                   <div
-                    className={`w-32 h-32 rounded-full p-[3px] shadow-lg ${
+                    className={`w-32 h-32 rounded-full p-[3px] shadow-[0_8px_24px_-6px_rgba(8,112,184,0.45)] ${
                       isProAccount
-                        ? 'bg-gradient-to-tr from-yellow-300 via-yellow-500 to-amber-600'
-                        : 'bg-gradient-to-tr from-sky-300 via-sky-400 to-cyan-500'
+                        ? // برو: تاج ذهبي (gold gradient) — استثناء دلالي للـpremium
+                          'bg-gradient-to-tr from-amber-300 via-amber-500 to-amber-600 shadow-[0_8px_24px_-6px_rgba(245,158,11,0.5)]'
+                        : // عادي: حلقة أزرق متدرج فقط
+                          'bg-gradient-to-tr from-blue-300 via-blue-500 to-blue-700'
                     }`}
                   >
                     <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
@@ -311,9 +316,10 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 mb-2">
+                  {/* زر "تعديل" — أزرق فاتح فقط */}
                   <label
                     htmlFor="profile-image-upload"
-                    className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-100 cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-full text-sm font-bold hover:bg-blue-100 cursor-pointer transition-colors"
                   >
                     <svg
                       className="w-4 h-4"
@@ -332,9 +338,10 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                   </label>
 
                   {profileImage && (
+                    /* زر "حذف" — أحمر متدرج (destructive action) */
                     <button
                       onClick={handleDeleteImage}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 rounded-full text-sm font-bold hover:bg-red-100 transition-colors"
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-l from-rose-600 to-rose-500 text-white border border-rose-700 hover:from-rose-700 hover:to-rose-600 shadow-[0_2px_8px_-2px_rgba(225,29,72,0.4)] hover:shadow-[0_4px_12px_-2px_rgba(225,29,72,0.5)] rounded-full text-sm font-bold transition-all"
                     >
                       <svg
                         className="w-4 h-4"
@@ -371,16 +378,16 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                 />
               </div>
 
-              {/* Name Field */}
+              {/* Name Field — focus ring أزرق */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  الاسم الكامل <span className="text-red-500">*</span>
+                  الاسم الكامل <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                  className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 font-semibold"
                   placeholder="د. عبدالرحمن جمال"
                 />
               </div>
@@ -388,10 +395,10 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
               {/* Specialty Field */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  التخصص الطبي <span className="text-red-500">*</span>
+                  التخصص الطبي <span className="text-rose-500">*</span>
                 </label>
                 {canEditSpecialty ? (
-                  // حساب قديم بدون تخصص: dropdown قابل للتعديل مرة واحدة
+                  // حساب قديم بدون تخصص: dropdown قابل للتعديل مرة واحدة (تنبيه = amber دلالي)
                   <>
                     <select
                       value={specialty}
@@ -411,17 +418,17 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                 ) : (
                   // التخصص محفوظ بالفعل → عرض فقط
                   <>
-                    <div className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-600 font-semibold">
+                    <div className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-blue-50 text-slate-800 font-semibold">
                       {resolvedSpecialty || 'غير محدد'}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1 font-semibold">
+                    <p className="text-xs text-slate-600 mt-1 font-semibold">
                       التخصص غير قابل للتعديل من الملف الشخصي
                     </p>
                   </>
                 )}
               </div>
 
-              {/* WhatsApp Field */}
+              {/* WhatsApp Field — focus ring أزرق */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   رقم الواتساب
@@ -430,31 +437,32 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                   type="tel"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                  className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 font-semibold"
                   placeholder="01xxxxxxxxx"
                   dir="ltr"
                 />
               </div>
 
-              {/* Email Field (Read-only) */}
+              {/* Email Field (Read-only) — خلفية صلبة عشان النص يبان */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   البريد الإلكتروني (Google)
                 </label>
-                <div className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 font-semibold">
+                <div className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-blue-50 text-slate-800 font-semibold">
                   {currentEmail}
                 </div>
-                <p className="text-xs text-slate-500 mt-1 font-semibold">
+                <p className="text-xs text-slate-600 mt-1 font-semibold">
                   البريد الإلكتروني لا يمكن تعديله
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
+                {/* زر "حفظ" — أخضر متدرج (CTA = action إيجابي) */}
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-black hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-to-l from-emerald-700 via-emerald-600 to-emerald-500 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-black shadow-[0_4px_14px_-2px_rgba(5,150,105,0.45)] hover:shadow-[0_6px_22px_-2px_rgba(5,150,105,0.55)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <span className="flex items-center justify-center gap-2">
@@ -465,10 +473,11 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                     'حفظ التعديلات'
                   )}
                 </button>
+                {/* زر "إلغاء" — أحمر متدرج (action سلبي/خروج) */}
                 <button
                   onClick={onClose}
                   disabled={isSaving}
-                  className="px-6 py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-black hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-l from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-black shadow-[0_4px_12px_-2px_rgba(225,29,72,0.4)] hover:shadow-[0_6px_18px_-2px_rgba(225,29,72,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   إلغاء
                 </button>

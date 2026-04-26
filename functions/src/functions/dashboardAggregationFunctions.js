@@ -15,9 +15,41 @@ const normalizeVerificationStatus = (value) => {
   return 'submitted';
 };
 
+// أسماء ميزات الـAI الـ6 — لازم تطابق `ALLOWED_AI_FEATURES` في adminFunctions.js
+const AI_FEATURE_NAMES = [
+  'case_analysis',
+  'translation',
+  'drug_interactions',
+  'pregnancy_safety',
+  'renal_dose',
+  'medical_report',
+];
+
+// تحويل الـsnake_case إلى camelCase لأسماء الحقول في الـpayload
+const FEATURE_CAMEL_MAP = {
+  case_analysis: 'caseAnalysis',
+  translation: 'translation',
+  drug_interactions: 'drugInteractions',
+  pregnancy_safety: 'pregnancySafety',
+  renal_dose: 'renalDose',
+  medical_report: 'medicalReport',
+};
+
+// يبني خريطة per-feature counters من tier object — لو ميزة مش موجودة بترجع 0
+const buildAiFeaturesMap = (tierData) => {
+  const aiFeaturesRaw = tierData && typeof tierData.aiFeatures === 'object' ? tierData.aiFeatures : {};
+  const result = {};
+  AI_FEATURE_NAMES.forEach((featureName) => {
+    result[featureName] = toNumber(aiFeaturesRaw?.[featureName]?.count);
+  });
+  return result;
+};
+
 const normalizeUsageCounters = (raw) => ({
   smartPrescriptionCount: toNumber(raw?.smartPrescriptionCount),
   printCount: toNumber(raw?.printCount),
+  // عداد منفصل لكل ميزة AI (6 ميزات)
+  aiFeatures: buildAiFeaturesMap(raw),
 });
 
 const getUsageByPlan = (doctorData) => {
@@ -27,23 +59,29 @@ const getUsageByPlan = (doctorData) => {
 
   let freeUsage = normalizeUsageCounters(usageByPlan?.free);
   let premiumUsage = normalizeUsageCounters(usageByPlan?.premium);
+  let proMaxUsage = normalizeUsageCounters(usageByPlan?.pro_max);
 
   const hasUsageByPlan =
     freeUsage.smartPrescriptionCount > 0 ||
     freeUsage.printCount > 0 ||
     premiumUsage.smartPrescriptionCount > 0 ||
-    premiumUsage.printCount > 0;
+    premiumUsage.printCount > 0 ||
+    proMaxUsage.smartPrescriptionCount > 0 ||
+    proMaxUsage.printCount > 0;
 
   if (!hasUsageByPlan) {
     const fallbackUsage = normalizeUsageCounters(doctorData?.usageStats || {});
-    if (String(doctorData?.accountType || '').trim().toLowerCase() === 'premium') {
+    const accType = String(doctorData?.accountType || '').trim().toLowerCase();
+    if (accType === 'pro_max') {
+      proMaxUsage = fallbackUsage;
+    } else if (accType === 'premium') {
       premiumUsage = fallbackUsage;
     } else {
       freeUsage = fallbackUsage;
     }
   }
 
-  return { freeUsage, premiumUsage };
+  return { freeUsage, premiumUsage, proMaxUsage };
 };
 
 const countBannerItems = (raw) => {
@@ -142,6 +180,71 @@ const computeTotalExpensesForYear = async (db, currentYear) => {
   return totalExpenses;
 };
 
+// يبني bucket فاضي لـper-feature counters: 6 ميزات × 3 tiers = 18 حقل
+const buildEmptyAiFeaturesBucket = () => {
+  const bucket = {};
+  AI_FEATURE_NAMES.forEach((feature) => {
+    const camel = FEATURE_CAMEL_MAP[feature];
+    ['Free', 'Pro', 'ProMax'].forEach((tierLabel) => {
+      bucket[`${camel}${tierLabel}Count`] = 0;
+    });
+  });
+  return bucket;
+};
+
+// ─ يحوّل أي صيغة لـcreatedAt إلى مفتاح "YYYY-MM" — أو null لو فاشل.
+//   بيدعم 3 صيغ: ISO string، Firestore Timestamp، Number millis.
+//   ضروري عشان أطباء قدامى ممكن يكون عندهم Timestamp بدل ISO، والكود
+//   القديم في ReportsSection كان بيرجع 0 للشهور كلها لو الحقل مش string.
+const extractMonthKeyFromCreatedAt = (rawCreatedAt) => {
+  if (!rawCreatedAt) return null;
+  let date = null;
+  if (typeof rawCreatedAt === 'string') {
+    // ISO أو "YYYY-MM-DD..." — ناخد أول 7 حروف لو الصيغة سليمة
+    const isoMatch = /^(\d{4}-\d{2})/.exec(rawCreatedAt.trim());
+    if (isoMatch) return isoMatch[1];
+    // fallback: نحاول نـparseها كـDate
+    const parsed = new Date(rawCreatedAt);
+    if (Number.isFinite(parsed.getTime())) date = parsed;
+  } else if (typeof rawCreatedAt === 'number' && Number.isFinite(rawCreatedAt)) {
+    date = new Date(rawCreatedAt);
+  } else if (rawCreatedAt && typeof rawCreatedAt.toDate === 'function') {
+    // Firestore Timestamp object — يستخدم .toDate()
+    try { date = rawCreatedAt.toDate(); } catch (_) { date = null; }
+  } else if (rawCreatedAt && typeof rawCreatedAt.seconds === 'number') {
+    // Plain Timestamp shape (يحدث لو الوثيقة جاية من cache)
+    date = new Date(rawCreatedAt.seconds * 1000);
+  }
+  if (!date || !Number.isFinite(date.getTime())) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+// ─ مجموع كل عدادات الاستخدام للطبيب (لإيجاد أعلى 10 نشاطاً).
+//   نقرا usageStats الفلات (legacy) + نضيف usageStatsByPlan لو موجود.
+const sumUsageForRanking = (doctorData) => {
+  let total = 0;
+  const flatStats = doctorData?.usageStats;
+  if (flatStats && typeof flatStats === 'object') {
+    for (const value of Object.values(flatStats)) {
+      const n = Number(value);
+      if (Number.isFinite(n)) total += n;
+    }
+  }
+  return total;
+};
+
+// ─ يبني آخر 12 شهر كـMap بقيم 0 — نملأها أثناء الـscan.
+const buildLast12MonthsMap = () => {
+  const map = new Map();
+  const today = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    map.set(key, 0);
+  }
+  return map;
+};
+
 const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
   const aggregate = {
     totalDoctors: 0,
@@ -164,7 +267,15 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
     proMaxMonthlyPlansCount: 0,
     proMaxSixMonthsPlansCount: 0,
     proMaxYearlyPlansCount: 0,
+    // per-feature counters (6 ميزات × 3 فئات = 18 حقل)
+    ...buildEmptyAiFeaturesBucket(),
   };
+
+  // ─ Reports aggregation (نقلناها من ReportsSection للـserver لتوفير
+  //   آلاف الـreads لكل فتحة لصفحة التقارير من الأدمن).
+  const monthlySignups = buildLast12MonthsMap();   // YYYY-MM → عدد التسجيلات
+  const specialtyMap = new Map();                  // تخصص → عدد الأطباء
+  const topDoctorsList = [];                       // كل الأطباء بـ totalActions، نختار الـ10 الأعلى لاحقاً
 
   let lastDoctorId = null;
 
@@ -213,6 +324,37 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
       aggregate.totalPrintsPro += usage.premiumUsage.printCount;
       aggregate.totalPrintsProMax += (usage.proMaxUsage?.printCount || 0);
 
+      // ─ تجميع per-feature counts (6 ميزات × 3 فئات)
+      const tierMappings = [
+        { tierLabel: 'Free',   tierUsage: usage.freeUsage },
+        { tierLabel: 'Pro',    tierUsage: usage.premiumUsage },
+        { tierLabel: 'ProMax', tierUsage: usage.proMaxUsage },
+      ];
+      tierMappings.forEach(({ tierLabel, tierUsage }) => {
+        AI_FEATURE_NAMES.forEach((feature) => {
+          const camel = FEATURE_CAMEL_MAP[feature];
+          aggregate[`${camel}${tierLabel}Count`] += (tierUsage.aiFeatures?.[feature] || 0);
+        });
+      });
+
+      // ─ Reports aggregation (شهور التسجيل + التخصصات + أعلى نشاطاً)
+      const monthKey = extractMonthKeyFromCreatedAt(doctorData?.createdAt);
+      if (monthKey && monthlySignups.has(monthKey)) {
+        monthlySignups.set(monthKey, monthlySignups.get(monthKey) + 1);
+      }
+
+      const specialty = String(doctorData?.doctorSpecialty || '').trim() || 'بدون تخصص';
+      specialtyMap.set(specialty, (specialtyMap.get(specialty) || 0) + 1);
+
+      const totalActions = sumUsageForRanking(doctorData);
+      if (totalActions > 0) {
+        topDoctorsList.push({
+          name: String(doctorData?.doctorName || doctorData?.displayName || 'طبيب'),
+          email: String(doctorData?.doctorEmail || doctorData?.email || ''),
+          totalActions,
+        });
+      }
+
       const revenueContribution = computeDoctorRevenueForCurrentYear({
         doctorData,
         currentYear,
@@ -236,6 +378,19 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
       break;
     }
   }
+
+  // ─ تجهيز نتائج الـreports النهائية في الشكل اللي الـclient محتاجه
+  aggregate.monthlySignups = Array.from(monthlySignups.entries())
+    .map(([month, newDoctors]) => ({ month, newDoctors }));
+
+  aggregate.specialtyBreakdown = Array.from(specialtyMap.entries())
+    .map(([specialty, count]) => ({ specialty, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  aggregate.topDoctorsByActivity = topDoctorsList
+    .sort((a, b) => b.totalActions - a.totalActions)
+    .slice(0, 10);
 
   return aggregate;
 };
@@ -280,6 +435,15 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
 
     const footerContacts = countFooterContacts(footerLineSnap.exists ? footerLineSnap.data() : {});
 
+    // ─ نستخرج كل حقول الـAI features من الـaggregate (18 حقل) ونضمّها في الـpayload
+    const aiFeaturesPayload = {};
+    AI_FEATURE_NAMES.forEach((feature) => {
+      const camel = FEATURE_CAMEL_MAP[feature];
+      ['Free', 'Pro', 'ProMax'].forEach((tierLabel) => {
+        aiFeaturesPayload[`${camel}${tierLabel}Count`] = doctorAggregate[`${camel}${tierLabel}Count`];
+      });
+    });
+
     const payload = {
       totalDoctors: doctorAggregate.totalDoctors,
       pendingDoctors: doctorAggregate.pendingDoctors,
@@ -300,6 +464,8 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
       totalPrintsFree: doctorAggregate.totalPrintsFree,
       totalPrintsPro: doctorAggregate.totalPrintsPro,
       totalPrintsProMax: doctorAggregate.totalPrintsProMax,
+      // عدادات per-feature لكل tier (6 ميزات × 3 فئات = 18 حقل)
+      ...aiFeaturesPayload,
       monthlyPlansCount: doctorAggregate.monthlyPlansCount,
       sixMonthsPlansCount: doctorAggregate.sixMonthsPlansCount,
       yearlyPlansCount: doctorAggregate.yearlyPlansCount,
@@ -311,12 +477,16 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
       totalRevenue: doctorAggregate.totalRevenue,
       totalExpenses,
       netProfit,
+      // Reports aggregates — يقراهم ReportsSection مباشرة بدل ما يـscan كل الأطباء
+      monthlySignups: doctorAggregate.monthlySignups,
+      specialtyBreakdown: doctorAggregate.specialtyBreakdown,
+      topDoctorsByActivity: doctorAggregate.topDoctorsByActivity,
       generatedAt: now.toISOString(),
       generatedBy: String(generatedBy || 'system'),
       source: String(source || 'scheduled'),
       currentYear,
       processingMs: Date.now() - startedAt,
-      statsVersion: 1,
+      statsVersion: 2, // ⚠️ زدنا الإصدار لأن الـschema تغيّر (ضفنا reports aggregates)
     };
 
     await db.collection(SUMMARY_COLLECTION).doc(SUMMARY_DOC_ID).set(payload, { merge: true });

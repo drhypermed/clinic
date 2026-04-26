@@ -19,21 +19,21 @@ import { generateContentWithSecurity, GEMINI_MODEL, tryParseJson } from './gemin
 
 // ─── الواجهة الخارجية للنتائج ────────────────────────────────────────────
 /** عنصر واحد في قائمة التشخيصات التفريقية */
-export interface DifferentialDiagnosisItem {
+interface DifferentialDiagnosisItem {
   diagnosis: string;      // اسم المرض بالإنجليزية (مصطلح سريري)
   reasoning: string;      // المنطق السريري (1-2 جملة بالإنجليزية)
   isMostLikely: boolean;  // هل هذا الأكثر احتمالاً؟ (الأول فقط = true)
 }
 
 /** عنصر في قائمة الحالات الخطيرة التي لا يجب تفويتها */
-export interface MustNotMissItem {
+interface MustNotMissItem {
   diagnosis: string;      // اسم الحالة بالإنجليزية
   reasoning: string;      // لماذا خطيرة / لماذا لا تُفوَّت (إنجليزي قصير)
   alreadyInDDx: boolean;  // هل مذكورة في الـ DDx؟ (لو نعم نضع ⚠️ بدلاً من التكرار)
 }
 
 /** فحص مقترح — اسم إنجليزي وسبب عربي */
-export interface SuggestedInvestigationItem {
+interface SuggestedInvestigationItem {
   nameEn: string;   // اسم الفحص الإنجليزي (CBC, CRP, U/S abdomen ...)
   reasonAr: string; // سبب طلبه بالعربي البسيط
 }
@@ -160,7 +160,7 @@ const sanitizeAnalysis = (raw: unknown): CaseAnalysisResult => {
 };
 
 // ─── الإدخالات ─────────────────────────────────────────────────────────────
-export interface CaseAnalysisInput {
+interface CaseAnalysisInput {
   complaint: string;          // الشكوى (عربي أو مختلط)
   medicalHistory: string;     // التاريخ المرضي
   examination: string;        // الفحص السريري
@@ -275,6 +275,7 @@ COUNTS
       responseMimeType: 'application/json',
       temperature: 0,
       thinkingBudget: 1000,
+      feature: 'case_analysis', // تتسجل في تقارير الاستهلاك تحت "تحليل الحالة"
     });
 
     const parsed = tryParseJson(responseText || '{}');

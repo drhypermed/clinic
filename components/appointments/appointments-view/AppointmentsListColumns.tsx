@@ -74,8 +74,8 @@ export const AppointmentsListColumns: React.FC<AppointmentsListColumnsProps> = (
       {/* Pending column — blue */}
       <div className="space-y-3">
         <div className="flex items-center gap-2.5 px-1 pb-1">
-          <span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse shrink-0" />
-          <h3 className="text-sm font-black text-blue-800">المواعيد المنتظرة</h3>
+          <span className="w-3 h-3 rounded-full bg-brand-500 animate-pulse shrink-0" />
+          <h3 className="text-sm font-black text-brand-800">المواعيد المنتظرة</h3>
         </div>
         {todayPending.length > 0 && (
           <DayGroup dateStr={todayStr} appointments={todayPending} defaultOpen variant="blue">
@@ -97,10 +97,10 @@ export const AppointmentsListColumns: React.FC<AppointmentsListColumnsProps> = (
       {/* Completed column — green */}
       <div className="space-y-3">
         <div className="flex items-center gap-2.5 px-1 pb-1">
-          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+          <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center shrink-0">
             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
           </div>
-          <h3 className="text-sm font-black text-emerald-800">المواعيد المنفذة</h3>
+          <h3 className="text-sm font-black text-success-800">المواعيد المنفذة</h3>
         </div>
         {visibleCompletedGroups.map((group) => (
           <DayGroup key={group.date} dateStr={group.date} appointments={group.appointments} variant="green">

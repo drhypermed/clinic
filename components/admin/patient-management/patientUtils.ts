@@ -1,21 +1,27 @@
 /**
  * أدوات مساعدة لإدارة المرضى (Patient Utils)
- * تحتوي على منطق حساب المعايير (Metrics) للمرضى مثل معدل التقييم 
- * وعدد المواعيد، بالإضافة إلى بناء محرك البحث النصي للمرضى.
+ * تحتوي على منطق حساب المعايير (Metrics) للمرضى مثل معدل التقييم وعدد المواعيد.
  */
 
 import { PublicUserBooking } from '../../../types';
-import { PatientAccount } from './types';
 
 /** هل الحجز يحتوي على تقييم صالح؟ */
 export const isRatedBooking = (booking: PublicUserBooking) =>
   typeof booking.rating === 'number' && booking.rating > 0;
 
+/**
+ * هل الحجز "مكتمل"؟
+ * نوحّد الفحص في دالة واحدة لأن الـ schema تاريخياً استخدم اسمين مختلفين:
+ *   - status='completed' (الحقل الحالي)
+ *   - appointmentStatus='completed' (legacy، قد يكون موجوداً في وثائق قديمة)
+ * نقبل أي منهما عشان لا نفقد إحصائيات الحجوزات القديمة.
+ */
+const isCompletedBooking = (booking: PublicUserBooking) =>
+  booking.status === 'completed' || (booking as any).appointmentStatus === 'completed';
+
 /** حساب إحصائيات المريض (عدد الحجوزات، المكتملة، التقييمات) */
 export const getPatientMetrics = (bookings: PublicUserBooking[]) => {
-  const confirmed = bookings.filter(
-    (booking) => booking.status === 'completed' || (booking as any).appointmentStatus === 'completed'
-  );
+  const confirmed = bookings.filter(isCompletedBooking);
   const reviews = confirmed.filter((booking) => isRatedBooking(booking));
 
   let averageRating = '0';
@@ -38,42 +44,3 @@ export const clearBookingReview = (booking: PublicUserBooking) => ({
   reviewComment: undefined,
   reviewedAt: undefined,
 });
-
-export const buildPatientSearchCorpus = (patient: PatientAccount) => {
-  const reviewSearchCorpus = patient.bookings
-    .map((booking) => {
-      const ratingText = typeof booking.rating === 'number' ? String(booking.rating) : '';
-      return [
-        booking.id,
-        booking.doctorName,
-        booking.doctorSpecialty,
-        booking.patientName,
-        booking.phone,
-        booking.visitReason,
-        booking.reviewComment,
-        booking.reviewedAt,
-        booking.dateTime,
-        booking.status,
-        (booking as any).appointmentStatus,
-        ratingText,
-      ].join(' ');
-    })
-    .join(' ');
-
-  return [
-    patient.id,
-    patient.name,
-    patient.email,
-    patient.createdAt,
-    patient.lastLoginAt,
-    patient.disabledReason,
-    patient.averageRating,
-    String(patient.totalAppointments),
-    String(patient.completedAppointments),
-    String(patient.totalReviews),
-    reviewSearchCorpus,
-  ]
-    .join(' ')
-    .toLowerCase();
-};
-

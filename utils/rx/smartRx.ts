@@ -1,5 +1,6 @@
 import { PatientRecord, PrescriptionItem, VitalSigns } from '../../types';
 import { analyzeComplaint, translateClinicalData } from '../../services/geminiRxService';
+import { consumeTranslationQuota } from '../../services/accountTypeControlsService';
 import { formatLabInvestigationItem, normalizeAdviceList } from './rxUtils';
 
 /** إدخالات محرك "دكتور هايبر الذكي" */
@@ -118,7 +119,28 @@ export const runSmartRx = async (input: SmartRxInput): Promise<SmartRxOutput> =>
      * تقوم بتحويل مدخلات الطبيب العربية السريعة إلى مصطلحات طبية إنجليزية رصينة.
      * userId بنمرره للكاش per-doctor — لو الطبيب كتب نفس الشكوى قبل كده، الترجمة
      * بترجع فوراً من IndexedDB بدون استدعاء Gemini.
+     *
+     * ─── فحص حد الترجمة اليومي (server-side enforcement) ───
+     * كانت الترجمة بتشتغل بدون أي حد. دلوقتي قبل أي ترجمة بنستهلك كوتا واحدة
+     * من الحد اللي الأدمن ضبطه في صفحة "التحكم في أنواع الحساب". لو الطبيب وصل
+     * للحد، السيرفر بيرفض ويرجع رسالة الأدمن المخصّصة + رابط واتساب للترقية.
+     *
+     * ملاحظة: بنفحص الحد بس لو في نص سريري فعلاً (لو كل الحقول فاضية، الترجمة
+     * بترجع early بدون استدعاء AI، فمفيش معنى نخصم كوتا).
      */
+    const hasAnyClinicalText = !!(
+        input.complaint?.trim() ||
+        input.medicalHistory?.trim() ||
+        input.examination?.trim() ||
+        diagnosisForTranslation?.trim() ||
+        input.investigations?.trim()
+    );
+    if (input.userId && hasAnyClinicalText) {
+        // لو الكوتا انتهت — السيرفر بيرمي error.
+        // الـerror بيتنشّر للـcaller (smartActions) اللي بيعرض رسالة + واتساب.
+        await consumeTranslationQuota();
+    }
+
     const translations = await translateClinicalData(
         input.complaint,
         input.medicalHistory,

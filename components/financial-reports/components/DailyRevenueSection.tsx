@@ -315,13 +315,13 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">المبلغ (ج.م)</label>
                                 <input type="number" value={costEditState.amount}
                                     onChange={e => setCostEditState(s => s ? { ...s, amount: e.target.value } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none" />
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black text-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none" />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">الفئة</label>
                                 <select value={costEditState.type}
                                     onChange={e => setCostEditState(s => s ? { ...s, type: e.target.value as 'interventions' | 'other' } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none">
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none">
                                     <option value="interventions">التداخلات</option>
                                     <option value="other">دخل آخر</option>
                                 </select>
@@ -330,13 +330,13 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">ملاحظة (اختياري)</label>
                                 <input type="text" value={costEditState.note}
                                     onChange={e => setCostEditState(s => s ? { ...s, note: e.target.value } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
                                     placeholder="ملاحظة..." />
                             </div>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={handleSaveCostEdit} disabled={isSaving}
-                                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl py-2 text-sm font-black disabled:opacity-60">
+                                className="flex-1 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl py-2 text-sm font-black disabled:opacity-60">
                                 {isSaving ? 'جاري الحفظ' : 'حفظ'}
                             </button>
                             <button onClick={() => setCostEditState(null)}
@@ -359,13 +359,13 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">المبلغ (ج.م)</label>
                                 <input type="number" value={insEditState.amount}
                                     onChange={e => setInsEditState(s => s ? { ...s, amount: e.target.value } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none" />
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black text-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none" />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">الفئة</label>
                                 <select value={insEditState.type}
                                     onChange={e => setInsEditState(s => s ? { ...s, type: e.target.value as 'interventions' | 'other' } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none">
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none">
                                     <option value="interventions">التداخلات</option>
                                     <option value="other">دخل آخر</option>
                                 </select>
@@ -374,13 +374,13 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                                 <label className="text-xs font-bold text-slate-500 mb-1 block">ملاحظة (اختياري)</label>
                                 <input type="text" value={insEditState.note}
                                     onChange={e => setInsEditState(s => s ? { ...s, note: e.target.value } : null)}
-                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+                                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
                                     placeholder="ملاحظة..." />
                             </div>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={handleSaveInsEdit} disabled={isSaving}
-                                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl py-2 text-sm font-black disabled:opacity-60">
+                                className="flex-1 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl py-2 text-sm font-black disabled:opacity-60">
                                 {isSaving ? 'جاري الحفظ' : 'حفظ'}
                             </button>
                             <button onClick={() => setInsEditState(null)}
@@ -392,7 +392,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                 </div>
             )}
 
-            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-700 to-blue-600">
+            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-700 to-brand-600">
                 <span className="text-base">💵</span>
                 <span className="text-sm font-black text-white">إيرادات اليوم</span>
                 <span className="mr-auto text-xs font-bold text-white/80 bg-white/15 rounded-full px-2.5 py-0.5">{formattedSelectedDay}</span>
@@ -403,11 +403,11 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1 h-full flex flex-col">
                         <label className="block text-sm font-bold text-slate-700">الكشوفات</label>
-                        <div className="bg-blue-50 rounded-xl border-2 border-blue-100 p-3 flex-1 flex flex-col justify-center">
-                            <div className="text-base sm:text-lg font-black text-blue-700 text-center break-words">
+                        <div className="bg-brand-50 rounded-xl border-2 border-brand-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-brand-700 text-center break-words">
                                 {formatCurrency(examsIncomeTotal)}
                             </div>
-                            <div className="text-xs text-center text-blue-500 font-bold mt-1">
+                            <div className="text-xs text-center text-brand-500 font-bold mt-1">
                                 {examsCountToday} كشف
                             </div>
                         </div>
@@ -415,11 +415,11 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
 
                     <div className="space-y-1 h-full flex flex-col">
                         <label className="block text-sm font-bold text-slate-700">الاستشارات</label>
-                        <div className="bg-indigo-50 rounded-xl border-2 border-indigo-100 p-3 flex-1 flex flex-col justify-center">
-                            <div className="text-base sm:text-lg font-black text-indigo-700 text-center break-words">
+                        <div className="bg-brand-50 rounded-xl border-2 border-brand-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-brand-700 text-center break-words">
                                 {formatCurrency(consultsIncomeTotal)}
                             </div>
-                            <div className="text-xs text-center text-indigo-500 font-bold mt-1">
+                            <div className="text-xs text-center text-brand-500 font-bold mt-1">
                                 {consultsCountToday} استشارة
                             </div>
                         </div>
@@ -427,8 +427,8 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
 
                     <div className="space-y-1 h-full flex flex-col">
                         <label className="block text-sm font-bold text-slate-700">{displayInterventionsLabel}</label>
-                        <div className="bg-purple-50 rounded-xl border-2 border-purple-100 p-3 flex-1 flex flex-col justify-center">
-                            <div className="text-base sm:text-lg font-black text-purple-700 text-center break-words">
+                        <div className="bg-slate-50 rounded-xl border-2 border-slate-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-slate-700 text-center break-words">
                                 {formatCurrency(interventionsIncomeTotal)}
                             </div>
                         </div>
@@ -436,8 +436,8 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
 
                     <div className="space-y-1 h-full flex flex-col">
                         <label className="block text-sm font-bold text-slate-700">{displayOtherLabel}</label>
-                        <div className="bg-teal-50 rounded-xl border-2 border-teal-100 p-3 flex-1 flex flex-col justify-center">
-                            <div className="text-base sm:text-lg font-black text-teal-700 text-center break-words">
+                        <div className="bg-brand-50 rounded-xl border-2 border-brand-100 p-3 flex-1 flex flex-col justify-center">
+                            <div className="text-base sm:text-lg font-black text-brand-700 text-center break-words">
                                 {formatCurrency(otherIncomeTotal)}
                             </div>
                         </div>
@@ -507,16 +507,16 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-blue-700 to-blue-600 rounded-xl p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-brand-700 to-brand-600 rounded-xl p-3">
                         <span className="font-bold text-white">💰 إجمالي اليوم</span>
                         <span className="text-base sm:text-xl font-black text-white">{formatCurrency((totalDailyRevenue || 0) + (dailyInsuranceTotal || 0))}</span>
                     </div>
-                    <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl px-3 py-2.5">
+                    <div className="flex items-center justify-between bg-gradient-to-r from-success-600 to-success-500 rounded-xl px-3 py-2.5">
                         <span className="text-sm font-bold text-white">💵 نقد محصّل</span>
                         <span className="text-sm font-black text-white">{formatCurrency(totalDailyRevenue || 0)}</span>
                     </div>
                     {(dailyInsuranceTotal || 0) > 0 && (
-                        <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl px-3 py-2.5">
+                        <div className="flex items-center justify-between bg-gradient-to-r from-brand-600 to-brand-500 rounded-xl px-3 py-2.5">
                             <span className="text-sm font-bold text-white">🏢 مطالبات تأمين</span>
                             <span className="text-sm font-black text-white">{formatCurrency(dailyInsuranceTotal || 0)}</span>
                         </div>

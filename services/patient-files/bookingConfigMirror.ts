@@ -40,7 +40,7 @@ import {
 import type { SyncBookingConfigIdentityInput } from './types';
 
 /** حل bookingSecret لمستخدم محدد (من مستند المستخدم أولاً، ثم من bookingConfig) */
-export const resolveBookingSecretForUser = async (userId: string): Promise<string> => {
+const resolveBookingSecretForUser = async (userId: string): Promise<string> => {
     const normalizedUserId = toTrimmedText(userId);
     if (!normalizedUserId) return '';
 

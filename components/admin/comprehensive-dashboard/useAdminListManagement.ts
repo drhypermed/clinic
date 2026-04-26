@@ -19,6 +19,13 @@ import { normalizeEmail } from '../../../services/auth-service/validation';
 import type { AdminListItem } from './types';
 
 /**
+ * حد أقصى لعدد المسؤولين — حماية ضد المبالغة العرضية أو الخبيثة في حشو الـ collection.
+ * عند الوصول للحد، الإضافة تُرفض مع رسالة واضحة.
+ * 5 admins كافية للفريق الفعلي (الأدمن الأساسي + شركاء/مساعدين محدودين).
+ */
+const MAX_ADMINS_ALLOWED = 5;
+
+/**
  * S3: تسجيل audit لأي عملية إضافة/حذف أدمن.
  * Append-only: الوثائق لا تُعدَّل أو تُحذف بعد الإنشاء (فرض في firestore.rules).
  */
@@ -133,6 +140,14 @@ export const useAdminListManagement = ({
 
         if (adminList.some((item) => item.email === email)) {
             setAdminActionMessage('هذا البريد مضاف بالفعل كمسؤول.');
+            return;
+        }
+
+        // حماية من المبالغة في عدد المسؤولين
+        if (adminList.length >= MAX_ADMINS_ALLOWED) {
+            setAdminActionMessage(
+                `وصلت للحد الأقصى من المسؤولين (${MAX_ADMINS_ALLOWED}). احذف أحدهم أولاً قبل الإضافة.`,
+            );
             return;
         }
 

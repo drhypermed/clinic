@@ -2,24 +2,23 @@
 // حاسبة إيرادات الاشتراكات (Revenue Calculator)
 // ─────────────────────────────────────────────────────────────────────────────
 // دالة نقية (Pure Function) بتحسب إيراد شهري بناء على:
-//   - قائمة الأطباء المدفوعين (برو وبرو ماكس) في النظام
-//   - أسعار كل شهر من أشهر السنة المختارة (بسعر منفصل لكل فئة)
+//   - قائمة الأطباء المدفوعين (برو وبرو ماكس) — كل طبيب فيه subscriptionHistory[]
+//   - أسعار كل شهر من أشهر السنة المختارة (للـ fallback لو الـ entry مفيهوش pricePaid)
 //   - السنة المحددة للحساب
 //
-// كيف بيتحسب الإيراد:
-//   - لكل طبيب مدفوع له premiumStartDate و premiumExpiryDate:
-//     * نحسب فرق الشهور بين البداية والنهاية.
-//     * لو >= 12 شهر: اشتراك سنوي (yearly).
-//     * لو >= 6 شهور: اشتراك نصف سنوي (sixMonths).
-//     * غير كده: اشتراك شهري (monthly).
-//   - لـ برو: نجيب السعر من prices (monthly/sixMonths/yearly).
-//   - لـ برو ماكس: نجيب السعر من proMaxPrices (monthly/sixMonths/yearly)
-//     — مع fallback لأسعار برو لو الأدمن ما ضبطش proMaxPrices.
+// المنطق الجديد بعد إصلاح "السعر التاريخي":
+//   - نقرأ subscriptionHistory[] لكل طبيب
+//   - كل entry فيه startDate + endDate + (اختيارياً) pricePaid + tier + planType
+//   - نضيف pricePaid لشهر startDate.getFullYear()-getMonth()
+//   - لو الـ entry قديم ومفيهوش pricePaid (entries قبل الإصلاح):
+//     * نحسب المدة بالشهور
+//     * نختار planType حسب المدة
+//     * نجيب السعر من pricesByMonth للشهر اللي ابتدت فيه الفترة
 //
-// حالات الاستبعاد:
-//   - لو ما فيش premiumStartDate — تجاهل
-//   - لو ما فيش premiumExpiryDate — نعدّه كـ "missing" ونحذّر الأدمن
-//   - لو ما فيش سعر للشهر ده — تجاهل الطبيب من الإيراد
+// مزايا هذا المنطق:
+//   - الأرقام التاريخية ثابتة حتى لو الأسعار اتغيرت
+//   - كل تمديد/تجديد يُحسب بسعره وقت التنفيذ، مش وقت العرض
+//   - Backward-compatible مع الـ entries القديمة
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { ProMaxSubscriptionPrices, RevenueData, SubscriptionPrices } from './types';
@@ -29,34 +28,46 @@ interface CombinedMonthPrices {
   proMaxPrices?: ProMaxSubscriptionPrices;
 }
 
-export interface RevenueCalculationInput {
+/** entry واحد في subscriptionHistory الخاص بالطبيب. */
+interface SubscriptionPeriodLike {
+  startDate?: string;
+  endDate?: string;
+  tier?: 'premium' | 'pro_max';
+  planType?: 'monthly' | 'sixMonths' | 'yearly';
+  durationMonths?: number;
+  pricePaid?: number;
+  changeType?: string;
+}
+
+interface RevenueCalculationInput {
   /** قائمة الأطباء في Firestore (الفلترة لمدفوع تتم داخل الدالة) */
   doctors: Record<string, any>[];
   /**
-   * خريطة أسعار الاشتراكات لكل شهر (مفتاح: "YYYY-MM")
-   * يمكن تكون SubscriptionPrices (نمط قديم — برو فقط) أو CombinedMonthPrices (نمط جديد — برو + برو ماكس)
+   * خريطة أسعار الاشتراكات لكل شهر (مفتاح: "YYYY-MM") — تُستخدم كـ fallback
+   * فقط عند غياب pricePaid في الـ entry (entries قبل إصلاح حفظ السعر).
    */
   pricesByMonth: Record<string, SubscriptionPrices | CombinedMonthPrices>;
   /** السنة المراد حساب الإيراد لها */
   selectedYear: number;
 }
 
-export interface RevenueCalculationResult {
+interface RevenueCalculationResult {
   /** مصفوفة ثابتة طولها 12 — إيراد كل شهر في السنة (حتى لو صفر) */
   revenueData: RevenueData[];
-  /** عدد أطباء مدفوعين في السنة ببيانات ناقصة (premiumExpiryDate مفقود) */
+  /** عدد أطباء مدفوعين في السنة ببيانات ناقصة (entries بدون startDate) */
   doctorsMissingExpiry: number;
 }
 
-/** helper: نطبّع الـ pricesByMonth entry للشكل الموحد (مع دعم النمط القديم والجديد) */
-const normalizePriceEntry = (raw: SubscriptionPrices | CombinedMonthPrices | undefined):
-  { prices: SubscriptionPrices; proMaxPrices: ProMaxSubscriptionPrices | null } | null => {
+/** نطبّع الـ pricesByMonth entry للشكل الموحد (مع دعم النمط القديم والجديد). */
+const normalizePriceEntry = (
+  raw: SubscriptionPrices | CombinedMonthPrices | undefined,
+):
+  | { prices: SubscriptionPrices; proMaxPrices: ProMaxSubscriptionPrices | null }
+  | null => {
   if (!raw) return null;
-  // لو القيمة SubscriptionPrices قديمة (مباشرة monthly/sixMonths/yearly)
   if ('monthly' in raw && 'sixMonths' in raw && 'yearly' in raw && !('prices' in raw)) {
     return { prices: raw as SubscriptionPrices, proMaxPrices: null };
   }
-  // القيمة الجديدة (مع .prices و .proMaxPrices)
   const combined = raw as CombinedMonthPrices;
   return {
     prices: combined.prices,
@@ -64,8 +75,8 @@ const normalizePriceEntry = (raw: SubscriptionPrices | CombinedMonthPrices | und
   };
 };
 
-/** helper: نختار السعر الصحيح حسب الفئة + المدة (مع fallback من pro_max لـ premium) */
-const pickPrice = (
+/** يختار السعر الصحيح حسب الفئة + المدة (مع fallback من pro_max لـ premium). */
+const pickFallbackPrice = (
   tier: 'premium' | 'pro_max',
   duration: 'monthly' | 'sixMonths' | 'yearly',
   prices: SubscriptionPrices,
@@ -78,94 +89,210 @@ const pickPrice = (
   return prices[duration] || 0;
 };
 
+/** يحسب فرق الشهور بين تاريخين بنفس قواعد subscriptionPricing.ts. */
+const computeDurationMonths = (startDate: Date, endDate: Date): number => {
+  const rawMonths =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    endDate.getMonth() -
+    startDate.getMonth();
+  return endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
+};
+
+/** يستنتج planType من المدة بنفس قواعد derivePlanTypeFromDuration. */
+const derivePlanType = (
+  durationMonths: number,
+): 'monthly' | 'sixMonths' | 'yearly' => {
+  if (durationMonths >= 12) return 'yearly';
+  if (durationMonths >= 6) return 'sixMonths';
+  return 'monthly';
+};
+
 /**
- * الحساب الأساسي للإيراد من قائمة الأطباء + أسعار الشهور.
+ * يحسب السعر النهائي للـ entry — يستخدم pricePaid لو متاح، وإلا fallback على
+ * أسعار الشهر من pricesByMonth.
+ */
+const resolveEntryPrice = (params: {
+  entry: SubscriptionPeriodLike;
+  doctorTier: 'premium' | 'pro_max';
+  startDate: Date;
+  pricesByMonth: Record<string, SubscriptionPrices | CombinedMonthPrices>;
+}): { price: number; planType: 'monthly' | 'sixMonths' | 'yearly'; tier: 'premium' | 'pro_max' } => {
+  const tier: 'premium' | 'pro_max' = params.entry.tier || params.doctorTier;
+
+  // أولوية ١: pricePaid محفوظ في الـ entry (الإصلاح الجديد)
+  if (
+    typeof params.entry.pricePaid === 'number' &&
+    Number.isFinite(params.entry.pricePaid) &&
+    params.entry.pricePaid > 0
+  ) {
+    const planType =
+      params.entry.planType ||
+      derivePlanType(
+        params.entry.durationMonths ||
+          (params.entry.endDate
+            ? computeDurationMonths(params.startDate, new Date(params.entry.endDate))
+            : 0),
+      );
+    return { price: params.entry.pricePaid, planType, tier };
+  }
+
+  // أولوية ٢: حساب من جدول الأسعار للشهر (للـ entries القديمة)
+  if (!params.entry.endDate) {
+    return { price: 0, planType: 'monthly', tier };
+  }
+  const endDate = new Date(params.entry.endDate);
+  if (Number.isNaN(endDate.getTime())) {
+    return { price: 0, planType: 'monthly', tier };
+  }
+  const durationMonths = Math.max(0, computeDurationMonths(params.startDate, endDate));
+  const planType: 'monthly' | 'sixMonths' | 'yearly' = derivePlanType(durationMonths);
+
+  const yearMonth = `${params.startDate.getFullYear()}-${String(params.startDate.getMonth() + 1).padStart(2, '0')}`;
+  const priceEntry = normalizePriceEntry(params.pricesByMonth[yearMonth]);
+  if (!priceEntry) {
+    return { price: 0, planType, tier };
+  }
+
+  const price = pickFallbackPrice(tier, planType, priceEntry.prices, priceEntry.proMaxPrices);
+  return { price, planType, tier };
+};
+
+interface MonthlyBucket {
+  revenue: number;
+  proMaxRevenue: number;
+  monthlyCount: number;
+  sixMonthsCount: number;
+  yearlyCount: number;
+  proMaxMonthlyCount: number;
+  proMaxSixMonthsCount: number;
+  proMaxYearlyCount: number;
+}
+
+const emptyBucket = (): MonthlyBucket => ({
+  revenue: 0,
+  proMaxRevenue: 0,
+  monthlyCount: 0,
+  sixMonthsCount: 0,
+  yearlyCount: 0,
+  proMaxMonthlyCount: 0,
+  proMaxSixMonthsCount: 0,
+  proMaxYearlyCount: 0,
+});
+
+/**
+ * الحساب الأساسي للإيراد من قائمة الأطباء + سجلات اشتراكاتهم.
  * لا يلمس Firestore ولا الـ state — ممكن نستخدمه في اختبارات أو حساب offline.
  */
 export const computeRevenueFromDoctors = (
-  input: RevenueCalculationInput
+  input: RevenueCalculationInput,
 ): RevenueCalculationResult => {
   const { doctors, pricesByMonth, selectedYear } = input;
 
-  // فلترة الأطباء المدفوعين (برو أو برو ماكس)
-  const paidDoctors = doctors.filter(
-    (item) => item?.accountType === 'premium' || item?.accountType === 'pro_max'
-  );
+  // فلترة الأطباء اللي عندهم اشتراكات تاريخية أو حالية
+  const candidateDoctors = doctors.filter((item) => {
+    const accountType = String(item?.accountType || '');
+    const hasHistory = Array.isArray(item?.subscriptionHistory) && item.subscriptionHistory.length > 0;
+    return (
+      accountType === 'premium' ||
+      accountType === 'pro_max' ||
+      hasHistory // حتى لو رجع free، اشتراكاته القديمة تتحسب
+    );
+  });
 
-  // خريطة الإيراد لكل شهر (نبنيها ثم نحولها لمصفوفة مرتبة)
-  const monthlyRevenue: Record<
-    string,
-    {
-      revenue: number;
-      proMaxRevenue: number;
-      monthlyCount: number;
-      sixMonthsCount: number;
-      yearlyCount: number;
-      proMaxMonthlyCount: number;
-      proMaxSixMonthsCount: number;
-      proMaxYearlyCount: number;
-    }
-  > = {};
+  const monthlyRevenue: Record<string, MonthlyBucket> = {};
+  let missingStartDateInYear = 0;
 
-  let missingExpiryInYear = 0;
+  candidateDoctors.forEach((data) => {
+    const doctorTier: 'premium' | 'pro_max' =
+      data?.accountType === 'pro_max' ? 'pro_max' : 'premium';
+    const history: SubscriptionPeriodLike[] = Array.isArray(data?.subscriptionHistory)
+      ? data.subscriptionHistory
+      : [];
 
-  paidDoctors.forEach((data) => {
-    if (!data.premiumStartDate) return;
+    if (history.length > 0) {
+      // المسار الجديد: نقرأ من السجل التاريخي
+      history.forEach((entry) => {
+        if (!entry?.startDate) {
+          missingStartDateInYear += 1;
+          return;
+        }
+        const entryStart = new Date(entry.startDate);
+        if (Number.isNaN(entryStart.getTime())) return;
+        if (entryStart.getFullYear() !== selectedYear) return;
 
-    const startDate = new Date(data.premiumStartDate);
-    const yearMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+        const yearMonth = `${entryStart.getFullYear()}-${String(entryStart.getMonth() + 1).padStart(2, '0')}`;
+        if (!monthlyRevenue[yearMonth]) {
+          monthlyRevenue[yearMonth] = emptyBucket();
+        }
 
-    // لو السنة مش المطلوبة — تجاهل
-    if (startDate.getFullYear() !== selectedYear) return;
+        const { price, planType, tier } = resolveEntryPrice({
+          entry,
+          doctorTier,
+          startDate: entryStart,
+          pricesByMonth,
+        });
 
-    // premiumExpiryDate مفقود = نحصي الحالة ونتجاوز الطبيب
-    if (!data.premiumExpiryDate) {
-      missingExpiryInYear += 1;
+        if (price <= 0) return; // ما عرفناش السعر — نتخطى عشان ما نضيفش رقم خاطئ
+
+        const bucket = monthlyRevenue[yearMonth];
+        bucket.revenue += price;
+
+        const isProMax = tier === 'pro_max';
+        if (isProMax) {
+          bucket.proMaxRevenue += price;
+          if (planType === 'yearly') bucket.proMaxYearlyCount += 1;
+          else if (planType === 'sixMonths') bucket.proMaxSixMonthsCount += 1;
+          else bucket.proMaxMonthlyCount += 1;
+        } else {
+          if (planType === 'yearly') bucket.yearlyCount += 1;
+          else if (planType === 'sixMonths') bucket.sixMonthsCount += 1;
+          else bucket.monthlyCount += 1;
+        }
+      });
       return;
     }
 
-    if (!monthlyRevenue[yearMonth]) {
-      monthlyRevenue[yearMonth] = {
-        revenue: 0,
-        proMaxRevenue: 0,
-        monthlyCount: 0,
-        sixMonthsCount: 0,
-        yearlyCount: 0,
-        proMaxMonthlyCount: 0,
-        proMaxSixMonthsCount: 0,
-        proMaxYearlyCount: 0,
-      };
+    // ── المسار القديم (Backward-compat): طبيب بدون subscriptionHistory ──
+    // قبل إصلاح السجل التاريخي. نستخدم premiumStartDate/premiumExpiryDate.
+    if (!data.premiumStartDate) return;
+    const startDate = new Date(data.premiumStartDate);
+    if (Number.isNaN(startDate.getTime())) return;
+    if (startDate.getFullYear() !== selectedYear) return;
+
+    if (!data.premiumExpiryDate) {
+      missingStartDateInYear += 1;
+      return;
     }
 
-    const priceEntry = normalizePriceEntry(pricesByMonth[yearMonth]);
-    if (!priceEntry) return; // تخطي في حال عدم وجود أسعار لهذا الشهر
+    const yearMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthlyRevenue[yearMonth]) {
+      monthlyRevenue[yearMonth] = emptyBucket();
+    }
 
-    // حساب فرق الشهور بين البداية والنهاية
-    const endDate = new Date(data.premiumExpiryDate);
-    const rawMonths =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-      endDate.getMonth() -
-      startDate.getMonth();
-    const diffMonths = endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
+    const { price, planType, tier } = resolveEntryPrice({
+      entry: {
+        startDate: data.premiumStartDate,
+        endDate: data.premiumExpiryDate,
+        tier: doctorTier,
+      },
+      doctorTier,
+      startDate,
+      pricesByMonth,
+    });
 
-    const isProMax = data.accountType === 'pro_max';
-    const tier: 'premium' | 'pro_max' = isProMax ? 'pro_max' : 'premium';
-    const duration: 'monthly' | 'sixMonths' | 'yearly' =
-      diffMonths >= 12 ? 'yearly' : diffMonths >= 6 ? 'sixMonths' : 'monthly';
+    if (price <= 0) return;
 
-    const price = pickPrice(tier, duration, priceEntry.prices, priceEntry.proMaxPrices);
     const bucket = monthlyRevenue[yearMonth];
     bucket.revenue += price;
-
-    // عد منفصل لكل فئة × مدة
+    const isProMax = tier === 'pro_max';
     if (isProMax) {
       bucket.proMaxRevenue += price;
-      if (duration === 'yearly') bucket.proMaxYearlyCount += 1;
-      else if (duration === 'sixMonths') bucket.proMaxSixMonthsCount += 1;
+      if (planType === 'yearly') bucket.proMaxYearlyCount += 1;
+      else if (planType === 'sixMonths') bucket.proMaxSixMonthsCount += 1;
       else bucket.proMaxMonthlyCount += 1;
     } else {
-      if (duration === 'yearly') bucket.yearlyCount += 1;
-      else if (duration === 'sixMonths') bucket.sixMonthsCount += 1;
+      if (planType === 'yearly') bucket.yearlyCount += 1;
+      else if (planType === 'sixMonths') bucket.sixMonthsCount += 1;
       else bucket.monthlyCount += 1;
     }
   });
@@ -188,5 +315,5 @@ export const computeRevenueFromDoctors = (
     });
   }
 
-  return { revenueData, doctorsMissingExpiry: missingExpiryInYear };
+  return { revenueData, doctorsMissingExpiry: missingStartDateInYear };
 };

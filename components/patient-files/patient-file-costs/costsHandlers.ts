@@ -58,6 +58,8 @@ const toInsuranceExtra = (ins: PatientInsuranceItem) => ({
     insuranceMembershipId: ins.insuranceMembershipId,
     insuranceApprovalCode: ins.insuranceApprovalCode,
     note: ins.note,
+    // نسبة تحمل المريض — بتروح للـ daily doc عشان الكشف التفصيلي يستخدمها
+    patientSharePercent: ins.patientSharePercent,
     fromPatientFile: true,
     patientFileId: ins.patientFileId,
     patientName: ins.patientName,
@@ -71,7 +73,7 @@ const toInsuranceExtra = (ins: PatientInsuranceItem) => ({
  * العناصر اللي تخصه. بيدمج بيانات هذا الملف مع بيانات الملفات الأخرى
  * الموجودة في Firestore daily doc بحيث ما نمسحش بياناتهم.
  */
-export const doSyncCostsToFirestore = ({
+const doSyncCostsToFirestore = ({
     userId,
     fileId,
     costs,
@@ -230,6 +232,8 @@ interface SaveInsuranceInput {
     insFormMembership: string;
     insFormApproval: string;
     insFormNote: string;
+    /** نسبة تحمل المريض كنص (string) — بتتحول لرقم وقت الحفظ، فاضي = 0 */
+    insFormSharePercent: string;
     editingInsId: string | null;
     costItems: PatientCostItem[];
     insuranceItems: PatientInsuranceItem[];
@@ -250,6 +254,9 @@ export const handleSaveInsuranceOperation = (input: SaveInsuranceInput): void =>
     if (!company) { input.setCostError('يرجى اختيار شركة التأمين.'); return; }
     const amount = parseFloat(insFormAmount);
     if (!amount || amount <= 0) { input.setCostError('يرجى إدخال مبلغ صحيح أكبر من الصفر.'); return; }
+    // نسبة التحمل: رقم بين 0 و100. فاضي → undefined (يتعامل كـ 0 في الحسبة).
+    const rawShare = parseFloat(input.insFormSharePercent);
+    const sharePercent = Number.isFinite(rawShare) ? Math.max(0, Math.min(100, rawShare)) : undefined;
     const dk = insFormDate || getTodayDateKey();
     input.setCostError(null);
     const fields = {
@@ -261,6 +268,7 @@ export const handleSaveInsuranceOperation = (input: SaveInsuranceInput): void =>
         insuranceMembershipId: input.insFormMembership.trim() || undefined,
         insuranceApprovalCode: input.insFormApproval.trim() || undefined,
         note: input.insFormNote.trim() || undefined,
+        patientSharePercent: sharePercent,
     };
     if (input.editingInsId) {
         const oldItem = input.insuranceItems.find(i => i.id === input.editingInsId);

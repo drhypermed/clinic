@@ -170,7 +170,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 }
                 window.location.reload();
               }}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-xl transition-all active:scale-95"
+              className="bg-success-600 hover:bg-success-700 text-white font-black py-2.5 px-6 rounded-xl transition-all active:scale-95"
             >
               {actionLabel}
             </button>

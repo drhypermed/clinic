@@ -125,6 +125,7 @@ export const MainApp: React.FC = () => {
     updateAdvice, removeAdvice, updateLab, removeLab,
     dismissNotification,
     dismissSmartQuotaNotice,
+    openQuotaNoticeModal, // 🆕 لتمريره لـuseMainAppPrescriptionExport
     consultationDate, setConsultationDate,
     visitDate, setVisitDate,
     visitType, setVisitType,
@@ -377,6 +378,7 @@ export const MainApp: React.FC = () => {
     userId,
     showNotification,
     setWhatsappGuideOpen,
+    openQuotaNoticeModal, // 🆕 عشان لما الحد ينتهي يفتح المودال (مع زرار واتساب) بدل toast
   });
 
   // طباعة التقرير الطبي AI — hook مستخرج
@@ -450,8 +452,8 @@ export const MainApp: React.FC = () => {
       <NotificationPermissionPrompt open={canShowPushPrompt} title="فعّل إشعارات العيادة" description="لتصلك إشعارات المواعيد وطلبات السكرتارية فوراً حتى أثناء التنقل داخل النظام." enableLabel="تفعيل الإشعارات" onEnable={handleEnablePushNotifications} onLater={handlePushPromptLater} />
       {pushEnableSuccessMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[10030] w-[min(94vw,30rem)]" dir="rtl">
-          <div className="rounded-2xl border border-emerald-200 bg-white shadow-[0_24px_50px_-28px_rgba(2,6,23,0.8)] px-4 py-3 text-center">
-            <p className="text-emerald-700 font-black text-sm">{pushEnableSuccessMessage}</p>
+          <div className="rounded-2xl border border-success-200 bg-white shadow-[0_24px_50px_-28px_rgba(2,6,23,0.8)] px-4 py-3 text-center">
+            <p className="text-success-700 font-black text-sm">{pushEnableSuccessMessage}</p>
           </div>
         </div>
       )}

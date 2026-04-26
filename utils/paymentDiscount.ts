@@ -13,7 +13,7 @@ const clampPercent = (value: number): number => {
   return roundMoney(Math.max(0, Math.min(100, value)));
 };
 
-export interface NormalizedDiscountResult {
+interface NormalizedDiscountResult {
   basePrice: number;
   discountAmount: number;
   discountPercent: number;
@@ -58,7 +58,7 @@ export const normalizeDiscountForBasePrice = (
   };
 };
 
-export interface PaymentBreakdownResult {
+interface PaymentBreakdownResult {
   billedIncome: number;
   collectedCash: number;
   insuranceClaims: number;

@@ -260,8 +260,8 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
             {notification && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[10001] animate-fadeIn">
                     <div className={`px-6 py-4 rounded-2xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 ${
-                        notification.type === 'success' ? 'bg-emerald-600' :
-                        notification.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+                        notification.type === 'success' ? 'bg-success-600' :
+                        notification.type === 'error' ? 'bg-danger-600' : 'bg-brand-600'
                     }`}>
                         <span>{notification.message}</span>
                         <button onClick={() => setNotification(null)} className="text-white/80 hover:text-white">

@@ -37,7 +37,7 @@ interface CachedPage {
 }
 
 /** شكل الفلاتر اللي بيتعمل عليها cache key */
-export interface DirectoryCacheFilters {
+interface DirectoryCacheFilters {
   specialty?: string;
   governorate?: string;
   city?: string;

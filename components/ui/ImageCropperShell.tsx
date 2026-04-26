@@ -17,7 +17,7 @@ import React from 'react';
 import Cropper from 'react-easy-crop';
 import { ModalOverlay } from './ModalOverlay';
 
-export interface CropAreaPixels {
+interface CropAreaPixels {
   x: number;
   y: number;
   width: number;

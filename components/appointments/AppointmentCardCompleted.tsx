@@ -18,9 +18,9 @@ const getSourceLabel = (source?: ClinicAppointment['source']) => {
 };
 
 const getSourceBadge = (source?: ClinicAppointment['source']) => {
-  if (source === 'public') return 'bg-amber-100 text-amber-800 border-amber-300';
-  if (source === 'secretary') return 'bg-violet-100 text-violet-800 border-violet-300';
-  return 'bg-cyan-100 text-cyan-800 border-cyan-300';
+  if (source === 'public') return 'bg-warning-100 text-warning-800 border-warning-300';
+  if (source === 'secretary') return 'bg-slate-100 text-slate-800 border-slate-300';
+  return 'bg-brand-100 text-brand-800 border-brand-300';
 };
 
 export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> = ({
@@ -54,48 +54,48 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
 
         {/* Row 2: type + source + time + payment badges */}
         <div className="flex flex-wrap items-center gap-1">
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isConsultation ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-teal-100 text-teal-700 border-teal-200'}`}>
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isConsultation ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-brand-100 text-brand-700 border-brand-200'}`}>
             {typeLabel}
           </span>
           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${getSourceBadge(apt.source)}`}>
             {getSourceLabel(apt.source)}
           </span>
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+          <span className="rounded-full border border-success-200 bg-success-50 px-2 py-0.5 text-[10px] font-bold text-success-800">
             {formatUserTime(apt.dateTime, { hour: '2-digit', minute: '2-digit' })}
           </span>
           {apt.paymentType === 'insurance' && (
-            <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800">
+            <span className="rounded-full border border-brand-200 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-800">
               تأمين {apt.insuranceCompanyName ? `(${apt.insuranceCompanyName})` : ''}
             </span>
           )}
           {apt.paymentType === 'discount' && (
-            <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
+            <span className="rounded-full border border-warning-200 bg-warning-100 px-2 py-0.5 text-[10px] font-black text-warning-800">
               خصم {discountBadgeText ? `(${discountBadgeText})` : ''}
             </span>
           )}
           {apt.paymentType === 'discount' && discountReasonSummary && (
-            <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-800">
+            <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-bold text-warning-800">
               {discountReasonSummary}
             </span>
           )}
           {/* الجنس + الحمل + الرضاعة — تظهر لو كانت محفوظة على الموعد */}
           {apt.gender === 'male' && (
-            <span className="rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-[10px] font-black text-sky-800">ذكر</span>
+            <span className="rounded-full border border-brand-300 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-800">ذكر</span>
           )}
           {apt.gender === 'female' && (
-            <span className="rounded-full border border-pink-300 bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-800">أنثى</span>
+            <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-800">أنثى</span>
           )}
           {apt.pregnant === true && (
-            <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤰 حامل</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤰 حامل</span>
           )}
           {apt.breastfeeding === true && (
-            <span className="rounded-full border border-pink-400 bg-pink-200 px-2 py-0.5 text-[10px] font-black text-pink-900">🤱 مرضعة</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤱 مرضعة</span>
           )}
         </div>
 
         {/* Row 3: execution time */}
         {apt.examCompletedAt && (
-          <p className="text-[11px] font-bold text-emerald-700">
+          <p className="text-[11px] font-bold text-success-700">
             تم التنفيذ: {formatUserDate(apt.examCompletedAt, { year: 'numeric', month: 'short', day: 'numeric' })}
             {' · '}
             {formatUserTime(apt.examCompletedAt, { hour: '2-digit', minute: '2-digit' })}
@@ -122,7 +122,7 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
           <button
             type="button"
             onClick={() => onRemoveAppointment(apt.id)}
-            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+            className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200 transition-all"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

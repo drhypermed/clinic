@@ -190,7 +190,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
 
   // إشعار نجاح إضافة موعد يدوي
   const addSuccessToastPortal = addSuccessToast && portalTarget && createPortal(
-    <div className="fixed top-4 left-4 right-4 z-[100000] max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-teal-600 text-white shadow-xl border border-teal-700" dir="rtl">
+    <div className="fixed top-4 left-4 right-4 z-[100000] max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-brand-600 text-white shadow-xl border border-brand-700" dir="rtl">
       <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
       </span>
@@ -273,8 +273,8 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         {/* تنبيه حالة التعديل */}
         {editingAppointmentId && (
           <div className="dh-day-shell rounded-2xl border px-4 py-3 flex items-center justify-between gap-2">
-            <p className="text-xs font-black text-blue-800"><LoadingText>جاري تعديل بيانات الموعد الحالي</LoadingText></p>
-            <button onClick={clearEditing} className="px-3 py-1.5 rounded-xl bg-white border border-blue-300 text-xs font-black text-blue-700 hover:bg-blue-50 transition-colors">إلغاء التعديل</button>
+            <p className="text-xs font-black text-brand-800"><LoadingText>جاري تعديل بيانات الموعد الحالي</LoadingText></p>
+            <button onClick={clearEditing} className="px-3 py-1.5 rounded-xl bg-white border border-brand-300 text-xs font-black text-brand-700 hover:bg-brand-50 transition-colors">إلغاء التعديل</button>
           </div>
         )}
 

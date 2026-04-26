@@ -24,7 +24,7 @@ export const toStoredBannerExpiryValue = (value: unknown): string => {
   return Number.isFinite(parsedDate.getTime()) ? parsedDate.toISOString() : '';
 };
 
-export const isBannerItemCurrentlyActive = (
+const isBannerItemCurrentlyActive = (
   item: BannerTimingLike | null | undefined,
   nowMs: number,
 ): boolean => {

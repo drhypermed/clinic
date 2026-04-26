@@ -70,9 +70,6 @@ export const clearTimedPayload = (storageKey: string): void => {
   }
 };
 
-export const buildSecretaryDoctorResponseToastKey = (secret: string): string =>
-  `dh_secretary_doctor_response_toast_${secret}`;
-
 export const buildSecretaryActionToastKey = (secret: string): string =>
   `dh_secretary_action_toast_${secret}`;
 

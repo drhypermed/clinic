@@ -78,30 +78,30 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-blue-100 bg-blue-50/40 p-3 space-y-1.5"
+                  className="rounded-2xl border border-brand-100 bg-brand-50/40 p-3 space-y-1.5"
                 >
                   <p className="text-slate-900 font-black">{booking.doctorName || 'طبيب'}</p>
-                  <p className="text-blue-800 text-xs font-black">{booking.doctorSpecialty || 'بدون تخصص'}</p>
+                  <p className="text-brand-800 text-xs font-black">{booking.doctorSpecialty || 'بدون تخصص'}</p>
                   <p className="text-slate-700 text-xs font-bold">{formatBookingDateTime(booking.dateTime)}</p>
                   <p className="text-slate-500 text-xs font-bold">المريض: {booking.patientName || accountName}</p>
                   {booking.status === 'completed' ? (
-                    <p className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-200 px-2.5 py-1 text-emerald-800 text-xs font-black">
+                    <p className="inline-flex items-center gap-1.5 rounded-full bg-success-100 border border-success-200 px-2.5 py-1 text-success-800 text-xs font-black">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3-3a1 1 0 111.414-1.42l2.293 2.294 6.493-6.494a1 1 0 011.415 0z" clipRule="evenodd" />
                       </svg>
                       حجز منفذ
                     </p>
                   ) : (
-                    <p className="inline-flex items-center rounded-full bg-amber-100 border border-amber-200 px-2.5 py-1 text-amber-800 text-xs font-black">
+                    <p className="inline-flex items-center rounded-full bg-warning-100 border border-warning-200 px-2.5 py-1 text-warning-800 text-xs font-black">
                       قيد الانتظار
                     </p>
                   )}
 
                   {booking.status === 'completed' && (
-                    <div className="mt-2 rounded-xl border border-amber-100 bg-amber-50/70 p-2.5 space-y-2">
+                    <div className="mt-2 rounded-xl border border-warning-100 bg-warning-50/70 p-2.5 space-y-2">
                       {typeof booking.rating === 'number' && Number.isFinite(booking.rating) ? (
                         <>
-                          <p className="text-xs font-black text-emerald-800">تم تقييم هذه الزيارة</p>
+                          <p className="text-xs font-black text-success-800">تم تقييم هذه الزيارة</p>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((starValue) => (
                               <span
@@ -109,7 +109,7 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                                 className="w-8 h-8 rounded-lg inline-flex items-center justify-center"
                               >
                                 <svg
-                                  className={`w-5 h-5 ${starValue <= Math.round(booking.rating || 0) ? 'text-amber-500' : 'text-amber-200'}`}
+                                  className={`w-5 h-5 ${starValue <= Math.round(booking.rating || 0) ? 'text-warning-500' : 'text-warning-200'}`}
                                   viewBox="0 0 20 20"
                                   fill="currentColor"
                                   aria-hidden="true"
@@ -118,15 +118,15 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                                 </svg>
                               </span>
                             ))}
-                            <span className="text-xs font-black text-amber-800 mr-1">{Math.round(booking.rating)}/5</span>
+                            <span className="text-xs font-black text-warning-800 mr-1">{Math.round(booking.rating)}/5</span>
                           </div>
                           {booking.reviewComment?.trim() && (
-                            <div className="rounded-lg border border-amber-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 whitespace-pre-wrap">
+                            <div className="rounded-lg border border-warning-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 whitespace-pre-wrap">
                               {booking.reviewComment.trim()}
                             </div>
                           )}
                           {bookingFeedback && (
-                            <p className={`text-xs font-black ${bookingFeedback.type === 'success' ? 'text-emerald-700' : 'text-red-700'}`}>
+                            <p className={`text-xs font-black ${bookingFeedback.type === 'success' ? 'text-success-700' : 'text-danger-700'}`}>
                               {bookingFeedback.message}
                             </p>
                           )}
@@ -134,14 +134,14 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                             type="button"
                             onClick={() => deleteBookingReview(booking)}
                             disabled={isReviewSubmitting}
-                            className="h-9 px-3 rounded-lg bg-rose-500 text-white text-xs font-black hover:bg-rose-600 disabled:opacity-60"
+                            className="h-9 px-3 rounded-lg bg-danger-500 text-white text-xs font-black hover:bg-danger-600 disabled:opacity-60"
                           >
                             {isReviewSubmitting ? 'جاري الحذف' : 'حذف التقييم'}
                           </button>
                         </>
                       ) : (
                         <>
-                          <p className="text-xs font-black text-amber-900">قيّم الطبيب بعد تنفيذ الحجز (مرة واحدة لكل زيارة)</p>
+                          <p className="text-xs font-black text-warning-900">قيّم الطبيب بعد تنفيذ الحجز (مرة واحدة لكل زيارة)</p>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((starValue) => (
                               <button
@@ -152,7 +152,7 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                                 aria-label={`تقييم ${starValue} نجوم`}
                               >
                                 <svg
-                                  className={`w-5 h-5 ${starValue <= reviewDraft.rating ? 'text-amber-500' : 'text-amber-200'}`}
+                                  className={`w-5 h-5 ${starValue <= reviewDraft.rating ? 'text-warning-500' : 'text-warning-200'}`}
                                   viewBox="0 0 20 20"
                                   fill="currentColor"
                                   aria-hidden="true"
@@ -161,7 +161,7 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                                 </svg>
                               </button>
                             ))}
-                            <span className="text-xs font-black text-amber-800 mr-1">
+                            <span className="text-xs font-black text-warning-800 mr-1">
                               {reviewDraft.rating > 0 ? `${reviewDraft.rating}/5` : 'اختر التقييم'}
                             </span>
                           </div>
@@ -169,11 +169,11 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                             value={reviewDraft.comment}
                             onChange={(e) => updateBookingReviewDraft(booking, { comment: e.target.value })}
                             placeholder="اكتب تعليقك (اختياري)"
-                            className="w-full min-h-[72px] rounded-lg border border-amber-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            className="w-full min-h-[72px] rounded-lg border border-warning-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-warning-300"
                             maxLength={600}
                           />
                           {bookingFeedback && (
-                            <p className={`text-xs font-black ${bookingFeedback.type === 'success' ? 'text-emerald-700' : 'text-red-700'}`}>
+                            <p className={`text-xs font-black ${bookingFeedback.type === 'success' ? 'text-success-700' : 'text-danger-700'}`}>
                               {bookingFeedback.message}
                             </p>
                           )}
@@ -181,7 +181,7 @@ export const BookingsPanelModal: React.FC<BookingsPanelModalProps> = ({
                             type="button"
                             onClick={() => submitBookingReview(booking)}
                             disabled={isReviewSubmitting}
-                            className="h-9 px-3 rounded-lg bg-amber-500 text-white text-xs font-black hover:bg-amber-600 disabled:opacity-60"
+                            className="h-9 px-3 rounded-lg bg-warning-500 text-white text-xs font-black hover:bg-warning-600 disabled:opacity-60"
                           >
                             {isReviewSubmitting ? 'جاري الحفظ' : 'إرسال التقييم'}
                           </button>

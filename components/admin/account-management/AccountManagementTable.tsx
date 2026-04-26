@@ -15,7 +15,10 @@ import { DoctorAccountCard } from './DoctorAccountCard';
 
 interface AccountManagementTableProps {
   approvedDoctors: ApprovedDoctor[];
+  /** الأطباء المعروضين في الصفحة الحالية (subset من الـfiltered) */
   filteredDoctors: ApprovedDoctor[];
+  /** إجمالي عدد الأطباء بعد الفلترة (قبل الـpagination) — اختياري للـlabel فقط */
+  totalFilteredCount?: number;
   isAdminDoctorEmail: (email?: string) => boolean;
   actionInProgress: Record<string, boolean>;
 
@@ -48,7 +51,9 @@ interface AccountManagementTableProps {
 }
 
 export const AccountManagementTable: React.FC<AccountManagementTableProps> = (props) => {
-  const { approvedDoctors, filteredDoctors, isAdminDoctorEmail, actionInProgress } = props;
+  const { approvedDoctors, filteredDoctors, totalFilteredCount, isAdminDoctorEmail, actionInProgress } = props;
+  // عدد الفلتر الإجمالي (لو ما اتمررش، نستخدم filteredDoctors.length) — يتعرض في الـheader
+  const totalAfterFilter = typeof totalFilteredCount === 'number' ? totalFilteredCount : filteredDoctors.length;
 
   // حالة التوسيع على مستوى الجدول (أي كاردات مفتوحة حالياً)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -66,7 +71,10 @@ export const AccountManagementTable: React.FC<AccountManagementTableProps> = (pr
       {/* ── Header: عدد النتائج + تلميح ── */}
       <div className="flex items-center justify-between gap-2 px-4 py-3 bg-slate-50/60 border-b border-slate-100">
         <h3 className="text-xs sm:text-sm font-black text-slate-800">
-          عرض النتائج ({filteredDoctors.length.toLocaleString('ar-EG')} من {approvedDoctors.length.toLocaleString('ar-EG')})
+          {/* لو في pagination (totalAfterFilter > filteredDoctors.length) يبان "X في الصفحة من Y المفلتر" */}
+          {totalAfterFilter > filteredDoctors.length
+            ? `عرض ${filteredDoctors.length.toLocaleString('ar-EG')} في هذه الصفحة (من ${totalAfterFilter.toLocaleString('ar-EG')} نتيجة)`
+            : `عرض النتائج (${totalAfterFilter.toLocaleString('ar-EG')} من ${approvedDoctors.length.toLocaleString('ar-EG')})`}
         </h3>
         <p className="text-[10px] font-bold text-slate-400">اضغط على أي طبيب للتوسيع</p>
       </div>

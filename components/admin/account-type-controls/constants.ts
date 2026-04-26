@@ -1,126 +1,31 @@
 /**
  * الملف: constants.ts
- * الوصف: "مستودع القيم الافتراضية". 
- * يحتوي هذا الملف على كافة الثوابت التي يحتاجها النظام لإدارة الباقات: 
- * 1. DEFAULT_FORM: القيم الأولية للحدود والرسائل (تستخدم عند تهيئة لوحة التحكم). 
- * 2. مجموعات التحكم (GROUPS): تعريف هيكل الأقسام (مثل تحليل الحالة، الروشتات) وكيفية عرضها. 
- * 3. مفاتيح البيانات (Keys): مصفوفات لتسهيل عملية التكرار (Iteration) وحفظ البيانات في Firestore. 
- * 4. إعدادات الواتساب: الأرقام والروابط الافتراضية للتواصل.
+ * الوصف: "مستودع المفاتيح والمجموعات للوحة التحكم".
+ * يحتوي على:
+ * 1. DEFAULT_FORM: القيم الأولية للحدود والرسائل — مُعاد تصديرها من DEFAULT_CONTROLS
+ *    (المصدر الموحَّد) بدل التكرار، عشان لو الأدمن غيّر default في مكان، يتطبّق في الكل.
+ * 2. مجموعات التحكم (GROUPS): تعريف هيكل الأقسام (تحليل الحالة، الترجمة، الروشتات...) وعرضها.
+ * 3. مفاتيح البيانات (Keys): مصفوفات لتسهيل عملية التكرار وحفظ البيانات في Firestore.
+ *
+ * 🆕 أُضيفت ميزة "الترجمة الذكية" (translation) للـadmin panel.
  */
 
 import type { LimitKey, MessageKey, WhatsappMessageKey } from './types';
 import type { AccountTypeControls } from '../../../services/accountTypeControlsService';
+import { DEFAULT_CONTROLS } from '../../../services/account-type-controls/defaults';
 import { GroupConfig } from '../../../types';
 
-export const DEFAULT_FORM: AccountTypeControls = {
-  freeDailyLimit: 2,
-  premiumDailyLimit: 50,
-  freeRecordDailyLimit: 3,
-  premiumRecordDailyLimit: 50,
-  freePublicBookingDailyLimit: 10,
-  premiumPublicBookingDailyLimit: 200,
-  freePublicFormBookingDailyLimit: 10,
-  premiumPublicFormBookingDailyLimit: 200,
-  freeSecretaryEntryRequestDailyLimit: 20,
-  premiumSecretaryEntryRequestDailyLimit: 300,
-  freeReadyPrescriptionDailyLimit: 3,
-  premiumReadyPrescriptionDailyLimit: 50,
-  freeMedicalReportDailyLimit: 3,
-  premiumMedicalReportDailyLimit: 80,
-  freeReadyPrescriptionsMaxCount: 5,
-  premiumReadyPrescriptionsMaxCount: 100,
-  freeMedicationCustomizationsMaxCount: 20,
-  premiumMedicationCustomizationsMaxCount: 500,
-  freeInteractionToolDailyLimit: 5000,
-  premiumInteractionToolDailyLimit: 5000,
-  freeRenalToolDailyLimit: 5000,
-  premiumRenalToolDailyLimit: 5000,
-  freePregnancyToolDailyLimit: 5000,
-  premiumPregnancyToolDailyLimit: 5000,
-  freeAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (3 مرات) للحساب المجاني. للتواصل واتساب',
-  premiumAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (50 مرة) لحساب برو. للتواصل واتساب',
-  freeRecordLimitMessage: 'تم استهلاك الحد اليومي لحفظ السجلات (3 مرات) للحساب المجاني. للتواصل واتساب',
-  premiumRecordLimitMessage: 'تم استهلاك الحد اليومي لحفظ السجلات (50 مرة) لحساب برو. للتواصل واتساب',
-  freePublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) للحساب المجاني. للتواصل واتساب',
-  premiumPublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) لحساب برو. للتواصل واتساب',
-  freePublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) للحساب المجاني. للتواصل واتساب',
-  premiumPublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) لحساب برو. للتواصل واتساب',
-  freeSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) للحساب المجاني. للتواصل واتساب',
-  premiumSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) لحساب برو. للتواصل واتساب',
-  freeReadyPrescriptionDailyLimitMessage: 'تم استهلاك الحد اليومي لحفظ الروشتات الجاهزة (3 مرات) للحساب المجاني. للتواصل واتساب',
-  premiumReadyPrescriptionDailyLimitMessage: 'تم استهلاك الحد اليومي لحفظ الروشتات الجاهزة (50 مرة) لحساب برو. للتواصل واتساب',
-  freeMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) للحساب المجاني. للتواصل واتساب',
-  premiumMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو. للتواصل واتساب',
-  freeReadyPrescriptionsCapacityMessage: 'وصلت للحد الأقصى للروشتات الجاهزة ({limit}) للحساب المجاني. احذف واحدة أولاً ثم أضف الجديدة.',
-  premiumReadyPrescriptionsCapacityMessage: 'وصلت للحد الأقصى للروشتات الجاهزة ({limit}) لحساب برو. احذف واحدة أولاً ثم أضف الجديدة.',
-  freeMedicationCustomizationsCapacityMessage: 'وصلت للحد الأقصى لتخزين الأدوية المعدلة ({limit}) للحساب المجاني.',
-  premiumMedicationCustomizationsCapacityMessage: 'وصلت للحد الأقصى لتخزين الأدوية المعدلة ({limit}) لحساب برو.',
-  whatsappNumber: '201092805293',
-  freeAnalysisWhatsappMessage: 'السلام عليكم، تجاوزت حد تحليل الحالة وأرغب في الاشتراك.',
-  premiumAnalysisWhatsappMessage: 'السلام عليكم، استهلكت حد تحليل الحالة وأرغب في ترقية الباقة.',
-  freeRecordWhatsappMessage: 'السلام عليكم، تجاوزت حد حفظ السجلات وأرغب في الاشتراك.',
-  premiumRecordWhatsappMessage: 'السلام عليكم، استهلكت حد حفظ السجلات وأرغب في ترقية الباقة.',
-  freePublicBookingWhatsappMessage: 'السلام عليكم، تجاوزت حد إضافة المواعيد اليومية وأرغب في الاشتراك.',
-  premiumPublicBookingWhatsappMessage: 'السلام عليكم، استهلكت حد إضافة المواعيد اليومية وأرغب في ترقية الباقة.',
-  freePublicFormBookingWhatsappMessage: 'السلام عليكم، تجاوزت حد الحجز اليومي من فورم الجمهور وأرغب في الاشتراك.',
-  premiumPublicFormBookingWhatsappMessage: 'السلام عليكم، استهلكت حد الحجز اليومي من فورم الجمهور وأرغب في ترقية الباقة.',
-  freeSecretaryEntryRequestWhatsappMessage: 'السلام عليكم، تجاوزت حد ارسال الموعد للطبيب من خلال السكرتارية وأرغب في الاشتراك.',
-  premiumSecretaryEntryRequestWhatsappMessage: 'السلام عليكم، استهلكت حد ارسال الموعد للطبيب من خلال السكرتارية وأرغب في ترقية الباقة.',
-  freeReadyPrescriptionWhatsappMessage: 'السلام عليكم، تجاوزت حد حفظ الروشتات الجاهزة وأرغب في الاشتراك.',
-  premiumReadyPrescriptionWhatsappMessage: 'السلام عليكم، استهلكت حد حفظ الروشتات الجاهزة وأرغب في ترقية الباقة.',
-  freeMedicalReportWhatsappMessage: 'السلام عليكم، تجاوزت الحد اليومي لطباعة التقرير الطبي للحالة وأرغب في الاشتراك.',
-  premiumMedicalReportWhatsappMessage: 'السلام عليكم، استهلكت الحد اليومي لطباعة التقرير الطبي للحالة وأرغب في ترقية الباقة.',
-  freeReadyPrescriptionsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لعدد الروشتات الجاهزة وأرغب في الاشتراك.',
-  premiumReadyPrescriptionsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لعدد الروشتات الجاهزة وأرغب في ترقية الباقة.',
-  freeMedicationCustomizationsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لتخزين الأدوية المعدلة وأرغب في الاشتراك.',
-  premiumMedicationCustomizationsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لتخزين الأدوية المعدلة وأرغب في ترقية الباقة.',
-  interactionToolPremiumOnly: true,
-  renalToolPremiumOnly: true,
-  pregnancyToolPremiumOnly: true,
-  interactionToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
-  renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
-  pregnancyToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
-  premiumTagLabel: 'Pro',
-  // ─── قيم افتراضية مبدئية للفئة الجديدة "برو ماكس" (مطابقة لـ برو — الأدمن يعدّل لاحقاً) ───
-  proMaxDailyLimit: 50,
-  proMaxRecordDailyLimit: 50,
-  proMaxPublicBookingDailyLimit: 200,
-  proMaxPublicFormBookingDailyLimit: 200,
-  proMaxSecretaryEntryRequestDailyLimit: 300,
-  proMaxReadyPrescriptionDailyLimit: 50,
-  proMaxMedicalReportDailyLimit: 80,
-  proMaxReadyPrescriptionsMaxCount: 100,
-  proMaxMedicationCustomizationsMaxCount: 500,
-  proMaxInteractionToolDailyLimit: 5000,
-  proMaxRenalToolDailyLimit: 5000,
-  proMaxPregnancyToolDailyLimit: 5000,
-  proMaxAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (50 مرة) لحساب برو ماكس. للتواصل واتساب',
-  proMaxRecordLimitMessage: 'تم استهلاك الحد اليومي لحفظ السجلات (50 مرة) لحساب برو ماكس. للتواصل واتساب',
-  proMaxPublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  proMaxPublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  proMaxSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  proMaxReadyPrescriptionDailyLimitMessage: 'تم استهلاك الحد اليومي لحفظ الروشتات الجاهزة (50 مرة) لحساب برو ماكس. للتواصل واتساب',
-  proMaxMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  proMaxReadyPrescriptionsCapacityMessage: 'وصلت للحد الأقصى للروشتات الجاهزة ({limit}) لحساب برو ماكس. احذف واحدة أولاً ثم أضف الجديدة.',
-  proMaxMedicationCustomizationsCapacityMessage: 'وصلت للحد الأقصى لتخزين الأدوية المعدلة ({limit}) لحساب برو ماكس.',
-  proMaxAnalysisWhatsappMessage: 'السلام عليكم، استهلكت حد تحليل الحالة في باقة برو ماكس وأرغب في التواصل.',
-  proMaxRecordWhatsappMessage: 'السلام عليكم، استهلكت حد حفظ السجلات في باقة برو ماكس وأرغب في التواصل.',
-  proMaxPublicBookingWhatsappMessage: 'السلام عليكم، استهلكت حد إضافة المواعيد اليومية في باقة برو ماكس وأرغب في التواصل.',
-  proMaxPublicFormBookingWhatsappMessage: 'السلام عليكم، استهلكت حد الحجز اليومي من فورم الجمهور في باقة برو ماكس وأرغب في التواصل.',
-  proMaxSecretaryEntryRequestWhatsappMessage: 'السلام عليكم، استهلكت حد ارسال الموعد للطبيب من خلال السكرتارية في باقة برو ماكس وأرغب في التواصل.',
-  proMaxReadyPrescriptionWhatsappMessage: 'السلام عليكم، استهلكت حد حفظ الروشتات الجاهزة في باقة برو ماكس وأرغب في التواصل.',
-  proMaxMedicalReportWhatsappMessage: 'السلام عليكم، استهلكت الحد اليومي لطباعة التقرير الطبي للحالة في باقة برو ماكس وأرغب في التواصل.',
-  proMaxReadyPrescriptionsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لعدد الروشتات الجاهزة في باقة برو ماكس وأرغب في التواصل.',
-  proMaxMedicationCustomizationsCapacityWhatsappMessage: 'السلام عليكم، وصلت للحد الأقصى لتخزين الأدوية المعدلة في باقة برو ماكس وأرغب في التواصل.',
-  proMaxTagLabel: 'Pro Max',
-  whatsappUrl: 'https://wa.me/201092805293',
-};
+// ─ DEFAULT_FORM = نفس DEFAULT_CONTROLS من services (المصدر الوحيد للحقيقة).
+// ─ كان فيه تكرار قديم (~100 سطر) كان بيخلق bug: لو الأدمن غيّر رسالة في مكان،
+//   مكنش بيتطبّق في المكان التاني. التوحيد ده يحل المشكلة دي نهائياً.
+export const DEFAULT_FORM: AccountTypeControls = DEFAULT_CONTROLS;
 
 export const LIMIT_KEYS: LimitKey[] = [
   'freeDailyLimit',
   'premiumDailyLimit',
-  'freeRecordDailyLimit',
-  'premiumRecordDailyLimit',
+  // ─ السجلات بقت سعة كلية مش يومية ─
+  'freeRecordsMaxCount',
+  'premiumRecordsMaxCount',
   'freePublicBookingDailyLimit',
   'premiumPublicBookingDailyLimit',
   'freePublicFormBookingDailyLimit',
@@ -131,20 +36,52 @@ export const LIMIT_KEYS: LimitKey[] = [
   'premiumReadyPrescriptionDailyLimit',
   'freeMedicalReportDailyLimit',
   'premiumMedicalReportDailyLimit',
+  // ─── الترجمة الذكية للروشتة 🆕 ───
+  'freeTranslationDailyLimit',
+  'premiumTranslationDailyLimit',
+  // ─── الأزرار الذهبية + الكلى تحت "حدود الميزات" 🆕 ───
+  'freeInteractionToolDailyLimit',
+  'premiumInteractionToolDailyLimit',
+  'freePregnancyToolDailyLimit',
+  'premiumPregnancyToolDailyLimit',
+  'freeRenalToolDailyLimit',
+  'premiumRenalToolDailyLimit',
+  // ─── 🆕 أزرار تصدير الروشتة ───
+  'freePrescriptionPrintDailyLimit',
+  'premiumPrescriptionPrintDailyLimit',
+  'freePrescriptionDownloadDailyLimit',
+  'premiumPrescriptionDownloadDailyLimit',
+  'freePrescriptionWhatsappDailyLimit',
+  'premiumPrescriptionWhatsappDailyLimit',
   'freeReadyPrescriptionsMaxCount',
   'premiumReadyPrescriptionsMaxCount',
   'freeMedicationCustomizationsMaxCount',
   'premiumMedicationCustomizationsMaxCount',
+  // ─── سعة الفروع 🆕 ───
+  'freeBranchesMaxCount',
+  'premiumBranchesMaxCount',
+  // ─── 🆕 سعة شركات التأمين ───
+  'freeInsuranceCompaniesMaxCount',
+  'premiumInsuranceCompaniesMaxCount',
   // ─── برو ماكس ───
   'proMaxDailyLimit',
-  'proMaxRecordDailyLimit',
+  'proMaxRecordsMaxCount',
   'proMaxPublicBookingDailyLimit',
   'proMaxPublicFormBookingDailyLimit',
   'proMaxSecretaryEntryRequestDailyLimit',
   'proMaxReadyPrescriptionDailyLimit',
   'proMaxMedicalReportDailyLimit',
+  'proMaxTranslationDailyLimit',
+  'proMaxInteractionToolDailyLimit',
+  'proMaxPregnancyToolDailyLimit',
+  'proMaxRenalToolDailyLimit',
+  'proMaxPrescriptionPrintDailyLimit',
+  'proMaxPrescriptionDownloadDailyLimit',
+  'proMaxPrescriptionWhatsappDailyLimit',
   'proMaxReadyPrescriptionsMaxCount',
   'proMaxMedicationCustomizationsMaxCount',
+  'proMaxBranchesMaxCount',
+  'proMaxInsuranceCompaniesMaxCount',
 ];
 
 export const DRUG_TOOLS_LIMIT_KEYS: Array<
@@ -172,8 +109,8 @@ export const DRUG_TOOLS_LIMIT_KEYS: Array<
 export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'freeAnalysisLimitMessage',
   'premiumAnalysisLimitMessage',
-  'freeRecordLimitMessage',
-  'premiumRecordLimitMessage',
+  'freeRecordsCapacityMessage',
+  'premiumRecordsCapacityMessage',
   'freePublicBookingLimitMessage',
   'premiumPublicBookingLimitMessage',
   'freePublicFormBookingLimitMessage',
@@ -184,27 +121,59 @@ export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'premiumReadyPrescriptionDailyLimitMessage',
   'freeMedicalReportLimitMessage',
   'premiumMedicalReportLimitMessage',
+  // ─── الترجمة الذكية ───
+  'freeTranslationLimitMessage',
+  'premiumTranslationLimitMessage',
+  // ─── 🆕 الأزرار الذهبية (التداخلات + الحمل/الرضاعة) + الكلى ───
+  'freeInteractionToolLimitMessage',
+  'premiumInteractionToolLimitMessage',
+  'freePregnancyToolLimitMessage',
+  'premiumPregnancyToolLimitMessage',
+  'freeRenalToolLimitMessage',
+  'premiumRenalToolLimitMessage',
+  // ─── 🆕 أزرار تصدير الروشتة ───
+  'freePrescriptionPrintLimitMessage',
+  'premiumPrescriptionPrintLimitMessage',
+  'freePrescriptionDownloadLimitMessage',
+  'premiumPrescriptionDownloadLimitMessage',
+  'freePrescriptionWhatsappLimitMessage',
+  'premiumPrescriptionWhatsappLimitMessage',
   'freeReadyPrescriptionsCapacityMessage',
   'premiumReadyPrescriptionsCapacityMessage',
   'freeMedicationCustomizationsCapacityMessage',
   'premiumMedicationCustomizationsCapacityMessage',
+  // ─── سعة الفروع 🆕 ───
+  'freeBranchesCapacityMessage',
+  'premiumBranchesCapacityMessage',
+  // ─── 🆕 سعة شركات التأمين ───
+  'freeInsuranceCompaniesCapacityMessage',
+  'premiumInsuranceCompaniesCapacityMessage',
   // ─── برو ماكس ───
   'proMaxAnalysisLimitMessage',
-  'proMaxRecordLimitMessage',
+  'proMaxRecordsCapacityMessage',
   'proMaxPublicBookingLimitMessage',
   'proMaxPublicFormBookingLimitMessage',
   'proMaxSecretaryEntryRequestLimitMessage',
   'proMaxReadyPrescriptionDailyLimitMessage',
   'proMaxMedicalReportLimitMessage',
+  'proMaxTranslationLimitMessage',
+  'proMaxInteractionToolLimitMessage',
+  'proMaxPregnancyToolLimitMessage',
+  'proMaxRenalToolLimitMessage',
+  'proMaxPrescriptionPrintLimitMessage',
+  'proMaxPrescriptionDownloadLimitMessage',
+  'proMaxPrescriptionWhatsappLimitMessage',
   'proMaxReadyPrescriptionsCapacityMessage',
   'proMaxMedicationCustomizationsCapacityMessage',
+  'proMaxBranchesCapacityMessage',
+  'proMaxInsuranceCompaniesCapacityMessage',
 ];
 
 export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'freeAnalysisWhatsappMessage',
   'premiumAnalysisWhatsappMessage',
-  'freeRecordWhatsappMessage',
-  'premiumRecordWhatsappMessage',
+  'freeRecordsCapacityWhatsappMessage',
+  'premiumRecordsCapacityWhatsappMessage',
   'freePublicBookingWhatsappMessage',
   'premiumPublicBookingWhatsappMessage',
   'freePublicFormBookingWhatsappMessage',
@@ -215,26 +184,58 @@ export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'premiumReadyPrescriptionWhatsappMessage',
   'freeMedicalReportWhatsappMessage',
   'premiumMedicalReportWhatsappMessage',
+  // ─── الترجمة الذكية ───
+  'freeTranslationWhatsappMessage',
+  'premiumTranslationWhatsappMessage',
+  // ─── 🆕 الأزرار الذهبية + الكلى ───
+  'freeInteractionToolWhatsappMessage',
+  'premiumInteractionToolWhatsappMessage',
+  'freePregnancyToolWhatsappMessage',
+  'premiumPregnancyToolWhatsappMessage',
+  'freeRenalToolWhatsappMessage',
+  'premiumRenalToolWhatsappMessage',
+  // ─── 🆕 أزرار تصدير الروشتة ───
+  'freePrescriptionPrintWhatsappMessage',
+  'premiumPrescriptionPrintWhatsappMessage',
+  'freePrescriptionDownloadWhatsappMessage',
+  'premiumPrescriptionDownloadWhatsappMessage',
+  'freePrescriptionWhatsappWhatsappMessage',
+  'premiumPrescriptionWhatsappWhatsappMessage',
   'freeReadyPrescriptionsCapacityWhatsappMessage',
   'premiumReadyPrescriptionsCapacityWhatsappMessage',
   'freeMedicationCustomizationsCapacityWhatsappMessage',
   'premiumMedicationCustomizationsCapacityWhatsappMessage',
+  // ─── سعة الفروع 🆕 ───
+  'freeBranchesCapacityWhatsappMessage',
+  'premiumBranchesCapacityWhatsappMessage',
+  // ─── 🆕 سعة شركات التأمين ───
+  'freeInsuranceCompaniesCapacityWhatsappMessage',
+  'premiumInsuranceCompaniesCapacityWhatsappMessage',
   // ─── برو ماكس ───
   'proMaxAnalysisWhatsappMessage',
-  'proMaxRecordWhatsappMessage',
+  'proMaxRecordsCapacityWhatsappMessage',
   'proMaxPublicBookingWhatsappMessage',
   'proMaxPublicFormBookingWhatsappMessage',
   'proMaxSecretaryEntryRequestWhatsappMessage',
   'proMaxReadyPrescriptionWhatsappMessage',
   'proMaxMedicalReportWhatsappMessage',
+  'proMaxTranslationWhatsappMessage',
+  'proMaxInteractionToolWhatsappMessage',
+  'proMaxPregnancyToolWhatsappMessage',
+  'proMaxRenalToolWhatsappMessage',
+  'proMaxPrescriptionPrintWhatsappMessage',
+  'proMaxPrescriptionDownloadWhatsappMessage',
+  'proMaxPrescriptionWhatsappWhatsappMessage',
   'proMaxReadyPrescriptionsCapacityWhatsappMessage',
   'proMaxMedicationCustomizationsCapacityWhatsappMessage',
+  'proMaxBranchesCapacityWhatsappMessage',
+  'proMaxInsuranceCompaniesCapacityWhatsappMessage',
 ];
 
 const GROUPS: GroupConfig[] = [
   {
     id: 'analysis',
-    title: 'تحليل الحالة',
+    title: 'إضافة إلى الروشتة والسجلات مع تحليل الحالة (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -269,46 +270,352 @@ const GROUPS: GroupConfig[] = [
       whatsappMessageKey: 'proMaxAnalysisWhatsappMessage',
     },
   },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 الترجمة الذكية للروشتة (Smart RX Translation)
+  // ─ كانت ميزة AI شغالة بدون حد للأدمن — أُضيفت لتحت تحكم الأدمن.
+  // ─ بتشتغل تلقائياً مع كل روشتة (Translation Layer في runSmartRx).
+  // ═══════════════════════════════════════════════════════════════════════
   {
-    id: 'records',
-    title: 'حفظ السجلات',
+    id: 'translation',
+    title: 'الترجمة الذكية للروشتة (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب حفظ السجلات (مجاني)',
-      whatsappPlaceholder: 'رسالة حفظ السجلات - مجاني',
-      limitKey: 'freeRecordDailyLimit',
-      messageKey: 'freeRecordLimitMessage',
-      whatsappMessageKey: 'freeRecordWhatsappMessage',
+      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة الترجمة الذكية - مجاني',
+      limitKey: 'freeTranslationDailyLimit',
+      messageKey: 'freeTranslationLimitMessage',
+      whatsappMessageKey: 'freeTranslationWhatsappMessage',
     },
     premium: {
       name: 'برو',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب حفظ السجلات (برو)',
-      whatsappPlaceholder: 'رسالة حفظ السجلات - برو',
-      limitKey: 'premiumRecordDailyLimit',
-      messageKey: 'premiumRecordLimitMessage',
-      whatsappMessageKey: 'premiumRecordWhatsappMessage',
+      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة الترجمة الذكية - برو',
+      limitKey: 'premiumTranslationDailyLimit',
+      messageKey: 'premiumTranslationLimitMessage',
+      whatsappMessageKey: 'premiumTranslationWhatsappMessage',
     },
     proMax: {
       name: 'برو ماكس',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب حفظ السجلات (برو ماكس)',
-      whatsappPlaceholder: 'رسالة حفظ السجلات - برو ماكس',
-      limitKey: 'proMaxRecordDailyLimit',
-      messageKey: 'proMaxRecordLimitMessage',
-      whatsappMessageKey: 'proMaxRecordWhatsappMessage',
+      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة الترجمة الذكية - برو ماكس',
+      limitKey: 'proMaxTranslationDailyLimit',
+      messageKey: 'proMaxTranslationLimitMessage',
+      whatsappMessageKey: 'proMaxTranslationWhatsappMessage',
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 الأزرار الذهبية تحت الروشتة — التداخلات الدوائية
+  // ─ كانت في قسم "أدوات الأدوية" المنفصل، اتنقلت 2026-04 لقسم "حدود الميزات"
+  //   كحد يومي كامل (مع رسالة + واتساب) عشان الأدمن يقدر يضبطها زي باقي الميزات.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'interaction_tool',
+    title: 'فحص التداخلات الدوائية (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب التداخلات (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص التداخلات - مجاني',
+      limitKey: 'freeInteractionToolDailyLimit',
+      messageKey: 'freeInteractionToolLimitMessage',
+      whatsappMessageKey: 'freeInteractionToolWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب التداخلات (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص التداخلات - برو',
+      limitKey: 'premiumInteractionToolDailyLimit',
+      messageKey: 'premiumInteractionToolLimitMessage',
+      whatsappMessageKey: 'premiumInteractionToolWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب التداخلات (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص التداخلات - برو ماكس',
+      limitKey: 'proMaxInteractionToolDailyLimit',
+      messageKey: 'proMaxInteractionToolLimitMessage',
+      whatsappMessageKey: 'proMaxInteractionToolWhatsappMessage',
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 الأزرار الذهبية تحت الروشتة — فحص الحمل والرضاعة
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'pregnancy_tool',
+    title: 'فحص الدواء أثناء الحمل والرضاعة (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب الحمل والرضاعة (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص الحمل والرضاعة - مجاني',
+      limitKey: 'freePregnancyToolDailyLimit',
+      messageKey: 'freePregnancyToolLimitMessage',
+      whatsappMessageKey: 'freePregnancyToolWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب الحمل والرضاعة (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص الحمل والرضاعة - برو',
+      limitKey: 'premiumPregnancyToolDailyLimit',
+      messageKey: 'premiumPregnancyToolLimitMessage',
+      whatsappMessageKey: 'premiumPregnancyToolWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب الحمل والرضاعة (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة فحص الحمل والرضاعة - برو ماكس',
+      limitKey: 'proMaxPregnancyToolDailyLimit',
+      messageKey: 'proMaxPregnancyToolLimitMessage',
+      whatsappMessageKey: 'proMaxPregnancyToolWhatsappMessage',
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 حاسبة جرعات الكلى — اتنقلت 2026-04 من قسم "أدوات الأدوية" المنفصل
+  // ─ بقت زي التداخلات والحمل: حد يومي + رسالة + واتساب لكل باقة
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'renal_tool',
+    title: 'حاسبة جرعات الكلى (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب جرعات الكلى (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة جرعات الكلى - مجاني',
+      limitKey: 'freeRenalToolDailyLimit',
+      messageKey: 'freeRenalToolLimitMessage',
+      whatsappMessageKey: 'freeRenalToolWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب جرعات الكلى (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة جرعات الكلى - برو',
+      limitKey: 'premiumRenalToolDailyLimit',
+      messageKey: 'premiumRenalToolLimitMessage',
+      whatsappMessageKey: 'premiumRenalToolWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب جرعات الكلى (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة جرعات الكلى - برو ماكس',
+      limitKey: 'proMaxRenalToolDailyLimit',
+      messageKey: 'proMaxRenalToolLimitMessage',
+      whatsappMessageKey: 'proMaxRenalToolWhatsappMessage',
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 أزرار تصدير الروشتة (طباعة + تنزيل + واتساب) — حدود يومية 2026-04
+  // ─ مفيش تكلفة AI، الحدود لتمييز الباقات وتشجيع الترقية ـ
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'prescription_print',
+    title: 'طباعة الروشتة (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب طباعة الروشتة (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة طباعة الروشتة - مجاني',
+      limitKey: 'freePrescriptionPrintDailyLimit',
+      messageKey: 'freePrescriptionPrintLimitMessage',
+      whatsappMessageKey: 'freePrescriptionPrintWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب طباعة الروشتة (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة طباعة الروشتة - برو',
+      limitKey: 'premiumPrescriptionPrintDailyLimit',
+      messageKey: 'premiumPrescriptionPrintLimitMessage',
+      whatsappMessageKey: 'premiumPrescriptionPrintWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب طباعة الروشتة (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة طباعة الروشتة - برو ماكس',
+      limitKey: 'proMaxPrescriptionPrintDailyLimit',
+      messageKey: 'proMaxPrescriptionPrintLimitMessage',
+      whatsappMessageKey: 'proMaxPrescriptionPrintWhatsappMessage',
+    },
+  },
+  {
+    id: 'prescription_download',
+    title: 'تنزيل الروشتة (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب تنزيل الروشتة (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة تنزيل الروشتة - مجاني',
+      limitKey: 'freePrescriptionDownloadDailyLimit',
+      messageKey: 'freePrescriptionDownloadLimitMessage',
+      whatsappMessageKey: 'freePrescriptionDownloadWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب تنزيل الروشتة (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة تنزيل الروشتة - برو',
+      limitKey: 'premiumPrescriptionDownloadDailyLimit',
+      messageKey: 'premiumPrescriptionDownloadLimitMessage',
+      whatsappMessageKey: 'premiumPrescriptionDownloadWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب تنزيل الروشتة (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة تنزيل الروشتة - برو ماكس',
+      limitKey: 'proMaxPrescriptionDownloadDailyLimit',
+      messageKey: 'proMaxPrescriptionDownloadLimitMessage',
+      whatsappMessageKey: 'proMaxPrescriptionDownloadWhatsappMessage',
+    },
+  },
+  {
+    id: 'prescription_whatsapp',
+    title: 'إرسال الروشتة عبر واتساب (حد يومي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب إرسال الروشتة (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة إرسال الروشتة - مجاني',
+      limitKey: 'freePrescriptionWhatsappDailyLimit',
+      messageKey: 'freePrescriptionWhatsappLimitMessage',
+      whatsappMessageKey: 'freePrescriptionWhatsappWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب إرسال الروشتة (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة إرسال الروشتة - برو',
+      limitKey: 'premiumPrescriptionWhatsappDailyLimit',
+      messageKey: 'premiumPrescriptionWhatsappLimitMessage',
+      whatsappMessageKey: 'premiumPrescriptionWhatsappWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد اليومي',
+      messageLabel: 'رسالة تجاوز الحد',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب إرسال الروشتة (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة إرسال الروشتة - برو ماكس',
+      limitKey: 'proMaxPrescriptionWhatsappDailyLimit',
+      messageKey: 'proMaxPrescriptionWhatsappLimitMessage',
+      whatsappMessageKey: 'proMaxPrescriptionWhatsappWhatsappMessage',
+    },
+  },
+  // ─ السجلات الطبية بقت "حد كلي" (سعة) — كانت "حد يومي" قبل 2026-04 ─
+  // ─ السلوك زي الروشتات الجاهزة: مجموع كلي مخزّن، لما يخلص لازم يحذف ─
+  {
+    id: 'records_capacity',
+    title: 'حفظ السجلات (حد كلي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة السجلات (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة السجلات - مجاني',
+      limitKey: 'freeRecordsMaxCount',
+      messageKey: 'freeRecordsCapacityMessage',
+      whatsappMessageKey: 'freeRecordsCapacityWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة السجلات (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة السجلات - برو',
+      limitKey: 'premiumRecordsMaxCount',
+      messageKey: 'premiumRecordsCapacityMessage',
+      whatsappMessageKey: 'premiumRecordsCapacityWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة السجلات (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة السجلات - برو ماكس',
+      limitKey: 'proMaxRecordsMaxCount',
+      messageKey: 'proMaxRecordsCapacityMessage',
+      whatsappMessageKey: 'proMaxRecordsCapacityWhatsappMessage',
     },
   },
   {
     id: 'medical_report_print',
-    title: 'طباعة تقرير طبي للحالة',
+    title: 'طباعة تقرير طبي للحالة (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -348,7 +655,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'public_booking',
-    title: 'إضافة موعد عند الطبيب (زر إضافة الموعد)',
+    title: 'إضافة الموعد — صفحة المواعيد (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -388,7 +695,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'secretary_request',
-    title: 'ارسال موعد للطبيب من خلال السكرتارية (زر ارسال الى الطبيب)',
+    title: 'إرسال إلى الطبيب من السكرتارية (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -428,7 +735,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'public_form_booking',
-    title: 'حجز موعد من فورم الجمهور',
+    title: 'حجز موعد من فورم الجمهور (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -468,7 +775,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'ready_daily',
-    title: 'حفظ الروشتات الجاهزة يوميا',
+    title: 'حفظ روشتة جاهزة (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
@@ -505,7 +812,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'ready_capacity',
-    title: 'الحد الأقصى لعدد الروشتات الجاهزة',
+    title: 'عدد الروشتات الجاهزة المخزّنة (حد كلي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد الأقصى',
@@ -545,7 +852,7 @@ const GROUPS: GroupConfig[] = [
   },
   {
     id: 'medication_customizations_capacity',
-    title: 'تخزين الأدوية المعدلة',
+    title: 'تخزين الأدوية المعدّلة (حد كلي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد الأقصى',
@@ -583,6 +890,95 @@ const GROUPS: GroupConfig[] = [
       whatsappMessageKey: 'proMaxMedicationCustomizationsCapacityWhatsappMessage',
     },
   },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 سعة الفروع (إعلان الطبيب) — ميزة بتفرّق بين الباقات
+  // ─ مجاني = فرع واحد · برو = 3 فروع · برو ماكس = 10 فروع (افتراضياً)
+  // ─ كان MAX_BRANCHES_PER_DOCTOR=5 hardcoded — دلوقتي ينقرأ من إعدادات الأدمن.
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'branches_capacity',
+    title: 'عدد الفروع — إعلان الطبيب (حد كلي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة الفروع (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة الفروع - مجاني',
+      limitKey: 'freeBranchesMaxCount',
+      messageKey: 'freeBranchesCapacityMessage',
+      whatsappMessageKey: 'freeBranchesCapacityWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة الفروع (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة الفروع - برو',
+      limitKey: 'premiumBranchesMaxCount',
+      messageKey: 'premiumBranchesCapacityMessage',
+      whatsappMessageKey: 'premiumBranchesCapacityWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب سعة الفروع (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة سعة الفروع - برو ماكس',
+      limitKey: 'proMaxBranchesMaxCount',
+      messageKey: 'proMaxBranchesCapacityMessage',
+      whatsappMessageKey: 'proMaxBranchesCapacityWhatsappMessage',
+    },
+  },
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 شركات التأمين (سعة كلية) — تمييز بين الباقات 2026-04
+  // ─ مجاني = 2 شركة · برو = 10 · برو ماكس = 50 (افتراضياً)
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'insurance_companies_capacity',
+    title: 'عدد شركات التأمين (حد كلي)',
+    free: {
+      name: 'مجاني',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب شركات التأمين (مجاني)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة شركات التأمين - مجاني',
+      limitKey: 'freeInsuranceCompaniesMaxCount',
+      messageKey: 'freeInsuranceCompaniesCapacityMessage',
+      whatsappMessageKey: 'freeInsuranceCompaniesCapacityWhatsappMessage',
+    },
+    premium: {
+      name: 'برو',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب شركات التأمين (برو)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة شركات التأمين - برو',
+      limitKey: 'premiumInsuranceCompaniesMaxCount',
+      messageKey: 'premiumInsuranceCompaniesCapacityMessage',
+      whatsappMessageKey: 'premiumInsuranceCompaniesCapacityWhatsappMessage',
+    },
+    proMax: {
+      name: 'برو ماكس',
+      limitLabel: 'الحد الأقصى',
+      messageLabel: 'رسالة السعة القصوى',
+      whatsappLabel: 'رسالة واتساب',
+      whatsappPreviewLabel: 'معاينة واتساب شركات التأمين (برو ماكس)',
+      messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
+      whatsappPlaceholder: 'رسالة شركات التأمين - برو ماكس',
+      limitKey: 'proMaxInsuranceCompaniesMaxCount',
+      messageKey: 'proMaxInsuranceCompaniesCapacityMessage',
+      whatsappMessageKey: 'proMaxInsuranceCompaniesCapacityWhatsappMessage',
+    },
+  },
 ];
 
 const END_GROUP_IDS = new Set(['public_booking', 'public_form_booking', 'secretary_request']);
@@ -591,10 +987,3 @@ export const ORDERED_GROUPS = [
   ...GROUPS.filter((group) => END_GROUP_IDS.has(group.id)),
 ];
 
-export const createOpenMap = (): Record<string, boolean> => {
-  const map: Record<string, boolean> = {};
-  GROUPS.forEach((group) => {
-    map[group.id] = false;
-  });
-  return map;
-};

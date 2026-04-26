@@ -28,7 +28,7 @@ export const DoctorAdInfoSection: React.FC<DoctorAdInfoSectionProps> = ({
           <input
             value={adDoctorName}
             onChange={(event) => onDoctorNameChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
             placeholder="اسم الطبيب"
           />
         </div>
@@ -37,7 +37,7 @@ export const DoctorAdInfoSection: React.FC<DoctorAdInfoSectionProps> = ({
           <input
             value={yearsExperience}
             onChange={(event) => onYearsExperienceChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
             placeholder="10"
             type="number"
             min={0}
@@ -57,7 +57,7 @@ export const DoctorAdInfoSection: React.FC<DoctorAdInfoSectionProps> = ({
           <textarea
             value={subSpecialties}
             onChange={(event) => onSubSpecialtiesChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all min-h-[110px]"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all min-h-[110px]"
             placeholder="مثال: مناظير الجهاز الهضمي - أمراض الكبد - مناظير القولون"
           />
         </div>
@@ -75,7 +75,7 @@ export const DoctorAdInfoSection: React.FC<DoctorAdInfoSectionProps> = ({
           <textarea
             value={workplace}
             onChange={(event) => onWorkplaceChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all min-h-[85px]"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all min-h-[85px]"
             placeholder="اسم المستشفى/المراكز التي تعمل بها"
           />
         </div>

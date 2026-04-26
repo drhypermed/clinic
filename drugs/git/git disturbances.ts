@@ -380,5 +380,4 @@ const GIT_DISTURBANCES_MEDS_RAW: Medication[] = [
 ];
 
 export const GIT_DISTURBANCES_MEDS: Medication[] = GIT_DISTURBANCES_MEDS_RAW.map(sanitizeMedication);
-export default GIT_DISTURBANCES_MEDS;
 

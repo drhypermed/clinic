@@ -4,10 +4,11 @@ import {
 } from 'firebase/firestore';
 import { getDocCacheFirst } from './firestore/cacheFirst';
 import { MedicationCustomization } from '../types';
-import { getAccountTypeControls } from './accountTypeControlsService';
+import { getAccountTypeControls, validateMedicationCustomizationsCapacity } from './accountTypeControlsService';
 import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime';
 import { getTrustedNowMs, syncTrustedTime } from '../utils/trustedTime';
 import { getUserProfileDocRef } from './firestore/profileRoles';
+import { isQuotaLimitExceededError } from './account-type-controls/quotaErrors';
 
 // Cache ذاكرة لتخصيصات الأدوية — يمنع قراءات متكررة من Firestore عند التنقل بين الشاشات.
 // TTL قصير (60 ثانية) يضمن إن أي تعديل من tab آخر يظهر خلال دقيقة.
@@ -135,49 +136,24 @@ export const medicationCustomizationService = {
             const isNewCustomization = !currentCustomizations[medicationId];
 
             if (isNewCustomization) {
-                const [controls, accountType] = await Promise.all([
-                    getAccountTypeControls(),
-                    resolveEffectiveAccountType(userId),
-                ]);
-                // 3 فئات: free | premium (برو) | pro_max (برو ماكس).
-                // pro_max يرث من premium لو الأدمن ما حددش قيمة خاصة به.
-                const limit = accountType === 'pro_max'
-                    ? (controls.proMaxMedicationCustomizationsMaxCount ?? controls.premiumMedicationCustomizationsMaxCount)
-                    : accountType === 'premium'
-                        ? controls.premiumMedicationCustomizationsMaxCount
-                        : controls.freeMedicationCustomizationsMaxCount;
-                const used = Object.keys(currentCustomizations).length;
-
-                if (used >= limit) {
-                    const messageTemplate = accountType === 'pro_max'
-                        ? (controls.proMaxMedicationCustomizationsCapacityMessage ?? controls.premiumMedicationCustomizationsCapacityMessage)
-                        : accountType === 'premium'
-                            ? controls.premiumMedicationCustomizationsCapacityMessage
-                            : controls.freeMedicationCustomizationsCapacityMessage;
-                    const tierLabel = accountType === 'pro_max' ? 'برو ماكس' : accountType === 'premium' ? 'برو' : 'المجاني';
-                    const fallbackMessage = `وصلت للحد الأقصى لتخزين الأدوية المعدلة (${limit}) لحساب ${tierLabel}.`;
-                    const whatsappTemplate = accountType === 'pro_max'
-                        ? (controls.proMaxMedicationCustomizationsCapacityWhatsappMessage ?? controls.premiumMedicationCustomizationsCapacityWhatsappMessage)
-                        : accountType === 'premium'
-                            ? controls.premiumMedicationCustomizationsCapacityWhatsappMessage
-                            : controls.freeMedicationCustomizationsCapacityWhatsappMessage;
-                    const limitReachedMessage = applyLimitPlaceholder(messageTemplate, limit, fallbackMessage);
-
-                    const error = new Error('MEDICATION_CUSTOMIZATION_CAPACITY_REACHED') as Error & {
-                        code?: string;
-                        details?: Record<string, unknown>;
-                    };
-                    error.code = 'resource-exhausted';
-                    error.details = {
-                        accountType,
-                        limit,
-                        used,
-                        remaining: 0,
-                        whatsappNumber: controls.whatsappNumber,
-                        whatsappUrl: buildWhatsAppUrlFromNumber(controls.whatsappNumber, whatsappTemplate || limitReachedMessage),
-                        limitReachedMessage,
-                    };
-                    throw error;
+                // ─ تشديد أمني 2026-04: السيرفر بيعد الـmap ويقارن بحد الأدمن ─
+                // كان قبل client-side فقط — ممكن يتجاوز عبر dev tools.
+                // السيرفر بيرمي error بكل التفاصيل (resource-exhausted) لو وصل للحد.
+                try {
+                    await validateMedicationCustomizationsCapacity();
+                } catch (capacityError: unknown) {
+                    if (isQuotaLimitExceededError(capacityError)) {
+                        // الـerror جاي من السيرفر فيه code='resource-exhausted' + details كاملة
+                        // (limitReachedMessage + whatsappUrl + accountType + limit + used)
+                        // — بنخليها تنتشر للـcaller (UI) عشان يفتح المودال
+                        throw capacityError;
+                    }
+                    // ─ تشديد أمني 2026-04: أي خطأ تاني (شبكة/auth) → نرمي error
+                    //   ونمنع الحفظ. كان قبل بيكمّل بحجة "السيرفر هيفحص تاني"
+                    //   لكن مفيش أي rule في firestore.rules بتفحص الحد عند الكتابة،
+                    //   فالطبيب اللي بيقطع نته لحظة الحفظ كان بيتجاوز الحد فعلاً.
+                    console.error('Medication customizations capacity check failed:', capacityError);
+                    throw new Error('تعذّر التحقق من حد تخصيص الأدوية. تأكد من اتصال الإنترنت وحاول مرة أخرى.');
                 }
             }
 

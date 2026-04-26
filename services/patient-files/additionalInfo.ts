@@ -16,7 +16,7 @@ import {
     toTrimmedText,
 } from './normalizers';
 
-export interface SavePatientAdditionalInfoInput {
+interface SavePatientAdditionalInfoInput {
     userId: string;
     patientName: string;
     phone?: string;
@@ -26,7 +26,7 @@ export interface SavePatientAdditionalInfoInput {
     patientFileNameKey?: string;
 }
 
-export interface SavePatientAdditionalInfoResult {
+interface SavePatientAdditionalInfoResult {
     patientFileId: string;
     patientFileNumber: number;
     patientFileNameKey: string;

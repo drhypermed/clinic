@@ -144,7 +144,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
 
   const fieldTitleClass = 'text-[12px] font-black text-slate-700 mb-1.5 px-1 tracking-[0.01em]';
   const normalizeAgeInput = (value: string) => value.replace(/\D/g, '').slice(0, 3);
-  const ageFieldWrapperClass = 'clinic-field relative h-[44px] rounded-xl !bg-white !border-2 !border-slate-200 focus-within:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow';
+  const ageFieldWrapperClass = 'clinic-field relative h-[44px] rounded-xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow';
   const ageFieldInputClass = 'w-full h-full bg-transparent border-none outline-none text-center font-black text-sm tabular-nums px-7';
   const ageFieldUnitClass = 'clinic-unit absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold pointer-events-none';
   const ageFieldConfigs: Array<{ key: string; value: string; setValue: (v: string) => void; unit: string }> = [
@@ -208,7 +208,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                 onChange={(e) => setPatientName(e.target.value)}
                 onFocus={() => setActiveSuggestionField('name')}
                 onBlur={closeSuggestions}
-                className="clinic-field w-full h-[44px] px-4 rounded-2xl font-black text-slate-900 text-sm placeholder-slate-400 text-right !bg-white !border-2 !border-slate-200 focus:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow"
+                className="clinic-field w-full h-[44px] px-4 rounded-2xl font-black text-slate-900 text-sm placeholder-slate-400 text-right !bg-white !border-2 !border-slate-200 focus:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow"
                 placeholder="يفضل كتابة الاسم ثلاثي"
               />
               {activeSuggestionField === 'name' && visibleSuggestions.length > 0 && (
@@ -224,7 +224,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                       <div className="flex items-start justify-between gap-2">
                         <div className="text-sm font-black text-slate-800">{item.patientName}</div>
                         {toPositiveFileNumber(item.patientFileNumber) && (
-                          <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-700">
+                          <span className="shrink-0 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-700">
                             ملف #{toPositiveFileNumber(item.patientFileNumber)}
                           </span>
                         )}
@@ -245,7 +245,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
               )}
             </div>
             {currentPatientFileNumber && (
-              <div className="mt-1 text-[11px] font-black text-blue-700">رقم الملف: #{currentPatientFileNumber}</div>
+              <div className="mt-1 text-[11px] font-black text-brand-700">رقم الملف: #{currentPatientFileNumber}</div>
             )}
           </div>
 
@@ -272,17 +272,17 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
             </div>
           </div>
 
-          {/* الجنس — بعد العمر مباشرة عشان قرار سؤال الحمل/الرضاعة يبقى جنب السن منطقياً */}
+          {/* الجنس — بعد العمر مباشرة. ذكر = أزرق (active)، أنثى = لون الخصم (وردي). */}
           {setGender && (
             <div>
               <p className={fieldTitleClass}>الجنس</p>
-              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow">
+              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow">
                 <div className="grid grid-cols-2 gap-1.5 h-full">
                   <button
                     type="button"
                     onClick={() => setGender('male')}
                     className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
-                      gender === 'male' ? 'bg-sky-600 text-white shadow-md' : 'clinic-toggle-btn--idle'
+                      gender === 'male' ? 'clinic-toggle-btn--active' : 'clinic-toggle-btn--idle'
                     }`}
                   >
                     ذكر
@@ -291,7 +291,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                     type="button"
                     onClick={() => setGender('female')}
                     className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
-                      gender === 'female' ? 'bg-pink-600 text-white shadow-md' : 'clinic-toggle-btn--idle'
+                      gender === 'female' ? 'clinic-toggle-btn--discount-active' : 'clinic-toggle-btn--idle'
                     }`}
                   >
                     أنثى
@@ -301,6 +301,68 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
             </div>
           )}
         </div>
+
+        {/* ═══ صف الحمل/الرضاعة (للإناث 18-50 فقط) ═══
+            سطر مستقل تحت الهوية، عمودين متساويين عشان مايحصلش تفاوت في عرض
+            الخانات لما يندمج مع الجنس في صف واحد. */}
+        {askFertility && (setPregnant || setBreastfeeding) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+            {setPregnant && (
+              <div>
+                <p className={fieldTitleClass}>هل حامل؟</p>
+                <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow">
+                  <div className="grid grid-cols-2 gap-1.5 h-full">
+                    <button
+                      type="button"
+                      onClick={() => setPregnant(true)}
+                      className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                        pregnant === true ? 'clinic-toggle-btn--discount-active' : 'clinic-toggle-btn--idle'
+                      }`}
+                    >
+                      نعم
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPregnant(false)}
+                      className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                        pregnant === false ? 'clinic-toggle-btn--active' : 'clinic-toggle-btn--idle'
+                      }`}
+                    >
+                      لا
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {setBreastfeeding && (
+              <div>
+                <p className={fieldTitleClass}>هل مرضعة؟</p>
+                <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow">
+                  <div className="grid grid-cols-2 gap-1.5 h-full">
+                    <button
+                      type="button"
+                      onClick={() => setBreastfeeding(true)}
+                      className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                        breastfeeding === true ? 'clinic-toggle-btn--discount-active' : 'clinic-toggle-btn--idle'
+                      }`}
+                    >
+                      نعم
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBreastfeeding(false)}
+                      className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
+                        breastfeeding === false ? 'clinic-toggle-btn--active' : 'clinic-toggle-btn--idle'
+                      }`}
+                    >
+                      لا
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ═══ الصف الثاني: التاريخ والوقت | التليفون | نوع الزيارة | الدفع ═══
             بيانات الزيارة الحالية (متغيرة كل زيارة). الأعمدة بتتغير حسب وجود
@@ -314,7 +376,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           <div className="flex flex-col">
             <p className={fieldTitleClass}>تاريخ ووقت الزيارة</p>
             <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-2">
-              <div className="clinic-field relative w-full min-w-0 h-[44px] rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow overflow-hidden">
+              <div className="clinic-field relative w-full min-w-0 h-[44px] rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow overflow-hidden">
                 <input
                   type="date"
                   lang="en-GB"
@@ -327,7 +389,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                   {visitDatePreview}
                 </span>
               </div>
-              <div className="clinic-field h-[44px] rounded-xl !bg-blue-50 !border !border-blue-200/80 text-blue-700 flex items-center justify-center text-[11px] font-black tabular-nums pointer-events-none">
+              <div className="clinic-field h-[44px] rounded-xl !bg-brand-50 !border !border-brand-200/80 text-brand-700 flex items-center justify-center text-[11px] font-black tabular-nums pointer-events-none">
                 {visitTimePreview}
               </div>
             </div>
@@ -343,7 +405,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                 onChange={(e) => setPhone(e.target.value)}
                 onFocus={() => setActiveSuggestionField('phone')}
                 onBlur={closeSuggestions}
-                className="clinic-field w-full h-[44px] px-4 rounded-2xl font-black text-slate-900 text-sm placeholder-slate-400 text-right !bg-white !border-2 !border-slate-200 focus:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow"
+                className="clinic-field w-full h-[44px] px-4 rounded-2xl font-black text-slate-900 text-sm placeholder-slate-400 text-right !bg-white !border-2 !border-slate-200 focus:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow"
                 placeholder="01xxxxxxxxx"
                 dir="ltr"
               />
@@ -360,7 +422,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                       <div className="flex items-start justify-between gap-2">
                         <div className="text-sm font-black text-slate-800">{item.patientName}</div>
                         {toPositiveFileNumber(item.patientFileNumber) && (
-                          <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-700">
+                          <span className="shrink-0 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-700">
                             ملف #{toPositiveFileNumber(item.patientFileNumber)}
                           </span>
                         )}
@@ -385,7 +447,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           {/* نوع الزيارة */}
           <div>
             <p className={fieldTitleClass}>نوع الزيارة</p>
-            <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-blue-400 hover:!border-blue-300 transition-colors dropdown-shadow">
+            <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow">
               <div className="grid grid-cols-2 gap-1.5 h-full">
                 <button
                   type="button"
@@ -409,7 +471,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           {paymentType !== undefined && setPaymentType && (
             <div>
               <p className={fieldTitleClass}>الدفع</p>
-              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 hover:!border-blue-300 transition-colors dropdown-shadow">
+              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 hover:!border-brand-300 transition-colors dropdown-shadow">
                 <div className="grid grid-cols-3 gap-1.5 h-full">
                   <button
                     type="button"
@@ -437,65 +499,6 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
             </div>
           )}
         </div>
-
-        {/* ═══ الصف الثالث (اختياري): الحمل/الرضاعة ═══
-            يظهر فقط للإناث 18-50. عرض كامل عشان يبان واضح كصف مستقل تحت. */}
-        {askFertility && (setPregnant || setBreastfeeding) && (
-          <div className="rounded-2xl border-2 border-pink-200 bg-pink-50/60 p-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {setPregnant && (
-                <div>
-                  <p className="text-xs font-bold text-slate-600 mb-1.5">هل حامل؟</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPregnant(true)}
-                      className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                        pregnant === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      نعم، حامل
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPregnant(false)}
-                      className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                        pregnant === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      لا
-                    </button>
-                  </div>
-                </div>
-              )}
-              {setBreastfeeding && (
-                <div>
-                  <p className="text-xs font-bold text-slate-600 mb-1.5">هل مرضعة؟</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setBreastfeeding(true)}
-                      className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                        breastfeeding === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      نعم، مرضعة
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBreastfeeding(false)}
-                      className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                        breastfeeding === false ? 'bg-slate-700 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      لا
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
       </div>
     </section>

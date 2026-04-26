@@ -35,8 +35,7 @@ import {
   mapTodayAppointments,
 } from './bookingConfigSync.transforms';
 
-// إعادة تصدير الأنواع والـ writers حتى لا تنكسر الـ imports القديمة
-export type { BookingConfigSubscribePayload } from './bookingConfigSync.types';
+// إعادة تصدير الـ writers حتى لا تنكسر الـ imports القديمة
 export {
   setBookingConfigTodayAppointments,
   setBookingConfigTodayAppointmentsByBranch,

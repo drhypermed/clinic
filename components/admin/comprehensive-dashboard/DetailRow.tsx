@@ -12,9 +12,9 @@ interface DetailRowProps {
   icon: React.ReactElement;
   label: string;
   value: number;
-  /** كلاس الخلفية للأيقونة (مثل "bg-emerald-50") */
+  /** كلاس الخلفية للأيقونة (مثل "bg-success-50") */
   iconBg: string;
-  /** كلاس لون الأيقونة (مثل "text-emerald-600") */
+  /** كلاس لون الأيقونة (مثل "text-success-600") */
   iconColor: string;
   /** كلاس لون القيمة — اختياري (افتراضي: slate-900) */
   valueColor?: string;

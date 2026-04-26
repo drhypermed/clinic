@@ -38,7 +38,7 @@ export type SecretaryVitalKey =
   | 'rr';
 
 /** نوع حقل السكرتارية: علامة حيوية قياسية أو مربع مخصص يضيفه الطبيب */
-export type SecretaryVitalFieldKind = 'vital' | 'customBox';
+type SecretaryVitalFieldKind = 'vital' | 'customBox';
 
 /**
  * تعريف حقل واحد في شاشة السكرتارية (سواء علامة حيوية أو مربع مخصص).

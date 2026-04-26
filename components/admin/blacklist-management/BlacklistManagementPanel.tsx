@@ -99,7 +99,7 @@ export const BlacklistManagementPanel: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">البريد الإلكتروني المحظور من التسجيل</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-danger-100 text-danger-800">
             {blacklist.length} محظور
           </span>
           <button
@@ -112,7 +112,7 @@ export const BlacklistManagementPanel: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-bold">
+        <div className="p-3 bg-danger-50 border border-danger-200 rounded-lg text-danger-700 text-sm font-bold">
           {error}
         </div>
       )}
@@ -146,7 +146,7 @@ export const BlacklistManagementPanel: React.FC = () => {
                 {blacklist.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td className="px-3 py-3">
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-mono">
+                      <span className="text-xs bg-danger-100 text-danger-700 px-2 py-1 rounded font-mono">
                         {item.email}
                       </span>
                     </td>
@@ -169,7 +169,7 @@ export const BlacklistManagementPanel: React.FC = () => {
                     <td className="px-3 py-3">
                       <button
                         onClick={() => handleUnblock(item.email, item.doctorName)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-success-600 text-white hover:bg-success-700 transition"
                       >
                         🔓 فك الحظر
                       </button>
@@ -187,11 +187,11 @@ export const BlacklistManagementPanel: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm truncate">{item.doctorName || 'بدون اسم'}</p>
-                    <p className="text-xs text-red-600 font-mono mt-0.5 break-all">{item.email}</p>
+                    <p className="text-xs text-danger-600 font-mono mt-0.5 break-all">{item.email}</p>
                   </div>
                   <button
                     onClick={() => handleUnblock(item.email, item.doctorName)}
-                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition"
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-success-600 text-white hover:bg-success-700 transition"
                   >
                     🔓 فك الحظر
                   </button>
@@ -216,8 +216,8 @@ export const BlacklistManagementPanel: React.FC = () => {
 
       {!loading && blacklist.length > 0 && (
         <div className="pt-4 border-t border-slate-200">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="text-xs text-amber-800">
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
+            <p className="text-xs text-warning-800">
               <strong>ملاحظة:</strong> فك الحظر سيسمح للبريد الإلكتروني بالتسجيل في النظام مجدداً.
               تأكد من السبب قبل فك الحظر.
             </p>

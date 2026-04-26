@@ -11,13 +11,13 @@ import { omitUndefined, toOptionalText } from './helpers';
 import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
 
 // ─── مساعدات رقمية خالصة ─────────────────────────────────────────────
-export const toPositiveFileNumber = (value: unknown): number | undefined => {
+const toPositiveFileNumber = (value: unknown): number | undefined => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
   return Math.floor(parsed);
 };
 
-export const toNonNegativeNumber = (value: unknown): number | undefined => {
+const toNonNegativeNumber = (value: unknown): number | undefined => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) return undefined;
   return parsed;

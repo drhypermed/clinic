@@ -1,32 +1,37 @@
 /**
  * useDrHyper.saveRecord.quotaCheck:
- * فحص الحصة اليومية (Storage Daily Quota) قبل حفظ السجل.
+ * فحص "سعة السجلات" قبل الحفظ — تطوّر السلوك:
+ *   - قبل 2026-04: حد يومي (server-side عبر consumeStorageQuota('recordSave'))
+ *   - بدايات 2026-04: حد كلي client-side (records.length في الذاكرة)
+ *   - دلوقتي 2026-04: حد كلي SERVER-SIDE (validateRecordsCapacity على Cloud Function)
+ *
+ * ليه التطور؟ الفحص في المتصفح كان ممكن يتجاوزه طبيب فاهم تقنياً عبر dev tools.
+ * السيرفر دلوقتي بيعد السجلات الفعلية ويرفض لو وصل للحد — مفيش طريق للتجاوز.
+ *
  * بيتعامل مع 3 حالات:
- * 1) انتهاء الحصة فعلاً → فتح نافذة تنبيه + إرجاع reason='quota'.
- * 2) خطأ مؤقت (offline/network) → تحذير فقط والاستمرار local-first.
- * 3) خطأ مصادقة → إرجاع reason='auth' مع notification.
+ * 1) السعة وصلت → فتح نافذة تنبيه + إرجاع reason='quota'.
+ * 2) خطأ شبكة/auth → نمنع الحفظ (تشديد أمني — ما بقاش local-first).
+ * 3) لو الفحص ناجح → نسمح بالحفظ.
  */
 import React from 'react';
-import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
+import { validateRecordsCapacity } from '../../services/accountTypeControlsService';
+import { isQuotaLimitExceededError } from '../../services/account-type-controls/quotaErrors';
 
-/** نتيجة فحص الحصة: إمّا نكمل الحفظ أو نرجع بسبب محدّد. */
-export type QuotaCheckResult =
+/** نتيجة فحص السعة: إمّا نكمل الحفظ أو نرجع بسبب محدّد. */
+type QuotaCheckResult =
   | { ok: true }
   | { ok: false; reason: 'quota' | 'auth' };
 
-interface QuotaCheckArgs {
-  // نطابق التوقيع الأصلي في CreateSaveRecordActionParams (Promise<unknown>)
-  consumeStorageQuota: (feature: 'recordSave' | 'readyPrescriptionSave') => Promise<unknown>;
-  extractSmartQuotaErrorDetails: (error: unknown) => {
-    accountType?: string;
-    whatsappNumber?: string;
-    whatsappUrl?: string;
-    dayKey?: string;
-  } | null;
-  getQuotaReachedMessage: (
-    details: { accountType?: string } | null,
-    fallback: string,
-  ) => string;
+interface CapacityCheckArgs {
+  /** المستخدم الحالي — للتأكد من الـauth قبل النداء */
+  user: { uid: string } | null | undefined;
+  /** عدد السجلات في الذاكرة — للاستخدام كـfallback لو السيرفر مش متاح
+   *  (ملاحظة: مش الـsource of truth بعد التشديد الأمني — بنعتمد على السيرفر) */
+  currentRecordsCount: number;
+  /** لو موجود = الـcaller بيعدّل سجل قائم (نفس الـid، عدد ثابت). السيرفر
+   *  هيتأكد من وجوده ويسمح بدون فحص الحد. لو غير موجود = إنشاء جديد. */
+  recordIdForUpdate?: string;
+  /** فتح نافذة تنبيه السعة (مع رابط واتساب) */
   openQuotaNoticeModal: (args: {
     message: string;
     whatsappNumber?: string;
@@ -41,73 +46,78 @@ interface QuotaCheckArgs {
   e?: React.MouseEvent<HTMLElement>;
 }
 
+/** استخراج تفاصيل خطأ السعة من Cloud Function response */
+const extractCapacityErrorDetails = (error: unknown) => {
+  const details = (error as { details?: Record<string, unknown> })?.details;
+  if (!details || typeof details !== 'object') return null;
+  return {
+    accountType: String(details.accountType || ''),
+    limit: Number(details.limit || 0),
+    used: Number(details.used || 0),
+    remaining: Number(details.remaining || 0),
+    whatsappNumber: String(details.whatsappNumber || ''),
+    whatsappUrl: String(details.whatsappUrl || ''),
+    limitReachedMessage: String(details.limitReachedMessage || ''),
+  };
+};
+
 export async function runPreSaveQuotaCheck({
-  consumeStorageQuota,
-  extractSmartQuotaErrorDetails,
-  getQuotaReachedMessage,
+  user,
+  // currentRecordsCount: مش بنستخدمه بعد التشديد — السيرفر هو الـsource of truth
+  currentRecordsCount: _currentRecordsCount,
+  recordIdForUpdate,
   openQuotaNoticeModal,
   showNotification,
   e,
-}: QuotaCheckArgs): Promise<QuotaCheckResult> {
+}: CapacityCheckArgs): Promise<QuotaCheckResult> {
+  if (!user?.uid) {
+    showNotification('يجب تسجيل الدخول أولاً ثم إعادة المحاولة.', 'error', e);
+    return { ok: false, reason: 'auth' };
+  }
+
   try {
-    await consumeStorageQuota('recordSave');
+    // السيرفر بيعد السجلات الفعلية ويقارنها بحد الأدمن.
+    // لو فيه recordIdForUpdate (تعديل سجل قائم) → السيرفر بيتأكد من وجوده
+    // وبيسمح بدون فحص الحد (لأن العدد الكلي مش هيزيد).
+    await validateRecordsCapacity(
+      recordIdForUpdate ? { recordId: recordIdForUpdate } : undefined,
+    );
     return { ok: true };
-  } catch (quotaError: unknown) {
-    const errorObj = quotaError as { code?: string; message?: string };
-    const code = String(errorObj?.code || '');
-    const message = String(errorObj?.message || '');
-    const isDailyLimit =
-      code === 'resource-exhausted' || message.includes('STORAGE_DAILY_LIMIT_REACHED');
-    const details = extractSmartQuotaErrorDetails(quotaError);
-
-    // (1) انتهاء الحصة فعلاً → افتح نافذة التنبيه
-    if (isDailyLimit && details) {
-      // 3 فئات: مجاني / برو / برو ماكس — ممنوع الاعتماد على ternary ثنائي هنا
-      const fallback =
-        details.accountType === 'free'
-          ? 'تم استهلاك حد حفظ السجلات اليومي للحساب المجاني'
-          : details.accountType === 'pro_max'
-            ? 'تم استهلاك حد حفظ السجلات اليومي لحساب برو ماكس'
-            : 'تم استهلاك حد حفظ السجلات اليومي لحساب برو';
-      openQuotaNoticeModal({
-        message: getQuotaReachedMessage(details, fallback),
-        whatsappNumber: details.whatsappNumber,
-        whatsappUrl: details.whatsappUrl,
-        dayKey: details.dayKey,
-      });
-      return { ok: false, reason: 'quota' };
+  } catch (err: unknown) {
+    // السعة وصلت للنهاية → نفتح المودال برسالة الأدمن + رابط واتساب
+    if (isQuotaLimitExceededError(err)) {
+      const details = extractCapacityErrorDetails(err);
+      if (details) {
+        const message = String(details.limitReachedMessage || '').trim()
+          .replace(/\{\s*limit\s*\}/gi, String(details.limit))
+          .replace(/\{\s*used\s*\}/gi, String(details.used))
+          .replace(/\{\s*remaining\s*\}/gi, String(details.remaining));
+        openQuotaNoticeModal({
+          message: message || 'وصلت للحد الأقصى لتخزين السجلات الطبية. احذف سجل قبل الإضافة.',
+          whatsappNumber: details.whatsappNumber,
+          whatsappUrl: details.whatsappUrl,
+        });
+        return { ok: false, reason: 'quota' };
+      }
     }
 
-    // (2) خطأ مؤقت/أوفلاين → كمل بدون ضجيج
-    if (isQuotaTransientError(quotaError)) {
-      console.warn(
-        'Record quota check transient/offline failure, continuing local-first save:',
-        quotaError,
-      );
-      return { ok: true };
-    }
-
-    // (3) خطأ مصادقة → أرجع reason='auth'
-    const quotaErrorMessage = message.trim();
-    const normalizedQuotaErrorMessage = quotaErrorMessage.toLowerCase();
-    const isAuthFailure =
-      quotaErrorMessage.includes('فشلت المصادقة') ||
-      quotaErrorMessage.includes('تسجيل الدخول') ||
-      normalizedQuotaErrorMessage.includes('unauthenticated');
-
-    if (isAuthFailure) {
-      console.warn('Record quota check failed due to auth:', quotaError);
+    // خطأ شبكة/auth → تشديد أمني: نمنع الحفظ بدل ما نكمل
+    // (ميزة الحفظ محتاجة السيرفر دلوقتي عشان تتأكد من السعة)
+    const errorMessage = err instanceof Error ? err.message : '';
+    const isAuth = errorMessage.includes('فشلت المصادقة') || errorMessage.toLowerCase().includes('unauthenticated');
+    if (isAuth) {
       showNotification(
-        quotaErrorMessage || 'فشلت المصادقة. أعد تسجيل الدخول ثم حاول مرة أخرى.',
-        'error',
-        e,
+        errorMessage || 'فشلت المصادقة. أعد تسجيل الدخول ثم حاول مرة أخرى.',
+        'error', e,
       );
       return { ok: false, reason: 'auth' };
     }
 
-    // (4) أي خطأ تاني → كـ quota failure عام
-    console.error('Error consuming record save quota:', quotaError);
-    showNotification('حدث خطأ أثناء التحقق من حد الحفظ اليومي', 'error', e);
+    console.error('Records capacity check failed:', err);
+    showNotification(
+      'تعذّر التحقق من سعة السجلات. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+      'error', e,
+    );
     return { ok: false, reason: 'quota' };
   }
 }

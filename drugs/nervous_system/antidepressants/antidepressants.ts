@@ -8,6 +8,3 @@ export const ANTIDEPRESSANTS_DRUGS: Medication[] = [
 	...ANTIDEPRESSANTS_2,
 ];
 
-export { ANTIDEPRESSANTS_1, ANTIDEPRESSANTS_2 };
-
-

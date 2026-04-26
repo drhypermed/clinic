@@ -45,18 +45,18 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
           <button
             type="button"
             onClick={onToggleShareMenu}
-            className="h-10 px-4 rounded-xl border border-orange-200 bg-orange-50 text-orange-700 font-black text-sm hover:bg-orange-100 transition-colors"
+            className="h-10 px-4 rounded-xl border border-warning-200 bg-warning-50 text-warning-700 font-black text-sm hover:bg-warning-100 transition-colors"
             title="مشاركة على المنصات"
           >
             {linkCopied ? '✓ تم النسخ' : '📤 مشاركة'}
           </button>
 
           {showShareMenu && (
-            <div className="absolute top-12 right-0 bg-white border border-orange-200 rounded-xl shadow-lg z-50 overflow-hidden min-w-48">
+            <div className="absolute top-12 right-0 bg-white border border-warning-200 rounded-xl shadow-lg z-50 overflow-hidden min-w-48">
               <button
                 type="button"
                 onClick={() => onShare('copy')}
-                className="w-full px-4 py-2 text-right hover:bg-orange-50 border-b border-orange-100 text-sm font-bold text-slate-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-right hover:bg-warning-50 border-b border-warning-100 text-sm font-bold text-slate-700 flex items-center gap-2"
               >
                 <span>📋</span>
                 <span>نسخ الرابط</span>
@@ -64,7 +64,7 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
               <button
                 type="button"
                 onClick={() => onShare('whatsapp')}
-                className="w-full px-4 py-2 text-right hover:bg-green-50 border-b border-orange-100 text-sm font-bold text-slate-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-right hover:bg-success-50 border-b border-warning-100 text-sm font-bold text-slate-700 flex items-center gap-2"
               >
                 <span>💬</span>
                 <span>واتس آب</span>
@@ -72,7 +72,7 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
               <button
                 type="button"
                 onClick={() => onShare('facebook')}
-                className="w-full px-4 py-2 text-right hover:bg-blue-50 border-b border-orange-100 text-sm font-bold text-slate-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-right hover:bg-brand-50 border-b border-warning-100 text-sm font-bold text-slate-700 flex items-center gap-2"
               >
                 <span>👍</span>
                 <span>فيس بوك</span>
@@ -80,7 +80,7 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
               <button
                 type="button"
                 onClick={() => onShare('twitter')}
-                className="w-full px-4 py-2 text-right hover:bg-blue-50 border-b border-orange-100 text-sm font-bold text-slate-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-right hover:bg-brand-50 border-b border-warning-100 text-sm font-bold text-slate-700 flex items-center gap-2"
               >
                 <span>𝕏</span>
                 <span>تويتر</span>
@@ -88,7 +88,7 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
               <button
                 type="button"
                 onClick={() => onShare('gmail')}
-                className="w-full px-4 py-2 text-right hover:bg-red-50 text-sm font-bold text-slate-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-right hover:bg-danger-50 text-sm font-bold text-slate-700 flex items-center gap-2"
               >
                 <span>📧</span>
                 <span>بريد إلكتروني</span>
@@ -99,11 +99,11 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
       </div>
 
       <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-600">
-        <span className="hover:text-orange-600 cursor-pointer transition-colors">الرئيسية</span>
+        <span className="hover:text-warning-600 cursor-pointer transition-colors">الرئيسية</span>
         <span className="text-slate-300">/</span>
-        <span className="hover:text-orange-600 cursor-pointer transition-colors">دليل الأطباء</span>
+        <span className="hover:text-warning-600 cursor-pointer transition-colors">دليل الأطباء</span>
         <span className="text-slate-300">/</span>
-        <span className="text-orange-600 truncate max-w-[200px]">{doctorName.trim() || 'حجز موعد'}</span>
+        <span className="text-warning-600 truncate max-w-[200px]">{doctorName.trim() || 'حجز موعد'}</span>
       </div>
     </>
   );

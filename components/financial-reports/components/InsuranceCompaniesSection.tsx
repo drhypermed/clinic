@@ -167,7 +167,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
       ───────────────────────────────────────────────────────── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-gradient-to-r from-blue-700 to-blue-600 px-4 sm:px-6 py-4 flex items-center justify-between cursor-pointer hover:from-blue-800 hover:to-blue-700 transition-all"
+        className="w-full bg-gradient-to-r from-brand-700 to-brand-600 px-4 sm:px-6 py-4 flex items-center justify-between cursor-pointer hover:from-brand-800 hover:to-brand-700 transition-all"
       >
         <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -199,7 +199,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
           {!showForm && (
             <button
               onClick={handleAdd}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:from-violet-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 text-white font-bold hover:from-slate-600 hover:to-slate-700 transition-all shadow-md hover:shadow-lg"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -210,30 +210,30 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
 
           {/* ─── نموذج الإضافة/التعديل ─── */}
           {showForm && (
-            <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 space-y-3">
-              <h3 className="text-base font-black text-violet-800">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+              <h3 className="text-base font-black text-slate-800">
                 {editingId ? '✏️ تعديل شركة تأمين' : '➕ إضافة شركة تأمين جديدة'}
               </h3>
 
               {/* اسم الشركة */}
               <div>
-                <label className="block text-xs font-bold text-violet-600 mb-1">
-                  اسم الشركة <span className="text-red-400">*</span>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  اسم الشركة <span className="text-danger-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="مثال: أكسا، بوبا، ميتلايف..."
-                  className="w-full px-3 py-2 rounded-xl border-2 border-violet-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
+                  className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
                   dir="rtl"
                 />
               </div>
 
               {/* نسبة تحمل المريض */}
               <div>
-                <label className="block text-xs font-bold text-violet-600 mb-1">
-                  نسبة تحمل المريض (%) <span className="text-red-400">*</span>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  نسبة تحمل المريض (%) <span className="text-danger-400">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -243,9 +243,9 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                     value={formPercent}
                     onChange={(e) => setFormPercent(e.target.value)}
                     placeholder="مثال: 20"
-                    className="w-full px-3 py-2 rounded-xl border-2 border-violet-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all text-sm font-bold text-slate-800 text-center bg-white"
+                    className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm font-bold text-slate-800 text-center bg-white"
                   />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 font-bold text-xs">%</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">%</span>
                 </div>
                 <p className="text-[10px] text-slate-500 mt-1">
                   يعني لو الكشف 500 ج وتحمل المريض 20%، المريض يدفع 100 ج والشركة 400 ج
@@ -254,21 +254,21 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
 
               {/* ملاحظات */}
               <div>
-                <label className="block text-xs font-bold text-violet-600 mb-1">ملاحظات (اختياري)</label>
+                <label className="block text-xs font-bold text-slate-600 mb-1">ملاحظات (اختياري)</label>
                 <input
                   type="text"
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   placeholder="مثال: تعاقد سنوي يتجدد في يناير..."
-                  className="w-full px-3 py-2 rounded-xl border-2 border-violet-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
+                  className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
                   dir="rtl"
                 />
               </div>
 
               {/* نسب مختلفة لكل فرع (اختياري) — تظهر فقط لو عند الطبيب أكثر من فرع */}
               {visibleBranches.length > 1 && (
-                <div className="border-t border-violet-200 pt-3 mt-1">
-                  <label className="block text-xs font-bold text-violet-600 mb-2">
+                <div className="border-t border-slate-200 pt-3 mt-1">
+                  <label className="block text-xs font-bold text-slate-600 mb-2">
                     نسب مختلفة لكل فرع (اختياري)
                   </label>
                   <p className="text-[10px] text-slate-500 mb-2">
@@ -290,9 +290,9 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                               value={value}
                               onChange={(e) => handleBranchOverrideChange(branch.id, e.target.value)}
                               placeholder="الافتراضية"
-                              className="w-full px-2 py-1 rounded-lg border border-violet-200 focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all text-xs font-bold text-slate-800 text-center bg-white"
+                              className="w-full px-2 py-1 rounded-lg border border-slate-200 focus:border-slate-500 focus:ring-1 focus:ring-slate-500/20 transition-all text-xs font-bold text-slate-800 text-center bg-white"
                             />
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-violet-400 font-bold text-[10px]">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">
                               %
                             </span>
                           </div>
@@ -320,7 +320,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                 <button
                   onClick={handleSave}
                   disabled={isSaving || !formName.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-600 text-white font-bold hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -361,7 +361,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
               {companies.map((company) => (
                 <div
                   key={company.id}
-                  className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 sm:p-4 border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all group"
+                  className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 sm:p-4 border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     {/* معلومات الشركة */}
@@ -373,10 +373,10 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                         </h4>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className="inline-flex items-center gap-1 bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">
                           تحمل المريض: {company.patientSharePercent}%
                         </span>
-                        <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                        <span className="inline-flex items-center gap-1 bg-success-100 text-success-700 px-2 py-0.5 rounded-full font-bold">
                           تحمل الشركة: {100 - company.patientSharePercent}%
                         </span>
                         {/* لو عند الطبيب أكثر من فرع وفيه override للفرع النشط مختلف عن الافتراضي، نعرضه */}
@@ -386,7 +386,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                           const activeBranchName =
                             visibleBranches.find((b) => b.id === activeBranchId)?.name || activeBranchId;
                           return (
-                            <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">
+                            <span className="inline-flex items-center gap-1 bg-warning-100 text-warning-700 px-2 py-0.5 rounded-full font-bold">
                               نسبة {activeBranchName}: {activeBranchPercent}%
                             </span>
                           );
@@ -401,7 +401,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button
                         onClick={() => handleEdit(company)}
-                        className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        className="p-1.5 rounded-lg bg-brand-100 text-brand-600 hover:bg-brand-200 transition-colors"
                         title="تعديل"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -410,7 +410,7 @@ export const InsuranceCompaniesSection: React.FC<InsuranceCompaniesSectionProps>
                       </button>
                       <button
                         onClick={() => handleDelete(company.id, company.name)}
-                        className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                        className="p-1.5 rounded-lg bg-danger-100 text-danger-600 hover:bg-danger-200 transition-colors"
                         title="حذف"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

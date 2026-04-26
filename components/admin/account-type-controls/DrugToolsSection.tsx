@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import {
-  FaPills, FaDroplet, FaBabyCarriage,
+  FaPills, FaDroplet,
   FaCrown, FaUser, FaLock, FaLockOpen, FaPenToSquare, FaChevronDown,
 } from 'react-icons/fa6';
 import { AccountTypeControlsForm } from './types';
@@ -50,34 +50,19 @@ type DrugToolConfig = {
   icon: React.ReactElement;
 };
 
+// ─ التداخلات + الحمل/الرضاعة اتنقلوا 2026-04 لقسم "حدود الميزات" كحدود يومية كاملة ─
+// ─ (هما "الأزرار الذهبية تحت الروشتة" — أصبح الأدمن يضبطهم زي باقي الميزات)
+// ─ الكلى لسه هنا لأنها أداة منفصلة (مش زر تحت الروشتة)
 const DRUG_TOOL_CONFIGS: DrugToolConfig[] = [
   {
-    id: 'interaction',
-    title: 'التفاعلات الدوائية',
-    freeLimitKey: 'freeInteractionToolDailyLimit',
-    premiumLimitKey: 'premiumInteractionToolDailyLimit',
-    premiumOnlyKey: 'interactionToolPremiumOnly',
-    lockedMessageKey: 'interactionToolLockedMessage',
-    showProTagField: true,
-    icon: <FaPills />,
-  },
-  {
     id: 'renal',
-    title: 'جرعات الكلى',
+    title: 'حاسبة جرعات الكلى (حد يومي)',
     freeLimitKey: 'freeRenalToolDailyLimit',
     premiumLimitKey: 'premiumRenalToolDailyLimit',
     premiumOnlyKey: 'renalToolPremiumOnly',
     lockedMessageKey: 'renalToolLockedMessage',
+    showProTagField: true,
     icon: <FaDroplet />,
-  },
-  {
-    id: 'pregnancy',
-    title: 'الأمان في الحمل والرضاعة',
-    freeLimitKey: 'freePregnancyToolDailyLimit',
-    premiumLimitKey: 'premiumPregnancyToolDailyLimit',
-    premiumOnlyKey: 'pregnancyToolPremiumOnly',
-    lockedMessageKey: 'pregnancyToolLockedMessage',
-    icon: <FaBabyCarriage />,
   },
 ];
 
@@ -102,7 +87,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
     <div className="space-y-3">
       {/* Section Header */}
       <div className="flex items-center gap-2 px-1">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg p-1.5 shadow-sm">
+        <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shadow-sm">
           <FaPills className="w-3.5 h-3.5 text-white" />
         </div>
         <h3 className="text-sm sm:text-base font-black text-slate-800">أدوات البحث الدوائي</h3>
@@ -122,7 +107,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
             <article key={tool.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4">
               {/* Header: unified blue gradient icon + title */}
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg p-1.5 sm:p-2 shrink-0 shadow-sm">
+                <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shrink-0 shadow-sm">
                   {React.cloneElement(tool.icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5 text-white' })}
                 </div>
                 <h4 className="flex-1 min-w-0 text-sm sm:text-base font-black text-slate-800 tracking-tight truncate">
@@ -141,8 +126,8 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                     onClick={() => updateField(tool.premiumOnlyKey, false as AccountTypeControlsForm[typeof tool.premiumOnlyKey])}
                     className={`flex items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black transition-colors ${
                       isAllowedForFree
-                        ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/50'
+                        ? 'border-success-500 bg-success-500 text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-success-300 hover:bg-success-50/50'
                     }`}
                   >
                     <FaLockOpen className="w-3 h-3" />
@@ -153,8 +138,8 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                     onClick={() => updateField(tool.premiumOnlyKey, true as AccountTypeControlsForm[typeof tool.premiumOnlyKey])}
                     className={`flex items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black transition-colors ${
                       !isAllowedForFree
-                        ? 'border-rose-500 bg-rose-500 text-white shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:bg-rose-50/50'
+                        ? 'border-danger-500 bg-danger-500 text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-danger-300 hover:bg-danger-50/50'
                     }`}
                   >
                     <FaLock className="w-3 h-3" />
@@ -180,7 +165,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                   <input
                     type="number"
                     min={0}
-                    max={5000}
+                    max={999999}
                     value={form[tool.freeLimitKey]}
                     onChange={(e) =>
                       updateField(
@@ -189,19 +174,19 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                       )
                     }
                     disabled={!isAllowedForFree}
-                    className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric disabled:bg-slate-50 disabled:cursor-not-allowed"
+                    className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric disabled:bg-slate-50 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center gap-1.5 mb-1.5 px-1">
-                    <FaCrown className="w-3 h-3 text-amber-500" />
-                    <span className="text-[12px] font-black text-amber-700">برو</span>
+                    <FaCrown className="w-3 h-3 text-warning-500" />
+                    <span className="text-[12px] font-black text-warning-700">برو</span>
                   </div>
                   <input
                     type="number"
                     min={0}
-                    max={5000}
+                    max={999999}
                     value={form[tool.premiumLimitKey]}
                     onChange={(e) =>
                       updateField(
@@ -209,7 +194,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                         clampLimit(Number(e.target.value || 0)) as AccountTypeControlsForm[typeof tool.premiumLimitKey],
                       )
                     }
-                    className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors font-numeric"
+                    className="w-full h-[44px] px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric"
                   />
                 </div>
               </div>
@@ -220,8 +205,8 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                 onClick={() => toggleExpanded(tool.id)}
                 className={`w-full flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-colors ${
                   isExpanded
-                    ? 'border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50/50'
+                    ? 'border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:bg-brand-50/50'
                 }`}
               >
                 <FaPenToSquare className="w-3 h-3" />
@@ -247,7 +232,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                       }
                       rows={3}
                       maxLength={500}
-                      className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors resize-none"
+                      className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors resize-none"
                     />
                     <p className="mt-1 text-[10px] text-slate-400 text-left" dir="ltr">
                       {(lockedMessageValue || '').length}/500
@@ -267,7 +252,7 @@ export const DrugToolsSection: React.FC<DrugToolsSectionProps> = ({
                           )
                         }
                         placeholder="Pro"
-                        className="w-full h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors"
+                        className="w-full h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors"
                       />
                     </div>
                   )}

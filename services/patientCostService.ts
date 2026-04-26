@@ -40,6 +40,12 @@ export interface PatientInsuranceItem {
   insuranceMembershipId?: string;
   insuranceApprovalCode?: string;
   note?: string;
+  /**
+   * نسبة تحمل المريض % (0–100) — بتتعبأ افتراضياً من شركة التأمين وقت الإضافة،
+   * ويقدر الطبيب يعدّلها لو الحالة دي ليها نسبة مختلفة.
+   * العناصر القديمة بدون الحقل ده بتتعامل كأن النسبة 0 (الشركة بتدفع كل المبلغ).
+   */
+  patientSharePercent?: number;
   createdAt: number;
   /**
    * الفرع اللي اتضافت فيه المطالبة. العناصر القديمة بتتعامل كأنها فرع 'main'.
@@ -113,7 +119,7 @@ function persistDateCosts(dateKey: string, items: PatientCostItem[]): void {
  *   - فرع main → `interventionsRevenue_{dateKey}` (backward compat)
  *   - أي فرع تاني → `{branchId}__interventionsRevenue_{dateKey}`
  */
-export function recomputeDailyTotals(dateKey: string, branchId?: string): void {
+function recomputeDailyTotals(dateKey: string, branchId?: string): void {
   const allItems = loadDateCosts(dateKey);
   const branchesToRecompute = branchId
     ? [branchId]
@@ -250,7 +256,7 @@ export function deleteInsuranceExtraFromDate(dateKey: string, itemId: string): v
 export function addInsuranceItem(
   fileId: string,
   patientName: string,
-  fields: Pick<PatientInsuranceItem, 'companyId' | 'companyName' | 'amount' | 'type' | 'dateKey' | 'insuranceMembershipId' | 'insuranceApprovalCode' | 'note'>,
+  fields: Pick<PatientInsuranceItem, 'companyId' | 'companyName' | 'amount' | 'type' | 'dateKey' | 'insuranceMembershipId' | 'insuranceApprovalCode' | 'note' | 'patientSharePercent'>,
   branchId?: string,
 ): PatientInsuranceItem {
   const item: PatientInsuranceItem = {
@@ -265,6 +271,7 @@ export function addInsuranceItem(
     insuranceMembershipId: fields.insuranceMembershipId,
     insuranceApprovalCode: fields.insuranceApprovalCode,
     note: fields.note,
+    patientSharePercent: fields.patientSharePercent,
     createdAt: Date.now(),
     branchId: branchId || undefined,
   };
@@ -281,7 +288,7 @@ export function addInsuranceItem(
 export function editInsuranceItem(
   fileId: string,
   itemId: string,
-  changes: Partial<Pick<PatientInsuranceItem, 'companyId' | 'companyName' | 'amount' | 'type' | 'dateKey' | 'insuranceMembershipId' | 'insuranceApprovalCode' | 'note'>>
+  changes: Partial<Pick<PatientInsuranceItem, 'companyId' | 'companyName' | 'amount' | 'type' | 'dateKey' | 'insuranceMembershipId' | 'insuranceApprovalCode' | 'note' | 'patientSharePercent'>>
 ): void {
   const fileIns = loadPatientFileInsurance(fileId);
   const existing = fileIns.find(i => i.id === itemId);
@@ -333,6 +340,9 @@ function _mergeInsuranceIntoDateExtras(
       insuranceMembershipId: item.insuranceMembershipId,
       insuranceApprovalCode: item.insuranceApprovalCode,
       note: item.note,
+      // نسبة تحمل المريض — لازم تتنسخ هنا عشان الـ cache المحلي يبقى متطابق
+      // مع Firestore daily doc (اللي بيتغذّى من toInsuranceExtra في costsHandlers)
+      patientSharePercent: item.patientSharePercent,
       fromPatientFile: true,
       patientFileId: item.patientFileId,
       patientName: item.patientName,
@@ -408,6 +418,8 @@ export async function loadCostsFromFirestore(
           insuranceMembershipId: ins.insuranceMembershipId,
           insuranceApprovalCode: ins.insuranceApprovalCode,
           note: ins.note,
+          // نسبة تحمل المريض — للحسابات المالية والكشف التفصيلي
+          patientSharePercent: ins.patientSharePercent,
           fromPatientFile: true, patientFileId: ins.patientFileId, patientName: ins.patientName,
         });
       }
@@ -480,6 +492,9 @@ export function subscribeToPatientFileCosts(
             insuranceMembershipId: ins.insuranceMembershipId,
             insuranceApprovalCode: ins.insuranceApprovalCode,
             note: ins.note,
+            // نسبة تحمل المريض — لازم تتنسخ هنا عشان الـcache المحلي يبقى متطابق
+            // مع المصدر الموحّد في Firestore + الكشف التفصيلي يقرأ نسبة صحيحة
+            patientSharePercent: ins.patientSharePercent,
             fromPatientFile: true, patientFileId: ins.patientFileId, patientName: ins.patientName,
           });
         }

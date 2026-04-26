@@ -86,7 +86,7 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
         dir="rtl"
       >
         <div className="px-4 md:px-6 py-5 relative max-h-[92vh] overflow-y-auto">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-l from-cyan-100/70 via-teal-50/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-l from-brand-100/70 via-brand-50/70 to-transparent" />
 
           <button
             type="button"
@@ -97,10 +97,10 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
           </button>
 
           {/* هيدر الطبيب العام (اسم، تخصص، صورة) — مشترك لكل الفروع */}
-          <div className="relative z-10 mt-8 rounded-3xl border border-cyan-100 bg-white/90 p-4 md:p-5 shadow-xl">
+          <div className="relative z-10 mt-8 rounded-3xl border border-brand-100 bg-white/90 p-4 md:p-5 shadow-xl">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-24 h-24 md:w-28 md:h-28 aspect-square shrink-0 rounded-full border-4 border-white bg-slate-100 overflow-hidden shadow-xl ring-2 ring-cyan-200">
+                <div className="w-24 h-24 md:w-28 md:h-28 aspect-square shrink-0 rounded-full border-4 border-white bg-slate-100 overflow-hidden shadow-xl ring-2 ring-brand-200">
                   {profileImage ? (
                     <img src={profileImage} alt={previewData.doctorName} className="w-full h-full object-cover" />
                   ) : (
@@ -111,7 +111,7 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
                 </div>
                 <div className="pb-1 min-w-0">
                   <h3 className="text-xl md:text-3xl font-black text-slate-900 leading-tight">{previewData.doctorName}</h3>
-                  <p className="text-sm md:text-base font-black text-cyan-700 mt-1">{previewData.doctorSpecialty}</p>
+                  <p className="text-sm md:text-base font-black text-brand-700 mt-1">{previewData.doctorSpecialty}</p>
                   <p className="text-xs md:text-sm font-bold text-slate-600 mt-1">{primaryLocation || 'العنوان غير محدد'}</p>
                 </div>
               </div>
@@ -123,7 +123,7 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
             {previewData.academicDegree && (
               <>
                 <p className="text-xs text-slate-500 font-black mb-2">الدرجة العلمية</p>
-                <p className="text-sm md:text-base font-bold text-indigo-700 leading-relaxed whitespace-pre-line break-words mb-3">
+                <p className="text-sm md:text-base font-bold text-brand-700 leading-relaxed whitespace-pre-line break-words mb-3">
                   {previewData.academicDegree}
                 </p>
               </>
@@ -186,7 +186,7 @@ export const LivePreviewModal: React.FC<LivePreviewModalProps> = ({
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="h-10 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-800 font-black text-sm inline-flex items-center justify-center gap-2 px-4 hover:bg-indigo-100 transition-colors"
+                    className="h-10 rounded-xl border border-brand-200 bg-brand-50 text-brand-800 font-black text-sm inline-flex items-center justify-center gap-2 px-4 hover:bg-brand-100 transition-colors"
                   >
                     <span>{getSocialIcon(social.platform)}</span>
                     <span>{social.platform || 'Social'}</span>

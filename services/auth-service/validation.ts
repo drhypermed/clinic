@@ -62,44 +62,4 @@ export const validateEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-/**
- * التحقق من قوة كلمة المرور.
- * تشترط القواعد: 8 أحرف، حرف كبير، رقم، ورمز خاص.
- */
-export const validatePassword = (password: string): { valid: boolean; message: string } => {
-  if (password.length < 8) {
-    return { valid: false, message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' };
-  }
-  if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: 'كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل' };
-  }
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, message: 'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل' };
-  }
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return { valid: false, message: 'كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل' };
-  }
-  return { valid: true, message: 'كلمة مرور قوية' };
-};
-
-/**
- * بناء رابط "المتابعة" (Continue URL) المستخدم في روابط تسجيل الدخول عبر البريد (Magic Links).
- * يضمن بقاء المستخدم داخل نطاق الموقع (Origin) لأسباب أمنية.
- */
-export const buildSafePublicContinueUrl = (
-  continuePath: string,
-  origin: string,
-  fallbackPath = '/login/public?mode=verify'
-): string => {
-  const fallbackUrl = new URL(fallbackPath, origin).toString();
-
-  try {
-    const resolved = new URL(continuePath, origin);
-    // حماية من هجمات إعادة التوجيه المفتوحة (Open Redirect Attacks)
-    if (resolved.origin !== origin) return fallbackUrl;
-    return resolved.toString();
-  } catch {
-    return fallbackUrl;
-  }
-};
 

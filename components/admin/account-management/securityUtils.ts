@@ -62,17 +62,3 @@ const isPublicUser = (data: Record<string, any>) =>
   data?.role === 'public' ||
   data?.accountType === 'public';
 
-/** اكتشاف ما إذا كان الحساب يخص طبيباً (بناءً على الصلاحيات أو البيانات المتوفرة) */
-export const isDoctorLikeUser = (data: Record<string, any>) => {
-  if (!data || isPublicUser(data)) return false;
-  return (
-    data?.authRole === 'doctor' ||
-    data?.userRole === 'doctor' ||
-    data?.role === 'doctor' ||
-    Boolean((data?.doctorName || '').trim()) ||
-    Boolean((data?.doctorEmail || '').trim()) ||
-    Boolean((data?.doctorWhatsApp || '').trim()) ||
-    Boolean((data?.doctorSpecialty || '').trim()) ||
-    Boolean((data?.verificationDocUrl || '').trim())
-  );
-};

@@ -9,19 +9,19 @@
 
 import type { PatientSuggestionOption } from '../add-appointment-form/types';
 
-export const toPositiveFileNumber = (value: unknown): number | undefined => {
+const toPositiveFileNumber = (value: unknown): number | undefined => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
     return Math.floor(parsed);
 };
 
-export const toDateMsOrZero = (value?: string): number => {
+const toDateMsOrZero = (value?: string): number => {
     const parsed = Date.parse(String(value || ''));
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
 /** اختيار أحدث تاريخ بين قيمتين (أو الصالح منهما) */
-export const pickLatestDate = (left?: string, right?: string): string | undefined => {
+const pickLatestDate = (left?: string, right?: string): string | undefined => {
     const leftText = String(left || '').trim();
     const rightText = String(right || '').trim();
     if (!leftText) return rightText || undefined;
@@ -30,7 +30,7 @@ export const pickLatestDate = (left?: string, right?: string): string | undefine
 };
 
 /** دمج عنصرَي مريض (incoming يأخذ الأولوية عندما تكون حقوله أحدث) */
-export const mergePatientDirectoryItem = (
+const mergePatientDirectoryItem = (
     current: PatientSuggestionOption,
     incoming: PatientSuggestionOption,
 ): PatientSuggestionOption => {

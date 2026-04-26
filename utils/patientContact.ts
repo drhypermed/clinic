@@ -1,4 +1,4 @@
-export interface PatientContactLinks {
+interface PatientContactLinks {
   tel: string;
   wa: string;
   normalizedDigits: string;

@@ -9,7 +9,7 @@ interface Props {
 export const MedicationEditModalHeader: React.FC<Props> = ({ isNewMedication, medicationName, onClose }) => (
   <div className="bg-white px-5 sm:px-6 py-4 flex justify-between items-start gap-3 border-b border-slate-200">
     <div className="flex items-start gap-2.5 min-w-0 flex-1">
-      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 shrink-0 mt-0.5">
+      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-success-50 text-success-600 shrink-0 mt-0.5">
         {isNewMedication ? (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />

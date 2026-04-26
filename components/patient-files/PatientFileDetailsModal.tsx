@@ -10,6 +10,7 @@ import type { ClinicalReportLanguage, ClinicalReportPageSize } from '../reports/
 import { PatientContactActions } from '../common/PatientContactActions';
 import { useAuth } from '../../hooks/useAuth';
 import { PatientFileCostsSection } from './PatientFileCostsSection';
+import { PatientFileInvoiceSection } from './PatientFileInvoiceSection';
 import { PatientFileVisitsList } from './PatientFileVisitsList';
 import { patientFilesService } from '../../services/patient-files';
 
@@ -362,7 +363,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         {patientFile.consultationCount} استشارة
                       </span>
                       {patientFile.latestVisitDate && (
-                        <span className="inline-flex items-center bg-white/15 border border-white/25 text-blue-100 rounded-full px-2.5 py-0.5 text-[11px] font-bold">
+                        <span className="inline-flex items-center bg-white/15 border border-white/25 text-brand-100 rounded-full px-2.5 py-0.5 text-[11px] font-bold">
                           آخر زيارة: {formatPatientFileDateLabel(patientFile.latestVisitDate)}
                         </span>
                       )}
@@ -370,7 +371,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                     {/* السطر الثالث: الهاتف + أيقونات التواصل */}
                     {patientFile.phones.length > 0 && (
                       <div className="mt-2">
-                        <span className="text-sm font-medium text-blue-100 block">{patientFile.phones.join(' | ')}</span>
+                        <span className="text-sm font-medium text-brand-100 block">{patientFile.phones.join(' | ')}</span>
                         <div className="mt-1.5">
                           <PatientContactActions phone={patientFile.phones[0]} compact />
                         </div>
@@ -380,7 +381,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                   <button
                     type="button"
                     onClick={onClose}
-                    className="shrink-0 rounded-xl border border-red-400/60 bg-gradient-to-br from-red-600 to-rose-500 px-3 py-2 text-xs font-black text-white shadow-sm transition-opacity hover:opacity-90"
+                    className="shrink-0 rounded-xl border border-danger-400/60 bg-gradient-to-br from-danger-600 to-danger-500 px-3 py-2 text-xs font-black text-white shadow-sm transition-opacity hover:opacity-90"
                   >
                     إغلاق
                   </button>
@@ -424,12 +425,12 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
             {isIdentityEditorOpen && (
               <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4">
                 {identityUpdateSuccess && (
-                  <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-700">
+                  <div className="mb-3 rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-[11px] font-black text-success-700">
                     {identityUpdateSuccess}
                   </div>
                 )}
                 {identityUpdateError && (
-                  <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">
+                  <div className="mb-3 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-[11px] font-black text-danger-700">
                     {identityUpdateError}
                   </div>
                 )}
@@ -439,7 +440,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                     <input
                       value={editPatientName}
                       onChange={(event) => setEditPatientName(event.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                       placeholder="اسم المريض"
                     />
                   </div>
@@ -448,7 +449,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                     <input
                       value={editPhone}
                       onChange={(event) => setEditPhone(event.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                       placeholder="01xxxxxxxxx"
                       dir="ltr"
                     />
@@ -460,21 +461,21 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         type="number"
                         value={editAgeYears}
                         onChange={(event) => setEditAgeYears(event.target.value)}
-                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                         placeholder="سنوات"
                       />
                       <input
                         type="number"
                         value={editAgeMonths}
                         onChange={(event) => setEditAgeMonths(event.target.value)}
-                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                         placeholder="شهور"
                       />
                       <input
                         type="number"
                         value={editAgeDays}
                         onChange={(event) => setEditAgeDays(event.target.value)}
-                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                         placeholder="أيام"
                       />
                     </div>
@@ -484,7 +485,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       type="button"
                       onClick={handleSubmitIdentityUpdate}
                       disabled={isUpdatingIdentity}
-                      className={`rounded-lg px-3 py-2 text-xs font-black text-white ${isUpdatingIdentity ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                      className={`rounded-lg px-3 py-2 text-xs font-black text-white ${isUpdatingIdentity ? 'bg-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}
                     >
                       {isUpdatingIdentity ? 'جاري تحديث البيانات' : 'حفظ التعديلات في كل الأماكن'}
                     </button>
@@ -498,26 +499,26 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
               <>
                 {/* فاصل أزرق مطابق لفاصل "سجل الزيارات" و"التكاليف المالية" */}
                 <div className="flex items-center gap-3 px-1 pt-1">
-                  <span className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
-                    <svg className="w-4 h-4 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <span className="flex items-center gap-1.5 bg-brand-50 border border-brand-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                    <svg className="w-4 h-4 text-brand-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                       <line x1="9" y1="13" x2="15" y2="13" />
                       <line x1="9" y1="17" x2="13" y2="17" />
                     </svg>
-                    <span className="text-[11px] font-black text-blue-700 whitespace-nowrap">معلومات إضافية عن المريض</span>
+                    <span className="text-[11px] font-black text-brand-700 whitespace-nowrap">معلومات إضافية عن المريض</span>
                   </span>
-                  <div className="flex-1 h-px bg-gradient-to-l from-blue-100 to-slate-100" />
+                  <div className="flex-1 h-px bg-gradient-to-l from-brand-100 to-slate-100" />
                 </div>
 
                 {/* رسائل النجاح/الفشل — تظهر فوق البطاقة */}
                 {additionalInfoSuccess && (
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-700">
+                  <div className="rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-[11px] font-black text-success-700">
                     {additionalInfoSuccess}
                   </div>
                 )}
                 {additionalInfoError && (
-                  <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">
+                  <div className="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-[11px] font-black text-danger-700">
                     {additionalInfoError}
                   </div>
                 )}
@@ -526,7 +527,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                 {!isAdditionalInfoEditorOpen && String(patientFile.additionalInfo || '').trim() && (
                   <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-blue-700">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-brand-700">
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
@@ -544,7 +545,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                             setEditAdditionalInfo(String(patientFile.additionalInfo || '').trim());
                             setIsAdditionalInfoEditorOpen(true);
                           }}
-                          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 text-[11px] font-black transition-colors"
+                          className="inline-flex items-center gap-1 rounded-lg bg-brand-600 hover:bg-brand-700 text-white px-2.5 py-1 text-[11px] font-black transition-colors"
                         >
                           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -556,7 +557,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                           type="button"
                           onClick={handleDeleteAdditionalInfo}
                           disabled={isSavingAdditionalInfo}
-                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-danger-600 hover:bg-danger-700'}`}
                         >
                           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" />
@@ -578,7 +579,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                 {isAdditionalInfoEditorOpen && (
                   <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-black text-blue-700">
+                      <span className="text-[11px] font-black text-brand-700">
                         {String(patientFile.additionalInfo || '').trim() ? 'تعديل المعلومات الإضافية' : 'إضافة معلومات إضافية جديدة'}
                       </span>
                       <button
@@ -601,7 +602,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         onChange={(event) => setEditAdditionalInfo(event.target.value)}
                         rows={4}
                         placeholder="مثال: حساسية من البنسلين، مريض ضغط..."
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 leading-relaxed focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-y"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 leading-relaxed focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none resize-y"
                       />
                       <div className="flex flex-wrap justify-end gap-2 pt-1">
                         {String(patientFile.additionalInfo || '').trim() && (
@@ -609,7 +610,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                             type="button"
                             onClick={handleDeleteAdditionalInfo}
                             disabled={isSavingAdditionalInfo}
-                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
+                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-danger-600 hover:bg-danger-700'}`}
                           >
                             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="3 6 5 6 21 6" />
@@ -622,7 +623,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                           type="button"
                           onClick={handleSubmitAdditionalInfo}
                           disabled={isSavingAdditionalInfo}
-                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black text-white transition-colors ${isSavingAdditionalInfo ? 'bg-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}
                         >
                           {isSavingAdditionalInfo ? 'جاري الحفظ' : 'حفظ'}
                         </button>
@@ -640,7 +641,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-black text-white">طباعة تقرير طبي للحالة</div>
-                    <div className="text-[11px] font-medium text-blue-100 mt-0.5">
+                    <div className="text-[11px] font-medium text-brand-100 mt-0.5">
                       {isReportSettingsOpen ? 'اختر لغة التقرير وحجم الورق وحجم الخط ثم احفظ أو اطبع' : 'اضغط على الإعدادات لتخصيص التقرير'}
                     </div>
                   </div>
@@ -656,7 +657,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       type="button"
                       onClick={handleGenerateMedicalReport}
                       disabled={isGeneratingReport}
-                      className={`flex-1 sm:flex-none sm:shrink-0 rounded-xl px-4 py-2 text-xs font-black transition-all inline-flex items-center justify-center gap-2 ${isGeneratingReport ? 'bg-emerald-500/50 text-white/70 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700 hover:shadow-md active:scale-[0.98]'}`}
+                      className={`flex-1 sm:flex-none sm:shrink-0 rounded-xl px-4 py-2 text-xs font-black transition-all inline-flex items-center justify-center gap-2 ${isGeneratingReport ? 'bg-success-500/50 text-white/70 cursor-not-allowed' : 'bg-gradient-to-r from-success-500 to-success-600 text-white shadow-sm hover:from-success-600 hover:to-success-700 hover:shadow-md active:scale-[0.98]'}`}
                     >
                       {isGeneratingReport ? (
                         <>
@@ -679,7 +680,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       <select
                         value={reportLanguage}
                         onChange={(event) => setReportLanguage(event.target.value as ClinicalReportLanguage)}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-brand-500 focus:outline-none"
                       >
                         <option value="ar">العربية</option>
                         <option value="en">English</option>
@@ -690,7 +691,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       <select
                         value={reportPageSize}
                         onChange={(event) => setReportPageSize(event.target.value as ClinicalReportPageSize)}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-brand-500 focus:outline-none"
                       >
                         <option value="A4">A4</option>
                         <option value="A5">A5</option>
@@ -704,14 +705,14 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         max={22}
                         value={reportFontSize}
                         onChange={(event) => setReportFontSize(event.target.value)}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-black text-slate-700 focus:border-brand-500 focus:outline-none"
                       />
                     </label>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                     <div className="text-[11px] font-bold text-slate-500">
                       {reportSettingsSaved ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-700">
+                        <span className="inline-flex items-center gap-1 text-success-700">
                           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
@@ -724,13 +725,13 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                     <button
                       type="button"
                       onClick={handleSaveReportSettings}
-                      className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 text-xs font-black transition-colors"
+                      className="rounded-lg bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 text-xs font-black transition-colors"
                     >
                       حفظ الإعدادات
                     </button>
                   </div>
                   {reportError && (
-                    <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">
+                    <div className="mt-2 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-[11px] font-black text-danger-700">
                       {reportError}
                     </div>
                   )}
@@ -740,32 +741,49 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
 
             {/* ─── فاصل: التكاليف المالية ─────────────────────────────── */}
             <div className="flex items-center gap-3 px-1 pt-1">
-              <span className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
-                <svg className="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="flex items-center gap-1.5 bg-success-50 border border-success-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                <svg className="w-4 h-4 text-success-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2" />
                   <line x1="2" y1="10" x2="22" y2="10" />
                   <line x1="7" y1="15" x2="7.01" y2="15" strokeWidth="3" />
                   <line x1="11" y1="15" x2="13" y2="15" />
                 </svg>
-                <span className="text-[11px] font-black text-emerald-700 whitespace-nowrap">التكاليف المالية</span>
+                <span className="text-[11px] font-black text-success-700 whitespace-nowrap">التكاليف المالية</span>
               </span>
-              <div className="flex-1 h-px bg-gradient-to-l from-emerald-100 to-slate-100" />
+              <div className="flex-1 h-px bg-gradient-to-l from-success-100 to-slate-100" />
             </div>
 
             <PatientFileCostsSection patientFile={patientFile} userId={user?.uid} branchId={branchId} />
 
+            {/* ─── فاصل: الفواتير ──────────────────────────────────────── */}
+            <div className="flex items-center gap-3 px-1 pt-1">
+              <span className="flex items-center gap-1.5 bg-warning-50 border border-warning-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                <svg className="w-4 h-4 text-warning-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="9" y1="13" x2="15" y2="13" />
+                  <line x1="9" y1="17" x2="13" y2="17" />
+                </svg>
+                <span className="text-[11px] font-black text-warning-700 whitespace-nowrap">الفواتير</span>
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-l from-warning-100 to-slate-100" />
+            </div>
+
+            {/* قسم إصدار وطباعة فواتير المريض */}
+            <PatientFileInvoiceSection patientFile={patientFile} activeBranchId={branchId} />
+
             {/* ─── فاصل: سجل الزيارات ─────────────────────────────────── */}
             <div className="flex items-center gap-3 px-1 pt-1">
-              <span className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
-                <svg className="w-4 h-4 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="flex items-center gap-1.5 bg-brand-50 border border-brand-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                <svg className="w-4 h-4 text-brand-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
                   <rect x="9" y="3" width="6" height="4" rx="1" />
                   <line x1="9" y1="12" x2="15" y2="12" />
                   <line x1="9" y1="16" x2="13" y2="16" />
                 </svg>
-                <span className="text-[11px] font-black text-blue-700 whitespace-nowrap">سجل الزيارات</span>
+                <span className="text-[11px] font-black text-brand-700 whitespace-nowrap">سجل الزيارات</span>
               </span>
-              <div className="flex-1 h-px bg-gradient-to-l from-blue-100 to-slate-100" />
+              <div className="flex-1 h-px bg-gradient-to-l from-brand-100 to-slate-100" />
             </div>
 
             {/* قائمة الزيارات — مرتبة من الأحدث للأقدم */}

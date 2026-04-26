@@ -198,10 +198,18 @@ export const createSmartRxActions = ({
         return false;
       }
 
+      // ─ تشديد أمني (2026-04): ما عدش نكمل لو فحص الحد فشل ─
+      // كان قبل: transient = continue (لتجربة offline أحسن)
+      // المشكلة الأمنية: طبيب فاهم تقنياً يقدر يقفل استدعاء الـquota فقط (مع
+      // إبقاء استدعاء الـAI شغال) ويستخدم الذكاء الاصطناعي بدون احتساب الحد.
+      // الحل: لو الفحص فشل لأي سبب، نمنع الإجراء — حتى لو كانت شبكة عابرة.
+      // ميزات الـAI محتاجة نت في كل الأحوال، فالـUX مايتأثرش فعلياً.
       if (isQuotaTransientError(error)) {
-        // خطأ شبكة مؤقت — نكمل (offline-first approach)
-        console.warn('Smart Rx quota check transient/offline failure, continuing:', error);
-        return true;
+        showNotification(
+          'تعذّر التحقق من حد تحليل الحالة. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+          'error', e,
+        );
+        return false;
       }
 
       console.error('Case analysis quota check failed:', error);

@@ -82,7 +82,7 @@ const antipsychoticKeywordBoost = (m: Medication) => {
 	return uniq([...base, ...genericBoost, dose, dosePlain, doseAr]);
 };
 
-export const enhanceAntipsychoticMedication = (m: Medication): Medication => {
+const enhanceAntipsychoticMedication = (m: Medication): Medication => {
 	const boosted = antipsychoticKeywordBoost(m);
 	return {
 		...m,

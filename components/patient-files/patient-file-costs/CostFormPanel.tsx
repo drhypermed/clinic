@@ -31,8 +31,8 @@ export const CostFormPanel: React.FC<Props> = ({
   onCancel,
   onSave,
 }) => (
-  <div className="rounded-xl bg-teal-50 border border-teal-200 p-3 space-y-2">
-    <div className="text-[11px] font-black text-teal-700">
+  <div className="rounded-xl bg-brand-50 border border-brand-200 p-3 space-y-2">
+    <div className="text-[11px] font-black text-brand-700">
       {editingCostId ? 'تعديل تكلفة كاش' : 'إضافة تكلفة كاش'}
     </div>
     <div className="grid grid-cols-2 gap-2">
@@ -43,7 +43,7 @@ export const CostFormPanel: React.FC<Props> = ({
           value={costFormDate}
           onChange={(e) => setCostFormDate(e.target.value)}
           dir="ltr"
-          className="w-full rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
         />
       </div>
       <div>
@@ -56,7 +56,7 @@ export const CostFormPanel: React.FC<Props> = ({
           onChange={(e) => setCostFormAmount(e.target.value)}
           placeholder="0.00"
           dir="ltr"
-          className="w-full rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
         />
       </div>
       <div>
@@ -64,7 +64,7 @@ export const CostFormPanel: React.FC<Props> = ({
         <select
           value={costFormType}
           onChange={(e) => setCostFormType(e.target.value as 'interventions' | 'other')}
-          className="w-full rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
         >
           <option value="interventions">التداخلات</option>
           <option value="other">دخل آخر</option>
@@ -77,7 +77,7 @@ export const CostFormPanel: React.FC<Props> = ({
           value={costFormNote}
           onChange={(e) => setCostFormNote(e.target.value)}
           placeholder="وصف التكلفة..."
-          className="w-full rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
         />
       </div>
     </div>
@@ -92,7 +92,7 @@ export const CostFormPanel: React.FC<Props> = ({
       <button
         type="button"
         onClick={onSave}
-        className="rounded-lg bg-teal-600 px-4 py-1.5 text-[11px] font-black text-white hover:bg-teal-700"
+        className="rounded-lg bg-brand-600 px-4 py-1.5 text-[11px] font-black text-white hover:bg-brand-700"
       >
         {editingCostId ? 'حفظ التعديل' : 'حفظ'}
       </button>

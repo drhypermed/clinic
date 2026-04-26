@@ -82,11 +82,11 @@ export const PRINT_PREVIEW_CLINICAL = {
 
 /** ألوان التبويبات للشريط العلوي للمعاينة */
 export const TAB_COLORS: Record<SettingsTabId, { bg: string; text: string; badge: string }> = {
-    header: { bg: 'from-blue-500 to-blue-600', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700' },
-    footer: { bg: 'from-emerald-500 to-teal-600', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-700' },
-    vitals: { bg: 'from-rose-500 to-pink-600', text: 'text-rose-700', badge: 'bg-rose-100 text-rose-700' },
-    middle: { bg: 'from-violet-500 to-purple-600', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-700' },
-    print: { bg: 'from-amber-500 to-orange-500', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700' },
+    header: { bg: 'from-brand-500 to-brand-600', text: 'text-brand-700', badge: 'bg-brand-100 text-brand-700' },
+    footer: { bg: 'from-success-500 to-brand-600', text: 'text-success-700', badge: 'bg-success-100 text-success-700' },
+    vitals: { bg: 'from-danger-500 to-slate-600', text: 'text-danger-700', badge: 'bg-danger-100 text-danger-700' },
+    middle: { bg: 'from-slate-500 to-slate-600', text: 'text-slate-700', badge: 'bg-slate-100 text-slate-700' },
+    print: { bg: 'from-warning-500 to-warning-500', text: 'text-warning-700', badge: 'bg-warning-100 text-warning-700' },
 };
 
 /** تسميات التبويبات في الشريط العلوي للمعاينة */

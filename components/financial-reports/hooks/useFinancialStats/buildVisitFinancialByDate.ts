@@ -17,7 +17,7 @@ import { computePaymentBreakdownForBasePrice } from '../../../../utils/paymentDi
 import { formatDateKey } from '../../utils/formatters';
 import { asTimestamp, type ConsultationVisit } from './collectConsultationVisits';
 
-export interface VisitFinancialDayEntry {
+interface VisitFinancialDayEntry {
     examsIncome: number;
     consultsIncome: number;
     collectedCash: number;

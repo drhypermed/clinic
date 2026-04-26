@@ -13,6 +13,8 @@ interface DoctorAdBranchesSectionProps {
   branches: DoctorAdBranch[];
   activeBranchId: string;
   canAddBranch: boolean;
+  // ─ الحد الأقصى للفروع للباقة الحالية (للعرض: "X من Y فروع") ─
+  maxBranches: number;
 
   onSetActiveBranchId: (id: string) => void;
   onAddBranch: () => string | null;
@@ -49,6 +51,7 @@ export const DoctorAdBranchesSection: React.FC<DoctorAdBranchesSectionProps> = (
   branches,
   activeBranchId,
   canAddBranch,
+  maxBranches,
   onSetActiveBranchId,
   onAddBranch,
   onRemoveBranch,
@@ -82,7 +85,7 @@ export const DoctorAdBranchesSection: React.FC<DoctorAdBranchesSectionProps> = (
     <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-3 space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h3 className="text-sm font-black text-slate-700">فروع العيادة</h3>
-        <p className="text-[11px] font-bold text-slate-500">{branches.length} من 5 فروع</p>
+        <p className="text-[11px] font-bold text-slate-500">{branches.length} من {maxBranches} فروع</p>
       </div>
 
       {/* شريط التبويبات: كل تبويب = فرع، وبعدهم زر "+ إضافة فرع" */}
@@ -97,7 +100,7 @@ export const DoctorAdBranchesSection: React.FC<DoctorAdBranchesSectionProps> = (
               onClick={() => onSetActiveBranchId(branch.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -109,7 +112,7 @@ export const DoctorAdBranchesSection: React.FC<DoctorAdBranchesSectionProps> = (
           type="button"
           onClick={() => onAddBranch()}
           disabled={!canAddBranch}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-success-50 text-success-700 border border-success-200 font-bold text-xs hover:bg-success-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -120,7 +123,7 @@ export const DoctorAdBranchesSection: React.FC<DoctorAdBranchesSectionProps> = (
           <button
             type="button"
             onClick={handleRemoveActiveBranch}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 font-bold text-xs hover:bg-red-100 transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-danger-50 text-danger-700 border border-danger-200 font-bold text-xs hover:bg-danger-100 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V4a2 2 0 012-2h4a2 2 0 012 2v3" />

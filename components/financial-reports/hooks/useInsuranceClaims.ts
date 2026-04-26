@@ -17,6 +17,11 @@ import type { PatientRecord } from '../../../types';
 import type { DailyFinancialData } from '../../../services/financial-data';
 import { usePrescriptionSettings } from '../../../hooks/usePrescriptionSettings';
 import { printPatientInvoice } from '../../patient-files/invoicePrintUtils';
+// كشف تفصيلي: يطبع جدول صف لكل حالة لإثبات الشغل لشركات التأمين
+import {
+  printInsuranceStatement,
+  type DetailedClaimRow,
+} from '../utils/insuranceStatementPrintUtils';
 import type { DailyInsuranceExtraEntry } from './useFinancialData';
 import {
   CompanyClaim,
@@ -161,16 +166,22 @@ export const useInsuranceClaims = ({
           claimsMap[extra.companyName] = createEmptyClaim(extra.companyName);
         }
         const companyClaim = claimsMap[extra.companyName];
+        // نسبة تحمل المريض على الـ extra نفسه (لو موجودة)، وإلا 0 = الكل على الشركة (backward compat)
+        const sharePct = typeof extra.patientSharePercent === 'number'
+          ? Math.max(0, Math.min(100, extra.patientSharePercent))
+          : 0;
+        const patientShareAmt = Math.round((extra.amount * sharePct) / 100);
+        const companyShareAmt = extra.amount - patientShareAmt;
         companyClaim.insuranceExtrasCount++;
-        companyClaim.insuranceExtrasTotal += extra.amount;
+        companyClaim.insuranceExtrasTotal += companyShareAmt;
         if (extra.type === 'interventions') {
           companyClaim.interventionsExtrasCount++;
-          companyClaim.interventionsExtrasTotal += extra.amount;
+          companyClaim.interventionsExtrasTotal += companyShareAmt;
         } else {
           companyClaim.otherExtrasCount++;
-          companyClaim.otherExtrasTotal += extra.amount;
+          companyClaim.otherExtrasTotal += companyShareAmt;
         }
-        totalCS += extra.amount;
+        totalCS += companyShareAmt;
       });
     }
 
@@ -188,6 +199,8 @@ export const useInsuranceClaims = ({
   const [invoiceCompany, setInvoiceCompany] = useState<string | null>(null);
   const [invoiceDateFrom, setInvoiceDateFrom] = useState('');
   const [invoiceDateTo, setInvoiceDateTo] = useState('');
+  // ملاحظات الطبيب اللي تطبع فوق الكشف التفصيلي (اختياري — مساحة حرة)
+  const [statementNotes, setStatementNotes] = useState('');
 
   /** فتح فورم الفاتورة لشركة — يضبط الفترة الافتراضية للشهر الحالي. */
   const openInvoiceForCompany = useCallback((companyName: string) => {
@@ -197,6 +210,8 @@ export const useInsuranceClaims = ({
     const lastDay = `${y}-${String(m + 1).padStart(2, '0')}-${String(new Date(y, m + 1, 0).getDate()).padStart(2, '0')}`;
     setInvoiceDateFrom(firstDay);
     setInvoiceDateTo(lastDay);
+    // ملاحظات الكشف التفصيلي ملك للشركة الحالية فقط — نمسحها لما نغيّر/نقفل
+    setStatementNotes('');
     // toggle: لو نفس الشركة مفتوحة، نقفلها
     setInvoiceCompany((prev) => (prev === companyName ? null : companyName));
   }, [selectedDate]);
@@ -265,14 +280,20 @@ export const useInsuranceClaims = ({
 
       extras.forEach((extra) => {
         if (extra.companyName !== companyName) return;
+        // نطبّق نفس منطق نسبة تحمل المريض في فاتورة الشركة (نفس فلسفة الكشف التفصيلي)
+        const sharePct = typeof extra.patientSharePercent === 'number'
+          ? Math.max(0, Math.min(100, extra.patientSharePercent))
+          : 0;
+        const patientShareAmt = Math.round((extra.amount * sharePct) / 100);
+        const companyShareAmt = extra.amount - patientShareAmt;
         claim.insuranceExtrasCount++;
-        claim.insuranceExtrasTotal += extra.amount;
+        claim.insuranceExtrasTotal += companyShareAmt;
         if (extra.type === 'interventions') {
           claim.interventionsExtrasCount++;
-          claim.interventionsExtrasTotal += extra.amount;
+          claim.interventionsExtrasTotal += companyShareAmt;
         } else {
           claim.otherExtrasCount++;
-          claim.otherExtrasTotal += extra.amount;
+          claim.otherExtrasTotal += companyShareAmt;
         }
       });
       dayKey = addDaysToKey(dayKey, 1);
@@ -326,6 +347,152 @@ export const useInsuranceClaims = ({
     );
   }, [invoiceDateFrom, invoiceDateTo, computeRangeClaim, rxSettings]);
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // الكشف التفصيلي (صف لكل حالة)
+  // ═══════════════════════════════════════════════════════════════════════════
+  /**
+   * يبني قائمة صفوف تفصيلية لشركة محددة داخل فترة:
+   * - كل كشف = صف
+   * - كل استشارة (سواء منفصلة أو من تاريخ زيارة) = صف
+   * - كل تداخل/دخل آخر مرتبط بالشركة = صف
+   * بيانات الكارنيه + كود الموافقة بتيجي من الـ record نفسه أو من الـ extra.
+   * كل ده محسوب من الذاكرة — صفر قراءة Firestore.
+   */
+  const buildDetailedRows = useCallback(
+    (companyName: string, fromKey: string, toKey: string): DetailedClaimRow[] => {
+      const rangeStart = new Date(fromKey + 'T00:00:00').getTime();
+      const rangeEnd = new Date(toKey + 'T23:59:59.999').getTime();
+      if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd)) return [];
+
+      const rows: DetailedClaimRow[] = [];
+
+      // ── 1) صفوف من السجلات المؤمنة (كشوفات + استشارات) ──
+      records.forEach((record) => {
+        if (record.paymentType !== 'insurance' || record.insuranceCompanyName !== companyName) return;
+        const recTs = new Date(record.date).getTime();
+        if (!Number.isFinite(recTs)) return;
+
+        const sharePercent = record.patientSharePercent ?? 0;
+        const membershipId = record.insuranceMembershipId;
+        const approvalCode = record.insuranceApprovalCode;
+
+        // الكشف الأساسي (لو مش استشارة فقط) — لازم يكون داخل الفترة
+        if (!record.isConsultationOnly && recTs >= rangeStart && recTs <= rangeEnd) {
+          const explicit = Number(record.serviceBasePrice);
+          const billed = Number.isFinite(explicit) && explicit >= 0
+            ? explicit
+            : resolveBasePriceByDate.exam(recTs);
+          const patientShare = Math.round((billed * sharePercent) / 100);
+          rows.push({
+            patientName: record.patientName || '—',
+            membershipId,
+            approvalCode,
+            visitTs: recTs,
+            type: 'exam',
+            billed,
+            patientShare,
+            companyShare: billed - patientShare,
+          });
+        }
+
+        // الاستشارات (داخلية للسجل أو منفصلة)
+        const addConsultRow = (visitDate: string, explicitBase?: unknown) => {
+          const consultTs = asTimestamp(visitDate);
+          if (!Number.isFinite(consultTs) || consultTs < rangeStart || consultTs > rangeEnd) return;
+          const parsed = Number(explicitBase);
+          const billed = Number.isFinite(parsed) && parsed >= 0
+            ? parsed
+            : resolveBasePriceByDate.consultation(consultTs);
+          const patientShare = Math.round((billed * sharePercent) / 100);
+          rows.push({
+            patientName: record.patientName || '—',
+            membershipId,
+            approvalCode,
+            visitTs: consultTs,
+            type: 'consultation',
+            billed,
+            patientShare,
+            companyShare: billed - patientShare,
+          });
+        };
+
+        if (record.isConsultationOnly) {
+          addConsultRow(record.date, record.serviceBasePrice);
+        } else {
+          const histDates = Array.isArray(record.consultationHistoryDates)
+            ? record.consultationHistoryDates
+            : [];
+          if (histDates.length > 0) {
+            histDates.forEach((hd, i) => addConsultRow(hd, record.consultationHistoryServiceBasePrices?.[i]));
+          } else if (record.consultation?.date) {
+            addConsultRow(record.consultation.date, record.consultationServiceBasePrice);
+          }
+        }
+      });
+
+      // ── 2) صفوف من الـ extras (تداخلات + دخل آخر) ──
+      let dayKey = fromKey;
+      while (dayKey <= toKey) {
+        const extras = dayKey === selectedDayKey
+          ? dailyInsuranceExtras
+          : readInsuranceExtrasForDay(dayKey, yearlyDailyMap);
+
+        const dayTs = new Date(dayKey + 'T00:00:00').getTime();
+
+        extras.forEach((extra) => {
+          if (extra.companyName !== companyName) return;
+          // نسبة تحمل المريض المسجَّلة على الـ extra نفسه (لو موجودة)، وإلا 0
+          // الحالات القديمة بدون النسبة دي بتفضل كاملة على الشركة (backward compat)
+          const sharePct = typeof extra.patientSharePercent === 'number'
+            ? Math.max(0, Math.min(100, extra.patientSharePercent))
+            : 0;
+          const billed = extra.amount;
+          const patientShare = Math.round((billed * sharePct) / 100);
+          rows.push({
+            // الاسم من ملف المريض لو متاح، وإلا "—" (الـ extras ممكن تكون يدوية بدون مريض)
+            patientName: extra.patientName || '—',
+            membershipId: extra.insuranceMembershipId,
+            approvalCode: extra.insuranceApprovalCode,
+            visitTs: dayTs,
+            type: extra.type === 'interventions' ? 'intervention' : 'other',
+            billed,
+            patientShare,
+            companyShare: billed - patientShare,
+            note: extra.note,
+          });
+        });
+
+        dayKey = addDaysToKey(dayKey, 1);
+      }
+
+      // ترتيب تصاعدي بالتاريخ — مفيد لشركة التأمين
+      rows.sort((a, b) => a.visitTs - b.visitTs);
+
+      return rows;
+    },
+    [records, resolveBasePriceByDate, selectedDayKey, dailyInsuranceExtras, yearlyDailyMap],
+  );
+
+  /** طباعة الكشف التفصيلي للشركة على الفترة المحددة + الملاحظات. */
+  const handlePrintDetailedStatement = useCallback(
+    (companyName: string) => {
+      if (!invoiceDateFrom || !invoiceDateTo) return;
+      const rows = buildDetailedRows(companyName, invoiceDateFrom, invoiceDateTo);
+      // نسمح بالطباعة حتى لو فاضي — هيظهر "لا توجد حالات" + مساحة الملاحظات
+      printInsuranceStatement(
+        {
+          companyName,
+          dateFromKey: invoiceDateFrom,
+          dateToKey: invoiceDateTo,
+          rows,
+          notes: statementNotes.trim() || undefined,
+        },
+        rxSettings,
+      );
+    },
+    [invoiceDateFrom, invoiceDateTo, buildDetailedRows, statementNotes, rxSettings],
+  );
+
   return {
     // بيانات المطالبات الشهرية
     claims,
@@ -336,8 +503,12 @@ export const useInsuranceClaims = ({
     invoiceDateTo,
     setInvoiceDateFrom,
     setInvoiceDateTo,
+    // ملاحظات الكشف التفصيلي
+    statementNotes,
+    setStatementNotes,
     // الإجراءات
     openInvoiceForCompany,
     handlePrintInsuranceInvoice,
+    handlePrintDetailedStatement,
   };
 };

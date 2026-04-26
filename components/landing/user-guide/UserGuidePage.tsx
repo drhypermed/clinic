@@ -35,6 +35,8 @@ import {
 } from 'react-icons/lu';
 import { USER_GUIDE_CATEGORIES, USER_GUIDE_ALL_TOPICS } from './userGuideData';
 import type { GuideTopic, GuideSection } from './userGuideData';
+// 🆕 جدول مقارنة حي بين الباقات — يقرأ القيم من إعدادات الأدمن لحظياً
+import { TierComparisonTable } from './TierComparisonTable';
 
 // ═════════════════════════════════════════════════════════════════════════════
 // الـsidebar اللي بيعرض الـcategories والـtopics
@@ -72,7 +74,7 @@ const GuideSidebar: React.FC<{
                   onClick={() => onSelectTopic(topic.id)}
                   className={`w-full text-right px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-brand-600 text-white shadow-sm'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -127,16 +129,35 @@ const renderInlineMarkdown = (text: string): React.ReactNode => {
 // كل قسم له anchor ID عشان الفهرس يقدر يـscroll له.
 // ═════════════════════════════════════════════════════════════════════════════
 const SectionRenderer: React.FC<{ section: GuideSection; index: number; anchorId: string }> = ({ section, index, anchorId }) => {
+  // 🆕 قسم خاص: جدول مقارنة الباقات الحي
+  if (section.tierComparison) {
+    return (
+      <div id={anchorId} className="my-5 scroll-mt-20">
+        {section.heading && (
+          <h3 className="text-base sm:text-lg font-black text-slate-900 mb-2">
+            <span className="inline-block w-7 h-7 rounded-lg bg-slate-900 text-white text-xs font-black ml-2 text-center leading-7">{index + 1}</span>
+            {section.heading}
+          </h3>
+        )}
+        {section.body && (
+          <p className="text-sm sm:text-base text-slate-700 font-semibold leading-relaxed mb-3 pr-9">
+            {renderMarkdownBody(section.body)}
+          </p>
+        )}
+        <TierComparisonTable />
+      </div>
+    );
+  }
   // قسم نصيحه محترف (Pro Tip) — خلفيّه صفرا
   if (section.tip) {
     return (
-      <div id={anchorId} className="my-4 flex gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 scroll-mt-20">
-        <div className="shrink-0 w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center">
+      <div id={anchorId} className="my-4 flex gap-3 p-4 rounded-xl bg-warning-50 border border-warning-200 scroll-mt-20">
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-warning-500 text-white flex items-center justify-center">
           <LuLightbulb className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-xs font-black text-amber-900 mb-1">{section.heading || 'نصيحه محترف'}</div>
-          <p className="text-sm text-amber-900 font-semibold leading-relaxed">{renderInlineLine(section.tip)}</p>
+          <div className="text-xs font-black text-warning-900 mb-1">{section.heading || 'نصيحه محترف'}</div>
+          <p className="text-sm text-warning-900 font-semibold leading-relaxed">{renderInlineLine(section.tip)}</p>
         </div>
       </div>
     );
@@ -144,13 +165,13 @@ const SectionRenderer: React.FC<{ section: GuideSection; index: number; anchorId
   // قسم خطأ شايع (Warning) — خلفيّه حمرا
   if (section.warning) {
     return (
-      <div id={anchorId} className="my-4 flex gap-3 p-4 rounded-xl bg-rose-50 border border-rose-200 scroll-mt-20">
-        <div className="shrink-0 w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center">
+      <div id={anchorId} className="my-4 flex gap-3 p-4 rounded-xl bg-danger-50 border border-danger-200 scroll-mt-20">
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-danger-500 text-white flex items-center justify-center">
           <LuTriangleAlert className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-xs font-black text-rose-900 mb-1">{section.heading || 'خطأ شايع'}</div>
-          <p className="text-sm text-rose-900 font-semibold leading-relaxed">{renderInlineLine(section.warning)}</p>
+          <div className="text-xs font-black text-danger-900 mb-1">{section.heading || 'خطأ شايع'}</div>
+          <p className="text-sm text-danger-900 font-semibold leading-relaxed">{renderInlineLine(section.warning)}</p>
         </div>
       </div>
     );
@@ -171,7 +192,7 @@ const SectionRenderer: React.FC<{ section: GuideSection; index: number; anchorId
         <ol className="space-y-2 pr-9">
           {section.steps.map((step, i) => (
             <li key={i} className="flex gap-2.5 items-start">
-              <LuCircleCheck className="w-4 h-4 shrink-0 mt-1 text-emerald-600" />
+              <LuCircleCheck className="w-4 h-4 shrink-0 mt-1 text-success-600" />
               <span className="text-sm text-slate-700 font-semibold leading-relaxed">
                 {renderMarkdownBody(step)}
               </span>
@@ -203,9 +224,9 @@ const TopicTableOfContents: React.FC<{ sections: GuideSection[]; topicId: string
   };
 
   return (
-    <nav className="mb-6 p-4 rounded-xl bg-blue-50/60 border border-blue-100">
+    <nav className="mb-6 p-4 rounded-xl bg-brand-50/60 border border-brand-100">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg bg-brand-600 text-white flex items-center justify-center">
           <LuList className="w-4 h-4" />
         </div>
         <h4 className="text-sm font-black text-slate-900">الفهرس — اللي هتلاقيه في الموضوع</h4>
@@ -216,7 +237,7 @@ const TopicTableOfContents: React.FC<{ sections: GuideSection[]; topicId: string
             <button
               type="button"
               onClick={() => handleJump(idx)}
-              className="text-xs sm:text-sm text-blue-700 hover:text-blue-900 font-semibold hover:underline text-right"
+              className="text-xs sm:text-sm text-brand-700 hover:text-brand-900 font-semibold hover:underline text-right"
             >
               {displayIdx + 1}. {section.heading}
             </button>
@@ -266,7 +287,7 @@ export const UserGuidePage: React.FC = () => {
               <LuArrowRight className="w-4 h-4 text-slate-700" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-sm">
                 <LuBookOpen className="w-5 h-5" />
               </div>
               <div>
@@ -377,9 +398,9 @@ const NextTopicButton: React.FC<{
 
   if (!next) {
     return (
-      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-        <p className="text-sm font-black text-emerald-900">🎉 كملت الدليل بالكامل!</p>
-        <p className="text-xs text-emerald-700 mt-1 font-semibold">جاهز تستخدم Dr Hyper باحترافيه.</p>
+      <div className="p-4 rounded-xl bg-success-50 border border-success-200 text-center">
+        <p className="text-sm font-black text-success-900">🎉 كملت الدليل بالكامل!</p>
+        <p className="text-xs text-success-700 mt-1 font-semibold">جاهز تستخدم Dr Hyper باحترافيه.</p>
       </div>
     );
   }
@@ -388,13 +409,13 @@ const NextTopicButton: React.FC<{
     <button
       type="button"
       onClick={() => onSelectTopic(next.id)}
-      className="w-full flex items-center justify-between gap-3 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 transition-all shadow-sm hover:shadow-md text-right"
+      className="w-full flex items-center justify-between gap-3 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 transition-all shadow-sm hover:shadow-md text-right"
     >
       <div>
         <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">الموضوع اللي بعده</div>
         <div className="text-sm font-black text-slate-900">{next.title}</div>
       </div>
-      <div className="shrink-0 w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+      <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center">
         <LuArrowRight className="w-4 h-4 rotate-180" />
       </div>
     </button>

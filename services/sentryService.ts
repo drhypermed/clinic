@@ -50,15 +50,3 @@ export async function initSentry(): Promise<void> {
   }
 }
 
-/**
- * تسجيل خطأ يدوي إلى Sentry (مع تجاهل آمن لو غير مُهيأ).
- */
-export async function captureException(error: unknown, context?: Record<string, unknown>): Promise<void> {
-  if (!sentryInitialized) return;
-  try {
-    const Sentry = await import('@sentry/react');
-    Sentry.captureException(error, { extra: context });
-  } catch {
-    // تجاهل
-  }
-}

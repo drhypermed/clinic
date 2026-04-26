@@ -84,7 +84,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
   const clearButtonClass = `no-print font-black px-1.5 rounded transition-all ${
     isDataOnlyMode
       ? 'invisible pointer-events-none'
-      : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50'
+      : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-slate-400 hover:text-danger-600 hover:bg-danger-50'
   }`;
 
   /** دالة لتنظيف النصوص ومقارنتها بالقيم الشائعة التي تعني "لا يوجد بيانات" */
@@ -157,7 +157,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
           >
             {showComplaint && (
               <div className="group flex gap-0.5 items-start border-l border-slate-200/50 pl-1">
-                <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0 w-[30px]">C/O:</span>
+                <span className="font-black text-danger-800 uppercase text-right pr-1 shrink-0 w-[30px]">C/O:</span>
                 <div className="flex-1 min-w-0">
                   <AutoResizeTextarea
                     value={complaintEn || ''}
@@ -176,7 +176,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
 
             {showHistory && (
               <div className="group flex gap-0.5 items-start pr-1">
-                <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0 w-[25px]">Hx:</span>
+                <span className="font-black text-danger-800 uppercase text-right pr-1 shrink-0 w-[25px]">Hx:</span>
                 <div className="flex-1 min-w-0">
                   <AutoResizeTextarea
                     value={historyEn || ''}
@@ -203,7 +203,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
           >
             {showExam && (
               <div className="group grid grid-cols-[30px_1fr_auto] gap-0.5 items-start border-l border-slate-200/50 pl-1">
-                <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0">O/E:</span>
+                <span className="font-black text-danger-800 uppercase text-right pr-1 shrink-0">O/E:</span>
                 <div className="flex-1 min-w-0">
                   <AutoResizeTextarea
                     value={examEn || ''}
@@ -222,7 +222,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
 
             {showInvestigations && (
               <div className="group grid grid-cols-[30px_1fr_auto] gap-0.5 items-start pr-1">
-                <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0">Inv:</span>
+                <span className="font-black text-danger-800 uppercase text-right pr-1 shrink-0">Inv:</span>
                 <div className="flex-1 min-w-0">
                   <AutoResizeTextarea
                     value={investigationsEn || ''}
@@ -246,7 +246,7 @@ export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
         {/* في الطباعة حتى لو المستخدم طبع بـ Ctrl+P (مش زر التطبيق اللي بيفعّل isPrintMode) */}
         {showDx && (
           <div className={`group grid grid-cols-[30px_1fr_auto] gap-0.5 items-start ${!diagnosisEn ? 'no-print' : ''}`} style={{ minHeight: '0px', marginBottom: '0px' }}>
-            <span className="font-black text-red-800 uppercase text-right pr-1 shrink-0">Dx:</span>
+            <span className="font-black text-danger-800 uppercase text-right pr-1 shrink-0">Dx:</span>
             <div className="flex-1 min-w-0">
               <AutoResizeTextarea
                 value={diagnosisEn}

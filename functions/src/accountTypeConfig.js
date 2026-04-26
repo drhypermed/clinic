@@ -3,10 +3,12 @@ const { DEFAULT_SMART_RX_CONFIG } = require('./smartRxDefaults');
 
 const ACCOUNT_TYPE_CONTROL_DOC_ID = 'accountTypeControls';
 
+// ─ السقف الأقصى للحدود — ٦ أرقام (كان 5000 ورفعناه 2026-04 عشان السجلات لـبرو/برو ماكس) ─
+const MAX_LIMIT_VALUE = 999999;
 const toSafeLimit = (value, fallback) => {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
-  return Math.min(5000, Math.max(0, Math.floor(n)));
+  return Math.min(MAX_LIMIT_VALUE, Math.max(0, Math.floor(n)));
 };
 
 const toBoolean = (value, fallback) => (typeof value === 'boolean' ? value : fallback);
@@ -35,8 +37,23 @@ const buildWhatsAppUrl = (digits, message) => {
 const normalizeSmartRxConfig = (raw) => {
   const freeDailyLimit = toSafeLimit(raw?.freeDailyLimit, DEFAULT_SMART_RX_CONFIG.freeDailyLimit);
   const premiumDailyLimit = toSafeLimit(raw?.premiumDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumDailyLimit);
-  const freeRecordDailyLimit = toSafeLimit(raw?.freeRecordDailyLimit, DEFAULT_SMART_RX_CONFIG.freeRecordDailyLimit);
-  const premiumRecordDailyLimit = toSafeLimit(raw?.premiumRecordDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumRecordDailyLimit);
+  // ─ السجلات بقت "حد كلي" (سعة) — تغيّرت 2026-04 من حد يومي ─
+  const freeRecordsMaxCount = toSafeLimit(raw?.freeRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.freeRecordsMaxCount);
+  const premiumRecordsMaxCount = toSafeLimit(raw?.premiumRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.premiumRecordsMaxCount);
+  // ─ الترجمة الذكية للروشتة (جديد 2026-04) ─
+  const freeTranslationDailyLimit = toSafeLimit(raw?.freeTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.freeTranslationDailyLimit);
+  const premiumTranslationDailyLimit = toSafeLimit(raw?.premiumTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumTranslationDailyLimit);
+  // ─ الفروع (جديد 2026-04) ─
+  const freeBranchesMaxCount = toSafeLimit(raw?.freeBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.freeBranchesMaxCount);
+  const premiumBranchesMaxCount = toSafeLimit(raw?.premiumBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.premiumBranchesMaxCount);
+  // ─ 🆕 سعة شركات التأمين 2026-04 ─
+  const freeInsuranceCompaniesMaxCount = toSafeLimit(raw?.freeInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.freeInsuranceCompaniesMaxCount);
+  const premiumInsuranceCompaniesMaxCount = toSafeLimit(raw?.premiumInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.premiumInsuranceCompaniesMaxCount);
+  // ─ 🆕 رسائل سعة شركات التأمين ─
+  const freeInsuranceCompaniesCapacityMessage = normalizeMessageAllowEmpty(raw?.freeInsuranceCompaniesCapacityMessage, DEFAULT_SMART_RX_CONFIG.freeInsuranceCompaniesCapacityMessage);
+  const premiumInsuranceCompaniesCapacityMessage = normalizeMessageAllowEmpty(raw?.premiumInsuranceCompaniesCapacityMessage, DEFAULT_SMART_RX_CONFIG.premiumInsuranceCompaniesCapacityMessage);
+  const freeInsuranceCompaniesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.freeInsuranceCompaniesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freeInsuranceCompaniesCapacityWhatsappMessage);
+  const premiumInsuranceCompaniesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumInsuranceCompaniesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumInsuranceCompaniesCapacityWhatsappMessage);
   const freePublicBookingDailyLimit = toSafeLimit(raw?.freePublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.freePublicBookingDailyLimit);
   const premiumPublicBookingDailyLimit = toSafeLimit(raw?.premiumPublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPublicBookingDailyLimit);
   const freePublicFormBookingDailyLimit = toSafeLimit(raw?.freePublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.freePublicFormBookingDailyLimit);
@@ -70,13 +87,68 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumAnalysisLimitMessage, raw?.premiumLimitMessage, raw?.premiumWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumAnalysisLimitMessage
   );
-  const freeRecordLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freeRecordLimitMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.freeRecordLimitMessage
+  // ─ رسائل سعة السجلات (تغيّرت من daily للحد الكلي) ─
+  const freeRecordsCapacityMessage = normalizeMessageAllowEmpty(
+    firstDefined(raw?.freeRecordsCapacityMessage, raw?.freeRecordLimitMessage, legacyMessage),
+    DEFAULT_SMART_RX_CONFIG.freeRecordsCapacityMessage
   );
-  const premiumRecordLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumRecordLimitMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.premiumRecordLimitMessage
+  const premiumRecordsCapacityMessage = normalizeMessageAllowEmpty(
+    firstDefined(raw?.premiumRecordsCapacityMessage, raw?.premiumRecordLimitMessage, legacyMessage),
+    DEFAULT_SMART_RX_CONFIG.premiumRecordsCapacityMessage
+  );
+  // ─ رسائل الترجمة الذكية (جديد) ─
+  const freeTranslationLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeTranslationLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freeTranslationLimitMessage,
+  );
+  const premiumTranslationLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumTranslationLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumTranslationLimitMessage,
+  );
+  // ─ رسائل أدوات الأدوية (الأزرار الذهبية + الكلى) — اتنقلوا لـ"حدود الميزات" ─
+  const freeInteractionToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeInteractionToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freeInteractionToolLimitMessage,
+  );
+  const premiumInteractionToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumInteractionToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumInteractionToolLimitMessage,
+  );
+  const freePregnancyToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freePregnancyToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freePregnancyToolLimitMessage,
+  );
+  const premiumPregnancyToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumPregnancyToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumPregnancyToolLimitMessage,
+  );
+  // ─ 🆕 أزرار تصدير الروشتة — حدود يومية + رسائل + واتساب ─
+  const freePrescriptionPrintDailyLimit = toSafeLimit(raw?.freePrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintDailyLimit);
+  const premiumPrescriptionPrintDailyLimit = toSafeLimit(raw?.premiumPrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintDailyLimit);
+  const freePrescriptionDownloadDailyLimit = toSafeLimit(raw?.freePrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadDailyLimit);
+  const premiumPrescriptionDownloadDailyLimit = toSafeLimit(raw?.premiumPrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadDailyLimit);
+  const freePrescriptionWhatsappDailyLimit = toSafeLimit(raw?.freePrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappDailyLimit);
+  const premiumPrescriptionWhatsappDailyLimit = toSafeLimit(raw?.premiumPrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappDailyLimit);
+  const freePrescriptionPrintLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintLimitMessage);
+  const premiumPrescriptionPrintLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintLimitMessage);
+  const freePrescriptionPrintWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintWhatsappMessage);
+  const premiumPrescriptionPrintWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintWhatsappMessage);
+  const freePrescriptionDownloadLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadLimitMessage);
+  const premiumPrescriptionDownloadLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadLimitMessage);
+  const freePrescriptionDownloadWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadWhatsappMessage);
+  const premiumPrescriptionDownloadWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadWhatsappMessage);
+  const freePrescriptionWhatsappLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappLimitMessage);
+  const premiumPrescriptionWhatsappLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappLimitMessage);
+  const freePrescriptionWhatsappWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappWhatsappMessage);
+  const premiumPrescriptionWhatsappWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappWhatsappMessage);
+
+  const freeRenalToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeRenalToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freeRenalToolLimitMessage,
+  );
+  const premiumRenalToolLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumRenalToolLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumRenalToolLimitMessage,
   );
   const freePublicBookingLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freePublicBookingLimitMessage, legacyMessage),
@@ -142,13 +214,48 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumAnalysisWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumAnalysisWhatsappMessage
   );
-  const freeRecordWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freeRecordWhatsappMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.freeRecordWhatsappMessage
+  // ─ رسائل واتساب السجلات (تغيّرت من daily للحد الكلي) ─
+  const freeRecordsCapacityWhatsappMessage = normalizeMessageAllowEmpty(
+    firstDefined(raw?.freeRecordsCapacityWhatsappMessage, raw?.freeRecordWhatsappMessage, legacyMessage),
+    DEFAULT_SMART_RX_CONFIG.freeRecordsCapacityWhatsappMessage
   );
-  const premiumRecordWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumRecordWhatsappMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.premiumRecordWhatsappMessage
+  const premiumRecordsCapacityWhatsappMessage = normalizeMessageAllowEmpty(
+    firstDefined(raw?.premiumRecordsCapacityWhatsappMessage, raw?.premiumRecordWhatsappMessage, legacyMessage),
+    DEFAULT_SMART_RX_CONFIG.premiumRecordsCapacityWhatsappMessage
+  );
+  // ─ رسائل واتساب الترجمة الذكية (جديد) ─
+  const freeTranslationWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeTranslationWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freeTranslationWhatsappMessage,
+  );
+  const premiumTranslationWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumTranslationWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumTranslationWhatsappMessage,
+  );
+  // ─ رسائل واتساب أدوات الأدوية (التداخلات + الحمل + الكلى) ─
+  const freeInteractionToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeInteractionToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freeInteractionToolWhatsappMessage,
+  );
+  const premiumInteractionToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumInteractionToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumInteractionToolWhatsappMessage,
+  );
+  const freePregnancyToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freePregnancyToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freePregnancyToolWhatsappMessage,
+  );
+  const premiumPregnancyToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumPregnancyToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumPregnancyToolWhatsappMessage,
+  );
+  const freeRenalToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeRenalToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freeRenalToolWhatsappMessage,
+  );
+  const premiumRenalToolWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumRenalToolWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumRenalToolWhatsappMessage,
   );
   const freePublicBookingWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freePublicBookingWhatsappMessage, legacyMessage),
@@ -228,8 +335,22 @@ const normalizeSmartRxConfig = (raw) => {
   return {
     freeDailyLimit,
     premiumDailyLimit,
-    freeRecordDailyLimit,
-    premiumRecordDailyLimit,
+    // ─ السجلات (سعة كلية بعد 2026-04) ─
+    freeRecordsMaxCount,
+    premiumRecordsMaxCount,
+    // ─ الترجمة الذكية ─
+    freeTranslationDailyLimit,
+    premiumTranslationDailyLimit,
+    // ─ الفروع ─
+    freeBranchesMaxCount,
+    premiumBranchesMaxCount,
+    // ─ 🆕 شركات التأمين ─
+    freeInsuranceCompaniesMaxCount,
+    premiumInsuranceCompaniesMaxCount,
+    freeInsuranceCompaniesCapacityMessage,
+    premiumInsuranceCompaniesCapacityMessage,
+    freeInsuranceCompaniesCapacityWhatsappMessage,
+    premiumInsuranceCompaniesCapacityWhatsappMessage,
     freePublicBookingDailyLimit,
     premiumPublicBookingDailyLimit,
     freePublicFormBookingDailyLimit,
@@ -252,8 +373,37 @@ const normalizeSmartRxConfig = (raw) => {
     premiumPregnancyToolDailyLimit,
     freeAnalysisLimitMessage,
     premiumAnalysisLimitMessage,
-    freeRecordLimitMessage,
-    premiumRecordLimitMessage,
+    // ─ رسائل سعة السجلات + الترجمة (جديد 2026-04) ─
+    freeRecordsCapacityMessage,
+    premiumRecordsCapacityMessage,
+    freeTranslationLimitMessage,
+    premiumTranslationLimitMessage,
+    // ─ رسائل أدوات الأدوية (التداخلات + الحمل + الكلى) ─
+    freeInteractionToolLimitMessage,
+    premiumInteractionToolLimitMessage,
+    freePregnancyToolLimitMessage,
+    premiumPregnancyToolLimitMessage,
+    freeRenalToolLimitMessage,
+    premiumRenalToolLimitMessage,
+    // ─ 🆕 أزرار تصدير الروشتة ─
+    freePrescriptionPrintDailyLimit,
+    premiumPrescriptionPrintDailyLimit,
+    freePrescriptionDownloadDailyLimit,
+    premiumPrescriptionDownloadDailyLimit,
+    freePrescriptionWhatsappDailyLimit,
+    premiumPrescriptionWhatsappDailyLimit,
+    freePrescriptionPrintLimitMessage,
+    premiumPrescriptionPrintLimitMessage,
+    freePrescriptionPrintWhatsappMessage,
+    premiumPrescriptionPrintWhatsappMessage,
+    freePrescriptionDownloadLimitMessage,
+    premiumPrescriptionDownloadLimitMessage,
+    freePrescriptionDownloadWhatsappMessage,
+    premiumPrescriptionDownloadWhatsappMessage,
+    freePrescriptionWhatsappLimitMessage,
+    premiumPrescriptionWhatsappLimitMessage,
+    freePrescriptionWhatsappWhatsappMessage,
+    premiumPrescriptionWhatsappWhatsappMessage,
     freePublicBookingLimitMessage,
     premiumPublicBookingLimitMessage,
     freePublicFormBookingLimitMessage,
@@ -271,8 +421,18 @@ const normalizeSmartRxConfig = (raw) => {
     whatsappNumber,
     freeAnalysisWhatsappMessage,
     premiumAnalysisWhatsappMessage,
-    freeRecordWhatsappMessage,
-    premiumRecordWhatsappMessage,
+    // ─ رسائل واتساب: السجلات (سعة) + الترجمة (جديد 2026-04) ─
+    freeRecordsCapacityWhatsappMessage,
+    premiumRecordsCapacityWhatsappMessage,
+    freeTranslationWhatsappMessage,
+    premiumTranslationWhatsappMessage,
+    // ─ رسائل واتساب أدوات الأدوية ─
+    freeInteractionToolWhatsappMessage,
+    premiumInteractionToolWhatsappMessage,
+    freePregnancyToolWhatsappMessage,
+    premiumPregnancyToolWhatsappMessage,
+    freeRenalToolWhatsappMessage,
+    premiumRenalToolWhatsappMessage,
     freePublicBookingWhatsappMessage,
     premiumPublicBookingWhatsappMessage,
     freePublicFormBookingWhatsappMessage,
@@ -297,7 +457,14 @@ const normalizeSmartRxConfig = (raw) => {
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
     // ═══ حقول الفئة الجديدة "برو ماكس" — pass-through مع fallback للـ defaults ═══
     proMaxDailyLimit: toSafeLimit(raw?.proMaxDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxDailyLimit),
-    proMaxRecordDailyLimit: toSafeLimit(raw?.proMaxRecordDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxRecordDailyLimit),
+    // ─ السجلات (سعة كلية) + الترجمة + الفروع — جديد 2026-04 ─
+    proMaxRecordsMaxCount: toSafeLimit(raw?.proMaxRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxRecordsMaxCount),
+    proMaxTranslationDailyLimit: toSafeLimit(raw?.proMaxTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxTranslationDailyLimit),
+    proMaxBranchesMaxCount: toSafeLimit(raw?.proMaxBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxBranchesMaxCount),
+    // ─ 🆕 برو ماكس: شركات التأمين ─
+    proMaxInsuranceCompaniesMaxCount: toSafeLimit(raw?.proMaxInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesMaxCount),
+    proMaxInsuranceCompaniesCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxInsuranceCompaniesCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesCapacityMessage),
+    proMaxInsuranceCompaniesCapacityWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxInsuranceCompaniesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesCapacityWhatsappMessage),
     proMaxPublicBookingDailyLimit: toSafeLimit(raw?.proMaxPublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingDailyLimit),
     proMaxPublicFormBookingDailyLimit: toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingDailyLimit),
     proMaxSecretaryEntryRequestDailyLimit: toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestDailyLimit),
@@ -309,7 +476,38 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxRenalToolDailyLimit: toSafeLimit(raw?.proMaxRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxRenalToolDailyLimit),
     proMaxPregnancyToolDailyLimit: toSafeLimit(raw?.proMaxPregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPregnancyToolDailyLimit),
     proMaxAnalysisLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxAnalysisLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxAnalysisLimitMessage),
-    proMaxRecordLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxRecordLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxRecordLimitMessage),
+    // ─ رسائل برو ماكس: سعة السجلات + الترجمة (جديد 2026-04) ─
+    proMaxRecordsCapacityMessage: normalizeMessageAllowEmpty(
+      firstDefined(raw?.proMaxRecordsCapacityMessage, raw?.proMaxRecordLimitMessage),
+      DEFAULT_SMART_RX_CONFIG.proMaxRecordsCapacityMessage,
+    ),
+    proMaxTranslationLimitMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxTranslationLimitMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxTranslationLimitMessage,
+    ),
+    // ─ رسائل برو ماكس: أدوات الأدوية ─
+    proMaxInteractionToolLimitMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxInteractionToolLimitMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxInteractionToolLimitMessage,
+    ),
+    proMaxPregnancyToolLimitMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxPregnancyToolLimitMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxPregnancyToolLimitMessage,
+    ),
+    proMaxRenalToolLimitMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxRenalToolLimitMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxRenalToolLimitMessage,
+    ),
+    // ─ 🆕 برو ماكس: أزرار تصدير الروشتة ─
+    proMaxPrescriptionPrintDailyLimit: toSafeLimit(raw?.proMaxPrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintDailyLimit),
+    proMaxPrescriptionDownloadDailyLimit: toSafeLimit(raw?.proMaxPrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadDailyLimit),
+    proMaxPrescriptionWhatsappDailyLimit: toSafeLimit(raw?.proMaxPrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappDailyLimit),
+    proMaxPrescriptionPrintLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintLimitMessage),
+    proMaxPrescriptionPrintWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintWhatsappMessage),
+    proMaxPrescriptionDownloadLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadLimitMessage),
+    proMaxPrescriptionDownloadWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadWhatsappMessage),
+    proMaxPrescriptionWhatsappLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappLimitMessage),
+    proMaxPrescriptionWhatsappWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappWhatsappMessage),
     proMaxPublicBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingLimitMessage),
     proMaxPublicFormBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingLimitMessage),
     proMaxSecretaryEntryRequestLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestLimitMessage),
@@ -318,7 +516,28 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxReadyPrescriptionsCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionsCapacityMessage),
     proMaxMedicationCustomizationsCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicationCustomizationsCapacityMessage),
     proMaxAnalysisWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxAnalysisWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxAnalysisWhatsappMessage),
-    proMaxRecordWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxRecordWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxRecordWhatsappMessage),
+    // ─ رسائل واتساب برو ماكس: سعة السجلات + الترجمة (جديد 2026-04) ─
+    proMaxRecordsCapacityWhatsappMessage: normalizeMessageAllowEmpty(
+      firstDefined(raw?.proMaxRecordsCapacityWhatsappMessage, raw?.proMaxRecordWhatsappMessage),
+      DEFAULT_SMART_RX_CONFIG.proMaxRecordsCapacityWhatsappMessage,
+    ),
+    proMaxTranslationWhatsappMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxTranslationWhatsappMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxTranslationWhatsappMessage,
+    ),
+    // ─ رسائل واتساب برو ماكس: أدوات الأدوية ─
+    proMaxInteractionToolWhatsappMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxInteractionToolWhatsappMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxInteractionToolWhatsappMessage,
+    ),
+    proMaxPregnancyToolWhatsappMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxPregnancyToolWhatsappMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxPregnancyToolWhatsappMessage,
+    ),
+    proMaxRenalToolWhatsappMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxRenalToolWhatsappMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxRenalToolWhatsappMessage,
+    ),
     proMaxPublicBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingWhatsappMessage),
     proMaxPublicFormBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingWhatsappMessage),
     proMaxSecretaryEntryRequestWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestWhatsappMessage),

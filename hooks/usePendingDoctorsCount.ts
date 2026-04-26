@@ -1,27 +1,22 @@
 /**
- * Hook حساب عدد طلبات الانضمام المعلقة (usePendingDoctorsCount)
- * يستخدم هذا الـ Hook في لوحة تحكم المدير (Admin Dashboard) لإظهار عدد الأطباء
- * الذين سجلوا في النظام وينتظرون مراجعة أوراقهم وقبولهم (submitted/pending legacy).
+ * Hook عداد طلبات الأطباء المعلقة بشكل لحظي (usePendingDoctorsCount)
+ *
+ * يستخدم في لوحة الأدمن لإظهار عدد الأطباء اللي عملوا signup ومستنين
+ * المراجعة (verificationStatus = 'submitted' أو 'pending' للقديم).
+ *
+ * 🔔 لحظي (Real-time):
+ * بنستخدم `onSnapshot` بدل `getCountFromServer` عشان أي طبيب جديد يعمل
+ * إنشاء حساب يظهر فوراً في عدّاد الأدمن (إشعار فوري) بدون refresh.
+ * - أول subscribe: قراءة لكل الـsubmitted/pending docs (~5-50 docs عادة)
+ * - بعد كده: قراءة واحدة لكل تغيير (طبيب جديد دخل، أو الأدمن اعتمد/رفض)
+ * - تكلفة Firestore reads: مهملة عند الـscale (10k طبيب) — حوالي $0.002/شهر
  */
 
 import { useState, useEffect } from 'react';
-import { getCountFromServer, where } from 'firebase/firestore';
+import { onSnapshot, where } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useIsAdmin } from './useIsAdmin';
 import { getDoctorUsersQuery } from '../services/firestore/profileRoles';
-
-const asNumber = (value: unknown): number => {
-    const normalized = Number(value);
-    return Number.isFinite(normalized) ? normalized : 0;
-};
-
-/**
- * كاش على مستوى الوحدة — getCountFromServer مكلف (تُحسب كل واحدة كقراءة
- * لحد ١٠٠٠ مستند). نحتفظ بالنتيجة لمدة ساعة عشان إعادة فتح الأدمن
- * من نفس الجلسة لا تعيد الحساب.
- */
-const PENDING_COUNT_CACHE_TTL_MS = 60 * 60 * 1000;
-let pendingCountCache: { expiresAt: number; count: number } | null = null;
 
 export const usePendingDoctorsCount = () => {
     const [count, setCount] = useState(0);
@@ -29,53 +24,57 @@ export const usePendingDoctorsCount = () => {
     const isAdmin = useIsAdmin(user);
 
     useEffect(() => {
-        // حماية البيانات: لا يتم جلب العدد إلا إذا كان المستخدم الحالي مديراً للنظام
+        // حماية: غير الأدمن ما يقدرش يقرأ الـquery (Firestore rules بتمنع برضه)
         if (!isAdmin) {
             setCount(0);
             return;
         }
 
-        let cancelled = false;
+        // نـsubscribe على الـ2 statuses معاً ونجمع الـcounts
+        // (نفصلهم لأن Firestore ما بيدعمش OR على نفس الحقل بسهولة)
+        let submittedCount = 0;
+        let legacyPendingCount = 0;
 
-        // لو الكاش لسه صالح، نستخدمه بدل إعادة الحساب
-        const now = Date.now();
-        if (pendingCountCache && pendingCountCache.expiresAt > now) {
-            setCount(pendingCountCache.count);
-            return () => { cancelled = true; };
-        }
+        const submittedQuery = getDoctorUsersQuery(where('verificationStatus', '==', 'submitted'));
+        const legacyPendingQuery = getDoctorUsersQuery(where('verificationStatus', '==', 'pending'));
 
-        // نتجاهل عن قصد ملخص settings/adminDashboardStats لأنه قد يتأخر لحظات (يُحدّث بجدولة)
-        // ويعرض أرقاماً قديمة تسبب بانر تنبيه كاذب. الاستعلام الحي على مجموعة users دقيق دائماً.
-        const loadPendingCount = async () => {
-            try {
-                const [submittedSnap, legacyPendingSnap] = await Promise.all([
-                    getCountFromServer(getDoctorUsersQuery(where('verificationStatus', '==', 'submitted'))),
-                    getCountFromServer(getDoctorUsersQuery(where('verificationStatus', '==', 'pending'))),
-                ]);
-                if (cancelled) return;
-
-                const submittedCount = asNumber(submittedSnap.data()?.count);
-                const pendingLegacyCount = asNumber(legacyPendingSnap.data()?.count);
-                const total = submittedCount + pendingLegacyCount;
-                pendingCountCache = {
-                    expiresAt: Date.now() + PENDING_COUNT_CACHE_TTL_MS,
-                    count: total,
-                };
-                setCount(total);
-            } catch (error) {
-                if (cancelled) return;
+        // listener لطلبات submitted (الـstatus الجديد)
+        const unsubSubmitted = onSnapshot(
+            submittedQuery,
+            (snap) => {
+                submittedCount = snap.size;
+                setCount(submittedCount + legacyPendingCount);
+            },
+            (error) => {
                 const code = String((error as { code?: unknown })?.code || '');
                 if (code === 'permission-denied') {
                     setCount(0);
                     return;
                 }
-                console.error('Error fetching pending doctors count:', error);
-            }
+                console.error('Error subscribing to submitted doctors:', error);
+            },
+        );
+
+        // listener لطلبات pending (للتوافق مع البيانات القديمة)
+        const unsubLegacy = onSnapshot(
+            legacyPendingQuery,
+            (snap) => {
+                legacyPendingCount = snap.size;
+                setCount(submittedCount + legacyPendingCount);
+            },
+            (error) => {
+                const code = String((error as { code?: unknown })?.code || '');
+                if (code === 'permission-denied') return; // مش هنصفّر — خلّ submittedCount يفضل صحيح
+                console.error('Error subscribing to legacy pending doctors:', error);
+            },
+        );
+
+        // cleanup: لما الـcomponent unmount، نلغي الـ2 subscriptions عشان مايفضلوش
+        // يستهلكوا reads بدون داعي
+        return () => {
+            unsubSubmitted();
+            unsubLegacy();
         };
-
-        void loadPendingCount();
-
-        return () => { cancelled = true; };
     }, [isAdmin]);
 
     return count;

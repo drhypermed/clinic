@@ -1,7 +1,7 @@
 // 3 فئات: free = مجاني | premium = برو | pro_max = برو ماكس
 export type UsagePlan = 'free' | 'premium' | 'pro_max';
 
-export type UsageCounterKey =
+type UsageCounterKey =
   | 'smartPrescriptionCount'
   | 'printCount'
   | 'interactionCheckerCount'
@@ -9,15 +9,15 @@ export type UsageCounterKey =
   | 'contraIndicationsCount'
   | 'patientRecordCount';
 
-export type UsageStatsRecord = Partial<Record<UsageCounterKey, number>>;
+type UsageStatsRecord = Partial<Record<UsageCounterKey, number>>;
 
-export interface UsageStatsByPlanRecord {
+interface UsageStatsByPlanRecord {
   free?: UsageStatsRecord;
   premium?: UsageStatsRecord;
   pro_max?: UsageStatsRecord;
 }
 
-export const USAGE_COUNTER_KEYS: readonly UsageCounterKey[] = [
+const USAGE_COUNTER_KEYS: readonly UsageCounterKey[] = [
   'smartPrescriptionCount',
   'printCount',
   'interactionCheckerCount',
@@ -58,7 +58,7 @@ export const normalizeUsageStatsByPlan = (raw: unknown): UsageStatsByPlanRecord 
   };
 };
 
-export const mergeUsageStatsRecords = (
+const mergeUsageStatsRecords = (
   base: UsageStatsRecord | undefined,
   addition: UsageStatsRecord | undefined,
 ): UsageStatsRecord => {
@@ -76,52 +76,6 @@ export const mergeUsageStatsRecords = (
   });
 
   return merged;
-};
-
-export const sumUsageCounter = (record: UsageStatsRecord | undefined, key: UsageCounterKey): number =>
-  toNonNegativeInt(record?.[key]);
-
-/** تحديد الـ plan الحالي من accountType — نقبل 3 قيم مع fallback لـ free */
-const planFromAccountType = (accountType: unknown): UsagePlan => {
-  if (accountType === 'premium') return 'premium';
-  if (accountType === 'pro_max') return 'pro_max';
-  return 'free';
-};
-
-export const splitUsageStatsByPlan = (params: {
-  accountType?: unknown;
-  usageStats?: unknown;
-  usageStatsByPlan?: unknown;
-}): { free: UsageStatsRecord; premium: UsageStatsRecord; pro_max: UsageStatsRecord } => {
-  const currentPlan: UsagePlan = planFromAccountType(params.accountType);
-  const usageStats = normalizeUsageStatsRecord(params.usageStats);
-  const byPlan = normalizeUsageStatsByPlan(params.usageStatsByPlan);
-
-  const free = normalizeUsageStatsRecord(byPlan.free);
-  const premium = normalizeUsageStatsRecord(byPlan.premium);
-  const pro_max = normalizeUsageStatsRecord(byPlan.pro_max);
-
-  USAGE_COUNTER_KEYS.forEach((key) => {
-    const accounted =
-      toNonNegativeInt(free[key]) +
-      toNonNegativeInt(premium[key]) +
-      toNonNegativeInt(pro_max[key]);
-    const currentTotal = toNonNegativeInt(usageStats[key]);
-
-    const assignTo = currentPlan === 'premium' ? premium : currentPlan === 'pro_max' ? pro_max : free;
-
-    if (accounted === 0 && currentTotal > 0) {
-      assignTo[key] = currentTotal;
-      return;
-    }
-
-    if (currentTotal > accounted) {
-      const delta = currentTotal - accounted;
-      assignTo[key] = toNonNegativeInt(assignTo[key]) + delta;
-    }
-  });
-
-  return { free, premium, pro_max };
 };
 
 export const buildUsageStatsForPlanSwitch = (params: {

@@ -283,22 +283,6 @@ const getExtensionFromBlob = (blob: Blob): string => {
 /** إعدادات ضغط مناسبة لصور الإعلان (أكبر وأعلى جودة من البروفايل، بنفس ترتيب التكلفة تقريباً بفضل WebP) */
 const AD_COMPRESSION_OPTIONS = { maxDimension: MAX_IMAGE_DIMENSION_AD, quality: IMAGE_QUALITY_AD } as const;
 
-/** رفع صور إعلانات الطبيب من ملف */
-export const uploadDoctorAdImageFile = async (doctorId: string, file: File): Promise<string> => {
-    try {
-        const ownerId = auth.currentUser?.uid || doctorId;
-        const compressed = await compressImage(file, AD_COMPRESSION_OPTIONS);
-        const ext = getExtensionFromBlob(compressed);
-        const fileName = `${ownerId}_doctor_ad_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const storageRef = ref(storage, `profile_images/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, compressed);
-        return await getDownloadURL(snapshot.ref);
-    } catch (error: any) {
-        console.error('[Storage] Error uploading doctor ad image file:', error);
-        throw new Error(error.message || 'حدث خطأ أثناء رفع صورة الإعلان');
-    }
-};
-
 /** رفع صور إعلانات الطبيب (Base64) مع توليد اسم فريد للصور المتعددة */
 export const uploadDoctorAdImageBase64 = async (doctorId: string, base64Data: string): Promise<string> => {
     try {

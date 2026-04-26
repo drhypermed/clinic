@@ -24,9 +24,9 @@ import type { ActionModalState } from './types';
 
 /** إعدادات العرض لكل نوع إجراء (عنوان، لون، أيقونة، هل يحتاج سبب). */
 const MODAL_CONFIG: Record<string, { title: string; color: string; icon: React.ReactElement; needsReason: boolean }> = {
-  disable: { title: 'تعطيل حساب طبيب', color: 'amber', icon: <FaBan className="w-5 h-5 text-amber-600" />, needsReason: true },
-  enable: { title: 'تفعيل حساب طبيب', color: 'emerald', icon: <FaCircleCheck className="w-5 h-5 text-emerald-600" />, needsReason: false },
-  delete: { title: 'حذف طبيب نهائيا', color: 'red', icon: <FaTrashCan className="w-5 h-5 text-red-600" />, needsReason: true },
+  disable: { title: 'تعطيل حساب طبيب', color: 'amber', icon: <FaBan className="w-5 h-5 text-warning-600" />, needsReason: true },
+  enable: { title: 'تفعيل حساب طبيب', color: 'emerald', icon: <FaCircleCheck className="w-5 h-5 text-success-600" />, needsReason: false },
+  delete: { title: 'حذف طبيب نهائيا', color: 'red', icon: <FaTrashCan className="w-5 h-5 text-danger-600" />, needsReason: true },
 };
 
 interface ActionConfirmationModalProps {
@@ -70,9 +70,9 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
 
         {/* ── تحذير خاص بالحذف ── */}
         {actionModal.type === 'delete' && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-            <FaTriangleExclamation className="w-4 h-4 text-red-500 shrink-0" />
-            <p className="text-xs font-bold text-red-700">
+          <div className="flex items-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-4 py-3">
+            <FaTriangleExclamation className="w-4 h-4 text-danger-500 shrink-0" />
+            <p className="text-xs font-bold text-danger-700">
               هذا الإجراء لا يمكن التراجع عنه. سيتم حذف الحساب نهائيا وحظر البريد.
             </p>
           </div>
@@ -80,9 +80,9 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
 
         {/* ── تحذير خاص بالتعطيل ── */}
         {actionModal.type === 'disable' && (
-          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <FaTriangleExclamation className="w-4 h-4 text-amber-500 shrink-0" />
-            <p className="text-xs font-bold text-amber-700">
+          <div className="flex items-center gap-2 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3">
+            <FaTriangleExclamation className="w-4 h-4 text-warning-500 shrink-0" />
+            <p className="text-xs font-bold text-warning-700">
               سيتم تعطيل الحساب. الطبيب لن يستطيع الدخول حتى يتم تفعيله مرة أخرى.
             </p>
           </div>
@@ -100,7 +100,7 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
               placeholder="اكتب السبب هنا..."
               rows={3}
               maxLength={500}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100 resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100 resize-none"
             />
             <p className="mt-1 text-[10px] text-slate-400 text-left" dir="ltr">{modalReason.length}/500</p>
           </div>
@@ -115,14 +115,14 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
 
         {/* ── رسالة خطأ ── */}
         {modalError && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+          <div className="flex items-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-bold text-danger-700">
             <FaCircleXmark className="w-3 h-3 shrink-0" /> {modalError}
           </div>
         )}
 
         {/* ── رسالة نجاح ── */}
         {modalSuccess && (
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+          <div className="flex items-center gap-2 rounded-xl border border-success-200 bg-success-50 px-3 py-2 text-xs font-bold text-success-700">
             <FaCircleCheck className="w-3 h-3 shrink-0" /> {modalSuccess}
           </div>
         )}
@@ -141,10 +141,10 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
               disabled={actionInProgress[actionModal.doctorId]}
               className={`rounded-xl px-4 py-2.5 text-sm font-black text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
                 actionModal.type === 'delete'
-                  ? 'bg-red-600 hover:bg-red-700'
+                  ? 'bg-danger-600 hover:bg-danger-700'
                   : actionModal.type === 'disable'
-                    ? 'bg-amber-600 hover:bg-amber-700'
-                    : 'bg-emerald-600 hover:bg-emerald-700'
+                    ? 'bg-warning-600 hover:bg-warning-700'
+                    : 'bg-success-600 hover:bg-success-700'
               }`}
             >
               {actionInProgress[actionModal.doctorId] ? (

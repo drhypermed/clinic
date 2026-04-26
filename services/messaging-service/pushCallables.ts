@@ -16,7 +16,7 @@ import { auth, functions } from '../firebaseConfig';
 const registerPushTokenCallable = httpsCallable(functions, 'registerPushToken');
 const unregisterPushTokenCallable = httpsCallable(functions, 'unregisterPushToken');
 
-export const buildPushCallablePayload = (
+const buildPushCallablePayload = (
     role: 'doctor' | 'secretary' | 'public',
     targetId: string,
     token: string,
@@ -40,13 +40,13 @@ export const buildPushCallablePayload = (
             : { role: 'public', token, userId: targetId }
 );
 
-export const isUnauthenticatedCallableError = (error: unknown): boolean => {
+const isUnauthenticatedCallableError = (error: unknown): boolean => {
     const code = String((error as { code?: unknown })?.code || '').toLowerCase();
     const message = String((error as { message?: unknown })?.message || '').toLowerCase();
     return code.includes('unauthenticated') || message.includes('unauthenticated');
 };
 
-export const ensureFreshAuthToken = async (): Promise<boolean> => {
+const ensureFreshAuthToken = async (): Promise<boolean> => {
     const user = auth.currentUser;
     if (!user) return false;
 

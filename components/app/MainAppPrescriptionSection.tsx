@@ -18,6 +18,11 @@ import {
   checkPregnancySafety,
   type PregnancySafetyResult,
 } from '../../services/geminiPregnancySafetyService';
+// ─ تشديد أمني 2026-04: الأزرار الذهبية كانت بتستهلك AI بدون احتساب الحد ─
+import { consumeDrugToolQuota } from '../../services/accountTypeControlsService';
+import {
+  isQuotaLimitExceededError,
+} from '../../services/account-type-controls/quotaErrors';
 import type {
   AlternativeMed,
   CustomBox,
@@ -243,6 +248,8 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   const [interactionsResult, setInteractionsResult] = React.useState<DrugInteractionsResult | null>(null);
   // عدد الأدوية اللي اتبعتت (للعرض في هيدر المودال)
   const [interactionsDrugCount, setInteractionsDrugCount] = React.useState(0);
+  // تنبيه ينزل لما الطبيب يضغط زر التداخلات والروشتة فاضية أو فيها دواء واحد فقط
+  const [interactionsNoDrugsNotice, setInteractionsNoDrugsNotice] = React.useState<string | null>(null);
 
   // ─── حالة مودال فحص سلامة الحمل ──────────────────────────────────────────
   const [pregnancyOpen, setPregnancyOpen] = React.useState(false);
@@ -410,6 +417,34 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   // نفس مجموعة الأدوية تانية → الكاش يرجعها فوراً بدون استهلاك quota.
   const handleOpenInteractionsCheck = React.useCallback(async () => {
     if (interactionsLoading) return;
+    // الطبيب طلب الزر يفضل متاح للضغط دايماً — لو الروشتة فاضية أو فيها دواء واحد
+    // بنعرض تنبيه ميختفي بعد 3 ثواني بدل ما نفتح المودال على فراغ
+    if (prescriptionDrugNames.length < 2) {
+      setInteractionsNoDrugsNotice(
+        prescriptionDrugNames.length === 0
+          ? 'مفيش أدوية في الروشتة — ضيف على الأقل دوائين قبل ما تفحص التداخلات'
+          : 'في الروشتة دواء واحد بس — محتاج اتنين على الأقل لفحص التداخلات بينهم',
+      );
+      window.setTimeout(() => setInteractionsNoDrugsNotice(null), 3000);
+      return;
+    }
+
+    // ─ تشديد أمني 2026-04: نستهلك الكوتا قبل أي مكالمة AI أو حتى فتح المودال ─
+    // كان قبل: الزرار بيستدعي الـAI مباشرة بدون احتساب الحد اليومي.
+    // التغيير: نستدعي الـserver عشان يخصم من الحد ويرجع رسالة الأدمن لو الحد انتهى.
+    try {
+      await consumeDrugToolQuota('interactionTool');
+    } catch (quotaError: unknown) {
+      const isLimit = isQuotaLimitExceededError(quotaError);
+      const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
+      const messageRaw = isLimit && details?.limitReachedMessage
+        ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
+        : 'تعذّر التحقق من حد فحص التداخلات الدوائية. تأكد من اتصال الإنترنت وحاول مرة أخرى.';
+      setInteractionsNoDrugsNotice(messageRaw);
+      window.setTimeout(() => setInteractionsNoDrugsNotice(null), 8000);
+      return;
+    }
+
     setInteractionsOpen(true);
     setInteractionsLoading(true);
     setInteractionsResult(null);
@@ -442,7 +477,23 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   // الجديدة بس هي اللي بتتبعت لـ Gemini → توفير كبير في التكلفة عند التكرار).
   const handlePregnancyStartCheck = React.useCallback(async (selectedDrugs: string[]) => {
     if (pregnancyLoading) return;
+
+    // ─ تشديد أمني 2026-04: نستهلك الكوتا قبل أي مكالمة AI ─
+    // كان قبل: الزرار بيستدعي الـAI مباشرة بدون احتساب الحد اليومي.
     setPregnancyLoading(true);
+    try {
+      await consumeDrugToolQuota('pregnancyTool');
+    } catch (quotaError: unknown) {
+      const isLimit = isQuotaLimitExceededError(quotaError);
+      const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
+      const messageRaw = isLimit && details?.limitReachedMessage
+        ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
+        : 'تعذّر التحقق من حد فحص الحمل والرضاعة. تأكد من اتصال الإنترنت وحاول مرة أخرى.';
+      showNotification(messageRaw, 'error');
+      setPregnancyLoading(false);
+      return;
+    }
+
     setPregnancyResult(null);
     try {
       const res = await checkPregnancySafety(selectedDrugs, userId);
@@ -450,7 +501,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     } finally {
       setPregnancyLoading(false);
     }
-  }, [pregnancyLoading, userId]);
+  }, [pregnancyLoading, userId, showNotification]);
 
   const handlePregnancyReset = React.useCallback(() => {
     setPregnancyResult(null);
@@ -600,7 +651,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                       onClick={handleQuickAddAction}
                       disabled={analyzing}
                       aria-busy={analyzing && activeAnalyzeMode === 'quick'}
-                      className="apple-action-btn flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl px-3 py-[0.85rem] font-black text-[0.8rem] sm:text-[0.88rem] leading-tight text-white bg-gradient-to-l from-sky-600 to-blue-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-blue-400/30"
+                      className="apple-action-btn flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl px-3 py-[0.85rem] font-black text-[0.8rem] sm:text-[0.88rem] leading-tight text-white bg-gradient-to-l from-brand-600 to-brand-600 hover:brightness-110 transition-all active:scale-[0.98] shadow-md disabled:opacity-60 disabled:cursor-not-allowed text-center ring-1 ring-brand-400/30"
                     >
                       {analyzing && activeAnalyzeMode === 'quick' ? (
                         <>
@@ -634,13 +685,13 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                         )}
                         {analyzing && activeAnalyzeMode === 'deep' ? (
                           <>
-                            <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                            <span className="inline-block h-5 w-5 shrink-0 rounded-full border-[2.2px] border-warning-900/30 border-t-amber-900 animate-spin" aria-hidden />
                             <span className="relative z-10">جاري التحليل…</span>
                           </>
                         ) : (
                           <>
                             <span className="relative z-10 top-[1px] inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
-                              <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
+                              <svg className="h-[15px] w-[15px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" /><path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" /><path d="M12 6.2v11.2" /><path d="M10 9.5c.9.1 1.7.7 2 1.6" /><path d="M14 9.5c-.9.1-1.7.7-2 1.6" /></svg>
                             </span>
                             <span className="relative z-10 tracking-tight">إضافة إلى الروشتة والسجلات مع تحليل الحالة</span>
                           </>
@@ -759,43 +810,38 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   </div>
                 </div>
 
-                {/* ─── صف أزرار الذكاء الاصطناعي الذهبية (تحت الروشتة مباشرة) ─── */}
+                {/* ─── صف الأزرار الذهبية (تحت الروشتة مباشرة) ─── */}
                 {/* الزرين جنب بعض على الديسكتوب، فوق بعض على الموبايل. */}
                 {/* كلاهما مدعوم بكاش per-user عشان يوفر تكلفة API عند التكرار. */}
                 <div className="prescription-actions-ai-row">
                   {/* ─── زر "فحص التداخلات الدوائية" ─── */}
-                  {/* disabled لو فيه أقل من دوائين — بيفحص كل أدوية الروشتة دلوقتي */}
-                  {/* مقاسات مصغرة (py/نص/أيقونة/بادج AI) حسب طلب الطبيب لتوفير مساحة */}
+                  {/* متاح دايماً — لو الروشتة فاضية يطلع تنبيه بدل ما يكون disabled */}
                   <div className="relative flex-1 min-w-0">
                     <span className="gold-premium-halo" aria-hidden />
-                    <span className="absolute -top-2 right-2.5 z-10 inline-flex items-center gap-0.5 px-2 py-[1px] rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[8.5px] font-black tracking-widest shadow-[0_2px_6px_rgba(251,191,36,0.5)] ring-1 ring-amber-200 uppercase">
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
-                      </svg>
-                      AI
-                    </span>
                     <button
                       type="button"
                       onClick={handleOpenInteractionsCheck}
-                      disabled={interactionsLoading || prescriptionDrugNames.length < 2}
+                      disabled={interactionsLoading}
                       aria-busy={interactionsLoading}
-                      title={prescriptionDrugNames.length < 2 ? 'محتاج على الأقل دوائين في الروشتة لفحص التداخلات' : 'فحص التداخلات الدوائية'}
+                      title="فحص التداخلات الدوائية"
                       className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
                     >
                       {!interactionsLoading && <span className="gold-premium-shimmer" aria-hidden />}
                       {interactionsLoading ? (
                         <>
-                          <span className="inline-block h-[0.95rem] w-[0.95rem] shrink-0 rounded-full border-[2px] border-amber-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                          <span className="inline-block h-[0.95rem] w-[0.95rem] shrink-0 rounded-full border-[2px] border-warning-900/30 border-t-amber-900 animate-spin" aria-hidden />
                           <span className="relative z-10">جاري الفحص</span>
                         </>
                       ) : (
                         <>
                           <span className="relative z-10 tracking-tight">فحص التداخلات الدوائية</span>
                           <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
-                            {/* أيقونة: كبسولتين متقاطعتين */}
-                            <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M10.5 20.5a4.95 4.95 0 01-7-7l7-7a4.95 4.95 0 017 7l-7 7z" />
-                              <path d="M8.5 8.5l7 7" />
+                            {/* أيقونة: كبسولتين متقاطعتين بشكل واضح (Lucide pills) */}
+                            <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              {/* الكبسولة الأولى — مائلة من أعلى يمين لأسفل يسار */}
+                              <path d="M10.5 20.5a4.95 4.95 0 01-7-7l3.5-3.5 7 7-3.5 3.5z" />
+                              {/* الكبسولة الثانية — مائلة من أسفل يسار لأعلى يمين */}
+                              <path d="M13.5 3.5a4.95 4.95 0 017 7L17 14l-7-7 3.5-3.5z" />
                             </svg>
                           </span>
                         </>
@@ -807,12 +853,6 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   {/* متاح دائماً — المودال بيتعامل مع الحالة الفاضية */}
                   <div className="relative flex-1 min-w-0">
                     <span className="gold-premium-halo" aria-hidden />
-                    <span className="absolute -top-2 right-2.5 z-10 inline-flex items-center gap-0.5 px-2 py-[1px] rounded-full bg-gradient-to-l from-amber-300 via-yellow-400 to-amber-500 text-amber-950 text-[8.5px] font-black tracking-widest shadow-[0_2px_6px_rgba(251,191,36,0.5)] ring-1 ring-amber-200 uppercase">
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                        <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
-                      </svg>
-                      AI
-                    </span>
                     <button
                       type="button"
                       onClick={handleOpenPregnancyCheck}
@@ -821,17 +861,39 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                       <span className="gold-premium-shimmer" aria-hidden />
                       <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل والرضاعة</span>
                       <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
-                        {/* أيقونة: امرأة حامل */}
-                        <svg className="h-[15px] w-[15px] text-amber-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="5" r="2.5" />
-                          <path d="M9 11a3 3 0 016 0v3a5 5 0 01-1 3.5" />
-                          <path d="M12 15c-2 1.5-3 3-3 5" />
-                          <path d="M14 18c.8-.6 1.5-1.4 2-2.4" />
+                        {/* أيقونة: امرأة حامل بشكل أوضح (رأس + جسم + بطن بيضاوي + ساقين) */}
+                        <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          {/* الرأس */}
+                          <circle cx="12" cy="4" r="2" />
+                          {/* الرقبة */}
+                          <path d="M12 6v2" />
+                          {/* الذراع — تشير للبطن */}
+                          <path d="M9 11c0-1.5 1-2 2-2" />
+                          {/* البطن البارز (الحمل) */}
+                          <ellipse cx="13" cy="13" rx="4" ry="3" />
+                          {/* الساقين */}
+                          <path d="M11 17v4" />
+                          <path d="M14 17v4" />
                         </svg>
                       </span>
                     </button>
                   </div>
                 </div>
+
+                {/* تنبيه: لو الطبيب ضغط فحص التداخلات والروشتة فاضية/فيها دواء واحد */}
+                {interactionsNoDrugsNotice && (
+                  <div
+                    role="alert"
+                    className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl border border-warning-300 bg-warning-50 text-warning-900 text-[0.8rem] font-bold shadow-sm"
+                  >
+                    <svg className="w-4 h-4 shrink-0 mt-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span className="leading-relaxed">{interactionsNoDrugsNotice}</span>
+                  </div>
+                )}
               </div>
             }
           />

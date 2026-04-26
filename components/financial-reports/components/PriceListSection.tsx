@@ -144,7 +144,7 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
             {/* ───────────────────────────────────────────────────────
                 الهيدر | Header
             ─────────────────────────────────────────────────────── */}
-            <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-4 sm:px-6 py-4">
+            <div className="bg-gradient-to-r from-brand-700 to-brand-600 px-4 sm:px-6 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-xl font-black text-white flex items-center gap-2">
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,7 +179,7 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
                                 value={draftExamPrice}
                                 onChange={(e) => handleExaminationPriceChange(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20 transition-all text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -198,7 +198,7 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
                                 value={draftConsultPrice}
                                 onChange={(e) => handleConsultationPriceChange(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20 transition-all text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -212,19 +212,19 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
                         type="button"
                         onClick={handleSavePrices}
                         disabled={isSaving || !isDirty}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-black shadow-sm hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-success-600 text-white text-sm font-black shadow-sm hover:bg-success-700 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         💾 حفظ
                     </button>
                     {isSaving && (
-                        <LoadingText className="text-sm text-emerald-700 font-black">جاري الحفظ</LoadingText>
+                        <LoadingText className="text-sm text-success-700 font-black">جاري الحفظ</LoadingText>
                     )}
                     {!isSaving && isDirty && (
-                        <span className="text-xs text-amber-700 font-black">يوجد تغييرات غير محفوظة</span>
+                        <span className="text-xs text-warning-700 font-black">يوجد تغييرات غير محفوظة</span>
                     )}
                 </div>
                 {saveErrorMessage && (
-                    <p className="mt-3 text-sm text-red-700 font-bold text-right">{saveErrorMessage}</p>
+                    <p className="mt-3 text-sm text-danger-700 font-bold text-right">{saveErrorMessage}</p>
                 )}
 
                 {/* سجل تغييرات الأسعار */}
@@ -233,13 +233,13 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
                         <button
                             type="button"
                             onClick={() => setShowHistory(v => !v)}
-                            className="flex items-center gap-2 text-sm font-black text-slate-600 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-2 text-sm font-black text-slate-600 hover:text-brand-600 transition-colors"
                         >
                             <svg className={`w-4 h-4 transition-transform ${showHistory ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                             سجل تغييرات الأسعار
-                            <span className="bg-blue-100 text-blue-700 text-xs font-black px-2 py-0.5 rounded-full">{priceHistory.length}</span>
+                            <span className="bg-brand-100 text-brand-700 text-xs font-black px-2 py-0.5 rounded-full">{priceHistory.length}</span>
                         </button>
                         {showHistory && (
                             <div className="mt-3 space-y-2 max-h-72 overflow-y-auto">
@@ -259,23 +259,23 @@ export const PriceListSection: React.FC<PriceListSectionProps> = ({
                                                     await financialDataService.deletePriceChangeEntry(userId, entry.id).catch(() => {});
                                                     setPriceHistory(prev => prev.filter(e => e.id !== entry.id));
                                                 }}
-                                                className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-black text-rose-600 hover:bg-rose-100"
+                                                className="shrink-0 rounded-lg border border-danger-200 bg-danger-50 px-2 py-0.5 text-[10px] font-black text-danger-600 hover:bg-danger-100"
                                             >
                                                 حذف
                                             </button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <div className="rounded-lg bg-rose-50 border border-rose-100 p-2">
-                                                <p className="text-[10px] font-bold text-rose-400 mb-0.5">كشف: قبل</p>
-                                                <p className="font-black text-rose-700">{entry.oldExaminationPrice} ج.م</p>
-                                                <p className="text-[10px] font-bold text-rose-400 mb-0.5 mt-1">استشارة: قبل</p>
-                                                <p className="font-black text-rose-700">{entry.oldConsultationPrice} ج.م</p>
+                                            <div className="rounded-lg bg-danger-50 border border-danger-100 p-2">
+                                                <p className="text-[10px] font-bold text-danger-400 mb-0.5">كشف: قبل</p>
+                                                <p className="font-black text-danger-700">{entry.oldExaminationPrice} ج.م</p>
+                                                <p className="text-[10px] font-bold text-danger-400 mb-0.5 mt-1">استشارة: قبل</p>
+                                                <p className="font-black text-danger-700">{entry.oldConsultationPrice} ج.م</p>
                                             </div>
-                                            <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-2">
-                                                <p className="text-[10px] font-bold text-emerald-500 mb-0.5">كشف: بعد</p>
-                                                <p className="font-black text-emerald-700">{entry.newExaminationPrice} ج.م</p>
-                                                <p className="text-[10px] font-bold text-emerald-500 mb-0.5 mt-1">استشارة: بعد</p>
-                                                <p className="font-black text-emerald-700">{entry.newConsultationPrice} ج.م</p>
+                                            <div className="rounded-lg bg-success-50 border border-success-100 p-2">
+                                                <p className="text-[10px] font-bold text-success-500 mb-0.5">كشف: بعد</p>
+                                                <p className="font-black text-success-700">{entry.newExaminationPrice} ج.م</p>
+                                                <p className="text-[10px] font-bold text-success-500 mb-0.5 mt-1">استشارة: بعد</p>
+                                                <p className="font-black text-success-700">{entry.newConsultationPrice} ج.م</p>
                                             </div>
                                         </div>
                                     </div>

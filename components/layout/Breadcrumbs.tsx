@@ -54,10 +54,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               {isFirst && segment.view === 'home' ? (
                 <button
                   onClick={() => handleClick(segment)}
-                  className="shrink-0 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-blue-100 transition-colors"
+                  className="shrink-0 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-brand-100 transition-colors"
                   aria-label={segment.label}
                 >
-                  <FaHouse className="w-3.5 h-3.5 text-blue-600" aria-hidden="true" />
+                  <FaHouse className="w-3.5 h-3.5 text-brand-600" aria-hidden="true" />
                 </button>
               ) : (
                 <button
@@ -66,7 +66,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     isLast
                       ? 'font-black text-slate-800'
                       : isClickable
-                        ? 'font-bold text-blue-600 hover:text-blue-800'
+                        ? 'font-bold text-brand-600 hover:text-brand-800'
                         : 'font-bold text-slate-500'
                   }`}
                   disabled={!isClickable}
@@ -107,10 +107,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               {isFirst && segment.view === 'home' ? (
                 <button
                   onClick={() => handleClick(segment)}
-                  className="shrink-0 w-7 h-7 rounded-lg bg-slate-50 hover:bg-blue-50 flex items-center justify-center transition-colors group"
+                  className="shrink-0 w-7 h-7 rounded-lg bg-slate-50 hover:bg-brand-50 flex items-center justify-center transition-colors group"
                   aria-label={segment.label}
                 >
-                  <FaHouse className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors" aria-hidden="true" />
+                  <FaHouse className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-600 transition-colors" aria-hidden="true" />
                 </button>
               ) : isLast ? (
                 <span className="font-bold text-slate-700 truncate" aria-current="page">
@@ -119,7 +119,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               ) : isClickable ? (
                 <button
                   onClick={() => handleClick(segment)}
-                  className="font-semibold text-blue-600 hover:text-blue-800 truncate transition-colors hover:underline underline-offset-2"
+                  className="font-semibold text-brand-600 hover:text-brand-800 truncate transition-colors hover:underline underline-offset-2"
                 >
                   {segment.label}
                 </button>

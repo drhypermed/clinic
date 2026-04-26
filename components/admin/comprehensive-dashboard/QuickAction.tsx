@@ -13,9 +13,9 @@ interface QuickActionProps {
   label: string;
   /** وصف مختصر تحت النص الرئيسي (مثال: "تحقق الأطباء الجدد") */
   sublabel: string;
-  /** لون الحدود (مثل "border-sky-200") */
+  /** لون الحدود (مثل "border-brand-200") */
   borderColor: string;
-  /** خلفية الزر (مثل "bg-sky-50/60") */
+  /** خلفية الزر (مثل "bg-brand-50/60") */
   bgColor: string;
   /** لون النصوص داخل الزر */
   textColor: string;
@@ -51,7 +51,7 @@ export const QuickAction: React.FC<QuickActionProps> = ({
 
     {/* الشارة الحمراء: تظهر فقط لو في عدد > 0. لو > 99 نعرض "99+" */}
     {badge != null && badge > 0 && (
-      <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
+      <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[20px] items-center justify-center rounded-full bg-danger-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-sm">
         {badge > 99 ? '99+' : badge}
       </span>
     )}

@@ -15,7 +15,7 @@
  * يُرجع الرسالة المطابقة لأحد الحالات المشتركة، أو `null` إن لم تتطابق أي حالة.
  * يُستخدم بواسطة خرائط الأخطاء الموسَّعة التي تضيف حالات خاصة بها.
  */
-export const tryMapCommonFirebaseError = (error: unknown): string | null => {
+const tryMapCommonFirebaseError = (error: unknown): string | null => {
   const raw = error instanceof Error ? error.message.toLowerCase() : '';
   // الأخطاء المشتركة بين Firestore و Storage
   if (raw.includes('permission-denied') || raw.includes('storage/unauthorized')) {

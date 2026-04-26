@@ -41,7 +41,7 @@ export const BranchPublicView: React.FC<BranchPublicViewProps> = ({ branch, show
           <p className="text-xs text-slate-500 font-black mb-1">الكشف</p>
           {hasExamDiscount ? (
             <div className="space-y-1">
-              <p className="text-sm font-black text-emerald-700">
+              <p className="text-sm font-black text-success-700">
                 {formatPrice(branch.discountedExaminationPrice)}
                 <span className="text-slate-500 mr-1">بدلًا من</span>
               </p>
@@ -55,7 +55,7 @@ export const BranchPublicView: React.FC<BranchPublicViewProps> = ({ branch, show
           <p className="text-xs text-slate-500 font-black mb-1">الاستشارة</p>
           {hasConsultDiscount ? (
             <div className="space-y-1">
-              <p className="text-sm font-black text-emerald-700">
+              <p className="text-sm font-black text-success-700">
                 {formatPrice(branch.discountedConsultationPrice)}
                 <span className="text-slate-500 mr-1">بدلًا من</span>
               </p>
@@ -72,34 +72,34 @@ export const BranchPublicView: React.FC<BranchPublicViewProps> = ({ branch, show
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500 font-black mb-2">بيانات التواصل بالفرع</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
-              <p className="text-[11px] text-emerald-700 font-black mb-2">اتصال مباشر</p>
+            <div className="rounded-xl bg-success-50 border border-success-100 p-3">
+              <p className="text-[11px] text-success-700 font-black mb-2">اتصال مباشر</p>
               {showContactActions && branch.contactPhone ? (
                 <a
                   href={`tel:${branch.contactPhone.replace(/\D/g, '')}`}
-                  className="h-10 w-full rounded-xl border bg-white text-emerald-800 border-emerald-200 font-black text-sm inline-flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
+                  className="h-10 w-full rounded-xl border bg-white text-success-800 border-success-200 font-black text-sm inline-flex items-center justify-center gap-2 hover:bg-success-100 transition-colors"
                 >
                   📞 {branch.contactPhone}
                 </a>
               ) : (
-                <div className="h-10 w-full rounded-xl border bg-white text-emerald-800 border-emerald-200 font-black text-sm inline-flex items-center justify-center gap-2">
+                <div className="h-10 w-full rounded-xl border bg-white text-success-800 border-success-200 font-black text-sm inline-flex items-center justify-center gap-2">
                   📞 {branch.contactPhone || 'غير متاح'}
                 </div>
               )}
             </div>
-            <div className="rounded-xl bg-teal-50 border border-teal-100 p-3">
-              <p className="text-[11px] text-teal-700 font-black mb-2">واتساب</p>
+            <div className="rounded-xl bg-brand-50 border border-brand-100 p-3">
+              <p className="text-[11px] text-brand-700 font-black mb-2">واتساب</p>
               {showContactActions && (branch.whatsapp || branch.contactPhone) ? (
                 <a
                   href={`https://wa.me/${(branch.whatsapp || branch.contactPhone).replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-10 w-full rounded-xl border bg-white text-teal-800 border-teal-200 font-black text-sm inline-flex items-center justify-center gap-2 hover:bg-teal-100 transition-colors"
+                  className="h-10 w-full rounded-xl border bg-white text-brand-800 border-brand-200 font-black text-sm inline-flex items-center justify-center gap-2 hover:bg-brand-100 transition-colors"
                 >
                   {branch.whatsapp || branch.contactPhone}
                 </a>
               ) : (
-                <div className="h-10 w-full rounded-xl border bg-white text-teal-800 border-teal-200 font-black text-sm inline-flex items-center justify-center gap-2">
+                <div className="h-10 w-full rounded-xl border bg-white text-brand-800 border-brand-200 font-black text-sm inline-flex items-center justify-center gap-2">
                   {branch.whatsapp || branch.contactPhone || 'غير متاح'}
                 </div>
               )}
@@ -142,11 +142,11 @@ export const BranchPublicView: React.FC<BranchPublicViewProps> = ({ branch, show
                   <span className="font-black text-slate-800 text-sm">{service.name}</span>
                   {discounted ? (
                     <div className="text-left">
-                      <span className="font-black text-emerald-700 text-sm block">{formatPrice(service.discountedPrice)}</span>
+                      <span className="font-black text-success-700 text-sm block">{formatPrice(service.discountedPrice)}</span>
                       <span className="font-bold text-slate-500 text-xs line-through block">{formatPrice(service.price)}</span>
                     </div>
                   ) : service.price != null ? (
-                    <span className="font-black text-cyan-700 text-sm">{formatPrice(service.price)}</span>
+                    <span className="font-black text-brand-700 text-sm">{formatPrice(service.price)}</span>
                   ) : null}
                 </div>
               );
@@ -166,7 +166,7 @@ export const BranchPublicView: React.FC<BranchPublicViewProps> = ({ branch, show
                   key={idx}
                   type="button"
                   onClick={() => onImageClick(idx)}
-                  className="relative aspect-video rounded-xl border border-slate-200 overflow-hidden bg-slate-100 hover:ring-2 hover:ring-teal-400 transition-all"
+                  className="relative aspect-video rounded-xl border border-slate-200 overflow-hidden bg-slate-100 hover:ring-2 hover:ring-brand-400 transition-all"
                 >
                   <img
                     src={url}
@@ -221,7 +221,7 @@ export const BranchTabs: React.FC<BranchTabsProps> = ({ branches, activeBranchId
             onClick={() => onSelect(branch.id)}
             className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
               isActive
-                ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-sm'
+                ? 'bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >

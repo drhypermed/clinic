@@ -31,11 +31,11 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
 
   // ألوان موحّده (أزرق) لكل الـaudiences — الطبيب والجمهور زي بعض.
   // كنا بنميز الجمهور بالأخضر قبل كده، لكن اتوحد التصميم.
-  const topBarGradient = 'from-blue-700 to-blue-500';
-  const accentText = 'text-blue-700';
-  const accentCheckbox = 'accent-blue-600';
+  const topBarGradient = 'from-brand-700 to-brand-500';
+  const accentText = 'text-brand-700';
+  const accentCheckbox = 'accent-brand-600';
   const readBtn =
-    'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)]';
+    'from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 shadow-cta';
 
   const handleToggle = (documentDef: LegalDocumentDefinition, checked: boolean) => {
     persistLegalDocumentConsent(audience, documentDef, checked);
@@ -68,7 +68,7 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
             return (
               <div
                 key={documentDef.kind}
-                className="rounded-xl ring-1 ring-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-3 flex flex-col gap-2.5 transition hover:ring-slate-300"
+                className="rounded-xl ring-1 ring-slate-200/70 bg-white shadow-soft p-3 flex flex-col gap-2.5 transition hover:ring-slate-300"
               >
                 <div className="flex items-start gap-2.5">
                   <input
@@ -107,14 +107,14 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
         <div
           className={`flex items-start gap-2 rounded-xl ring-1 px-3 py-2 text-xs font-bold leading-relaxed ${
             isValid
-              ? 'ring-emerald-300/70 bg-emerald-50/85 text-emerald-800'
-              : 'ring-amber-300/70 bg-amber-50/85 text-amber-800'
+              ? 'ring-success-300/70 bg-success-50/85 text-success-800'
+              : 'ring-warning-300/70 bg-warning-50/85 text-warning-800'
           }`}
         >
           {isValid ? (
-            <FaCircleCheck className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-600" />
+            <FaCircleCheck className="w-4 h-4 flex-shrink-0 mt-0.5 text-success-600" />
           ) : (
-            <FaTriangleExclamation className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+            <FaTriangleExclamation className="w-4 h-4 flex-shrink-0 mt-0.5 text-warning-600" />
           )}
           <span>
             {isValid

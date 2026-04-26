@@ -24,7 +24,7 @@ interface FcmTokenWithScopeResult extends FcmTokenResult {
 }
 
 /** حل FCM token من registration واحد مع fallback (VAPID ↔ بدون VAPID) */
-export const getFcmTokenWithFallback = async (
+const getFcmTokenWithFallback = async (
     msg: Messaging,
     serviceWorkerRegistration: ServiceWorkerRegistration,
     vapidKey?: string

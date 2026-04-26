@@ -20,7 +20,7 @@ export const VitalsTitleControls: React.FC<VitalsSectionControlsProps> = ({ sect
         type="text"
         value={section.title ?? ''}
         onChange={(e) => updateSection({ title: e.target.value })}
-        className="w-full p-3 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none"
+        className="w-full p-3 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-brand-500 outline-none"
         placeholder="القياسات والعلامات الحيوية"
       />
       <div className="relative z-10">
@@ -45,7 +45,7 @@ export const VitalsTitleControls: React.FC<VitalsSectionControlsProps> = ({ sect
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">الشفافية</span>
-                <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-danger-600 bg-danger-50 px-2 py-0.5 rounded-full">
                   {Math.round((section.titleUnderlineOpacity ?? 1) * 100)}%
                 </span>
               </div>

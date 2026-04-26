@@ -21,7 +21,7 @@ export const VitalsPositionControls: React.FC<VitalsSectionControlsProps> = ({ s
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">أفقياً (يمين/يسار)</span>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
                   {section.itemsOffsetX || 0}px
                 </span>
               </div>
@@ -61,7 +61,7 @@ export const VitalsPositionControls: React.FC<VitalsSectionControlsProps> = ({ s
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">عمودياً (فوق/تحت)</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">
                   {section.itemsOffsetY || 0}px
                 </span>
               </div>
@@ -103,7 +103,7 @@ export const VitalsPositionControls: React.FC<VitalsSectionControlsProps> = ({ s
         <div className="space-y-3">
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-bold text-slate-600">عرض المربعات (نسبة مئوية)</label>
-            <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-bold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full">
               {section.width !== undefined ? section.width : 100}%
             </span>
           </div>

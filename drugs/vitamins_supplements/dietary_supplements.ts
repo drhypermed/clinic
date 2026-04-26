@@ -53,7 +53,7 @@ const DIVITON_D_200IU_PER_DROP_RULE = (_w: number, ageMonths: number) => {
 	return '٥ نقط يومياً (١٠٠٠ وحدة دولية)';
 };
 
-export const DIETARY_SUPPLEMENTS_1: Medication[] = [
+const DIETARY_SUPPLEMENTS_1: Medication[] = [
 	// ==========================================
 	// Dietary supplements - Part 1
 	// Items: 1 → 57
@@ -1200,7 +1200,7 @@ export const DIETARY_SUPPLEMENTS_1: Medication[] = [
 	},
 ];
 
-export const DIETARY_SUPPLEMENTS_2: Medication[] = [
+const DIETARY_SUPPLEMENTS_2: Medication[] = [
 	// ==========================================
 	// Dietary supplements - Part 2
 	// Items: 58 → 110

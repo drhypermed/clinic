@@ -18,6 +18,9 @@ import {
 } from '../services/auth-service';
 import { clearAllAuth } from '../utils/clearAllAuth';
 import { resetUsageTrackingBatch } from '../services/usageTrackingService';
+// ─ ثوابت الأدمن — للاستثناء من verification guard (الأدمن يدخل عادي)
+import { ADMIN_EMAIL, ROOT_ADMIN_UID } from '../app/drug-catalog/admin';
+import { normalizeEmail } from '../services/auth-service/validation';
 
 const PENDING_GOOGLE_AUTH_WAIT_MS = 6000; // مدة انتظار معالجة بيانات جوجل
 const PENDING_GOOGLE_AUTH_POLL_MS = 50;   // فترة الاستعلام المتكرر
@@ -197,9 +200,27 @@ export const useAuth = (): UseAuthReturn => {
                         const { data: userData, sourceCollection } = await loadResolvedProfile(authUser.uid);
                         const resolvedAuthRole = resolveAuthRoleFromProfileData(userData);
 
-                        // إجراء أمان: منع الأطباء المرفوضين من الدخول للأجزاء الحساسة
-                        if (resolvedAuthRole === 'doctor' && userData?.verificationStatus === 'rejected') {
-                            console.warn('Rejected doctor account - auto logout');
+                        // ─ إجراء أمان: محدش يدخل التطبيق غير الأطباء المعتمدين فقط ─
+                        // الـguard ده بيشتغل في كل auth state change عشان يغطي:
+                        //   1) الطبيب الجديد بعد signup (verificationStatus = 'submitted')
+                        //   2) الطبيب القديم في حالة 'pending' أو 'rejected'
+                        //   3) محاولات تسجيل دخول من حسابات قديمة غير معتمدة
+                        // ↓ أي حالة غير 'approved' = signout تلقائي
+                        // الاستثناء الوحيد: الأدمن الجذر — بيدخل عادي (لإدارة اللوحة)
+                        const adminEmailNormalized = normalizeEmail(ADMIN_EMAIL);
+                        const userEmailNormalized = normalizeEmail(authUser.email);
+                        const isRootAdmin =
+                            authUser.uid === ROOT_ADMIN_UID ||
+                            (!!userEmailNormalized && userEmailNormalized === adminEmailNormalized);
+
+                        if (
+                            !isRootAdmin &&
+                            resolvedAuthRole === 'doctor' &&
+                            userData?.verificationStatus !== 'approved'
+                        ) {
+                            console.warn(
+                                `Doctor not approved (status: ${userData?.verificationStatus || 'missing'}) - auto signout`,
+                            );
                             await authSignOut();
                             setUser(null);
                             setLoading(false);

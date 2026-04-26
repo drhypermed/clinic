@@ -1,7 +1,7 @@
 /**
  * صفحة إدارة إعلان الطبيب (Doctor Advertisement Management Page):
  * - الحقول العامة عن الطبيب (اسم، درجة علمية، تخصصات دقيقة، خدمات، معلومات).
- * - فروع العيادة (حتى 5 فروع) — كل فرع بعنوانه ومواعيده وأسعاره وخدماته وصوره.
+ * - فروع العيادة (العدد حسب باقة الطبيب) — كل فرع بعنوانه ومواعيده وأسعاره وخدماته وصوره.
  * - روابط السوشيال (عالمية لكل الفروع).
  * - حفظ كمسودة / نشر / معاينة.
  */
@@ -29,7 +29,7 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
     extraInfo, setExtraInfo, socialLinks, setSocialLinks,
 
     // الفروع
-    branches, activeBranchId, setActiveBranchId, canAddBranch,
+    branches, activeBranchId, setActiveBranchId, canAddBranch, maxBranchesForPlan,
     addBranch, removeBranch, renameBranch, updateBranchField,
     addScheduleRow, removeScheduleRow, updateScheduleRow,
     addServiceRow, removeServiceRow, updateServiceRow,
@@ -72,8 +72,8 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
           <div
             className={`max-w-md w-full text-white rounded-2xl shadow-2xl px-5 py-4 text-center font-black border ${
               error
-                ? 'bg-red-600/95 border-red-300'
-                : 'bg-emerald-600/95 border-emerald-300'
+                ? 'bg-danger-600/95 border-danger-300'
+                : 'bg-success-600/95 border-success-300'
             }`}
           >
             {error || message}
@@ -105,6 +105,7 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
         branches={branches}
         activeBranchId={activeBranchId}
         canAddBranch={canAddBranch}
+        maxBranches={maxBranchesForPlan}
         onSetActiveBranchId={setActiveBranchId}
         onAddBranch={addBranch}
         onRemoveBranch={removeBranch}

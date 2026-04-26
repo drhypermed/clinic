@@ -128,7 +128,7 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
         <div className="bg-white px-5 sm:px-6 py-4 flex justify-between items-start gap-3 border-b border-slate-200">
           <div className="flex flex-col gap-1.5 min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-success-50 text-success-600 shrink-0">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </span>
               <h3 className="text-lg sm:text-xl font-bold tracking-tight leading-tight text-slate-900 truncate">{medication.name}</h3>
@@ -141,7 +141,7 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
                 <span className="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{medication.form}</span>
               )}
               {medication.category && (
-                <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">{medication.category}</span>
+                <span className="text-[11px] font-bold bg-success-50 text-success-700 px-2 py-0.5 rounded-full border border-success-100">{medication.category}</span>
               )}
             </div>
           </div>
@@ -160,7 +160,7 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-center">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">السعر</div>
-              <div className="text-base sm:text-lg font-bold text-emerald-600">{medication.price} <span className="text-[10px] font-semibold text-slate-500">EGP</span></div>
+              <div className="text-base sm:text-lg font-bold text-success-600">{medication.price} <span className="text-[10px] font-semibold text-slate-500">EGP</span></div>
             </div>
             <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-center">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">العمر الآمن</div>
@@ -173,13 +173,13 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
           </div>
 
           {/* قسم الجرعة المحسوبة - يتأثر بوزن المريض المدخل في شاشة الفحص */}
-          <div className="bg-white border border-emerald-200 rounded-xl overflow-hidden">
+          <div className="bg-white border border-success-200 rounded-xl overflow-hidden">
             <div className="flex items-start gap-3 p-4">
-              <div className="bg-emerald-50 p-2.5 rounded-lg shrink-0">
-                <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              <div className="bg-success-50 p-2.5 rounded-lg shrink-0">
+                <svg className="w-5 h-5 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase text-emerald-700 font-bold tracking-wider mb-1">الجرعة المعتمدة</div>
+                <div className="text-[10px] uppercase text-success-700 font-bold tracking-wider mb-1">الجرعة المعتمدة</div>
                 <div className="text-base sm:text-lg font-bold leading-snug text-slate-900 mb-1.5 break-words">{getDosageText()}</div>
                 <p className="text-[11px] text-slate-500 leading-relaxed">للحساب الدقيق أدخل الوزن والعمر في شاشة الفحص وسيتم تحديث الجرعة أوتوماتيكياً.</p>
               </div>
@@ -214,15 +214,15 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
 
           {/* تحذيرات */}
           {medication.warnings && medication.warnings.length > 0 && (
-            <div className="bg-white p-4 rounded-xl border border-amber-200">
-              <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1">
+            <div className="bg-white p-4 rounded-xl border border-warning-200">
+              <div className="text-[10px] font-bold text-warning-700 uppercase tracking-wider mb-2 flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 تحذيرات
               </div>
               <ul className="space-y-1.5">
                 {medication.warnings.map((w, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-800 leading-relaxed">
-                    <span className="text-amber-500 mt-0.5 shrink-0">•</span>
+                    <span className="text-warning-500 mt-0.5 shrink-0">•</span>
                     <span>{w}</span>
                   </li>
                 ))}
@@ -242,7 +242,7 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
           {user && (
             <button
               onClick={handleEdit}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-success-600 hover:bg-success-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

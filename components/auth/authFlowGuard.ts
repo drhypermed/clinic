@@ -19,14 +19,11 @@
 
 import { AUTH_FLOW_GUARD_EVENT, AUTH_FLOW_GUARD_KEY } from '../app/core/constants';
 
-// إعادة التصدير عشان الصفحات اللي بتستخدم الـ helper تقدر تستورد كل حاجة من هنا
-export { AUTH_FLOW_GUARD_EVENT, AUTH_FLOW_GUARD_KEY };
-
 /**
  * إطلاق حدث "تغير الحارس" — بيخلي useAuthFlowGuard في الـ App Router
  * يعيد قراءة الحالة فوراً بدل ما يستنى focus/visibilitychange.
  */
-export const notifyAuthFlowGuardChanged = () => {
+const notifyAuthFlowGuardChanged = () => {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(AUTH_FLOW_GUARD_EVENT));
 };

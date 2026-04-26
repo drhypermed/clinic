@@ -27,7 +27,7 @@ export const VitalsBackgroundControls: React.FC<VitalsSectionControlsProps> = ({
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">الشفافية</span>
-                <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full">
                   {Math.round((section.backgroundColorOpacity ?? 1) * 100)}%
                 </span>
               </div>
@@ -60,7 +60,7 @@ export const VitalsBackgroundControls: React.FC<VitalsSectionControlsProps> = ({
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">الشفافية</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">
                   {Math.round((section.itemBackgroundColorOpacity ?? 1) * 100)}%
                 </span>
               </div>

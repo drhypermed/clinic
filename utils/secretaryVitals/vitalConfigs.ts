@@ -75,7 +75,7 @@ export const toSecretaryVitalSignConfigs = (
 };
 
 /** بناء مفتاح إشعار لعلامة حيوية (مثال: sv_weight) */
-export const getSecretaryVitalNotificationKey = (key: SecretaryVitalKey): string =>
+const getSecretaryVitalNotificationKey = (key: SecretaryVitalKey): string =>
     `${SECRETARY_VITAL_NOTIFICATION_PREFIX}${key}`;
 
 /** استخراج علامات حيوية من بيانات إشعار (مسطحة أو nested) */

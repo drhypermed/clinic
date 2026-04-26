@@ -56,7 +56,7 @@ const DEFAULT_PAPER_SIZE: PaperSizeSettings = {
  * الحصول على كائن الإعدادات الافتراضي بالكامل
  */
 /** القيم الافتراضية لأحجام الخطوط والمسافات والألوان داخل الروشتة */
-export const DEFAULT_TYPOGRAPHY = {
+const DEFAULT_TYPOGRAPHY = {
     medNamePx: 13,
     medInstPx: 12,
     notesPx: 12,

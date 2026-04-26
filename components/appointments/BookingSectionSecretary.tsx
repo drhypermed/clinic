@@ -80,7 +80,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
     <button
       type="button"
       onClick={onToggleOpen}
-      className="w-full bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-right"
+      className="w-full bg-gradient-to-r from-slate-600 to-slate-600 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-right"
     >
       <h3 className="text-base font-black text-white flex items-center gap-2">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -113,7 +113,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
               value={bookingFormTitle}
               onChange={(e) => onBookingFormTitleChange(e.target.value)}
               placeholder="مثال: إدارة مواعيد سكرتارية عيادة د. أحمد"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-bold text-sm resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 font-bold text-sm resize-none"
               rows={1}
             />
           </div>
@@ -149,7 +149,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             <label className="block text-xs font-bold text-slate-500 mb-1">
               كلمة مرور السكرتارية
               {hasMultipleBranches && currentBranchLabel && (
-                <span className="mr-2 text-[11px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-black">
+                <span className="mr-2 text-[11px] text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full font-black">
                   فرع: {currentBranchLabel}
                 </span>
               )}
@@ -160,11 +160,11 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
               onChange={(e) => onSecretaryPasswordChange(e.target.value)}
               placeholder="اكتب كلمة سر للسكرتارية (6 حروف على الأقل)"
               minLength={6}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-bold text-sm"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 font-bold text-sm"
             />
             {/* تحذير بصري لو الطبيب كتب حاجة أقل من 6 حروف */}
             {secretaryPassword.trim().length > 0 && secretaryPassword.trim().length < 6 && (
-              <p className="text-[10px] text-red-600 font-bold mt-1">
+              <p className="text-[10px] text-danger-600 font-bold mt-1">
                 ⚠️ الرقم السري لازم يكون 6 حروف/أرقام على الأقل.
               </p>
             )}
@@ -178,10 +178,10 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             )}
           </div>
 
-          <div className="sm:col-span-2 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-3">
+          <div className="sm:col-span-2 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-xs font-black text-blue-800">حقول القياسات والعلامات الحيوية للسكرتارية</div>
+                <div className="text-xs font-black text-brand-800">حقول القياسات والعلامات الحيوية للسكرتارية</div>
                 <p className="mt-0.5 text-[11px] font-bold text-slate-600">
                   الحقول المفعلة تظهر للسكرتارية اسفل سبب الزيارة، وتنتقل تلقائيا للطبيب.
                 </p>
@@ -190,11 +190,11 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
                 <button
                   type="button"
                   onClick={toggleAllVitals}
-                  className="inline-flex items-center rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-black text-blue-700 hover:bg-blue-100"
+                  className="inline-flex items-center rounded-full border border-brand-200 bg-white px-2.5 py-1 text-[11px] font-black text-brand-700 hover:bg-brand-100"
                 >
                   {allVitalsEnabled ? 'إلغاء الكل' : 'تحديد الكل'}
                 </button>
-                <span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-black text-blue-700">
+                <span className="inline-flex items-center rounded-full border border-brand-200 bg-white px-2.5 py-1 text-[11px] font-black text-brand-700">
                   مفعل {enabledVitalsCount} / {sortedSecretaryFields.length}
                 </span>
               </div>
@@ -212,8 +212,8 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
                     key={field.id}
                     className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 transition-all ${
                       isEnabled
-                        ? 'border-blue-300 bg-blue-100/70'
-                        : 'border-slate-200 bg-white hover:border-blue-200'
+                        ? 'border-brand-300 bg-brand-100/70'
+                        : 'border-slate-200 bg-white hover:border-brand-200'
                     }`}
                   >
                     <div className="min-w-0">
@@ -224,7 +224,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
                       type="checkbox"
                       checked={isEnabled}
                       onChange={(event) => onSecretaryVitalVisibilityChange(field.id, event.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                     />
                   </label>
                 );
@@ -244,16 +244,16 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
               aria-live="polite"
             >
               {credentialsSaving ? (
-                <span className="flex items-center gap-2 text-blue-700">
+                <span className="flex items-center gap-2 text-brand-700">
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeDasharray="40 80" />
                   </svg>
                   جاري الحفظ...
                 </span>
               ) : credentialsError ? (
-                <span className="text-red-600">⚠️ {credentialsError}</span>
+                <span className="text-danger-600">⚠️ {credentialsError}</span>
               ) : credentialsSuccess ? (
-                <span className="flex items-center gap-1 text-emerald-600">
+                <span className="flex items-center gap-1 text-success-600">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
                   تم الحفظ
                 </span>
@@ -264,7 +264,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             <button
               type="submit"
               disabled={credentialsSaving}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-brand-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {credentialsSaving ? (
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">

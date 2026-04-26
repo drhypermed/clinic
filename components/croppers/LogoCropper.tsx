@@ -62,7 +62,7 @@ export const LogoCropper: React.FC<LogoCropperProps> = ({ imageSrc, onCropComple
                         max={3}
                         step={0.1}
                         onChange={setZoom}
-                        accentClassName="accent-blue-600"
+                        accentClassName="accent-brand-600"
                         renderValue={(value) => `${Math.round(value * 100)}%`}
                     />
                     <CropperRangeControl
@@ -72,7 +72,7 @@ export const LogoCropper: React.FC<LogoCropperProps> = ({ imageSrc, onCropComple
                         max={180}
                         step={1}
                         onChange={setRotation}
-                        accentClassName="accent-indigo-600"
+                        accentClassName="accent-brand-600"
                         renderValue={(value) => `${Math.round(value)}°`}
                     />
                     <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export const LogoCropper: React.FC<LogoCropperProps> = ({ imageSrc, onCropComple
                         <button onClick={() => setRotation(0)} className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold">تصفير</button>
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={handleSave} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">✓ قص وحفظ</button>
+                        <button onClick={handleSave} className="flex-1 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition">✓ قص وحفظ</button>
                         <button onClick={onCancel} className="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200">إلغاء</button>
                     </div>
                 </div>

@@ -24,7 +24,7 @@ export const CustomBoxesSection: React.FC<CustomBoxesSectionProps> = ({
       {/* زر التبديل لفتح أو إغلاق قسم المربعات المخصصة */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200 hover:border-emerald-300 transition-all"
+        className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-success-50 to-brand-50 rounded-xl border-2 border-success-200 hover:border-success-300 transition-all"
       >
         <span className="font-black text-slate-800 flex items-center gap-2">📦 المربعات المخصصة</span>
         <span className={`transition-transform ${showCustomBoxes ? 'rotate-180' : ''}`}>▼</span>
@@ -42,14 +42,14 @@ export const CustomBoxesSection: React.FC<CustomBoxesSectionProps> = ({
                 <div
                   key={box.id}
                   className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
-                    box.enabled ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
+                    box.enabled ? 'bg-success-50 border-success-200' : 'bg-slate-50 border-slate-200'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={box.enabled}
                     onChange={(e) => updateCustomBox?.(box.id, { enabled: e.target.checked })}
-                    className="w-5 h-5 rounded accent-emerald-600"
+                    className="w-5 h-5 rounded accent-success-600"
                   />
                   <div className="flex-1 flex flex-col gap-2">
                     <input
@@ -87,7 +87,7 @@ export const CustomBoxesSection: React.FC<CustomBoxesSectionProps> = ({
                   </div>
                   <button
                     onClick={() => deleteCustomBox?.(box.id)}
-                    className="p-2 hover:bg-red-100 rounded text-red-600"
+                    className="p-2 hover:bg-danger-100 rounded text-danger-600"
                     title="حذف"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +101,7 @@ export const CustomBoxesSection: React.FC<CustomBoxesSectionProps> = ({
 
           <button
             onClick={() => addCustomBox?.()}
-            className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-success-500 to-brand-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />

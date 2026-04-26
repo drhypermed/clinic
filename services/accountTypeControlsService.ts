@@ -8,6 +8,11 @@ export {
   consumeStorageQuota,
   consumeBookingQuota,
   consumeDrugToolQuota,
+  consumeTranslationQuota,
+  validateRecordsCapacity,
+  validateReadyPrescriptionsCapacity,
+  validateMedicationCustomizationsCapacity,
+  validateInsuranceCompaniesCapacity,
 } from './account-type-controls/quotas';
 
 export type {
@@ -19,5 +24,8 @@ export type {
   BookingQuotaResult,
   DrugToolQuotaFeature,
   DrugToolQuotaResult,
+  TranslationQuotaResult,
+  RecordsCapacityResult,
+  CapacityCheckResult,
   SmartQuotaLimitErrorDetails,
 } from './account-type-controls/types';

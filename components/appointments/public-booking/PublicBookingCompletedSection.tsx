@@ -48,10 +48,10 @@ export const PublicBookingCompletedSection: React.FC<Props> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2.5 px-1 pb-1">
-        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+        <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center shrink-0">
           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
         </div>
-        <h3 className="text-sm font-black text-emerald-800">المواعيد المنفذة</h3>
+        <h3 className="text-sm font-black text-success-800">المواعيد المنفذة</h3>
       </div>
 
       {visibleGroups.length === 0 ? (
@@ -85,7 +85,7 @@ const CompletedDayGroupCard: React.FC<{ group: DayGroup; onRemove: (id: string) 
         <div className="font-black text-sm sm:text-base leading-relaxed text-right break-words">{group.fullDate}</div>
         <div className="w-full sm:w-auto shrink-0 flex flex-wrap sm:flex-nowrap items-center justify-start sm:justify-end gap-1.5 sm:gap-2">
           <span className="text-[11px] font-bold bg-white/20 text-white rounded-full px-2.5 py-1">{group.appointments.length} موعد</span>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${isOpen ? 'bg-white text-emerald-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${isOpen ? 'bg-white text-success-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
             {isOpen ? 'طي' : 'عرض'}
             <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none">
               <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -120,32 +120,32 @@ const CompletedCard: React.FC<{ apt: TodayAppointment; onRemove: (id: string) =>
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isConsultation ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-teal-100 text-teal-700 border-teal-200'}`}>
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isConsultation ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-brand-100 text-brand-700 border-brand-200'}`}>
             {isConsultation ? 'استشارة' : 'كشف'}
           </span>
           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${getSourceBadgeStyle(apt.source)}`}>
             {getSourceLabel(apt.source)}
           </span>
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+          <span className="rounded-full border border-success-200 bg-success-50 px-2 py-0.5 text-[10px] font-bold text-success-800">
             {formatUserTime(apt.dateTime, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
           </span>
           {apt.paymentType === 'insurance' && (
-            <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800">
+            <span className="rounded-full border border-brand-200 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-800">
               تأمين {apt.insuranceCompanyName ? `(${apt.insuranceCompanyName})` : ''}
             </span>
           )}
           {normalizedDiscountAmount > 0 || normalizedDiscountPercent > 0 ? (
-            <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
+            <span className="rounded-full border border-warning-200 bg-warning-100 px-2 py-0.5 text-[10px] font-black text-warning-800">
               خصم {discountBadgeText ? `(${discountBadgeText})` : ''}
             </span>
           ) : null}
           {discountReasonSummary && (
-            <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-800">{discountReasonSummary}</span>
+            <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-bold text-warning-800">{discountReasonSummary}</span>
           )}
         </div>
 
         {apt.examCompletedAt && (
-          <p className="text-[11px] font-bold text-emerald-700">
+          <p className="text-[11px] font-bold text-success-700">
             تم التنفيذ: {formatUserDate(apt.examCompletedAt, { year: 'numeric', month: 'short', day: 'numeric' }, 'ar-EG')}
             {' · '}
             {formatUserTime(apt.examCompletedAt, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
@@ -164,7 +164,7 @@ const CompletedCard: React.FC<{ apt: TodayAppointment; onRemove: (id: string) =>
         <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
 
         <div className="flex justify-start pt-0.5">
-          <button type="button" onClick={() => onRemove(apt.id)} className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all">
+          <button type="button" onClick={() => onRemove(apt.id)} className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200 transition-all">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
         </div>

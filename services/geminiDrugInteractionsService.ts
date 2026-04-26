@@ -207,6 +207,7 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
       responseMimeType: 'application/json',
       temperature: 0,
       thinkingBudget: 1000,
+      feature: 'drug_interactions', // تتسجل في تقارير الاستهلاك تحت "فحص التداخلات"
     });
 
     const parsed = tryParseJson(responseText || '{}');

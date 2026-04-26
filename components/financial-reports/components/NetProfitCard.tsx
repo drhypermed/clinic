@@ -45,7 +45,7 @@ export const NetProfitCard: React.FC<NetProfitCardProps> = ({
     return (
         <div className="rounded-2xl shadow-sm overflow-hidden">
             <div className={`flex items-center gap-2 px-4 py-3 ${
-                isProfit ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-rose-600 to-rose-500'
+                isProfit ? 'bg-gradient-to-r from-brand-700 to-brand-600' : 'bg-gradient-to-r from-danger-600 to-danger-500'
             }`}>
                 <span className="text-base">📊</span>
                 <span className="text-sm font-black text-white">صافي الأرباح الشهرية</span>
@@ -54,7 +54,7 @@ export const NetProfitCard: React.FC<NetProfitCardProps> = ({
 
             <div className="bg-white p-4">
                 <div className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 text-white ${
-                    isProfit ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-rose-600 to-red-700'
+                    isProfit ? 'bg-gradient-to-br from-brand-600 to-brand-700' : 'bg-gradient-to-br from-danger-600 to-danger-700'
                 }`}>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">

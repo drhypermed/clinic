@@ -16,8 +16,24 @@ export type LimitKey =
   // ─── free + premium (=برو) موجودين من الأول ───
   | 'freeDailyLimit'
   | 'premiumDailyLimit'
-  | 'freeRecordDailyLimit'
-  | 'premiumRecordDailyLimit'
+  // ─── سعة السجلات الطبية (حد كلي مش يومي — تغيّرت 2026-04) ───
+  | 'freeRecordsMaxCount'
+  | 'premiumRecordsMaxCount'
+  // ─── 🆕 الأزرار الذهبية تحت الروشتة (التداخلات + الحمل/الرضاعة) — حدود يومية ───
+  | 'freeInteractionToolDailyLimit'
+  | 'premiumInteractionToolDailyLimit'
+  | 'freePregnancyToolDailyLimit'
+  | 'premiumPregnancyToolDailyLimit'
+  // ─── 🆕 الكلى — اتنقلت لـ"حدود الميزات" 2026-04 ───
+  | 'freeRenalToolDailyLimit'
+  | 'premiumRenalToolDailyLimit'
+  // ─── 🆕 أزرار تصدير الروشتة (طباعة + تنزيل + واتساب) ───
+  | 'freePrescriptionPrintDailyLimit'
+  | 'premiumPrescriptionPrintDailyLimit'
+  | 'freePrescriptionDownloadDailyLimit'
+  | 'premiumPrescriptionDownloadDailyLimit'
+  | 'freePrescriptionWhatsappDailyLimit'
+  | 'premiumPrescriptionWhatsappDailyLimit'
   | 'freePublicBookingDailyLimit'
   | 'premiumPublicBookingDailyLimit'
   | 'freePublicFormBookingDailyLimit'
@@ -28,26 +44,45 @@ export type LimitKey =
   | 'premiumReadyPrescriptionDailyLimit'
   | 'freeMedicalReportDailyLimit'
   | 'premiumMedicalReportDailyLimit'
+  // ─── الترجمة الذكية للروشتة (Smart RX Translation) ───
+  | 'freeTranslationDailyLimit'
+  | 'premiumTranslationDailyLimit'
   | 'freeReadyPrescriptionsMaxCount'
   | 'premiumReadyPrescriptionsMaxCount'
   | 'freeMedicationCustomizationsMaxCount'
   | 'premiumMedicationCustomizationsMaxCount'
+  // ─── سعة الفروع (إعلان الطبيب) ───
+  | 'freeBranchesMaxCount'
+  | 'premiumBranchesMaxCount'
+  // ─── 🆕 سعة شركات التأمين ───
+  | 'freeInsuranceCompaniesMaxCount'
+  | 'premiumInsuranceCompaniesMaxCount'
   // ─── برو ماكس (جديد) — الأدمن يضبط قيمها لاحقاً ───
   | 'proMaxDailyLimit'
-  | 'proMaxRecordDailyLimit'
+  | 'proMaxRecordsMaxCount'
+  | 'proMaxInteractionToolDailyLimit'
+  | 'proMaxPregnancyToolDailyLimit'
+  | 'proMaxRenalToolDailyLimit'
+  | 'proMaxPrescriptionPrintDailyLimit'
+  | 'proMaxPrescriptionDownloadDailyLimit'
+  | 'proMaxPrescriptionWhatsappDailyLimit'
   | 'proMaxPublicBookingDailyLimit'
   | 'proMaxPublicFormBookingDailyLimit'
   | 'proMaxSecretaryEntryRequestDailyLimit'
   | 'proMaxReadyPrescriptionDailyLimit'
   | 'proMaxMedicalReportDailyLimit'
+  | 'proMaxTranslationDailyLimit'
   | 'proMaxReadyPrescriptionsMaxCount'
-  | 'proMaxMedicationCustomizationsMaxCount';
+  | 'proMaxMedicationCustomizationsMaxCount'
+  | 'proMaxBranchesMaxCount'
+  | 'proMaxInsuranceCompaniesMaxCount';
 
 export type MessageKey =
   | 'freeAnalysisLimitMessage'
   | 'premiumAnalysisLimitMessage'
-  | 'freeRecordLimitMessage'
-  | 'premiumRecordLimitMessage'
+  // ─── رسائل سعة السجلات الطبية ───
+  | 'freeRecordsCapacityMessage'
+  | 'premiumRecordsCapacityMessage'
   | 'freePublicBookingLimitMessage'
   | 'premiumPublicBookingLimitMessage'
   | 'freePublicFormBookingLimitMessage'
@@ -58,26 +93,60 @@ export type MessageKey =
   | 'premiumReadyPrescriptionDailyLimitMessage'
   | 'freeMedicalReportLimitMessage'
   | 'premiumMedicalReportLimitMessage'
+  // ─── الترجمة الذكية ───
+  | 'freeTranslationLimitMessage'
+  | 'premiumTranslationLimitMessage'
+  // ─── 🆕 الأزرار الذهبية تحت الروشتة (التداخلات + الحمل/الرضاعة) ───
+  | 'freeInteractionToolLimitMessage'
+  | 'premiumInteractionToolLimitMessage'
+  | 'freePregnancyToolLimitMessage'
+  | 'premiumPregnancyToolLimitMessage'
+  // ─── 🆕 الكلى ───
+  | 'freeRenalToolLimitMessage'
+  | 'premiumRenalToolLimitMessage'
+  // ─── 🆕 أزرار تصدير الروشتة ───
+  | 'freePrescriptionPrintLimitMessage'
+  | 'premiumPrescriptionPrintLimitMessage'
+  | 'freePrescriptionDownloadLimitMessage'
+  | 'premiumPrescriptionDownloadLimitMessage'
+  | 'freePrescriptionWhatsappLimitMessage'
+  | 'premiumPrescriptionWhatsappLimitMessage'
   | 'freeReadyPrescriptionsCapacityMessage'
   | 'premiumReadyPrescriptionsCapacityMessage'
   | 'freeMedicationCustomizationsCapacityMessage'
   | 'premiumMedicationCustomizationsCapacityMessage'
+  // ─── سعة الفروع ───
+  | 'freeBranchesCapacityMessage'
+  | 'premiumBranchesCapacityMessage'
+  // ─── 🆕 سعة شركات التأمين ───
+  | 'freeInsuranceCompaniesCapacityMessage'
+  | 'premiumInsuranceCompaniesCapacityMessage'
   // ─── برو ماكس ───
   | 'proMaxAnalysisLimitMessage'
-  | 'proMaxRecordLimitMessage'
+  | 'proMaxRecordsCapacityMessage'
   | 'proMaxPublicBookingLimitMessage'
   | 'proMaxPublicFormBookingLimitMessage'
   | 'proMaxSecretaryEntryRequestLimitMessage'
   | 'proMaxReadyPrescriptionDailyLimitMessage'
   | 'proMaxMedicalReportLimitMessage'
+  | 'proMaxTranslationLimitMessage'
+  | 'proMaxInteractionToolLimitMessage'
+  | 'proMaxPregnancyToolLimitMessage'
+  | 'proMaxRenalToolLimitMessage'
+  | 'proMaxPrescriptionPrintLimitMessage'
+  | 'proMaxPrescriptionDownloadLimitMessage'
+  | 'proMaxPrescriptionWhatsappLimitMessage'
   | 'proMaxReadyPrescriptionsCapacityMessage'
-  | 'proMaxMedicationCustomizationsCapacityMessage';
+  | 'proMaxMedicationCustomizationsCapacityMessage'
+  | 'proMaxBranchesCapacityMessage'
+  | 'proMaxInsuranceCompaniesCapacityMessage';
 
 export type WhatsappMessageKey =
   | 'freeAnalysisWhatsappMessage'
   | 'premiumAnalysisWhatsappMessage'
-  | 'freeRecordWhatsappMessage'
-  | 'premiumRecordWhatsappMessage'
+  // ─── رسائل واتساب سعة السجلات الطبية ───
+  | 'freeRecordsCapacityWhatsappMessage'
+  | 'premiumRecordsCapacityWhatsappMessage'
   | 'freePublicBookingWhatsappMessage'
   | 'premiumPublicBookingWhatsappMessage'
   | 'freePublicFormBookingWhatsappMessage'
@@ -88,20 +157,53 @@ export type WhatsappMessageKey =
   | 'premiumReadyPrescriptionWhatsappMessage'
   | 'freeMedicalReportWhatsappMessage'
   | 'premiumMedicalReportWhatsappMessage'
+  // ─── الترجمة الذكية ───
+  | 'freeTranslationWhatsappMessage'
+  | 'premiumTranslationWhatsappMessage'
+  // ─── 🆕 الأزرار الذهبية تحت الروشتة ───
+  | 'freeInteractionToolWhatsappMessage'
+  | 'premiumInteractionToolWhatsappMessage'
+  | 'freePregnancyToolWhatsappMessage'
+  | 'premiumPregnancyToolWhatsappMessage'
+  // ─── 🆕 الكلى ───
+  | 'freeRenalToolWhatsappMessage'
+  | 'premiumRenalToolWhatsappMessage'
+  // ─── 🆕 أزرار تصدير الروشتة (واتساب رسالة) ───
+  | 'freePrescriptionPrintWhatsappMessage'
+  | 'premiumPrescriptionPrintWhatsappMessage'
+  | 'freePrescriptionDownloadWhatsappMessage'
+  | 'premiumPrescriptionDownloadWhatsappMessage'
+  | 'freePrescriptionWhatsappWhatsappMessage'
+  | 'premiumPrescriptionWhatsappWhatsappMessage'
   | 'freeReadyPrescriptionsCapacityWhatsappMessage'
   | 'premiumReadyPrescriptionsCapacityWhatsappMessage'
   | 'freeMedicationCustomizationsCapacityWhatsappMessage'
   | 'premiumMedicationCustomizationsCapacityWhatsappMessage'
+  // ─── سعة الفروع ───
+  | 'freeBranchesCapacityWhatsappMessage'
+  | 'premiumBranchesCapacityWhatsappMessage'
+  // ─── 🆕 سعة شركات التأمين ───
+  | 'freeInsuranceCompaniesCapacityWhatsappMessage'
+  | 'premiumInsuranceCompaniesCapacityWhatsappMessage'
   // ─── برو ماكس ───
   | 'proMaxAnalysisWhatsappMessage'
-  | 'proMaxRecordWhatsappMessage'
+  | 'proMaxRecordsCapacityWhatsappMessage'
   | 'proMaxPublicBookingWhatsappMessage'
   | 'proMaxPublicFormBookingWhatsappMessage'
   | 'proMaxSecretaryEntryRequestWhatsappMessage'
   | 'proMaxReadyPrescriptionWhatsappMessage'
   | 'proMaxMedicalReportWhatsappMessage'
+  | 'proMaxTranslationWhatsappMessage'
+  | 'proMaxInteractionToolWhatsappMessage'
+  | 'proMaxPregnancyToolWhatsappMessage'
+  | 'proMaxRenalToolWhatsappMessage'
+  | 'proMaxPrescriptionPrintWhatsappMessage'
+  | 'proMaxPrescriptionDownloadWhatsappMessage'
+  | 'proMaxPrescriptionWhatsappWhatsappMessage'
   | 'proMaxReadyPrescriptionsCapacityWhatsappMessage'
-  | 'proMaxMedicationCustomizationsCapacityWhatsappMessage';
+  | 'proMaxMedicationCustomizationsCapacityWhatsappMessage'
+  | 'proMaxBranchesCapacityWhatsappMessage'
+  | 'proMaxInsuranceCompaniesCapacityWhatsappMessage';
 
 export type PlanConfig = {
   // الأسماء التجارية في الـ UI: "مجاني" / "برو" / "برو ماكس"

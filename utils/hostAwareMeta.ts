@@ -227,6 +227,3 @@ export const applyHostAwareMeta = (pathname?: string): void => {
   setMetaTag('name', 'twitter:title', meta.title);
   setMetaTag('name', 'twitter:description', meta.description);
 };
-
-// نصدّر الـhelper عشان نستخدمه لو احتجنا نفحص من برّا (مثلاً في sitemap JS)
-export { isClinicPublicPath };

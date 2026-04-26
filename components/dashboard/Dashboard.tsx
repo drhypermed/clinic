@@ -296,10 +296,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div className="dh-dashboard animate-fadeIn min-h-screen font-sans relative overflow-hidden">
-            {/* Ambient background */}
-            <div className="absolute inset-0 bg-gradient-to-bl from-slate-50 via-white to-blue-50/30 pointer-events-none" />
-            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-teal-100/20 via-blue-100/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-indigo-100/20 via-purple-50/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+            {/* خلفية بريميوم — قاعدة شبه بيضاء بـtint أزرق فاتح */}
+            <div className="absolute inset-0 bg-gradient-to-bl from-blue-50/70 via-white to-emerald-50/40 pointer-events-none" />
+            {/* دائرة أزرق متدرج (blue-only) في الزاوية العلوية */}
+            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/30 via-blue-200/15 to-transparent rounded-full blur-3xl pointer-events-none" />
+            {/* دائرة أخضر متدرج (green-only) في الزاوية السفلية — منفصلة تماماً عن الأزرق */}
+            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-emerald-300/30 via-emerald-200/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 w-full px-3 sm:px-5 lg:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
 
@@ -321,28 +323,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 ) : null}
 
                 {/* ═══════════════════════════════════════════
-                    HEADER — Glassmorphism welcome card
+                    HEADER — كرت ترحيب بخلفية صلبة (مش شفاف عشان الكلام يبان)
                 ═══════════════════════════════════════════ */}
-                <div className="dh-stagger-1 relative rounded-2xl p-4 sm:p-5 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_-4px_rgba(0,0,0,0.06)]">
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-bl from-teal-500/[0.03] via-transparent to-indigo-500/[0.03] pointer-events-none" />
+                <div className="dh-stagger-1 relative rounded-2xl p-4 sm:p-5 bg-white border border-blue-200 shadow-[0_2px_8px_rgba(37,99,235,0.08),0_8px_24px_-6px_rgba(37,99,235,0.12)]">
+                    {/* طبقة لون داخلية خفيفة جداً (decoration بس، مش بتأثر على قراءة الكلام) */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-bl from-blue-50/60 via-transparent to-blue-50/40 pointer-events-none" />
                     <div className="relative flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                            <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-800 tracking-tight leading-tight">
-                                {greeting}{displayName ? <> يا <span className="bg-gradient-to-l from-teal-700 to-teal-500 bg-clip-text text-transparent">{displayName}</span></> : ''}
+                            <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                                {/* اسم الطبيب: تدرج أزرق فقط (blue-700 → blue-500) */}
+                                {greeting}{displayName ? <> يا <span className="bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500 bg-clip-text text-transparent">{displayName}</span></> : ''}
                             </h1>
-                            <div className="flex items-center gap-2 mt-1 text-slate-400 text-[11px] sm:text-xs font-medium">
-                                <div className="flex items-center gap-1.5 bg-slate-100/80 rounded-full px-2.5 py-1">
-                                    <FaClock className="w-2.5 h-2.5 text-teal-500 shrink-0" />
-                                    <span className="font-numeric font-bold text-slate-600">{timeStr}</span>
+                            <div className="flex items-center gap-2 mt-1 text-slate-600 text-[11px] sm:text-xs font-medium">
+                                {/* بادج الوقت: خلفية صلبة (مش شفافة) */}
+                                <div className="flex items-center gap-1.5 bg-blue-100 rounded-full px-2.5 py-1 border border-blue-300">
+                                    <FaClock className="w-2.5 h-2.5 text-blue-700 shrink-0" />
+                                    <span className="font-numeric font-bold text-blue-900">{timeStr}</span>
                                 </div>
-                                <span className="text-slate-300 hidden sm:inline">|</span>
-                                <span className="hidden sm:inline text-slate-500">{dateStr}</span>
+                                <span className="text-blue-400 hidden sm:inline">|</span>
+                                <span className="hidden sm:inline text-slate-700">{dateStr}</span>
                             </div>
                         </div>
-                        {/* زر كشف جديد — ظل teal أعمق + scale خفيف على الـhover عشان يبان CTA أقوى */}
+                        {/* زر كشف جديد — أزرق متدرج (نفس عائلة الـsidebar) */}
                         <button
                             onClick={onStartNewExam}
-                            className="group flex items-center gap-2 bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 active:from-teal-800 active:to-teal-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold text-xs sm:text-sm shadow-[0_6px_20px_-4px_rgba(13,148,136,0.55),0_2px_6px_-2px_rgba(13,148,136,0.35)] hover:shadow-[0_10px_28px_-6px_rgba(13,148,136,0.65),0_4px_10px_-2px_rgba(13,148,136,0.45)] hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-100 transition-all duration-200 shrink-0"
+                            className="group flex items-center gap-2 bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500 hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 active:from-blue-900 active:via-blue-800 active:to-blue-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold text-xs sm:text-sm shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:shadow-[0_8px_22px_-4px_rgba(37,99,235,0.55)] hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-100 transition-all duration-200 shrink-0"
                         >
                             <FaPlus className="w-3 h-3 transition-transform duration-200 group-hover:rotate-90" />
                             <span className="hidden sm:inline">كشف جديد</span>
@@ -359,93 +364,96 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <NextPatientCard appointment={nextPatient} onStartExam={onStartNewExam} />
                     </div>
                 ) : totalToday > 0 ? (
-                    <div className="dh-stagger-2 bg-gradient-to-bl from-emerald-50/80 to-teal-50/80 backdrop-blur-sm border border-emerald-200/40 rounded-2xl p-5 sm:p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mx-auto mb-3 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.4)]">
+                    /* كرت "تم الانتهاء" — أخضر متدرج بخلفية صلبة (إنجاز/نجاح) */
+                    <div className="dh-stagger-2 bg-gradient-to-bl from-emerald-100 via-emerald-50 to-emerald-100 border border-emerald-300 rounded-2xl p-5 sm:p-6 text-center shadow-[0_2px_8px_-2px_rgba(5,150,105,0.2)]">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mx-auto mb-3 shadow-[0_6px_16px_-2px_rgba(5,150,105,0.5)]">
                             <FaCircleCheck className="w-6 h-6 text-white" />
                         </div>
-                        <p className="text-base sm:text-lg font-black text-emerald-800">تم الانتهاء من جميع المواعيد</p>
-                        <p className="text-xs text-emerald-600/70 font-medium mt-1">تم كشف {completedCount} {completedCount === 1 ? 'مريض' : 'مرضى'} اليوم</p>
+                        <p className="text-base sm:text-lg font-black text-emerald-900">تم الانتهاء من جميع المواعيد</p>
+                        <p className="text-xs text-emerald-800 font-medium mt-1">تم كشف {completedCount} {completedCount === 1 ? 'مريض' : 'مرضى'} اليوم</p>
                     </div>
                 ) : null}
 
                 {/* ═══════════════════════════════════════════
-                    TODAY'S PROGRESS
+                    TODAY'S PROGRESS — خلفية صلبة + بادجات صلبة (تباين عالي)
                 ═══════════════════════════════════════════ */}
-                <div className="dh-stagger-3 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_-4px_rgba(0,0,0,0.06)] p-4 sm:p-5">
+                <div className="dh-stagger-3 bg-white rounded-2xl border border-blue-200 shadow-[0_2px_8px_rgba(37,99,235,0.08),0_8px_24px_-6px_rgba(37,99,235,0.10)] p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-sm">
+                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-[0_2px_6px_-1px_rgba(37,99,235,0.4)]">
                                 <FaChartLine className="w-3 h-3 text-white" />
                             </div>
-                            <span className="text-xs sm:text-sm font-bold text-slate-700">تقدم اليوم</span>
+                            <span className="text-xs sm:text-sm font-bold text-blue-900">تقدم اليوم</span>
                         </div>
-                        <div className="bg-slate-100/80 rounded-full px-3 py-1">
-                            <span className="text-[11px] sm:text-xs font-black text-slate-700 font-numeric">{completedCount} / {totalToday}</span>
+                        {/* بادج صلب */}
+                        <div className="bg-blue-100 rounded-full px-3 py-1 border border-blue-300">
+                            <span className="text-[11px] sm:text-xs font-black text-blue-900 font-numeric">{completedCount} / {totalToday}</span>
                         </div>
                     </div>
-                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-l from-teal-400 via-teal-500 to-emerald-500 rounded-full transition-all duration-700 ease-out dh-progress-glow" style={{ width: `${progressPercent}%` }} />
+                    {/* قاعدة الشريط: صلبة (مش شفافة) */}
+                    <div className="w-full h-2.5 bg-blue-100 rounded-full overflow-hidden border border-blue-200">
+                        {/* الشريط نفسه: أخضر متدرج (إنجاز) */}
+                        <div className="h-full bg-gradient-to-l from-emerald-400 via-emerald-500 to-emerald-600 rounded-full transition-all duration-700 ease-out dh-progress-glow" style={{ width: `${progressPercent}%` }} />
                     </div>
                     <div className="flex items-center justify-between mt-3 text-[10px] sm:text-[11px] font-bold">
-                        <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-1"><FaCircleCheck className="w-2.5 h-2.5" />تم: {completedCount}</span>
-                        <span className="flex items-center gap-1.5 text-amber-600 bg-amber-50 rounded-full px-2.5 py-1"><FaHourglassHalf className="w-2.5 h-2.5" />متبقي: {pendingCount}</span>
+                        {/* بادجات صلبة (عشان الكلام يبان واضح) */}
+                        <span className="flex items-center gap-1.5 text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full px-2.5 py-1"><FaCircleCheck className="w-2.5 h-2.5" />تم: {completedCount}</span>
+                        <span className="flex items-center gap-1.5 text-amber-800 bg-amber-100 border border-amber-300 rounded-full px-2.5 py-1"><FaHourglassHalf className="w-2.5 h-2.5" />متبقي: {pendingCount}</span>
                     </div>
                 </div>
 
                 {/* ═══════════════════════════════════════════
-                    STATS GRID — Daily / Monthly / Yearly
+                    STATS GRID — اليوم/الشهر/السنة
+                    قاعدة بصرية: اليوم = أزرق متدرج فقط، الشهر = أخضر متدرج فقط،
+                    السنة = أزرق غامق premium dark (blue-only)
                 ═══════════════════════════════════════════ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
 
-                    {/* ─── TODAY ─── */}
-                    {/* اليوم: teal أعمق ومشبع (primary) — بدل 400→600 بقى 500→700 عشان feel premium */}
+                    {/* ─── TODAY — أزرق متدرج بخلفية صلبة ─── */}
                     <div className="dh-stagger-4">
                         <PeriodCard
                             icon={<FaCalendarDay />}
                             title="إحصائيات اليوم"
-                            accentFrom="from-teal-500"
-                            accentTo="to-teal-700"
-                            headerBg="bg-gradient-to-l from-teal-50 via-white to-teal-50/40"
-                            headerBorder="border-teal-100"
-                            headerIcon="text-teal-700"
-                            headerText="text-teal-900"
+                            accentFrom="from-blue-500"
+                            accentTo="to-blue-700"
+                            headerBg="bg-gradient-to-l from-blue-50 via-blue-50 to-blue-100"
+                            headerBorder="border-blue-200"
+                            headerIcon="text-blue-700"
+                            headerText="text-blue-900"
                             data={periodStats.today}
                             fmtMoney={fmtMoney}
                             labels={labels}
                         />
                     </div>
 
-                    {/* ─── THIS MONTH ─── */}
-                    {/* الشهر: لمسة ناعمة من slate مع tint خفيف (Linear/Vercel feel) */}
+                    {/* ─── THIS MONTH — أخضر متدرج بخلفية صلبة ─── */}
                     <div className="dh-stagger-5">
                         <PeriodCard
                             icon={<FaCalendar />}
                             title="إحصائيات الشهر"
-                            accentFrom="from-slate-500"
-                            accentTo="to-slate-700"
-                            headerBg="bg-gradient-to-l from-slate-50 via-white to-slate-50/40"
-                            headerBorder="border-slate-200/80"
-                            headerIcon="text-slate-700"
-                            headerText="text-slate-900"
+                            accentFrom="from-emerald-500"
+                            accentTo="to-emerald-700"
+                            headerBg="bg-gradient-to-l from-emerald-50 via-emerald-50 to-emerald-100"
+                            headerBorder="border-emerald-200"
+                            headerIcon="text-emerald-700"
+                            headerText="text-emerald-900"
                             data={periodStats.month}
                             fmtMoney={fmtMoney}
                             labels={labels}
                         />
                     </div>
 
-                    {/* ─── THIS YEAR ─── */}
-                    {/* السنة: obsidian/dark premium — الـheader كله غامق زي dashboards الـSaaS */}
-                    {/* الأيقونة teal مضيئة عشان تتباين مع الخلفية الغامقة (accent على dark) */}
+                    {/* ─── THIS YEAR — أزرق غامق premium dark ─── */}
                     <div className="dh-stagger-6 md:col-span-2 xl:col-span-1">
                         <PeriodCard
                             icon={<FaChartLine />}
                             title={`إحصائيات ${currentYear}`}
-                            accentFrom="from-slate-700"
-                            accentTo="to-slate-900"
-                            iconFrom="from-teal-400"
-                            iconTo="to-teal-600"
-                            headerBg="bg-gradient-to-l from-slate-900 via-slate-800 to-slate-900"
-                            headerBorder="border-slate-900/60"
+                            accentFrom="from-blue-800"
+                            accentTo="to-blue-950"
+                            iconFrom="from-blue-400"
+                            iconTo="to-blue-600"
+                            headerBg="bg-gradient-to-l from-blue-950 via-blue-900 to-blue-950"
+                            headerBorder="border-blue-950"
                             headerIcon="text-white"
                             headerText="text-white"
                             data={periodStats.year}
@@ -456,32 +464,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
 
                 {/* ═══════════════════════════════════════════
-                    TODAY'S SCHEDULE
+                    TODAY'S SCHEDULE — خلفية صلبة بـheader واضح
                 ═══════════════════════════════════════════ */}
-                <div className="dh-stagger-7 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_-4px_rgba(0,0,0,0.06)] overflow-hidden">
-                    <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100/80">
+                <div className="dh-stagger-7 bg-white rounded-2xl border border-blue-200 shadow-[0_2px_8px_rgba(37,99,235,0.08),0_8px_24px_-6px_rgba(37,99,235,0.10)] overflow-hidden">
+                    <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-blue-200 bg-gradient-to-l from-blue-50 via-blue-50 to-blue-100">
                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center shadow-sm">
+                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-[0_2px_6px_-1px_rgba(37,99,235,0.4)]">
                                 <FaClipboardList className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <h2 className="text-sm sm:text-base font-black text-slate-800">جدول مواعيد اليوم</h2>
+                            <h2 className="text-sm sm:text-base font-black text-blue-900">جدول مواعيد اليوم</h2>
                         </div>
                         {totalToday > 0 && (
-                            <button onClick={() => onNavigate('appointments')} className="group text-[11px] sm:text-xs text-teal-600 hover:text-teal-700 font-bold flex items-center gap-1 transition-all bg-teal-50 hover:bg-teal-100 rounded-full px-3 py-1.5">
+                            <button onClick={() => onNavigate('appointments')} className="group text-[11px] sm:text-xs text-blue-800 hover:text-blue-900 font-bold flex items-center gap-1 transition-all bg-white hover:bg-blue-100 border border-blue-300 rounded-full px-3 py-1.5">
                                 إدارة المواعيد<FaArrowLeft className="w-2.5 h-2.5 transition-transform group-hover:-translate-x-0.5" />
                             </button>
                         )}
                     </div>
                     {sortedAppointments.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-14 text-slate-300">
-                            <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
-                                <FaCalendarCheck className="w-7 h-7 text-slate-200" />
+                        <div className="flex flex-col items-center justify-center py-14">
+                            {/* الحالة الفارغة: ألوان واضحة بدل الباهت */}
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 flex items-center justify-center mb-4">
+                                <FaCalendarCheck className="w-7 h-7 text-blue-400" />
                             </div>
-                            <p className="text-sm font-bold text-slate-400">لا توجد مواعيد محجوزة اليوم</p>
-                            <p className="text-[11px] text-slate-300 mt-1">المواعيد الجديدة ستظهر هنا تلقائياً</p>
+                            <p className="text-sm font-bold text-blue-800">لا توجد مواعيد محجوزة اليوم</p>
+                            <p className="text-[11px] text-blue-600 mt-1">المواعيد الجديدة ستظهر هنا تلقائياً</p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-slate-50/80">
+                        <div className="divide-y divide-blue-100">
                             {sortedAppointments.map((appt) => (
                                 <AppointmentRow key={appt.id} appointment={appt} />
                             ))}

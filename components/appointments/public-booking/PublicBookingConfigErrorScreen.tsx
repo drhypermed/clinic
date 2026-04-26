@@ -27,7 +27,7 @@ export const PublicBookingConfigErrorScreen: React.FC<PublicBookingConfigErrorSc
   onRetry,
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 max-w-md w-full text-center space-y-4">
         {/* أيقونة تحذير بسيطة */}
         <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2">
@@ -52,7 +52,7 @@ export const PublicBookingConfigErrorScreen: React.FC<PublicBookingConfigErrorSc
           <button
             type="button"
             onClick={onReloadPage}
-            className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md transition-all active:scale-95"
+            className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition-all active:scale-95"
           >
             تحديث الصفحة
           </button>

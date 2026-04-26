@@ -15,15 +15,15 @@
 import type { PatientGender } from '../app/drug-catalog/types';
 
 /** أجزاء السن (سنوات/شهور/أيام) — نفس الشكل المستخدم في PatientRecord.age */
-export interface ComputedAgeParts {
+interface ComputedAgeParts {
     years: string;
     months: string;
     days: string;
 }
 
 /** نطاق السن اللي فيه الإناث بنسأل عن الحمل/الرضاعة (شامل الطرفين) */
-export const FERTILITY_QUESTIONS_MIN_AGE_YEARS = 18; // بداية العمر الإنجابي التقريبي
-export const FERTILITY_QUESTIONS_MAX_AGE_YEARS = 50; // نهاية العمر الإنجابي التقريبي
+const FERTILITY_QUESTIONS_MIN_AGE_YEARS = 18; // بداية العمر الإنجابي التقريبي
+const FERTILITY_QUESTIONS_MAX_AGE_YEARS = 50; // نهاية العمر الإنجابي التقريبي
 
 /** نحول الأرقام العربية إلى إنجليزية قبل الـparse (عشان الـparseInt ما يفشلش) */
 const normalizeArabicDigits = (value: string): string =>
@@ -122,7 +122,7 @@ export const advancedAgeText = (
 /**
  * حساب السن بالسنوات (رقم) من الأجزاء — لاستخدامها في قرار ظهور الحمل/الرضاعة.
  */
-export const ageYearsFromParts = (parts?: { years?: string; months?: string; days?: string }): number => {
+const ageYearsFromParts = (parts?: { years?: string; months?: string; days?: string }): number => {
     if (!parts) return 0;
     return safeParseInt(parts.years);
 };
@@ -131,7 +131,7 @@ export const ageYearsFromParts = (parts?: { years?: string; months?: string; day
  * استخراج عدد السنوات من نص السن ("30 سنة" → 30، "6 شهر" → 0).
  * نرجع 0 للشهور/الأيام لأنها أصغر من سنة (غير مهمة لقرار الحمل).
  */
-export const ageYearsFromAgeString = (ageText?: string): number => {
+const ageYearsFromAgeString = (ageText?: string): number => {
     if (!ageText || typeof ageText !== 'string') return 0;
     const normalized = normalizeArabicDigits(ageText);
     // لو نص الوحدة شهر/يوم فالمريض أقل من سنة
@@ -183,33 +183,3 @@ export const normalizeGender = (value: unknown): PatientGender | undefined => {
     return undefined;
 };
 
-/**
- * تحويل تاريخ الميلاد لنص سن قابل للعرض (مثلاً: "25 سنة" أو "8 أشهر").
- * يُستخدم لملء حقل السن تلقائياً في الفورم عند اختيار مريض قديم له تاريخ ميلاد.
- */
-export const ageStringFromDateOfBirth = (dob: string): string => {
-    if (!dob) return '';
-    const birth = new Date(dob);
-    if (!Number.isFinite(birth.getTime())) return '';
-    const now = new Date();
-    let years = now.getFullYear() - birth.getFullYear();
-    let months = now.getMonth() - birth.getMonth();
-    if (months < 0) { years -= 1; months += 12; }
-    if (years > 0) return `${years}`;
-    if (months > 0) return `0`;  // أقل من سنة — نُعيد 0 والطبيب يكمل
-    return '0';
-};
-
-/**
- * تطبيع تاريخ الميلاد من أي مصدر: يقبل YYYY-MM-DD فقط، غير ذلك undefined.
- * يُستخدم لتنقية القيم القادمة من Firestore أو إدخال المستخدم.
- */
-export const normalizeDateOfBirth = (value: unknown): string | undefined => {
-    const str = typeof value === 'string' ? value.trim() : '';
-    if (!str) return undefined;
-    // نقبل YYYY-MM-DD فقط
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return undefined;
-    const parsed = new Date(str);
-    if (!Number.isFinite(parsed.getTime())) return undefined;
-    return str;
-};

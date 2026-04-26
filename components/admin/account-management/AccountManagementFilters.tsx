@@ -37,7 +37,7 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
             placeholder="بحث بالاسم أو البريد..."
             value={filters.searchTerm}
             onChange={(e) => update('searchTerm', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           />
         </div>
 
@@ -47,7 +47,7 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
           <select
             value={filters.verificationStatus}
             onChange={(e) => update('verificationStatus', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           >
             <option value="all">الكل</option>
             <option value="approved">مقبول</option>
@@ -62,7 +62,7 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
           <select
             value={filters.specialty}
             onChange={(e) => update('specialty', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           >
             <option value="all">كل التخصصات</option>
             {specialties.map((s) => (
@@ -77,7 +77,7 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
           <select
             value={filters.subscriptionType}
             onChange={(e) => update('subscriptionType', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           >
             <option value="all">الكل</option>
             <option value="free">مجاني</option>
@@ -92,7 +92,7 @@ export const AccountManagementFilters: React.FC<AccountManagementFiltersProps> =
           <select
             value={filters.sortBy}
             onChange={(e) => update('sortBy', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           >
             <option value="recent">الأحدث</option>
             <option value="name">الاسم</option>

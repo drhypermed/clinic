@@ -29,7 +29,7 @@ export const CropperModalFrame: React.FC<CropperModalFrameProps> = ({
         <div className="p-6 space-y-4">
           {controlsContent}
           <div className="flex gap-3">
-            <button onClick={onSave} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">
+            <button onClick={onSave} className="flex-1 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition">
               💾 حفظ التصميم
             </button>
             <button onClick={onCancel} className="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200">

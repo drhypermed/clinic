@@ -89,11 +89,20 @@ export const FinancialPanel: React.FC = () => {
     const yearlyCount = canUseSummaryTotals
       ? currentYearSummary?.yearlyCount || 0
       : revenueData.reduce((sum, item) => sum + item.yearlyCount, 0);
-    // عدادات برو ماكس منفصلة — تُحسب من revenueData (المجموع الفعلي عبر الشهور)
-    const proMaxMonthlyCount = revenueData.reduce((sum, item) => sum + (item.proMaxMonthlyCount || 0), 0);
-    const proMaxSixMonthsCount = revenueData.reduce((sum, item) => sum + (item.proMaxSixMonthsCount || 0), 0);
-    const proMaxYearlyCount = revenueData.reduce((sum, item) => sum + (item.proMaxYearlyCount || 0), 0);
-    const proMaxRevenue = revenueData.reduce((sum, item) => sum + (item.proMaxRevenue || 0), 0);
+    // عدادات برو ماكس — للسنة الحالية في عرض سنوي ناخدها من الملخص (revenueData
+    // فيه أصفار عشان ما نقرأش الأطباء)؛ لأي سنة تانية ناخدها من revenueData المحسوب.
+    const proMaxMonthlyCount = canUseSummaryTotals
+      ? currentYearSummary?.proMaxMonthlyCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.proMaxMonthlyCount || 0), 0);
+    const proMaxSixMonthsCount = canUseSummaryTotals
+      ? currentYearSummary?.proMaxSixMonthsCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.proMaxSixMonthsCount || 0), 0);
+    const proMaxYearlyCount = canUseSummaryTotals
+      ? currentYearSummary?.proMaxYearlyCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.proMaxYearlyCount || 0), 0);
+    const proMaxRevenue = canUseSummaryTotals
+      ? currentYearSummary?.proMaxRevenue || 0
+      : revenueData.reduce((sum, item) => sum + (item.proMaxRevenue || 0), 0);
     const totalRevenue = canUseSummaryTotals
       ? currentYearSummary?.totalRevenue || 0
       : revenueData.reduce((sum, item) => sum + item.revenue, 0);
@@ -122,7 +131,7 @@ export const FinancialPanel: React.FC = () => {
 
   if (!isAdminUser) {
     return (
-      <div className="bg-red-900/20 border border-red-700 rounded-xl p-4 text-red-200">
+      <div className="bg-danger-900/20 border border-danger-700 rounded-xl p-4 text-danger-200">
         غير مصرح لك بالوصول إلى الإدارة المالية.
       </div>
     );
@@ -174,7 +183,7 @@ export const FinancialPanel: React.FC = () => {
 
       {/* تحذير للأدمن: بيانات اشتراك ناقصة قد تؤثر على دقة الإيراد */}
       {doctorsMissingExpiry > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-700">
+        <div className="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-xs font-bold text-warning-700">
           ⚠️ يوجد {doctorsMissingExpiry.toLocaleString('ar-EG')} طبيب Pro في سنة {selectedYear} ببيانات اشتراك ناقصة (بدون تاريخ انتهاء). تم استبعادهم من حساب الإيراد لهذه السنة. يُرجى تصحيح بياناتهم من "إدارة الأطباء".
         </div>
       )}

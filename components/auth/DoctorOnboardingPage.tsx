@@ -6,7 +6,6 @@
  * 2. حالة التحقق (Verification) - ما إذا كان الحساب مقبولاً أو مرفوضاً من الإدارة.
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { LoadingText } from '../ui/LoadingText';
 import { useNavigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from '../../hooks/useAuth';
@@ -79,24 +78,22 @@ export const DoctorOnboardingPage: React.FC = () => {
     };
   }, [user?.uid, navigate, signOut]);
 
-  return (
-    <AuthLayout>
-      <div className="w-full max-w-md text-center" dir="rtl">
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 space-y-6">
-          {checking ? (
-            <>
-              <div className="w-16 h-16 border-4 border-white/70 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-white/90 font-bold text-lg"><LoadingText>جاري التحقق</LoadingText></p>
-              <p className="text-white/70 text-sm">يرجى الانتظار</p>
-            </>
-          ) : error ? (
-            <>
-              <div className="text-3xl mb-4">❌</div>
-              <p className="text-red-200 font-bold text-lg">{error}</p>
-            </>
-          ) : null}
+  // أثناء التحقق: مفيش أي UI ظاهر — الصفحة دي مجرد جسر يُحوِّل المستخدم لمكانه فوراً
+  if (checking) return null;
+
+  // الخطأ بس هو اللي يستاهل عرض — لو حصل رفض أو حساب غير موجود
+  if (error) {
+    return (
+      <AuthLayout>
+        <div className="w-full max-w-md text-center" dir="rtl">
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 space-y-6">
+            <div className="text-3xl mb-4">❌</div>
+            <p className="text-danger-200 font-bold text-lg">{error}</p>
+          </div>
         </div>
-      </div>
-    </AuthLayout>
-  );
+      </AuthLayout>
+    );
+  }
+
+  return null;
 };

@@ -439,7 +439,6 @@ export const PrescriptionFooter: React.FC<PrescriptionFooterProps> = ({
                                         <span dir="ltr">{contact.value || contact.label}</span>
                                     </span>
                                 )}
-                                {index < activeContacts.length - 1 && <span>•</span>}
                             </React.Fragment>
                         ))}
                     </div>

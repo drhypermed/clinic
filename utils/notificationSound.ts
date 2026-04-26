@@ -156,7 +156,7 @@ export function initNotificationSoundUnlockListeners(): void {
   unlockListenersBound = true;
 }
 
-export async function resumeNotificationAudio(): Promise<boolean> {
+async function resumeNotificationAudio(): Promise<boolean> {
   const ctx = getSharedAudioContext();
   if (!ctx) return false;
 

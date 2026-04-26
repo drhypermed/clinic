@@ -126,7 +126,7 @@ export const RxList: React.FC<RxListProps> = ({
                 <AutoResizeTextarea
                   value={item.instructions}
                   onChange={(e) => onUpdateItemInstruction(idx, e.target.value)}
-                  className={`font-black text-slate-800 w-full bg-transparent outline-none border-none text-center font-cairo resize-none p-2 m-0 leading-relaxed ${item.customFontSize || 'text-[15px]'} overflow-visible focus:bg-blue-50/20 rounded`}
+                  className={`font-black text-slate-800 w-full bg-transparent outline-none border-none text-center font-cairo resize-none p-2 m-0 leading-relaxed ${item.customFontSize || 'text-[15px]'} overflow-visible focus:bg-brand-50/20 rounded`}
                   /* الإعدادات العامة للملاحظات (الحجم/اللون/الخط) تطغى على الـ default — إلا لو الملاحظة لها customFontSize خاص بها */
                   style={{
                     ...(item.customFontSize ? {} : (notePx ? { fontSize: `${notePx}px` } : {})),
@@ -139,7 +139,7 @@ export const RxList: React.FC<RxListProps> = ({
                 />
               </div>
               {!isPrintMode && (
-                <button onClick={() => onRemoveItem(idx)} className="no-print text-slate-300 hover:text-red-600 text-xl font-bold px-1 transition-colors opacity-0 group-hover:opacity-100 shrink-0">×</button>
+                <button onClick={() => onRemoveItem(idx)} className="no-print text-slate-300 hover:text-danger-600 text-xl font-bold px-1 transition-colors opacity-0 group-hover:opacity-100 shrink-0">×</button>
               )}
             </div>
           ) : (
@@ -151,7 +151,7 @@ export const RxList: React.FC<RxListProps> = ({
                     value={item.medication?.name || ''}
                     onChange={(e) => { onUpdateItemName(idx, e.target.value); setActiveSearchIdx(idx); }}
                     onFocus={() => setActiveSearchIdx(idx)}
-                    className={`font-black text-slate-900 text-left font-sans ${medNameSize} block uppercase bg-transparent outline-none border-none resize-none overflow-visible p-0 w-full focus:bg-blue-50/50 rounded`}
+                    className={`font-black text-slate-900 text-left font-sans ${medNameSize} block uppercase bg-transparent outline-none border-none resize-none overflow-visible p-0 w-full focus:bg-brand-50/50 rounded`}
                     style={{
                       lineHeight: englishStyle?.lineHeight ? `${englishStyle.lineHeight}` : 'inherit',
                       letterSpacing: englishStyle?.letterSpacing ? `${englishStyle.letterSpacing}px` : undefined,
@@ -181,7 +181,7 @@ export const RxList: React.FC<RxListProps> = ({
                   {/* قائمة الاقتراحات المنسدلة (تظهر تحت حفل الكتابة الحالي) */}
                   {!isPrintMode && activeSearchIdx === idx && (
                     <div
-                      className="absolute left-0 top-full mt-1 w-full bg-white border border-indigo-100 shadow-xl rounded-xl z-[99999] max-h-[320px] overflow-y-auto ring-2 ring-black/5"
+                      className="absolute left-0 top-full mt-1 w-full bg-white border border-brand-100 shadow-xl rounded-xl z-[99999] max-h-[320px] overflow-y-auto ring-2 ring-black/5"
                     >
                       {suggestions.length > 0 ? (
                         suggestions.map(s => {
@@ -190,19 +190,19 @@ export const RxList: React.FC<RxListProps> = ({
                             <div
                               key={s.id}
                               onMouseDown={(e) => { e.preventDefault(); onSelectMedication?.(idx, s); setActiveSearchIdx(null); }}
-                              className="px-3 py-2 hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors group/item"
+                              className="px-3 py-2 hover:bg-success-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors group/item"
                               dir="ltr"
                             >
                               <div className="flex flex-col gap-0.5">
                                 <div className="flex items-start justify-between gap-2">
-                                  <span className="font-black text-slate-800 text-[13px] group-hover/item:text-emerald-700 transition-colors leading-snug">{s.name}</span>
-                                  {s.price ? <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 shrink-0">{s.price} ج.م</span> : null}
+                                  <span className="font-black text-slate-800 text-[13px] group-hover/item:text-success-700 transition-colors leading-snug">{s.name}</span>
+                                  {s.price ? <span className="text-[10px] font-black text-success-700 bg-success-50 px-1.5 py-0.5 rounded border border-success-100 shrink-0">{s.price} ج.م</span> : null}
                                 </div>
                                 {s.genericName && <div className="text-[11px] text-slate-500 italic leading-snug">{s.genericName}</div>}
                                 {(s.form || ageLabel) && (
                                   <div className="flex flex-wrap items-center gap-1 mt-0.5">
                                     {s.form && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">{s.form}</span>}
-                                    {ageLabel && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">{ageLabel}</span>}
+                                    {ageLabel && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 border border-brand-100">{ageLabel}</span>}
                                   </div>
                                 )}
                                 {s.usage && <div className="text-[10px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{s.usage}</div>}
@@ -239,7 +239,7 @@ export const RxList: React.FC<RxListProps> = ({
                   {item.alternatives && item.alternatives.length > 0 && (
                     <button
                       onClick={() => onSetAltModal({ index: idx, alts: item.alternatives! })}
-                      className="text-blue-700 hover:text-blue-900 text-[10px] font-black px-2 py-0.5 bg-blue-100 rounded-md border border-blue-200 transition-all active:scale-95"
+                      className="text-brand-700 hover:text-brand-900 text-[10px] font-black px-2 py-0.5 bg-brand-100 rounded-md border border-brand-200 transition-all active:scale-95"
                     >
                       بدائل
                     </button>
@@ -248,7 +248,7 @@ export const RxList: React.FC<RxListProps> = ({
                   {item.medication && (
                     <button
                       onClick={() => onMedicationClick(item.medication!)}
-                      className="text-blue-500 hover:text-blue-700 p-0.5 bg-slate-50 rounded-full border border-slate-200"
+                      className="text-brand-500 hover:text-brand-700 p-0.5 bg-slate-50 rounded-full border border-slate-200"
                       title="تفاصيل الدواء"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,7 +257,7 @@ export const RxList: React.FC<RxListProps> = ({
                     </button>
                   )}
 
-                  <button onClick={() => onRemoveItem(idx)} className="text-slate-300 hover:text-red-600 text-xl font-bold px-1 transition-colors">×</button>
+                  <button onClick={() => onRemoveItem(idx)} className="text-slate-300 hover:text-danger-600 text-xl font-bold px-1 transition-colors">×</button>
                 </div>
               </div>
 
@@ -266,7 +266,7 @@ export const RxList: React.FC<RxListProps> = ({
                 <AutoResizeTextarea
                   value={item.instructions}
                   onChange={(e) => onUpdateItemInstruction(idx, e.target.value)}
-                  className={`font-bold text-slate-700 w-full bg-transparent outline-none border-none text-right font-cairo resize-none p-0 m-0 ${medInstSize} overflow-visible focus:bg-blue-50/30 rounded`}
+                  className={`font-bold text-slate-700 w-full bg-transparent outline-none border-none text-right font-cairo resize-none p-0 m-0 ${medInstSize} overflow-visible focus:bg-brand-50/30 rounded`}
                   style={{
                     lineHeight: arabicStyle?.lineHeight ? `${arabicStyle.lineHeight}` : 'inherit',
                     paddingTop: arabicStyle?.textBgPaddingTop ? `${arabicStyle.textBgPaddingTop}px` : 0,

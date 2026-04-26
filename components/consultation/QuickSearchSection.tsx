@@ -211,7 +211,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
     <section data-no-reveal className="apple-quick-search bg-white p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-slate-200 relative z-20 text-right" dir="rtl">
       <div className="flex flex-wrap justify-between items-center mb-3 sm:mb-4 gap-2">
         <h2 className="apple-quick-search__title text-base sm:text-lg font-black text-slate-900 flex items-center gap-3">
-          <span className="apple-quick-search__bar w-1.5 h-6 bg-blue-600 rounded-full"></span>
+          <span className="apple-quick-search__bar w-1.5 h-6 bg-brand-600 rounded-full"></span>
           البحث السريع عن الأدوية
         </h2>
       </div>
@@ -223,16 +223,16 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
             value={searchTerm}
             onFocus={() => setIsOpen(true)}
             onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); setSelectedMed(null); }}
-            className="apple-quick-search__input w-full p-3.5 pl-12 pr-12 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-blue-400 outline-none shadow-sm transition-all placeholder-slate-400 text-ellipsis text-right"
+            className="apple-quick-search__input w-full p-3.5 pl-12 pr-12 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-brand-400 outline-none shadow-sm transition-all placeholder-slate-400 text-ellipsis text-right"
             placeholder="ابحث باسم الدواء أو المادة الفعالة أو الاستخدام..."
             dir="rtl"
           />
-          <svg className="apple-quick-search__icon w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 group-focus-within:text-blue-600 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <svg className="apple-quick-search__icon w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 group-focus-within:text-brand-600 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 
           {searchTerm && (
             <button
               onClick={() => { setSearchTerm(''); setIsOpen(true); }}
-              className="apple-quick-search__clear absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-red-400 p-1 hover:bg-slate-100 rounded-full transition-all"
+              className="apple-quick-search__clear absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-danger-400 p-1 hover:bg-slate-100 rounded-full transition-all"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -293,12 +293,12 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
       </div>
 
       {selectedMed && (
-        <div className="apple-quick-search__result mt-4 bg-white p-5 rounded-[1.5rem] border border-emerald-200 shadow-md animate-fadeIn relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-[100%] -mr-10 -mt-10 z-0"></div>
+        <div className="apple-quick-search__result mt-4 bg-white p-5 rounded-[1.5rem] border border-success-200 shadow-md animate-fadeIn relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-success-50 rounded-bl-[100%] -mr-10 -mt-10 z-0"></div>
 
           <button
             onClick={() => setSelectedMed(null)}
-            className="apple-quick-search__dismiss absolute top-3 right-3 z-30 bg-white/80 hover:bg-red-100 text-slate-400 hover:text-red-500 p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all"
+            className="apple-quick-search__dismiss absolute top-3 right-3 z-30 bg-white/80 hover:bg-danger-100 text-slate-400 hover:text-danger-500 p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all"
             title="إلغاء"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -320,12 +320,12 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
 
               if (!isAgeEntered || !isWeightEntered) {
                 return (
-                  <div className="apple-quick-search__alert mb-4 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+                  <div className="apple-quick-search__alert mb-4 bg-warning-50 border-2 border-warning-300 rounded-2xl p-4">
                     <div className="flex items-start gap-3">
                       <div className="text-2xl">⚠️</div>
                       <div className="flex-1">
-                        <div className="font-black text-amber-800 text-sm mb-1" dir="rtl">بيانات ناقصة (الوزن أو العمر)</div>
-                        <div className="text-sm text-amber-700 font-bold leading-relaxed" dir="rtl">
+                        <div className="font-black text-warning-800 text-sm mb-1" dir="rtl">بيانات ناقصة (الوزن أو العمر)</div>
+                        <div className="text-sm text-warning-700 font-bold leading-relaxed" dir="rtl">
                           يتم اضافة الجرعه والتعليمات بواسطة الطبيب في حال عدم ادخال سن ووزن المريض
                         </div>
                       </div>
@@ -336,12 +336,12 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
 
               if (isAgeOutOfRange || isWeightOutOfRange) {
                 return (
-                  <div className="apple-quick-search__alert mb-4 bg-red-50 border-2 border-red-300 rounded-2xl p-4">
+                  <div className="apple-quick-search__alert mb-4 bg-danger-50 border-2 border-danger-300 rounded-2xl p-4">
                     <div className="flex items-start gap-3">
                       <div className="text-2xl">⚠️</div>
                       <div className="flex-1">
-                        <div className="font-black text-red-700 text-sm mb-2" dir="rtl">تحذير: هذا الدواء خارج النطاق المسموح طبياً!</div>
-                        <div className="text-xs text-red-600 font-bold space-y-1" dir="rtl">
+                        <div className="font-black text-danger-700 text-sm mb-2" dir="rtl">تحذير: هذا الدواء خارج النطاق المسموح طبياً!</div>
+                        <div className="text-xs text-danger-600 font-bold space-y-1" dir="rtl">
                           {isAgeOutOfRange && (
                             <div className="flex items-center gap-2">
                               <span>📅</span>
@@ -360,7 +360,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                               </span>
                             </div>
                           )}
-                          <div className="mt-2 text-red-800 font-black">
+                          <div className="mt-2 text-danger-800 font-black">
                             ⚕️ يُنصح باختيار دواء بديل مناسب
                           </div>
                         </div>
@@ -375,12 +375,12 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
             <div className="flex justify-between items-start mb-4 pr-8">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="apple-quick-search__med-name font-black text-xl text-emerald-900 flex items-center gap-2">
+                  <h3 className="apple-quick-search__med-name font-black text-xl text-success-900 flex items-center gap-2">
                     <span>{selectedMed.name}</span>
                   </h3>
                   <button
                     onClick={(e) => toggleFavorite(e, selectedMed.id)}
-                    className={`p-1 rounded-full transition-all ${favorites.includes(selectedMed.id) ? 'text-amber-400' : 'text-slate-200 hover:text-amber-400'}`}
+                    className={`p-1 rounded-full transition-all ${favorites.includes(selectedMed.id) ? 'text-warning-400' : 'text-slate-200 hover:text-warning-400'}`}
                   >
                     <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                   </button>
@@ -394,10 +394,10 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
             </div>
 
             <div className="space-y-3">
-              <div className="apple-quick-search__dose flex items-center gap-4 bg-emerald-600 p-4 rounded-2xl shadow-lg shadow-emerald-200/50 text-white">
+              <div className="apple-quick-search__dose flex items-center gap-4 bg-success-600 p-4 rounded-2xl shadow-lg shadow-success-200/50 text-white">
                 <div className="text-3xl">💊</div>
                 <div className="flex-1">
-                  <div className="text-[10px] uppercase text-emerald-200 font-bold tracking-wider">
+                  <div className="text-[10px] uppercase text-success-200 font-bold tracking-wider">
                     {(!weight || weight <= 0 || !totalAgeMonths || totalAgeMonths <= 0)
                       ? '⚠️ أدخل الوزن والعمر لحساب الجرعة'
                       : 'الجرعة الموصى بها'}
@@ -408,7 +408,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                       : calculateDose(selectedMed)}
                   </div>
                   {weight > 0 && totalAgeMonths > 0 && (
-                    <div className="text-[10px] text-emerald-100 font-bold mt-1">
+                    <div className="text-[10px] text-success-100 font-bold mt-1">
                       بناءً على الوزن {safeWeightDisplay(weight)} والعمر {safeAgeDisplay(totalAgeMonths)}
                     </div>
                   )}
@@ -418,7 +418,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
               <div className="apple-quick-search__info-grid grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">نقطة العمر الآمنة</span>
-                  <span className="block font-bold text-blue-700 text-sm break-words">{formatMinAge(selectedMed.minAgeMonths)}</span>
+                  <span className="block font-bold text-brand-700 text-sm break-words">{formatMinAge(selectedMed.minAgeMonths)}</span>
                 </div>
                 <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">التركيز</span>
@@ -426,7 +426,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                 </div>
                 <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">التصنيف</span>
-                  <span className="block font-bold text-emerald-700 text-sm break-words">{selectedMed.category}</span>
+                  <span className="block font-bold text-success-700 text-sm break-words">{selectedMed.category}</span>
                 </div>
                 <div className="min-w-0 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                   <span className="block text-[10px] text-slate-400 font-bold uppercase mb-1">طريقة التعاطي</span>
@@ -434,8 +434,8 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                 </div>
               </div>
 
-              <div className="apple-quick-search__usage bg-blue-50 p-3 rounded-2xl border border-blue-200 text-blue-800 text-xs font-bold leading-relaxed">
-                <span className="text-blue-700 uppercase text-[9px] block mb-1">الاستخدام / الدواعي</span>
+              <div className="apple-quick-search__usage bg-brand-50 p-3 rounded-2xl border border-brand-200 text-brand-800 text-xs font-bold leading-relaxed">
+                <span className="text-brand-700 uppercase text-[9px] block mb-1">الاستخدام / الدواعي</span>
                 {selectedMed.usage}
               </div>
 
@@ -450,7 +450,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                 {selectedMed.warnings && selectedMed.warnings.length > 0 && (
                   <div className="mt-3 space-y-1">
                     {selectedMed.warnings.map((w, i) => (
-                      <div key={i} className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-amber-800">
+                      <div key={i} className="flex items-start gap-2 bg-warning-50 border border-warning-100 rounded-xl px-3 py-2 text-warning-800">
                         <span className="text-sm">⚠️</span>
                         <span>{w}</span>
                       </div>
@@ -462,7 +462,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
               <div className="mt-4 pt-4 border-t border-slate-100">
                 <button
                   onClick={handleAddToPrescription}
-                  className="apple-quick-search__cta w-full bg-emerald-900 hover:bg-emerald-800 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 active:scale-95"
+                  className="apple-quick-search__cta w-full bg-success-900 hover:bg-success-800 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                   أضف إلى الروشتة

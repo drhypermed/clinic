@@ -21,7 +21,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-export type ModalAnimation = 'fade' | 'slideUp' | 'both' | 'none';
+type ModalAnimation = 'fade' | 'slideUp' | 'both' | 'none';
 
 interface ModalOverlayProps {
   /** هل المودال مفتوح؟ */

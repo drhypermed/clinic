@@ -9,7 +9,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LoadingText } from '../ui/LoadingText';
 import type { PatientFileData } from './patientFilesShared';
-import { insuranceService, type InsuranceCompany } from '../../services/insuranceService';
+import {
+  insuranceService,
+  resolvePatientSharePercentForBranch,
+  type InsuranceCompany,
+} from '../../services/insuranceService';
 import {
   type PatientCostItem,
   type PatientInsuranceItem,
@@ -72,6 +76,8 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
   const [insFormMembership, setInsFormMembership] = useState('');
   const [insFormApproval, setInsFormApproval] = useState('');
   const [insFormNote, setInsFormNote] = useState('');
+  // نسبة تحمل المريض % — بتتعبأ افتراضياً من الشركة، الطبيب يقدر يعدّلها
+  const [insFormSharePercent, setInsFormSharePercent] = useState('');
   const [editingInsId, setEditingInsId] = useState<string | null>(null);
 
   // حالة لوحة اختيار بنود الفاتورة
@@ -116,6 +122,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     setInsFormMembership('');
     setInsFormApproval('');
     setInsFormNote('');
+    setInsFormSharePercent('');
     setEditingInsId(null);
     setShowInvoiceSelection(false);
     resetSelections();
@@ -181,6 +188,21 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     };
   }, [isCostSectionOpen, userId, patientFile?.fileId]);
 
+  // ─── Auto-fill نسبة تحمل المريض من الشركة عند اختيارها ──────────────
+  // مفعّل فقط أثناء "إضافة" (مش "تعديل") عشان منغيّرش نسبة محفوظة قديماً
+  useEffect(() => {
+    if (editingInsId) return;
+    if (!insFormCompanyId) {
+      setInsFormSharePercent('');
+      return;
+    }
+    const company = insuranceCompanies.find((c) => c.id === insFormCompanyId);
+    if (!company) return;
+    // ناخد نسبة الفرع لو فيها override، وإلا الـ default للشركة
+    const share = resolvePatientSharePercentForBranch(company, branchId);
+    setInsFormSharePercent(String(share));
+  }, [insFormCompanyId, insuranceCompanies, branchId, editingInsId]);
+
   // ─── handlers العمليات (حفظ / حذف / بدء تعديل) ──────────────────────
   const handleSaveCost = () => {
     handleSaveCostOperation({
@@ -239,6 +261,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
       insFormMembership,
       insFormApproval,
       insFormNote,
+      insFormSharePercent,
       editingInsId,
       costItems,
       insuranceItems,
@@ -254,6 +277,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
         setInsFormMembership('');
         setInsFormApproval('');
         setInsFormNote('');
+        setInsFormSharePercent('');
         setShowAddInsurance(false);
       },
     });
@@ -283,6 +307,14 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     setInsFormMembership(item.insuranceMembershipId ?? '');
     setInsFormApproval(item.insuranceApprovalCode ?? '');
     setInsFormNote(item.note ?? '');
+    // عند التعديل: نستخدم النسبة المحفوظة، أو نسبة الشركة لو العنصر قديم بدون قيمة
+    setInsFormSharePercent(
+      typeof item.patientSharePercent === 'number'
+        ? String(item.patientSharePercent)
+        : company
+          ? String(resolvePatientSharePercentForBranch(company, branchId))
+          : '',
+    );
     setShowAddInsurance(true);
     setShowAddCost(false);
   };
@@ -296,7 +328,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
         <div className="flex items-center justify-between gap-2">
           <div>
             <div className="text-sm font-black text-white">تكاليف أخرى</div>
-            <div className="text-[11px] font-medium text-blue-100 mt-0.5">
+            <div className="text-[11px] font-medium text-brand-100 mt-0.5">
               تداخلات ودخل آخر كاش + مطالبات تأمين — تُغذِّي التقارير المالية تلقائيًا
             </div>
           </div>
@@ -316,7 +348,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
               </span>
             )}
             {insuranceItems.length > 0 && (
-              <span className="inline-flex items-center bg-violet-200/30 border border-violet-400/40 text-purple-100 rounded-full px-2.5 py-0.5 text-[11px] font-black">
+              <span className="inline-flex items-center bg-slate-200/30 border border-slate-400/40 text-slate-100 rounded-full px-2.5 py-0.5 text-[11px] font-black">
                 {insuranceItems.length} مطالبة تأمين
               </span>
             )}
@@ -332,7 +364,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
             </div>
           )}
           {costError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-black text-rose-700">
+            <div className="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-[11px] font-black text-danger-700">
               {costError}
             </div>
           )}
@@ -351,7 +383,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
                 setCostFormType('interventions');
                 setCostError(null);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-teal-700"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-brand-700"
             >
               + إضافة تكلفة كاش
             </button>
@@ -368,9 +400,10 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
                 setInsFormMembership('');
                 setInsFormApproval('');
                 setInsFormNote('');
+                setInsFormSharePercent('');
                 setCostError(null);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-violet-700"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-slate-700"
             >
               + إضافة مطالبة تأمين
             </button>
@@ -385,7 +418,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
                     resetSelections();
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-indigo-700"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-brand-700"
               >
                 {showInvoiceSelection ? 'إلغاء طباعة الفاتورة' : 'طباعة فاتورة'}
               </button>
@@ -437,6 +470,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
               insFormMembership={insFormMembership}
               insFormApproval={insFormApproval}
               insFormNote={insFormNote}
+              insFormSharePercent={insFormSharePercent}
               setInsFormCompanyId={setInsFormCompanyId}
               setInsFormDate={setInsFormDate}
               setInsFormAmount={setInsFormAmount}
@@ -444,6 +478,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
               setInsFormMembership={setInsFormMembership}
               setInsFormApproval={setInsFormApproval}
               setInsFormNote={setInsFormNote}
+              setInsFormSharePercent={setInsFormSharePercent}
               onCancel={() => {
                 setShowAddInsurance(false);
                 setEditingInsId(null);

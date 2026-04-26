@@ -14,7 +14,7 @@ interface HookArgs {
 }
 
 // نوع croppedAreaPixels من react-easy-crop (x/y/width/height بالبكسل)
-export interface CroppedAreaPixels {
+interface CroppedAreaPixels {
   x: number;
   y: number;
   width: number;

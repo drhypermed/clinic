@@ -4,7 +4,7 @@ const DOCTOR_PUSH_TOKEN_CACHE_PREFIX = 'dh_push_token_doctor_';
 const SECRETARY_PUSH_TOKEN_CACHE_PREFIX = 'dh_push_token_secretary_';
 const PUBLIC_PUSH_TOKEN_CACHE_PREFIX = 'dh_push_token_public_';
 
-export const getPushTokenCacheKey = (
+const getPushTokenCacheKey = (
   role: 'doctor' | 'secretary' | 'public',
   targetId: string
 ): string => {

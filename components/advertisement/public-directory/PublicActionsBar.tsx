@@ -164,7 +164,7 @@ export const PublicActionsBar: React.FC<PublicActionsBarProps> = ({
           <div className="mx-auto rounded-full p-[3px] bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100 w-24 h-24 shadow-lg">
             <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
               {isLoggedIn && trimmedName ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-4xl select-none">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-500 to-brand-600 text-white font-black text-4xl select-none">
                   {initialLetter}
                 </div>
               ) : (
@@ -197,7 +197,7 @@ export const PublicActionsBar: React.FC<PublicActionsBarProps> = ({
         <button
           type="button"
           onClick={() => handleNavClick(onOpenAccount)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white border border-blue-500/60 hover:brightness-105 transition-all text-sm font-bold mb-2"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white border border-brand-500/60 hover:brightness-105 transition-all text-sm font-bold mb-2"
         >
           <FaCircleUser className="w-4 h-4" />
           حسابي
@@ -213,13 +213,13 @@ export const PublicActionsBar: React.FC<PublicActionsBarProps> = ({
             onClick={() => handleNavClick(item.onClick)}
             className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
               item.isActive
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-lg'
                 : 'text-slate-600 bg-transparent hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
             <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-all ${
               item.isActive
-                ? 'bg-blue-500 text-white'
+                ? 'bg-brand-500 text-white'
                 : 'bg-slate-100 group-hover:bg-slate-200 group-hover:text-slate-700'
             }`}>
               {item.icon}
@@ -277,11 +277,11 @@ export const PublicActionsBar: React.FC<PublicActionsBarProps> = ({
           <button
             type="button"
             onClick={onOpenAccount}
-            className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500"
+            className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-brand-500 via-slate-500 to-slate-500"
           >
             <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
               {isLoggedIn && trimmedName ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-sm select-none">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-500 to-brand-600 text-white font-black text-sm select-none">
                   {initialLetter}
                 </div>
               ) : (

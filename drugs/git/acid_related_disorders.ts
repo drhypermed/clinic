@@ -2,7 +2,7 @@
 import { Medication, Category } from '../../types';
 const toAr = (n: number | string) => n.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)]);
 
-export const ACID_RELATED_DISORDERS: Medication[] = [
+const ACID_RELATED_DISORDERS: Medication[] = [
     // 1. Rani-f 20mg Sachets
     {
         id: 'rani-f-20',

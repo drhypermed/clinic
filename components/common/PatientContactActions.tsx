@@ -43,7 +43,7 @@ export const PatientContactActions: React.FC<PatientContactActionsProps> = ({
       </a>
       <a
         href={links.tel}
-        className={`${buttonClass} bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-colors`}
+        className={`${buttonClass} bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700 transition-colors`}
         title="اتصال"
         aria-label="اتصال هاتفي"
       >

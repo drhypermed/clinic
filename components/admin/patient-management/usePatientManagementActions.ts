@@ -112,10 +112,14 @@ export const usePatientManagementActions = ({
     }
   };
 
-  /** 
-   * تفعيل حساب مريض معطل 
-   * يعيد الحساب لحالة نظيفة تماماً بدون أي دور (لا جمهور ولا طبيب)
-   * بحيث يمكن للمستخدم إعادة التسجيل من جديد كجمهور أو طبيب.
+  /**
+   * تفعيل حساب مريض معطل وتصفيره لإعادة التسجيل
+   * الإجراء يتم على مرحلتين عشان يضمن إصلاح Firebase Auth + Firestore + blacklist:
+   *   1) استدعاء Cloud Function setPublicAccountDisabled({ disabled: false })
+   *      → يلغي disabled على مستوى Firebase Auth (يسمح بالدخول مرة أخرى)
+   *      → ويحدّث Firestore بـ isAccountDisabled=false + enabledBy/enabledAt
+   *   2) تصفير الأدوار من العميل: حذف authRole/userRole/role/accountType + إزالة البريد من blacklist
+   * ⚠️ قبل الإصلاح: كان يستخدم setDoc مباشرة فقط → الحساب يفضل معطل في Auth ولا يقدر المستخدم يدخل.
    */
   const handleEnableAccount = async (rawPatientId: string) => {
     if (!ensureAdminAccess()) return;
@@ -128,35 +132,43 @@ export const usePatientManagementActions = ({
 
     if (!window.confirm(
       '⚠️ تنبيه: هذا الإجراء ليس "تفعيل" عادي — سيُعيد الحساب للصفر:\n\n' +
+      '• فك تعطيل الحساب في نظام تسجيل الدخول (Firebase Auth)\n' +
       '• حذف كل الأدوار (جمهور/طبيب/...)\n' +
-      '• إزالة علامة التعطيل\n' +
       '• إزالة البريد من قائمة حظر الجمهور\n\n' +
       'المستخدم سيحتاج لإعادة التسجيل من جديد.\n\n' +
       'هل أنت متأكد؟'
     )) return;
 
     try {
+      // تجديد التوكن لضمان تمرير claim الأدمن للـ Cloud Function
+      if (auth.currentUser) await auth.currentUser.getIdToken(true);
+
+      // المرحلة 1: فك التعطيل عبر Cloud Function (يصلح Firebase Auth + Firestore ذرياً)
+      const setDisabled = httpsCallable(functions, 'setPublicAccountDisabled');
+      await setDisabled({ userId: patientId, disabled: false });
+
+      // المرحلة 2: تصفير الأدوار + إزالة البريد من blacklist (للسماح بإعادة تسجيل بنفس البريد)
       const identity = await resolvePublicUserIdentity(patientId);
       const now = new Date().toISOString();
-      
-      // إزالة كافة حقول الدور والتعطيل من مجموعة users
-      // ملاحظة: لا نستخدم buildWritePayload هنا لأنها تعيد إضافة authRole: 'public'
+
+      // مسح الحقول التي تربط الحساب بدور "جمهور" أو "طبيب" حتى يبدأ من الصفر
       await setDoc(doc(db, 'users', patientId), {
         authRole: deleteField(),
         userRole: deleteField(),
         role: deleteField(),
         accountType: deleteField(),
-        isAccountDisabled: deleteField(),
-        disabledReason: deleteField(),
-        disabledAt: deleteField(),
         verificationStatus: deleteField(),
         deletedAt: deleteField(),
         updatedAt: now,
       }, { merge: true });
 
-      // إزالة البريد من القائمة السوداء للجمهور إذا كان موجوداً
+      // إزالة البريد من القائمة السوداء للجمهور إن كان موجوداً (الـ rules تسمح للأدمن)
       if (identity.email) {
-        await deleteDoc(doc(db, 'publicBlacklistedEmails', identity.email));
+        try {
+          await deleteDoc(doc(db, 'publicBlacklistedEmails', identity.email));
+        } catch {
+          // ليس فشلاً قاتلاً — البريد ربما لم يكن في القائمة أصلاً
+        }
       }
 
       // إزالة المريض من القائمة المعروضة فوراً (لأنه لم يعد "جمهور")

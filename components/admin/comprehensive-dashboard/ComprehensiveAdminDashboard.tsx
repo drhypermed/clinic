@@ -18,8 +18,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DoctorVerificationPanel } from '../doctor-verification/DoctorVerificationPanel';
-import { BlacklistManagementPanel } from '../blacklist-management/BlacklistManagementPanel';
-import { DisabledAccountsPanel } from '../disabled-accounts/DisabledAccountsPanel';
 import { ReportsSection } from './ReportsSection';
 import { PatientManagementPanel } from '../patient-management/PatientManagementPanel';
 import { PublicBlacklistManagementPanel } from '../public-blacklist/PublicBlacklistManagementPanel';
@@ -32,13 +30,14 @@ import { AccountTypeControlsPanel } from '../account-type-controls/AccountTypeCo
 import { UpdateBroadcastManagementPanel } from '../update-broadcast/UpdateBroadcastManagementPanel';
 import { ExternalNotificationBroadcastPanel } from '../external-notification-broadcast/ExternalNotificationBroadcastPanel';
 import { InternalNotificationBroadcastPanel } from '../internal-notification-broadcast/InternalNotificationBroadcastPanel';
+import { RestrictedAccountsPanel } from './RestrictedAccountsPanel';
 import { usePendingDoctorsCount } from '../../../hooks/usePendingDoctorsCount';
 import { ADMIN_EMAIL } from '../../../app/drug-catalog/admin';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
 import { DashboardSidebar } from './DashboardSidebar';
 import { OverviewSection } from './OverviewSection';
 import { SettingsSection } from './SettingsSection';
-import { NAV_ITEMS } from './constants';
+import { NAV_GROUPS, NAV_ITEMS } from './constants';
 import { AdminDashboardProps } from '../../../types';
 import { normalizeEmail } from '../../../services/auth-service/validation';
 import type { AdminView } from './types';
@@ -49,14 +48,14 @@ const VIEW_META: Record<AdminView, { title: string }> = {
   overview: { title: 'نظرة تشغيلية شاملة' },
   verification: { title: 'تحقق الأطباء' },
   patients: { title: 'إدارة الجمهور' },
+  publicBlacklist: { title: 'حظر الجمهور' },
   accounts: { title: 'إدارة الأطباء' },
   accountTypesControl: { title: 'التحكم في أنواع الحساب' },
   financial: { title: 'الإدارة المالية' },
-  blacklist: { title: 'قائمة حظر الأطباء' },
-  disabledAccounts: { title: 'الحسابات المعطّلة' },
+  // ─ يضم: حظر الأطباء + الأطباء المعطّلين فقط (حظر الجمهور اتنقل لقسمه)
+  restrictedAccounts: { title: 'الحسابات المقيدة' },
   externalNotifications: { title: 'بث الإشعارات' },
   updateBroadcasts: { title: 'تحديثات التطبيق' },
-  publicBlacklist: { title: 'حظر الجمهور' },
   reports: { title: 'التقارير والإحصاءات' },
   homeBanner: { title: 'بانرات الصفحة الرئيسية' },
   prescriptionFooterLine: { title: 'سطر أسفل الروشتة' },
@@ -173,14 +172,15 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
       overview: stats.totalDoctors + stats.totalPatients,
       verification: effectivePendingDoctorsCount,
       patients: stats.totalPatients,
+      // ─ حظر الجمهور بقى عداده مستقل (تحت قسم "إدارة الجمهور")
+      publicBlacklist: stats.publicBlacklisted,
       accounts: stats.totalDoctors,
       accountTypesControl: stats.activeSubscriptions,
       financial: stats.activeSubscriptions,
-      blacklist: stats.doctorBlacklisted,
-      disabledAccounts: 0,
+      // ─ المقيدين = حظر أطباء + معطّلين فقط (حظر الجمهور انفصل)
+      restrictedAccounts: stats.doctorBlacklisted,
       externalNotifications: 0,
       updateBroadcasts: 0,
-      publicBlacklist: stats.publicBlacklisted,
       reports: stats.totalDoctors,
       homeBanner: stats.homeBannerItems,
       prescriptionFooterLine: stats.footerContacts,
@@ -213,6 +213,7 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
         return <AdminViewShell view="verification"><DoctorVerificationPanel /></AdminViewShell>;
       case 'patients':
         return <AdminViewShell view="patients"><PatientManagementPanel currentView="patients" /></AdminViewShell>;
+      // ─ حظر الجمهور — view منفصل تحت "إدارة الجمهور" (نُقل من RestrictedAccountsPanel)
       case 'publicBlacklist':
         return (
           <AdminViewShell view="publicBlacklist">
@@ -225,10 +226,13 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
         return <AdminViewShell view="accountTypesControl"><AccountTypeControlsPanel /></AdminViewShell>;
       case 'financial':
         return <AdminViewShell view="financial"><FinancialPanel /></AdminViewShell>;
-      case 'blacklist':
-        return <AdminViewShell view="blacklist"><BlacklistManagementPanel /></AdminViewShell>;
-      case 'disabledAccounts':
-        return <AdminViewShell view="disabledAccounts"><DisabledAccountsPanel /></AdminViewShell>;
+      // ─ view موحد جديد يجمع 3 panels قديمة في tabs (blacklist + disabled + publicBlacklist)
+      case 'restrictedAccounts':
+        return (
+          <AdminViewShell view="restrictedAccounts">
+            <RestrictedAccountsPanel isAdminUser={isAdminUser} adminEmail={user?.email} />
+          </AdminViewShell>
+        );
       case 'externalNotifications':
         return (
           <AdminViewShell view="externalNotifications">
@@ -292,9 +296,9 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
   return (
     <div className="admin-modern-scope relative min-h-screen overflow-hidden bg-[#f3f7fb]" dir="rtl">
       <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute -top-24 right-[-8rem] h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl" />
-        <div className="absolute left-[-10rem] top-1/3 h-96 w-96 rounded-full bg-blue-200/35 blur-3xl" />
-        <div className="absolute bottom-[-8rem] right-1/4 h-72 w-72 rounded-full bg-emerald-200/35 blur-3xl" />
+        <div className="absolute -top-24 right-[-8rem] h-72 w-72 rounded-full bg-brand-300/30 blur-3xl" />
+        <div className="absolute left-[-10rem] top-1/3 h-96 w-96 rounded-full bg-brand-200/35 blur-3xl" />
+        <div className="absolute bottom-[-8rem] right-1/4 h-72 w-72 rounded-full bg-success-200/35 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex min-h-screen w-full flex-col lg:flex-row">
@@ -311,14 +315,14 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
           <div className="min-w-0 flex-1 text-right">
             <p className="truncate text-sm font-bold text-slate-900">{VIEW_META[currentView].title}</p>
           </div>
-          <span className="inline-flex min-w-[2rem] items-center justify-center rounded-full bg-amber-100 px-2 py-1 text-xs font-black text-amber-700">
+          <span className="inline-flex min-w-[2rem] items-center justify-center rounded-full bg-warning-100 px-2 py-1 text-xs font-black text-warning-700">
             {effectivePendingDoctorsCount > 99 ? '99+' : effectivePendingDoctorsCount}
           </span>
         </div>
 
         <div className="admin-modern-layout flex min-h-0 flex-1">
           <DashboardSidebar
-            navItems={NAV_ITEMS}
+            navGroups={NAV_GROUPS}
             currentView={currentView}
             sidebarOpen={sidebarOpen}
             viewCounts={viewCounts}
@@ -330,7 +334,7 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
 
           <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-2 py-2 sm:px-3 sm:py-3 lg:px-5 pt-14 lg:pt-2 pb-3 sm:pb-4 mx-auto w-full max-w-[1780px] lg:mr-72">
             {!isAdminUser && (
-              <div className="mb-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-700">
+              <div className="mb-6 rounded-2xl border border-danger-300 bg-danger-50 p-4 text-danger-700">
                 غير مصرح لك بالوصول الكامل إلى لوحة الإدارة.
               </div>
             )}

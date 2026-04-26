@@ -16,12 +16,7 @@
 
 // Constants + types
 export {
-    SECRETARY_VITAL_FIELDS,
-    SECRETARY_VITAL_KEYS,
-    SECRETARY_VITAL_NOTIFICATION_PREFIX,
     toSecretaryCustomFieldId,
-    toSecretaryVitalFieldId,
-    type SecretaryVitalFieldMeta,
 } from './constants';
 
 // Helpers (public APIs only)
@@ -43,7 +38,6 @@ export {
 // Visibility
 export {
     buildSecretaryVisibilityByFieldDefinitions,
-    getEnabledSecretaryVitalKeys,
     isSecretaryFieldEnabled,
     isSecretaryVitalEnabled,
     normalizeSecretaryVitalsVisibility,
@@ -53,12 +47,10 @@ export {
 export {
     sanitizeSecretaryVitalsInput,
     toSecretaryVitalsEntries,
-    type SecretaryVitalEntry,
 } from './inputSanitizer';
 
 // Vital configs + notification helpers
 export {
     extractSecretaryVitalsFromNotificationData,
-    getSecretaryVitalNotificationKey,
     toSecretaryVitalSignConfigs,
 } from './vitalConfigs';

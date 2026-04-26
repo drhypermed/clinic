@@ -45,14 +45,14 @@ export const DoctorAdSocialLinksSection: React.FC<DoctorAdSocialLinksSectionProp
             <input
               value={item.url}
               onChange={(event) => onSocialUrlChange(item.id, event.target.value)}
-              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
               placeholder="https://..."
               dir="ltr"
             />
             <button
               type="button"
               onClick={() => onSocialRemove(item.id)}
-              className="px-3 py-2.5 rounded-xl bg-red-50 text-red-700 border border-red-200 font-bold text-xs hover:bg-red-100 transition-colors"
+              className="px-3 py-2.5 rounded-xl bg-danger-50 text-danger-700 border border-danger-200 font-bold text-xs hover:bg-danger-100 transition-colors"
             >
               حذف
             </button>
@@ -61,7 +61,7 @@ export const DoctorAdSocialLinksSection: React.FC<DoctorAdSocialLinksSectionProp
         <button
           type="button"
           onClick={onSocialAdd}
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
         >
           <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

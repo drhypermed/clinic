@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * خيارات إنشاء Hook النسخ للحافظة.
  */
-export interface UseCopyFeedbackOptions {
+interface UseCopyFeedbackOptions {
   /** المدة (بالميللي ثانية) التي يبقى خلالها `copied=true` قبل أن يرجع `false`. الافتراضي 2000. */
   resetMs?: number;
 }
@@ -11,7 +11,7 @@ export interface UseCopyFeedbackOptions {
 /**
  * خيارات استدعاء واحد لعملية النسخ.
  */
-export interface CopyOptions {
+interface CopyOptions {
   /**
    * يُستدعى إن فشل `navigator.clipboard.writeText` (مثلاً المتصفح حجب النسخ).
    * إن لم يُمرَّر، يُبتلع الخطأ بصمت كما كانت تفعل معظم نقاط الاستدعاء الأصلية.

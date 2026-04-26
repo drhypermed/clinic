@@ -14,7 +14,7 @@ export const highlight = (text: string, term: string) => {
     return (
         <>
             {parts.map((part, i) => part.toLowerCase() === term.toLowerCase()
-                ? <mark key={i} className="bg-yellow-200 rounded px-0.5">{part}</mark>
+                ? <mark key={i} className="bg-warning-200 rounded px-0.5">{part}</mark>
                 : <React.Fragment key={i}>{part}</React.Fragment>)}
         </>
     );

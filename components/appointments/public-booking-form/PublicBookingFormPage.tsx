@@ -314,7 +314,7 @@ export const PublicBookingFormPage: React.FC = () => {
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-50 flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-2xl space-y-4">
           <BookingSuccessCard
             clinicName={config?.title}
@@ -329,7 +329,7 @@ export const PublicBookingFormPage: React.FC = () => {
             <button
               type="button"
               onClick={handleGotoDirectory}
-              className="flex-1 h-12 rounded-xl border-2 border-blue-400 bg-white text-blue-800 font-black text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-xl border-2 border-brand-400 bg-white text-brand-800 font-black text-sm hover:bg-brand-50 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -343,7 +343,7 @@ export const PublicBookingFormPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-50 py-8 px-4" dir="rtl">
       <div className="max-w-xl mx-auto">
         <AppUpdateBroadcastBanner
           audience="public"

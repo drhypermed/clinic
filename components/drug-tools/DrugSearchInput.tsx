@@ -95,7 +95,7 @@ export const DrugSearchInput: React.FC<DrugSearchInputProps> = ({
         onChange={handleChange}
         onFocus={() => { if (filteredMeds.length > 0) setIsOpen(true); }}
         onKeyDown={handleKeyDown}
-        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
         placeholder={placeholder}
         dir="rtl"
       />

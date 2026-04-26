@@ -9,7 +9,7 @@ interface Props {
 }
 
 const subFieldClass =
-  'w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors';
+  'w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 transition-colors';
 
 export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onChange }) => {
   const conditions = dosageConditions || [];
@@ -36,7 +36,7 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-success-50 text-success-600 shrink-0">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
             </svg>
@@ -48,7 +48,7 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
         <button
           type="button"
           onClick={addCondition}
-          className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors active:scale-[0.98] shrink-0"
+          className="flex items-center gap-1 bg-success-600 hover:bg-success-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors active:scale-[0.98] shrink-0"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -62,14 +62,14 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
           conditions.map((condition, idx) => (
             <div key={idx} className="p-3 sm:p-4 bg-slate-50 rounded-xl border border-slate-200">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-success-700 bg-success-50 border border-success-100 px-2 py-0.5 rounded-full">
                   الجرعة #{idx + 1}
                 </span>
                 <button
                   type="button"
                   onClick={() => removeCondition(idx)}
                   aria-label="حذف الجرعة"
-                  className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors active:scale-90"
+                  className="text-slate-400 hover:text-danger-600 hover:bg-danger-50 p-1.5 rounded-lg transition-colors active:scale-90"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -115,7 +115,7 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
                     <select
                       value={condition.ageUnit || 'months'}
                       onChange={(e) => updateCondition(idx, { ageUnit: e.target.value as 'days' | 'months' | 'years' })}
-                      className="text-[10px] font-bold bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="text-[10px] font-bold bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-success-500"
                     >
                       <option value="days">أيام</option>
                       <option value="months">شهور</option>
@@ -175,7 +175,7 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
                   value={condition.text || ''}
                   onChange={(e) => updateCondition(idx, { text: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none leading-relaxed transition-colors"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-none leading-relaxed transition-colors"
                   placeholder="مثال: ملعقة صغيرة 5 مل ثلاث مرات يومياً"
                 />
               </div>

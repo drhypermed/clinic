@@ -252,8 +252,8 @@ export const PublicBookingPage: React.FC = () => {
         />
         {pushEnableSuccessMessage && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[10030] w-[min(94vw,30rem)]" dir="rtl">
-            <div className="rounded-2xl border border-emerald-200 bg-white shadow-[0_24px_50px_-28px_rgba(2,6,23,0.8)] px-4 py-3 text-center">
-              <p className="text-emerald-700 font-black text-sm">{pushEnableSuccessMessage}</p>
+            <div className="rounded-2xl border border-success-200 bg-white shadow-[0_24px_50px_-28px_rgba(2,6,23,0.8)] px-4 py-3 text-center">
+              <p className="text-success-700 font-black text-sm">{pushEnableSuccessMessage}</p>
             </div>
           </div>
         )}
@@ -278,7 +278,7 @@ export const PublicBookingPage: React.FC = () => {
         {/* رسالة نجاح — في الأعلى بخلفية خضراء ونص أبيض ليكون واضحاً */}
         {success && (
           <div className="fixed top-4 left-4 right-4 z-[1200] flex justify-center pointer-events-none px-4" dir="rtl">
-            <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-green-700 bg-green-600 shadow-2xl p-4 text-center animate-fadeIn">
+            <div className="pointer-events-auto w-full max-w-sm rounded-2xl border border-success-700 bg-success-600 shadow-2xl p-4 text-center animate-fadeIn">
               <div className="flex items-center justify-center gap-2">
                 <span className="inline-flex w-8 h-8 items-center justify-center rounded-full bg-white/20 shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

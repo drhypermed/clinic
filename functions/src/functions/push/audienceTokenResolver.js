@@ -7,7 +7,6 @@ const ROLE_TOKEN_COLLECTIONS = Object.freeze({
   secretary: 'secretaryFcmTokens',
 });
 
-const ALL_ROLE_KEYS = Object.freeze(['doctor', 'secretary', 'public']);
 const QUERY_PAGE_SIZE = 300;
 const DOCTOR_SEGMENT_AUDIENCES = Object.freeze([
   'doctors_premium_active',
@@ -221,16 +220,25 @@ module.exports = (context) => {
     );
   };
 
-  const resolveDoctorSegmentUserIds = async (normalizedAudience) => {
-    if (!DOCTOR_SEGMENT_AUDIENCES.includes(normalizedAudience)) return [];
+  /**
+   * يقرأ شريحة الأطباء (premium نشط/مجاني/منتهي) ويستخرج الـ tokens مباشرة
+   * من نفس قراءة المستندات. النسخة السابقة كانت تقرأ كل طبيب مرتين (مرة للفلتر،
+   * مرة لجلب الـ tokens). دلوقتي قراءة واحدة فقط.
+   */
+  const resolveDoctorSegmentUserIdsAndTokens = async (normalizedAudience) => {
+    if (!DOCTOR_SEGMENT_AUDIENCES.includes(normalizedAudience)) {
+      return { userIds: [], tokens: [] };
+    }
 
     const db = getDb();
-    const doctorDataById = new Map();
     const nowMs = Date.now();
     const accountTypeFilter =
       normalizedAudience === 'doctors_premium_active' ? 'premium' : 'free';
 
+    const matchedUserIds = [];
+    const tokenSet = new Set();
     let lastDoc = null;
+
     while (true) {
       let doctorsQuery = db
         .collection('users')
@@ -249,54 +257,35 @@ module.exports = (context) => {
       snapshot.docs.forEach((docSnap) => {
         const userId = normalizeText(docSnap.id);
         if (!userId) return;
-        doctorDataById.set(userId, docSnap.data() || {});
+        const data = docSnap.data() || {};
+
+        // استبعاد الحسابات المعطّلة بالشريحة كمان — تماشياً مع منطق collectUsersRoleTokens.
+        if (data.isAccountDisabled === true) return;
+
+        const matches =
+          normalizedAudience === 'doctors_premium_active'
+            ? isProActiveDoctor(data, nowMs)
+            : normalizedAudience === 'doctors_free_never_premium'
+              ? isFreeNeverProDoctor(data)
+              : isFreeExpiredProDoctor(data, nowMs);
+
+        if (!matches) return;
+
+        matchedUserIds.push(userId);
+        getFcmTokensFromDoc(data).forEach((token) => {
+          const normalized = normalizeText(token);
+          if (normalized) tokenSet.add(normalized);
+        });
       });
 
       lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
       if (snapshot.size < QUERY_PAGE_SIZE) break;
     }
 
-    return Array.from(doctorDataById.entries())
-      .filter(([, data]) => {
-        if (normalizedAudience === 'doctors_premium_active') {
-          return isProActiveDoctor(data, nowMs);
-        }
-
-        if (normalizedAudience === 'doctors_free_never_premium') {
-          return isFreeNeverProDoctor(data);
-        }
-
-        return isFreeExpiredProDoctor(data, nowMs);
-      })
-      .map(([userId]) => userId);
-  };
-
-  const collectDoctorRoleTokensForUserIds = async (doctorUserIds) => {
-    const normalizedIds = Array.isArray(doctorUserIds)
-      ? doctorUserIds.map((id) => normalizeText(id)).filter(Boolean)
-      : [];
-    if (normalizedIds.length === 0) return [];
-
-    const db = getDb();
-    const tokenSet = new Set();
-    const chunkSize = 40;
-
-    for (let index = 0; index < normalizedIds.length; index += chunkSize) {
-      const batchIds = normalizedIds.slice(index, index + chunkSize);
-      const batchSnapshots = await Promise.all(
-        batchIds.map((userId) => db.doc(`users/${userId}`).get().catch(() => null))
-      );
-
-      batchSnapshots.forEach((docSnap) => {
-        if (!docSnap?.exists) return;
-        getFcmTokensFromDoc(docSnap.data()).forEach((token) => {
-          const normalized = normalizeText(token);
-          if (normalized) tokenSet.add(normalized);
-        });
-      });
-    }
-
-    return Array.from(tokenSet);
+    return {
+      userIds: matchedUserIds,
+      tokens: Array.from(tokenSet),
+    };
   };
 
   const resolveCustomModeInclusions = (customEmailRoleMode) => {
@@ -458,6 +447,17 @@ module.exports = (context) => {
     };
   };
 
+  /**
+   * يجمع الـ tokens المستهدفة لفئة جمهور معينة.
+   *
+   * تصميم التكلفة: يقرأ فقط مجموعات الأدوار المستهدفة. النسخة السابقة كانت
+   * تقرأ المجموعات الثلاث (أطباء + سكرتارية + جمهور) لكل بث للتحقق من تداخل
+   * الـ tokens — مكلفة جداً مع آلاف المستخدمين بدون فائدة عملية: نفس الجهاز
+   * يكون له token فريد لكل دور تقريباً، والحالات النادرة من التداخل غير مبررة
+   * مقابل تكلفة قراءة كل المستخدمين في كل بث.
+   *
+   * dedup الحالي يحدث عبر Set داخل tokens المستهدفة فقط.
+   */
   const collectTokensByAudience = async ({ targetAudience, targetEmail, customEmailRoleMode }) => {
     const normalizedAudience = normalizeAudience(targetAudience || 'all');
 
@@ -466,66 +466,37 @@ module.exports = (context) => {
     }
 
     if (DOCTOR_SEGMENT_AUDIENCES.includes(normalizedAudience)) {
-      const doctorUserIds = await resolveDoctorSegmentUserIds(normalizedAudience);
-      const doctorSegmentTokens = await collectDoctorRoleTokensForUserIds(doctorUserIds);
-
-      const [secretaryRoleTokens, publicRoleTokens] = await Promise.all([
-        collectRoleTokens('secretary'),
-        collectRoleTokens('public'),
-      ]);
-
-      const secretaryTokenSet = new Set(secretaryRoleTokens.map((token) => normalizeText(token)).filter(Boolean));
-      const publicTokenSet = new Set(publicRoleTokens.map((token) => normalizeText(token)).filter(Boolean));
-
-      const targetTokenCandidates = new Set(
-        doctorSegmentTokens.map((token) => normalizeText(token)).filter(Boolean)
-      );
-
-      const tokens = Array.from(targetTokenCandidates).filter((token) =>
-        !secretaryTokenSet.has(token) && !publicTokenSet.has(token)
-      );
-
+      const { userIds, tokens } = await resolveDoctorSegmentUserIdsAndTokens(normalizedAudience);
       return {
         mode: 'audience',
         customEmailRoleMode: 'all_linked',
         normalizedTargetEmail: '',
         roleKeys: ['doctor'],
         tokens,
-        excludedDueToOverlapCount: Math.max(0, targetTokenCandidates.size - tokens.length),
-        candidateUserIds: doctorUserIds,
+        excludedDueToOverlapCount: 0,
+        candidateUserIds: userIds,
       };
     }
 
     const roleKeys = resolveAudienceRoleKeys(normalizedAudience);
+    const tokenSet = new Set();
 
-    const tokensByRole = {
-      doctor: new Set(),
-      secretary: new Set(),
-      public: new Set(),
-    };
-
-    for (const roleKey of ALL_ROLE_KEYS) {
+    // قراءة الأدوار المستهدفة فقط، وdedup داخلي عبر Set.
+    for (const roleKey of roleKeys) {
       const roleTokens = await collectRoleTokens(roleKey);
-      roleTokens.forEach((token) => tokensByRole[roleKey].add(token));
+      roleTokens.forEach((token) => {
+        const normalized = normalizeText(token);
+        if (normalized) tokenSet.add(normalized);
+      });
     }
-
-    const targetTokenCandidates = new Set();
-    roleKeys.forEach((roleKey) => {
-      tokensByRole[roleKey].forEach((token) => targetTokenCandidates.add(token));
-    });
-
-    const excludedRoleKeys = ALL_ROLE_KEYS.filter((roleKey) => !roleKeys.includes(roleKey));
-    const tokens = Array.from(targetTokenCandidates).filter((token) =>
-      excludedRoleKeys.every((roleKey) => !tokensByRole[roleKey].has(token))
-    );
 
     return {
       mode: 'audience',
       customEmailRoleMode: 'all_linked',
       normalizedTargetEmail: '',
       roleKeys,
-      tokens,
-      excludedDueToOverlapCount: Math.max(0, targetTokenCandidates.size - tokens.length),
+      tokens: Array.from(tokenSet),
+      excludedDueToOverlapCount: 0,
       candidateUserIds: [],
     };
   };

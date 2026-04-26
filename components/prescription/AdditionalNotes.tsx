@@ -119,14 +119,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       {showLabsSection && (
         <div className="w-full" dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
           <div className="w-full text-right flex items-center gap-1.5 mb-0">
-            <span className={`text-red-900 font-black ${labSize}`} style={titleStyle}>فحوصات مطلوبة :</span>
+            <span className={`text-danger-900 font-black ${labSize}`} style={titleStyle}>فحوصات مطلوبة :</span>
           </div>
 
           <div className="pr-1" style={{ display: 'flex', flexDirection: 'column', gap: '0px', minHeight: 'auto' }}>
             {displayLabs.map((lab, i) => (
               /* min-height ثابت لكل صف يضمن تطابق ارتفاع التحرير (textarea) والطباعة (div) — يمنع ضيق المسافة في الطباعة */
               <div key={i} className="flex items-start gap-2 group overflow-visible" style={{ minHeight: effectiveRowMinHeight }}>
-                <span className={`text-red-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
+                <span className={`text-danger-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
 
                 {/* بنية موحّدة بين التحرير والطباعة: نفس الـ container ونفس className.
                     في التحرير يرسم AutoResizeTextarea كـ textarea (قابل للكتابة).
@@ -152,7 +152,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 </div>
 
                 {!isPrintMode ? (
-                  <button onClick={() => onRemoveLab?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-red-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
+                  <button onClick={() => onRemoveLab?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-danger-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
                 ) : (
                   /* spacer فاضي بعرض زر المسح ليحفظ نفس مساحة التحرير في الطباعة (بدون أي نص ظاهر) */
                   <span className="shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'inline-block' }} />
@@ -167,14 +167,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       {showAdviceSection && (
         <div className="w-full" dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
           <div className="flex items-center gap-1.5 mb-1.5 h-auto">
-            <span className={`text-red-900 font-black ${labSize}`} style={titleStyle}>تعليمات هامة :</span>
+            <span className={`text-danger-900 font-black ${labSize}`} style={titleStyle}>تعليمات هامة :</span>
           </div>
 
           <div className="pr-1" style={{ display: 'flex', flexDirection: 'column', gap: '0px', minHeight: 'auto' }}>
             {displayAdvice.map((advice, i) => (
               /* min-height ثابت لكل صف يضمن تطابق ارتفاع التحرير (textarea) والطباعة (div) — يمنع ضيق المسافة في الطباعة */
               <div key={i} className="flex items-start gap-2 group overflow-visible" style={{ minHeight: effectiveRowMinHeight }}>
-                <span className={`text-emerald-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
+                <span className={`text-success-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
                 <div className="flex-1 min-w-0">
                   <AutoResizeTextarea
                     value={advice}
@@ -187,7 +187,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   />
                 </div>
                 {!isPrintMode ? (
-                  <button onClick={() => onRemoveAdvice?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-red-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
+                  <button onClick={() => onRemoveAdvice?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-danger-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
                 ) : (
                   /* spacer فاضي بعرض زر المسح ليحفظ نفس مساحة التحرير في الطباعة (بدون أي نص ظاهر) */
                   <span className="shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'inline-block' }} />

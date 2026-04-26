@@ -51,7 +51,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
       isOpen={openSection === 'footerLogo'}
       onToggle={() => toggle('footerLogo')}
       color="indigo"
-      className="flex items-start gap-4 p-4 bg-indigo-50/30"
+      className="flex items-start gap-4 p-4 bg-brand-50/30"
     >
       <div className="flex-1 space-y-4">
         {/* قسم رفع وتحميل صورة الشعار */}
@@ -68,14 +68,14 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
           // زر اختيار الملف في حالة عدم وجود شعار مسبق
           <button
             onClick={() => document.getElementById('footerLogoInput')?.click()}
-            className="w-full py-4 border-2 border-dashed border-indigo-300 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition-all flex flex-col items-center gap-2 text-indigo-500 hover:text-indigo-600"
+            className="w-full py-4 border-2 border-dashed border-brand-300 rounded-xl hover:border-brand-400 hover:bg-brand-50 transition-all flex flex-col items-center gap-2 text-brand-500 hover:text-brand-600"
           >
             <span className="text-2xl">📂</span>
             <span className="font-bold">اختر صورة شعار الفوتر</span>
           </button>
         )}
         {footer.logoBase64 && (
-          <div className="mt-4 pt-4 border-t-2 border-dashed border-indigo-200">
+          <div className="mt-4 pt-4 border-t-2 border-dashed border-brand-200">
             <h3 className="font-bold text-slate-700 mb-3 text-sm">أبعاد ومكان اللوجو</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
@@ -86,7 +86,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
                   max="300"
                   value={footer.logoWidth ?? 80}
                   onChange={e => updateFooter({ logoWidth: parseInt(e.target.value, 10) })}
-                  className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
               <div>
@@ -97,7 +97,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
                   max="100"
                   value={100 - (footer.logoPosX ?? 10)}
                   onChange={e => updateFooter({ logoPosX: 100 - parseInt(e.target.value, 10) })}
-                  className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
               <div>
@@ -108,7 +108,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
                   max="100"
                   value={footer.logoPosY ?? 50}
                   onChange={e => updateFooter({ logoPosY: parseInt(e.target.value, 10) })}
-                  className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
               <div>
@@ -119,7 +119,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
                   max="100"
                   value={Math.round((footer.logoOpacity ?? 1) * 100)}
                   onChange={e => updateFooter({ logoOpacity: parseInt(e.target.value, 10) / 100 })}
-                  className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             </div>
@@ -135,13 +135,13 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => document.getElementById('footerLogoInput')?.click()}
-              className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded hover:bg-indigo-100 transition-colors"
+              className="px-3 py-1 bg-brand-50 text-brand-600 text-xs font-bold rounded hover:bg-brand-100 transition-colors"
             >
               تغيير
             </button>
             <button
               onClick={() => updateFooter({ logoBase64: undefined })}
-              className="px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded hover:bg-red-100 transition-colors"
+              className="px-3 py-1 bg-danger-50 text-danger-600 text-xs font-bold rounded hover:bg-danger-100 transition-colors"
             >
               حذف
             </button>

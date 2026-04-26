@@ -59,8 +59,8 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
         };
 
         const headBg = isExam
-          ? 'bg-gradient-to-br from-blue-900 via-blue-600 to-cyan-700'
-          : 'bg-gradient-to-br from-green-900 via-green-600 to-emerald-700';
+          ? 'bg-gradient-to-br from-brand-900 via-brand-600 to-brand-700'
+          : 'bg-gradient-to-br from-success-900 via-success-600 to-success-700';
 
         return (
           <div key={visit.visitId} className="dh-patient-shell rounded-2xl border overflow-hidden">
@@ -79,22 +79,22 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
                     {paymentLabel}
                   </span>
                   {rec.paymentType === 'discount' && discountReasonSummary && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-100 border border-amber-300/30 text-[11px] font-medium">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-warning-400/20 text-warning-100 border border-warning-300/30 text-[11px] font-medium">
                       سبب الخصم: {discountReasonSummary}
                     </span>
                   )}
                   {!isExam && visit.sourceExamDate && (
-                    <span className="inline-flex items-center text-[11px] font-bold text-green-100 bg-white/10 border border-white/20 rounded-lg px-2 py-0.5">
+                    <span className="inline-flex items-center text-[11px] font-bold text-success-100 bg-white/10 border border-white/20 rounded-lg px-2 py-0.5">
                       مرتبطة بكشف يوم {formatPatientFileDateLabel(visit.sourceExamDate)}
                     </span>
                   )}
                   {isExam && visit.linkedConsultationDates && visit.linkedConsultationDates.length > 0 && (
-                    <span className="inline-flex items-center text-[11px] font-bold text-blue-100 bg-white/10 border border-white/20 rounded-lg px-2 py-0.5">
+                    <span className="inline-flex items-center text-[11px] font-bold text-brand-100 bg-white/10 border border-white/20 rounded-lg px-2 py-0.5">
                       {visit.linkedConsultationDates.length === 1 ? 'له استشارة' : `له ${visit.linkedConsultationDates.length} استشارات`}
                     </span>
                   )}
                 </div>
-                <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${isExpanded ? 'bg-white text-blue-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
+                <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${isExpanded ? 'bg-white text-brand-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
                   {isExpanded ? 'طي' : 'عرض'}
                   <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -110,7 +110,7 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
                     <button
                       type="button"
                       onClick={() => onEditExamVisit(rec)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                     >
                       تعديل الكشف
                     </button>
@@ -119,7 +119,7 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
                     <button
                       type="button"
                       onClick={() => onEditConsultationVisit(rec)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                     >
                       تعديل الاستشارة
                     </button>

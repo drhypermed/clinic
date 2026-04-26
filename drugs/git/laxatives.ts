@@ -1478,5 +1478,4 @@ const LAXATIVE_MEDS_RAW: Medication[] = [
 ];
 
 export const LAXATIVE_MEDS: Medication[] = LAXATIVE_MEDS_RAW.map(sanitizeMedication);
-export default LAXATIVE_MEDS;
 

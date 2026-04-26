@@ -24,7 +24,7 @@ import type { CaseAnalysisResult } from './geminiCaseAnalysisService';
 // ─── الإدخالات اللي بنعمل hash عليها ─────────────────────────────────────
 // أي تغيير في أي حقل من دول = كاش جديد (عشان ما نعرضش نتيجة قديمة على بيانات
 // المريض جديدة). النوع/الحمل/الرضاعة مهمين جداً للسلامة.
-export interface CaseAnalysisCacheKeyInput {
+interface CaseAnalysisCacheKeyInput {
   complaint: string;
   medicalHistory: string;
   examination: string;

@@ -36,10 +36,10 @@ export const getSourceLabel = (source?: 'clinic' | 'secretary' | 'public') => {
  * - الجمهور: أخضر — حجز إلكتروني خارجي
  */
 export const getSourceBadgeStyle = (source?: 'clinic' | 'secretary' | 'public'): string => {
-  if (source === 'clinic') return 'bg-blue-100 text-blue-700 border-blue-200';
-  if (source === 'public') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+  if (source === 'clinic') return 'bg-brand-100 text-brand-700 border-brand-200';
+  if (source === 'public') return 'bg-success-100 text-success-700 border-success-200';
   // secretary (و undefined fallback)
-  return 'bg-violet-100 text-violet-700 border-violet-200';
+  return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
 /** يرجع emoji icon قصير للتمييز البصري السريع. */

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { disableNetwork, enableNetwork, waitForPendingWrites } from 'firebase/firestore';
+import { waitForPendingWrites } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
 export type SyncState = 'online' | 'offline' | 'syncing';
@@ -53,6 +53,3 @@ export const useOnlineStatus = (): SyncState => {
   if (isSyncing) return 'syncing';
   return 'online';
 };
-
-export const goOffline = () => disableNetwork(db).catch(() => {});
-export const goOnline = () => enableNetwork(db).catch(() => {});

@@ -107,11 +107,11 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
   if (bioItems.length === 0 && selectedDoctor.bio) bioItems.push({ label: 'نبذة', value: sanitizeBioForDisplay(selectedDoctor.bio), accent: 'slate' });
 
   const accentMap: Record<string, string> = {
-    indigo: 'border-indigo-200 bg-indigo-50/60 text-indigo-900',
-    cyan: 'border-cyan-200 bg-cyan-50/60 text-cyan-900',
-    emerald: 'border-emerald-200 bg-emerald-50/60 text-emerald-900',
-    sky: 'border-sky-200 bg-sky-50/60 text-sky-900',
-    amber: 'border-amber-200 bg-amber-50/60 text-amber-900',
+    indigo: 'border-brand-200 bg-brand-50/60 text-brand-900',
+    cyan: 'border-brand-200 bg-brand-50/60 text-brand-900',
+    emerald: 'border-success-200 bg-success-50/60 text-success-900',
+    sky: 'border-brand-200 bg-brand-50/60 text-brand-900',
+    amber: 'border-warning-200 bg-warning-50/60 text-warning-900',
     slate: 'border-slate-200 bg-slate-50/60 text-slate-900',
   };
 
@@ -132,9 +132,9 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
         dir="rtl"
       >
         {/* Sticky Header — اتوحّدت ألوانه بـblue/indigo مع باقي واجهة الجمهور */}
-        <div className="relative shrink-0 border-b border-slate-200 bg-gradient-to-l from-blue-50 via-indigo-50/80 to-white">
-          <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-200/40 blur-3xl" />
-          <div className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="relative shrink-0 border-b border-slate-200 bg-gradient-to-l from-brand-50 via-brand-50/80 to-white">
+          <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-brand-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full bg-brand-200/30 blur-3xl" />
 
           <button
             type="button"
@@ -152,7 +152,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             <button
               type="button"
               onClick={() => { if (avatarImage) onPreviewAvatar(avatarImage); }}
-              className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 overflow-hidden shadow-lg ring-2 ring-blue-200"
+              className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 overflow-hidden shadow-lg ring-2 ring-brand-200"
               title="عرض الصورة بالحجم الكامل"
             >
               {avatarImage ? (
@@ -173,7 +173,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
 
             <div className="flex-1 min-w-0">
               <h3 className="text-lg md:text-2xl font-black text-slate-900 leading-tight truncate">{selectedDoctor.doctorName}</h3>
-              <p className="text-xs md:text-sm font-black text-blue-700 mt-0.5 truncate">{selectedDoctor.doctorSpecialty || 'بدون تخصص'}</p>
+              <p className="text-xs md:text-sm font-black text-brand-700 mt-0.5 truncate">{selectedDoctor.doctorSpecialty || 'بدون تخصص'}</p>
               <p className="text-[11px] md:text-xs font-bold text-slate-600 mt-0.5 truncate">📍 {locationText}</p>
 
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -181,7 +181,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => onOpenDoctorReviews(selectedDoctor)}
-                    className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-black text-amber-800 hover:bg-amber-100 transition-colors"
+                    className="inline-flex items-center gap-1 rounded-full bg-warning-50 border border-warning-200 px-2 py-0.5 text-[11px] font-black text-warning-800 hover:bg-warning-100 transition-colors"
                   >
                     ⭐ {selectedDoctorRatingStats.average.toFixed(1)} ({selectedDoctorRatingStats.count})
                   </button>
@@ -189,7 +189,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
                   <span className="text-[11px] font-bold text-slate-400">بدون تقييمات</span>
                 )}
                 {selectedDoctor.yearsExperience != null && selectedDoctor.yearsExperience > 0 && (
-                  <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 text-[11px] font-black px-2 py-0.5">
+                  <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 text-brand-700 text-[11px] font-black px-2 py-0.5">
                     خبرة {selectedDoctor.yearsExperience} سنة
                   </span>
                 )}
@@ -203,7 +203,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             {callPhone && (
               <a
                 href={`tel:${callPhone}`}
-                className="h-11 px-3 rounded-xl border border-sky-200 bg-sky-50 text-sky-800 font-black text-sm inline-flex items-center gap-1.5 hover:bg-sky-100 transition-colors"
+                className="h-11 px-3 rounded-xl border border-brand-200 bg-brand-50 text-brand-800 font-black text-sm inline-flex items-center gap-1.5 hover:bg-brand-100 transition-colors"
               >
                 📞 اتصال
               </a>
@@ -213,7 +213,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
                 href={`https://wa.me/${whatsappPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-11 px-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 font-black text-sm inline-flex items-center gap-1.5 hover:bg-emerald-100 transition-colors"
+                className="h-11 px-3 rounded-xl border border-success-200 bg-success-50 text-success-800 font-black text-sm inline-flex items-center gap-1.5 hover:bg-success-100 transition-colors"
               >
                 <FaWhatsapp className="w-4 h-4" /> واتساب
               </a>
@@ -221,7 +221,7 @@ export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="h-11 px-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-black text-sm hover:bg-blue-100 transition-colors"
+              className="h-11 px-3 rounded-xl border border-brand-200 bg-brand-50 text-brand-700 font-black text-sm hover:bg-brand-100 transition-colors"
               title="نسخ الرابط"
             >
               {linkCopied ? '✓' : '↗'}

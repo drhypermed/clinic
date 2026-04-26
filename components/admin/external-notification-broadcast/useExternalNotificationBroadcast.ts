@@ -33,7 +33,7 @@ import {
 } from './constants';
 
 /** نوع نتيجة الـ feedback للمكون (success/error/info لتحديد الألوان). */
-export type BroadcastFeedbackType = 'success' | 'error' | 'info';
+type BroadcastFeedbackType = 'success' | 'error' | 'info';
 
 export const useExternalNotificationBroadcast = (isAdminUser: boolean) => {
   // ── حالة نموذج الإرسال ──

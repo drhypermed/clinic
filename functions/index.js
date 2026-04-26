@@ -245,6 +245,15 @@ exports.consumeSmartPrescriptionQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS
 exports.consumeStorageQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeStorageQuota'));
 exports.consumeBookingQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeBookingQuota'));
 exports.consumeDrugToolQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeDrugToolQuota'));
+// ─── الترجمة الذكية للروشتة — وظيفة جديدة بتعد الترجمة وتقفلها لما توصل لحد الأدمن ───
+exports.consumeTranslationQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeTranslationQuota'));
+// ─── فحص سعة السجلات على السيرفر — تشديد أمني 2026-04 ───
+exports.validateRecordsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateRecordsCapacity'));
+// ─── فحص سعة الروشتات الجاهزة + الأدوية المعدّلة على السيرفر — تشديد أمني 2026-04 ───
+exports.validateReadyPrescriptionsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateReadyPrescriptionsCapacity'));
+exports.validateMedicationCustomizationsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateMedicationCustomizationsCapacity'));
+// ─── 🆕 فحص سعة شركات التأمين 2026-04 ───
+exports.validateInsuranceCompaniesCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateInsuranceCompaniesCapacity'));
 
 // --- Subscription Functions ---
 exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredProSubscriptions'));

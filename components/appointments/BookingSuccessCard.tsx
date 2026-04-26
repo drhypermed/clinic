@@ -100,7 +100,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
         <div className="relative px-6 pt-10 pb-12 text-center" style={{ backgroundColor: theme.primary }}>
           <div className="flex flex-col items-center justify-center relative z-10">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg bg-white transform rotate-3">
-              <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-8 h-8 text-warning-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -138,8 +138,8 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
 
             {/* بيانات المريض */}
             <div className="flex items-center p-4 rounded-2xl border bg-slate-50 border-slate-200">
-              <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-blue-100">
-                <svg className="w-6 h-6 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-brand-100">
+                <svg className="w-6 h-6 text-brand-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -150,9 +150,9 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
             </div>
 
             {/* موعد الزيارة */}
-            <div className="flex items-center p-4 rounded-2xl border border-amber-200 bg-amber-50">
-              <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-amber-100">
-                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex items-center p-4 rounded-2xl border border-warning-200 bg-warning-50">
+              <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-warning-100">
+                <svg className="w-6 h-6 text-warning-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -160,20 +160,20 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
                 <p className="text-xs font-bold mb-1 opacity-70">موعد الزيارة</p>
                 <div className="flex gap-2 items-center">
                   <span className="text-lg font-bold">{formattedDate}</span>
-                  <span className="text-xl font-black text-amber-800" dir="ltr">{formattedTime}</span>
+                  <span className="text-xl font-black text-warning-800" dir="ltr">{formattedTime}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* تنبيه الحضور */}
-          <div className="p-4 rounded-xl text-center mb-6 bg-rose-50 border border-rose-100">
-            <p className="text-sm font-bold text-rose-700 m-0">يرجى الحضور قبل الموعد بـ 10 دقائق</p>
+          <div className="p-4 rounded-xl text-center mb-6 bg-danger-50 border border-danger-100">
+            <p className="text-sm font-bold text-danger-700 m-0">يرجى الحضور قبل الموعد بـ 10 دقائق</p>
           </div>
 
           <div className="text-center space-y-1">
             <p className="text-xs font-bold opacity-60">شكراً لاستخدامكم نظام الحجز الالكتروني</p>
-            <p className="text-sm font-bold text-amber-800">مع تمنياتنا لكم بالشفاء العاجل</p>
+            <p className="text-sm font-bold text-warning-800">مع تمنياتنا لكم بالشفاء العاجل</p>
           </div>
         </div>
 
@@ -189,11 +189,11 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
         <button
           onClick={handleSaveImage}
           disabled={saving}
-          className="w-full py-4 rounded-xl font-bold text-white shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 bg-gradient-to-br from-blue-900 to-slate-900"
+          className="w-full py-4 rounded-xl font-bold text-white shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 bg-gradient-to-br from-brand-900 to-slate-900"
         >
           {saving ? 'جاري الحفظ' : (
             <>
-              <svg className="w-5 h-5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              <svg className="w-5 h-5 text-brand-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               <span>حفظ صورة الحجز</span>
             </>
           )}

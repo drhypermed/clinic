@@ -103,7 +103,7 @@ export const DisabledAccountsPanel: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">حسابات الأطباء الموقوفة مؤقتاً (قابلة لإعادة التفعيل)</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-warning-100 text-warning-800">
             {items.length} معطّل
           </span>
           <button
@@ -115,12 +115,12 @@ export const DisabledAccountsPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-xs font-bold text-emerald-800">
+      <div className="rounded-xl border border-success-200 bg-success-50/70 px-4 py-3 text-xs font-bold text-success-800">
         🛡️ التعطيل يُنفَّذ على Firebase Auth مباشرة: الطبيب المعطّل لا يستطيع الدخول ولا استخدام أي token قديم — حماية كاملة غير قابلة للاختراق.
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-bold">
+        <div className="p-3 bg-danger-50 border border-danger-200 rounded-lg text-danger-700 text-sm font-bold">
           {error}
         </div>
       )}
@@ -161,7 +161,7 @@ export const DisabledAccountsPanel: React.FC = () => {
                       <span className="text-slate-800 font-semibold">{item.doctorName || '-'}</span>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded font-mono">
+                      <span className="text-xs bg-warning-100 text-warning-800 px-2 py-1 rounded font-mono">
                         {item.doctorEmail || '-'}
                       </span>
                     </td>
@@ -188,7 +188,7 @@ export const DisabledAccountsPanel: React.FC = () => {
                       <button
                         onClick={() => handleEnable(item.id, item.doctorName)}
                         disabled={enablingId === item.id}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-success-600 text-white hover:bg-success-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {enablingId === item.id ? (
                           <LoadingText>جاري التفعيل</LoadingText>
@@ -210,12 +210,12 @@ export const DisabledAccountsPanel: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm truncate">{item.doctorName || 'بدون اسم'}</p>
-                    <p className="text-xs text-amber-700 font-mono mt-0.5 break-all">{item.doctorEmail}</p>
+                    <p className="text-xs text-warning-700 font-mono mt-0.5 break-all">{item.doctorEmail}</p>
                   </div>
                   <button
                     onClick={() => handleEnable(item.id, item.doctorName)}
                     disabled={enablingId === item.id}
-                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50"
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-success-600 text-white hover:bg-success-700 transition disabled:opacity-50"
                   >
                     {enablingId === item.id ? '...' : '🔓 تفعيل'}
                   </button>

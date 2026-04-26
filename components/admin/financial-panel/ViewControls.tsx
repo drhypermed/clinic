@@ -32,7 +32,7 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
         <select
           value={selectedYear}
           onChange={(e) => onChangeSelectedYear(parseInt(e.target.value, 10))}
-          className="px-3 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 focus:border-blue-400 focus:outline-none text-sm font-bold"
+          className="px-3 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 focus:border-brand-400 focus:outline-none text-sm font-bold"
         >
           {availableYears.map((year) => (
             <option key={year} value={year}>
@@ -47,7 +47,7 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
           onClick={() => onChangeViewMode('monthly')}
           className={`px-4 py-2 text-sm font-bold rounded-lg transition ${
             viewMode === 'monthly'
-              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm shadow-blue-200/60'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-sm shadow-brand-200/60'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
@@ -57,7 +57,7 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
           onClick={() => onChangeViewMode('yearly')}
           className={`px-4 py-2 text-sm font-bold rounded-lg transition ${
             viewMode === 'yearly'
-              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm shadow-blue-200/60'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-sm shadow-brand-200/60'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >

@@ -24,6 +24,9 @@ import {
 import { getDocCacheFirst, getDocsCacheFirst } from './firestore/cacheFirst';
 import { getBookingSecretByUserId } from './firestore/booking-secretary/secretConfig.secret';
 import type { PaymentType } from '../types';
+// ─ تشديد أمني 2026-04: فحص حد شركات التأمين على السيرفر قبل أي إنشاء جديد ─
+import { validateInsuranceCompaniesCapacity } from './accountTypeControlsService';
+import { isQuotaLimitExceededError } from './account-type-controls/quotaErrors';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // أنواع البيانات | Data Types
@@ -345,6 +348,22 @@ export const insuranceService = {
 
     const companyId = company.id || doc(getCompaniesRef(userId)).id;
     const docRef = doc(getCompaniesRef(userId), companyId);
+
+    // ─ تشديد أمني 2026-04: فحص حد شركات التأمين على السيرفر قبل الحفظ ─
+    // السيرفر بيتأكد من companyId — لو موجود (تعديل) → سماح. لو جديد → فحص الحد.
+    // لو الحد انتهى، السيرفر بيرمي error بكل التفاصيل (resource-exhausted).
+    try {
+      await validateInsuranceCompaniesCapacity({ companyId });
+    } catch (capacityError: unknown) {
+      if (isQuotaLimitExceededError(capacityError)) {
+        // الـerror فيه code='resource-exhausted' + details (limitReachedMessage + whatsappUrl)
+        // — بنخليها تنتشر للـcaller عشان يفتح المودال
+        throw capacityError;
+      }
+      // أي خطأ تاني (شبكة/auth) → نرمي error ونمنع الحفظ (تشديد أمني)
+      console.error('Insurance companies capacity check failed:', capacityError);
+      throw new Error('تعذّر التحقق من حد شركات التأمين. تأكد من اتصال الإنترنت وحاول مرة أخرى.');
+    }
 
     // تنظيف خريطة per-branch: نتجاهل القيم غير الصالحة ونـ clamp الباقي بين 0-100
     const rawOverrides = company.patientSharePercentByBranch;

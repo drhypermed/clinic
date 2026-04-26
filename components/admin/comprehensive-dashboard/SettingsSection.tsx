@@ -40,8 +40,8 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
-              <svg className="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+              <svg className="w-3.5 h-3.5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -61,8 +61,8 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
 
         <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 border border-amber-100">
-              <svg className="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-warning-50 border border-warning-100">
+              <svg className="w-3.5 h-3.5 text-warning-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -88,14 +88,14 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       <section className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-50 border border-cyan-100">
-              <svg className="w-3.5 h-3.5 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 border border-brand-100">
+              <svg className="w-3.5 h-3.5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <h3 className="text-sm font-black text-slate-900 sm:text-base">إدارة المسؤولين</h3>
           </div>
-          <span className="rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1 text-[11px] font-bold text-cyan-700">
+          <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">
             صلاحيات كاملة
           </span>
         </div>
@@ -107,14 +107,21 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
             type="email"
             value={newAdminEmail}
             onChange={(e) => onChangeNewAdminEmail(e.target.value)}
-            placeholder="أدخل بريد الأدمن الجديد"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none transition"
+            // Enter في الـ input يستدعي الإضافة مباشرة (UX) — مع حماية من الضغط أثناء التحميل
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !adminActionLoading && canManageAdmins) {
+                e.preventDefault();
+                onAddAdmin();
+              }
+            }}
+            placeholder="أدخل بريد الأدمن الجديد ثم اضغط Enter أو زر الإضافة"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none transition"
             disabled={!canManageAdmins}
           />
           <button
             onClick={onAddAdmin}
             disabled={adminActionLoading || !canManageAdmins}
-            className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-black text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl border border-success-200 bg-success-50 px-4 py-2.5 text-sm font-black text-success-700 transition hover:bg-success-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             إضافة أدمن
           </button>
@@ -146,7 +153,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
                   <button
                     onClick={() => onRemoveAdmin(admin.email)}
                     disabled={adminActionLoading || !canManageAdmins}
-                    className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-black text-danger-600 transition hover:bg-danger-100 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     حذف الأدمن
                   </button>

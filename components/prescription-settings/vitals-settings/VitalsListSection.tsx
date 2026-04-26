@@ -25,7 +25,7 @@ export const VitalsListSection: React.FC<VitalsListSectionProps> = ({
           <div
             key={vital.key}
             className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
-              vital.enabled ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200'
+              vital.enabled ? 'bg-brand-50 border-brand-200' : 'bg-slate-50 border-slate-200'
             }`}
           >
             {/* خانة الاختيار لتفعيل أو تعطيل العلامة الحيوية */}
@@ -33,7 +33,7 @@ export const VitalsListSection: React.FC<VitalsListSectionProps> = ({
               type="checkbox"
               checked={vital.enabled}
               onChange={(e) => updateVital(vital.key, { enabled: e.target.checked })}
-              className="w-5 h-5 rounded accent-blue-600"
+              className="w-5 h-5 rounded accent-brand-600"
             />
             <div className="flex-1 grid grid-cols-3 gap-2">
               <input

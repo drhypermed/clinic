@@ -58,7 +58,7 @@ export const PastRecordDatePickerModal: React.FC<PastRecordDatePickerModalProps>
                         value={state.selectedDate}
                         max={todayStr}
                         onChange={(e) => onStateChange({ ...state, selectedDate: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none text-slate-800 font-medium text-sm"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none text-slate-800 font-medium text-sm"
                     />
                     <div className="flex gap-2.5">
                         <button
@@ -71,7 +71,7 @@ export const PastRecordDatePickerModal: React.FC<PastRecordDatePickerModalProps>
                                 }
                                 reset();
                             }}
-                            className="flex-1 px-4 py-3 rounded-xl text-white font-black bg-gradient-to-r from-blue-600 to-blue-700 shadow-sm hover:shadow-md transition-all"
+                            className="flex-1 px-4 py-3 rounded-xl text-white font-black bg-gradient-to-r from-brand-600 to-brand-700 shadow-sm hover:shadow-md transition-all"
                         >
                             تأكيد
                         </button>

@@ -71,14 +71,14 @@ export const ExternalBroadcastRecordCard: React.FC<ExternalBroadcastRecordCardPr
         <button
           onClick={() => onResend(record)}
           disabled={isResendingThis || sending || isDeletingThis}
-          className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white text-xs font-black"
+          className="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white text-xs font-black"
         >
           {isResendingThis ? 'جارٍ إعادة الإرسال' : 'إعادة إرسال'}
         </button>
         <button
           onClick={() => onDelete(record)}
           disabled={isDeletingThis || sending || isResendingThis || record.status === 'sending'}
-          className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-black"
+          className="px-3 py-1.5 rounded-lg bg-danger-600 hover:bg-danger-700 disabled:opacity-60 text-white text-xs font-black"
         >
           {isDeletingThis ? 'جارٍ الحذف' : '🗑️ حذف نهائي'}
         </button>
@@ -93,16 +93,16 @@ export const ExternalBroadcastRecordCard: React.FC<ExternalBroadcastRecordCardPr
         <div className="rounded-lg bg-slate-700/70 border border-slate-500 px-3 py-2 text-slate-100">
           الأجهزة المستهدفة: <span className="font-black">{record.tokenCount}</span>
         </div>
-        <div className="rounded-lg bg-emerald-900/25 border border-emerald-500 px-3 py-2 text-emerald-200">
+        <div className="rounded-lg bg-success-900/25 border border-success-500 px-3 py-2 text-success-200">
           نجح: <span className="font-black">{record.successCount}</span>
         </div>
-        <div className="rounded-lg bg-red-900/25 border border-red-500 px-3 py-2 text-red-200">
+        <div className="rounded-lg bg-danger-900/25 border border-danger-500 px-3 py-2 text-danger-200">
           فشل: <span className="font-black">{record.failureCount}</span>
         </div>
-        <div className="rounded-lg bg-amber-900/25 border border-amber-500 px-3 py-2 text-amber-200">
+        <div className="rounded-lg bg-warning-900/25 border border-warning-500 px-3 py-2 text-warning-200">
           دفعات فاشلة: <span className="font-black">{record.failedBatchesCount}</span>
         </div>
-        <div className="rounded-lg bg-purple-900/25 border border-purple-500 px-3 py-2 text-purple-200 sm:col-span-2 lg:col-span-4">
+        <div className="rounded-lg bg-slate-900/25 border border-slate-500 px-3 py-2 text-slate-200 sm:col-span-2 lg:col-span-4">
           تم استبعاد بسبب تداخل فئات: <span className="font-black">{record.excludedDueToOverlapCount}</span>
         </div>
       </div>

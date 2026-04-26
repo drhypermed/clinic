@@ -40,7 +40,7 @@ export const ProfileImageCropperOverlay: React.FC<ProfileImageCropperOverlayProp
                 className="bg-white rounded-3xl w-full max-w-md overflow-hidden flex flex-col h-[80vh]"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between z-10">
+                <div className="bg-gradient-to-r from-brand-600 to-slate-600 text-white px-6 py-4 flex items-center justify-between z-10">
                     <h3 className="text-xl font-black">قص الصورة</h3>
                     <button
                         onClick={onCancel}
@@ -77,14 +77,14 @@ export const ProfileImageCropperOverlay: React.FC<ProfileImageCropperOverlayProp
                             step={0.1}
                             aria-labelledby="Zoom"
                             onChange={(e) => onZoomChange(Number(e.target.value))}
-                            className="flex-1 accent-blue-600"
+                            className="flex-1 accent-brand-600"
                         />
                         <span className="text-xs font-bold text-slate-500">تكبير</span>
                     </div>
                     <div className="flex gap-3">
                         <button
                             onClick={() => void onConfirm()}
-                            className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-black hover:shadow-lg transition-all"
+                            className="flex-1 bg-gradient-to-r from-brand-600 to-slate-600 text-white px-4 py-3 rounded-xl font-black hover:shadow-lg transition-all"
                         >
                             اعتماد الصورة
                         </button>

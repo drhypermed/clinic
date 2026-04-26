@@ -84,6 +84,17 @@ const countFooterContacts = (raw: RawDoc): number => {
   ).length;
 };
 
+// أسماء ميزات الـAI الـ6 — لازم تطابق الـbackend (dashboardAggregationFunctions.js)
+const AI_FEATURE_CAMEL_NAMES = [
+  'caseAnalysis',
+  'translation',
+  'drugInteractions',
+  'pregnancySafety',
+  'renalDose',
+  'medicalReport',
+] as const;
+const TIER_LABELS = ['Free', 'Pro', 'ProMax'] as const;
+
 const mergeSummaryMetrics = (baseStats: DashboardStats, summaryRaw: RawDoc): DashboardStats => {
   const merged = { ...baseStats };
 
@@ -96,6 +107,43 @@ const mergeSummaryMetrics = (baseStats: DashboardStats, summaryRaw: RawDoc): Das
   merged.totalRevenue = asNumber(summaryRaw?.totalRevenue);
   merged.totalExpenses = asNumber(summaryRaw?.totalExpenses);
   merged.netProfit = asNumber(summaryRaw?.netProfit || merged.totalRevenue - merged.totalExpenses);
+
+  // ─ قراءة عدادات الـAI per-feature × per-tier (6 ميزات × 3 فئات = 18 حقل)
+  AI_FEATURE_CAMEL_NAMES.forEach((feature) => {
+    TIER_LABELS.forEach((tier) => {
+      const key = `${feature}${tier}Count` as keyof DashboardStats;
+      (merged as any)[key] = asNumber(summaryRaw?.[key]);
+    });
+  });
+
+  // ─ Reports aggregates (موجودين في الـsummary من statsVersion 2 فما فوق).
+  //   لو الـsummary قديم، الحقول هتكون undefined و ReportsSection هيعرض رسالة
+  //   "اضغط تحديث الآن" بدل ما يقرا كل الأطباء.
+  if (Array.isArray(summaryRaw?.monthlySignups)) {
+    merged.monthlySignups = summaryRaw.monthlySignups
+      .filter((item: any) => item && typeof item.month === 'string')
+      .map((item: any) => ({
+        month: String(item.month),
+        newDoctors: asNumber(item.newDoctors),
+      }));
+  }
+  if (Array.isArray(summaryRaw?.specialtyBreakdown)) {
+    merged.specialtyBreakdown = summaryRaw.specialtyBreakdown
+      .filter((item: any) => item && typeof item.specialty === 'string')
+      .map((item: any) => ({
+        specialty: String(item.specialty),
+        count: asNumber(item.count),
+      }));
+  }
+  if (Array.isArray(summaryRaw?.topDoctorsByActivity)) {
+    merged.topDoctorsByActivity = summaryRaw.topDoctorsByActivity
+      .filter((item: any) => item && typeof item.name === 'string')
+      .map((item: any) => ({
+        name: String(item.name),
+        email: String(item.email || ''),
+        totalActions: asNumber(item.totalActions),
+      }));
+  }
 
   return merged;
 };
@@ -230,7 +278,10 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           footerLineSnap.exists() ? (footerLineSnap.data() as RawDoc) : {},
         );
 
+        // الـbase بيبدأ من INITIAL_DASHBOARD_STATS (كل الحقول = 0) ثم نحدّث الـlive
+        // counters. الـAI features + smartRx + الإيرادات بتدخل من mergeSummaryMetrics.
         const baseStats: DashboardStats = {
+          ...INITIAL_DASHBOARD_STATS,
           totalDoctors,
           pendingDoctors,
           approvedDoctors,
@@ -283,11 +334,21 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
     if (!isAdminUser) return;
     setRefreshing(true);
     try {
+      // ─ نشغّل الـmaterialize السريع (sharded counters) + الـfull aggregate scan معاً.
+      //   الـfull scan هو اللي بيحدّث الـreports (شهور/تخصصات/نشاط)، فبدونه
+      //   الضغط على "تحديث الآن" كان بيحدّث الأرقام بس مش التقارير.
       try {
         const materialize = httpsCallable(functions, 'materializeAdminDashboardSummaryNow');
         await materialize({});
       } catch (callableErr) {
         console.warn('[useDashboardStats] materializeAdminDashboardSummaryNow failed:', callableErr);
+      }
+      try {
+        const refreshAggregates = httpsCallable(functions, 'refreshAdminDashboardAggregatesNow');
+        await refreshAggregates({});
+      } catch (callableErr) {
+        // الـfull scan ممكن ياخد ثواني — لو فشل، الـsharded counters لسه تحدثت
+        console.warn('[useDashboardStats] refreshAdminDashboardAggregatesNow failed:', callableErr);
       }
       await loadStatsRef.current({ skipCache: true, forceLiveCounters: true });
     } finally {

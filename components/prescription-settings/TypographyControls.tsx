@@ -48,7 +48,7 @@ const SliderRow: React.FC<SliderRowProps> = ({ label, value, min, max, step = 1,
             max={max}
             step={step}
             onChange={(e) => onChange(Number(e.target.value))}
-            className="flex-1 accent-amber-500"
+            className="flex-1 accent-warning-500"
         />
         <div className="flex items-center gap-1 shrink-0">
             <input
@@ -61,7 +61,7 @@ const SliderRow: React.FC<SliderRowProps> = ({ label, value, min, max, step = 1,
                     const n = Number(e.target.value);
                     if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
                 }}
-                className="w-14 px-1.5 py-1 text-center text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-amber-400 focus:outline-none"
+                className="w-14 px-1.5 py-1 text-center text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-warning-400 focus:outline-none"
             />
             <span className="text-[10px] text-slate-400 font-bold">px</span>
         </div>
@@ -87,7 +87,7 @@ const ColorRow: React.FC<ColorRowProps> = ({ label, value, onChange }) => (
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="flex-1 px-2 py-1 text-xs font-mono text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-amber-400 focus:outline-none"
+            className="flex-1 px-2 py-1 text-xs font-mono text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-warning-400 focus:outline-none"
         />
     </div>
 );
@@ -104,7 +104,7 @@ const FontRow: React.FC<FontRowProps> = ({ label, value, onChange }) => (
         <select
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
-            className="flex-1 px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-amber-400 focus:outline-none"
+            className="flex-1 px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-warning-400 focus:outline-none"
             style={{ fontFamily: value || 'inherit' }}
         >
             {FONT_FAMILIES.map(f => (
@@ -141,7 +141,7 @@ const TextElementCard: React.FC<TextElementCardProps> = ({
     <details className="group bg-white border border-slate-200 rounded-xl overflow-hidden">
         <summary className="px-3.5 py-2.5 cursor-pointer flex items-center justify-between hover:bg-slate-50 transition-colors list-none">
             <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-warning-400" />
                 <div>
                     <div className="text-sm font-bold text-slate-800">{title}</div>
                     {description && <div className="text-[10px] text-slate-400 mt-0.5">{description}</div>}
@@ -171,7 +171,7 @@ export const TypographyControls: React.FC<TypographyControlsProps> = ({ typograp
             onClick={() => setActiveSection(id)}
             className={`flex-1 px-3 py-2 text-xs font-black rounded-lg transition-all ${
                 activeSection === id
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200'
+                    ? 'bg-gradient-to-r from-warning-500 to-warning-500 text-white shadow-md shadow-warning-200'
                     : 'bg-white text-slate-500 hover:text-slate-700 border border-slate-200'
             }`}
         >{label}</button>
@@ -181,7 +181,7 @@ export const TypographyControls: React.FC<TypographyControlsProps> = ({ typograp
         <div className="mt-5">
             {/* رأس القسم */}
             <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-warning-400 to-warning-500 flex items-center justify-center shadow-sm">
                     <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h8m-8 6h16" />
                     </svg>
@@ -268,7 +268,7 @@ export const TypographyControls: React.FC<TypographyControlsProps> = ({ typograp
                         fontFamilyValue={t.rxSymbolFontFamily}
                         onFontFamilyChange={(v) => onChange({ rxSymbolFontFamily: v })}
                     />
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-[11px] text-blue-700 leading-relaxed">
+                    <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 text-[11px] text-brand-700 leading-relaxed">
                         <div className="font-bold mb-1">ℹ️ ملاحظة:</div>
                         <div>إعدادات <strong>شريط بيانات المريض</strong> (الاسم/السن/التاريخ) موجودة في تاب <strong>"الجزء العلوي"</strong>.</div>
                         <div>إعدادات <strong>نص الفوتر</strong> (العنوان/التليفون/الأوقات) موجودة في تاب <strong>"الجزء السفلي"</strong>.</div>

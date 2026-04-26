@@ -32,8 +32,6 @@ import {
   syncTodayAppointmentsToBookingConfig,
 } from './usePublicBookingAppointmentActions/submitAppointment';
 
-export type { EntryRequestAppointment, UsePublicBookingAppointmentActionsParams };
-
 export const usePublicBookingAppointmentActions = ({
   secret,
   userId,

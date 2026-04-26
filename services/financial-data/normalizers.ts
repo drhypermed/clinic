@@ -61,7 +61,7 @@ export const toNonNegativePriceNumber = (value: unknown): number => {
 export const toPriceText = (value: unknown): string => String(toNonNegativePriceNumber(value));
 
 /** تحويل قيمة إلى نص رقم اختياري (يرجع undefined إذا كانت فارغة/غير صالحة) */
-export const toOptionalPriceText = (value: unknown): string | undefined => {
+const toOptionalPriceText = (value: unknown): string | undefined => {
     if (value === null || value === undefined) return undefined;
     if (typeof value === 'string' && value.trim() === '') return undefined;
     const parsed = Number(value);

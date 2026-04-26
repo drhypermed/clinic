@@ -47,7 +47,7 @@ export const BranchPickerModal: React.FC<BranchPickerModalProps> = ({
         dir="rtl"
       >
         {/* الهيدر بنفس هويّة الفورم العام (تدرّج teal/cyan = هويّة دليل الأطباء) */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 flex items-start justify-between gap-3">
+        <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-5 py-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-black text-white leading-tight">اختر الفرع للحجز</h2>
             {doctorName && (
@@ -78,16 +78,16 @@ export const BranchPickerModal: React.FC<BranchPickerModalProps> = ({
                 key={branch.id}
                 type="button"
                 onClick={() => onSelectBranch(branch.id)}
-                className="w-full flex items-start gap-3 p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-400 transition text-right"
+                className="w-full flex items-start gap-3 p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-400 transition text-right"
               >
-                <div className="w-9 h-9 shrink-0 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+                <div className="w-9 h-9 shrink-0 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center">
                   <LuMapPin className="w-4 h-4" strokeWidth={2.25} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-black text-slate-800 truncate">{branch.name || 'فرع'}</div>
                   <div className="text-[11px] text-slate-600 font-bold mt-0.5 truncate">{addressText}</div>
                 </div>
-                <span className="shrink-0 text-blue-500 font-black text-lg leading-none">›</span>
+                <span className="shrink-0 text-brand-500 font-black text-lg leading-none">›</span>
               </button>
             );
           })}

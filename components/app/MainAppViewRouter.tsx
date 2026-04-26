@@ -81,7 +81,7 @@ export const preloadMainAppViewChunks = () => {
 
 // القوائم دي طويلة جداً عمداً — Props متجمعة لتجنب ترتيب متناثر.
 // أي شاشة بتاخد بس الـ props اللي تخصها.
-export interface MainAppViewRouterProps {
+interface MainAppViewRouterProps {
   // ── توجيه عام ──
   currentView: AppView;
   navigateToView: (view: AppView) => void;

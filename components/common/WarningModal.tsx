@@ -46,14 +46,14 @@ export const WarningModal: React.FC<WarningModalProps> = ({
     >
       <>
         {/* رأس النافذة التنبيهي */}
-        <div className="bg-gradient-to-r from-red-500 to-red-600 p-4 text-white">
+        <div className="bg-gradient-to-r from-danger-500 to-danger-600 p-4 text-white">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-3xl backdrop-blur-sm">
               ⚠️
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-black mb-0.5">{title}</h2>
-              <p className="text-red-100 text-xs font-bold">يرجى المراجعة قبل المتابعة</p>
+              <p className="text-danger-100 text-xs font-bold">يرجى المراجعة قبل المتابعة</p>
             </div>
           </div>
         </div>
@@ -63,20 +63,20 @@ export const WarningModal: React.FC<WarningModalProps> = ({
           {/* قائمة التحذيرات التفصيلية */}
           <div className="space-y-2">
             {warnings.map((warning, idx) => (
-              <div key={idx} className="bg-red-50 border-2 border-red-200 rounded-xl p-3">
+              <div key={idx} className="bg-danger-50 border-2 border-danger-200 rounded-xl p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-xl">{warning.icon}</span>
                   <div className="flex-1">
-                    <div className="font-black text-red-700 text-xs mb-1.5">{warning.label}</div>
-                    <div className="space-y-1 text-[11px] font-bold text-red-600">
+                    <div className="font-black text-danger-700 text-xs mb-1.5">{warning.label}</div>
+                    <div className="space-y-1 text-[11px] font-bold text-danger-600">
                       {/* مقارنة بين النطاق المطلوب والقيمة الحالية */}
-                      <div className="flex justify-between items-center bg-white rounded-lg px-2.5 py-1.5 border border-red-100">
+                      <div className="flex justify-between items-center bg-white rounded-lg px-2.5 py-1.5 border border-danger-100">
                         <span className="text-slate-500">النطاق المسموح:</span>
-                        <span className="text-red-700">{warning.expected}</span>
+                        <span className="text-danger-700">{warning.expected}</span>
                       </div>
-                      <div className="flex justify-between items-center bg-red-100 rounded-lg px-2.5 py-1.5 border border-red-200">
-                        <span className="text-red-600">القيمة الحالية:</span>
-                        <span className="text-red-800 font-black">{warning.actual}</span>
+                      <div className="flex justify-between items-center bg-danger-100 rounded-lg px-2.5 py-1.5 border border-danger-200">
+                        <span className="text-danger-600">القيمة الحالية:</span>
+                        <span className="text-danger-800 font-black">{warning.actual}</span>
                       </div>
                     </div>
                   </div>
@@ -86,12 +86,12 @@ export const WarningModal: React.FC<WarningModalProps> = ({
           </div>
 
           {/* التوصية الطبية والبدائل */}
-          <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-3">
+          <div className="bg-warning-50 border-2 border-warning-300 rounded-xl p-3">
             <div className="flex items-start gap-2">
               <span className="text-xl">⚕️</span>
               <div className="flex-1">
-                <div className="font-black text-amber-800 text-xs mb-1">توصية طبية</div>
-                <p className="text-amber-700 text-[11px] font-bold leading-relaxed" dir="rtl">{recommendation}</p>
+                <div className="font-black text-warning-800 text-xs mb-1">توصية طبية</div>
+                <p className="text-warning-700 text-[11px] font-bold leading-relaxed" dir="rtl">{recommendation}</p>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export const WarningModal: React.FC<WarningModalProps> = ({
           {/* عبارة إخلاء المسؤولية */}
           <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-center">
             <p className="text-slate-700 font-black text-xs">
-              هل تريد الاستمرار وإضافة الدواء <span className="text-red-600">على مسؤوليتك الطبية</span>؟
+              هل تريد الاستمرار وإضافة الدواء <span className="text-danger-600">على مسؤوليتك الطبية</span>؟
             </p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export const WarningModal: React.FC<WarningModalProps> = ({
         <div className="bg-slate-50 p-3 flex gap-2">
           <button
             onClick={onConfirm}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2.5 px-3 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95"
+            className="flex-1 bg-danger-600 hover:bg-danger-700 text-white font-black py-2.5 px-3 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95"
           >
             <div className="flex items-center justify-center gap-1.5">
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

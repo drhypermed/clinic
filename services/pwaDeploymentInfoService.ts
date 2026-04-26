@@ -1,6 +1,6 @@
 ﻿import { checkPendingPwaUpdate } from './pwaUpdateService';
 
-export interface PwaDeploymentInfo {
+interface PwaDeploymentInfo {
   hasWaitingUpdate: boolean;
   deployedAtIso: string;
   deployedAtMs: number;
@@ -8,21 +8,39 @@ export interface PwaDeploymentInfo {
   checkedAtIso: string;
 }
 
+// حد أقصى ٨ ثوان لكل طلب — لو الشبكة بطيئة أكثر من كده نعتبر الفحص فشل ونكمل،
+// بدل ما المستخدم يفضل شايف "جارٍ الفحص" لدقيقة كاملة.
+const FETCH_TIMEOUT_MS = 8000;
+
 const parseDateToMs = (value: string): number => {
   if (!value) return 0;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
 };
 
+const fetchWithTimeout = async (url: string, init: RequestInit, timeoutMs: number): Promise<Response> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 const readSwHeaders = async (): Promise<{ deployedAtIso: string; deployedAtMs: number; etag: string }> => {
   const swUrl = `/sw.js?ts=${Date.now()}`;
 
   const readHeaders = async (method: 'HEAD' | 'GET') => {
-    const response = await fetch(swUrl, {
-      method,
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' },
-    });
+    const response = await fetchWithTimeout(
+      swUrl,
+      {
+        method,
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      },
+      FETCH_TIMEOUT_MS,
+    );
     if (!response.ok) {
       throw new Error(`SW_HEADERS_${method}_FAILED_${response.status}`);
     }

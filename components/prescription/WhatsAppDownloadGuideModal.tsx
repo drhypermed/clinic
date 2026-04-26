@@ -35,7 +35,7 @@ export const WhatsAppDownloadGuideModal: React.FC<WhatsAppDownloadGuideModalProp
         >
             <>
                 {/* رأس النافذة — أخضر واتساب */}
-                <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 px-5 py-5 text-white">
+                <div className="bg-gradient-to-br from-success-500 via-success-600 to-success-600 px-5 py-5 text-white">
                     <div className="flex items-center gap-3">
                         <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shrink-0">
                             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
@@ -46,7 +46,7 @@ export const WhatsAppDownloadGuideModal: React.FC<WhatsAppDownloadGuideModalProp
                             <h2 id="wa-guide-title" className="text-xl font-black mb-1 leading-tight">
                                 قبل الإرسال عبر واتساب
                             </h2>
-                            <p className="text-emerald-50 text-xs font-bold">
+                            <p className="text-success-50 text-xs font-bold">
                                 اتّبع الخطوتين لإرسال الروشتة للمريض
                             </p>
                         </div>
@@ -55,42 +55,42 @@ export const WhatsAppDownloadGuideModal: React.FC<WhatsAppDownloadGuideModalProp
 
                 {/* الخطوات */}
                 <div className="p-5 space-y-3">
-                    <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
+                    <div className="bg-success-50 border-2 border-success-200 rounded-2xl p-4">
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-sm shrink-0">
+                            <div className="w-8 h-8 bg-success-600 text-white rounded-full flex items-center justify-center font-black text-sm shrink-0">
                                 1
                             </div>
                             <div className="flex-1 pt-0.5">
-                                <p className="text-emerald-900 font-black text-sm leading-relaxed">
-                                    اضغط زر <span className="text-emerald-700">«تنزيل الروشتة»</span> أولاً
+                                <p className="text-success-900 font-black text-sm leading-relaxed">
+                                    اضغط زر <span className="text-success-700">«تنزيل الروشتة»</span> أولاً
                                 </p>
-                                <p className="text-emerald-700 text-xs font-bold mt-1 leading-relaxed">
+                                <p className="text-success-700 text-xs font-bold mt-1 leading-relaxed">
                                     اختر "حفظ كملف PDF" من نافذة الطباعة — سيُحفظ الملف باسم المريض تلقائياً.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
+                    <div className="bg-success-50 border-2 border-success-200 rounded-2xl p-4">
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-sm shrink-0">
+                            <div className="w-8 h-8 bg-success-600 text-white rounded-full flex items-center justify-center font-black text-sm shrink-0">
                                 2
                             </div>
                             <div className="flex-1 pt-0.5">
-                                <p className="text-emerald-900 font-black text-sm leading-relaxed">
-                                    اضغط زر <span className="text-emerald-700">«إرسال واتساب»</span> مرة أخرى
+                                <p className="text-success-900 font-black text-sm leading-relaxed">
+                                    اضغط زر <span className="text-success-700">«إرسال واتساب»</span> مرة أخرى
                                 </p>
-                                <p className="text-emerald-700 text-xs font-bold mt-1 leading-relaxed">
+                                <p className="text-success-700 text-xs font-bold mt-1 leading-relaxed">
                                     ستُفتح محادثة المريض على الرقم المسجّل — أرفق ملف الـ PDF اللي نزّلته يدوياً.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
+                    <div className="bg-warning-50 border-2 border-warning-200 rounded-xl p-3">
                         <div className="flex items-start gap-2">
                             <span className="text-lg shrink-0">💡</span>
-                            <p className="text-amber-800 text-[11px] font-bold leading-relaxed">
+                            <p className="text-warning-800 text-[11px] font-bold leading-relaxed">
                                 واتساب لا يسمح بإرفاق الملفات تلقائياً عبر الروابط لأسباب أمنية — لذلك الإرفاق يدوي داخل المحادثة.
                             </p>
                         </div>
@@ -103,7 +103,7 @@ export const WhatsAppDownloadGuideModal: React.FC<WhatsAppDownloadGuideModalProp
                         type="button"
                         onClick={onClose}
                         autoFocus
-                        className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+                        className="w-full bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 text-white font-black py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
                     >
                         <div className="flex items-center justify-center gap-2">
                             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

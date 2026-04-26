@@ -36,7 +36,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
 }) => {
     return (
         <div className="rounded-2xl shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-rose-600 to-rose-500">
+            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-danger-600 to-danger-500">
                 <span className="text-base">💸</span>
                 <span className="text-sm font-black text-white">المصروفات الشهرية</span>
                 <span className="mr-auto text-xs font-bold text-white/80 bg-white/15 rounded-full px-2.5 py-0.5">{currentMonthLabel}</span>
@@ -54,7 +54,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                                 value={rentExpense}
                                 onChange={(e) => onUpdateRent(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -72,7 +72,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                                 value={salariesExpense}
                                 onChange={(e) => onUpdateSalaries(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -90,7 +90,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                                 value={toolsExpense}
                                 onChange={(e) => onUpdateTools(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -108,7 +108,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                                 value={electricityExpense}
                                 onChange={(e) => onUpdateElectricity(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -126,7 +126,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                                 value={otherExpense}
                                 onChange={(e) => onUpdateOther(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
+                                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-danger-500 focus:ring-2 focus:ring-danger-500/20 transition-all text-base sm:text-lg font-black text-slate-800 text-center"
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
                                 ج.م
@@ -156,10 +156,10 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                             🏷️ خصومات الزيارات
                         </label>
                         <div className="relative">
-                            <div className="w-full px-3 py-3 rounded-xl border-2 border-amber-200 bg-amber-100 text-base sm:text-lg font-black text-amber-900 text-center break-words">
+                            <div className="w-full px-3 py-3 rounded-xl border-2 border-warning-200 bg-warning-100 text-base sm:text-lg font-black text-warning-900 text-center break-words">
                                 {formatCurrency(monthlyDiscountExpense)}
                             </div>
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-amber-700 font-bold text-xs">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-warning-700 font-bold text-xs">
                                 ج.م
                             </span>
                         </div>
@@ -170,7 +170,7 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-rose-600 to-rose-500 rounded-xl p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-danger-600 to-danger-500 rounded-xl p-3">
                         <span className="font-bold text-white">💰 إجمالي المصروفات الشهرية</span>
                         <span className="text-base sm:text-xl font-black text-white break-words">
                             {formatCurrency(totalExpenses)}

@@ -38,20 +38,20 @@ export const toPositiveFileNumber = (value: unknown): number | undefined => {
 };
 
 /** تنسيق التاريخ للعرض في الاقتراحات (مثلاً: 25/12/2023) */
-export const formatSuggestionDate = (value?: string) => {
+const formatSuggestionDate = (value?: string) => {
   if (!value) return 'غير متوفر';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'غير متوفر';
   return formatUserDate(date, undefined, 'ar-EG-u-nu-latn');
 };
 
-export interface PatientSuggestionDetailLine {
+interface PatientSuggestionDetailLine {
   key: 'fileNumber' | 'phone' | 'age' | 'lastExam' | 'lastConsultation';
   label: string;
   value: string;
 }
 
-export interface PatientSuggestionDisplayModel {
+interface PatientSuggestionDisplayModel {
   patientName: string;
   fileNumber?: number;
   lines: PatientSuggestionDetailLine[];

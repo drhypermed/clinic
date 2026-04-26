@@ -35,7 +35,7 @@ export const normalizeBranchId = (branchId?: string): string => {
 const MAX_APPROVED_IDS_PER_LIST = 500;
 
 /** يقص قائمة الـ ids ليحفظ آخر maxSize فقط (FIFO — الأقدم يُزال أولاً). */
-export const trimApprovedIdsList = (
+const trimApprovedIdsList = (
   ids: string[],
   maxSize: number = MAX_APPROVED_IDS_PER_LIST,
 ): string[] => {

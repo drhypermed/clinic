@@ -93,73 +93,73 @@ const PATIENT_FEATURES: Feature[] = [
     icon: <HiOutlineMagnifyingGlass className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'ابحث بالتخصّص',
     desc: 'لاقي دكتورك في أكتر من 30 تخصص — من الأطفال للباطنه والجراحه والنسا والنفسيه وغيرهم.',
-    color: 'from-teal-500 to-cyan-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineMapPin className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'ابحث بالموقع',
     desc: 'اختار المحافظه والمدينه — تغطيه 28 محافظه في كل أنحاء مصر لدكاتره قريبين منك.',
-    color: 'from-emerald-500 to-teal-600',
+    color: 'from-success-500 to-brand-600',
   },
   {
     icon: <HiOutlineStar className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'تقييمات مرضى حقيقيّه',
     desc: 'اقرا تجارب مرضى زيّك قبل ما تحجز — تقييمات موثّقه بعد الحجز الفعلي مش تقييمات وهميّه.',
-    color: 'from-amber-500 to-orange-600',
+    color: 'from-warning-500 to-warning-600',
   },
   {
     icon: <HiOutlineCalendarDays className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'حجز فوري إلكتروني',
     desc: 'احجز موعدك في دقيقتين — اختار اليوم والوقت بدون اتصال أو انتظار على التليفون.',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineBanknotes className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'أسعار واضحه قبل الحجز',
     desc: 'شوف سعر الكشف والاستشاره والخدمات قبل ما تحجز — مفيش مفاجآت في العياده.',
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success-500 to-success-600',
   },
   {
     icon: <HiOutlineIdentification className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'ملف طبيب كامل',
     desc: 'شهادات، سنوات الخبره، الخدمات، ومعرض صور العياده — كل اللي محتاجه تعرفه في صفحه واحده.',
-    color: 'from-indigo-500 to-blue-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineTag className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'خصومات وعروض خاصّه',
     desc: 'عيادات كتيره بتقدّم عروض حصريّه لمستخدمي Dr Hyper — وفّر فلوس على كل زياره.',
-    color: 'from-rose-500 to-pink-600',
+    color: 'from-danger-500 to-slate-600',
   },
   {
     icon: <HiOutlineClock className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'مواعيد عمل الحيّه',
     desc: 'اعرف العياده شغّاله امتى بالظبط — مواعيد كل يوم محدّثه من الدكتور نفسه.',
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-slate-500 to-slate-600',
   },
   {
     icon: <FaWhatsapp className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'تواصل مباشر بواتساب',
     desc: 'اتصل أو كلّم العياده على واتساب من التطبيق مباشره — من غير ما تخرج أو تحفظ الرقم.',
-    color: 'from-emerald-500 to-green-600',
+    color: 'from-success-500 to-success-600',
   },
   {
     icon: <HiOutlineBell className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'تذكير بالموعد',
     desc: 'هنفكّرك قبل موعدك بساعات — مش هتنسى ومش هتحتار في المواعيد الضروريّه.',
-    color: 'from-yellow-500 to-amber-600',
+    color: 'from-warning-500 to-warning-600',
   },
   {
     icon: <HiOutlineClipboardDocumentList className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'حجوزاتي كلها في مكان',
     desc: 'لوحه واحده تشوف فيها كل مواعيدك — اللي فاتت، الجايّه، وتقدر تقيّم الزياره بعدها.',
-    color: 'from-cyan-500 to-blue-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'خصوصيّه وأمان كامل',
     desc: 'بياناتك مشفّره ومحميه — طبيبك هو اللي يشوف تفاصيلك الصحّيه ومحدش غيره.',
-    color: 'from-teal-500 to-emerald-600',
+    color: 'from-brand-500 to-success-600',
   },
 ];
 
@@ -180,7 +180,7 @@ export const PatientLandingPage: React.FC = () => {
       `}</style>
 
       {/* ══════════ HERO + FEATURES ══════════ */}
-      <section className="pt-6 pb-12 sm:pt-10 sm:pb-16 px-3 sm:px-6 bg-gradient-to-b from-teal-50/40 to-white">
+      <section className="pt-6 pb-12 sm:pt-10 sm:pb-16 px-3 sm:px-6 bg-gradient-to-b from-brand-50/40 to-white">
         <div className="max-w-6xl mx-auto">
           <A>
             <div className="flex flex-col lg:flex-row-reverse items-center justify-center gap-6 lg:gap-14 mb-6 sm:mb-8">
@@ -188,19 +188,19 @@ export const PatientLandingPage: React.FC = () => {
               <div className="flex flex-col items-center lg:items-start gap-3 text-center lg:text-right max-w-lg">
                 <div className="flex items-center gap-2 lg:self-center">
                   <p className="text-lg sm:text-2xl font-bold text-slate-800">دليل الأطباء وحجز المواعيد</p>
-                  <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7 text-teal-600 shrink-0" aria-hidden="true" />
+                  <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7 text-brand-600 shrink-0" aria-hidden="true" />
                 </div>
                 <p className="text-sm sm:text-base text-slate-600 font-semibold leading-relaxed">
                   Dr Hyper — لاقي دكتورك واحجز موعدك في دقيقتين بدون انتظار ولا تليفونات.
                 </p>
                 <div className="flex items-center gap-6 sm:gap-10 pt-1 lg:self-center">
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-teal-600"><Counter target={1000} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-brand-600"><Counter target={1000} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">دكتور معتمد</div>
                   </div>
                   <div className="w-px h-9 bg-slate-200" />
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-emerald-600"><Counter target={30} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-success-600"><Counter target={30} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">تخصّص</div>
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export const PatientLandingPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => go('/public')}
-                    className="inline-flex items-center gap-2 bg-gradient-to-l from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white text-sm sm:text-base font-black px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 bg-gradient-to-l from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white text-sm sm:text-base font-black px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
                   >
                     <HiOutlineMagnifyingGlass className="w-5 h-5" />
                     ابحث عن دكتورك الآن
@@ -221,7 +221,7 @@ export const PatientLandingPage: React.FC = () => {
           <A>
             <div className="flex items-center justify-center gap-2 mt-8 mb-6 sm:mt-12 sm:mb-8">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 text-center">كل اللي محتاجه عشان تلاقي دكتورك</h2>
-              <HiOutlineSquares2X2 className="w-7 h-7 sm:w-8 sm:h-8 text-teal-600 shrink-0" aria-hidden="true" />
+              <HiOutlineSquares2X2 className="w-7 h-7 sm:w-8 sm:h-8 text-brand-600 shrink-0" aria-hidden="true" />
             </div>
           </A>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
@@ -262,7 +262,7 @@ export const PatientLandingPage: React.FC = () => {
             <A>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-md">
                     <HiOutlineMagnifyingGlass className="w-5 h-5" />
                   </div>
                   <h3 className="text-base font-black text-slate-900">ابحث عن دكتور</h3>
@@ -273,7 +273,7 @@ export const PatientLandingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => go('/public')}
-                  className="self-start flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]"
+                  className="self-start flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]"
                 >
                   <HiOutlineMagnifyingGlass className="w-3.5 h-3.5" />
                   تصفّح الأطباء
@@ -284,7 +284,7 @@ export const PatientLandingPage: React.FC = () => {
             <A delay={80}>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 text-white flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-600 to-slate-600 text-white flex items-center justify-center shadow-md">
                     <FaUserGroup className="w-4 h-4" />
                   </div>
                   <h3 className="text-base font-black text-slate-900">حجوزاتي</h3>
@@ -295,7 +295,7 @@ export const PatientLandingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => go('/login/public')}
-                  className="self-start flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]"
+                  className="self-start flex items-center gap-1.5 bg-slate-600 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]"
                 >
                   <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                   تسجيل الدخول
@@ -306,9 +306,9 @@ export const PatientLandingPage: React.FC = () => {
 
           {/* قسم ثانوي صغيّر — دعوه للأطباء للانضمام */}
           <A delay={240}>
-            <div className="mt-8 sm:mt-10 bg-gradient-to-l from-slate-50 to-teal-50/40 rounded-2xl ring-1 ring-slate-200/70 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="mt-8 sm:mt-10 bg-gradient-to-l from-slate-50 to-brand-50/40 rounded-2xl ring-1 ring-slate-200/70 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-md shrink-0">
                   <FaUserDoctor className="w-4 h-4" />
                 </div>
                 <div className="text-center sm:text-right">
@@ -318,7 +318,7 @@ export const PatientLandingPage: React.FC = () => {
               </div>
               <a
                 href="https://clinic.drhypermed.com"
-                className="flex items-center gap-1.5 bg-white ring-1 ring-slate-200 hover:ring-blue-300 text-blue-700 hover:text-blue-800 text-xs font-black px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.97]"
+                className="flex items-center gap-1.5 bg-white ring-1 ring-slate-200 hover:ring-brand-300 text-brand-700 hover:text-brand-800 text-xs font-black px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.97]"
               >
                 <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                 بوابة الأطباء

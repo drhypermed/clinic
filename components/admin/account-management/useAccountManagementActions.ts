@@ -15,7 +15,8 @@
 //   4) Rate limiting: actionInProgress[id] state يمنع الضغط المتكرر على نفس الطبيب.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { ApprovedDoctor, EditMode, SubscriptionChangeType, SubscriptionPeriod, SubscriptionUnit } from './types';
+import { ApprovedDoctor, EditMode, SubscriptionChangeType, SubscriptionPeriod, SubscriptionTier, SubscriptionUnit } from './types';
+import { computePeriodPricing } from './subscriptionPricing';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { setDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -189,12 +190,26 @@ export const useAccountManagementActions = ({
         updateData.premiumStartDate = now.toISOString();
         updateData.premiumExpiryDate = expiryDate.toISOString();
         const currentHistory = doctor?.subscriptionHistory || [];
+        // نحسب السعر لحظة العملية ونحفظه مع entry السجل — بحيث الإيراد التاريخي
+        // يفضل ثابت حتى لو الأسعار اتغيرت بعدين.
+        const tier: SubscriptionTier = newType === 'pro_max' ? 'pro_max' : 'premium';
+        const pricing = await computePeriodPricing({
+          startDate: now,
+          endDate: expiryDate,
+          tier,
+        });
         const newPeriod: SubscriptionPeriod = {
           startDate: now.toISOString(),
           endDate: expiryDate.toISOString(),
           changeType: 'new',
           modifiedBy: userEmail,
           modifiedAt: now.toISOString(),
+          tier,
+          planType: pricing.planType,
+          durationMonths: pricing.durationMonths,
+          pricePaid: pricing.pricePaid,
+          priceCurrency: 'EGP',
+          priceSource: pricing.priceSource,
         };
         updateData.subscriptionHistory = [...currentHistory, newPeriod];
         updateData.premiumNotificationSent = false;
@@ -294,17 +309,33 @@ export const useAccountManagementActions = ({
 
       const startDate = new Date(doctor.premiumStartDate);
       const currentHistory = doctor.subscriptionHistory || [];
+
+      // الـ entry الجديد للتمديد بيمثل **فترة التمديد فقط** (من anchor لـ expiryDate)،
+      // مش الفترة الكلية من بداية الاشتراك. ده ضروري عشان الإيراد يتحسب على
+      // مدة التمديد الحقيقية بسعر اللحظة الحالية.
+      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : 'premium';
+      const extensionPricing = await computePeriodPricing({
+        startDate: anchor,
+        endDate: expiryDate,
+        tier,
+      });
       const newPeriod: SubscriptionPeriod = {
-        startDate: startDate.toISOString(),
+        startDate: anchor.toISOString(),
         endDate: expiryDate.toISOString(),
         changeType: 'extension',
         modifiedBy: userEmail,
         modifiedAt: new Date().toISOString(),
+        tier,
+        planType: extensionPricing.planType,
+        durationMonths: extensionPricing.durationMonths,
+        pricePaid: extensionPricing.pricePaid,
+        priceCurrency: 'EGP',
+        priceSource: extensionPricing.priceSource,
       };
       const updatedHistory = [...currentHistory, newPeriod];
 
       await writeDoctorProfile(doctorId, {
-        accountType: 'premium',
+        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : 'premium',
         premiumStartDate: startDate.toISOString(),
         premiumExpiryDate: expiryDate.toISOString(),
         subscriptionHistory: updatedHistory,
@@ -316,7 +347,7 @@ export const useAccountManagementActions = ({
           d.id === doctorId
             ? {
                 ...d,
-                accountType: 'premium',
+                accountType: d.accountType === 'pro_max' ? 'pro_max' : 'premium',
                 premiumStartDate: startDate.toISOString(),
                 premiumExpiryDate: expiryDate.toISOString(),
                 subscriptionHistory: updatedHistory,
@@ -354,17 +385,30 @@ export const useAccountManagementActions = ({
     try {
       await ensureDoctorDocumentExists(doctorId);
       const currentHistory = doctor.subscriptionHistory || [];
+      // التعديل اليدوي بيكتب فترة كلية جديدة. نحسب السعر بناءً على الفترة الجديدة.
+      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : 'premium';
+      const manualPricing = await computePeriodPricing({
+        startDate,
+        endDate,
+        tier,
+      });
       const newPeriod: SubscriptionPeriod = {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         changeType: 'manual_edit',
         modifiedBy: userEmail,
         modifiedAt: new Date().toISOString(),
+        tier,
+        planType: manualPricing.planType,
+        durationMonths: manualPricing.durationMonths,
+        pricePaid: manualPricing.pricePaid,
+        priceCurrency: 'EGP',
+        priceSource: manualPricing.priceSource,
       };
       const updatedHistory = [...currentHistory, newPeriod];
 
       await writeDoctorProfile(doctorId, {
-        accountType: 'premium',
+        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : 'premium',
         premiumStartDate: startDate.toISOString(),
         premiumExpiryDate: endDate.toISOString(),
         subscriptionHistory: updatedHistory,
@@ -376,7 +420,7 @@ export const useAccountManagementActions = ({
           d.id === doctorId
             ? {
                 ...d,
-                accountType: 'premium',
+                accountType: d.accountType === 'pro_max' ? 'pro_max' : 'premium',
                 premiumStartDate: startDate.toISOString(),
                 premiumExpiryDate: endDate.toISOString(),
                 subscriptionHistory: updatedHistory,

@@ -58,7 +58,7 @@ export const CropModal: React.FC<CropModalProps> = ({
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold">
             إلغاء
           </button>
-          <button type="button" onClick={onApply} className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold">
+          <button type="button" onClick={onApply} className="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold">
             إضافة الصورة
           </button>
         </>

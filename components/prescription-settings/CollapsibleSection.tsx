@@ -18,40 +18,40 @@ interface CollapsibleSectionProps {
 
 const COLOR_STYLES = {
     blue: {
-        header: 'from-blue-50 to-white text-blue-800 border-blue-200 hover:from-blue-100',
-        active: 'bg-blue-50/50 border-blue-200',
-        border: 'border-blue-100',
-        icon: 'text-blue-500'
+        header: 'from-brand-50 to-white text-brand-800 border-brand-200 hover:from-brand-100',
+        active: 'bg-brand-50/50 border-brand-200',
+        border: 'border-brand-100',
+        icon: 'text-brand-500'
     },
     indigo: {
-        header: 'from-indigo-50 to-white text-indigo-800 border-indigo-200 hover:from-indigo-100',
-        active: 'bg-indigo-50/50 border-indigo-200',
-        border: 'border-indigo-100',
-        icon: 'text-indigo-500'
+        header: 'from-brand-50 to-white text-brand-800 border-brand-200 hover:from-brand-100',
+        active: 'bg-brand-50/50 border-brand-200',
+        border: 'border-brand-100',
+        icon: 'text-brand-500'
     },
     emerald: {
-        header: 'from-emerald-50 to-white text-emerald-800 border-emerald-200 hover:from-emerald-100',
-        active: 'bg-emerald-50/50 border-emerald-200',
-        border: 'border-emerald-100',
-        icon: 'text-emerald-500'
+        header: 'from-success-50 to-white text-success-800 border-success-200 hover:from-success-100',
+        active: 'bg-success-50/50 border-success-200',
+        border: 'border-success-100',
+        icon: 'text-success-500'
     },
     amber: {
-        header: 'from-amber-50 to-white text-amber-800 border-amber-200 hover:from-amber-100',
-        active: 'bg-amber-50/50 border-amber-200',
-        border: 'border-amber-100',
-        icon: 'text-amber-500'
+        header: 'from-warning-50 to-white text-warning-800 border-warning-200 hover:from-warning-100',
+        active: 'bg-warning-50/50 border-warning-200',
+        border: 'border-warning-100',
+        icon: 'text-warning-500'
     },
     rose: {
-        header: 'from-rose-50 to-white text-rose-800 border-rose-200 hover:from-rose-100',
-        active: 'bg-rose-50/50 border-rose-200',
-        border: 'border-rose-100',
-        icon: 'text-rose-500'
+        header: 'from-danger-50 to-white text-danger-800 border-danger-200 hover:from-danger-100',
+        active: 'bg-danger-50/50 border-danger-200',
+        border: 'border-danger-100',
+        icon: 'text-danger-500'
     },
     violet: {
-        header: 'from-violet-50 to-white text-violet-800 border-violet-200 hover:from-violet-100',
-        active: 'bg-violet-50/50 border-violet-200',
-        border: 'border-violet-100',
-        icon: 'text-violet-500'
+        header: 'from-slate-50 to-white text-slate-800 border-slate-200 hover:from-slate-100',
+        active: 'bg-slate-50/50 border-slate-200',
+        border: 'border-slate-100',
+        icon: 'text-slate-500'
     },
     slate: {
         header: 'from-slate-50 to-white text-slate-700 border-slate-200 hover:from-slate-100',

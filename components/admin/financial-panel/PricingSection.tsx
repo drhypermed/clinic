@@ -35,7 +35,7 @@ const PriceInput: React.FC<{
 }> = ({ value, onChange, tone = 'amber' }) => {
   const focusClass = tone === 'gold'
     ? 'focus:border-[#FFB300] focus:ring-[#FFE082]'
-    : 'focus:border-amber-400 focus:ring-amber-100';
+    : 'focus:border-warning-400 focus:ring-warning-100';
   return (
     <input
       type="number"
@@ -64,20 +64,20 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   onChangeTempProMaxPrices,
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 border-t-4 border-blue-500">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 border-t-4 border-brand-500">
       <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <h3 className="text-lg font-bold text-slate-800">أسعار الاشتراكات</h3>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={onTogglePriceHistory}
-            className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg border border-purple-200 text-sm transition"
+            className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg border border-slate-200 text-sm transition"
           >
             {showPriceHistory ? 'إخفاء التاريخ' : 'عرض التاريخ'}
           </button>
           {!editingPrices ? (
             <button
               onClick={onStartEditingPrices}
-              className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-lg text-sm shadow-sm transition"
+              className="px-3 py-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-bold rounded-lg text-sm shadow-sm transition"
             >
               تعديل الأسعار
             </button>
@@ -85,13 +85,13 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
             <>
               <button
                 onClick={onSavePrices}
-                className="px-3 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-lg text-sm shadow-sm transition"
+                className="px-3 py-2 bg-gradient-to-r from-success-600 to-brand-600 hover:from-success-700 hover:to-brand-700 text-white font-bold rounded-lg text-sm shadow-sm transition"
               >
                 حفظ
               </button>
               <button
                 onClick={onCancelEditingPrices}
-                className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg border border-red-200 text-sm transition"
+                className="px-3 py-2 bg-danger-50 hover:bg-danger-100 text-danger-600 font-bold rounded-lg border border-danger-200 text-sm transition"
               >
                 إلغاء
               </button>
@@ -106,7 +106,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
           type="month"
           value={selectedPriceMonth}
           onChange={(e) => onChangeSelectedPriceMonth(e.target.value)}
-          className="px-4 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+          className="px-4 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
         />
         <span className="text-slate-500 text-sm mr-3">
           {formatUserDate(buildCairoDateTime(`${selectedPriceMonth}-01`, '12:00'), {
@@ -119,13 +119,13 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
       {/* ═══ أسعار باقة برو ═══ */}
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-50 border border-warning-200 text-warning-700 text-xs font-black">
             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z" /></svg>
             باقة برو
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-amber-50/40 rounded-xl border border-amber-100 p-4">
+          <div className="bg-warning-50/40 rounded-xl border border-warning-100 p-4">
             <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك شهري</label>
             {editingPrices ? (
               <PriceInput value={tempPrices.monthly} onChange={(v) => onChangeTempPrices({ ...tempPrices, monthly: v })} />
@@ -133,7 +133,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               <p className="text-2xl font-black text-slate-800">{prices.monthly} ج.م</p>
             )}
           </div>
-          <div className="bg-amber-50/40 rounded-xl border border-amber-100 p-4">
+          <div className="bg-warning-50/40 rounded-xl border border-warning-100 p-4">
             <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك 6 شهور</label>
             {editingPrices ? (
               <PriceInput value={tempPrices.sixMonths} onChange={(v) => onChangeTempPrices({ ...tempPrices, sixMonths: v })} />
@@ -141,7 +141,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               <p className="text-2xl font-black text-slate-800">{prices.sixMonths} ج.م</p>
             )}
           </div>
-          <div className="bg-amber-50/40 rounded-xl border border-amber-100 p-4">
+          <div className="bg-warning-50/40 rounded-xl border border-warning-100 p-4">
             <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك سنوي</label>
             {editingPrices ? (
               <PriceInput value={tempPrices.yearly} onChange={(v) => onChangeTempPrices({ ...tempPrices, yearly: v })} />
@@ -196,7 +196,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               <thead className="bg-slate-50">
                 <tr>
                   <th rowSpan={2} className="px-3 py-2 text-right text-slate-700 font-bold align-middle">الشهر</th>
-                  <th colSpan={3} className="px-3 py-1.5 text-center text-amber-700 font-black border-b border-slate-100 bg-amber-50/40">باقة برو</th>
+                  <th colSpan={3} className="px-3 py-1.5 text-center text-warning-700 font-black border-b border-slate-100 bg-warning-50/40">باقة برو</th>
                   <th colSpan={3} className="px-3 py-1.5 text-center text-[#B45309] font-black bg-gradient-to-r from-[#FFFDE7] to-[#FFF8E1]">باقة برو ماكس</th>
                 </tr>
                 <tr>
@@ -217,9 +217,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                         month: 'long',
                       }, 'ar-EG')}
                     </td>
-                    <td className="px-3 py-2 text-amber-700">{p.monthly}</td>
-                    <td className="px-3 py-2 text-amber-700">{p.sixMonths}</td>
-                    <td className="px-3 py-2 text-amber-700">{p.yearly}</td>
+                    <td className="px-3 py-2 text-warning-700">{p.monthly}</td>
+                    <td className="px-3 py-2 text-warning-700">{p.sixMonths}</td>
+                    <td className="px-3 py-2 text-warning-700">{p.yearly}</td>
                     <td className="px-3 py-2 text-[#B45309]">{pm?.monthly ?? '—'}</td>
                     <td className="px-3 py-2 text-[#B45309]">{pm?.sixMonths ?? '—'}</td>
                     <td className="px-3 py-2 text-[#B45309]">{pm?.yearly ?? '—'}</td>

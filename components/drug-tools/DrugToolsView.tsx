@@ -222,7 +222,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
       {!activeTool ? (
         <>
           {lockedNotice && (
-            <div className="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-3 shadow-[0_8px_20px_-8px_rgba(245,158,11,0.5)]">
+            <div className="rounded-2xl bg-gradient-to-br from-warning-500 to-warning-600 p-3 shadow-[0_8px_20px_-8px_rgba(245,158,11,0.5)]">
               <div className="flex items-center justify-between gap-2 mb-1">
                 <h4 className="text-sm font-black text-white">{lockedNotice.title}</h4>
                 <span className="rounded-lg bg-white/20 px-2 py-0.5 text-[10px] font-black text-white">
@@ -247,8 +247,8 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
           )}
 
           {/* ملاحظة توجيهية للطبيب: فحص التداخلات والحمل اتنقلوا لشاشة الكشف */}
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-3">
-            <p className="text-[12px] sm:text-[13px] font-bold text-amber-900 leading-relaxed">
+          <div className="rounded-2xl border border-warning-200 bg-warning-50/70 p-3">
+            <p className="text-[12px] sm:text-[13px] font-bold text-warning-900 leading-relaxed">
               💡 <span className="font-black">ملاحظة:</span> فحص التداخلات الدوائية وفحص الدواء أثناء الحمل
               اتنقلوا لشاشة <span className="font-black">«كشف جديد»</span> — هتلاقيهم كأزرار ذهبية تحت الروشتة مباشرة.
             </p>
@@ -285,7 +285,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
             <h2 className="text-sm font-black text-slate-800 truncate">{activeToolTitle}</h2>
             <button
               onClick={() => setToolWithUrl('')}
-              className="shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-[11px] font-black text-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+              className="shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-[11px] font-black text-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
             >
               رجوع للأدوات
             </button>

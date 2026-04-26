@@ -75,55 +75,55 @@ const FEATURES: Feature[] = [
     icon: <HiOutlineDocumentText className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'كتابة وطباعة الروشتات',
     desc: 'روشتة احترافية بشعار عيادتك وبياناتك من تصميمك الشخصي — مع مقاسات ورق مخصصة، طباعة فورية، أو مشاركة مباشرة على واتساب.',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <FaStethoscope className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'المساعدة في التشخيص',
     desc: 'اكتب الشكوى والتاريخ المرضي والفحوصات — والنظام يقترح عليك التشخيص المحتمل وتقدر تعدل عليه بكل سهولة، ويتضاف ويُكتب في الروشتة هو وكل تفاصيل المريض بشكل احترافي.',
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-slate-500 to-slate-600',
   },
   {
     icon: <FaCapsules className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'اختيار الأدوية المناسبة',
     desc: 'جرعات آمنة تلقائياً بالوزن والعمر — مع تنبيهات للجرعة القصوى والاستخدامات والتحذيرات والتداخلات، وإمكانية التعديل عليها بعد الإضافة للروشتة.',
-    color: 'from-pink-500 to-rose-600',
+    color: 'from-slate-500 to-danger-600',
   },
   {
     icon: <HiOutlineBeaker className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'أدوات الأدوية المتقدمة',
     desc: 'فحص تفاعلات الأدوية، تعديل جرعات مرضى الكلى، وتصنيف أمان الأدوية في الحمل والرضاعة.',
-    color: 'from-rose-500 to-red-600',
+    color: 'from-danger-500 to-danger-600',
   },
   {
     icon: <FaWandMagicSparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'الروشتات الذكية',
     desc: 'اعمل روشتة جاهزة بالأدوية والفحوصات والتعليمات وضيفها بضغطة زر — مع التعديل عليها قبل الطباعة لو عايز.',
-    color: 'from-indigo-500 to-blue-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineCalendarDays className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'حجز المواعيد إلكترونياً',
     desc: 'رابط حجز مخصّص لعيادتك — المرضى يحجزوا أونلاين وانت بتشوف كل حجز فوراً على شاشتك.',
-    color: 'from-emerald-500 to-teal-600',
+    color: 'from-success-500 to-brand-600',
   },
   {
     icon: <HiOutlineUserGroup className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'تنسيق مع السكرتارية',
     desc: 'السكرتارية تدخل بيانات المريض قبل الكشف وبتوصلك البيانات — وبتتواصل معاك بكل سهولة: تطلب دخول الحالة، وانت بترد بالموافقة أو الانتظار بشكل لحظي.',
-    color: 'from-amber-500 to-orange-600',
+    color: 'from-warning-500 to-warning-600',
   },
   {
     icon: <HiOutlineClipboardDocumentList className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'ملفات وسجلات المرضى',
     desc: 'أرشيف كامل لكل زيارات المريض مع بحث متقدم بالاسم، التشخيص، الدواء، أو التاريخ.',
-    color: 'from-lime-500 to-green-600',
+    color: 'from-success-500 to-success-600',
   },
   {
     icon: <HiOutlineChartBarSquare className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'الحسابات والتأمينات',
     desc: 'إيرادات ومصروفات يومياً وشهرياً وسنوياً — مع دعم شركات التأمين، الخصومات، والفواتير.',
-    color: 'from-cyan-500 to-blue-600',
+    color: 'from-brand-500 to-brand-600',
   },
   {
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5 sm:w-6 sm:h-6" />,
@@ -135,19 +135,19 @@ const FEATURES: Feature[] = [
     icon: <HiOutlineMegaphone className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'دليل الأطباء والتسويق',
     desc: 'صفحة عامة لعيادتك في الدليل العام — بخدماتك وتقييمات المرضى ورابط الحجز المباشر.',
-    color: 'from-yellow-500 to-amber-600',
+    color: 'from-warning-500 to-warning-600',
   },
   {
     icon: <HiOutlineBell className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'إشعارات فورية',
     desc: 'تنبيهات لحظية على المتصفح والموبايل لكل حجز جديد، تحديث بيانات، أو طلب من السكرتارية.',
-    color: 'from-fuchsia-500 to-purple-600',
+    color: 'from-slate-500 to-slate-600',
   },
   {
     icon: <HiOutlineShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'حماية وتشفير كامل',
     desc: 'بيانات المرضى مشفّرة بالكامل مع نسخ احتياطي تلقائي وصلاحيات مخصّصة لكل مستخدم.',
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success-500 to-success-600',
   },
 ];
 
@@ -176,19 +176,19 @@ export const LandingPage: React.FC = () => {
               <div className="flex flex-col items-center lg:items-start gap-3 text-center lg:text-right max-w-lg">
                 <div className="flex items-center gap-2 lg:self-center">
                   <p className="text-lg sm:text-2xl font-bold text-slate-800">نظام متكامل لإدارة العيادات</p>
-                  <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 shrink-0" aria-hidden="true" />
+                  <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7 text-brand-600 shrink-0" aria-hidden="true" />
                 </div>
                 <p className="text-sm sm:text-base text-slate-600 font-semibold leading-relaxed">
                   دكتور هايبر — الشريك الطبي والإداري الذكي اللي بيخلّي كل تفصيلة في عيادتك أحسن وأسرع.
                 </p>
                 <div className="flex items-center gap-6 sm:gap-10 pt-1 lg:self-center">
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-blue-600"><Counter target={5500} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-brand-600"><Counter target={5500} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">دواء</div>
                   </div>
                   <div className="w-px h-9 bg-slate-200" />
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-violet-600"><Counter target={200} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-600"><Counter target={200} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">ميزة</div>
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export const LandingPage: React.FC = () => {
           <A>
             <div className="flex items-center justify-center gap-2 mt-8 mb-6 sm:mt-12 sm:mb-8">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 text-center">كل اللي عيادتك محتاجاه في مكان واحد</h2>
-              <HiOutlineSquares2X2 className="w-7 h-7 sm:w-8 sm:h-8 text-violet-600 shrink-0" aria-hidden="true" />
+              <HiOutlineSquares2X2 className="w-7 h-7 sm:w-8 sm:h-8 text-slate-600 shrink-0" aria-hidden="true" />
             </div>
           </A>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
@@ -239,23 +239,23 @@ export const LandingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => go('/user-guide')}
-              className="group w-full mb-5 sm:mb-6 flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-blue-50 via-white to-indigo-50 ring-1 ring-blue-200/60 hover:ring-blue-400 hover:shadow-lg transition-all text-right active:scale-[0.99]"
+              className="group w-full mb-5 sm:mb-6 flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-brand-50 via-white to-brand-50 ring-1 ring-brand-200/60 hover:ring-brand-400 hover:shadow-lg transition-all text-right active:scale-[0.99]"
             >
               <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                   <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm sm:text-base font-black text-slate-900">دليل المستخدم</h3>
-                    <span className="text-[10px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-full">جديد</span>
+                    <span className="text-[10px] font-black bg-brand-600 text-white px-2 py-0.5 rounded-full">جديد</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug mt-0.5">
                     شوف كل ميزات التطبيق خطوه بخطوه قبل ما تسجّل — 10 مواضيع مرتّبه بالترتيب اللي هتستخدمه.
                   </p>
                 </div>
               </div>
-              <div className="shrink-0 hidden sm:flex items-center gap-1 text-blue-700 font-black text-xs group-hover:gap-2 transition-all">
+              <div className="shrink-0 hidden sm:flex items-center gap-1 text-brand-700 font-black text-xs group-hover:gap-2 transition-all">
                 <span>افتح الدليل</span>
                 <HiOutlineArrowRightEndOnRectangle className="w-4 h-4" />
               </div>
@@ -270,18 +270,18 @@ export const LandingPage: React.FC = () => {
             <A>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md"><FaUserDoctor className="w-4 h-4" /></div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-md"><FaUserDoctor className="w-4 h-4" /></div>
                   <h3 className="text-base font-black text-slate-900">للأطباء</h3>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
                   أنشئ حسابك وابدأ تدير عيادتك — الروشتات، المواعيد، الحسابات، والسجلات.
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" onClick={() => go('/signup/doctor')} className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
+                  <button type="button" onClick={() => go('/signup/doctor')} className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
                     <FaUserPlus className="w-3 h-3" />
                     إنشاء حساب
                   </button>
-                  <button type="button" onClick={() => go('/login/doctor')} className="flex items-center gap-1.5 bg-gradient-to-l from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.97]">
+                  <button type="button" onClick={() => go('/login/doctor')} className="flex items-center gap-1.5 bg-gradient-to-l from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.97]">
                     <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                     تسجيل الدخول
                   </button>
@@ -292,13 +292,13 @@ export const LandingPage: React.FC = () => {
             <A delay={80}>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center shadow-md"><FaClipboardUser className="w-4 h-4" /></div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success-600 to-brand-600 text-white flex items-center justify-center shadow-md"><FaClipboardUser className="w-4 h-4" /></div>
                   <h3 className="text-base font-black text-slate-900">للسكرتارية</h3>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
                   ادخل بيانات المرضى وأدر قائمة الانتظار — بإيميل الطبيب والرقم السري.
                 </p>
-                <button type="button" onClick={() => go('/login/secretary')} className="self-start flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
+                <button type="button" onClick={() => go('/login/secretary')} className="self-start flex items-center gap-1.5 bg-success-600 hover:bg-success-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
                   <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                   دخول السكرتارية
                 </button>

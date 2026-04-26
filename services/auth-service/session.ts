@@ -33,13 +33,6 @@ export const signOut = async (): Promise<void> => {
 };
 
 /**
- * الحصول على كائن المستخدم الحالي من Firebase Auth.
- */
-export const getCurrentUser = (): User | null => {
-  return auth.currentUser;
-};
-
-/**
  * الاشتراك في تغييرات حالة المصادقة (دخول/خروج/تغير بيانات).
  */
 export const onAuthStateChanged = (callback: (user: User | null) => void) => {
@@ -47,24 +40,10 @@ export const onAuthStateChanged = (callback: (user: User | null) => void) => {
 };
 
 /**
- * إعادة إرسال رابط توثيق البريد الإلكتروني للأطباء.
+ * الحصول على كائن المستخدم الحالي من Firebase Auth.
  */
-export const resendVerificationEmail = async (): Promise<void> => {
-  const user = getCurrentUser();
-  if (!user) {
-    throw new Error('لا يوجد مستخدم مسجل دخول');
-  }
-
-  if (user.emailVerified) {
-    throw new Error('البريد الإلكتروني موثق بالفعل');
-  }
-
-  try {
-    // إرسال البريد مع إعدادات العودة للتطبيق (ActionCodeSettings)
-    await sendEmailVerification(user, doctorAuthActionCodeSettings);
-  } catch {
-    throw new Error('حدث خطأ أثناء إرسال بريد التوثيق');
-  }
+const getCurrentUser = (): User | null => {
+  return auth.currentUser;
 };
 
 /**

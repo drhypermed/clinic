@@ -91,8 +91,8 @@ export const PublicLoginPage: React.FC = () => {
           <BrandLogo className="w-36 h-36 lg:w-48 lg:h-48" size={192} fetchPriority="high" />
         </div>
 
-        <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 to-blue-500" />
+        <div className="relative bg-white rounded-2xl shadow-card ring-1 ring-slate-200/60 overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-700 to-brand-500" />
           <div className="px-6 pt-6 pb-4 border-b border-slate-200">
             <h2 className="text-2xl font-black text-slate-900 leading-tight">دخول الجمهور</h2>
             <p className="text-sm text-slate-600 font-semibold mt-1">للاطلاع على دليل الأطباء وحجز المواعيد.</p>
@@ -109,7 +109,7 @@ export const PublicLoginPage: React.FC = () => {
             <button
               onClick={handleGoogleLogin}
               disabled={loading || !isLegalReady}
-              className="w-full py-3 px-4 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
+              className="w-full py-3 px-4 bg-gradient-to-b from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-black text-base rounded-lg shadow-cta transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
             >
               {loading ? (
                 <>
@@ -127,10 +127,10 @@ export const PublicLoginPage: React.FC = () => {
             </button>
 
             {mergedError && (
-              <div className="p-3 bg-rose-50 border border-rose-300 rounded-md space-y-3">
+              <div className="p-3 bg-danger-50 border border-danger-300 rounded-md space-y-3">
                 <div className="flex items-start gap-2">
-                  <FaTriangleExclamation className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" />
-                  <p className="text-rose-800 text-sm font-semibold whitespace-pre-wrap leading-relaxed">{mergedError}</p>
+                  <FaTriangleExclamation className="w-5 h-5 flex-shrink-0 text-danger-600 mt-0.5" />
+                  <p className="text-danger-800 text-sm font-semibold whitespace-pre-wrap leading-relaxed">{mergedError}</p>
                 </div>
 
                 {mergedError.includes('مسجل كطبيب') && (
@@ -140,7 +140,7 @@ export const PublicLoginPage: React.FC = () => {
                       clearPublicAuthError();
                       navigate('/login/doctor', { replace: true });
                     }}
-                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-md transition"
+                    className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >
                     الانتقال إلى تسجيل دخول الأطباء
                   </button>

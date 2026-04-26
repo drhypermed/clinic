@@ -1,13 +1,12 @@
 import { collection, doc, query, where, type QueryConstraint } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
-export type SupportedAuthRole = 'doctor' | 'public' | 'secretary';
 
 const normalizeRoleValue = (value: unknown): string => String(value || '').trim().toLowerCase();
 const normalizeOptionalString = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
 
-export const isDoctorAuthRole = (value: unknown): boolean => normalizeRoleValue(value) === 'doctor';
-export const isPublicAuthRole = (value: unknown): boolean => normalizeRoleValue(value) === 'public';
+const isDoctorAuthRole = (value: unknown): boolean => normalizeRoleValue(value) === 'doctor';
+const isPublicAuthRole = (value: unknown): boolean => normalizeRoleValue(value) === 'public';
 
 export const isPublicLikeUserData = (data: Record<string, any> | null | undefined): boolean => {
   if (!data) return false;
@@ -67,5 +66,3 @@ export const getDoctorNotificationDocRef = (userId: string, notificationId: stri
 export const getDoctorUsersQuery = (...constraints: QueryConstraint[]) =>
   query(collection(db, 'users'), where('authRole', '==', 'doctor'), ...constraints);
 
-export const getPublicUsersQuery = (...constraints: QueryConstraint[]) =>
-  query(collection(db, 'users'), where('authRole', '==', 'public'), ...constraints);

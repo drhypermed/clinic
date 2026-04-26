@@ -31,9 +31,7 @@ export const MAX_IMAGES_PER_BRANCH = 6;
 export const createServiceId = () => `service-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 export const createScheduleId = () => `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 export const createSocialId = () => `social-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-export const createBranchId = () => `branch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-export const createDefaultSchedule = (): DoctorClinicScheduleRow[] => [];
+const createBranchId = () => `branch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const isCustomCityValue = (value: string) =>
   value === CUSTOM_CITY_OPTION || value === LEGACY_CUSTOM_CITY_OPTION;

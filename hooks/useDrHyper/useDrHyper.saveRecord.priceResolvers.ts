@@ -10,7 +10,7 @@ import { getDocCacheFirst } from '../../services/firestore/cacheFirst';
 import { db } from '../../services/firebaseConfig';
 import { financialDataService } from '../../services/financial-data';
 
-export interface ResolvedServicePrices {
+interface ResolvedServicePrices {
   examPrice?: number;
   consultationPrice?: number;
 }

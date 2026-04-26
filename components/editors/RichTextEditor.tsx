@@ -45,7 +45,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
     };
 
     return (
-        <div className="border border-slate-300 rounded-lg overflow-hidden bg-white transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
+        <div className="border border-slate-300 rounded-lg overflow-hidden bg-white transition-all focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100">
             <div
                 ref={internalRef}
                 contentEditable

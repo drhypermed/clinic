@@ -30,12 +30,12 @@ export const RejectConfirmModal: React.FC<RejectConfirmModalProps> = ({
       {rejectConfirm && (
         <div className="p-5 sm:p-6 space-y-4" dir="rtl">
           {/* تحذير واضح بأن الإجراء غير قابل للتراجع */}
-          <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+          <div className="rounded-xl bg-danger-50 border border-danger-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <FaTriangleExclamation className="w-4 h-4 text-red-500" />
-              <p className="text-sm font-black text-red-800">هذا الإجراء لا يمكن التراجع عنه</p>
+              <FaTriangleExclamation className="w-4 h-4 text-danger-500" />
+              <p className="text-sm font-black text-danger-800">هذا الإجراء لا يمكن التراجع عنه</p>
             </div>
-            <p className="text-xs text-red-600 leading-relaxed">
+            <p className="text-xs text-danger-600 leading-relaxed">
               سيتم حذف حساب <strong>{rejectConfirm.name}</strong> نهائيا وإضافة بريده الإلكتروني إلى قائمة الحظر.
               لن يتمكن من التسجيل مرة أخرى بنفس البريد.
             </p>
@@ -56,7 +56,7 @@ export const RejectConfirmModal: React.FC<RejectConfirmModalProps> = ({
             </button>
             <button
               onClick={onConfirm}
-              className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-red-700"
+              className="rounded-xl bg-danger-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-danger-700"
             >
               تأكيد الرفض
             </button>
@@ -107,12 +107,12 @@ export const BulkDeleteModal: React.FC<BulkDeleteModalProps> = ({
     >
       <div className="p-5 sm:p-6 space-y-4" dir="rtl">
         {/* تحذير واضح بأن الإجراء خطير */}
-        <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+        <div className="rounded-xl bg-danger-50 border border-danger-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <FaTriangleExclamation className="w-4 h-4 text-red-500" />
-            <p className="text-sm font-black text-red-800">إجراء خطير لا يمكن التراجع عنه</p>
+            <FaTriangleExclamation className="w-4 h-4 text-danger-500" />
+            <p className="text-sm font-black text-danger-800">إجراء خطير لا يمكن التراجع عنه</p>
           </div>
-          <p className="text-xs text-red-600 leading-relaxed">
+          <p className="text-xs text-danger-600 leading-relaxed">
             سيتم حذف <strong>{itemsCount.toLocaleString('ar-EG')}</strong> حساب طبيب معلق نهائياً
             (من Authentication و Firestore و Storage). استخدم هذا الإجراء فقط لتنظيف حسابات الاختبار.
           </p>
@@ -129,15 +129,15 @@ export const BulkDeleteModal: React.FC<BulkDeleteModalProps> = ({
             </div>
             <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
               <div
-                className="h-full bg-red-500 transition-all"
+                className="h-full bg-danger-500 transition-all"
                 style={{
                   width: progress.total > 0 ? `${(progress.done / progress.total) * 100}%` : '0%',
                 }}
               />
             </div>
             <div className="flex items-center gap-4 text-[11px] font-bold">
-              <span className="text-emerald-700">نجح: {progress.succeeded.toLocaleString('ar-EG')}</span>
-              <span className="text-red-700">فشل: {progress.failed.toLocaleString('ar-EG')}</span>
+              <span className="text-success-700">نجح: {progress.succeeded.toLocaleString('ar-EG')}</span>
+              <span className="text-danger-700">فشل: {progress.failed.toLocaleString('ar-EG')}</span>
             </div>
           </div>
         )}
@@ -153,14 +153,14 @@ export const BulkDeleteModal: React.FC<BulkDeleteModalProps> = ({
               value={confirmText}
               onChange={(e) => onConfirmTextChange(e.target.value)}
               placeholder={BULK_DELETE_CONFIRM_PHRASE}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-bold text-slate-800 placeholder-slate-400 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-100"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-bold text-slate-800 placeholder-slate-400 focus:border-danger-400 focus:outline-none focus:ring-1 focus:ring-danger-100"
             />
           </div>
         )}
 
         {/* رسالة خطأ (مثلاً: نص تأكيد غلط أو فشل حذف بعض الطلبات) */}
         {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+          <div className="flex items-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-bold text-danger-700">
             <FaCircleXmark className="w-3 h-3 shrink-0" />
             {error}
           </div>
@@ -177,7 +177,7 @@ export const BulkDeleteModal: React.FC<BulkDeleteModalProps> = ({
           <button
             onClick={onExecute}
             disabled={running || confirmText.trim() !== BULK_DELETE_CONFIRM_PHRASE}
-            className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl bg-danger-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-danger-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {running ? 'جاري الحذف…' : `حذف ${itemsCount.toLocaleString('ar-EG')} حساب`}
           </button>

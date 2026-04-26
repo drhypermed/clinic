@@ -13,33 +13,29 @@
 
 import type { PatientSuggestionOption } from '../add-appointment-form/types';
 
-/** التحقق من قيمة نوع رد الطبيب (للتوست). */
-export const isDoctorResponseToastValue = (value: unknown): value is 'approved' | 'wait' =>
-  value === 'approved' || value === 'wait';
-
 /** توحيد نص البحث (حذف مسافات + lowercase) لمقارنة أسماء المرضى. */
-export const normalizePatientLookupText = (value?: string): string =>
+const normalizePatientLookupText = (value?: string): string =>
   String(value || '').trim().toLocaleLowerCase();
 
 /** توحيد رقم التليفون (أرقام فقط) لمقارنة المطابقة. */
-export const normalizePatientLookupPhone = (value?: string): string =>
+const normalizePatientLookupPhone = (value?: string): string =>
   String(value || '').replace(/\D/g, '');
 
 /** تحويل أي قيمة لرقم ملف موجب صحيح، أو undefined. */
-export const toPositiveFileNumber = (value: unknown): number | undefined => {
+const toPositiveFileNumber = (value: unknown): number | undefined => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
   return Math.floor(parsed);
 };
 
 /** تحويل ISO date لـ ms — مع fallback صفر لو القيمة مش صالحة. */
-export const toDateMsOrZero = (value?: string): number => {
+const toDateMsOrZero = (value?: string): number => {
   const parsed = Date.parse(String(value || ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
 /** اختيار التاريخ الأحدث بين قيمتين — ترجع undefined لو الاثنين فاضيين. */
-export const pickLatestDate = (left?: string, right?: string): string | undefined => {
+const pickLatestDate = (left?: string, right?: string): string | undefined => {
   const leftText = String(left || '').trim();
   const rightText = String(right || '').trim();
   if (!leftText) return rightText || undefined;
@@ -53,7 +49,7 @@ export const pickLatestDate = (left?: string, right?: string): string | undefine
  *   - لو فيه اسم أو تليفون: "np:name|phone"
  *   - كـ fallback: "idx:N" حسب ترتيبه في القائمة
  */
-export const buildPatientDirectoryIdentity = (
+const buildPatientDirectoryIdentity = (
   item: PatientSuggestionOption,
   fallbackIndex: number
 ): string => {
@@ -71,7 +67,7 @@ export const buildPatientDirectoryIdentity = (
  * دمج عنصرَي مريض — الـ incoming يأخذ الأولوية عندما يكون له قيمة،
  * مع الاحتفاظ بأحدث التواريخ من الاثنين (للـ lastExamDate/lastConsultationDate).
  */
-export const mergePatientDirectoryItem = (
+const mergePatientDirectoryItem = (
   current: PatientSuggestionOption,
   incoming: PatientSuggestionOption,
 ): PatientSuggestionOption => {

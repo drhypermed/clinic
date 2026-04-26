@@ -49,12 +49,12 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
   onPublicSlotTimeStrChange, publicSlotTodayStr, publicTimeMin,
   publicSlotAdding, onAddPublicSlot, publicSlots, onRemovePublicSlot, isSaved,
 }) => (
-  <section className="bg-white rounded-2xl shadow-lg border border-amber-200 overflow-hidden">
+  <section className="bg-white rounded-2xl shadow-lg border border-warning-200 overflow-hidden">
     {/* زر التحكم في فتح/غلق القسم */}
     <button
       type="button"
       onClick={onToggleOpen}
-      className="w-full bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-right"
+      className="w-full bg-gradient-to-r from-warning-500 to-warning-600 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-right"
     >
       <h3 className="text-base font-black text-white flex items-center gap-2">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9a9 9 0 019 9m-9 9a9 9 0 019-9" /></svg>
@@ -78,7 +78,7 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
               type="button"
               onClick={onCopyPublicLink}
               disabled={!publicBookingLink}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-sm font-bold shrink-0 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning-100 hover:bg-warning-200 text-warning-800 text-sm font-bold shrink-0 disabled:opacity-50"
             >
               {publicLinkCopied ? 'تم النسخ' : 'نسخ الرابط'}
             </button>
@@ -93,7 +93,7 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
               value={publicFormTitle}
               onChange={(e) => onPublicFormTitleChange(e.target.value)}
               placeholder="مثال: حجز موعد — عيادة د. عبدالرحمن"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold text-sm resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold text-sm resize-none"
               rows={1}
             />
           </div>
@@ -104,14 +104,14 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
               onChange={(e) => onPublicFormContactInfoChange(e.target.value)}
               placeholder="مثال: للاستفسار: 01092805293 — العنوان: بنها"
               rows={2}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold text-sm resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold text-sm resize-none"
             />
           </div>
           <div className="flex items-center gap-2">
-            <button type="submit" disabled={publicFormSaving} className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm disabled:opacity-60">
+            <button type="submit" disabled={publicFormSaving} className="px-3 py-1.5 rounded-lg bg-warning-600 hover:bg-warning-700 text-white font-bold text-sm disabled:opacity-60">
               {publicFormSaving ? 'جاري الحفظ' : 'حفظ إعدادات الفورم'}
             </button>
-            {isSaved && <span className="text-green-600 font-bold text-sm animate-pulse">تم الحفظ بنجاح</span>}
+            {isSaved && <span className="text-success-600 font-bold text-sm animate-pulse">تم الحفظ بنجاح</span>}
           </div>
         </form>
 
@@ -127,7 +127,7 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
               <label className="block text-xs font-bold text-slate-500 mb-0.5">الوقت</label>
               <input type="time" value={publicSlotTimeStr} min={publicTimeMin} onChange={(e) => onPublicSlotTimeStrChange(e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-sm font-bold" />
             </div>
-            <button type="submit" disabled={publicSlotAdding || !publicSlotDateStr || !publicSlotTimeStr} className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm disabled:opacity-50">
+            <button type="submit" disabled={publicSlotAdding || !publicSlotDateStr || !publicSlotTimeStr} className="px-3 py-1.5 rounded-lg bg-warning-600 hover:bg-warning-700 text-white font-bold text-sm disabled:opacity-50">
               {publicSlotAdding ? 'جاري الإضافة' : 'إضافة'}
             </button>
           </form>
@@ -143,7 +143,7 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
                   <span className="text-sm font-bold text-slate-700">
                     {formatPublicSlotLabel(slot.dateTime)}
                   </span>
-                  <button onClick={() => onRemovePublicSlot(slot.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600" title="حذف">
+                  <button onClick={() => onRemovePublicSlot(slot.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-danger-50 hover:text-danger-600" title="حذف">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </li>

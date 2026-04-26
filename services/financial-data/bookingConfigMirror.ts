@@ -24,7 +24,7 @@ import { normalizeBookingSecret, parseBranchDocKey, toPriceText } from './normal
  * لو تم تمرير branchId (مش main)، يقرأ الـ secret من document الفرع.
  * لو branchId = main أو undefined، يستخدم الـ secret العام من ملف المستخدم.
  */
-export const getUserBookingSecret = async (userId: string, branchId?: string): Promise<string> => {
+const getUserBookingSecret = async (userId: string, branchId?: string): Promise<string> => {
     try {
         if (!userId) return '';
 

@@ -65,11 +65,11 @@ export const RenalDoseAdjustment: React.FC = () => {
                             <div className="flex rounded-xl overflow-hidden">
                                 <button
                                     onClick={() => setGender('male')}
-                                    className={`flex-1 py-2 text-xs font-black transition-all ${gender === 'male' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}
+                                    className={`flex-1 py-2 text-xs font-black transition-all ${gender === 'male' ? 'bg-gradient-to-r from-brand-600 to-brand-600 text-white' : 'bg-slate-100 text-slate-500'}`}
                                 >ذكر</button>
                                 <button
                                     onClick={() => setGender('female')}
-                                    className={`flex-1 py-2 text-xs font-black transition-all ${gender === 'female' ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white' : 'bg-slate-100 text-slate-500'}`}
+                                    className={`flex-1 py-2 text-xs font-black transition-all ${gender === 'female' ? 'bg-gradient-to-r from-slate-500 to-danger-600 text-white' : 'bg-slate-100 text-slate-500'}`}
                                 >أنثى</button>
                             </div>
                         </div>
@@ -79,7 +79,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                                 type="number"
                                 value={age}
                                 onChange={e => setAge(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-800 placeholder-slate-400 text-center focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-800 placeholder-slate-400 text-center focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                                 placeholder="60"
                             />
                         </div>
@@ -89,7 +89,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                                 type="number"
                                 value={weight}
                                 onChange={e => setWeight(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-800 placeholder-slate-400 text-center focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-800 placeholder-slate-400 text-center focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                                 placeholder="75"
                             />
                         </div>
@@ -100,14 +100,14 @@ export const RenalDoseAdjustment: React.FC = () => {
                                 step="0.1"
                                 value={scr}
                                 onChange={e => setScr(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-red-600 placeholder-slate-400 text-center focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-danger-600 placeholder-slate-400 text-center focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                                 placeholder="1.2"
                             />
                         </div>
                     </div>
 
                     {(age && weight && scr) && (
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 rounded-xl flex items-center justify-between shadow-md" dir="ltr">
+                        <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-3 py-2 rounded-xl flex items-center justify-between shadow-md" dir="ltr">
                             <span className="text-white/80 font-bold text-xs">CrCl (Cockcroft-Gault):</span>
                             <span className="text-lg font-black text-white">{calculateCrCl()} <span className="text-[10px] font-bold text-white/70">ml/min</span></span>
                         </div>
@@ -126,7 +126,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                     <button
                         onClick={handleCalculate}
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white font-black text-sm bg-gradient-to-br from-emerald-600 to-green-700 shadow-[0_8px_20px_-8px_rgba(5,150,105,0.5)] hover:shadow-lg transition-all active:scale-[0.98] disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white font-black text-sm bg-gradient-to-br from-success-600 to-success-700 shadow-cta hover:shadow-lg transition-all active:scale-[0.98] disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                     >
                         {loading ? (
                             <LoadingText>جاري التحليل</LoadingText>
@@ -134,7 +134,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                     </button>
 
                     {error && (
-                        <div className="rounded-xl bg-gradient-to-br from-red-500 to-rose-600 p-2.5 text-white font-bold text-xs text-center">
+                        <div className="rounded-xl bg-gradient-to-br from-danger-500 to-danger-600 p-2.5 text-white font-bold text-xs text-center">
                             {error}
                         </div>
                     )}
@@ -147,9 +147,9 @@ export const RenalDoseAdjustment: React.FC = () => {
                 ) : (
                     <div className="space-y-2">
                         <div className={`p-3 rounded-2xl shadow-md ${
-                            result.status === 'normal' ? 'bg-gradient-to-br from-emerald-600 to-green-700' :
-                            result.status === 'adjust' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                            'bg-gradient-to-br from-red-500 to-rose-600'
+                            result.status === 'normal' ? 'bg-gradient-to-br from-success-600 to-success-700' :
+                            result.status === 'adjust' ? 'bg-gradient-to-br from-warning-500 to-warning-600' :
+                            'bg-gradient-to-br from-danger-500 to-danger-600'
                         }`}>
                             <p className="font-black text-sm text-white mb-1">
                                 {result.status === 'normal' && 'الجرعة المعتادة (لا حاجة للتعديل)'}
@@ -159,7 +159,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                             <p className="font-bold text-white/90 text-xs leading-relaxed">{result.recommendation}</p>
                         </div>
 
-                        <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-3 shadow-md">
+                        <div className="bg-gradient-to-br from-brand-600 to-brand-600 rounded-2xl p-3 shadow-md">
                             <p className="text-[10px] font-black text-white/70 mb-1">التفاصيل العلمية</p>
                             <p className="text-[11px] font-bold text-white leading-relaxed">{result.reasoning}</p>
                             {result.reference && (
@@ -168,7 +168,7 @@ export const RenalDoseAdjustment: React.FC = () => {
                         </div>
 
                         {result.criticalNote && (
-                            <div className="p-2.5 bg-gradient-to-br from-red-600 to-rose-700 rounded-xl text-white font-bold text-xs shadow-md">
+                            <div className="p-2.5 bg-gradient-to-br from-danger-600 to-danger-700 rounded-xl text-white font-bold text-xs shadow-md">
                                 {result.criticalNote}
                             </div>
                         )}

@@ -1368,7 +1368,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_1_RAW: Medication[] = [
 	},
 ];
 
-export const ANTIPSYCHOTIC_DRUGS_PART_1: Medication[] = enhanceAntipsychoticList(ANTIPSYCHOTIC_DRUGS_PART_1_RAW);
+const ANTIPSYCHOTIC_DRUGS_PART_1: Medication[] = enhanceAntipsychoticList(ANTIPSYCHOTIC_DRUGS_PART_1_RAW);
 
 export const ANTIPSYCHOTIC_DRUGS: Medication[] = [
 	...ANTIPSYCHOTIC_DRUGS_PART_1,

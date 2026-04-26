@@ -18,7 +18,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from 'react';
-import { collection, doc, query, setDoc } from 'firebase/firestore';
+import { collection, doc, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../../../services/firebaseConfig';
 import { getDocCacheFirst, getDocsCacheFirst } from '../../../services/firestore/cacheFirst';
 import { getDoctorUsersQuery } from '../../../services/firestore/profileRoles';
@@ -48,11 +48,19 @@ const SUMMARY_COLLECTION = 'settings';
 const SUMMARY_DOC_ID = 'adminDashboardStats';
 
 /** شكل ملخص السنة الحالية المخزن مركزياً (تحديث السنة الحالية فوري عبر Cloud Function). */
-export interface CurrentYearSummarySnapshot {
+interface CurrentYearSummarySnapshot {
   totalRevenue: number;
+  // عدادات باقة برو
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  // عدادات باقة برو ماكس + إيراد منفصل
+  // كانت ناقصة من الملخص — كل عداد برو ماكس كان يظهر صفر في العرض السنوي
+  // للسنة الحالية لأن الواجهة ما كانتش بتقرأها رغم وجودها في الملخص.
+  proMaxMonthlyCount: number;
+  proMaxSixMonthsCount: number;
+  proMaxYearlyCount: number;
+  proMaxRevenue: number;
 }
 
 interface UseFinancialDataParams {
@@ -127,11 +135,19 @@ export const useFinancialData = ({
         return null;
       }
 
+      const toSafeCount = (value: unknown): number =>
+        Number.isFinite(Number(value)) ? Number(value) : 0;
+
       const nextSummary: CurrentYearSummarySnapshot = {
-        totalRevenue: Number.isFinite(Number(raw?.totalRevenue)) ? Number(raw?.totalRevenue) : 0,
-        monthlyCount: Number.isFinite(Number(raw?.monthlyPlansCount)) ? Number(raw?.monthlyPlansCount) : 0,
-        sixMonthsCount: Number.isFinite(Number(raw?.sixMonthsPlansCount)) ? Number(raw?.sixMonthsPlansCount) : 0,
-        yearlyCount: Number.isFinite(Number(raw?.yearlyPlansCount)) ? Number(raw?.yearlyPlansCount) : 0,
+        totalRevenue: toSafeCount(raw?.totalRevenue),
+        monthlyCount: toSafeCount(raw?.monthlyPlansCount),
+        sixMonthsCount: toSafeCount(raw?.sixMonthsPlansCount),
+        yearlyCount: toSafeCount(raw?.yearlyPlansCount),
+        // عدادات برو ماكس — موجودة في الملخص لكن كانت محذوفة من القراءة قبل الإصلاح
+        proMaxMonthlyCount: toSafeCount(raw?.proMaxMonthlyPlansCount),
+        proMaxSixMonthsCount: toSafeCount(raw?.proMaxSixMonthsPlansCount),
+        proMaxYearlyCount: toSafeCount(raw?.proMaxYearlyPlansCount),
+        proMaxRevenue: toSafeCount(raw?.proMaxRevenue),
       };
 
       setCurrentYearSummary(nextSummary);
@@ -251,8 +267,16 @@ export const useFinancialData = ({
         return;
       }
 
-      // غير ذلك: نحمل أطباء Pro + الأسعار، ثم نستدعي الحاسبة النقية
-      const doctorUsersSnap = await getDocsCacheFirst(getDoctorUsersQuery());
+      // غير ذلك: نحمل الأطباء + الأسعار، ثم نستدعي الحاسبة النقية.
+      // ملاحظة: للسنوات القديمة لازم نشمل الأطباء اللي رجعوا free لكن عندهم
+      // subscriptionHistory (اشتراكات سابقة). لذلك نشيل فلتر accountType للـ
+      // historical years ونعتمد على cache + الفلتر داخل الـ calculator.
+      // للسنة الحالية + monthly view: نفلتر بـ accountType لتقليل القراءات.
+      const isHistorical = selectedYear < currentCalendarYear;
+      const doctorsQuery = isHistorical
+        ? getDoctorUsersQuery()
+        : getDoctorUsersQuery(where('accountType', 'in', ['premium', 'pro_max']));
+      const doctorUsersSnap = await getDocsCacheFirst(doctorsQuery);
       const doctors = doctorUsersSnap.docs.map(
         (snapshotDoc) => snapshotDoc.data() as Record<string, any>
       );

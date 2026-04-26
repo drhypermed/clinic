@@ -345,7 +345,11 @@ export const generateClinicalTimelineNarrative = async (
     // (بدل الـ dynamic الافتراضي اللي ممكن يديله 500 بس). ده بيعطي توازن
     // ممتاز: جودة أعلى من الـ dynamic، مع تكلفة معقولة للاشتراك $15/شهر.
     // لو لاحقاً رفعت سعر الاشتراك، ممكن ترفعه لـ 2048 لجودة أعلى.
-    const raw = await generateJson(prompt, { temperature: 0.2, thinkingBudget: 1024 });
+    const raw = await generateJson(prompt, {
+      temperature: 0.2,
+      thinkingBudget: 1024,
+      feature: 'medical_report', // تتسجل في تقارير الاستهلاك تحت "طباعة تقرير طبي"
+    });
 
     return {
       narrative: normalizeNarrative(raw, snapshot, language),

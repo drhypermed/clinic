@@ -9,7 +9,7 @@ import type {
   OpenClinicalAiReportWindowInput,
 } from './types';
 
-export interface CreateAndOpenClinicalAiPatientReportParams {
+interface CreateAndOpenClinicalAiPatientReportParams {
   patientFile: PatientFileData;
   language: ClinicalReportLanguage;
   pageSize: ClinicalReportPageSize;

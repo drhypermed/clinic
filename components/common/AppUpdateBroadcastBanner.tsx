@@ -1,7 +1,6 @@
 ﻿import React, { useEffect, useMemo, useRef } from 'react';
-import { collection, limit, orderBy, query } from 'firebase/firestore';
+import { collection, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
-import { getDocsCacheFirst } from '../../services/firestore/cacheFirst';
 import type { UpdateBroadcastAudience } from '../../services/updateBroadcastService';
 import { applyPendingPwaUpdateNow } from '../../services/pwaUpdateService';
 
@@ -11,6 +10,7 @@ type RolloutRecord = {
   id: string;
   targetAudience: UpdateBroadcastAudience;
   status: string;
+  createdAtMs: number;
 };
 
 type AppUpdateBroadcastBannerProps = {
@@ -25,9 +25,18 @@ const TARGETS_BY_AUDIENCE: Record<AppAudience, UpdateBroadcastAudience[]> = {
   public: ['public', 'all'],
 };
 
+// نتجاهل أي رولأوت أقدم من ٢٤ ساعة لمنع تطبيق رولأوت قديم على متصفح جديد
+// (مستخدم يفتح التطبيق لأول مرة على جهازه، ما يستحقش reload لرولأوت قديم).
+const ROLLOUT_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
 const toSafeString = (value: unknown, fallback = ''): string => {
   const normalized = String(value || '').trim();
   return normalized || fallback;
+};
+
+const toSafeNumber = (value: unknown): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
 };
 
 const makeAppliedStorageKey = (audience: AppAudience, scopeId?: string): string => {
@@ -62,45 +71,57 @@ export const AppUpdateBroadcastBanner: React.FC<AppUpdateBroadcastBannerProps> =
 
   useEffect(() => {
     const allowedTargets = TARGETS_BY_AUDIENCE[audience];
-    let cancelled = false;
+    const cutoffMs = Date.now() - ROLLOUT_LOOKBACK_MS;
 
+    // اشتراك لحظي بدلاً من قراءة واحدة — لما الأدمن ينفذ تحديث وكل التطبيقات
+    // المفتوحة تلاحظه فوراً وتعيد تحميل نفسها (هذا الوعد في رسالة الـ Cloud Function).
+    // الفلتر بالـ status و createdAtMs يقلل القراءات: المستخدم لا يقرأ كل الرولأوتس،
+    // فقط الناجحة من آخر ٢٤ ساعة (عادة ٠-٢ سجل).
     const rolloutQuery = query(
       collection(db, 'appUpdateRollouts'),
+      where('status', '==', 'sent'),
+      where('createdAtMs', '>', cutoffMs),
       orderBy('createdAtMs', 'desc'),
-      limit(25)
+      limit(5),
     );
 
-    getDocsCacheFirst(rolloutQuery).then((snapshot) => {
-      if (cancelled) return;
-      if (isApplyingRef.current) return;
+    const unsubscribe = onSnapshot(
+      rolloutQuery,
+      (snapshot) => {
+        if (isApplyingRef.current) return;
 
-      const latestApplicableRollout = snapshot.docs
-        .map((docSnap) => {
-          const data = docSnap.data() as Record<string, unknown>;
-          return {
-            id: docSnap.id,
-            targetAudience: toSafeString(data.targetAudience, 'all') as UpdateBroadcastAudience,
-            status: toSafeString(data.status, 'sent'),
-          } as RolloutRecord;
-        })
-        .find((record) => record.status === 'sent' && allowedTargets.includes(record.targetAudience));
+        const latestApplicableRollout = snapshot.docs
+          .map((docSnap) => {
+            const data = docSnap.data() as Record<string, unknown>;
+            return {
+              id: docSnap.id,
+              targetAudience: toSafeString(data.targetAudience, 'all') as UpdateBroadcastAudience,
+              status: toSafeString(data.status, 'sent'),
+              createdAtMs: toSafeNumber(data.createdAtMs),
+            } as RolloutRecord;
+          })
+          .find((record) => allowedTargets.includes(record.targetAudience));
 
-      if (!latestApplicableRollout) return;
+        if (!latestApplicableRollout) return;
 
-      const appliedRolloutId = readAppliedRolloutId(appliedStorageKey);
-      if (appliedRolloutId === latestApplicableRollout.id) return;
+        const appliedRolloutId = readAppliedRolloutId(appliedStorageKey);
+        if (appliedRolloutId === latestApplicableRollout.id) return;
 
-      isApplyingRef.current = true;
-      saveAppliedRolloutId(appliedStorageKey, latestApplicableRollout.id);
+        isApplyingRef.current = true;
+        saveAppliedRolloutId(appliedStorageKey, latestApplicableRollout.id);
 
-      void applyPendingPwaUpdateNow().finally(() => {
-        setTimeout(() => {
-          isApplyingRef.current = false;
-        }, 4000);
-      });
-    }).catch(() => {});
+        void applyPendingPwaUpdateNow().finally(() => {
+          setTimeout(() => {
+            isApplyingRef.current = false;
+          }, 4000);
+        });
+      },
+      () => {
+        // فشل الاشتراك — لا نفعل شيء (التحديث يحصل عند فتحة لاحقة).
+      },
+    );
 
-    return () => { cancelled = true; };
+    return () => unsubscribe();
   }, [appliedStorageKey, audience]);
 
   return null;

@@ -21,7 +21,7 @@ export const MedicationEditModalFooter: React.FC<Props> = ({
       disabled={loading}
       className={`${
         isNewMedication
-          ? 'bg-white hover:bg-red-50 border-red-200 text-red-600'
+          ? 'bg-white hover:bg-danger-50 border-danger-200 text-danger-600'
           : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700'
       } border font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto`}
     >
@@ -38,7 +38,7 @@ export const MedicationEditModalFooter: React.FC<Props> = ({
       <button
         onClick={onSave}
         disabled={loading}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
+        className="bg-success-600 hover:bg-success-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors active:scale-[0.98] text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
       >
         {loading ? (
           <>

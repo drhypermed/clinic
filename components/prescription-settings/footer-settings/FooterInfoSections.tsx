@@ -20,10 +20,10 @@ export const FooterInfoSections: React.FC<FooterSectionSharedProps> = ({ footer,
                 isOpen={openSection === 'address'}
                 onToggle={() => toggle('address')}
                 color="emerald"
-                className="p-4 bg-gradient-to-br from-emerald-50 to-white"
+                className="p-4 bg-gradient-to-br from-success-50 to-white"
             >
                 <div className="space-y-4">
-                    <label className="text-sm font-bold text-emerald-800 block">نص العنوان</label>
+                    <label className="text-sm font-bold text-success-800 block">نص العنوان</label>
                     {/* محرر نصوص غنية لإدخال العنوان مع دعم الألوان والتنسيقات */}
                     <div className="border rounded-lg overflow-hidden shadow-sm">
                         <RichTextEditor
@@ -49,10 +49,10 @@ export const FooterInfoSections: React.FC<FooterSectionSharedProps> = ({ footer,
                 isOpen={openSection === 'workingHours'}
                 onToggle={() => toggle('workingHours')}
                 color="amber"
-                className="p-4 bg-gradient-to-br from-amber-50 to-white"
+                className="p-4 bg-gradient-to-br from-warning-50 to-white"
             >
                 <div className="space-y-4">
-                    <label className="text-sm font-bold text-amber-800 block">تفاصيل المواعيد</label>
+                    <label className="text-sm font-bold text-warning-800 block">تفاصيل المواعيد</label>
                     <div className="border rounded-lg overflow-hidden shadow-sm">
                         <RichTextEditor
                             ref={el => { if (editorRefs.current) editorRefs.current['workingHours'] = el; }}
@@ -77,10 +77,10 @@ export const FooterInfoSections: React.FC<FooterSectionSharedProps> = ({ footer,
                 isOpen={openSection === 'consultation'}
                 onToggle={() => toggle('consultation')}
                 color="indigo"
-                className="p-4 bg-gradient-to-br from-indigo-50 to-white"
+                className="p-4 bg-gradient-to-br from-brand-50 to-white"
             >
                 <div className="space-y-4">
-                    <label className="text-sm font-bold text-indigo-800 block">نص مدة الاستشارة</label>
+                    <label className="text-sm font-bold text-brand-800 block">نص مدة الاستشارة</label>
                     <div className="border rounded-lg overflow-hidden shadow-sm">
                         <RichTextEditor
                             ref={el => { if (editorRefs.current) editorRefs.current['consultation'] = el; }}

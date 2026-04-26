@@ -41,23 +41,3 @@ export const safeLsRemove = (key: string): void => {
   }
 };
 
-/** قراءة آمنة لقيمة JSON وتحليلها؛ ترجع null عند الفشل أو عدم الوجود */
-export const safeLsGetJson = <T = unknown>(key: string): T | null => {
-  const raw = safeLsGet(key);
-  if (raw == null) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-};
-
-/** كتابة آمنة لقيمة بعد تسلسلها إلى JSON */
-export const safeLsSetJson = (key: string, value: unknown): void => {
-  try {
-    const serialized = JSON.stringify(value);
-    safeLsSet(key, serialized);
-  } catch {
-    /* تجاهل أخطاء التسلسل */
-  }
-};

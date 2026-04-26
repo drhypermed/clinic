@@ -36,7 +36,7 @@ const SIGNUP_DOCTOR_PATH = '/signup/doctor';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 const inputBase =
-  'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 hover:border-slate-400 transition';
+  'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 hover:border-slate-400 transition';
 
 const labelBase = 'block text-sm font-bold text-slate-900 mb-1.5';
 
@@ -219,9 +219,25 @@ export const DoctorSignupPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       }), { merge: true });
 
+      // ─ إجراء أمان: signout الطبيب فور تسجيل البيانات.
+      // محدش يدخل التطبيق غير بعد ما الأدمن يعتمده يدوياً (verificationStatus = 'approved').
+      // الـuseAuth guard هيمنعه برضه (defense in depth)، لكن signout هنا أوضح
+      // للمستخدم: ينتقل مباشرة لـ/login بدون وميض على /home ثم signout مفاجئ.
+      try { await firebaseSignOut(auth); } catch { /* best effort — الـguard في useAuth backup */ }
+
       localStorage.setItem(SESSION_ROLE_STORAGE_KEY, 'doctor');
       clearAuthFlowGuard();
-      window.location.href = '/home';
+
+      // رسالة واضحة للطبيب: تم استلام طلبك، استنى الموافقة
+      alert(
+        '✅ تم تسجيل طلبك بنجاح!\n\n' +
+        '📋 سيتم مراجعة حسابك من الإدارة خلال 24 ساعة.\n' +
+        '📧 ستصلك رسالة على بريدك بمجرد الاعتماد.\n\n' +
+        '🔐 لا يمكنك الدخول قبل اعتماد الإدارة لحسابك.',
+      );
+
+      // redirect لـ/login (مش /home) — الطبيب يستنى الاعتماد
+      window.location.href = '/login';
     } catch (err: any) {
       try { await firebaseSignOut(auth); } catch { /* best effort */ }
       localStorage.removeItem(SESSION_ROLE_STORAGE_KEY);
@@ -241,8 +257,8 @@ export const DoctorSignupPage: React.FC = () => {
           <BrandLogo className="w-36 h-36 lg:w-48 lg:h-48" size={192} fetchPriority="high" />
         </div>
 
-        <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 to-blue-500" />
+        <div className="relative bg-white rounded-2xl shadow-card ring-1 ring-slate-200/60 overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-700 to-brand-500" />
           <div className="px-6 pt-6 pb-4 border-b border-slate-200">
             <h2 className="text-2xl font-black text-slate-900 leading-tight">إنشاء حساب جديد للطبيب</h2>
             <p className="text-sm text-slate-600 font-semibold mt-1">أكمل بياناتك ثم سجّل بحساب Google.</p>
@@ -251,7 +267,7 @@ export const DoctorSignupPage: React.FC = () => {
           <div className="px-6 py-5 space-y-4">
             <div>
               <label htmlFor="doctorName" className={labelBase}>
-                الاسم الكامل <span className="text-rose-600">*</span>
+                الاسم الكامل <span className="text-danger-600">*</span>
               </label>
               <input
                 id="doctorName"
@@ -266,7 +282,7 @@ export const DoctorSignupPage: React.FC = () => {
 
             <div>
               <label htmlFor="specialty" className={labelBase}>
-                التخصص الطبي <span className="text-rose-600">*</span>
+                التخصص الطبي <span className="text-danger-600">*</span>
               </label>
               <select
                 id="specialty"
@@ -284,7 +300,7 @@ export const DoctorSignupPage: React.FC = () => {
 
             <div>
               <label htmlFor="whatsapp" className={labelBase}>
-                رقم واتساب <span className="text-rose-600">*</span>
+                رقم واتساب <span className="text-danger-600">*</span>
               </label>
               <input
                 id="whatsapp"
@@ -299,7 +315,7 @@ export const DoctorSignupPage: React.FC = () => {
 
             <div>
               <label htmlFor="licenseImage" className={labelBase}>
-                صورة الكارنيه أو الترخيص <span className="text-rose-600">*</span>
+                صورة الكارنيه أو الترخيص <span className="text-danger-600">*</span>
               </label>
               <input
                 id="licenseImage"
@@ -310,7 +326,7 @@ export const DoctorSignupPage: React.FC = () => {
               />
               <label
                 htmlFor="licenseImage"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-dashed border-slate-400 rounded-md text-slate-800 text-sm font-bold hover:bg-slate-100 hover:border-blue-500 cursor-pointer transition"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-dashed border-slate-400 rounded-md text-slate-800 text-sm font-bold hover:bg-slate-100 hover:border-brand-500 cursor-pointer transition"
               >
                 <FaCamera className="w-4 h-4 text-slate-600" />
                 <span className="truncate max-w-[220px]">
@@ -331,7 +347,7 @@ export const DoctorSignupPage: React.FC = () => {
                       setLicenseImage(null);
                     }}
                     aria-label="إزالة الصورة"
-                    className="absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-7 h-7 flex items-center justify-center shadow transition"
+                    className="absolute -top-2 -right-2 bg-danger-600 hover:bg-danger-700 text-white rounded-full w-7 h-7 flex items-center justify-center shadow transition"
                   >
                     <FaXmark className="w-4 h-4" />
                   </button>
@@ -340,10 +356,10 @@ export const DoctorSignupPage: React.FC = () => {
             </div>
 
             {mergedError && (
-              <div className="p-3 bg-rose-50 border border-rose-300 rounded-md space-y-3">
+              <div className="p-3 bg-danger-50 border border-danger-300 rounded-md space-y-3">
                 <div className="flex items-start gap-2">
-                  <FaTriangleExclamation className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" />
-                  <div className="text-rose-800 text-sm font-semibold whitespace-pre-wrap leading-relaxed">
+                  <FaTriangleExclamation className="w-5 h-5 flex-shrink-0 text-danger-600 mt-0.5" />
+                  <div className="text-danger-800 text-sm font-semibold whitespace-pre-wrap leading-relaxed">
                     {mergedError}
                   </div>
                 </div>
@@ -352,7 +368,7 @@ export const DoctorSignupPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/login/doctor', { replace: true })}
-                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-md transition"
+                    className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >
                     اذهب لصفحة تسجيل الدخول
                   </button>
@@ -362,7 +378,7 @@ export const DoctorSignupPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/login/public', { replace: true })}
-                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-md transition"
+                    className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >
                     اذهب لتسجيل دخول الجمهور
                   </button>
@@ -373,7 +389,7 @@ export const DoctorSignupPage: React.FC = () => {
                     href="https://wa.me/201092805293"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-md transition"
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-success-600 hover:bg-success-700 text-white font-bold text-sm rounded-md transition"
                   >
                     <FaWhatsapp className="w-4 h-4" />
                     واتساب الإدارة
@@ -405,7 +421,7 @@ export const DoctorSignupPage: React.FC = () => {
                 !whatsapp.trim() ||
                 !licenseImage
               }
-              className="w-full py-3 px-4 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-base rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.1),0_4px_12px_-4px_rgba(37,99,235,0.45)] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
+              className="w-full py-3 px-4 bg-gradient-to-b from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-black text-base rounded-lg shadow-cta transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-[0.99]"
             >
               {(loading || isChecking) ? (
                 <>
@@ -426,7 +442,7 @@ export const DoctorSignupPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/user-guide')}
-              className="w-full py-2.5 px-4 bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 bg-white border-2 border-brand-600 text-brand-700 hover:bg-brand-50 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <span>دليل استخدام التطبيق</span>
             </button>
@@ -435,7 +451,7 @@ export const DoctorSignupPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login/doctor', { replace: true })}
-                className="text-sm font-bold text-blue-700 hover:underline"
+                className="text-sm font-bold text-brand-700 hover:underline"
               >
                 لديك حساب بالفعل؟ تسجيل الدخول
               </button>

@@ -16,6 +16,9 @@ export interface PatientAccount {
   totalReviews: number;
   averageRating: string;
   bookings: PublicUserBooking[];
+  // علامة هل تم جلب حجوزات هذا المريض من Firestore (lazy loading)
+  // false = الإحصائيات أصفار حالياً ولم تُجلب الحجوزات بعد لتوفير قراءات
+  bookingsLoaded?: boolean;
 }
 
 export interface PatientManagementPanelProps {
@@ -32,6 +35,10 @@ export interface PatientManagementTableProps {
   onEnableAccount: (patientId: string) => Promise<void> | void;
   onDeletePatient: (patientId: string) => Promise<void> | void;
   onOpenReviews: (patient: PatientAccount) => void;
+  // جلب الإحصائيات لمريض محدد عند الطلب (lazy)
+  onLoadStats: (patientId: string) => Promise<void> | void;
+  // معرّف المريض الذي تُجلب إحصائياته الآن (لإظهار loading state على زر واحد فقط)
+  bookingsLoadingId: string | null;
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => Promise<void> | void;

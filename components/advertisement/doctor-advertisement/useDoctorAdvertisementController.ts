@@ -37,6 +37,13 @@ import {
   validateDoctorAdBeforeSave,
 } from './useDoctorAdvertisementController.helpers';
 import { useDoctorAdBranches } from './useDoctorAdBranches';
+// ─ مكتبات لقراءة باقة الطبيب الحالية + إعدادات الأدمن (لحساب الفروع المسموح بيها) ─
+import { getAccountTypeControls } from '../../../services/accountTypeControlsService';
+import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
+import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
+import { resolveEffectiveAccountTypeFromData } from '../../../utils/accountStatusTime';
+import { syncTrustedTime, getTrustedNowMs } from '../../../utils/trustedTime';
+import { MAX_BRANCHES_PER_DOCTOR as DEFAULT_MAX_BRANCHES } from './utils';
 
 export const useDoctorAdvertisementController = ({
   doctorId,
@@ -64,8 +71,43 @@ export const useDoctorAdvertisementController = ({
   const [socialLinks, setSocialLinks] = useState<DoctorSocialLink[]>([]);
   const [yearsExperience, setYearsExperience] = useState('');
 
+  // ─── حد الفروع المسموح به للباقة الحالية ───
+  // الافتراضي: قيمة fallback ثابتة (5) لحد ما الإعدادات الفعلية من الأدمن تتحمل.
+  // بعد ما تتحمل، بنحدّث الـstate ده فيتطبق فوراً (canAddBranch بيتحدث).
+  const [maxBranchesForPlan, setMaxBranchesForPlan] = useState<number>(DEFAULT_MAX_BRANCHES);
+
+  useEffect(() => {
+    if (!safeDoctorId) return;
+    let mounted = true;
+    (async () => {
+      try {
+        // 1) نجيب إعدادات الأدمن (الحدود حسب الباقة)
+        // 2) نحدد باقة الطبيب الحالية (مع احترام انتهاء الاشتراك)
+        // 3) نحسب الحد الفعلي
+        const [controls, userSnap] = await Promise.all([
+          getAccountTypeControls(),
+          getDocCacheFirst(getUserProfileDocRef(safeDoctorId)),
+        ]);
+        if (!mounted) return;
+        await syncTrustedTime();
+        const userData = userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : {};
+        const tier = resolveEffectiveAccountTypeFromData(userData, getTrustedNowMs());
+        const limit = tier === 'pro_max'
+          ? (controls.proMaxBranchesMaxCount ?? controls.premiumBranchesMaxCount)
+          : tier === 'premium'
+            ? controls.premiumBranchesMaxCount
+            : controls.freeBranchesMaxCount;
+        const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit as number) : DEFAULT_MAX_BRANCHES;
+        if (mounted) setMaxBranchesForPlan(safeLimit);
+      } catch (err) {
+        console.warn('Failed to resolve doctor branch limit, using default:', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [safeDoctorId]);
+
   // ─── فروع الطبيب (كل فرع بمعلوماته المستقلة) ───
-  const branchesApi = useDoctorAdBranches();
+  const branchesApi = useDoctorAdBranches([], maxBranchesForPlan);
   const { branches, activeBranchId, activeBranch } = branchesApi;
 
   // ─── حالة رفع الصور (مشتركة — كل صورة بتروح للفرع النشط) ───
@@ -418,6 +460,8 @@ export const useDoctorAdvertisementController = ({
     branches, activeBranchId, activeBranch,
     setActiveBranchId: branchesApi.setActiveBranchId,
     canAddBranch: branchesApi.canAddBranch,
+    // ─ الحد الفعلي للفروع للباقة الحالية — يُعرض في الـUI ("X من Y فروع")
+    maxBranchesForPlan,
     addBranch: branchesApi.addBranch,
     removeBranch: branchesApi.removeBranch,
     renameBranch: branchesApi.renameBranch,

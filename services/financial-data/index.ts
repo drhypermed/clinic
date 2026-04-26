@@ -56,7 +56,6 @@ import {
 
 export type {
     DailyFinancialData,
-    FinancialLabels,
     MonthlyFinancialData,
     PriceChangeHistoryEntry,
 } from './types';

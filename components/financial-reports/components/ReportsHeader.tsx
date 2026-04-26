@@ -115,7 +115,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                 max={todayStr}
                                 onChange={(e) => onSetDay(e.target.value)}
                                 className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium
-                                           text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+                                           text-slate-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
                                            outline-none cursor-pointer"
                             />
                         )}
@@ -127,7 +127,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                     value={selectedMonth}
                                     onChange={(e) => onJumpToYearMonth(selectedYear, Number(e.target.value))}
                                     className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
-                                               text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+                                               text-slate-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
                                                outline-none cursor-pointer"
                                 >
                                     {ARABIC_MONTHS.map((name, idx) => {
@@ -145,7 +145,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                     value={selectedYear}
                                     onChange={(e) => onJumpToYearMonth(Number(e.target.value), selectedMonth)}
                                     className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
-                                               text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+                                               text-slate-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
                                                outline-none cursor-pointer"
                                 >
                                     {yearOptions.map((y) => (
@@ -161,7 +161,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                                 value={selectedStatsYear}
                                 onChange={(e) => onSetStatsYear(Number(e.target.value))}
                                 className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold
-                                           text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+                                           text-slate-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
                                            outline-none cursor-pointer"
                             >
                                 {yearOptions.map((y) => (
@@ -181,7 +181,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
                             className={`flex-1 min-w-[64px] flex items-center justify-center gap-1 px-2 py-1.5
                                         font-black transition-all rounded-xl whitespace-nowrap
                                         ${activeTab === tab.key
-                                    ? 'bg-blue-600 text-white shadow-sm text-sm'
+                                    ? 'bg-brand-600 text-white shadow-sm text-sm'
                                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs'
                                 }`}
                         >

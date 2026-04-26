@@ -83,7 +83,7 @@ export const OverviewWelcomeHeader: React.FC<OverviewWelcomeHeaderProps> = ({
             <span className="hidden sm:inline">{refreshing ? 'جاري التحديث' : 'تحديث'}</span>
           </button>
         )}
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1.5 text-[11px] sm:text-xs font-bold text-blue-700">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-3 py-1.5 text-[11px] sm:text-xs font-bold text-brand-700">
           <FaShieldHalved className="w-3 h-3" />
           <span className="hidden sm:inline">لوحة الإدارة</span>
           <span className="sm:hidden">أدمن</span>

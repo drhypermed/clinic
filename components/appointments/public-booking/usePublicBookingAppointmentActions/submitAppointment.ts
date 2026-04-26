@@ -265,5 +265,3 @@ export const buildMergedTodayAppointment = (
     breastfeeding: input.breastfeeding,
 });
 
-// re-export sanitizeSecretaryVitalsInput for convenience
-export { sanitizeSecretaryVitalsInput };

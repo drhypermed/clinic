@@ -11,7 +11,7 @@ import { BrandLogo } from '../../common/BrandLogo';
  *   • شيلت كروت الإحصائيّات (أطباء/تخصصات/محافظات) — كانت مكرّره ومش محتاجه.
  */
 export const DirectoryHeroSection: React.FC = () => (
-  <section className="relative overflow-hidden rounded-3xl border border-blue-100/80 bg-gradient-to-b from-blue-50/40 to-white shadow-[0_20px_50px_-24px_rgba(37,99,235,0.25)] p-6 md:p-10">
+  <section className="relative overflow-hidden rounded-3xl border border-brand-100/80 bg-gradient-to-b from-brand-50/40 to-white shadow-[0_20px_50px_-24px_rgba(37,99,235,0.25)] p-6 md:p-10">
     {/* keyframes الـshimmer — اتغيّرت ألوانه لـblue/indigo عشان توحيد الجمهور
         مع هويّة الطبيب (blue) بناءً على طلب المالك. */}
     <style>{`
@@ -20,8 +20,8 @@ export const DirectoryHeroSection: React.FC = () => (
     `}</style>
 
     {/* بلوبات الخلفيّه الزخرفيّه — اتوحّدت بـblue/indigo */}
-    <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-blue-300/40 to-indigo-300/30 blur-3xl" />
-    <div className="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-indigo-300/30 to-blue-300/30 blur-3xl" />
+    <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-brand-300/40 to-brand-300/30 blur-3xl" />
+    <div className="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-brand-300/30 to-brand-300/30 blur-3xl" />
 
     <div className="relative flex flex-col items-center gap-3 text-center">
       {/* الشعار = نفس BrandLogo اللي في الصفحة التعريفية (مع glow). */}
@@ -34,7 +34,7 @@ export const DirectoryHeroSection: React.FC = () => (
       {/* "دليل الأطباء وحجز المواعيد" + sparkle */}
       <div className="flex items-center gap-2">
         <p className="text-sm sm:text-lg font-bold text-slate-800">دليل الأطباء وحجز المواعيد</p>
-        <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 shrink-0" aria-hidden="true" />
+        <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-brand-600 shrink-0" aria-hidden="true" />
       </div>
 
       {/* اسم Dr Hyper بشكله المتأنّق المتحرّك — مطابق للصفحة التعريفية */}

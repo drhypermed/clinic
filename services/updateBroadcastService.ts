@@ -8,11 +8,11 @@ export type UpdateBroadcastAudience =
   | 'doctor_secretaries'
   | 'all';
 
-export interface SendUpdateBroadcastPayload {
+interface SendUpdateBroadcastPayload {
   targetAudience: UpdateBroadcastAudience;
 }
 
-export interface SendUpdateBroadcastResult {
+interface SendUpdateBroadcastResult {
   ok: boolean;
   broadcastId: string;
   targetAudience: UpdateBroadcastAudience;

@@ -54,8 +54,12 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
     invoiceDateTo,
     setInvoiceDateFrom,
     setInvoiceDateTo,
+    // ملاحظات تطبع على الكشف التفصيلي + دالة الطباعة التفصيلية
+    statementNotes,
+    setStatementNotes,
     openInvoiceForCompany,
     handlePrintInsuranceInvoice,
+    handlePrintDetailedStatement,
   } = useInsuranceClaims({
     userId,
     records,
@@ -73,7 +77,7 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
   return (
     <div className="rounded-2xl shadow-sm overflow-hidden">
       {/* ─── الهيدر ─── */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-700 to-blue-600">
+      <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-700 to-brand-600">
         <span className="text-base">🏥</span>
         <span className="text-sm font-black text-white">مطالبات التأمين الشهرية</span>
         <span className="mr-auto text-xs font-bold text-white/80 bg-white/15 rounded-full px-2.5 py-0.5">{currentMonthLabel}</span>
@@ -83,9 +87,9 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
       <div className="bg-white p-4 space-y-4">
         {/* ملخص سريع: إجمالي المطالبات */}
         <div className="grid grid-cols-1 gap-3">
-          <div className="bg-amber-50 rounded-xl p-3 border border-amber-100 text-center">
-            <p className="text-xs font-bold text-amber-600 mb-1">مطالبات من الشركات</p>
-            <p className="text-xl font-black text-amber-800">{formatCurrency(totalCompanyShare)}</p>
+          <div className="bg-warning-50 rounded-xl p-3 border border-warning-100 text-center">
+            <p className="text-xs font-bold text-warning-600 mb-1">مطالبات من الشركات</p>
+            <p className="text-xl font-black text-warning-800">{formatCurrency(totalCompanyShare)}</p>
           </div>
         </div>
 
@@ -102,25 +106,25 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
 
               {/* شبكة تفاصيل المطالبة: 4 فئات + الإجمالي */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                  <p className="text-[10px] font-bold text-blue-600">كشوفات</p>
-                  <p className="text-sm font-black text-blue-800">{formatCurrency(claim.examsCompanyShare)}</p>
+                <div className="bg-brand-50 rounded-lg p-2 border border-brand-100">
+                  <p className="text-[10px] font-bold text-brand-600">كشوفات</p>
+                  <p className="text-sm font-black text-brand-800">{formatCurrency(claim.examsCompanyShare)}</p>
                 </div>
-                <div className="bg-indigo-50 rounded-lg p-2 border border-indigo-100">
-                  <p className="text-[10px] font-bold text-indigo-600">استشارات</p>
-                  <p className="text-sm font-black text-indigo-800">{formatCurrency(claim.consultsCompanyShare)}</p>
+                <div className="bg-brand-50 rounded-lg p-2 border border-brand-100">
+                  <p className="text-[10px] font-bold text-brand-600">استشارات</p>
+                  <p className="text-sm font-black text-brand-800">{formatCurrency(claim.consultsCompanyShare)}</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-2 border border-purple-100 col-span-2">
-                  <p className="text-[10px] font-bold text-purple-600">تداخلات</p>
-                  <p className="text-sm font-black text-purple-800">{formatCurrency(claim.interventionsExtrasTotal)}</p>
+                <div className="bg-slate-50 rounded-lg p-2 border border-slate-100 col-span-2">
+                  <p className="text-[10px] font-bold text-slate-600">تداخلات</p>
+                  <p className="text-sm font-black text-slate-800">{formatCurrency(claim.interventionsExtrasTotal)}</p>
                 </div>
-                <div className="bg-teal-50 rounded-lg p-2 border border-teal-100 col-span-2">
-                  <p className="text-[10px] font-bold text-teal-600">دخل آخر</p>
-                  <p className="text-sm font-black text-teal-800">{formatCurrency(claim.otherExtrasTotal)}</p>
+                <div className="bg-brand-50 rounded-lg p-2 border border-brand-100 col-span-2">
+                  <p className="text-[10px] font-bold text-brand-600">دخل آخر</p>
+                  <p className="text-sm font-black text-brand-800">{formatCurrency(claim.otherExtrasTotal)}</p>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-2 border border-amber-100 col-span-2 sm:col-span-2">
-                  <p className="text-[10px] font-bold text-amber-600">مطالبة الشركة</p>
-                  <p className="text-sm font-black text-amber-800">{formatCurrency(claim.companyShare + claim.insuranceExtrasTotal)}</p>
+                <div className="bg-warning-50 rounded-lg p-2 border border-warning-100 col-span-2 sm:col-span-2">
+                  <p className="text-[10px] font-bold text-warning-600">مطالبة الشركة</p>
+                  <p className="text-sm font-black text-warning-800">{formatCurrency(claim.companyShare + claim.insuranceExtrasTotal)}</p>
                 </div>
               </div>
 
@@ -129,7 +133,7 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => openInvoiceForCompany(claim.companyName)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-indigo-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-brand-700"
                 >
                   {invoiceCompany === claim.companyName ? 'إلغاء' : 'إصدار فاتورة للشركة'}
                 </button>
@@ -137,8 +141,8 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
 
               {/* نموذج اختيار الفترة (يظهر فقط للشركة المختارة) */}
               {invoiceCompany === claim.companyName && (
-                <div className="mt-2 rounded-xl bg-indigo-50 border border-indigo-200 p-3 space-y-2">
-                  <div className="text-[11px] font-black text-indigo-700">اختر الفترة لفاتورة {claim.companyName}</div>
+                <div className="mt-2 rounded-xl bg-brand-50 border border-brand-200 p-3 space-y-2">
+                  <div className="text-[11px] font-black text-brand-700">اختر الفترة لكشف {claim.companyName}</div>
                   <div className="flex flex-wrap items-end gap-2">
                     <div>
                       <label className="mb-0.5 block text-[10px] font-black text-slate-500">من</label>
@@ -147,7 +151,7 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
                         value={invoiceDateFrom}
                         onChange={(e) => setInvoiceDateFrom(e.target.value)}
                         dir="ltr"
-                        className="rounded-lg border border-indigo-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -157,18 +161,49 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
                         value={invoiceDateTo}
                         onChange={(e) => setInvoiceDateTo(e.target.value)}
                         dir="ltr"
-                        className="rounded-lg border border-indigo-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                       />
                     </div>
+                  </div>
+
+                  {/* خانة ملاحظات تطبع على الكشف التفصيلي (اختياري — مساحة حرة للطبيب) */}
+                  <div>
+                    <label className="mb-0.5 block text-[10px] font-black text-slate-500">
+                      ملاحظات للكشف التفصيلي (اختياري)
+                    </label>
+                    <textarea
+                      value={statementNotes}
+                      onChange={(e) => setStatementNotes(e.target.value)}
+                      rows={2}
+                      placeholder="أي ملاحظات تكتبها هنا هتظهر مطبوعة في الكشف التفصيلي..."
+                      className="w-full resize-y rounded-lg border border-brand-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* زرين: فاتورة مجمعة (الموجود) + كشف تفصيلي (الجديد) */}
+                  <div className="flex flex-wrap gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintInsuranceInvoice(claim.companyName)}
                       disabled={!invoiceDateFrom || !invoiceDateTo}
-                      className={`rounded-lg px-4 py-1.5 text-[11px] font-black text-white ${!invoiceDateFrom || !invoiceDateTo ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                      className={`rounded-lg px-4 py-1.5 text-[11px] font-black text-white ${!invoiceDateFrom || !invoiceDateTo ? 'bg-slate-300 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}
+                      title="ورقة A5 فيها مجاميع الكشوفات والاستشارات والتداخلات"
                     >
-                      طباعة الفاتورة
+                      🧾 فاتورة مجمعة
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePrintDetailedStatement(claim.companyName)}
+                      disabled={!invoiceDateFrom || !invoiceDateTo}
+                      className={`rounded-lg px-4 py-1.5 text-[11px] font-black text-white ${!invoiceDateFrom || !invoiceDateTo ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                      title="ورقة A4 فيها صف لكل حالة بكارنيه + تاريخ + كود موافقة (للمراجعة من شركة التأمين)"
+                    >
+                      📋 كشف تفصيلي بالحالات
                     </button>
                   </div>
+                  <p className="text-[9px] font-bold text-slate-400 leading-relaxed">
+                    💡 الفاتورة المجمعة = ملخص بالأرقام • الكشف التفصيلي = جدول بكل حالة على حدة (لإثبات الشغل لشركة التأمين)
+                  </p>
                 </div>
               )}
             </div>
@@ -177,9 +212,9 @@ export const InsuranceClaimsSection: React.FC<InsuranceClaimsSectionProps> = ({
 
         {/* الإجمالي الكبير في الأسفل */}
         <div className="pt-2 border-t border-slate-200">
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-blue-50 rounded-xl p-3 border border-blue-200">
-            <span className="font-bold text-blue-700">💰 إجمالي مطالبات الشهر لدى الشركات</span>
-            <span className="text-base sm:text-xl font-black text-blue-700">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-brand-50 rounded-xl p-3 border border-brand-200">
+            <span className="font-bold text-brand-700">💰 إجمالي مطالبات الشهر لدى الشركات</span>
+            <span className="text-base sm:text-xl font-black text-brand-700">
               {formatCurrency(totalCompanyShare)}
             </span>
           </div>

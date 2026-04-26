@@ -2,7 +2,7 @@ import { deleteField, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { normalizeBookingSecret, normalizeEmail, sanitizeDocSegment } from './helpers';
 
-export type SecretaryAuthRecord = {
+type SecretaryAuthRecord = {
   userId?: string;
   doctorEmail?: string;
   secretaryPasswordHash?: string;

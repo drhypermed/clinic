@@ -85,7 +85,7 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
 
     return (
         // توحيد الخلفيه مع صفحات السجلات وملفات المرضى: بيضاء بدون تدرّج.
-        // قبل كده كانت from-slate-50 via-blue-50/30 to-indigo-50/20 (تدرّج فاتح).
+        // قبل كده كانت from-slate-50 via-brand-50/30 to-brand-50/20 (تدرّج فاتح).
         <div className="bg-white min-h-screen max-w-[100vw] overflow-x-hidden pb-32" dir="rtl">
 
             {/* Toast Notification */}
@@ -93,8 +93,8 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none p-4">
                     <div className={`pointer-events-auto px-8 py-4 rounded-2xl shadow-2xl font-black text-center text-lg animate-bounce ${
                         form.notification.type === 'success'
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                            : 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+                            ? 'bg-gradient-to-r from-success-500 to-success-600 text-white'
+                            : 'bg-gradient-to-r from-danger-500 to-danger-600 text-white'
                     }`}>
                         {form.notification.message}
                     </div>
@@ -124,11 +124,11 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
 
                     {/* شريط علوي ملون حسب التبويب */}
                     <div className={`h-1.5 w-full ${
-                        activeTab === 'header' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
-                        activeTab === 'footer' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' :
-                        activeTab === 'vitals' ? 'bg-gradient-to-r from-rose-500 to-pink-600' :
-                        activeTab === 'middle' ? 'bg-gradient-to-r from-violet-500 to-purple-600' :
-                        'bg-gradient-to-r from-amber-500 to-orange-500'
+                        activeTab === 'header' ? 'bg-gradient-to-r from-brand-500 to-brand-600' :
+                        activeTab === 'footer' ? 'bg-gradient-to-r from-success-500 to-brand-600' :
+                        activeTab === 'vitals' ? 'bg-gradient-to-r from-danger-500 to-slate-600' :
+                        activeTab === 'middle' ? 'bg-gradient-to-r from-slate-500 to-slate-600' :
+                        'bg-gradient-to-r from-warning-500 to-warning-500'
                     }`} />
 
                     <div className="p-5 sm:p-6">
@@ -195,7 +195,7 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                         {activeTab === 'print' && (
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm">
+                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-warning-500 to-warning-500 flex items-center justify-center shadow-sm">
                                         <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                         </svg>
@@ -221,7 +221,7 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                             <button
                                 onClick={form.handleSave}
                                 disabled={form.saving}
-                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black rounded-xl shadow-lg shadow-green-200 hover:shadow-xl hover:shadow-green-300 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-success-500 to-success-600 text-white font-black rounded-xl shadow-lg shadow-success-200 hover:shadow-xl hover:shadow-success-300 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             >
                                 {form.saving ? (
                                     <>

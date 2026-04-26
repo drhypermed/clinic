@@ -37,7 +37,7 @@ export {
   getBMICategory,
   toDateOnly,
 } from './records-view-parts/helpers';
-export type { CaseData, RecordTimelineEntry } from './records-view-parts/helpers';
+export type { RecordTimelineEntry } from './records-view-parts/helpers';
 
 /**
  * مكون المجموعة اليومية (Daily Group):
@@ -90,7 +90,7 @@ export const DailyGroup: React.FC<{
           <span className="text-[11px] font-bold bg-white/20 text-white rounded-full px-2.5 py-1">{totalCasesCount} حالة</span>
           <span className="text-[11px] font-bold bg-white/15 text-white rounded-full px-2.5 py-1">{examCasesCount} كشف</span>
           <span className="text-[11px] font-bold bg-white/15 text-white rounded-full px-2.5 py-1">{consultationCasesCount} استشارة</span>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${open ? 'bg-white text-blue-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black transition-colors ${open ? 'bg-white text-brand-700 border-white' : 'bg-white/20 text-white border-white/40'}`}>
             {open ? 'طي' : 'عرض'}
             <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -166,7 +166,7 @@ export const DailyGroup: React.FC<{
                       <button
                         type="button"
                         onClick={() => toggleRecordExpansion(entry.entryId)}
-                        className="font-black text-slate-900 hover:text-blue-700 transition-colors text-right leading-tight"
+                        className="font-black text-slate-900 hover:text-brand-700 transition-colors text-right leading-tight"
                       >
                         {highlight(rec.patientName || 'مريض بدون اسم', term)}
                       </button>
@@ -180,7 +180,7 @@ export const DailyGroup: React.FC<{
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onOpenPatientFile(rec); }}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-3.5 py-1.5 text-xs font-black text-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-brand-600 to-brand-700 px-3.5 py-1.5 text-xs font-black text-white shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                           ملف المريض
@@ -190,7 +190,7 @@ export const DailyGroup: React.FC<{
                     <button
                       type="button"
                       onClick={() => toggleRecordExpansion(entry.entryId)}
-                      className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${isExpanded ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600'}`}
+                      className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${isExpanded ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-500 border-slate-200 hover:border-brand-300 hover:text-brand-600'}`}
                     >
                       {isExpanded ? 'طي' : 'تفاصيل'}
                       <svg className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -210,7 +210,7 @@ export const DailyGroup: React.FC<{
                       {paymentMetaText}
                     </span>
                     {rec.paymentType === 'discount' && discountReasonSummary && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-medium">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-warning-50 text-warning-700 border border-warning-100 text-[11px] font-medium">
                         {highlight(`سبب الخصم: ${discountReasonSummary}`, term)}
                       </span>
                     )}
@@ -223,18 +223,18 @@ export const DailyGroup: React.FC<{
                       </span>
                     ))}
                     {consultationSequenceLabel && (
-                      <span className="inline-flex items-center text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5">{consultationSequenceLabel}</span>
+                      <span className="inline-flex items-center text-[11px] font-bold text-warning-700 bg-warning-50 border border-warning-200 rounded-lg px-2 py-0.5">{consultationSequenceLabel}</span>
                     )}
                   </div>
 
                   {/* مرتبط - فقط للاستشارة المرتبطة بكشف */}
                   {linkedExamText && (
-                    <div className="mt-1 text-[11px] font-bold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
+                    <div className="mt-1 text-[11px] font-bold bg-gradient-to-r from-success-500 to-success-600 bg-clip-text text-transparent">
                       {linkedExamText}
                     </div>
                   )}
                   {linkedConsultationLines.map((line, i) => (
-                    <div key={i} className="mt-0.5 text-[11px] font-bold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
+                    <div key={i} className="mt-0.5 text-[11px] font-bold bg-gradient-to-r from-success-500 to-success-600 bg-clip-text text-transparent">
                       {line}
                     </div>
                   ))}
@@ -260,23 +260,23 @@ export const DailyGroup: React.FC<{
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => onNewExam(rec)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
                         كشف جديد
                       </button>
                       {canOpenConsultation && (
-                        <button onClick={() => onOpenConsultation(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+                        <button onClick={() => onOpenConsultation(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
                           فتح استشارة
                         </button>
                       )}
                       {canLoadConsultation && (
-                        <button onClick={() => onLoadConsultation(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+                        <button onClick={() => onLoadConsultation(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
                           تحميل الاستشارة
                         </button>
                       )}
                       {canLoadExam && (
-                        <button onClick={() => onLoadRecord(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+                        <button onClick={() => onLoadRecord(rec)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-black shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
                           تحميل الكشف
                         </button>
                       )}
@@ -299,11 +299,11 @@ export const DailyGroup: React.FC<{
 /** بطاقة الإحصاءات المصغرة (Stat Card) */
 export const StatCard: React.FC<{ label: string; value: number; tone: 'blue' | 'purple' | 'emerald' | 'amber' | 'indigo'; className?: string }> = ({ label, value, tone, className = '' }) => {
   const color: Record<string, string> = {
-    blue: 'text-blue-700',
-    purple: 'text-blue-700',
-    emerald: 'text-emerald-600',
-    amber: 'text-amber-600',
-    indigo: 'text-blue-700',
+    blue: 'text-brand-700',
+    purple: 'text-brand-700',
+    emerald: 'text-success-600',
+    amber: 'text-warning-600',
+    indigo: 'text-brand-700',
   };
 
   return (

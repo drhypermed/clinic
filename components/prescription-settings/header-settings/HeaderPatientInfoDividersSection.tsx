@@ -19,7 +19,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
               type="checkbox"
               checked={(header.showInfoBarDivider1 ?? header.showInfoBarDividers) !== false}
               onChange={(e) => updateHeader({ showInfoBarDivider1: e.target.checked })}
-              className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+              className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
             />
             <span className="text-sm font-bold text-slate-700">الخط بين الاسم والسن</span>
           </label>
@@ -117,7 +117,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
               type="checkbox"
               checked={(header.showInfoBarDivider2 ?? header.showInfoBarDividers) !== false}
               onChange={(e) => updateHeader({ showInfoBarDivider2: e.target.checked })}
-              className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+              className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
             />
             <span className="text-sm font-bold text-slate-700">الخط بين السن والتاريخ</span>
           </label>

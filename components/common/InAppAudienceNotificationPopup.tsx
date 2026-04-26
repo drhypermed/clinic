@@ -3,17 +3,26 @@ import { createPortal } from 'react-dom';
 import {
   collection,
   doc,
+  getDocs,
   limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { useAuth } from '../../hooks/useAuth';
 import type { ExternalNotificationAudience } from '../../services/externalNotificationBroadcastService';
 import { playNotificationCue } from '../../utils/notificationSound';
+
+// آخر ٢٤ ساعة فقط للقراءة الأولية — بثّ أقدم من ده ما عاد محتاج يطلع لأول مرة.
+const INITIAL_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+// حد أقصى ٥ بثوث نشطة في القراءة الأولية. الأدمن نادراً ينشر أكثر من ده في الفترة دي.
+const MAX_INITIAL_BROADCASTS = 5;
+// حد أقصى ٥ بثوث جديدة في الجلسة الواحدة عبر الاشتراك اللحظي.
+const MAX_LIVE_BROADCASTS = 5;
 
 type AppAudience = 'doctors' | 'secretaries' | 'public';
 
@@ -117,60 +126,125 @@ export const InAppAudienceNotificationPopup: React.FC<InAppAudienceNotificationP
   const [activeBroadcast, setActiveBroadcast] = useState<InAppBroadcastRecord | null>(null);
   const [broadcasts, setBroadcasts] = useState<InAppBroadcastRecord[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  // علم تحميل قائمة المغلقات — يمنع ظهور الإشعار "للحظة ثم اختفاء"
+  // لما القائمة تتأخر في التحميل بعد ما البث الأساسي اتجاب.
+  const [dismissedReady, setDismissedReady] = useState(false);
   const lastPlayedBroadcastIdRef = useRef<string | null>(null);
 
   const normalizedScopeIds = useMemo(() => normalizeScopeIds(scopeIds), [scopeIds]);
 
   /**
-   * الاشتراك في قائمة البثوث.
-   * يُفلتر لاحقاً بناءً على الجمهور + قائمة المُغلَقات.
+   * يقرأ البثوث على مرحلتين لتقليل التكلفة على آلاف المستخدمين:
+   *   ١) قراءة أولية واحدة (getDocs) لآخر ٢٤ ساعة من البثوث النشطة فقط
+   *   ٢) اشتراك لحظي (onSnapshot) على البثوث الجديدة الناشئة بعد فتح الجلسة فقط
+   * الفرق عن النسخة السابقة: كان onSnapshot على آخر ٣٠ بث بدون فلتر، يولّد
+   * ٣٠ قراءة لكل مستخدم عند فتح التطبيق.
    */
   useEffect(() => {
-    const broadcastsQuery = query(
+    let isMounted = true;
+    const sessionStartMs = Date.now();
+    const initialCutoffMs = sessionStartMs - INITIAL_LOOKBACK_MS;
+    const initialDocs = new Map<string, InAppBroadcastRecord>();
+    const liveDocs = new Map<string, InAppBroadcastRecord>();
+    let unsubscribeLive: (() => void) | null = null;
+
+    const mergeAndPublish = () => {
+      if (!isMounted) return;
+      // نضمن دمج المرحلتين بدون تكرار، مع ترتيب تنازلي بـ createdAtMs.
+      const combined = new Map<string, InAppBroadcastRecord>();
+      initialDocs.forEach((value, key) => combined.set(key, value));
+      liveDocs.forEach((value, key) => combined.set(key, value));
+      const sorted = Array.from(combined.values()).sort(
+        (a, b) => b.createdAtMs - a.createdAtMs,
+      );
+      setBroadcasts(sorted);
+    };
+
+    const toRecord = (docSnap: { id: string; data: () => unknown }): InAppBroadcastRecord => {
+      const data = (docSnap.data() || {}) as Record<string, unknown>;
+      return {
+        id: docSnap.id,
+        title: toSafeString(data.title),
+        body: toSafeString(data.body),
+        targetAudience: (toSafeString(data.targetAudience, 'all') as ExternalNotificationAudience),
+        status: toSafeString(data.status, 'active'),
+        createdAtMs: toSafeNumber(data.createdAtMs),
+        expiresAtMs: toSafeNumber(data.expiresAtMs),
+        targetScopeIds: Array.isArray(data.targetScopeIds)
+          ? data.targetScopeIds.map((item) => toSafeString(item))
+          : [],
+      };
+    };
+
+    // ── المرحلة ١: قراءة لقطة واحدة للبثوث النشطة الحديثة ──
+    const initialQuery = query(
       collection(db, 'inAppNotificationBroadcasts'),
+      where('status', '==', 'active'),
+      where('createdAtMs', '>', initialCutoffMs),
       orderBy('createdAtMs', 'desc'),
-      limit(30)
+      limit(MAX_INITIAL_BROADCASTS),
     );
 
-    const unsubscribe = onSnapshot(
-      broadcastsQuery,
-      (snapshot) => {
-        const records: InAppBroadcastRecord[] = snapshot.docs.map((docSnap) => {
-          const data = docSnap.data() as Record<string, unknown>;
-          return {
-            id: docSnap.id,
-            title: toSafeString(data.title),
-            body: toSafeString(data.body),
-            targetAudience: (toSafeString(data.targetAudience, 'all') as ExternalNotificationAudience),
-            status: toSafeString(data.status, 'active'),
-            createdAtMs: toSafeNumber(data.createdAtMs),
-            expiresAtMs: toSafeNumber(data.expiresAtMs),
-            targetScopeIds: Array.isArray(data.targetScopeIds)
-              ? data.targetScopeIds.map((item) => toSafeString(item))
-              : [],
-          };
+    getDocs(initialQuery)
+      .then((snapshot) => {
+        if (!isMounted) return;
+        snapshot.docs.forEach((docSnap) => {
+          initialDocs.set(docSnap.id, toRecord(docSnap));
         });
-        setBroadcasts(records);
-      },
-      (error) => {
-        if ((error as { code?: string })?.code === 'permission-denied') {
-          setBroadcasts([]);
-          return;
-        }
-        setBroadcasts([]);
-      }
-    );
+        mergeAndPublish();
+      })
+      .catch(() => {
+        // فشل القراءة — نتعامل كأن لا توجد بثوث ولا نعطّل الـ live.
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        // ── المرحلة ٢: اشتراك على الجديد بعد بداية الجلسة فقط ──
+        const liveQuery = query(
+          collection(db, 'inAppNotificationBroadcasts'),
+          where('status', '==', 'active'),
+          where('createdAtMs', '>', sessionStartMs),
+          orderBy('createdAtMs', 'desc'),
+          limit(MAX_LIVE_BROADCASTS),
+        );
 
-    return () => unsubscribe();
+        unsubscribeLive = onSnapshot(
+          liveQuery,
+          (snapshot) => {
+            if (!isMounted) return;
+            // نمسح ونعيد البناء لأن الاشتراك يعرض اللقطة الحالية بالكامل لمدى الاستعلام.
+            liveDocs.clear();
+            snapshot.docs.forEach((docSnap) => {
+              liveDocs.set(docSnap.id, toRecord(docSnap));
+            });
+            mergeAndPublish();
+          },
+          () => {
+            // فشل الاشتراك (صلاحيات/شبكة) — نُبقي اللقطة الأولية بدون تغيير.
+          },
+        );
+      });
+
+    return () => {
+      isMounted = false;
+      if (unsubscribeLive) unsubscribeLive();
+    };
   }, []);
 
   /**
    * الاشتراك في قائمة الإشعارات المُغلقة من المستخدم (Firestore per-user).
    * يحل محل localStorage القديم — يعمل عبر كل الأجهزة وبعد تسجيل الخروج/الدخول.
+   *
+   * dismissedReady بيتحدد True بعد أول لقطة (نجاح أو فشل) عشان الـ popup
+   * ما يظهرش لحظة قبل ما القائمة توصل ثم يختفي بعد ما توصل.
    */
   useEffect(() => {
+    setDismissedReady(false);
+
     if (!userId) {
+      // لا يوجد مستخدم — لا توجد قائمة محفوظة، نعتبر القراءة جاهزة بقائمة فارغة
+      // عشان الإشعار يظهر للزوار وللحسابات اللي لسه ما سجلتش.
       setDismissedIds(new Set());
+      setDismissedReady(true);
       return undefined;
     }
 
@@ -184,11 +258,13 @@ export const InAppAudienceNotificationPopup: React.FC<InAppAudienceNotificationP
           if (broadcastId) next.add(broadcastId);
         });
         setDismissedIds(next);
+        setDismissedReady(true);
       },
       () => {
-        // في حال فشل القراءة (مثلاً لم يسجل دخول بعد) — نفترض لا شيء مُغلق.
+        // فشل القراءة (مثلاً صلاحيات مش متاحة) — نعتبر لا شيء مغلق ونكمّل.
         setDismissedIds(new Set());
-      }
+        setDismissedReady(true);
+      },
     );
 
     return () => unsubscribe();
@@ -198,8 +274,12 @@ export const InAppAudienceNotificationPopup: React.FC<InAppAudienceNotificationP
    * احتساب البثّ النشط بعد دمج القائمتين (متاح + غير مُغلق من المستخدم).
    * مُحصّن مزدوج: الإشعار يُعتبر مُغلقاً لو موجود في Firestore أو في localStorage
    * (يضمن استمرار احترام الإغلاقات القديمة + يعمل حتى قبل نشر قواعد Firestore).
+   *
+   * ننتظر اكتمال تحميل dismissedReady قبل عرض الإشعار. ده يمنع الـ flash اللي
+   * بيحصل لما الإشعار يظهر للحظة ثم يختفي بعد ما القائمة توصل بأنه مغلق.
    */
   useEffect(() => {
+    if (!dismissedReady) return;
     const nowMs = Date.now();
     const applicable = broadcasts.find((record) => {
       if (record.status !== 'active') return false;
@@ -218,7 +298,7 @@ export const InAppAudienceNotificationPopup: React.FC<InAppAudienceNotificationP
     }) || null;
 
     setActiveBroadcast(applicable);
-  }, [broadcasts, dismissedIds, audience, normalizedScopeIds]);
+  }, [broadcasts, dismissedIds, audience, normalizedScopeIds, dismissedReady]);
 
   useEffect(() => {
     if (!activeBroadcast) {
@@ -268,7 +348,7 @@ export const InAppAudienceNotificationPopup: React.FC<InAppAudienceNotificationP
 
   const popup = (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[10040] w-[min(94vw,34rem)]" dir="rtl">
-      <div className="rounded-2xl border border-cyan-200 bg-white shadow-[0_24px_52px_-30px_rgba(2,6,23,0.82)] px-4 py-3 sm:px-5 sm:py-4">
+      <div className="rounded-2xl border border-brand-200 bg-white shadow-[0_24px_52px_-30px_rgba(2,6,23,0.82)] px-4 py-3 sm:px-5 sm:py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h4 className="text-slate-900 text-sm sm:text-base font-black leading-snug">{activeBroadcast.title}</h4>

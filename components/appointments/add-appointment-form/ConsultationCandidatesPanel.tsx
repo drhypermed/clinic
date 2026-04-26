@@ -81,7 +81,7 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
   };
 
   return (
-    <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border-2 border-teal-400 bg-gradient-to-r from-teal-600 via-cyan-600 to-sky-500 p-3 shadow-lg">
+    <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border-2 border-brand-400 bg-gradient-to-r from-brand-600 via-brand-600 to-brand-500 p-3 shadow-lg">
       <div className="mb-3 flex items-center justify-between">
         <p className="inline-flex items-center gap-1 rounded-lg bg-black/20 px-2.5 py-1 text-xs font-black text-white ring-1 ring-white/40">
           كشوفات اخر 30 يوم
@@ -96,20 +96,20 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
             <div key={dateKey} className="space-y-1.5">
               {/* ترويسة التاريخ */}
               <div className="flex items-center gap-2 px-2 py-1">
-                <span className="text-[11px] font-black text-teal-900 bg-cyan-200 px-2 py-0.5 rounded-full">{getArabicDayName(dateKey)}</span>
-                <span className="text-[11px] font-bold text-cyan-50">{formatUserDate(buildCairoDateTime(dateKey, '12:00'), undefined, 'ar-EG')}</span>
+                <span className="text-[11px] font-black text-brand-900 bg-brand-200 px-2 py-0.5 rounded-full">{getArabicDayName(dateKey)}</span>
+                <span className="text-[11px] font-bold text-brand-50">{formatUserDate(buildCairoDateTime(dateKey, '12:00'), undefined, 'ar-EG')}</span>
               </div>
 
               {/* قائمة المرضى في هذا اليوم */}
               {grouped[dateKey].map((candidate) => {
                 const consultationStatus = getConsultationStatus(candidate);
                 return (
-                <div key={candidate.id} className={`rounded-xl border-2 p-2.5 transition-all flex items-center justify-between gap-3 ${selectedConsultationCandidateId === candidate.id ? 'border-amber-400 bg-white shadow-md scale-[1.01]' : 'border-emerald-200 bg-white/95'}`}>
+                <div key={candidate.id} className={`rounded-xl border-2 p-2.5 transition-all flex items-center justify-between gap-3 ${selectedConsultationCandidateId === candidate.id ? 'border-warning-400 bg-white shadow-md scale-[1.01]' : 'border-success-200 bg-white/95'}`}>
                   <div className="flex flex-wrap items-center gap-2 flex-1">
                     <p className="text-sm font-black text-slate-800">{candidate.patientName}</p>
-                    <span className="text-[10px] font-black text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">{candidate.age || 'السن غير معروف'}</span>
-                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">{candidate.phone || 'بدون رقم هاتف'}</span>
-                    <div className={`max-w-full text-[10px] font-black px-2 py-1 rounded border leading-relaxed ${consultationStatus.hasConsultation ? 'text-amber-800 bg-amber-50 border-amber-100' : 'text-rose-800 bg-rose-50 border-rose-100'}`}>
+                    <span className="text-[10px] font-black text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-100">{candidate.age || 'السن غير معروف'}</span>
+                    <span className="text-[10px] font-black text-success-800 bg-success-50 px-2 py-0.5 rounded border border-success-100">{candidate.phone || 'بدون رقم هاتف'}</span>
+                    <div className={`max-w-full text-[10px] font-black px-2 py-1 rounded border leading-relaxed ${consultationStatus.hasConsultation ? 'text-warning-800 bg-warning-50 border-warning-100' : 'text-danger-800 bg-danger-50 border-danger-100'}`}>
                       <div>{consultationStatus.statusLabel}</div>
                       {consultationStatus.datesLabel && (
                         <div className="font-bold text-[10px] text-slate-700 mt-0.5 break-words">{consultationStatus.datesLabel}</div>
@@ -117,7 +117,7 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
                     </div>
                     <PatientContactActions phone={candidate.phone} compact />
                   </div>
-                  <button type="button" onClick={() => onSelectCandidate(candidate)} className="px-3 py-2 rounded-lg bg-teal-300 hover:bg-teal-400 text-teal-950 text-xs font-black transition-colors shrink-0">حجز استشارة</button>
+                  <button type="button" onClick={() => onSelectCandidate(candidate)} className="px-3 py-2 rounded-lg bg-brand-300 hover:bg-brand-400 text-brand-950 text-xs font-black transition-colors shrink-0">حجز استشارة</button>
                 </div>
                 );
               })}
@@ -129,7 +129,7 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
               <button
                 type="button"
                 onClick={onLoadMoreConsultationCandidates}
-                className="w-full rounded-xl bg-white/90 hover:bg-white text-teal-700 text-xs font-black px-3 py-2 border border-teal-200 transition-colors"
+                className="w-full rounded-xl bg-white/90 hover:bg-white text-brand-700 text-xs font-black px-3 py-2 border border-brand-200 transition-colors"
               >
                 تحميل المزيد
               </button>

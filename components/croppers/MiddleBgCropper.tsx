@@ -94,7 +94,7 @@ export const MiddleBgCropper: React.FC<MiddleBgCropperProps> = ({ imageSrc, onCr
             max={3}
             step={0.1}
             onChange={setZoom}
-            accentClassName="accent-blue-600"
+            accentClassName="accent-brand-600"
             renderValue={(value) => `${Math.round(value * 100)}%`}
           />
           <CropperRangeControl
@@ -104,7 +104,7 @@ export const MiddleBgCropper: React.FC<MiddleBgCropperProps> = ({ imageSrc, onCr
             max={200}
             step={1}
             onChange={setScale}
-            accentClassName="accent-green-600"
+            accentClassName="accent-success-600"
           />
           <CropperRangeControl
             label="التدوير"
@@ -113,7 +113,7 @@ export const MiddleBgCropper: React.FC<MiddleBgCropperProps> = ({ imageSrc, onCr
             max={180}
             step={1}
             onChange={setRotation}
-            accentClassName="accent-indigo-600"
+            accentClassName="accent-brand-600"
             renderValue={(value) => `${Math.round(value)}°`}
           />
           <CropperRangeControl
@@ -123,7 +123,7 @@ export const MiddleBgCropper: React.FC<MiddleBgCropperProps> = ({ imageSrc, onCr
             max={100}
             step={5}
             onChange={setOpacity}
-            accentClassName="accent-purple-600"
+            accentClassName="accent-slate-600"
           />
         </>
       }

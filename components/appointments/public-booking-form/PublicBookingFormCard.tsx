@@ -116,7 +116,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
 }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-3 text-center">
+      <div className="bg-gradient-to-r from-warning-500 to-warning-600 px-4 py-3 text-center">
         <h1 className="text-lg font-black text-white">{configTitle?.trim() || 'حجز موعد - فورم الجمهور'}</h1>
         {!configTitle?.trim() && (
           <p className="text-white/90 text-sm mt-0.5">اختر ميعادًا من المواعيد المتاحة وأكمل البيانات</p>
@@ -124,7 +124,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
       </div>
 
       {contactInfo?.trim() && (
-        <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
+        <div className="px-4 py-3 bg-warning-50 border-b border-warning-100">
           <p className="text-slate-700 font-bold text-sm whitespace-pre-wrap" dir="rtl">
             {contactInfo.trim()}
           </p>
@@ -139,7 +139,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
               type="button"
               onClick={onSelectExam}
               className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${appointmentType === 'exam'
-                ? 'bg-amber-600 text-white border-amber-600'
+                ? 'bg-warning-600 text-white border-warning-600'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
             >
@@ -149,7 +149,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
               type="button"
               onClick={onSelectConsultation}
               className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${appointmentType === 'consultation'
-                ? 'bg-violet-600 text-white border-violet-600'
+                ? 'bg-slate-600 text-white border-slate-600'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
             >
@@ -206,7 +206,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black shadow-md hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-60"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-warning-500 to-warning-600 text-white font-black shadow-md hover:from-warning-600 hover:to-warning-700 transition-all disabled:opacity-60"
             >
               {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
             </button>
@@ -216,11 +216,11 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
               type="button"
               disabled={submitting}
               onClick={() => onLoginToBook?.(selectedSlotId)}
-              className="w-full py-3 rounded-xl bg-white border-2 border-amber-500 text-amber-700 font-black shadow-md hover:bg-amber-50 transition-all disabled:opacity-60 flex items-center justify-center gap-3"
+              className="w-full py-3 rounded-xl bg-white border-2 border-warning-500 text-warning-700 font-black shadow-md hover:bg-warning-50 transition-all disabled:opacity-60 flex items-center justify-center gap-3"
             >
               {submitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-warning-600 border-t-transparent rounded-full animate-spin" />
                   <span>جاري تسجيل الدخول والحجز...</span>
                 </>
               ) : (

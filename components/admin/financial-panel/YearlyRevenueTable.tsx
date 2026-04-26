@@ -26,35 +26,35 @@ export const YearlyRevenueTable: React.FC<YearlyRevenueTableProps> = ({ selected
           <thead className="bg-slate-50">
             <tr>
               <th rowSpan={2} className="px-4 py-3 text-right text-slate-700 font-bold align-middle">السنة</th>
-              <th colSpan={3} className="px-4 py-2 text-center text-amber-700 font-black border-b border-slate-100 bg-amber-50/40">اشتراكات برو</th>
+              <th colSpan={3} className="px-4 py-2 text-center text-warning-700 font-black border-b border-slate-100 bg-warning-50/40">اشتراكات برو</th>
               <th colSpan={3} className="px-4 py-2 text-center text-[#B45309] font-black border-b border-slate-100 bg-gradient-to-r from-[#FFFDE7] to-[#FFF8E1]">اشتراكات برو ماكس</th>
               <th rowSpan={2} className="px-4 py-3 text-right text-slate-700 font-bold align-middle">الإيرادات</th>
               <th rowSpan={2} className="px-4 py-3 text-right text-slate-700 font-bold align-middle">المصروفات</th>
               <th rowSpan={2} className="px-4 py-3 text-right text-slate-700 font-bold align-middle">صافي الربح</th>
             </tr>
             <tr className="border-b border-slate-100">
-              <th className="px-3 py-1.5 text-center text-blue-600 font-bold">شهري</th>
-              <th className="px-3 py-1.5 text-center text-emerald-600 font-bold">6 أشهر</th>
-              <th className="px-3 py-1.5 text-center text-purple-600 font-bold">سنوي</th>
-              <th className="px-3 py-1.5 text-center text-blue-600 font-bold">شهري</th>
-              <th className="px-3 py-1.5 text-center text-emerald-600 font-bold">6 أشهر</th>
-              <th className="px-3 py-1.5 text-center text-purple-600 font-bold">سنوي</th>
+              <th className="px-3 py-1.5 text-center text-brand-600 font-bold">شهري</th>
+              <th className="px-3 py-1.5 text-center text-success-600 font-bold">6 أشهر</th>
+              <th className="px-3 py-1.5 text-center text-slate-600 font-bold">سنوي</th>
+              <th className="px-3 py-1.5 text-center text-brand-600 font-bold">شهري</th>
+              <th className="px-3 py-1.5 text-center text-success-600 font-bold">6 أشهر</th>
+              <th className="px-3 py-1.5 text-center text-slate-600 font-bold">سنوي</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b border-slate-100 hover:bg-slate-50">
               <td className="px-4 py-3 text-slate-800 font-bold">{selectedYear}</td>
               {/* برو */}
-              <td className="px-3 py-3 text-blue-600 font-bold text-center">{yearlyStats.monthlyCount}</td>
-              <td className="px-3 py-3 text-emerald-600 font-bold text-center">{yearlyStats.sixMonthsCount}</td>
-              <td className="px-3 py-3 text-purple-600 font-bold text-center">{yearlyStats.yearlyCount}</td>
+              <td className="px-3 py-3 text-brand-600 font-bold text-center">{yearlyStats.monthlyCount}</td>
+              <td className="px-3 py-3 text-success-600 font-bold text-center">{yearlyStats.sixMonthsCount}</td>
+              <td className="px-3 py-3 text-slate-600 font-bold text-center">{yearlyStats.yearlyCount}</td>
               {/* برو ماكس */}
-              <td className="px-3 py-3 text-blue-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxMonthlyCount || 0}</td>
-              <td className="px-3 py-3 text-emerald-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxSixMonthsCount || 0}</td>
-              <td className="px-3 py-3 text-purple-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxYearlyCount || 0}</td>
-              <td className="px-4 py-3 text-emerald-600 font-bold">{yearlyStats.totalRevenue.toLocaleString('ar-EG')} ج.م</td>
-              <td className="px-4 py-3 text-red-500 font-bold">{yearlyStats.totalExpenses.toLocaleString('ar-EG')} ج.م</td>
-              <td className={`px-4 py-3 font-bold ${yearlyStats.netProfit >= 0 ? 'text-teal-600' : 'text-rose-600'}`}>
+              <td className="px-3 py-3 text-brand-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxMonthlyCount || 0}</td>
+              <td className="px-3 py-3 text-success-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxSixMonthsCount || 0}</td>
+              <td className="px-3 py-3 text-slate-600 font-bold text-center bg-[#FFFDE7]/50">{yearlyStats.proMaxYearlyCount || 0}</td>
+              <td className="px-4 py-3 text-success-600 font-bold">{yearlyStats.totalRevenue.toLocaleString('ar-EG')} ج.م</td>
+              <td className="px-4 py-3 text-danger-500 font-bold">{yearlyStats.totalExpenses.toLocaleString('ar-EG')} ج.م</td>
+              <td className={`px-4 py-3 font-bold ${yearlyStats.netProfit >= 0 ? 'text-brand-600' : 'text-danger-600'}`}>
                 {yearlyStats.netProfit.toLocaleString('ar-EG')} ج.م
               </td>
             </tr>

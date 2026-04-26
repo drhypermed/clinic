@@ -27,7 +27,6 @@ import { useDrHyperActions } from './useDrHyper.actions';
 import { useDrHyperDraft } from './useDrHyper.draft';
 import { getDoctorNotificationDocRef } from '../../services/firestore/profileRoles';
 import { branchesService } from '../../services/firestore/branches';
-export type { NotificationState } from './useDrHyper.types';
 
 export const useDrHyper = (options?: { activeBranchId?: string }) => {
     const OFFLINE_SYNC_PENDING_KEY = 'dh_offline_sync_pending';
@@ -138,6 +137,8 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         showNotification,
         dismissNotification,
         dismissSmartQuotaNotice,
+        // 🆕 نخرّجه عشان MainApp يقدر يستخدمه مع أزرار تصدير الروشتة (طباعة/تنزيل/واتساب)
+        openQuotaNoticeModal,
     } = notificationsState;
 
     const realtimeData = useDrHyperRealtimeData({
@@ -362,6 +363,7 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         showNotification,
         dismissNotification,
         dismissSmartQuotaNotice,
+        openQuotaNoticeModal, // 🆕 لاستخدامه مع أزرار تصدير الروشتة
         consultationDate, setConsultationDate,
         visitDate, setVisitDate,
         visitType, setVisitType,

@@ -101,7 +101,7 @@ export const DirectoryFiltersSection: React.FC<DirectoryFiltersSectionProps> = (
               onClick={() => onTopSpecialtyClick(specialty)}
               className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-black border transition-all ${
                 specialtyFilter === specialty
-                  ? 'bg-gradient-to-l from-blue-700 to-blue-600 text-white border-transparent shadow-md'
+                  ? 'bg-gradient-to-l from-brand-700 to-brand-600 text-white border-transparent shadow-md'
                   : 'clinic-info hover:brightness-95'
               }`}
             >
@@ -114,7 +114,7 @@ export const DirectoryFiltersSection: React.FC<DirectoryFiltersSectionProps> = (
       {hasSearch && (
         <div className="mt-4 flex items-center justify-between gap-3 flex-wrap relative z-10">
           <p className="text-sm font-black text-slate-700">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full clinic-info text-blue-800 border-blue-200">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full clinic-info text-brand-800 border-brand-200">
               النتائج: <span className="text-slate-900">{filteredAdsCount}</span>
             </span>
             {activeFiltersCount > 0 && (

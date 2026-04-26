@@ -11,16 +11,19 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FaSliders, FaWhatsapp, FaFloppyDisk,
   FaCircleCheck, FaCircleXmark, FaListCheck,
-  FaTriangleExclamation,
+  FaTriangleExclamation, FaArrowRotateLeft,
 } from 'react-icons/fa6';
 import { useAuth } from '../../../hooks/useAuth';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
 import {
   getAccountTypeControls, updateAccountTypeControls,
 } from '../../../services/accountTypeControlsService';
-import { DEFAULT_FORM, ORDERED_GROUPS } from './constants';
+import {
+  DEFAULT_FORM, ORDERED_GROUPS,
+  LIMIT_MESSAGE_KEYS, WHATSAPP_MESSAGE_KEYS,
+} from './constants';
 import { AccountTypeControlsForm } from '../../../types';
-import { DrugToolsSection } from './DrugToolsSection';
+// ─ DrugToolsSection اتشال 2026-04 — التداخلات + الحمل + الكلى كلهم في "حدود الميزات" دلوقتي ─
 import { PlanGroupSection } from './PlanGroupSection';
 import { buildPayloadForSave, digitsOnly, getErrorMessage } from './utils';
 import { LoadingText } from '../../ui/LoadingText';
@@ -86,6 +89,39 @@ export const AccountTypeControlsPanel: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
 
+  /* ── إعادة تعيين كل الرسائل للافتراضية ──────────────────────────────────
+   * لو الأدمن قبل كده حافظ رسائل قديمة، الافتراضيات الجديدة ما بتظهرش لأنها
+   * بيتم تخطيها بالقيم المحفوظة. الزرار ده بيستبدل كل الرسائل بالافتراضية
+   * الحالية (limit + whatsapp + locked) — بدون حفظ تلقائي عشان الأدمن يقدر
+   * يراجع قبل ما يضغط "حفظ".
+   */
+  const handleResetMessagesToDefaults = useCallback(() => {
+    const ok = window.confirm(
+      'هل تريد إعادة تعيين كل رسائل تجاوز الحد ورسائل الواتساب للقيم الافتراضية؟\n\n'
+        + 'هذا سيستبدل أي تعديلات سابقة في نصوص الرسائل فقط (لن يغيّر الأرقام أو الإعدادات الأخرى).\n\n'
+        + 'تحتاج للضغط على "حفظ الإعدادات" بعد التأكد عشان التغيير يتطبّق.',
+    );
+    if (!ok) return;
+    setFormAndMarkDirty((prev) => {
+      const next = { ...prev };
+      // كل رسائل تجاوز الحد + رسائل الواتساب
+      LIMIT_MESSAGE_KEYS.forEach((key) => {
+        next[key] = DEFAULT_FORM[key] || '';
+      });
+      WHATSAPP_MESSAGE_KEYS.forEach((key) => {
+        next[key] = DEFAULT_FORM[key] || '';
+      });
+      // ورسائل القفل لأدوات الأدوية (لو الأدمن مفعّل premiumOnly)
+      next.interactionToolLockedMessage = DEFAULT_FORM.interactionToolLockedMessage;
+      next.renalToolLockedMessage = DEFAULT_FORM.renalToolLockedMessage;
+      next.pregnancyToolLockedMessage = DEFAULT_FORM.pregnancyToolLockedMessage;
+      return next;
+    });
+    setMessage('تم تحميل الرسائل الافتراضية. اضغط "حفظ الإعدادات" للتطبيق.');
+    setMessageType('success');
+    setTimeout(() => { setMessage(''); setMessageType(null); }, 5000);
+  }, [setFormAndMarkDirty]);
+
   /* ── Save ── */
   const handleSave = async () => {
     if (!canManageControls) {
@@ -123,7 +159,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
   if (!canManageControls) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+      <div className="rounded-xl border border-danger-200 bg-danger-50 p-4 text-sm font-bold text-danger-700">
         غير مصرح لك بالوصول إلى إعدادات أنواع الحساب.
       </div>
     );
@@ -136,7 +172,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
       {/* ═══ Header ═══ */}
       <div className="flex items-center gap-2">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg p-1.5 sm:p-2 shadow-sm">
+        <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shadow-sm">
           <FaSliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
         </div>
         <div>
@@ -151,14 +187,14 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
       {/* ═══ Load Error Banner (blocks editing) ═══ */}
       {loadError && (
-        <div className="flex items-start gap-3 rounded-2xl border-2 border-red-200 bg-red-50 p-4">
-          <FaTriangleExclamation className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-2xl border-2 border-danger-200 bg-danger-50 p-4">
+          <FaTriangleExclamation className="w-4 h-4 text-danger-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-black text-red-800">فشل تحميل الإعدادات الحالية</p>
-            <p className="mt-1 text-[11px] font-bold text-red-600/80">
+            <p className="text-sm font-black text-danger-800">فشل تحميل الإعدادات الحالية</p>
+            <p className="mt-1 text-[11px] font-bold text-danger-600/80">
               {loadError}
             </p>
-            <p className="mt-2 text-[11px] font-bold text-red-700">
+            <p className="mt-2 text-[11px] font-bold text-danger-700">
               الحفظ معطل لحماية الإعدادات الحالية. حدث الصفحة بعد ما يرجع الاتصال.
             </p>
           </div>
@@ -167,9 +203,9 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
       {/* ═══ Dirty Indicator ═══ */}
       {isDirty && !loadError && (
-        <div className="flex items-center gap-2 rounded-xl border-2 border-amber-200 bg-amber-50 px-3 py-2">
-          <FaTriangleExclamation className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-          <p className="text-[11px] font-black text-amber-700">
+        <div className="flex items-center gap-2 rounded-xl border-2 border-warning-200 bg-warning-50 px-3 py-2">
+          <FaTriangleExclamation className="w-3.5 h-3.5 text-warning-600 shrink-0" />
+          <p className="text-[11px] font-black text-warning-700">
             عندك تعديلات لسه مش محفوظة — اضغط "حفظ الإعدادات" قبل ما تخرج من الصفحة.
           </p>
         </div>
@@ -181,7 +217,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
         {/* ═══ WhatsApp Number Card ═══ */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-lg p-1.5 shadow-sm">
+            <div className="bg-gradient-to-br from-success-500 to-success-700 text-white rounded-lg p-1.5 shadow-sm">
               <FaWhatsapp className="w-3 h-3 text-white" />
             </div>
             <label className="text-xs sm:text-sm font-black text-slate-800">رقم واتساب الاشتراك</label>
@@ -196,20 +232,30 @@ export const AccountTypeControlsPanel: React.FC = () => {
             }
             placeholder="201092805293"
             dir="ltr"
-            className="w-full max-w-md h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-blue-400 hover:border-blue-300 focus:outline-none transition-colors"
+            className="w-full max-w-md h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors"
           />
         </div>
 
         {/* ═══ Features Section ═══ */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 px-1">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg p-1.5 shadow-sm">
+          <div className="flex items-center gap-2 px-1 flex-wrap">
+            <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shadow-sm">
               <FaListCheck className="w-3.5 h-3.5 text-white" />
             </div>
             <h3 className="text-sm sm:text-base font-black text-slate-800">حدود الميزات</h3>
             <span className="text-[10px] sm:text-[11px] font-bold text-slate-400">
               ({ORDERED_GROUPS.length} ميزات)
             </span>
+            {/* ─ زرار "إعادة تعيين الرسائل" — لو الأدمن عايز يرجّع كل الرسائل للصياغة الافتراضية ─ */}
+            <button
+              type="button"
+              onClick={handleResetMessagesToDefaults}
+              className="mr-auto inline-flex items-center gap-1.5 rounded-lg border border-warning-200 bg-warning-50 px-2.5 py-1.5 text-[11px] font-black text-warning-700 hover:bg-warning-100 transition"
+              title="استبدال كل رسائل تجاوز الحد ورسائل الواتساب بالقيم الافتراضية الجديدة"
+            >
+              <FaArrowRotateLeft className="w-3 h-3" />
+              إعادة تعيين الرسائل
+            </button>
           </div>
 
           <div className="space-y-3">
@@ -225,8 +271,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* ═══ Drug Tools Section ═══ */}
-        <DrugToolsSection form={form} setForm={setFormAndMarkDirty} />
+        {/* ─ قسم "أدوات الأدوية" المنفصل اتشال 2026-04 — كل أدوات الأدوية بقت في "حدود الميزات" ─ */}
 
       </fieldset>
 
@@ -236,15 +281,15 @@ export const AccountTypeControlsPanel: React.FC = () => {
           <div
             className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${
               messageType === 'success'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : 'border-red-200 bg-red-50 text-red-700'
+                ? 'border-success-200 bg-success-50 text-success-700'
+                : 'border-danger-200 bg-danger-50 text-danger-700'
             }`}
           >
             {messageType === 'success' ? <FaCircleCheck className="w-3 h-3 shrink-0" /> : <FaCircleXmark className="w-3 h-3 shrink-0" />}
             {message}
           </div>
         ) : isDirty ? (
-          <p className="text-[11px] font-black text-amber-600">تعديلات غير محفوظة</p>
+          <p className="text-[11px] font-black text-warning-600">تعديلات غير محفوظة</p>
         ) : (
           <p className="text-[11px] font-bold text-slate-400">كل التعديلات محفوظة</p>
         )}
@@ -252,7 +297,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saveDisabled}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-emerald-600 disabled:hover:to-teal-600"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600"
         >
           {saving ? (
             <LoadingText>جاري الحفظ</LoadingText>

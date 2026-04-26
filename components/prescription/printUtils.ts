@@ -96,9 +96,6 @@ export async function printPrescription(paperSize?: PaperSizeSettings): Promise<
     await triggerNativePrintDialog(paperSize);
 }
 
-/** اسم بديل للتوافق مع الاستدعاءات القديمة. */
-export const printPrescriptionNative = printPrescription;
-
 // ─── (2) تنزيل PDF عبر حوار الطباعة الأصلي ──────────────────────
 
 interface DownloadOptions {

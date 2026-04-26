@@ -35,7 +35,7 @@ export const DEFAULT_BRANCH_ID = 'main';
 const ACTIVE_BRANCH_KEY = 'dh_active_branch';
 
 /** إنشاء كائن الفرع الافتراضي */
-export const createDefaultBranch = (): Branch => ({
+const createDefaultBranch = (): Branch => ({
     id: DEFAULT_BRANCH_ID,
     name: 'الفرع الرئيسي',
     createdAt: new Date().toISOString(),

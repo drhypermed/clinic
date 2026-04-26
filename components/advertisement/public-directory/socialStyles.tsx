@@ -17,7 +17,7 @@ import {
 } from 'react-icons/fa6';
 import { LuLink } from 'react-icons/lu';
 
-export type SocialStyle = {
+type SocialStyle = {
   // الأيقونه نفسها — class name بيوصل من المستهلك (سايز مختلف لكل ماكان: كرت/مودال)
   iconNode: (className: string) => React.ReactNode;
   // كلاس tailwind للخلفيّه (لون البراند الرسمي أو gradient لـInstagram)
@@ -27,7 +27,7 @@ export type SocialStyle = {
 };
 
 // لون كل براند زي ما هو في موقعه الرسمي — مينفعش نلاعب فيه عشان UX recognition
-export const SOCIAL_STYLES: Record<string, SocialStyle> = {
+const SOCIAL_STYLES: Record<string, SocialStyle> = {
   facebook: {
     iconNode: (cls) => <FaFacebookF className={cls} />,
     bg: 'bg-[#1877F2]',                                                  // فيسبوك أزرق رسمي
@@ -67,7 +67,7 @@ export const SOCIAL_STYLES: Record<string, SocialStyle> = {
 };
 
 // Fallback لمنصّه غير معروفه — لون رمادي محايد بدل ما الكرت يبان مكسور
-export const DEFAULT_SOCIAL_STYLE: SocialStyle = {
+const DEFAULT_SOCIAL_STYLE: SocialStyle = {
   iconNode: (cls) => <LuLink className={cls} strokeWidth={2.25} />,
   bg: 'bg-slate-600',
   label: 'رابط',

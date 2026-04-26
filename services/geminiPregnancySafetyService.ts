@@ -257,6 +257,7 @@ OUTPUT (strict JSON, no fences, no prose):
       responseMimeType: 'application/json',
       temperature: 0,
       thinkingBudget: 1000,
+      feature: 'pregnancy_safety', // تتسجل في تقارير الاستهلاك تحت "أمان الحمل/الرضاعة"
     });
 
     const parsed = tryParseJson(responseText || '{}');

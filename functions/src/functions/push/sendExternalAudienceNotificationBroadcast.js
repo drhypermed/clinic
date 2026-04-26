@@ -10,6 +10,9 @@ const RETRY_POLICY = 'no_auto_retry';
 // حد أقصى للبثوث اليومية لكل أدمن — حماية من السبام حتى لو حساب أدمن اختُرق.
 const DAILY_BROADCAST_LIMIT_PER_ADMIN = 30;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+// حد التخزين لـ retryable tokens — كل token تقريباً ١٥٠ بايت مع overhead.
+// ٢٠٠٠ × ١٥٠ = ~٣٠٠ كيلوبايت، مساحة آمنة بعيدة عن حد المليون بايت لمستند Firestore.
+const MAX_RETRYABLE_TOKENS_STORED = 2000;
 
 const normalizeText = (value) => String(value || '').trim();
 
@@ -97,6 +100,8 @@ module.exports = (context) => {
     const db = getDb();
 
     // حد تردد يومي — يرفض الإرسال إذا تجاوز أدمن ما DAILY_BROADCAST_LIMIT_PER_ADMIN بثّاً في آخر 24 ساعة.
+    // fail-closed: لو فشل الفحص نفسه (مشكلة شبكة)، نرفض البث بدل ما نسمح به.
+    // الإرسال للآلاف ضرر دائم؛ تأخير دقيقة ضرر مؤقت.
     const oneDayAgoIso = new Date(Date.now() - ONE_DAY_MS).toISOString();
     try {
       const recentBroadcastsSnap = await db
@@ -114,7 +119,11 @@ module.exports = (context) => {
       }
     } catch (err) {
       if (err instanceof HttpsError) throw err;
-      console.warn('[sendExternalAudienceNotificationBroadcast] rate-limit check failed:', err?.message || err);
+      console.error('[sendExternalAudienceNotificationBroadcast] rate-limit check failed:', err?.message || err);
+      throw new HttpsError(
+        'unavailable',
+        'RATE_LIMIT_CHECK_FAILED',
+      );
     }
 
     const title = ensureNonEmpty(request?.data?.title, 'TITLE_REQUIRED', HttpsError);
@@ -357,7 +366,9 @@ module.exports = (context) => {
           retryPolicy: shouldScheduleRetry ? 'auto_retry_once_after_5min' : RETRY_POLICY,
           retryAttempted: false,
           retryScheduledAtMs,
-          retryableTokens: shouldScheduleRetry ? uniqueRetryableTokens.slice(0, 5000) : [],
+          retryableTokens: shouldScheduleRetry
+            ? uniqueRetryableTokens.slice(0, MAX_RETRYABLE_TOKENS_STORED)
+            : [],
           failureReasons,
           resultText,
         },

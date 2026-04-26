@@ -104,9 +104,9 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
     const meds = data.rxItems.filter(i => i.type === 'medication');
     const notes = data.rxItems.filter(i => i.type === 'note').map(i => (i.instructions || '').trim()).filter(Boolean);
 
-    const titleTone = 'border-blue-200 bg-blue-50 text-blue-700';
+    const titleTone = 'border-brand-200 bg-brand-50 text-brand-700';
     const borderAccent = 'border-r-[3px] border-r-blue-500';
-    const headerBadge = 'bg-blue-600 text-white';
+    const headerBadge = 'bg-brand-600 text-white';
 
     return (
         <div className={`rounded-2xl bg-white border border-slate-200 overflow-hidden ${borderAccent}`}>
@@ -119,7 +119,7 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
                         <button
                             type="button"
                             onClick={onDeleteCase}
-                            className="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[11px] font-bold hover:bg-red-700 transition-colors shadow-sm"
+                            className="px-2.5 py-1 rounded-lg bg-danger-600 text-white text-[11px] font-bold hover:bg-danger-700 transition-colors shadow-sm"
                         >
                             حذف
                         </button>

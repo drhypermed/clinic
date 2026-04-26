@@ -8,6 +8,18 @@ import { auth, authPersistenceReady, functions } from './firebaseConfig';
  * ويسمح بتطبيق حدود الاستخدام (Quotas) لكل طبيب بناءً على نوع حسابه.
  */
 
+/**
+ * أسماء الميزات المسموحة للـtracking — لازم تطابق `ALLOWED_AI_FEATURES`
+ * في `functions/src/functions/adminFunctions.js`. أي قيمة تانية بتتسجل كـ"unknown".
+ */
+export type AiFeatureName =
+  | 'case_analysis'      // تحليل الحالة الكامل
+  | 'translation'        // ترجمة بيانات الروشتة (Smart RX)
+  | 'drug_interactions'  // فحص التداخلات الدوائية
+  | 'pregnancy_safety'   // أمان الحمل والرضاعة
+  | 'renal_dose'         // تعديل جرعات الكلى
+  | 'medical_report';    // طباعة تقرير طبي بالـAI
+
 interface SecureGeminiParams {
   prompt: string;
   model?: string;
@@ -21,6 +33,11 @@ interface SecureGeminiParams {
    * لو مُرسَلش، الـ Cloud Function بيستخدم `-1` كـ default.
    */
   thinkingBudget?: number;
+  /**
+   * اسم الميزة اللي بتنادي AI — يُسجَّل في users/{id}.usageStatsByPlan.{tier}.aiFeatures
+   * عشان تقرير الأدمن يعرض عداد per-feature لكل دكتور.
+   */
+  feature?: AiFeatureName;
 }
 
 interface SecureGeminiResponse {

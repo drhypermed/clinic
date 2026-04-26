@@ -24,7 +24,7 @@ export const VitalsSectionStylePanel: React.FC<VitalsSectionStylePanelProps> = (
       {/* زر التبديل لفتح أو إغلاق لوحة التحكم في الأنماط */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200 hover:border-purple-300 transition-all"
+        className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-brand-50 rounded-xl border-2 border-slate-200 hover:border-slate-300 transition-all"
       >
         <span className="font-black text-slate-800 flex items-center gap-2">
           🎨 تصميم قسم {section.title || 'Vitals & measurements'}

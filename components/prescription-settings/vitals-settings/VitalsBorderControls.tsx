@@ -27,7 +27,7 @@ export const VitalsBorderControls: React.FC<VitalsSectionControlsProps> = ({ sec
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">الشفافية</span>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
                   {Math.round((section.borderOpacity ?? 1) * 100)}%
                 </span>
               </div>
@@ -60,7 +60,7 @@ export const VitalsBorderControls: React.FC<VitalsSectionControlsProps> = ({ sec
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-500 font-medium">الشفافية</span>
-                <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
                   {Math.round((section.itemBorderColorOpacity ?? 1) * 100)}%
                 </span>
               </div>

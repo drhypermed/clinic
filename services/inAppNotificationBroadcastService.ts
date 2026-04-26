@@ -5,7 +5,7 @@ import type {
   CustomEmailRoleMode,
 } from './externalNotificationBroadcastService';
 
-export interface SendInAppNotificationPayload {
+interface SendInAppNotificationPayload {
   title: string;
   body: string;
   targetAudience: ExternalNotificationAudience;

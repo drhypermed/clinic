@@ -299,7 +299,7 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
                   {previewRxItems.length > 0 && (
                     <>
                       <div
-                        className="text-xl font-serif font-black text-red-900 italic mb-2 shrink-0 text-left"
+                        className="text-xl font-serif font-black text-danger-900 italic mb-2 shrink-0 text-left"
                         dir="ltr"
                       >
                         Rx
@@ -345,8 +345,8 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
 
         {/* تلميح ثبات المعاينة */}
         {!isStickyMode && (
-          <div className="w-full text-center py-1 bg-amber-50 border-t border-amber-100 rounded-b-xl">
-            <span className="text-[9px] text-amber-600 font-semibold">
+          <div className="w-full text-center py-1 bg-warning-50 border-t border-warning-100 rounded-b-xl">
+            <span className="text-[9px] text-warning-600 font-semibold">
               المعاينة ثابتة في هذا التبويب للحفاظ على وضوح المحتوى
             </span>
           </div>

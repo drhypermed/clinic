@@ -224,7 +224,7 @@ export const PwaInstallPrompt: React.FC = () => {
         <button
           type="button"
           onClick={handleInstallClick}
-          className="no-print fixed top-20 md:top-4 left-3 md:left-4 z-[10000] rounded-xl bg-emerald-600 text-white px-3 py-2 shadow-lg font-black text-xs md:text-sm hover:bg-emerald-700 transition-colors"
+          className="no-print fixed top-20 md:top-4 left-3 md:left-4 z-[10000] rounded-xl bg-success-600 text-white px-3 py-2 shadow-lg font-black text-xs md:text-sm hover:bg-success-700 transition-colors"
         >
           {isSecretaryRoute ? 'تثبيت سكرتارية العيادة' : 'تثبيت التطبيق'}
         </button>

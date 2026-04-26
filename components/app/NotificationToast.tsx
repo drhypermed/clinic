@@ -29,10 +29,10 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ notificati
         // تحديد لون الخلفية بناءً على نوع الإشعار
         const bgClass =
           notif.type === 'success'
-            ? 'bg-emerald-600'
+            ? 'bg-success-600'
             : notif.type === 'error'
-              ? 'bg-red-600'
-              : 'bg-blue-600';
+              ? 'bg-danger-600'
+              : 'bg-brand-600';
 
         return (
           <div

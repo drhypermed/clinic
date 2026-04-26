@@ -12,8 +12,8 @@ import React from 'react';
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { PrescriptionItem, ReadyPrescription } from '../../types';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST, normalizeAdviceList } from '../../utils/rx/rxUtils';
-import { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
-import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
+import { SmartQuotaLimitErrorDetails, validateReadyPrescriptionsCapacity } from '../../services/accountTypeControlsService';
+import { isQuotaLimitExceededError, isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
 import {
     extractDoctorFinalInstruction,
     sanitizeReadyPrescriptionRxItems,
@@ -42,7 +42,7 @@ interface CreateReadyPrescriptionActionsParams {
     dismissNotification: (id?: string, manual?: boolean) => void;
     openQuotaNoticeModal: (payload: { message: string; whatsappNumber?: string; whatsappUrl?: string; dayKey?: string; persist?: boolean }) => void;
     buildWhatsAppUrlFromNumber: (number: string, message: string) => string;
-    consumeStorageQuota: (feature: 'recordSave' | 'readyPrescriptionSave') => Promise<any>;
+    consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => Promise<any>;
     extractSmartQuotaErrorDetails: (error: any) => SmartQuotaLimitErrorDetails | null;
     getQuotaReachedMessage: (details: SmartQuotaLimitErrorDetails, fallback: string) => string;
     saveHistory: () => void;
@@ -141,48 +141,37 @@ export const createReadyPrescriptionActions = ({
         showNotification(onlineMessage, 'success', e);
     };
 
+    // ─ تشديد أمني 2026-04: السيرفر بيعد الروشتات الفعلية ويقارنها بحد الأدمن.
+    //   كان قبل client-side فقط (readyPrescriptions.length) — ممكن يتجاوز عبر dev tools.
     const ensureReadyPrescriptionCapacity = async (): Promise<boolean> => {
         try {
-            const [controls, accountType] = await Promise.all([
-                getAccountTypeControls(),
-                resolveCurrentUserAccountType(),
-            ]);
-
-            // 3 فئات: pro_max يرث من premium لو الأدمن ما حددش حدود خاصة
-            const maxReady = accountType === 'pro_max'
-                ? (controls.proMaxReadyPrescriptionsMaxCount ?? controls.premiumReadyPrescriptionsMaxCount)
-                : accountType === 'premium'
-                    ? controls.premiumReadyPrescriptionsMaxCount
-                    : controls.freeReadyPrescriptionsMaxCount;
-
-            if ((readyPrescriptions || []).length < maxReady) {
-                return true;
-            }
-
-            const fallbackMsg = `تم الوصول إلى الحد الأقصى للروشتات الجاهزة (${maxReady}). احذف عنصرًا قديمًا لإضافة جديد.`;
-            const template = accountType === 'pro_max'
-                ? (controls.proMaxReadyPrescriptionsCapacityMessage ?? controls.premiumReadyPrescriptionsCapacityMessage)
-                : accountType === 'premium'
-                    ? controls.premiumReadyPrescriptionsCapacityMessage
-                    : controls.freeReadyPrescriptionsCapacityMessage;
-            const capacityMessage = applyLimitPlaceholder(template, maxReady, fallbackMsg);
-            const capacityWhatsAppMessage = accountType === 'pro_max'
-                ? (controls.proMaxReadyPrescriptionsCapacityWhatsappMessage ?? controls.premiumReadyPrescriptionsCapacityWhatsappMessage)
-                : accountType === 'premium'
-                    ? controls.premiumReadyPrescriptionsCapacityWhatsappMessage
-                    : controls.freeReadyPrescriptionsCapacityWhatsappMessage;
-
-            dismissNotification();
-            openQuotaNoticeModal({
-                message: capacityMessage,
-                whatsappNumber: controls.whatsappNumber,
-                whatsappUrl: buildWhatsAppUrlFromNumber(controls.whatsappNumber, capacityWhatsAppMessage || capacityMessage),
-            });
-
-            return false;
-        } catch (capacityError) {
-            console.error('Error checking ready prescriptions capacity:', capacityError);
+            await validateReadyPrescriptionsCapacity();
             return true;
+        } catch (capacityError: unknown) {
+            const isLimit = isQuotaLimitExceededError(capacityError);
+            const details = (capacityError as { details?: Record<string, unknown> })?.details;
+            if (isLimit && details) {
+                const limit = Number(details.limit || 0);
+                const message = String(details.limitReachedMessage || '').trim()
+                    .replace(/\{\s*limit\s*\}/gi, String(limit));
+                dismissNotification();
+                openQuotaNoticeModal({
+                    message: message || `تم الوصول إلى الحد الأقصى للروشتات الجاهزة (${limit}). احذف عنصراً قديماً لإضافة جديد.`,
+                    whatsappNumber: String(details.whatsappNumber || ''),
+                    whatsappUrl: String(details.whatsappUrl || ''),
+                });
+                return false;
+            }
+            // ─ تشديد أمني 2026-04: أي خطأ تاني (شبكة/auth) → نمنع الحفظ.
+            //   كان قبل بيكمّل الحفظ بحجة "السيرفر هيفحص تاني عند الكتابة"
+            //   لكن مفيش أي rule في firestore.rules بتفحص الحد عند الكتابة،
+            //   فالطبيب اللي بيقطع نته لحظة الحفظ كان بيتجاوز الحد فعلاً.
+            console.error('Ready prescriptions capacity check failed:', capacityError);
+            showNotification(
+                'تعذّر التحقق من حد الروشتات الجاهزة. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+                'error',
+            );
+            return false;
         }
     };
 

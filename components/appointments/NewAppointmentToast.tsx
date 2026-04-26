@@ -38,16 +38,16 @@ export const NewAppointmentToast: React.FC<NewAppointmentToastProps> = ({ toast,
   >
     <div
       className={`rounded-2xl shadow-xl border-2 p-3 sm:p-4 flex items-start gap-2.5 sm:gap-3 ${
-        toast.source === 'secretary' ? 'bg-white border-violet-400' : 'bg-white border-amber-400'
+        toast.source === 'secretary' ? 'bg-white border-slate-400' : 'bg-white border-warning-400'
       }`}
     >
       {/* أيقونة التنبيه ملونة حسب المصدر */}
       <span
         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
-          toast.source === 'secretary' ? 'bg-violet-100' : 'bg-amber-100'
+          toast.source === 'secretary' ? 'bg-slate-100' : 'bg-warning-100'
         }`}
       >
-        <svg className={`w-5 h-5 ${toast.source === 'secretary' ? 'text-violet-600' : 'text-amber-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-5 h-5 ${toast.source === 'secretary' ? 'text-slate-600' : 'text-warning-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </span>

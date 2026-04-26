@@ -14,14 +14,13 @@ export type AdminView =
   | 'overview'
   | 'verification'
   | 'patients'
+  | 'publicBlacklist'      // ─ حظر الجمهور — تحت قسم "إدارة الجمهور" (منفصل)
   | 'accounts'
   | 'accountTypesControl'
   | 'financial'
-  | 'blacklist'
-  | 'disabledAccounts'
+  | 'restrictedAccounts'   // ─ حظر الأطباء + المعطّلين فقط (2 tabs بعد فصل الجمهور)
   | 'externalNotifications'
   | 'updateBroadcasts'
-  | 'publicBlacklist'
   | 'reports'
   | 'homeBanner'
   | 'prescriptionFooterLine'
@@ -51,6 +50,38 @@ export interface DashboardStats {
   totalRevenue: number;
   totalExpenses: number;
   netProfit: number;
+
+  // ═══ عدادات استهلاك ميزات الذكاء الاصطناعي (6 ميزات × 3 فئات = 18 حقل) ═══
+  // تحليل الحالة (Case Analysis)
+  caseAnalysisFreeCount: number;
+  caseAnalysisProCount: number;
+  caseAnalysisProMaxCount: number;
+  // الترجمة الذكية (Smart RX Translation)
+  translationFreeCount: number;
+  translationProCount: number;
+  translationProMaxCount: number;
+  // فحص التداخلات الدوائية
+  drugInteractionsFreeCount: number;
+  drugInteractionsProCount: number;
+  drugInteractionsProMaxCount: number;
+  // أمان الحمل والرضاعة
+  pregnancySafetyFreeCount: number;
+  pregnancySafetyProCount: number;
+  pregnancySafetyProMaxCount: number;
+  // تعديل جرعات الكلى
+  renalDoseFreeCount: number;
+  renalDoseProCount: number;
+  renalDoseProMaxCount: number;
+  // طباعة تقرير طبي بالـAI
+  medicalReportFreeCount: number;
+  medicalReportProCount: number;
+  medicalReportProMaxCount: number;
+
+  // ═══ Reports aggregates — السيرفر بيـscan الأطباء كل 6 ساعات ويخزّن النتائج هنا
+  //     عشان ReportsSection ما يحتاجش يقرا كل وثائق الأطباء كل فتحة (وفر ضخم في الـreads)
+  monthlySignups?: Array<{ month: string; newDoctors: number }>;
+  specialtyBreakdown?: Array<{ specialty: string; count: number }>;
+  topDoctorsByActivity?: Array<{ name: string; email: string; totalActions: number }>;
 }
 
 export interface AdminDashboardProps {
@@ -69,4 +100,17 @@ export interface NavItem {
   id: AdminView;
   label: string;
   icon: string;
+}
+
+/**
+ * مجموعة عناصر تنقل تحت header مشترك في الـsidebar.
+ * Example: { label: 'إدارة الأطباء', items: [verification, accounts, ...] }
+ */
+export interface NavGroup {
+  /** عنوان المجموعة الظاهر للمستخدم (مثال: "إدارة الأطباء") */
+  label: string;
+  /** اختياري — emoji أو رمز يظهر بجانب الـlabel */
+  emoji?: string;
+  /** الـnavigation items داخل المجموعة */
+  items: readonly NavItem[];
 }

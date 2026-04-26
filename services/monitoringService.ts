@@ -87,9 +87,3 @@ export function initMonitoring(): void {
   });
 }
 
-/**
- * تسجيل خطأ يدوي (مثلاً من catch block مهم).
- */
-export function logError(error: unknown): void {
-  void sendErrorToFirestore(buildLog(error, 'manual'));
-}

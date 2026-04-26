@@ -18,17 +18,17 @@ import {
 } from 'react-icons/fa6';
 
 /* ═════════════════════ COLOR MAP ═════════════════════ */
-// خريطة الألوان — بعد تبسيطها:
-//   - الأرقام كلها text-slate-900 (تباين قوي على الأبيض) بدل ألوان باهتة
-//   - الألوان اتحصرت في الأيقونات فقط + خلفية خفيفة لتمييزها
-//   - دلالة الألوان: emerald=إيراد/موجب، rose=مصروفات/سالب، teal=primary (طبي)،
-//     slate=محايد للأرقام العادية (كشوف/استشارات)
+// خريطة الألوان — قاعدة جديدة: أزرق متدرج فقط أو أخضر متدرج فقط (مفيش mix)
+//   - الأرقام كلها text-slate-900 (تباين قوي على الأبيض)
+//   - blue = الأرقام المحايدة + معلومات (كشوف/استشارات/تأمين)
+//   - emerald = القيم المالية الموجبة (تداخلات/دخل/إيراد)
+//   - rose = استثناء دلالي للسالب فقط (مصروفات) — لأن الأخضر بيدل على الموجب
 const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
-  slate:   { bg: 'bg-slate-100',   icon: 'text-slate-600' },   // محايد (كشوف/استشارات/دخل آخر)
-  teal:    { bg: 'bg-teal-50',     icon: 'text-teal-600' },    // primary (تداخلات)
-  emerald: { bg: 'bg-emerald-50',  icon: 'text-emerald-600' }, // حالة موجبة (إيراد)
-  rose:    { bg: 'bg-rose-50',     icon: 'text-rose-600' },    // حالة سالبة (مصروفات)
-  sky:     { bg: 'bg-sky-50',      icon: 'text-sky-600' },     // معلومة ثانوية (تأمين)
+  slate:   { bg: 'bg-blue-50',     icon: 'text-blue-700' },     // محايد → أزرق فاتح (كشوف/استشارات)
+  teal:    { bg: 'bg-emerald-50',  icon: 'text-emerald-700' },  // تداخلات → أخضر فقط
+  emerald: { bg: 'bg-emerald-100', icon: 'text-emerald-700' },  // إيراد → أخضر أعمق شوية
+  rose:    { bg: 'bg-rose-50',     icon: 'text-rose-600' },     // مصروفات (سالب) — استثناء دلالي
+  sky:     { bg: 'bg-blue-50',     icon: 'text-blue-700' },     // تأمين → أزرق فقط
 };
 
 /* ═════════════════════ MINI STAT ═════════════════════ */
@@ -45,18 +45,18 @@ interface MiniStatProps {
 const MiniStat: React.FC<MiniStatProps> = ({ icon, label, value, color, isMoney, className = '' }) => {
   const c = COLOR_MAP[color] || COLOR_MAP.slate;
   return (
-    // الخلفية بقت white صريح (مش white/60) عشان الأرقام تبان أوضح
-    <div className={`group rounded-xl border border-slate-200/70 bg-white p-2.5 sm:p-3 hover:border-slate-300 hover:shadow-sm transition-all duration-200 ${className}`}>
+    // border صلب بدل /80 الشفاف
+    <div className={`group rounded-xl border border-blue-200 bg-white p-2.5 sm:p-3 hover:border-blue-400 hover:shadow-sm transition-all duration-200 ${className}`}>
       <div className="flex items-center gap-1.5 mb-1.5">
         <div className={`${c.bg} ${c.icon} rounded-lg p-1.5`}>
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-2.5 h-2.5 sm:w-3 sm:h-3' })}
         </div>
-        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
+        <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 uppercase tracking-wider">{label}</span>
       </div>
-      {/* الأرقام كلها slate-900 لتباين عالي، بحجم ثابت للإحصائيات الثانوية */}
+      {/* الأرقام كلها slate-900 لتباين عالي */}
       <div className="text-base sm:text-lg font-black font-numeric text-slate-900 tracking-tight leading-none">
         {typeof value === 'number' ? value.toLocaleString('ar-EG') : value}
-        {isMoney && <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 mr-0.5">ج.م</span>}
+        {isMoney && <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 mr-0.5">ج.م</span>}
       </div>
     </div>
   );
@@ -70,12 +70,12 @@ const MiniStat: React.FC<MiniStatProps> = ({ icon, label, value, color, isMoney,
  */
 const NetProfitStat: React.FC<{ value: number; fmtMoney: (n: number) => string }> = ({ value, fmtMoney }) => {
   const isPositive = value >= 0;
-  // تدرج قوي شوية عشان يبان إنه البطل في الكرت
+  // الموجب: أخضر متدرج فقط (emerald-only). السالب: أحمر دلالي (rose).
   const gradient = isPositive
-    ? 'from-emerald-100 via-emerald-50 to-teal-50 border-emerald-300/80'
+    ? 'from-emerald-100 via-emerald-50 to-emerald-50 border-emerald-300/80'
     : 'from-rose-100 via-rose-50 to-red-50 border-rose-300/80';
   const iconGradient = isPositive
-    ? 'from-emerald-500 to-teal-600'
+    ? 'from-emerald-500 to-emerald-700'
     : 'from-rose-500 to-red-600';
   // الأرقام slate-900 للتباين العالي، اللون يتلون على التسمية فقط (أوضح دلاليًا)
   const accentText = isPositive ? 'text-emerald-700' : 'text-rose-700';
@@ -103,7 +103,7 @@ const NetProfitStat: React.FC<{ value: number; fmtMoney: (n: number) => string }
 
 /* ═════════════════════ PERIOD CARD ═════════════════════ */
 /** بيانات الفترة (يوم/شهر/سنة) — مستخدمة كـ props لـ PeriodCard. */
-export interface PeriodData {
+interface PeriodData {
   exams: number;
   consults: number;
   revenue: number;
@@ -150,9 +150,10 @@ export const PeriodCard: React.FC<PeriodCardProps> = ({
   const iconBgFrom = iconFrom || accentFrom;
   const iconBgTo = iconTo || accentTo;
   return (
-    <div className={`group bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_-4px_rgba(0,0,0,0.06)] overflow-hidden hover:shadow-[0_1px_3px_rgba(0,0,0,0.04),0_12px_32px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${className}`}>
-      {/* شريط اللون العلوي */}
-      <div className={`h-1 bg-gradient-to-l ${accentFrom} ${accentTo}`} />
+    // كرت أبيض صريح بـborder خفيف بـtint blue (بدل white/70 الباهت اللي كان بيختفي على الخلفية)
+    <div className={`group bg-white rounded-2xl border border-blue-100 shadow-[0_2px_6px_rgba(8,112,184,0.06),0_8px_24px_-4px_rgba(8,112,184,0.10)] overflow-hidden hover:shadow-[0_2px_6px_rgba(8,112,184,0.06),0_14px_36px_-6px_rgba(8,112,184,0.16)] transition-shadow duration-300 ${className}`}>
+      {/* شريط اللون العلوي — هوية كل كرت (blue-only أو emerald-only) */}
+      <div className={`h-1.5 bg-gradient-to-l ${accentFrom} ${accentTo}`} />
       <div className={`flex items-center gap-2.5 px-4 py-3 ${headerBg} border-b ${headerBorder}`}>
         <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${iconBgFrom} ${iconBgTo} flex items-center justify-center shadow-sm`}>
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3 h-3 text-white' })}

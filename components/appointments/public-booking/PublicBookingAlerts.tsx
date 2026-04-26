@@ -40,7 +40,7 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
     <>
       {/* تأكيد من السكرتارية للطبيب أن الحالة قد دخلت العيادة بالفعل */}
       {secretaryActionToast === 'approved' && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-emerald-600 text-white shadow-xl border border-emerald-700 animate-fadeIn">
+        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-success-600 text-white shadow-xl border border-success-700 animate-fadeIn">
           <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -60,7 +60,7 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
 
       {/* إبلاغ الطبيب أن الحالة المطلوبة غير موجودة في الانتظار حالياً */}
       {secretaryActionToast === 'rejected' && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-red-600 text-white shadow-xl border border-red-700 animate-fadeIn">
+        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-danger-600 text-white shadow-xl border border-danger-700 animate-fadeIn">
           <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -80,7 +80,7 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
 
       {/* التنبيه اللحظي: الطبيب يطلب فلان بالاسم من السكرتارية الآن */}
       {entryAlert && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto p-4 rounded-xl bg-violet-600 text-white shadow-xl border border-violet-700 animate-fadeIn flex flex-col gap-3">
+        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto p-4 rounded-xl bg-slate-600 text-white shadow-xl border border-slate-700 animate-fadeIn flex flex-col gap-3">
           <div className="flex items-start gap-3">
             <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,7 +105,7 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
               type="button"
               disabled={entryResponding}
               onClick={onApproveEntry}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success-500 hover:bg-success-600 text-white font-bold text-sm disabled:opacity-60"
               title="نعم - تمت الموافقة"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,7 +117,7 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
               type="button"
               disabled={entryResponding}
               onClick={onRejectEntry}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold text-sm disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-danger-500 hover:bg-danger-600 text-white font-bold text-sm disabled:opacity-60"
               title="لا - غير موجود"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

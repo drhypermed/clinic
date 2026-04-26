@@ -1,14 +1,19 @@
 /**
  * مكون بنر الإعلانات (AdBanner):
- * يعرض هذا المكون شريطاً إعلانياً دواراً (Carousel) للأطباء.
+ * يعرض هذا المكون شريطاً إعلانياً دواراً (Carousel) للأطباء/الجمهور.
+ *
  * الميزات:
  * 1. دعم الصور الفردية أو المتعددة مع التبديل التلقائي (Auto-rotation).
  * 2. فلترة الإعلانات المنتهية الصلاحية أو غير النشطة تلقائياً.
  * 3. دعم الروابط الخارجية عند الضغط على الإعلان.
  * 4. الحفاظ على نسبة العرض إلى الارتفاع (Aspect Ratio) لضمان عدم تشوه الصور.
+ * 5. تقليب يدوي بأسهم (يمين/شمال) + نقاط مباشرة، والـauto-rotation
+ *    بيـreset عند أي تدخّل يدوي عشان نفس مدة الأدمن تبدأ من الأول.
+ * 6. تخطّي الصور الفاشلة بدل ما يختفي البانر بالكامل لمجرد فشل صورة وسط مجموعة.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import { useTrustedNow } from '../../hooks/useTrustedNow';
 import { filterActiveBannerItems } from '../../utils/homepageBannerTime';
 
@@ -33,6 +38,11 @@ interface AdBannerProps {
   rotationSeconds?: number;
 }
 
+// ─ مدة الـtimeout الأمني (تُعتبر بعدها الصورة فاشلة لو ما طلقتش onLoad/onError).
+//   الـCORS أحياناً بيوقف الصورة بدون أي event، فالـtimeout دا الحماية الوحيدة.
+//   زدناها من 10s لـ20s عشان النت البطيء (3G ريفي + صور كبيرة) ميـfailش بالغلط.
+const SILENT_FAILURE_TIMEOUT_MS = 20000;
+
 export const AdBanner: React.FC<AdBannerProps> = ({
   imageUrl,
   imageUrls,
@@ -43,15 +53,12 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   displayHeight,
   rotationSeconds = 5,
 }) => {
-  const [imageError, setImageError] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  // إضافي: نتتبّع إذا كانت الصورة الحالية تحمّلت فعلاً — علشان ما نرسمش
-  // الحاوية بالـ aspect-ratio قبل التحميل (ده كان بيخلق فراغاً لو الصوره فشلت بصمت)
-  const [imageLoaded, setImageLoaded] = useState(false);
   const { nowMs } = useTrustedNow();
   const safeHeight = Math.max(120, Number(displayHeight) || 500);
   const bannerAspectRatio = 1600 / safeHeight;
 
+  // ─ بنفلتر الإعلانات المنتهية/غير النشطة قبل أي شيء — العميل ما يشوفش
+  //   صور قديمة الأدمن نسي يحذفها.
   const activeItems = filterActiveBannerItems(Array.isArray(items) ? items : [], nowMs);
 
   const allImages = (activeItems.length > 0
@@ -64,6 +71,101 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   ).filter(Boolean);
   const imagesKey = allImages.join('|');
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  // ─ مجموعة indices الصور اللي فشلت (سواء onError أو silent timeout).
+  //   بنستخدمها عشان نتخطاها في التقليب — صورة واحدة معطوبة وسط 3 ما تخفيش
+  //   البانر بالكامل، نقفز للتانية فوراً.
+  const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+  // ─ علامة إن الصورة الحالية تحمّلت بنجاح — تتحكم في الـsilent-failure timer.
+  const [currentLoaded, setCurrentLoaded] = useState(false);
+
+  // ─ reset كامل لما قائمة الصور تتغير (الأدمن غيّر البانر، أو مدّة انتهت).
+  useEffect(() => {
+    setActiveIndex(0);
+    setFailedIndices(new Set());
+    setCurrentLoaded(false);
+  }, [imagesKey]);
+
+  // ─ reset لـcurrentLoaded عند تغيير الصورة (يدوي/تلقائي) — كل صورة جديدة
+  //   لازم تطلق onLoad تاني عشان نعتبرها محمّلة.
+  useEffect(() => {
+    setCurrentLoaded(false);
+  }, [activeIndex]);
+
+  // ─ يلاقي أول index صالح في الاتجاه المطلوب (1 = الأمام، -1 = الخلف).
+  //   يتخطى الـfailedIndices. يرجع -1 لو كل الصور فشلت.
+  const findNextValidIndex = (current: number, direction: 1 | -1): number => {
+    const total = allImages.length;
+    if (total === 0) return -1;
+    for (let step = 1; step <= total; step++) {
+      const candidate = ((current + direction * step) % total + total) % total;
+      if (!failedIndices.has(candidate)) return candidate;
+    }
+    return -1;
+  };
+
+  const goNext = () => {
+    const next = findNextValidIndex(activeIndex, 1);
+    if (next !== -1 && next !== activeIndex) setActiveIndex(next);
+  };
+
+  const goPrev = () => {
+    const prev = findNextValidIndex(activeIndex, -1);
+    if (prev !== -1 && prev !== activeIndex) setActiveIndex(prev);
+  };
+
+  // ─ يضيف index للـfailed set (idempotent — لو موجود مش بيعمل re-render).
+  const markIndexFailed = (idx: number) => {
+    setFailedIndices((prev) => {
+      if (prev.has(idx)) return prev;
+      const next = new Set(prev);
+      next.add(idx);
+      return next;
+    });
+  };
+
+  // ─ لو الصورة الحالية بقت في الـfailed set، نقفز للتانية الصالحة فوراً.
+  //   ده بيشتغل سواء الفشل من onError أو من silent-timeout.
+  useEffect(() => {
+    if (!failedIndices.has(activeIndex)) return;
+    const total = allImages.length;
+    for (let step = 1; step <= total; step++) {
+      const candidate = (activeIndex + step) % total;
+      if (!failedIndices.has(candidate)) {
+        setActiveIndex(candidate);
+        return;
+      }
+    }
+    // كل الصور فشلت → البانر هيختفي عبر return null تحت
+  }, [activeIndex, failedIndices, allImages.length]);
+
+  // ─ Auto-rotation: الـtimer بيتـreset كل ما activeIndex يتغير (يدوي أو تلقائي)،
+  //   فلو المستخدم ضغط سهم/dot → نفس مدة الأدمن تبدأ من الأول.
+  //   لو مفيش غير صورة صالحة واحدة، مفيش تقليب أصلاً.
+  useEffect(() => {
+    const validCount = allImages.length - failedIndices.size;
+    if (validCount <= 1) return;
+    const delay = Math.max(1, rotationSeconds) * 1000;
+    const timer = window.setTimeout(goNext, delay);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex, allImages.length, failedIndices, rotationSeconds, imagesKey]);
+
+  // ─ Safety net للفشل الصامت (CORS بيوقف الصورة بدون onError).
+  //   لو الصورة ما حملتش خلال 20s، نعتبرها فاشلة ونتخطاها. الـtimer
+  //   بيتلغي تلقائياً لو currentLoaded بقت true قبل الـ20s.
+  useEffect(() => {
+    if (currentLoaded) return;
+    const timer = window.setTimeout(() => {
+      markIndexFailed(activeIndex);
+    }, SILENT_FAILURE_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [currentLoaded, activeIndex, imagesKey]);
+
+  // لو كل الصور فشلت أو ما فيش صور = نخفي البانر تماماً
+  if (allImages.length === 0 || failedIndices.size >= allImages.length) return null;
+
+  const currentImage = allImages[activeIndex];
   const currentItem = activeItems[activeIndex] || null;
   const hasPerImageItems = activeItems.length > 0;
   const resolvedLink = hasPerImageItems
@@ -71,81 +173,71 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     : (link || '').trim();
   const resolvedAlt = currentItem?.title || altText;
 
-  const currentImage = allImages[activeIndex] || '';
-
-  React.useEffect(() => {
-    setActiveIndex(0);
-    setImageError(false);
-    // نعيد imageLoaded لـfalse لما مصدر الصور يتغير — البانر الجديد ما يظهرش حتى يتأكد التحميل
-    setImageLoaded(false);
-  }, [imagesKey]);
-
-  // لو الصورة ما تحمّلتش خلال 10 ثواني (مثلاً CORS يمنعها بصمت) نعتبرها فشلت
-  // بدل ما نسيب فراغ بدون onError. ده بيحمي من "البانر مش بيظهر بس مساحته موجودة".
-  React.useEffect(() => {
-    if (!currentImage || imageLoaded || imageError) return;
-    const timer = window.setTimeout(() => setImageError(true), 10000);
-    return () => window.clearTimeout(timer);
-  }, [currentImage, imageLoaded, imageError]);
-
-  React.useEffect(() => {
-    if (allImages.length <= 1) return;
-    const nextDelay = Math.max(1, rotationSeconds) * 1000;
-    const timeout = window.setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % allImages.length);
-    }, nextDelay);
-    return () => window.clearTimeout(timeout);
-  }, [allImages.length, rotationSeconds, activeIndex, imagesKey]);
-
-  if (imageError || !currentImage) return null;
-
-  // لو الصورة لسه ما تحمّلتش: نرسم img خفي خارج الـlayout — بس يشغل onLoad
-  // بدون ما ياخد مساحه في الصفحه. ده بيمنع الفراغ اللي كان بيظهر لما الصورة تفشل بصمت.
-  if (!imageLoaded) {
-    return (
-      <img
-        src={currentImage}
-        alt=""
-        aria-hidden="true"
-        onLoad={() => setImageLoaded(true)}
-        onError={() => setImageError(true)}
-        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-      />
-    );
-  }
+  // عدد الصور الصالحة — لإظهار/إخفاء عناصر التحكم (أسهم + نقاط)
+  const validImagesCount = allImages.length - failedIndices.size;
 
   const BannerContent = (
     <div className={`relative w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}>
       <div
         className="relative w-full"
-        style={{
-          aspectRatio: `${bannerAspectRatio}`,
-        }}
+        style={{ aspectRatio: `${bannerAspectRatio}` }}
       >
-      <img
-        src={currentImage}
-        alt={resolvedAlt}
-        className="w-full h-full object-cover"
-        onLoad={() => setImageLoaded(true)}
-        onError={() => setImageError(true)}
-        loading="lazy"
-      />
+        {/* key على activeIndex بيخلي React يعيد ركّب الـimg لما الصورة تتغير
+            — ده يضمن إن onLoad/onError يـtriggerوا للصورة الجديدة فعلاً. */}
+        <img
+          key={`banner-img-${activeIndex}`}
+          src={currentImage}
+          alt={resolvedAlt}
+          className="w-full h-full object-cover"
+          onLoad={() => setCurrentLoaded(true)}
+          onError={() => markIndexFailed(activeIndex)}
+          loading="lazy"
+        />
       </div>
-      {allImages.length > 1 && (
+
+      {/* أسهم التنقل اليدوي — تظهر بس لو في أكتر من صورة صالحة.
+          الاتجاه: يمين = التالي، شمال = السابق.
+          الشكل: صغير + شفاف + ثابت بدون أي حركة عند hover. */}
+      {validImagesCount > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goPrev(); }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center"
+            aria-label="الإعلان السابق"
+          >
+            <FaChevronLeft className="w-2.5 h-2.5" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goNext(); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center"
+            aria-label="الإعلان التالي"
+          >
+            <FaChevronRight className="w-2.5 h-2.5" />
+          </button>
+        </>
+      )}
+
+      {/* نقاط للقفز المباشر لصورة معينة — بنخفي نقاط الصور الفاشلة. */}
+      {validImagesCount > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/35 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
-          {allImages.map((_, idx) => (
-            <button
-              key={`banner-dot-${idx}`}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setActiveIndex(idx);
-              }}
-              className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? 'bg-white scale-110' : 'bg-white/50'}`}
-              aria-label={`banner ${idx + 1}`}
-            />
-          ))}
+          {allImages.map((_, idx) => {
+            if (failedIndices.has(idx)) return null;
+            return (
+              <button
+                key={`banner-dot-${idx}`}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveIndex(idx);
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/80'}`}
+                aria-label={`إعلان ${idx + 1}`}
+              />
+            );
+          })}
         </div>
       )}
     </div>

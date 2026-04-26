@@ -9,7 +9,7 @@
 import React from 'react';
 
 /** الأنواع المدعومة — يجب أن تتطابق مع SYSTEM_REQUEST_ICON_OPTIONS */
-export type SocialIconName =
+type SocialIconName =
   | 'whatsapp'
   | 'facebook'
   | 'instagram'

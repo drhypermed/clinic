@@ -9,12 +9,12 @@ import { isPositiveFileNumber } from './patientFilesShared';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface PrintableInvoiceItem {
+interface PrintableInvoiceItem {
   description: string;
   amount: number;
 }
 
-export interface PrintableInvoiceData {
+interface PrintableInvoiceData {
   patientName: string;
   patientFileNumber?: number;
   patientPhone?: string;

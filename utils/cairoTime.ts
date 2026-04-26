@@ -1,7 +1,7 @@
 const DEFAULT_DISPLAY_LOCALE = 'ar-EG-u-nu-latn';
 const PARTS_LOCALE = 'en-CA';
 
-export const CAIRO_TIME_ZONE = 'Africa/Cairo';
+const CAIRO_TIME_ZONE = 'Africa/Cairo';
 
 type CairoDateInput = Date | string | number;
 
@@ -49,7 +49,7 @@ export const getCairoDateParts = (value: CairoDateInput = new Date()): CairoDate
   };
 };
 
-export const getUserDateParts = (value: CairoDateInput = new Date()): CairoDateParts => {
+const getUserDateParts = (value: CairoDateInput = new Date()): CairoDateParts => {
   const date = toDate(value);
   const parts = userPartsFormatter.formatToParts(date);
   return {

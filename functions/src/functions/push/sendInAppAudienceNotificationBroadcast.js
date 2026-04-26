@@ -61,6 +61,7 @@ module.exports = (context) => {
     const db = getDb();
 
     // حد تردد يومي — يرفض البث إذا تجاوز أدمن ما DAILY_IN_APP_BROADCAST_LIMIT_PER_ADMIN في آخر 24 ساعة.
+    // fail-closed: لو فشل الفحص نفسه نرفض البث بدل ما نسمح، لحماية الميزانية.
     const oneDayAgoIso = new Date(Date.now() - ONE_DAY_MS).toISOString();
     try {
       const recentBroadcastsSnap = await db
@@ -78,7 +79,11 @@ module.exports = (context) => {
       }
     } catch (err) {
       if (err instanceof HttpsError) throw err;
-      console.warn('[sendInAppAudienceNotificationBroadcast] rate-limit check failed:', err?.message || err);
+      console.error('[sendInAppAudienceNotificationBroadcast] rate-limit check failed:', err?.message || err);
+      throw new HttpsError(
+        'unavailable',
+        'RATE_LIMIT_CHECK_FAILED',
+      );
     }
 
     const title = ensureNonEmpty(request?.data?.title, 'TITLE_REQUIRED', HttpsError);
@@ -129,6 +134,10 @@ module.exports = (context) => {
     const estimatedDeviceCount = tokens.length;
     const matchedUserIdsCount = targetScopeIds.length;
 
+    // البث الداخلي ما يرسل push فعلي — بس يكتب وثيقة، والـ popup بيظهر لما المستخدم
+    // يفتح التطبيق ويلاقي بثّ مطابق. عشان كده ما عندناش "نجاح/فشل توصيل" حقيقي،
+    // وكل اللي نقدر نسجله هو "عدد الأجهزة المتوقع وصول الإشعار لها" + "عدد المستخدمين
+    // المطابقين". أي successCount غير ده مضلل لأنه ما يتأكدش إن المستخدم شاف الـ popup.
     await broadcastRef.set(
       {
         id: broadcastId,
@@ -148,14 +157,11 @@ module.exports = (context) => {
         createdAtMs: nowMs,
         expiresAtMs,
         tokenCount: estimatedDeviceCount,
-        successCount: estimatedDeviceCount,
-        failureCount: 0,
-        failedBatchesCount: 0,
         matchedUserIdsCount,
         excludedDueToOverlapCount,
         resultText:
           estimatedDeviceCount > 0
-            ? 'تم نشر الإشعار الداخلي بنجاح وسيظهر للفئة المستهدفة وفق منطق الاستهداف.'
+            ? 'تم حفظ الإشعار الداخلي. سيظهر للأجهزة المطابقة عند فتح التطبيق.'
             : targetAudience === 'custom'
               ? 'لا توجد جلسات نشطة مرتبطة بالبريد الإلكتروني المستهدف حالياً، وتم حفظ الإشعار للعرض عند التحقق من التطابق.'
               : 'لا توجد أجهزة نشطة حالياً لهذه الفئة، وتم حفظ الإشعار الداخلي للوصول المتوافق.',
@@ -169,7 +175,9 @@ module.exports = (context) => {
       broadcastId,
       targetAudience,
       tokenCount: estimatedDeviceCount,
-      successCount: estimatedDeviceCount,
+      // ما عندناش تأكيد توصيل حقيقي للبث الداخلي، فنسجل صفر ونعتمد على tokenCount
+      // كمؤشر تقديري لحجم الجمهور المستهدف فقط.
+      successCount: 0,
       failureCount: 0,
       failedBatchesCount: 0,
       matchedUserIdsCount,
@@ -177,7 +185,7 @@ module.exports = (context) => {
       customEmailRoleMode: targetAudience === 'custom' ? resolvedCustomEmailRoleMode : 'all_linked',
       message:
         estimatedDeviceCount > 0
-          ? 'تم نشر الإشعار الداخلي بنجاح.'
+          ? `تم حفظ الإشعار الداخلي. سيظهر لـ${estimatedDeviceCount} جهاز متوقع عند فتح التطبيق.`
           : 'تم حفظ الإشعار الداخلي وسيظهر وفق شروط الاستهداف عند التطابق.',
     };
   };

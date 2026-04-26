@@ -5,7 +5,7 @@ import type { AppStateSnapshot } from './useDrHyper.types';
 import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
 import { getCairoDayKey } from '../../utils/cairoTime';
 
-export type VisitType = 'exam' | 'consultation';
+type VisitType = 'exam' | 'consultation';
 
 export const useDrHyperPatientState = () => {
   const [patientName, setPatientName] = useState('');

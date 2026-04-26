@@ -98,33 +98,3 @@ export const subscribeDocCacheFirst = <T extends DocumentData>(
   );
 };
 
-/**
- * اشتراك في مجموعة مستندات بنمط cache-first:
- * - ينفذ callback فوراً بالنتائج المخزنة محلياً.
- * - ثم يستمع للتحديثات الحية.
- * - يعمل بسلاسة في وضع عدم الاتصال.
- */
-export const subscribeDocsCacheFirst = <T extends DocumentData>(
-  q: Query<T>,
-  callbacks: SubscribeCallbacks<QuerySnapshot<T>>
-): Unsubscribe => {
-  let delivered = false;
-
-  getDocsFromCache(q)
-    .then((cached) => {
-      if (!delivered && !cached.empty) {
-        callbacks.next(cached);
-      }
-    })
-    .catch(() => { /* لا توجد نسخة مخزنة */ });
-
-  return onSnapshot(
-    q,
-    { includeMetadataChanges: false },
-    (snap) => {
-      delivered = true;
-      callbacks.next(snap);
-    },
-    (err) => callbacks.error?.(err)
-  );
-};

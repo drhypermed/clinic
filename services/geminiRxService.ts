@@ -165,7 +165,7 @@ Return STRICT JSON ONLY:
     // thinking=200: تشخيص مفرد (اسم مرض واحد) محتاج تفكير خفيف بس. الدالة
     // دي مش مستخدمة حالياً (الفلو الحالي يستعمل analyzeCaseDeeply للتحليل الغني)
     // بس لو حد استدعاها مستقبلاً، الإعداد ده بيخليها رخيصة.
-    const stage1 = await generateJson(stage1Prompt, { temperature: 0.25, thinkingBudget: 200 });
+    const stage1 = await generateJson(stage1Prompt, { temperature: 0.25, thinkingBudget: 200, feature: 'translation' });
     return sanitizeAnalysisResult(stage1);
   } catch (error) {
     console.error('Gemini Rx Error:', error);
@@ -316,6 +316,7 @@ Return STRICT JSON ONLY with these keys only:
       // thinking=0: الترجمة شغلة ميكانيكية (ألم بطن → abdominal pain) مش محتاجة
       // تفكير عميق — تشييله بيوفر ~50-60% من تكلفة الترجمة بدون أي فقد في الجودة.
       thinkingBudget: 0,
+      feature: 'translation', // تتسجل في تقارير الاستهلاك تحت "الترجمة الذكية"
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};
@@ -385,6 +386,7 @@ Diagnosis: ${dxText}`;
         temperature: 0,
         // نفس الـ fallback — ترجمة لا تحتاج تفكير
         thinkingBudget: 0,
+        feature: 'translation', // fallback ترجمة (text mode) — نفس الميزة
       });
 
       const out = {

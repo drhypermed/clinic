@@ -301,9 +301,6 @@ export async function requestPermissionAndSaveTokenForSecretary(secret: string, 
 export async function requestPermissionAndSaveTokenWithDetails(userId: string): Promise<PushSetupResult> {
   return getAndSaveFcmToken('doctor', userId, (id, token) => firestoreService.saveFcmToken(id, token));
 }
-export async function requestPermissionAndSaveTokenForPublicWithDetails(userId: string): Promise<PushSetupResult> {
-  return getAndSaveFcmToken('public', userId, (id, token) => firestoreService.savePublicFcmToken(id, token));
-}
 export async function requestPermissionAndSaveTokenForSecretaryWithDetails(secret: string, branchId?: string): Promise<PushSetupResult> {
   return getAndSaveFcmToken(
     'secretary',

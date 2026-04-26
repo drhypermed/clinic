@@ -62,12 +62,12 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
   return (
     <article
       className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
-        hasSuccess ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200/80'
+        hasSuccess ? 'border-success-200 bg-success-50/30' : 'border-slate-200/80'
       }`}
     >
       {/* ═══ هيدر الكارد: أفاتار + الاسم + التخصص + تاريخ (ديسكتوب) ═══ */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-sky-50/60 border-b border-sky-100/60">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 text-white font-black text-sm shadow-sm">
+      <div className="flex items-center gap-3 px-4 py-3 bg-brand-50/60 border-b border-brand-100/60">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black text-sm shadow-sm">
           {getInitials(item.doctorName || 'د')}
         </div>
         <div className="min-w-0 flex-1">
@@ -75,8 +75,8 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
             {item.doctorName || 'طبيب'}
           </h3>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <FaStethoscope className="w-2.5 h-2.5 text-sky-500" />
-            <span className="text-[11px] sm:text-xs font-bold text-sky-600 truncate">
+            <FaStethoscope className="w-2.5 h-2.5 text-brand-500" />
+            <span className="text-[11px] sm:text-xs font-bold text-brand-600 truncate">
               {item.doctorSpecialty || 'بدون تخصص'}
             </span>
           </div>
@@ -103,13 +103,13 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           {item.doctorWhatsApp && (
             <ContactRow
               icon={<FaWhatsapp />} label="واتساب" value={item.doctorWhatsApp}
-              iconBg="bg-emerald-50" iconColor="text-emerald-600" dir="ltr"
+              iconBg="bg-success-50" iconColor="text-success-600" dir="ltr"
             />
           )}
           {item.doctorEmail && (
             <ContactRow
               icon={<FaEnvelope />} label="البريد" value={item.doctorEmail}
-              iconBg="bg-blue-50" iconColor="text-blue-600" dir="ltr"
+              iconBg="bg-brand-50" iconColor="text-brand-600" dir="ltr"
             />
           )}
         </div>
@@ -120,21 +120,21 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
             href={item.verificationDocUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50/60 px-4 py-3 transition hover:bg-blue-100/80 hover:shadow-sm group"
+            className="flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-50/60 px-4 py-3 transition hover:bg-brand-100/80 hover:shadow-sm group"
           >
-            <div className="bg-blue-100 text-blue-600 rounded-lg p-2">
+            <div className="bg-brand-100 text-brand-600 rounded-lg p-2">
               <FaFileLines className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-blue-700">عرض مستند التحقق</p>
-              <p className="text-[10px] font-bold text-blue-500">اضغط لفتح المستند في نافذة جديدة</p>
+              <p className="text-sm font-black text-brand-700">عرض مستند التحقق</p>
+              <p className="text-[10px] font-bold text-brand-500">اضغط لفتح المستند في نافذة جديدة</p>
             </div>
-            <FaArrowLeft className="w-3.5 h-3.5 text-blue-400 shrink-0 transition-transform group-hover:-translate-x-1" />
+            <FaArrowLeft className="w-3.5 h-3.5 text-brand-400 shrink-0 transition-transform group-hover:-translate-x-1" />
           </a>
         ) : (
-          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
-            <FaTriangleExclamation className="w-4 h-4 text-amber-500 shrink-0" />
-            <span className="text-sm font-bold text-amber-700">لا يوجد مستند تحقق مرفوع</span>
+          <div className="flex items-center gap-2 rounded-xl border border-warning-200 bg-warning-50/60 px-4 py-3">
+            <FaTriangleExclamation className="w-4 h-4 text-warning-500 shrink-0" />
+            <span className="text-sm font-bold text-warning-700">لا يوجد مستند تحقق مرفوع</span>
           </div>
         )}
 
@@ -158,7 +158,7 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
               onClick={() => onAccountTypeChange('premium')}
               className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-bold transition ${
                 accountType === 'premium'
-                  ? 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm'
+                  ? 'border-2 border-warning-500 bg-warning-500 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -171,7 +171,7 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
               className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-black transition ${
                 accountType === 'pro_max'
                   ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_8px_rgba(255,193,7,0.45)]'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:border-amber-200'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-warning-50 hover:border-warning-200'
               }`}
             >
               <FaCrown className={`w-3 h-3 ${accountType === 'pro_max' ? 'text-[#E65100]' : ''}`} />
@@ -185,10 +185,10 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           <div className={`rounded-xl border p-3 ${
             accountType === 'pro_max'
               ? 'border-[#FFB300] bg-gradient-to-r from-[#FFF8E1] via-[#FFF3C4] to-[#FFF8E1]'
-              : 'border-amber-100 bg-amber-50/60'
+              : 'border-warning-100 bg-warning-50/60'
           }`}>
             <label className={`mb-2 block text-xs font-black ${
-              accountType === 'pro_max' ? 'text-[#B45309]' : 'text-amber-700'
+              accountType === 'pro_max' ? 'text-[#B45309]' : 'text-warning-700'
             }`}>
               مدة اشتراك {accountType === 'pro_max' ? 'برو ماكس' : 'برو'}
             </label>
@@ -198,10 +198,10 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
                 // برو ماكس ذهبي لامع، برو ذهبي هادئ
                 const activeClass = accountType === 'pro_max'
                   ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_6px_rgba(255,193,7,0.45)]'
-                  : 'border-2 border-amber-500 bg-amber-500 text-white shadow-sm';
+                  : 'border-2 border-warning-500 bg-warning-500 text-white shadow-sm';
                 const inactiveClass = accountType === 'pro_max'
                   ? 'border border-[#FFE082] bg-white text-[#B45309] hover:bg-[#FFF8E1]'
-                  : 'border border-amber-200 bg-white text-amber-700 hover:bg-amber-50';
+                  : 'border border-warning-200 bg-white text-warning-700 hover:bg-warning-50';
                 return (
                   <button
                     key={opt.value}
@@ -224,19 +224,19 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
             placeholder="سبب الرفض (مطلوب عند الرفض)"
             value={rejectNote}
             onChange={(e) => onRejectNoteChange(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-100"
           />
         </div>
 
         {/* رسائل الخطأ والنجاح الخاصة بالكارد */}
         {cardError && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+          <div className="flex items-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-bold text-danger-700">
             <FaCircleXmark className="w-3 h-3 shrink-0" />
             {cardError}
           </div>
         )}
         {cardSuccess && (
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+          <div className="flex items-center gap-2 rounded-xl border border-success-200 bg-success-50 px-3 py-2 text-xs font-bold text-success-700">
             <FaCircleCheck className="w-3 h-3 shrink-0" />
             {cardSuccess}
           </div>
@@ -247,7 +247,7 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           <button
             onClick={onApprove}
             disabled={isBusy}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isApproving ? (
               <LoadingText>جاري الاعتماد</LoadingText>
@@ -258,7 +258,7 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           <button
             onClick={onReject}
             disabled={isBusy}
-            className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-4 py-2.5 text-sm font-black text-danger-700 transition hover:bg-danger-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRejecting ? (
               <LoadingText>جاري الرفض</LoadingText>

@@ -44,14 +44,14 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
 
     return (
         <div className="rounded-2xl shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-700 to-blue-600">
+            <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-700 to-brand-600">
                 <span className="text-base">📈</span>
                 <span className="text-sm font-black text-white">إحصائيات السنة</span>
                 <span className="mr-auto text-xs font-bold text-white/80 bg-white/15 rounded-full px-2.5 py-0.5">سنة {currentYear}</span>
             </div>
 
             <div className="bg-white p-4">
-                <div className="bg-blue-600 rounded-2xl p-4 mb-4">
+                <div className="bg-brand-600 rounded-2xl p-4 mb-4">
                     <div className="text-center mb-3">
                         <span className="bg-white/20 px-4 py-1.5 rounded-full text-sm font-black text-white">
                             إجمالي سنة {currentYear}
@@ -60,26 +60,26 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                         <div className="bg-white/15 rounded-xl p-3 text-center">
-                            <div className="text-xs text-blue-100 font-bold">الكشوفات</div>
+                            <div className="text-xs text-brand-100 font-bold">الكشوفات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{yearTotals.exams}</div>
-                            <div className="text-sm font-bold text-blue-100">{formatCurrency(yearTotals.examsIncome, true)}</div>
+                            <div className="text-sm font-bold text-brand-100">{formatCurrency(yearTotals.examsIncome, true)}</div>
                         </div>
 
                         <div className="bg-white/15 rounded-xl p-3 text-center">
-                            <div className="text-xs text-blue-100 font-bold">الاستشارات</div>
+                            <div className="text-xs text-brand-100 font-bold">الاستشارات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{yearTotals.consultations}</div>
-                            <div className="text-sm font-bold text-blue-100">{formatCurrency(yearTotals.consultsIncome, true)}</div>
+                            <div className="text-sm font-bold text-brand-100">{formatCurrency(yearTotals.consultsIncome, true)}</div>
                         </div>
 
                         <div className="bg-white/15 rounded-xl p-3 text-center">
-                            <div className="text-xs text-blue-100 font-bold">التداخلات</div>
+                            <div className="text-xs text-brand-100 font-bold">التداخلات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">
                                 {formatCurrency(yearTotals.interventionsRevenue, true)}
                             </div>
                         </div>
 
                         <div className="bg-white/15 rounded-xl p-3 text-center">
-                            <div className="text-xs text-blue-100 font-bold">دخل آخر</div>
+                            <div className="text-xs text-brand-100 font-bold">دخل آخر</div>
                             <div className="text-xl sm:text-2xl font-black text-white">
                                 {formatCurrency(yearTotals.otherRevenue, true)}
                             </div>
@@ -87,19 +87,19 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="bg-emerald-500/80 rounded-xl p-3 text-center">
+                        <div className="bg-success-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">إجمالي الدخل</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(yearTotals.income, true)}</div>
                         </div>
 
-                        <div className="bg-rose-500/80 rounded-xl p-3 text-center">
+                        <div className="bg-danger-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">المصروفات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(yearTotals.expenses, true)}</div>
                         </div>
 
                         <div
                             className={`rounded-xl p-3 text-center ${
-                                yearTotals.netProfit >= 0 ? 'bg-white/20' : 'bg-rose-600/80'
+                                yearTotals.netProfit >= 0 ? 'bg-white/20' : 'bg-danger-600/80'
                             }`}
                         >
                             <div className="text-xs text-white font-bold">
@@ -124,7 +124,7 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                                 key={idx}
                                 className={`relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-2 ${
                                     isCurrentMonth
-                                        ? 'border-blue-400 shadow-lg ring-2 ring-blue-200'
+                                        ? 'border-brand-400 shadow-lg ring-2 ring-brand-200'
                                         : isPastOrCurrent
                                           ? 'border-slate-200 shadow-md'
                                           : 'border-slate-200 opacity-50'
@@ -133,7 +133,7 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                                 <div
                                     className={`px-3 py-2.5 text-center ${
                                         isCurrentMonth
-                                            ? 'bg-blue-600'
+                                            ? 'bg-brand-600'
                                             : isPastOrCurrent
                                               ? 'bg-slate-700'
                                               : 'bg-slate-300'
@@ -148,77 +148,77 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                                     </span>
                                 </div>
 
-                                <div className={`p-3 ${isCurrentMonth ? 'bg-blue-50' : 'bg-white'}`}>
+                                <div className={`p-3 ${isCurrentMonth ? 'bg-brand-50' : 'bg-white'}`}>
                                     <div className="space-y-2 text-[11px] sm:text-xs">
-                                        <div className="flex items-center justify-between gap-2 bg-blue-100 px-2 py-1.5 rounded-lg">
-                                            <span className="text-blue-700 font-bold whitespace-nowrap">
+                                        <div className="flex items-center justify-between gap-2 bg-brand-100 px-2 py-1.5 rounded-lg">
+                                            <span className="text-brand-700 font-bold whitespace-nowrap">
                                                 الكشوفات (
-                                                <span className="text-blue-900" dir="ltr">{monthData.exams}</span>
+                                                <span className="text-brand-900" dir="ltr">{monthData.exams}</span>
                                                 )
                                             </span>
-                                            <span className="font-black text-blue-800 whitespace-nowrap text-left">
+                                            <span className="font-black text-brand-800 whitespace-nowrap text-left">
                                                 {formatCurrency(monthData.examsIncome, true)}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center justify-between gap-2 bg-indigo-50 px-2 py-1.5 rounded-lg">
-                                            <span className="text-indigo-700 font-bold whitespace-nowrap">
+                                        <div className="flex items-center justify-between gap-2 bg-brand-50 px-2 py-1.5 rounded-lg">
+                                            <span className="text-brand-700 font-bold whitespace-nowrap">
                                                 الاستشارات (
-                                                <span className="text-indigo-900" dir="ltr">{monthData.consultations}</span>
+                                                <span className="text-brand-900" dir="ltr">{monthData.consultations}</span>
                                                 )
                                             </span>
-                                            <span className="font-black text-indigo-800 whitespace-nowrap text-left">
+                                            <span className="font-black text-brand-800 whitespace-nowrap text-left">
                                                 {formatCurrency(monthData.consultsIncome, true)}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center justify-between gap-2 bg-purple-50 px-2 py-1.5 rounded-lg">
-                                            <span className="text-purple-700 font-bold whitespace-nowrap">التداخلات</span>
-                                            <span className="font-black text-purple-800 whitespace-nowrap text-left">
+                                        <div className="flex items-center justify-between gap-2 bg-slate-50 px-2 py-1.5 rounded-lg">
+                                            <span className="text-slate-700 font-bold whitespace-nowrap">التداخلات</span>
+                                            <span className="font-black text-slate-800 whitespace-nowrap text-left">
                                                 {formatCurrency(monthData.interventionsRevenue, true)}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center justify-between gap-2 bg-teal-50 px-2 py-1.5 rounded-lg">
-                                            <span className="text-teal-700 font-bold whitespace-nowrap">دخل آخر</span>
-                                            <span className="font-black text-teal-800 whitespace-nowrap text-left">
+                                        <div className="flex items-center justify-between gap-2 bg-brand-50 px-2 py-1.5 rounded-lg">
+                                            <span className="text-brand-700 font-bold whitespace-nowrap">دخل آخر</span>
+                                            <span className="font-black text-brand-800 whitespace-nowrap text-left">
                                                 {formatCurrency(monthData.otherRevenue, true)}
                                             </span>
                                         </div>
 
                                         <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                                             <div
-                                                className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full transition-all duration-500"
+                                                className="h-full bg-gradient-to-r from-success-400 to-success-500 rounded-full transition-all duration-500"
                                                 style={{ width: `${incomePercent}%` }}
                                             />
                                         </div>
 
                                         <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                                            <div className="flex items-center justify-between gap-2 bg-emerald-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-emerald-700 font-bold whitespace-nowrap">الدخل</span>
-                                                <span className="font-black text-emerald-800 whitespace-nowrap text-left">
+                                            <div className="flex items-center justify-between gap-2 bg-success-50 px-2 py-1.5 rounded-lg">
+                                                <span className="text-success-700 font-bold whitespace-nowrap">الدخل</span>
+                                                <span className="font-black text-success-800 whitespace-nowrap text-left">
                                                     {formatCurrency(monthData.income, true)}
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center justify-between gap-2 bg-rose-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-rose-700 font-bold whitespace-nowrap">المصروفات</span>
-                                                <span className="font-black text-rose-800 whitespace-nowrap text-left">
+                                            <div className="flex items-center justify-between gap-2 bg-danger-50 px-2 py-1.5 rounded-lg">
+                                                <span className="text-danger-700 font-bold whitespace-nowrap">المصروفات</span>
+                                                <span className="font-black text-danger-800 whitespace-nowrap text-left">
                                                     {formatCurrency(monthData.expenses, true)}
                                                 </span>
                                             </div>
 
                                             <div
                                                 className={`flex items-center justify-between gap-2 p-2 rounded-lg ${
-                                                    netProfit >= 0 ? 'bg-blue-100' : 'bg-rose-100'
+                                                    netProfit >= 0 ? 'bg-brand-100' : 'bg-danger-100'
                                                 }`}
                                             >
-                                                <span className={`font-bold whitespace-nowrap ${netProfit >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>
+                                                <span className={`font-bold whitespace-nowrap ${netProfit >= 0 ? 'text-brand-700' : 'text-danger-700'}`}>
                                                     الصافي
                                                 </span>
                                                 <span
                                                     className={`font-black whitespace-nowrap text-left ${
-                                                        netProfit >= 0 ? 'text-blue-900' : 'text-rose-900'
+                                                        netProfit >= 0 ? 'text-brand-900' : 'text-danger-900'
                                                     }`}
                                                 >
                                                     {formatCurrency(netProfit, true)}

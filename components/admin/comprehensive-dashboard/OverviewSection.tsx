@@ -59,15 +59,15 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
 
       {/* ═══ 2) تنبيه معدل رفض مرتفع (من SmartAlertSystem القديم) ═══ */}
       {showHighRejectionAlert && (
-        <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-gradient-to-l from-red-50 via-rose-50 to-red-50 px-4 py-3 sm:py-4 shadow-sm dh-stagger-2">
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 shrink-0">
+        <div className="flex items-center gap-3 rounded-2xl border border-danger-200 bg-gradient-to-l from-danger-50 via-danger-50 to-danger-50 px-4 py-3 sm:py-4 shadow-sm dh-stagger-2">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-danger-100 text-danger-600 shrink-0">
             <FaTriangleExclamation className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0 text-right">
-            <p className="text-sm sm:text-base font-black text-red-800">
+            <p className="text-sm sm:text-base font-black text-danger-800">
               معدل رفض الأطباء مرتفع: {rejectionRate.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}%
             </p>
-            <p className="text-[11px] sm:text-xs font-medium text-red-600/80">
+            <p className="text-[11px] sm:text-xs font-medium text-danger-600/80">
               تجاوز الحد الآمن (40%). راجع معايير القبول أو جودة طلبات التسجيل.
             </p>
           </div>
@@ -77,13 +77,13 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       {/* ═══ 3) شريط تنبيه عاجل: أطباء بانتظار المراجعة ═══ */}
       {pendingDoctorsCount > 0 && (
         <button onClick={() => onNavigate('verification')} className="w-full group dh-stagger-2">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-l from-amber-50 via-orange-50 to-amber-50 px-4 py-3 sm:py-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-warning-200 bg-gradient-to-l from-warning-50 via-warning-50 to-warning-50 px-4 py-3 sm:py-4 shadow-sm transition hover:shadow-md">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 shrink-0">
+              <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-warning-100 text-warning-600 shrink-0">
                 <FaTriangleExclamation className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 text-right">
-                <p className="text-sm sm:text-base font-black text-amber-800">
+                <p className="text-sm sm:text-base font-black text-warning-800">
                   {/* صياغة ذكية: مفرد / مثنى / جمع حسب العدد */}
                   {pendingDoctorsCount === 1
                     ? 'يوجد طبيب واحد بانتظار المراجعة'
@@ -91,12 +91,12 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                       ? 'يوجد طبيبان بانتظار المراجعة'
                       : `يوجد ${pendingDoctorsCount.toLocaleString('ar-EG')} أطباء بانتظار المراجعة`}
                 </p>
-                <p className="text-[11px] sm:text-xs font-medium text-amber-600/80">
+                <p className="text-[11px] sm:text-xs font-medium text-warning-600/80">
                   اضغط هنا لمراجعة الطلبات والتحقق من الحسابات
                 </p>
               </div>
             </div>
-            <FaArrowLeft className="w-4 h-4 text-amber-500 shrink-0 transition-transform group-hover:-translate-x-1" />
+            <FaArrowLeft className="w-4 h-4 text-warning-500 shrink-0 transition-transform group-hover:-translate-x-1" />
           </div>
         </button>
       )}
@@ -109,17 +109,17 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           title="إجمالي الأطباء"
           value={stats.totalDoctors}
           icon={<FaStethoscope />}
-          iconBg="bg-cyan-50"
-          iconColor="text-cyan-600"
-          valueColor="text-cyan-700"
+          iconBg="bg-brand-50"
+          iconColor="text-brand-600"
+          valueColor="text-brand-700"
         />
         <StatCard
           title="إجمالي الجمهور"
           value={stats.totalPatients}
           icon={<FaUsers />}
-          iconBg="bg-blue-50"
-          iconColor="text-blue-600"
-          valueColor="text-blue-700"
+          iconBg="bg-brand-50"
+          iconColor="text-brand-600"
+          valueColor="text-brand-700"
         />
         {/* اشتراكات برو — العدد المحدد للبريميوم فقط (ذهبي فاتح) */}
         <StatCard
@@ -127,9 +127,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           value={stats.premiumDocsCount}
           unit="اشتراك نشط"
           icon={<FaCrown />}
-          iconBg="bg-amber-50"
-          iconColor="text-amber-600"
-          valueColor="text-amber-700"
+          iconBg="bg-warning-50"
+          iconColor="text-warning-600"
+          valueColor="text-warning-700"
         />
         {/* اشتراكات برو ماكس — منفصلة (ذهبي غامق) عشان الأدمن يعرف الفئة الأعلى */}
         <StatCard
@@ -146,9 +146,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           value={stats.netProfit}
           unit="جنيه مصري"
           icon={<FaChartLine />}
-          iconBg={stats.netProfit >= 0 ? 'bg-emerald-50' : 'bg-rose-50'}
-          iconColor={stats.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}
-          valueColor={stats.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}
+          iconBg={stats.netProfit >= 0 ? 'bg-success-50' : 'bg-danger-50'}
+          iconColor={stats.netProfit >= 0 ? 'text-success-600' : 'text-danger-600'}
+          valueColor={stats.netProfit >= 0 ? 'text-success-700' : 'text-danger-700'}
         />
       </div>
 
@@ -156,29 +156,29 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 dh-stagger-4">
         {/* ── بطاقة حالة الأطباء ── */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-cyan-50/60 border-b border-cyan-100/60">
-            <FaStethoscope className="w-3.5 h-3.5 text-cyan-600" />
-            <h2 className="text-xs sm:text-sm font-black text-cyan-800">حالة حسابات الأطباء</h2>
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-brand-50/60 border-b border-brand-100/60">
+            <FaStethoscope className="w-3.5 h-3.5 text-brand-600" />
+            <h2 className="text-xs sm:text-sm font-black text-brand-800">حالة حسابات الأطباء</h2>
           </div>
           <div className="p-3 sm:p-4 space-y-2">
             <DetailRow icon={<FaCircleCheck />} label="مقبولون" value={stats.approvedDoctors}
-              iconBg="bg-emerald-50" iconColor="text-emerald-600" valueColor="text-emerald-700" />
+              iconBg="bg-success-50" iconColor="text-success-600" valueColor="text-success-700" />
             <DetailRow icon={<FaHourglassHalf />} label="قيد المراجعة" value={stats.pendingDoctors}
-              iconBg="bg-amber-50" iconColor="text-amber-600" valueColor="text-amber-700" />
+              iconBg="bg-warning-50" iconColor="text-warning-600" valueColor="text-warning-700" />
             <DetailRow icon={<FaCircleXmark />} label="مرفوضون" value={stats.rejectedDoctors}
-              iconBg="bg-rose-50" iconColor="text-rose-600" valueColor="text-rose-700" />
+              iconBg="bg-danger-50" iconColor="text-danger-600" valueColor="text-danger-700" />
             <DetailRow icon={<FaBan />} label="محظورون" value={stats.totalBlacklisted}
-              iconBg="bg-red-50" iconColor="text-red-600" valueColor="text-red-700" />
+              iconBg="bg-danger-50" iconColor="text-danger-600" valueColor="text-danger-700" />
 
             {/* شريط تقدم نسبة الموافقة */}
             <div className="pt-2 mt-1 border-t border-slate-100">
               <div className="flex items-center justify-between mb-1.5 text-[11px] sm:text-xs">
                 <span className="font-bold text-slate-500">نسبة الموافقة</span>
-                <span className="font-black text-cyan-700 font-numeric">{approvalRate}%</span>
+                <span className="font-black text-brand-700 font-numeric">{approvalRate}%</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-l from-cyan-400 to-teal-500 transition-all duration-500"
+                  className="h-full rounded-full bg-gradient-to-l from-brand-400 to-brand-500 transition-all duration-500"
                   style={{ width: `${approvalRate}%` }}
                 />
               </div>
@@ -188,36 +188,36 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
 
         {/* ── بطاقة الملخص المالي ── */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50/60 border-b border-emerald-100/60">
-            <FaMoneyBillWave className="w-3.5 h-3.5 text-emerald-600" />
-            <h2 className="text-xs sm:text-sm font-black text-emerald-800">الملخص المالي</h2>
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-success-50/60 border-b border-success-100/60">
+            <FaMoneyBillWave className="w-3.5 h-3.5 text-success-600" />
+            <h2 className="text-xs sm:text-sm font-black text-success-800">الملخص المالي</h2>
           </div>
           <div className="p-3 sm:p-4 space-y-2">
             <DetailRow icon={<FaMoneyBillWave />} label="إجمالي الإيرادات" value={stats.totalRevenue}
-              iconBg="bg-emerald-50" iconColor="text-emerald-600" valueColor="text-emerald-700" />
+              iconBg="bg-success-50" iconColor="text-success-600" valueColor="text-success-700" />
             <DetailRow icon={<FaCoins />} label="إجمالي المصروفات" value={stats.totalExpenses}
-              iconBg="bg-orange-50" iconColor="text-orange-600" valueColor="text-orange-700" />
+              iconBg="bg-warning-50" iconColor="text-warning-600" valueColor="text-warning-700" />
 
             {/* إبراز صافي الربح في مربع ملون (أخضر لو موجب، وردي لو سالب) */}
             <div className="pt-2 mt-1 border-t border-slate-100">
               <div
                 className={`flex items-center justify-between rounded-xl px-3 py-3 ${
                   stats.netProfit >= 0
-                    ? 'bg-emerald-50 border border-emerald-100'
-                    : 'bg-rose-50 border border-rose-100'
+                    ? 'bg-success-50 border border-success-100'
+                    : 'bg-danger-50 border border-danger-100'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <FaChartLine className={`w-4 h-4 ${stats.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} />
-                  <span className={`text-sm font-bold ${stats.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  <FaChartLine className={`w-4 h-4 ${stats.netProfit >= 0 ? 'text-success-600' : 'text-danger-600'}`} />
+                  <span className={`text-sm font-bold ${stats.netProfit >= 0 ? 'text-success-700' : 'text-danger-700'}`}>
                     صافي الربح
                   </span>
                 </div>
                 <div className="text-left">
-                  <span className={`text-lg sm:text-xl font-black font-numeric ${stats.netProfit >= 0 ? 'text-emerald-800' : 'text-rose-800'}`}>
+                  <span className={`text-lg sm:text-xl font-black font-numeric ${stats.netProfit >= 0 ? 'text-success-800' : 'text-danger-800'}`}>
                     {stats.netProfit.toLocaleString('ar-EG')}
                   </span>
-                  <span className={`mr-1 text-[10px] font-bold ${stats.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  <span className={`mr-1 text-[10px] font-bold ${stats.netProfit >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
                     ج.م
                   </span>
                 </div>
@@ -227,7 +227,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         </div>
       </div>
 
-      {/* ═══ 6) تحليل استهلاك الباقات ═══ */}
+      {/* ═══ 6) تحليل استهلاك الباقات (إجمالي lifetime — بدون range filter للتوفير) ═══ */}
       <OverviewUsageAnalysis stats={stats} />
 
       {/* ═══ 7) اختصارات سريعة ═══ */}
@@ -242,26 +242,29 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           </span>
         </div>
 
-        <div className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* 4 اختصارات بالظبط — `lg:grid-cols-4` يخلي الـgrid يملأ الصف بدون خانات فاضية */}
+        <div className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <QuickAction
             icon={<FaShieldHalved />} label="تحقق" sublabel="تحقق الأطباء الجدد"
-            borderColor="border-sky-200" bgColor="bg-sky-50/60" textColor="text-sky-700" iconColor="text-sky-600"
+            borderColor="border-brand-200" bgColor="bg-brand-50/60" textColor="text-brand-700" iconColor="text-brand-600"
             badge={pendingDoctorsCount}
             onClick={() => onNavigate('verification')}
           />
           <QuickAction
             icon={<FaStethoscope />} label="أطباء" sublabel="إدارة الأطباء"
-            borderColor="border-blue-200" bgColor="bg-blue-50/60" textColor="text-blue-700" iconColor="text-blue-600"
+            borderColor="border-brand-200" bgColor="bg-brand-50/60" textColor="text-brand-700" iconColor="text-brand-600"
             onClick={() => onNavigate('accounts')}
           />
+          {/* استبدلنا "حظر" بـ"إدارة الجمهور" — الحظر موجود في الـsidebar،
+              والجمهور كان مفيش له اختصار قبل كده. */}
           <QuickAction
-            icon={<FaBan />} label="حظر" sublabel="قائمة الحظر"
-            borderColor="border-rose-200" bgColor="bg-rose-50/60" textColor="text-rose-700" iconColor="text-rose-600"
-            onClick={() => onNavigate('blacklist')}
+            icon={<FaUsers />} label="الجمهور" sublabel="إدارة حسابات الجمهور"
+            borderColor="border-brand-200" bgColor="bg-brand-50/60" textColor="text-brand-700" iconColor="text-brand-600"
+            onClick={() => onNavigate('patients')}
           />
           <QuickAction
             icon={<FaMoneyBillWave />} label="مالي" sublabel="الإدارة المالية"
-            borderColor="border-emerald-200" bgColor="bg-emerald-50/60" textColor="text-emerald-700" iconColor="text-emerald-600"
+            borderColor="border-success-200" bgColor="bg-success-50/60" textColor="text-success-700" iconColor="text-success-600"
             onClick={() => onNavigate('financial')}
           />
         </div>

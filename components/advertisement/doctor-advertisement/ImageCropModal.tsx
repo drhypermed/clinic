@@ -60,7 +60,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             type="button"
             onClick={() => void onSaveEdited()}
             disabled={uploading}
-            className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold"
+            className="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold"
           >
             {uploading ? 'جاري الرفع…' : 'حفظ'}
           </button>

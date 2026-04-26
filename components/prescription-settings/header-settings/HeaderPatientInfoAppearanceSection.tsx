@@ -75,7 +75,7 @@ export const HeaderPatientInfoAppearanceSection: React.FC<HeaderPatientInfoAppea
             type="checkbox"
             checked={header.showInfoBarBottomBorder !== false}
             onChange={(e) => updateHeader({ showInfoBarBottomBorder: e.target.checked })}
-            className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+            className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
           />
           <span className="text-sm font-bold text-slate-700">إظهار الخط السفلي</span>
         </label>

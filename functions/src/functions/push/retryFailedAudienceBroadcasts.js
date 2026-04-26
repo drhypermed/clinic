@@ -117,7 +117,11 @@ module.exports = (context) => {
 
       const relativeLink = '/';
       const absoluteLink = toAbsoluteWebUrl(relativeLink);
-      const notificationTag = `admin_external_broadcast_retry_${broadcastDoc.id}`;
+      // نفس الـ tag المستخدم في الإرسال الأصلي. السبب: لو FCM أرجعت "فشل" لـ token
+      // استلم الإشعار فعلاً (false positive)، الـ Notification API هتستبدل الإشعار
+      // الأصلي بدل ما تضيف نسخة ثانية، فالمستخدم ما يشوفش تكرار. الـ tag الثاني
+      // (_retry_ ...) كان يعطّل المنطق ده لأنه مختلف عن الأصلي.
+      const notificationTag = `admin_external_broadcast_${broadcastDoc.id}`;
 
       let retrySuccessCount = 0;
       let retryFailureCount = 0;

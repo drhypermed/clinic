@@ -104,7 +104,7 @@ export const MainAppOverlays: React.FC<MainAppOverlaysProps> = ({
 
       {/* 4. تنبيه خطأ تحميل الإعدادات من السحابة */}
       {settingsError && (
-        <div className="fixed bottom-4 left-4 z-50 bg-red-50 border-l-4 border-red-700 p-4 rounded shadow-lg max-w-md" dir="ltr">
+        <div className="fixed bottom-4 left-4 z-50 bg-danger-50 border-l-4 border-danger-700 p-4 rounded shadow-lg max-w-md" dir="ltr">
           <p className="font-bold">Settings Load Error:</p>
           <p>{settingsError}</p>
         </div>

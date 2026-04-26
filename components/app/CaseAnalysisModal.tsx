@@ -96,52 +96,52 @@ interface SectionHeaderProps {
 
 const SECTION_TONE: Record<SectionHeaderProps['tone'], { bg: string; ring: string; iconBg: string; iconText: string; text: string; border: string }> = {
   violet: {
-    bg: 'bg-gradient-to-r from-violet-50/90 via-indigo-50/70 to-transparent',
-    ring: 'ring-violet-100',
-    iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-600',
+    bg: 'bg-gradient-to-r from-slate-50/90 via-brand-50/70 to-transparent',
+    ring: 'ring-slate-100',
+    iconBg: 'bg-gradient-to-br from-slate-500 to-brand-600',
     iconText: 'text-white',
-    text: 'text-violet-900',
-    border: 'border-violet-100/80',
+    text: 'text-slate-900',
+    border: 'border-slate-100/80',
   },
   rose: {
-    bg: 'bg-gradient-to-r from-rose-50/90 via-red-50/70 to-transparent',
-    ring: 'ring-rose-100',
-    iconBg: 'bg-gradient-to-br from-rose-500 to-red-600',
+    bg: 'bg-gradient-to-r from-danger-50/90 via-danger-50/70 to-transparent',
+    ring: 'ring-danger-100',
+    iconBg: 'bg-gradient-to-br from-danger-500 to-danger-600',
     iconText: 'text-white',
-    text: 'text-rose-900',
-    border: 'border-rose-100/80',
+    text: 'text-danger-900',
+    border: 'border-danger-100/80',
   },
   blue: {
-    bg: 'bg-gradient-to-r from-sky-50/90 via-blue-50/70 to-transparent',
-    ring: 'ring-sky-100',
-    iconBg: 'bg-gradient-to-br from-sky-500 to-blue-600',
+    bg: 'bg-gradient-to-r from-brand-50/90 via-brand-50/70 to-transparent',
+    ring: 'ring-brand-100',
+    iconBg: 'bg-gradient-to-br from-brand-500 to-brand-600',
     iconText: 'text-white',
-    text: 'text-sky-900',
-    border: 'border-sky-100/80',
+    text: 'text-brand-900',
+    border: 'border-brand-100/80',
   },
   emerald: {
-    bg: 'bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-transparent',
-    ring: 'ring-emerald-100',
-    iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+    bg: 'bg-gradient-to-r from-success-50/90 via-brand-50/70 to-transparent',
+    ring: 'ring-success-100',
+    iconBg: 'bg-gradient-to-br from-success-500 to-brand-600',
     iconText: 'text-white',
-    text: 'text-emerald-900',
-    border: 'border-emerald-100/80',
+    text: 'text-success-900',
+    border: 'border-success-100/80',
   },
   amber: {
-    bg: 'bg-gradient-to-r from-amber-50/90 via-yellow-50/70 to-transparent',
-    ring: 'ring-amber-100',
-    iconBg: 'bg-gradient-to-br from-amber-400 to-orange-500',
+    bg: 'bg-gradient-to-r from-warning-50/90 via-warning-50/70 to-transparent',
+    ring: 'ring-warning-100',
+    iconBg: 'bg-gradient-to-br from-warning-400 to-warning-500',
     iconText: 'text-white',
-    text: 'text-amber-900',
-    border: 'border-amber-100/80',
+    text: 'text-warning-900',
+    border: 'border-warning-100/80',
   },
   crimson: {
-    bg: 'bg-gradient-to-r from-red-100/95 via-rose-100/70 to-transparent',
-    ring: 'ring-red-200',
-    iconBg: 'bg-gradient-to-br from-red-600 to-rose-700',
+    bg: 'bg-gradient-to-r from-danger-100/95 via-danger-100/70 to-transparent',
+    ring: 'ring-danger-200',
+    iconBg: 'bg-gradient-to-br from-danger-600 to-danger-700',
     iconText: 'text-white',
-    text: 'text-red-900',
-    border: 'border-red-200/80',
+    text: 'text-danger-900',
+    border: 'border-danger-200/80',
   },
 };
 
@@ -183,7 +183,7 @@ const AddButton: React.FC<AddButtonProps> = ({ onClick, added, label = 'إضاف
     className={`${fullWidthOnMobile ? 'w-full sm:w-auto sm:shrink-0' : 'shrink-0'} px-3.5 py-1.5 rounded-xl text-[11.5px] font-black transition-all active:scale-95 ${
       added
         ? 'bg-slate-100 text-slate-400 cursor-not-allowed ring-1 ring-slate-200'
-        : 'bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_4px_12px_-2px_rgba(5,150,105,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(5,150,105,0.55)] ring-1 ring-emerald-400/50'
+        : 'bg-gradient-to-br from-success-500 to-brand-600 hover:from-success-400 hover:to-brand-500 text-white shadow-[0_4px_12px_-2px_rgba(5,150,105,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(5,150,105,0.55)] ring-1 ring-success-400/50'
     }`}
   >
     {added ? addedLabel : label}
@@ -306,11 +306,11 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <div className="relative w-14 h-14" aria-hidden>
               {/* حلقة خارجية دائرة */}
-              <div className="absolute inset-0 rounded-full border-[3px] border-violet-100" />
+              <div className="absolute inset-0 rounded-full border-[3px] border-slate-100" />
               {/* حلقة متحركة */}
               <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-violet-600 border-r-indigo-600 animate-spin" />
               {/* نقطة مركز */}
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-inner" />
+              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-slate-500 to-brand-600 shadow-inner" />
             </div>
             <div className="text-center space-y-1">
               <p className="text-sm font-black text-slate-700">جاري تحليل الحالة</p>
@@ -321,11 +321,11 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── تحذير بيانات غير كافية ─── */}
         {!loading && result?.insufficientData && (
-          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex items-start gap-3">
+          <div className="bg-warning-50 border-2 border-warning-300 rounded-2xl p-4 flex items-start gap-3">
             <span className="text-2xl shrink-0">ℹ️</span>
             <div className="flex-1">
-              <h3 className="font-black text-amber-800 text-sm mb-1">بيانات غير كافية للتحليل الدقيق</h3>
-              <p className="text-amber-700 text-xs font-bold leading-relaxed">
+              <h3 className="font-black text-warning-800 text-sm mb-1">بيانات غير كافية للتحليل الدقيق</h3>
+              <p className="text-warning-700 text-xs font-bold leading-relaxed">
                 {result.insufficientDataNote || 'من فضلك أدخل الشكوى والفحص والعلامات الحيوية بشكل أوضح ثم أعد المحاولة.'}
               </p>
             </div>
@@ -334,7 +334,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 1) التشخيصات التفريقية (DDx) ─── */}
         {!loading && result && result.differentialDiagnoses.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-violet-100 shadow-[0_4px_16px_-4px_rgba(109,40,217,0.08)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-slate-100 shadow-[0_4px_16px_-4px_rgba(109,40,217,0.08)] overflow-hidden">
             <SectionHeader icon="ddx" title="Differential Diagnosis" tone="violet" dir="ltr" />
             {/* المحتوى كله إنجليزي — LTR ومحاذاة شمال */}
             <div className="p-4 space-y-3" dir="ltr">
@@ -352,8 +352,8 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                     key={`${dd.diagnosis}-${idx}`}
                     className={`rounded-xl p-3.5 ring-1 transition-all ${
                       dd.isMostLikely
-                        ? 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50 ring-emerald-300 shadow-[0_2px_10px_-2px_rgba(5,150,105,0.2)]'
-                        : 'bg-white ring-slate-200 hover:ring-violet-200 hover:shadow-sm'
+                        ? 'bg-gradient-to-br from-success-50 via-white to-success-50 ring-success-300 shadow-[0_2px_10px_-2px_rgba(5,150,105,0.2)]'
+                        : 'bg-white ring-slate-200 hover:ring-slate-200 hover:shadow-sm'
                     }`}
                   >
                     {/* موبايل: كل العناصر فوق بعض (اسم التشخيص ياخد عرض السطر كامل).
@@ -363,7 +363,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                         <div className="flex items-center gap-2 flex-wrap">
                           {/* رقم محاط بدائرة بلون القسم */}
                           <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
-                            dd.isMostLikely ? 'bg-emerald-600 text-white shadow-sm' : 'bg-violet-100 text-violet-700'
+                            dd.isMostLikely ? 'bg-success-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
                           }`}>
                             {idx + 1}
                           </span>
@@ -372,7 +372,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                             {dd.diagnosis}
                           </span>
                           {dd.isMostLikely && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-l from-emerald-500 to-teal-600 text-white text-[9.5px] font-black tracking-[0.12em] shadow-sm">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-l from-success-500 to-brand-600 text-white text-[9.5px] font-black tracking-[0.12em] shadow-sm">
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                                 <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8 2 9.4h7.6L12 2z" />
                               </svg>
@@ -406,7 +406,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 2) Must Not Miss ─── */}
         {!loading && result && result.mustNotMiss.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-rose-100 shadow-[0_4px_16px_-4px_rgba(225,29,72,0.08)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-danger-100 shadow-[0_4px_16px_-4px_rgba(225,29,72,0.08)] overflow-hidden">
             <SectionHeader icon="must-not-miss" title="Must Not Miss" tone="rose" dir="ltr" />
             <div className="p-4 space-y-2" dir="ltr">
               {result.mustNotMiss.map((m, idx) => (
@@ -414,8 +414,8 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                   key={`${m.diagnosis}-${idx}`}
                   className={`rounded-xl p-3 border-2 text-left ${
                     m.alreadyInDDx
-                      ? 'bg-amber-50 border-amber-300'
-                      : 'bg-red-50 border-red-200'
+                      ? 'bg-warning-50 border-warning-300'
+                      : 'bg-danger-50 border-danger-200'
                   }`}
                 >
                   <div className="flex items-start gap-2">
@@ -437,7 +437,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 3) Suggested Investigations ─── */}
         {!loading && result && result.suggestedInvestigations.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-sky-100 shadow-[0_4px_16px_-4px_rgba(2,132,199,0.08)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-brand-100 shadow-[0_4px_16px_-4px_rgba(2,132,199,0.08)] overflow-hidden">
             <SectionHeader icon="investigations" title="Suggested Investigations" tone="blue" dir="ltr" />
             {/* حاوية LTR: الاسم الإنجليزي على الشمال، السبب العربي بين قوسين بجنبه */}
             <div className="p-4 space-y-2" dir="ltr">
@@ -446,11 +446,11 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                 return (
                   <div
                     key={`${inv.nameEn}-${idx}`}
-                    className="rounded-xl p-3 bg-blue-50/60 border border-blue-200 flex items-center gap-3"
+                    className="rounded-xl p-3 bg-brand-50/60 border border-brand-200 flex items-center gap-3"
                   >
                     {/* سطر واحد: اسم الفحص + (سبب بالعربي) — نفس صيغة ما هيتضاف للروشتة */}
                     <p className="flex-1 min-w-0 text-left text-sm font-bold text-slate-800 leading-relaxed">
-                      <span className="font-black text-blue-900">{inv.nameEn}</span>
+                      <span className="font-black text-brand-900">{inv.nameEn}</span>
                       {inv.reasonAr && (
                         <span className="text-slate-600"> ({inv.reasonAr})</span>
                       )}
@@ -471,7 +471,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 4) Important Instructions (عربي) ─── */}
         {!loading && result && result.importantInstructionsAr.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-emerald-100 shadow-[0_4px_16px_-4px_rgba(5,150,105,0.08)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-success-100 shadow-[0_4px_16px_-4px_rgba(5,150,105,0.08)] overflow-hidden">
             {/* قسم 4 عربي فالهيدر RTL */}
             <SectionHeader icon="instructions" title="تعليمات هامة" tone="emerald" dir="rtl" />
             <div className="p-4 space-y-2">
@@ -480,7 +480,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
                 return (
                   <div
                     key={`${ins}-${idx}`}
-                    className="rounded-xl p-3 bg-emerald-50/60 border border-emerald-200 flex items-center gap-3"
+                    className="rounded-xl p-3 bg-success-50/60 border border-success-200 flex items-center gap-3"
                   >
                     <p className="flex-1 text-[13px] text-slate-800 font-bold leading-relaxed">
                       • {ins}
@@ -495,13 +495,13 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 5) Missing Information ─── */}
         {!loading && result && result.missingInformation.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-amber-100 shadow-[0_4px_16px_-4px_rgba(217,119,6,0.08)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-warning-100 shadow-[0_4px_16px_-4px_rgba(217,119,6,0.08)] overflow-hidden">
             <SectionHeader icon="missing" title="Missing Information" tone="amber" dir="ltr" />
             <div className="p-4" dir="ltr">
               <ul className="space-y-1.5">
                 {result.missingInformation.map((q, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-[12.5px] text-slate-700 font-bold text-left">
-                    <span className="text-amber-600 shrink-0">?</span>
+                    <span className="text-warning-600 shrink-0">?</span>
                     <span>{q}</span>
                   </li>
                 ))}
@@ -512,14 +512,14 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
 
         {/* ─── 6) Red Flags ─── */}
         {!loading && result && result.redFlags.length > 0 && (
-          <section className="bg-white rounded-2xl ring-1 ring-red-200 shadow-[0_4px_16px_-2px_rgba(220,38,38,0.12)] overflow-hidden">
+          <section className="bg-white rounded-2xl ring-1 ring-danger-200 shadow-[0_4px_16px_-2px_rgba(220,38,38,0.12)] overflow-hidden">
             <SectionHeader icon="red-flag" title="Red Flags" tone="crimson" dir="ltr" />
             <div className="p-4" dir="ltr">
               <ul className="space-y-2">
                 {result.redFlags.map((flag, idx) => (
                   <li
                     key={idx}
-                    className="flex items-start gap-2 text-[13px] text-red-800 font-black bg-red-50 rounded-lg px-3 py-2 border border-red-200 text-left"
+                    className="flex items-start gap-2 text-[13px] text-danger-800 font-black bg-danger-50 rounded-lg px-3 py-2 border border-danger-200 text-left"
                   >
                     <span className="shrink-0">🚩</span>
                     <span>{flag}</span>
@@ -552,7 +552,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             </svg>
             <span>الطبيب هو المسؤول الأول والأخير عن التشخيص طبقاً لمناظرته للحالة</span>
           </p>
-          <p className="text-[10.5px] font-bold text-emerald-700 leading-relaxed flex items-start gap-1.5">
+          <p className="text-[10.5px] font-bold text-success-700 leading-relaxed flex items-start gap-1.5">
             <svg className="w-3 h-3 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M17.8 2l4.2 4.2L8.4 19.8l-5.6 1.4L4.2 15.6 17.8 2z" />
             </svg>

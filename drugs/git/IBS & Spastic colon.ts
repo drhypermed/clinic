@@ -809,5 +809,4 @@ const IBS_SPASTIC_COLON_MEDS_RAW: Medication[] = [
 ];
 
 export const IBS_SPASTIC_COLON_MEDS: Medication[] = IBS_SPASTIC_COLON_MEDS_RAW.map(sanitizeMedication);
-export default IBS_SPASTIC_COLON_MEDS;
 

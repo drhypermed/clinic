@@ -11,7 +11,7 @@ export const DoctorAdPreviewButton: React.FC<DoctorAdPreviewButtonProps> = ({ on
     // زر المعاينة: نفس درجات الأزرق المستخدمة في أزرار الإجراءات الرئيسية بباقي التطبيق
     <button
       onClick={onClick}
-      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 font-black text-lg"
+      className="w-full bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 font-black text-lg"
     >
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

@@ -139,12 +139,13 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
-        {/* رأس النافذة الرئيسية */}
-        <div className="shrink-0 border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-white p-4 sm:p-5">
+        {/* رأس النافذة الرئيسية — أزرق فاتح صلب */}
+        <div className="shrink-0 border-b border-blue-200 bg-gradient-to-l from-blue-50 via-white to-blue-50 p-4 sm:p-5">
           <div className="flex items-center gap-2 justify-between flex-wrap lg:flex-nowrap">
             <div className="order-1 flex min-w-0 items-center gap-2">
-              <h3 className="flex items-center gap-2 whitespace-nowrap text-lg font-black text-slate-800 sm:text-xl">
-                <span className="h-6 w-1.5 rounded-full bg-blue-600"></span>
+              <h3 className="flex items-center gap-2 whitespace-nowrap text-lg font-black text-slate-900 sm:text-xl">
+                {/* الشريط الجانبي — أزرق متدرج */}
+                <span className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-600 to-blue-700"></span>
                 الروشتات الجاهزة
               </h3>
               {!draft.isEditorOpen && (
@@ -173,10 +174,10 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="بحث داخل الروشتات..."
-                  className="w-full rounded-xl border border-slate-300 bg-white py-1.5 pr-8 pl-2 text-[11px] font-bold text-slate-700 focus:border-blue-400 focus:outline-none sm:text-xs"
+                  className="w-full rounded-xl border border-blue-200 bg-white py-1.5 pr-8 pl-2 text-[11px] font-bold text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none sm:text-xs"
                 />
                 <svg
-                  className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-blue-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -198,7 +199,8 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
           <div className="min-h-0 flex-1 overflow-y-auto bg-white p-3 sm:p-4">
             <div className="flex min-h-full flex-col gap-3">
               {filteredPresets.length === 0 && (
-                <div className="flex min-h-full flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500 font-bold">
+                /* الحالة الفارغة — border + نص واضح */
+                <div className="flex min-h-full flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/40 p-6 text-center text-slate-700 font-bold">
                   {searchTerm.trim()
                     ? 'لا توجد نتائج مطابقة للبحث داخل الروشتات.'
                     : 'لا توجد روشتات جاهزة محفوظة بعد.'}

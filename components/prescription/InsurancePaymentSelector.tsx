@@ -177,8 +177,8 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
             }}
             className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
               paymentType === 'cash'
-                ? 'bg-blue-600 text-white shadow-sm scale-[1.01]'
-                : 'bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300 hover:bg-blue-100'
+                ? 'bg-brand-600 text-white shadow-sm scale-[1.01]'
+                : 'bg-brand-50 text-brand-700 border border-brand-200 hover:border-brand-300 hover:bg-brand-100'
             }`}
           >
             💵 كاش
@@ -191,8 +191,8 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
             }}
             className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
               paymentType === 'insurance'
-                ? 'bg-emerald-600 text-white shadow-sm scale-[1.01]'
-                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100'
+                ? 'bg-success-600 text-white shadow-sm scale-[1.01]'
+                : 'bg-success-50 text-success-700 border border-success-200 hover:border-success-300 hover:bg-success-100'
             }`}
           >
             🏢 تأمين
@@ -205,8 +205,8 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
             }}
             className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
               paymentType === 'discount'
-                ? 'bg-amber-600 text-white shadow-sm scale-[1.01]'
-                : 'bg-amber-50 text-amber-700 border border-amber-200 hover:border-amber-300 hover:bg-amber-100'
+                ? 'bg-warning-600 text-white shadow-sm scale-[1.01]'
+                : 'bg-warning-50 text-warning-700 border border-warning-200 hover:border-warning-300 hover:bg-warning-100'
             }`}
           >
             🏷️ خصم
@@ -229,7 +229,7 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
               <select
                 value={insuranceCompanyId}
                 onChange={(e) => handleCompanyChange(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 text-sm font-bold bg-white text-slate-800"
+                className="w-full px-3 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 text-sm font-bold bg-white text-slate-800"
               >
                 <option value="">-- اختر الشركة --</option>
                 {effectiveCompanies.map((c) => (
@@ -251,7 +251,7 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
                   value={insuranceMembershipId}
                   onChange={(e) => setInsuranceMembershipId(e.target.value)}
                   placeholder="رقم كارنيه المريض"
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 text-sm font-bold bg-white text-slate-800"
+                  className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 text-sm font-bold bg-white text-slate-800"
                   dir="ltr"
                 />
               </div>
@@ -262,7 +262,7 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
                   value={insuranceApprovalCode}
                   onChange={(e) => setInsuranceApprovalCode(e.target.value)}
                   placeholder="Approval Code"
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 text-sm font-bold bg-white text-slate-800"
+                  className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 text-sm font-bold bg-white text-slate-800"
                   dir="ltr"
                 />
               </div>
@@ -274,10 +274,10 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
             <div className="bg-white/90 rounded-xl px-3 py-2.5 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
               <span className="text-slate-700 font-black">📊 تقسيم التكلفة</span>
               <div className="flex items-center gap-2">
-                <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-black">
+                <span className="bg-success-100 text-success-700 px-2 py-1 rounded-lg font-black">
                   المريض: {patientSharePercent}%
                 </span>
-                <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded-lg font-black">
+                <span className="bg-brand-100 text-brand-700 px-2 py-1 rounded-lg font-black">
                   الشركة: {100 - patientSharePercent}%
                 </span>
               </div>

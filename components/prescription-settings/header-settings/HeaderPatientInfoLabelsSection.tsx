@@ -24,7 +24,7 @@ export const HeaderPatientInfoLabelsSection: React.FC<HeaderPatientInfoLabelsSec
           type="text"
           value={header.nameLabel || 'الاسم'}
           onChange={(e) => updateHeader({ nameLabel: e.target.value })}
-          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none"
+          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-brand-500 outline-none"
         />
         {/* التحكم في ستايل تسمية الاسم (لون، حجم، نوع الخط) */}
         <StyleControl
@@ -47,7 +47,7 @@ export const HeaderPatientInfoLabelsSection: React.FC<HeaderPatientInfoLabelsSec
           type="text"
           value={header.ageLabel || 'السن'}
           onChange={(e) => updateHeader({ ageLabel: e.target.value })}
-          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none"
+          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-brand-500 outline-none"
         />
         {/* التحكم في ستايل تسمية السن */}
         <StyleControl
@@ -70,7 +70,7 @@ export const HeaderPatientInfoLabelsSection: React.FC<HeaderPatientInfoLabelsSec
           type="text"
           value={header.dateLabel || 'التاريخ'}
           onChange={(e) => updateHeader({ dateLabel: e.target.value })}
-          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none"
+          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-brand-500 outline-none"
         />
         {/* التحكم في ستايل تسمية التاريخ */}
         <StyleControl

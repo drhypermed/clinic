@@ -416,7 +416,7 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
 
   if (!safeSettingsDocId) {
     return (
-      <section className="bg-slate-700 rounded-2xl shadow-xl p-6 border border-red-500/40 text-red-200">
+      <section className="bg-white rounded-2xl shadow-sm p-6 border border-danger-200 text-danger-700 font-bold">
         معرف إعدادات البانر غير صالح.
       </section>
     );
@@ -428,17 +428,19 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
 
   if (!isAdminUser) {
     return (
-      <section className="bg-slate-700 rounded-2xl shadow-xl p-6 border border-red-500/40 text-red-200">
+      <section className="bg-white rounded-2xl shadow-sm p-6 border border-danger-200 text-danger-700 font-bold">
         غير مصرح لك بإدارة بانر الصفحة الرئيسية.
       </section>
     );
   }
 
+  // ─ ألوان موحّدة مع باقي شاشات الأدمن (إدارة الحسابات / فئات الاشتراك):
+  //   خلفية بيضاء + حدود slate-200 + accent متدرج أزرق (brand) للهيدر.
   return (
-    <section className="bg-slate-700 rounded-2xl shadow-xl p-8 border-t-4 border-fuchsia-500 space-y-6">
+    <section className="bg-white rounded-2xl shadow-sm p-8 border border-slate-200/80 space-y-6">
       <div className="dh-stagger-1">
-        <h3 className="text-2xl font-black text-white mb-2">{panelTitle}</h3>
-        <p className="text-slate-300 text-sm">{panelDescription}</p>
+        <h3 className="text-2xl font-black text-slate-900 mb-1">{panelTitle}</h3>
+        <p className="text-slate-500 text-sm">{panelDescription}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 dh-stagger-2">

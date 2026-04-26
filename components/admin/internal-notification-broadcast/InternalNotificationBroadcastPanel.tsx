@@ -60,7 +60,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
   // حماية: المستخدم لازم يكون أدمن
   if (!isAdminUser) {
     return (
-      <div className="bg-red-900/20 border border-red-700 rounded-xl p-4 text-red-200">
+      <div className="bg-danger-900/20 border border-danger-700 rounded-xl p-4 text-danger-200">
         غير مصرح لك باستخدام صفحة الإشعارات الداخلية.
       </div>
     );
@@ -69,7 +69,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
   return (
     <div className="space-y-6" dir="rtl">
       {/* ═════════ قسم: نموذج إرسال إشعار جديد ═════════ */}
-      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-emerald-400 dh-stagger-1">
+      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-success-400 dh-stagger-1">
         <h3 className="text-white text-xl sm:text-2xl font-black mb-2">إرسال إشعار داخلي Popup</h3>
         <p className="text-slate-300 text-sm mb-5">
           يظهر كنافذة منبثقة داخل التطبيق بنفس منطق الاستهداف، مع زر إغلاق وحفظ اختيار المستخدم.
@@ -84,7 +84,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
               onChange={(event) => setTitle(event.target.value)}
               maxLength={120}
               placeholder="مثال: تنبيه داخلي مهم"
-              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success-400"
             />
             <p className="text-xs text-slate-400 mt-1">{title.length}/120</p>
           </div>
@@ -98,7 +98,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
               maxLength={1000}
               rows={4}
               placeholder="اكتب نص الإشعار الداخلي هنا..."
-              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success-400"
             />
             <p className="text-xs text-slate-400 mt-1">{body.length}/1000</p>
           </div>
@@ -109,7 +109,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
             <select
               value={targetAudience}
               onChange={(event) => setTargetAudience(event.target.value as ExternalNotificationAudience)}
-              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success-400"
             >
               {AUDIENCE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -129,7 +129,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
                   onChange={(event) => setTargetEmail(event.target.value)}
                   type="email"
                   placeholder="doctor@example.com"
-                  className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success-400"
                 />
                 <p className="text-xs text-slate-400 mt-1">
                   سيتم الاستهداف حسب الحساب المرتبط بهذا البريد الإلكتروني فقط.
@@ -141,7 +141,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
                 <select
                   value={customEmailRoleMode}
                   onChange={(event) => setCustomEmailRoleMode(event.target.value as CustomEmailRoleMode)}
-                  className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className="w-full rounded-xl border border-slate-500 bg-slate-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success-400"
                 >
                   {CUSTOM_EMAIL_ROLE_MODE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -169,7 +169,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
             <button
               onClick={() => { void handleSend(); }}
               disabled={!isFormValid || sending}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black"
+              className="px-5 py-2.5 rounded-xl bg-success-500 hover:bg-success-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black"
             >
               {sending ? 'جارٍ النشر' : 'نشر الإشعار الداخلي'}
             </button>
@@ -191,9 +191,9 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
             <div
               className={`rounded-xl border px-3 py-2 text-sm font-bold whitespace-pre-wrap ${
                 feedbackType === 'success'
-                  ? 'bg-emerald-900/30 border-emerald-500 text-emerald-200'
+                  ? 'bg-success-900/30 border-success-500 text-success-200'
                   : feedbackType === 'error'
-                    ? 'bg-red-900/30 border-red-500 text-red-200'
+                    ? 'bg-danger-900/30 border-danger-500 text-danger-200'
                     : 'bg-slate-800/70 border-slate-500 text-slate-200'
               }`}
             >
@@ -204,7 +204,7 @@ export const InternalNotificationBroadcastPanel: React.FC<InternalNotificationBr
       </div>
 
       {/* ═════════ قسم: سجل الإشعارات السابقة ═════════ */}
-      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-cyan-400 dh-stagger-2">
+      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-brand-400 dh-stagger-2">
         <h4 className="text-white text-lg sm:text-xl font-black mb-2">سجل الإشعارات الداخلية (آخر 30 يوم)</h4>
         <p className="text-slate-300 text-sm mb-4">يتم تنظيف السجل تلقائيا ضمن مهام الصيانة اليومية.</p>
 

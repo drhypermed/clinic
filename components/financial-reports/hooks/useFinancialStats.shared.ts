@@ -6,7 +6,7 @@ export interface DayStats {
     exams: number;           // عدد الكشوفات
     consultations: number;   // عدد الاستشارات
 }
-export interface MonthStats {
+interface MonthStats {
     exams: number;
     consultations: number;
     dailyBreakdown: Record<string, DayStats>;  // تفصيل يومي

@@ -48,14 +48,14 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
         </p>
 
         {authError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 mb-3">
-            <p className="text-sm font-black text-red-700">{authError}</p>
+          <div className="rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 mb-3">
+            <p className="text-sm font-black text-danger-700">{authError}</p>
           </div>
         )}
 
         {authInfo && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 mb-3">
-            <p className="text-sm font-black text-emerald-700">{authInfo}</p>
+          <div className="rounded-xl border border-success-200 bg-success-50 px-3 py-2 mb-3">
+            <p className="text-sm font-black text-success-700">{authInfo}</p>
           </div>
         )}
 

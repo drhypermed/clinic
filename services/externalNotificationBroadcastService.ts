@@ -25,7 +25,7 @@ export interface FailureReasonItem {
   message?: string;
 }
 
-export interface SendExternalNotificationPayload {
+interface SendExternalNotificationPayload {
   title: string;
   body: string;
   targetAudience: ExternalNotificationAudience;
@@ -33,7 +33,7 @@ export interface SendExternalNotificationPayload {
   customEmailRoleMode?: CustomEmailRoleMode;
 }
 
-export interface SendExternalNotificationResult {
+interface SendExternalNotificationResult {
   ok: boolean;
   status: 'sent' | 'partial' | 'failed' | string;
   broadcastId: string;
@@ -61,13 +61,13 @@ export async function sendExternalNotificationBroadcast(
   return (response.data || {}) as SendExternalNotificationResult;
 }
 
-export interface EstimateAudiencePayload {
+interface EstimateAudiencePayload {
   targetAudience: ExternalNotificationAudience;
   targetEmail?: string;
   customEmailRoleMode?: CustomEmailRoleMode;
 }
 
-export interface EstimateAudienceResult {
+interface EstimateAudienceResult {
   targetAudience: ExternalNotificationAudience;
   tokenCount: number;
   uniqueTokenCount: number;

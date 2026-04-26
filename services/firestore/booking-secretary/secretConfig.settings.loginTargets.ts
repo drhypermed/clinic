@@ -112,5 +112,3 @@ export const getSecretaryLoginTargetByUserEmail = async (
     }
 };
 
-// Internal export للاستخدام من update-settings
-export const getSecretaryLoginIndexRefInternal = getSecretaryLoginIndexRef;

@@ -36,7 +36,7 @@ type BranchScalarField =
   | 'consultationPrice'
   | 'discountedConsultationPrice';
 
-export interface UseDoctorAdBranchesApi {
+interface UseDoctorAdBranchesApi {
   branches: DoctorAdBranch[];
   activeBranchId: string;
   activeBranch: DoctorAdBranch;
@@ -65,7 +65,11 @@ export interface UseDoctorAdBranchesApi {
 }
 
 export const useDoctorAdBranches = (
-  initialBranches: DoctorAdBranch[] = []
+  initialBranches: DoctorAdBranch[] = [],
+  // ─ الحد الأقصى للفروع — كان hardcoded=5، دلوقتي بيتقرأ من إعدادات الأدمن
+  //   حسب باقة الطبيب (مجاني/برو/برو ماكس). الـcaller بيمرّره. لو لم يُمرّر،
+  //   نرجع لـMAX_BRANCHES_PER_DOCTOR كـsafety net عشان مايكسرش الكود القديم.
+  maxBranches: number = MAX_BRANCHES_PER_DOCTOR,
 ): UseDoctorAdBranchesApi => {
   // نبدأ دايماً بفرع واحد على الأقل عشان واجهة التعديل يكون عندها محتوى تعرضه
   const [branches, setBranches] = useState<DoctorAdBranch[]>(() => {
@@ -86,7 +90,12 @@ export const useDoctorAdBranches = (
     setActiveBranchIdState(id);
   }, []);
 
-  const canAddBranch = branches.length < MAX_BRANCHES_PER_DOCTOR;
+  // الحد المعتمد: قيمة الباقة من الأدمن، أو الـfallback لو القيمة غير صالحة
+  const effectiveMaxBranches = Math.max(
+    1,
+    Number.isFinite(maxBranches) ? Math.floor(maxBranches) : MAX_BRANCHES_PER_DOCTOR,
+  );
+  const canAddBranch = branches.length < effectiveMaxBranches;
 
   const addBranch = useCallback((): string | null => {
     if (!canAddBranch) return null;

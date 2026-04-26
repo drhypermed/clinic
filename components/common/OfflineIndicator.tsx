@@ -61,7 +61,7 @@ export const OfflineIndicator: React.FC = () => {
       label: 'بدون اتصال — التطبيق يعمل من الذاكرة المحلية',
     },
     syncing: {
-      bg: 'bg-amber-500/95',
+      bg: 'bg-warning-500/95',
       text: 'text-white',
       icon: (
         <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -71,7 +71,7 @@ export const OfflineIndicator: React.FC = () => {
       label: 'جاري مزامنة التغييرات مع السيرفر',
     },
     'back-online': {
-      bg: 'bg-emerald-600/95',
+      bg: 'bg-success-600/95',
       text: 'text-white',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -81,7 +81,7 @@ export const OfflineIndicator: React.FC = () => {
       label: 'عاد الاتصال — تم تحديث البيانات',
     },
     synced: {
-      bg: 'bg-emerald-600/95',
+      bg: 'bg-success-600/95',
       text: 'text-white',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">

@@ -25,7 +25,7 @@ interface UseDrHyperActionsArgs {
   trackMedUsage: DrHyperViewAndUsageState['trackMedUsage'];
   resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
   getAccountTypeControls: () => Promise<any>;
-  consumeStorageQuota: (feature: 'recordSave' | 'readyPrescriptionSave') => Promise<unknown>;
+  consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => Promise<unknown>;
   consumeSmartPrescriptionQuota: () => Promise<unknown>;
   sanitizeRxItemsForSave: (items: any[]) => any[];
   sanitizeForFirestore: (value: unknown) => unknown;
@@ -305,9 +305,7 @@ export const useDrHyperActions = ({
     setLastSavedHash,
     sanitizeRxItemsForSave,
     sanitizeForFirestore,
-    consumeStorageQuota,
-    extractSmartQuotaErrorDetails,
-    getQuotaReachedMessage,
+    // ─ saveRecord مالوش حاجة بكوتا التخزين بعد 2026-04 (السجلات بقت "حد كلي")
     openQuotaNoticeModal,
     showNotification,
     markOfflineSyncPendingIfNeeded,

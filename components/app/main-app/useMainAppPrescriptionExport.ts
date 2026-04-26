@@ -20,6 +20,13 @@ interface UseMainAppPrescriptionExportParams {
   userId: string;
   showNotification: (msg: string, type?: any, options?: any) => void;
   setWhatsappGuideOpen: (open: boolean) => void;
+  /** 🆕 يُستدعى لما الكوتا تنتهي لأي إجراء تصدير — لفتح مودال الحد + الواتساب */
+  openQuotaNoticeModal?: (payload: {
+    message: string;
+    whatsappNumber?: string;
+    whatsappUrl?: string;
+    persist?: boolean;
+  }) => void;
 }
 
 export const useMainAppPrescriptionExport = ({
@@ -29,6 +36,7 @@ export const useMainAppPrescriptionExport = ({
   userId,
   showNotification,
   setWhatsappGuideOpen,
+  openQuotaNoticeModal,
 }: UseMainAppPrescriptionExportParams) => {
   return usePrescriptionExport({
     paperSize,
@@ -65,6 +73,19 @@ export const useMainAppPrescriptionExport = ({
         whatsapp: 'تعذر إرسال الروشتة عبر واتساب، يرجى المحاولة مرة أخرى.',
       };
       showNotification(messages[operation], 'error', { id: `prescription-export-${operation}` });
+    },
+    /** 🆕 لما الحد اليومي ينتهي — نفتح المودال الموحّد للكوتا (رسالة الأدمن + واتساب). */
+    onQuotaLimitReached: (_operation, details) => {
+      if (openQuotaNoticeModal) {
+        openQuotaNoticeModal({
+          message: details.message,
+          whatsappNumber: details.whatsappNumber,
+          whatsappUrl: details.whatsappUrl,
+          persist: true,
+        });
+      } else {
+        showNotification(details.message, 'error', { id: `prescription-export-quota` });
+      }
     },
   });
 };

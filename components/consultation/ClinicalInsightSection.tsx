@@ -83,7 +83,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onChange={(e) => setComplaint(e.target.value)}
             onInput={autoResize}
             rows={1}
-            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-violet-400 hover:!border-violet-300 transition-colors dropdown-shadow"
+            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
             placeholder="مثال: اسهال وترجيع"
           />
         </div>
@@ -97,7 +97,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onChange={(e) => setHistory(e.target.value)}
             onInput={autoResize}
             rows={1}
-            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-violet-400 hover:!border-violet-300 transition-colors dropdown-shadow"
+            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
             placeholder="مثال: ضغط وسكر"
           />
         </div>
@@ -111,7 +111,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onChange={(e) => setExam(e.target.value)}
             onInput={autoResize}
             rows={1}
-            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-violet-400 hover:!border-violet-300 transition-colors dropdown-shadow"
+            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
             placeholder="مثال: احتقان في الحلق وتزييق في الصدر"
           />
         </div>
@@ -125,7 +125,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onChange={(e) => setInvestigations(e.target.value)}
             onInput={autoResize}
             rows={1}
-            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-violet-400 hover:!border-violet-300 transition-colors dropdown-shadow"
+            className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
             placeholder="مثال: الهيموجلوبين 9.5 والكرياتنين 1.5"
           />
         </div>
@@ -133,7 +133,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
 
       {/* عرض رسالة الخطأ الفنية فقط (نتجاهل أخطاء الكوتا هنا لعدم تكرار التنبيهات) */}
       {errorMsg && !isQuotaMessage && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold text-xs text-right">
+        <div className="mt-4 p-4 bg-danger-50 border border-danger-200 text-danger-600 rounded-2xl font-bold text-xs text-right">
           ⚠️ {errorMsg}
         </div>
       )}

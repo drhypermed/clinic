@@ -3,13 +3,13 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { auth, functions } from './firebaseConfig';
 import { formatUserDate } from '../utils/cairoTime';
 
-export type SecretaryLoginPayload = {
+type SecretaryLoginPayload = {
   doctorEmail?: string;
   secret?: string;
   secretaryPassword: string;
 };
 
-export type SecretaryLoginResult = {
+type SecretaryLoginResult = {
   secret: string;
   userId?: string;
   sessionToken: string;

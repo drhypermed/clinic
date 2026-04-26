@@ -51,7 +51,7 @@ export const AlternativesModal: React.FC<AlternativesModalProps> = ({ isOpen, on
                 {/* رأس النافذة */}
                 <div className="bg-white px-5 py-4 flex justify-between items-start gap-3 border-b border-slate-200 shrink-0">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-success-50 text-success-600 shrink-0">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                             </svg>
@@ -90,10 +90,10 @@ export const AlternativesModal: React.FC<AlternativesModalProps> = ({ isOpen, on
                                 key={i}
                                 type="button"
                                 onClick={() => onSelect(alt)}
-                                className="w-full text-right p-3.5 bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-colors group flex items-start gap-3"
+                                className="w-full text-right p-3.5 bg-white rounded-xl border border-slate-200 hover:border-success-400 hover:bg-success-50/30 cursor-pointer transition-colors group flex items-start gap-3"
                             >
                                 <div className="flex-1 min-w-0">
-                                    <div className="font-bold text-slate-900 text-base group-hover:text-emerald-700 uppercase leading-tight truncate">
+                                    <div className="font-bold text-slate-900 text-base group-hover:text-success-700 uppercase leading-tight truncate">
                                         {alt.name}
                                     </div>
                                     <div className="text-[11px] text-slate-500 font-semibold italic mt-0.5 truncate">
@@ -118,10 +118,10 @@ export const AlternativesModal: React.FC<AlternativesModalProps> = ({ isOpen, on
                                     )}
                                 </div>
                                 <div className="shrink-0 flex flex-col items-end gap-1">
-                                    <div className="font-bold text-emerald-700 text-sm bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg whitespace-nowrap">
+                                    <div className="font-bold text-success-700 text-sm bg-success-50 border border-success-100 px-2.5 py-1 rounded-lg whitespace-nowrap">
                                         {alt.price > 0 ? `${alt.price} EGP` : 'السعر في القائمة'}
                                     </div>
-                                    <svg className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="w-4 h-4 text-slate-300 group-hover:text-success-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </div>

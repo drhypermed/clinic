@@ -26,7 +26,7 @@ type ListAppointmentsPayload = {
 
 type RawAppointment = Record<string, unknown>;
 
-export type ListAppointmentsResult = {
+type ListAppointmentsResult = {
   today: TodayAppointment[];
   upcoming: TodayAppointment[];
   completed: TodayAppointment[];

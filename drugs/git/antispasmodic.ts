@@ -807,5 +807,4 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
 ];
 
 export const ANTISPASMODIC_MEDS: Medication[] = ANTISPASMODIC_MEDS_RAW.map(sanitizeMedication);
-export default ANTISPASMODIC_MEDS;
 

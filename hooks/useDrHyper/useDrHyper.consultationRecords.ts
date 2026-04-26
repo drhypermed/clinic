@@ -30,7 +30,7 @@ export const buildGeneratedConsultationRecordId = (
   return `${CONSULTATION_RECORD_PREFIX}${sourcePart}${CONSULTATION_RECORD_SOURCE_SEPARATOR}${timestamp}${CONSULTATION_RECORD_SOURCE_SEPARATOR}${randomPart}`;
 };
 
-export const extractSourceExamRecordIdFromConsultationRecord = (record: {
+const extractSourceExamRecordIdFromConsultationRecord = (record: {
   id?: string;
   sourceExamRecordId?: string;
 }): string | undefined => {

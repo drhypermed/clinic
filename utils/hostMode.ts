@@ -14,7 +14,7 @@
 // أو تحط في localStorage: `__hostMode_override` = 'patient' / 'clinic'.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type HostMode = 'patient' | 'clinic' | 'both';
+type HostMode = 'patient' | 'clinic' | 'both';
 
 /** الدومينات اللي بتعتبر "وضع مريض" */
 const PATIENT_HOSTS = new Set([
@@ -112,15 +112,4 @@ export const getHostMode = (): HostMode => {
 
   // fallback: أي دومين تاني = مريض (الأغلبيّه)
   return 'patient';
-};
-
-/** اختصار للقراءه الواضحه في الكود */
-export const isPatientHost = (): boolean => {
-  const mode = getHostMode();
-  return mode === 'patient' || mode === 'both';
-};
-
-export const isClinicHost = (): boolean => {
-  const mode = getHostMode();
-  return mode === 'clinic' || mode === 'both';
 };

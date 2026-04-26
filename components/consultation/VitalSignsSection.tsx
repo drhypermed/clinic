@@ -96,7 +96,7 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
                   step="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-rose-400 hover:!border-rose-300 transition-colors dropdown-shadow"
+                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-danger-400 hover:!border-danger-300 transition-colors dropdown-shadow"
                   placeholder={weightConfig?.unit || 'kg'}
                 />
               </div>
@@ -111,7 +111,7 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
                   step="0.1"
                   value={height || ''}
                   onChange={(e) => setHeight?.(e.target.value)}
-                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-rose-400 hover:!border-rose-300 transition-colors dropdown-shadow"
+                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-danger-400 hover:!border-danger-300 transition-colors dropdown-shadow"
                   placeholder={heightConfig?.unit || 'cm'}
                 />
               </div>
@@ -137,7 +137,7 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
                   type="number"
                   value={vitals.rbs}
                   onChange={(e) => setVitals('rbs', e.target.value)}
-                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-rose-400 hover:!border-rose-300 transition-colors dropdown-shadow"
+                  className="clinic-field w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center !bg-white !border-2 !border-slate-200 focus:!border-danger-400 hover:!border-danger-300 transition-colors dropdown-shadow"
                   placeholder={rbsConfig?.unit || 'mg/dl'}
                 />
               </div>
@@ -152,7 +152,7 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
                   inputMode={vitalConfig.key === 'bp' ? "text" : "numeric"}
                   value={(vitals as any)[vitalConfig.key] || ''}
                   onChange={(e) => setVitals(vitalConfig.key, e.target.value)}
-                  className="clinic-field clinic-field--compact w-full h-[44px] px-2 rounded-xl font-bold text-center text-sm !bg-white !border-2 !border-slate-200 focus:!border-rose-400 hover:!border-rose-300 transition-colors dropdown-shadow"
+                  className="clinic-field clinic-field--compact w-full h-[44px] px-2 rounded-xl font-bold text-center text-sm !bg-white !border-2 !border-slate-200 focus:!border-danger-400 hover:!border-danger-300 transition-colors dropdown-shadow"
                   placeholder={vitalConfig.unit}
                 />
               </div>
@@ -166,7 +166,7 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
                   type="text"
                   value={customBoxValues[box.id] !== undefined ? customBoxValues[box.id] : (box.value || '')}
                   onChange={(e) => setCustomBoxValue?.(box.id, e.target.value)}
-                  className="clinic-field clinic-field--compact w-full h-[44px] px-2 rounded-xl font-bold text-center text-sm !bg-white !border-2 !border-slate-200 focus:!border-rose-400 hover:!border-rose-300 transition-colors dropdown-shadow"
+                  className="clinic-field clinic-field--compact w-full h-[44px] px-2 rounded-xl font-bold text-center text-sm !bg-white !border-2 !border-slate-200 focus:!border-danger-400 hover:!border-danger-300 transition-colors dropdown-shadow"
                   placeholder="..."
                 />
               </div>

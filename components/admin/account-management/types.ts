@@ -10,6 +10,12 @@
 
 export type SubscriptionChangeType = 'new' | 'extension' | 'manual_edit' | 'plan_switch';
 
+/** فئات الباقة المسعّرة (لا تشمل free لأن free مفيش له سعر). */
+export type SubscriptionTier = 'premium' | 'pro_max';
+
+/** نوع المدة المسعّرة في جدول الأسعار: شهري / ٦ شهور / سنوي. */
+export type SubscriptionPlanType = 'monthly' | 'sixMonths' | 'yearly';
+
 export interface SubscriptionPeriod {
   startDate: string;
   endDate: string;
@@ -19,6 +25,21 @@ export interface SubscriptionPeriod {
   modifiedBy?: string;
   /** وقت التغيير */
   modifiedAt?: string;
+  // ─── الحقول التاريخية الجديدة لحفظ سعر الفترة لحظة الاشتراك ───
+  // كانت ناقصة قبلاً، فالإيراد التاريخي كان يعتمد على آخر snapshot للأسعار
+  // والاشتراكات بدل ما يعكس الواقع الفعلي وقت كل عملية.
+  /** فئة الباقة وقت العملية (برو أو برو ماكس). */
+  tier?: SubscriptionTier;
+  /** نوع المدة المسعّرة (لتحديد العمود في جدول الأسعار). */
+  planType?: SubscriptionPlanType;
+  /** المدة الفعلية بالشهور — تحدد الـ planType + مفيدة للـ analytics. */
+  durationMonths?: number;
+  /** السعر الفعلي اللي ينتج عن العملية (يحتسب لحظة التنفيذ). */
+  pricePaid?: number;
+  /** عملة السعر (افتراضي EGP). */
+  priceCurrency?: string;
+  /** المصدر اللي تم جلب السعر منه — مفيد للتدقيق. */
+  priceSource?: 'pricing_table' | 'admin_override' | 'unknown';
 }
 
 // ثلاث فئات: مجاني / برو (كان اسمه premium داخلياً للتوافق العكسي) / برو ماكس

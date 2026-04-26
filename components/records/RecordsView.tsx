@@ -321,7 +321,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                 });
                 setDateModal({ isOpen: true, type: 'exam', selectedDate: todayStr, selectedTime: t });
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
             >
               <svg
                 className="w-3.5 h-3.5 shrink-0"
@@ -352,7 +352,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                   selectedTime: t,
                 });
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
             >
               <svg
                 className="w-3.5 h-3.5 shrink-0"
@@ -438,7 +438,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
             {hasMoreDays && (
               <button
                 onClick={() => setVisibleDays((prev) => prev + 10)}
-                className="w-full py-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl font-bold text-emerald-700 text-sm shadow-sm hover:shadow-md hover:bg-emerald-100 transition-all active:scale-[0.99]"
+                className="w-full py-3.5 bg-success-50 border border-success-200 rounded-2xl font-bold text-success-700 text-sm shadow-sm hover:shadow-md hover:bg-success-100 transition-all active:scale-[0.99]"
               >
                 عرض المزيد (10 أيام)
               </button>

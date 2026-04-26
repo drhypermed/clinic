@@ -59,9 +59,8 @@ export interface CreateSaveRecordActionParams {
     setLastSavedHash: React.Dispatch<React.SetStateAction<string>>;
     sanitizeRxItemsForSave: (items: PrescriptionItem[]) => PrescriptionItem[];
     sanitizeForFirestore: (value: unknown) => unknown;
-    consumeStorageQuota: (feature: 'recordSave' | 'readyPrescriptionSave') => Promise<unknown>;
-    extractSmartQuotaErrorDetails: (error: unknown) => SmartQuotaLimitErrorDetails | null;
-    getQuotaReachedMessage: (details: SmartQuotaLimitErrorDetails, fallback: string) => string;
+    // ─ saveRecord مالوش حاجة بكوتا التخزين بعد 2026-04 (السجلات بقت "حد كلي")
+    //   لكن سيبنا الـprops هنا كـoptional لو فلو تاني محتاجها — TODO clean up later
     openQuotaNoticeModal: (payload: {
         message: string;
         whatsappNumber?: string;

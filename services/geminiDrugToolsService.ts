@@ -56,7 +56,8 @@ export const calculateRenalDoseAdjustment = async (
     const responseText = await generateContentWithSecurity(prompt, {
       model: GEMINI_MODEL,
       responseMimeType: 'application/json',
-      temperature: 0.1
+      temperature: 0.1,
+      feature: 'renal_dose', // تتسجل في تقارير الاستهلاك تحت "تعديل جرعات الكلى"
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};

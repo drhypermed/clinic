@@ -13,6 +13,16 @@ import {
   subscribeToPatientFileInvoices,
   syncInvoicesToFirestore,
 } from '../../services/patientInvoiceService';
+// استيراد بنود التكاليف للفاتورة (يدمج الكاش + التأمين)
+import {
+  type PatientCostItem,
+  type PatientInsuranceItem,
+  loadPatientFileCosts,
+  loadPatientFileInsurance,
+  subscribeToPatientFileCosts,
+} from '../../services/patientCostService';
+import { InvoiceImportPanel } from './InvoiceImportPanel';
+import type { ImportableInvoiceItem } from './invoiceImportHelpers';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,11 +61,21 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
   const [formNotes, setFormNotes] = useState('');
   const [formDate, setFormDate] = useState<string>(getTodayDateKey);
 
+  // ─── Import-from-costs state ─────────────────────────────────────────────
+  // بنود التكاليف+التأمين الموجودة في الملف — بتمرّ لـ InvoiceImportPanel للعرض
+  const [costItems, setCostItems] = useState<PatientCostItem[]>([]);
+  const [insuranceItems, setInsuranceItems] = useState<PatientInsuranceItem[]>([]);
+  // المعرّفات اللي اتسحبت بالفعل للفاتورة الحالية — لتجنّب التكرار
+  const [importedIds, setImportedIds] = useState<Set<string>>(new Set());
+
   // ─── Reset on file change ────────────────────────────────────────────────
   useEffect(() => {
     setIsOpen(false);
     setInvoices([]);
     setError(null);
+    setCostItems([]);
+    setInsuranceItems([]);
+    setImportedIds(new Set());
     resetForm();
   }, [patientFile?.fileId]);
 
@@ -98,6 +118,23 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
     };
   }, [isOpen, userId, patientFile?.fileId]);
 
+  // ─── Cost items subscription (لوحة الاستيراد) ───────────────────────────
+  // بنحمّل التكاليف+التأمين من Firestore لما القسم مفتوح + الفورم مفتوح فقط
+  // — عشان منعملش قراءات Firestore زائدة لو الطبيب مفتح القسم بس لمراجعة الفواتير القديمة
+  useEffect(() => {
+    if (!isOpen || !showForm || !userId || !patientFile?.fileId) return;
+    const fileId = patientFile.fileId;
+    // هيدرات أولية من localStorage (سريع، صفر تكلفة)
+    setCostItems(loadPatientFileCosts(fileId));
+    setInsuranceItems(loadPatientFileInsurance(fileId));
+    // Snapshot subscription — يحدّث لحظياً لو حصل تعديل من جهاز تاني
+    const unsubscribe = subscribeToPatientFileCosts(userId, fileId, (costs, ins) => {
+      setCostItems(costs);
+      setInsuranceItems(ins);
+    });
+    return () => unsubscribe();
+  }, [isOpen, showForm, userId, patientFile?.fileId]);
+
   // ─── Form helpers ────────────────────────────────────────────────────────
   const resetForm = () => {
     setShowForm(false);
@@ -106,6 +143,8 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
     setFormNotes('');
     setFormDate(getTodayDateKey());
     setError(null);
+    // لما الفورم يتقفل، نمسح المعرّفات المستوردة عشان فاتورة جديدة تقدر تستورد نفسها
+    setImportedIds(new Set());
   };
 
   const addFormItem = () => {
@@ -129,6 +168,26 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
   const formSubtotal = formItems.reduce((s, i) => s + (i.amount || 0), 0);
   const formDiscountNum = parseFloat(formDiscount) || 0;
   const formTotal = Math.max(0, formSubtotal - formDiscountNum);
+
+  // ─── Import handler — يستقبل البنود من InvoiceImportPanel ────────────────
+  // بيشيل أي صف فاضي ثم بيضيف الصفوف الجديدة، ويسجّل ids كمستوردة
+  const handleImportItems = (picked: ImportableInvoiceItem[]) => {
+    if (picked.length === 0) return;
+    const newRows: InvoiceLineItem[] = picked.map((i) => ({
+      id: uid(),
+      description: i.label,
+      amount: i.amount,
+    }));
+    setFormItems((prev) => {
+      const meaningful = prev.filter((p) => p.description.trim() || p.amount > 0);
+      return [...meaningful, ...newRows];
+    });
+    setImportedIds((prev) => {
+      const next = new Set(prev);
+      picked.forEach((p) => next.add(p.id));
+      return next;
+    });
+  };
 
   // ─── Save invoice ────────────────────────────────────────────────────────
   const handleSaveInvoice = useCallback(
@@ -249,10 +308,13 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
               setShowForm(v => !v);
               setError(null);
               if (!showForm) {
+                // فتح فورم جديد → نظّف كل حالة الفورم بما فيها المعرّفات المستوردة
+                // عشان البنود اللي اتسحبت في فاتورة سابقة تظهر تاني للاستيراد
                 setFormItems([{ id: uid(), description: '', amount: 0 }]);
                 setFormDiscount('');
                 setFormNotes('');
                 setFormDate(getTodayDateKey());
+                setImportedIds(new Set());
               }
             }}
             className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-indigo-700"
@@ -276,6 +338,14 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
                   className="w-full max-w-[200px] rounded-lg border border-indigo-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
+
+              {/* لوحة استيراد البنود من قسم التكاليف المالية */}
+              <InvoiceImportPanel
+                costItems={costItems}
+                insuranceItems={insuranceItems}
+                importedIds={importedIds}
+                onAdd={handleImportItems}
+              />
 
               {/* Line items */}
               <div className="space-y-2">

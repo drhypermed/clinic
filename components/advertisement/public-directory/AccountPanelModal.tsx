@@ -90,7 +90,7 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
             placeholder="اسمك بالكامل"
             maxLength={60}
             disabled={accountSaving || isTemporaryPublicAccount}
-            className="w-full h-11 px-3 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-400 disabled:bg-slate-50 disabled:text-slate-400"
+            className="w-full h-11 px-3 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:border-brand-400 disabled:bg-slate-50 disabled:text-slate-400"
           />
         </div>
 
@@ -111,7 +111,7 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
             maxLength={20}
             dir="ltr"
             disabled={accountSaving || isTemporaryPublicAccount}
-            className="w-full h-11 px-3 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-400 disabled:bg-slate-50 disabled:text-slate-400 text-left"
+            className="w-full h-11 px-3 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:border-brand-400 disabled:bg-slate-50 disabled:text-slate-400 text-left"
           />
         </div>
 
@@ -123,12 +123,12 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
 
         {/* رسائل الحالة */}
         {accountSaveError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-bold text-red-700">
+          <div className="rounded-xl border border-danger-200 bg-danger-50 p-2.5 text-xs font-bold text-danger-700">
             {accountSaveError}
           </div>
         )}
         {savedFlash && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-xs font-bold text-emerald-700">
+          <div className="rounded-xl border border-success-200 bg-success-50 p-2.5 text-xs font-bold text-success-700">
             تم حفظ بياناتك
           </div>
         )}
@@ -140,7 +140,7 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
           disabled={!canSave}
           className={`w-full h-11 rounded-xl font-black text-sm transition-all ${
             canSave
-              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:brightness-105 shadow'
+              ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white hover:brightness-105 shadow'
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'
           }`}
         >
@@ -150,17 +150,17 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
         {/* حالة التحقق */}
         <div className={`rounded-2xl border p-3 ${
           isTemporaryPublicAccount
-            ? 'border-amber-200 bg-amber-50'
+            ? 'border-warning-200 bg-warning-50'
             : isPublicEmailVerified
-              ? 'border-emerald-200 bg-emerald-50'
-              : 'border-orange-200 bg-orange-50'
+              ? 'border-success-200 bg-success-50'
+              : 'border-warning-200 bg-warning-50'
         }`}>
           <p className={`text-sm font-black ${
             isTemporaryPublicAccount
-              ? 'text-amber-800'
+              ? 'text-warning-800'
               : isPublicEmailVerified
-                ? 'text-emerald-800'
-                : 'text-orange-800'
+                ? 'text-success-800'
+                : 'text-warning-800'
           }`}>
             {isTemporaryPublicAccount
               ? 'يرجى تسجيل الدخول بجوجل لإكمال الحجز.'
@@ -174,7 +174,7 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
           <button
             type="button"
             onClick={onOpenGoogleLogin}
-            className="w-full h-10 rounded-xl border border-blue-300 bg-blue-50 text-blue-800 font-black"
+            className="w-full h-10 rounded-xl border border-brand-300 bg-brand-50 text-brand-800 font-black"
           >
             تسجيل الدخول بجوجل
           </button>
@@ -183,7 +183,7 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
         <button
           type="button"
           onClick={onLogout}
-          className="w-full h-11 rounded-xl bg-red-600 text-white font-black hover:bg-red-700"
+          className="w-full h-11 rounded-xl bg-danger-600 text-white font-black hover:bg-danger-700"
         >
           تسجيل خروج
         </button>

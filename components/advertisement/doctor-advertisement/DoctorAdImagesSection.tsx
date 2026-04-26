@@ -14,7 +14,7 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
       <h3 className="text-sm font-black text-slate-700 mb-2.5 block">الصور</h3>
       <div>
         {/* زر رفع الصورة: نفس تدرج الأزرق المستخدم في أزرار "إضافة" بباقي أقسام الإعلان */}
-        <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]">
+        <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]">
           <input
             type="file"
             accept="image/*"
@@ -38,7 +38,7 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
                 type="button"
                 onClick={() => void onRemoveImage(idx)}
                 disabled={deletingImageIndex === idx}
-                className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-danger-600 text-white text-xs font-black hover:bg-danger-700 transition-colors disabled:opacity-50"
               >
                 {deletingImageIndex === idx ? '…' : '×'}
               </button>

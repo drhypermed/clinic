@@ -112,18 +112,18 @@ export const LoginSelectionPage: React.FC = () => {
 
         {/* Card side */}
         <div className="flex-1 w-full max-w-md">
-          <div className="relative bg-white rounded-2xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.15)] ring-1 ring-slate-200/60 p-5 space-y-3 overflow-hidden">
+          <div className="relative bg-white rounded-2xl shadow-card ring-1 ring-slate-200/60 p-5 space-y-3 overflow-hidden">
             {/* شريط علوي أزرق موحّد — كان أزرق/أخضر مختلط قبل كده عشان يميز الخيارات. */}
-            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400" />
+            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-700 via-brand-500 to-brand-400" />
             {visibleOptions.map((opt) => {
               return (
                 <button
                   key={opt.id}
                   type="button"
                   onClick={() => navigate(opt.route)}
-                  className="group w-full flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl text-right transition-all hover:bg-blue-50 hover:border-blue-400 hover:shadow-sm active:scale-[0.99]"
+                  className="group w-full flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl text-right transition-all hover:bg-brand-50 hover:border-brand-400 hover:shadow-sm active:scale-[0.99]"
                 >
-                  <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-blue-600 text-white shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-brand-600 text-white shadow-sm group-hover:scale-105 transition-transform">
                     {opt.icon}
                   </div>
                   <div className="flex-1 min-w-0">

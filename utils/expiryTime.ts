@@ -1,4 +1,4 @@
-export interface ExpiryStatus {
+interface ExpiryStatus {
   expiryMs: number | null;
   hasExpiry: boolean;
   isValid: boolean;
@@ -6,7 +6,7 @@ export interface ExpiryStatus {
   isActive: boolean;
 }
 
-export interface RemainingTimePart {
+interface RemainingTimePart {
   key: 'years' | 'months' | 'days' | 'hours' | 'minutes';
   value: number;
   label: string;

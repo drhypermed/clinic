@@ -15,7 +15,7 @@ export interface BreadcrumbSegment {
 }
 
 /** التسميات العربية لكل واجهة */
-export const VIEW_LABELS: Record<AppView, string> = {
+const VIEW_LABELS: Record<AppView, string> = {
   home: 'الرئيسية',
   prescription: 'كشف جديد',
   records: 'سجلات المرضى',
@@ -36,7 +36,7 @@ const VIEW_PARENT: Partial<Record<AppView, AppView>> = {
 };
 
 /** تسميات التابات للتقارير المالية */
-export const FINANCIAL_TAB_LABELS: Record<string, string> = {
+const FINANCIAL_TAB_LABELS: Record<string, string> = {
   daily: 'يومي',
   monthly: 'شهري',
   yearly: 'سنوي',
@@ -44,7 +44,7 @@ export const FINANCIAL_TAB_LABELS: Record<string, string> = {
 };
 
 /** تسميات التابات لإعدادات الروشتة */
-export const SETTINGS_TAB_LABELS: Record<string, string> = {
+const SETTINGS_TAB_LABELS: Record<string, string> = {
   header: 'الجزء العلوي',
   footer: 'الجزء السفلي',
   vitals: 'الجزء الجانبي',
@@ -53,7 +53,7 @@ export const SETTINGS_TAB_LABELS: Record<string, string> = {
 };
 
 /** تسميات أدوات الأدوية */
-export const DRUG_TOOL_LABELS: Record<string, string> = {
+const DRUG_TOOL_LABELS: Record<string, string> = {
   interactions: 'التفاعلات الدوائية',
   renal: 'جرعات الكلى',
   pregnancy: 'الأمان في الحمل',

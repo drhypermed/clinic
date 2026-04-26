@@ -36,29 +36,9 @@ import {
 } from './reportPreferences';
 
 export {
-    buildPatientFileDocIdFromNameKey,
     buildPatientFileNameKey,
     normalizePatientNameForFile,
 } from './normalizers';
-
-export type {
-    PatientFileReference,
-    PatientFileSeedRecord,
-    PatientIdentityAgeInput,
-    SyncPatientIdentityByFileInput,
-    SyncPatientIdentityByFileResult,
-} from './types';
-
-export type {
-    SavePatientAdditionalInfoInput,
-    SavePatientAdditionalInfoResult,
-} from './additionalInfo';
-
-export type {
-    ReportPreferences,
-    ReportLanguagePref,
-    ReportPageSizePref,
-} from './reportPreferences';
 
 /** الواجهة الموحّدة لخدمة ملفات المرضى */
 export const patientFilesService = {

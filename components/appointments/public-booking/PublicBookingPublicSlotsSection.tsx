@@ -82,17 +82,17 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
       {publicSectionOpen && (
         <div className="space-y-4">
           {/* جزء عرض ونسخ رابط الحجز الإلكتروني */}
-          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
-            <p className="text-amber-800 font-black text-xs mb-2">رابط فورم الجمهور</p>
+          <div className="rounded-xl border border-warning-200 bg-warning-50/60 p-3">
+            <p className="text-warning-800 font-black text-xs mb-2">رابط فورم الجمهور</p>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-amber-700 font-bold text-xs break-all dir-ltr text-left flex-1 min-w-0">
+              <p className="text-warning-700 font-bold text-xs break-all dir-ltr text-left flex-1 min-w-0">
                 {publicBookingLink ?? 'جاري تجهيز فورم الجمهور'}
               </p>
               <button
                 type="button"
                 onClick={onCopyPublicBookingLink}
                 disabled={!publicBookingLink}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm font-bold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning-200 hover:bg-warning-300 text-warning-900 text-sm font-bold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {publicLinkCopied ? 'تم النسخ' : 'نسخ الرابط'}
               </button>
@@ -101,9 +101,9 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
 
           {/* لافتة توضح الفرع الحالي — تظهر لو عنده أكتر من فرع */}
           {hasMultipleBranches && currentBranchName && (
-            <div className="rounded-xl border border-amber-300 bg-amber-100/60 p-3 text-amber-900 text-sm font-black">
+            <div className="rounded-xl border border-warning-300 bg-warning-100/60 p-3 text-warning-900 text-sm font-black">
               🏥 أنت تدير مواعيد فرع: <span className="underline">{currentBranchName}</span>
-              <span className="block text-xs font-bold text-amber-700 mt-1">
+              <span className="block text-xs font-bold text-warning-700 mt-1">
                 المواعيد اللي هتضيفها هتتحفظ على هذا الفرع فقط. لتغيير الفرع بدّله من قائمة الفروع في التطبيق.
               </span>
             </div>
@@ -125,7 +125,7 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
                     }}
                     placeholder="مثال: شارع 9 - المعادي"
                     disabled={branchAddressesSaving}
-                    className="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                    className="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm font-bold focus:ring-2 focus:ring-warning-500 outline-none"
                   />
                 </div>
               ))}
@@ -141,7 +141,7 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
                 value={publicSlotDateStr}
                 min={publicSlotTodayStr}
                 onChange={(e) => onPublicSlotDateChange(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
               />
             </div>
             <div>
@@ -151,18 +151,18 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
                 value={publicSlotTimeStr}
                 min={publicTimeMin}
                 onChange={(e) => onPublicSlotTimeChange(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
               />
             </div>
             <div className="sm:col-span-2 flex flex-wrap items-center gap-2">
               <button
                 type="submit"
                 disabled={!publicSecret || publicSlotAdding}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm disabled:opacity-60"
+                className="px-4 py-2 rounded-xl bg-warning-500 hover:bg-warning-600 text-white font-bold text-sm disabled:opacity-60"
               >
                 {publicSlotAdding ? 'جاري الإضافة' : 'إضافة ميعاد للجمهور'}
               </button>
-              {publicSlotError && <span className="text-red-600 text-sm font-bold">{publicSlotError}</span>}
+              {publicSlotError && <span className="text-danger-600 text-sm font-bold">{publicSlotError}</span>}
             </div>
           </form>
 
@@ -172,7 +172,7 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
             {publicSlotsLoading ? (
               <p className="text-slate-500 font-bold text-sm"><LoadingText>جاري تحميل المواعيد</LoadingText></p>
             ) : publicSlots.length === 0 ? (
-              <p className="text-amber-600 font-bold text-sm">لا توجد مواعيد متاحة حاليًا.</p>
+              <p className="text-warning-600 font-bold text-sm">لا توجد مواعيد متاحة حاليًا.</p>
             ) : (
               <ul className="space-y-2 max-h-52 overflow-y-auto">
                 {publicSlots.map((slot) => (
@@ -181,7 +181,7 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
                     <button
                       type="button"
                       onClick={() => onRemovePublicSlot(slot.id)}
-                      className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold text-xs border border-red-100 hover:bg-red-100"
+                      className="px-3 py-1.5 rounded-lg bg-danger-50 text-danger-600 font-bold text-xs border border-danger-100 hover:bg-danger-100"
                     >
                       حذف
                     </button>

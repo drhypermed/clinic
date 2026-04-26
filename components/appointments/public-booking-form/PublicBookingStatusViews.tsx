@@ -13,7 +13,7 @@ import { LoadingText } from '../../ui/LoadingText';
 
 export const PublicBookingLoadingView: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-warning-50 to-warning-50 flex items-center justify-center p-4" dir="rtl">
       <div className="text-slate-600 font-bold"><LoadingText>جاري التحميل</LoadingText></div>
     </div>
   );
@@ -21,7 +21,7 @@ export const PublicBookingLoadingView: React.FC = () => {
 
 export const PublicBookingInvalidLinkView: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-warning-50 to-warning-50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 max-w-md w-full text-center">
         <p className="text-slate-700 font-bold">رابط غير صالح أو منتهي الصلاحية.</p>
       </div>
@@ -31,10 +31,10 @@ export const PublicBookingInvalidLinkView: React.FC = () => {
 
 export const PublicBookingLoginRequiredView: React.FC<{ onLogin: () => void; loading?: boolean }> = ({ onLogin, loading }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-warning-50 to-warning-50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 max-w-md w-full text-center space-y-6">
-        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
-          <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-20 h-20 bg-warning-100 rounded-full flex items-center justify-center mx-auto">
+          <svg className="w-10 h-10 text-warning-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>

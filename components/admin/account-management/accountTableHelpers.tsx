@@ -26,7 +26,7 @@ export const getInitials = (name: string): string => {
 };
 
 /** تعريف شكل شارة الحالة (أيقونة + تسمية + كلاسات CSS). */
-export interface StatusConfig {
+interface StatusConfig {
   icon: React.ReactElement;
   label: string;
   cls: string;
@@ -41,18 +41,18 @@ export const getStatusConfig = (status?: string): StatusConfig => {
     return {
       icon: <FaCircleCheck className="w-2.5 h-2.5" />,
       label: 'مقبول',
-      cls: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+      cls: 'border-success-200 bg-success-50 text-success-700',
     };
   if (isDoctorRejectedVerification(status))
     return {
       icon: <FaCircleXmark className="w-2.5 h-2.5" />,
       label: 'مرفوض',
-      cls: 'border-rose-200 bg-rose-50 text-rose-700',
+      cls: 'border-danger-200 bg-danger-50 text-danger-700',
     };
   return {
     icon: <FaHourglassHalf className="w-2.5 h-2.5" />,
     label: 'قيد المراجعة',
-    cls: 'border-amber-200 bg-amber-50 text-amber-700',
+    cls: 'border-warning-200 bg-warning-50 text-warning-700',
   };
 };
 
@@ -61,10 +61,10 @@ export const getStatusConfig = (status?: string): StatusConfig => {
  * new = اشتراك جديد | extension = تمديد | manual_edit = تعديل يدوي | plan_switch = تغيير خطة
  */
 export const CHANGE_TYPE_LABELS: Record<string, { label: string; cls: string }> = {
-  new: { label: 'اشتراك جديد', cls: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
-  extension: { label: 'تمديد', cls: 'border-blue-200 bg-blue-50 text-blue-700' },
-  manual_edit: { label: 'تعديل يدوي', cls: 'border-indigo-200 bg-indigo-50 text-indigo-700' },
-  plan_switch: { label: 'تغيير خطة', cls: 'border-amber-200 bg-amber-50 text-amber-700' },
+  new: { label: 'اشتراك جديد', cls: 'border-success-200 bg-success-50 text-success-700' },
+  extension: { label: 'تمديد', cls: 'border-brand-200 bg-brand-50 text-brand-700' },
+  manual_edit: { label: 'تعديل يدوي', cls: 'border-brand-200 bg-brand-50 text-brand-700' },
+  plan_switch: { label: 'تغيير خطة', cls: 'border-warning-200 bg-warning-50 text-warning-700' },
   '': { label: 'غير محدد', cls: 'border-slate-200 bg-slate-50 text-slate-500' },
 };
 

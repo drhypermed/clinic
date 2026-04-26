@@ -63,7 +63,7 @@ export const DoctorAdScheduleSection: React.FC<DoctorAdScheduleSectionProps> = (
         <select
           value={newScheduleDay}
           onChange={(event) => onNewScheduleDayChange(event.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
         >
           <option value="">اختر اليوم</option>
           {daysOfWeek.map((dayOption) => (
@@ -76,24 +76,24 @@ export const DoctorAdScheduleSection: React.FC<DoctorAdScheduleSectionProps> = (
           type="time"
           value={newScheduleFrom}
           onChange={(event) => onNewScheduleFromChange(event.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
         />
         <input
           type="time"
           value={newScheduleTo}
           onChange={(event) => onNewScheduleToChange(event.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
         />
         <input
           value={newScheduleNotes}
           onChange={(event) => onNewScheduleNotesChange(event.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
           placeholder="ملاحظات (اختياري)"
         />
         <button
           type="button"
           onClick={onAddScheduleRow}
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
         >
           <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -107,11 +107,11 @@ export const DoctorAdScheduleSection: React.FC<DoctorAdScheduleSectionProps> = (
           // وضع التعديل: نفس شكل صف الإضافة بس مع زر "حفظ" و"إلغاء" بدل "إضافة"
           if (isEditing && editDraft) {
             return (
-              <div key={row.id} className="grid grid-cols-1 md:grid-cols-[130px_1fr_1fr_1.5fr_auto_auto] gap-2 items-center bg-blue-50/40 border border-blue-100 rounded-xl p-1.5">
+              <div key={row.id} className="grid grid-cols-1 md:grid-cols-[130px_1fr_1fr_1.5fr_auto_auto] gap-2 items-center bg-brand-50/40 border border-brand-100 rounded-xl p-1.5">
                 <select
                   value={editDraft.day}
                   onChange={(event) => setEditDraft({ ...editDraft, day: event.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                 >
                   <option value="">اختر اليوم</option>
                   {daysOfWeek.map((dayOption) => (
@@ -124,24 +124,24 @@ export const DoctorAdScheduleSection: React.FC<DoctorAdScheduleSectionProps> = (
                   type="time"
                   value={editDraft.from}
                   onChange={(event) => setEditDraft({ ...editDraft, from: event.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                 />
                 <input
                   type="time"
                   value={editDraft.to}
                   onChange={(event) => setEditDraft({ ...editDraft, to: event.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                 />
                 <input
                   value={editDraft.notes}
                   onChange={(event) => setEditDraft({ ...editDraft, notes: event.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
                   placeholder="ملاحظات (اختياري)"
                 />
                 <button
                   type="button"
                   onClick={handleSaveEdit}
-                  className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+                  className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-gradient-to-r from-success-600 to-success-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -176,14 +176,14 @@ export const DoctorAdScheduleSection: React.FC<DoctorAdScheduleSectionProps> = (
               <button
                 type="button"
                 onClick={() => handleStartEdit(row)}
-                className="px-3 py-2.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-bold text-xs hover:bg-blue-100 transition-colors"
+                className="px-3 py-2.5 rounded-xl bg-brand-50 text-brand-700 border border-brand-200 font-bold text-xs hover:bg-brand-100 transition-colors"
               >
                 تعديل
               </button>
               <button
                 type="button"
                 onClick={() => onRemoveScheduleRow(row.id)}
-                className="px-3 py-2.5 rounded-xl bg-red-50 text-red-700 border border-red-200 font-bold text-xs hover:bg-red-100 transition-colors"
+                className="px-3 py-2.5 rounded-xl bg-danger-50 text-danger-700 border border-danger-200 font-bold text-xs hover:bg-danger-100 transition-colors"
               >
                 حذف
               </button>

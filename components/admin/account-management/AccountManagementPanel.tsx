@@ -29,6 +29,12 @@ import { useAccountManagementActions } from './useAccountManagementActions';
 import { useAdminEmails } from './useAdminEmails';
 import { useDoctorsPagination } from './useDoctorsPagination';
 import { ActionConfirmationModal } from './ActionConfirmationModal';
+import { exportDoctorsToCsv } from './exportDoctorsCsv';
+import { Pagination } from './Pagination';
+
+// ─ خيارات حجم الصفحة المتاحة للأدمن (يقدر يغير من dropdown)
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+const DEFAULT_PAGE_SIZE = 25;
 
 export const AccountManagementPanel: React.FC = () => {
   const { user } = useAuth();
@@ -76,6 +82,24 @@ export const AccountManagementPanel: React.FC = () => {
   // ── فلترة client-side (تبحث في الاسم/البريد/الواتساب) ──
   const [filteredDoctors, setFilteredDoctors] = useState<ApprovedDoctor[]>([]);
 
+  // ── Pagination state: الصفحة الحالية + حجم الصفحة ──
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+
+  // عند تغيير الفلاتر → نرجع لـpage 1 (تجنب الوقوف على صفحة بدون نتائج)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.searchTerm, filters.verificationStatus, filters.specialty, filters.subscriptionType, filters.sortBy]);
+
+  // قائمة الأطباء الـpaginated (slice من الـfiltered حسب الصفحة)
+  const totalPages = Math.max(1, Math.ceil(filteredDoctors.length / pageSize));
+  // safeCurrentPage: لو حصل race condition وعدد الـfilteredDoctors نقص فجأة، نعرض آخر صفحة بدل صفحة فاضية
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedDoctors = filteredDoctors.slice(
+    (safeCurrentPage - 1) * pageSize,
+    safeCurrentPage * pageSize,
+  );
+
   useEffect(() => {
     let result = [...approvedDoctors];
 
@@ -96,7 +120,24 @@ export const AccountManagementPanel: React.FC = () => {
       result = result.filter((d) => (d.doctorSpecialty || '').trim() === filters.specialty);
     }
     if (filters.subscriptionType !== 'all') {
-      result = result.filter((d) => (d.accountType || 'free') === filters.subscriptionType);
+      // ─ Bug fix: الفلتر بيراعي انتهاء الاشتراك دلوقتي.
+      // طبيب accountType='premium' لكن premiumExpiryDate انتهى = نعتبره 'free'
+      // (مش هيظهر تحت فلتر "برو" — هيظهر تحت "مجاني" زي ما الـUI بيعرضه).
+      // الأدمن (premiumExpiryDate يبدأ بـ9999) معفي من الـexpiry check.
+      const nowMs = Date.now();
+      result = result.filter((d) => {
+        const declared = (d.accountType || 'free') as 'free' | 'premium' | 'pro_max';
+        // المجاني ما عندوش expiry — يفضل مجاني
+        if (declared === 'free') return filters.subscriptionType === 'free';
+        // الأدمن (premiumExpiryDate سنة 9999) دائماً paid
+        const isLifetime = d.premiumExpiryDate?.startsWith('9999');
+        if (isLifetime) return declared === filters.subscriptionType;
+        // باقة فعلياً منتهية → نعتبره مجاني
+        const expiryMs = d.premiumExpiryDate ? new Date(d.premiumExpiryDate).getTime() : 0;
+        const isExpired = expiryMs > 0 && expiryMs < nowMs;
+        const effectiveType = isExpired ? 'free' : declared;
+        return effectiveType === filters.subscriptionType;
+      });
     }
 
     // الترتيب: الأحدث أولاً (recent) أو أبجدي بالاسم (name)
@@ -196,7 +237,7 @@ export const AccountManagementPanel: React.FC = () => {
   // ── حماية: لو مش أدمن، ارجع رسالة منع ──
   if (!canManageAccounts) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+      <div className="rounded-xl border border-danger-200 bg-danger-50 p-4 text-sm font-bold text-danger-700">
         غير مصرح لك بالوصول إلى إدارة الأطباء.
       </div>
     );
@@ -205,12 +246,18 @@ export const AccountManagementPanel: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-5">
       <div className="dh-stagger-1">
-        <AccountManagementHeader totalCount={approvedDoctors.length} filteredCount={filteredDoctors.length} />
+        <AccountManagementHeader
+          totalCount={approvedDoctors.length}
+          filteredCount={filteredDoctors.length}
+          // ─ التصدير يستخدم الـfilteredDoctors (يحترم الفلاتر النشطة)
+          onExport={() => exportDoctorsToCsv(filteredDoctors, 'doctors-list')}
+          exportDisabled={filteredDoctors.length === 0}
+        />
       </div>
 
       {/* رسالة خطأ تحميل البيانات */}
       {loadError && (
-        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+        <div className="flex items-center gap-2 rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-bold text-danger-700">
           <FaCircleXmark className="w-4 h-4 shrink-0" />
           {loadError}
         </div>
@@ -228,7 +275,8 @@ export const AccountManagementPanel: React.FC = () => {
         <div className="dh-stagger-3 space-y-3">
           <AccountManagementTable
             approvedDoctors={approvedDoctors}
-            filteredDoctors={filteredDoctors}
+            filteredDoctors={paginatedDoctors}
+            totalFilteredCount={filteredDoctors.length}
             isAdminDoctorEmail={isAdminDoctorEmail}
             actionInProgress={actionInProgress}
             editingDurationId={editingDurationId}
@@ -253,9 +301,21 @@ export const AccountManagementPanel: React.FC = () => {
             onUpdateSubscriptionDuration={handleUpdateSubscriptionDuration}
           />
 
+          {/* Pagination UI — يظهر لو في أكتر من صفحة واحدة (أو لتغيير حجم الصفحة) */}
+          {filteredDoctors.length > 0 && (
+            <Pagination
+              currentPage={safeCurrentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              pageSize={pageSize}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+            />
+          )}
+
           {/* مؤشر "جاري تحميل كل الصفحات تلقائياً للبحث" */}
           {autoLoadingAll && (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50/70 px-4 py-2 text-xs font-bold text-sky-700">
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50/70 px-4 py-2 text-xs font-bold text-brand-700">
               <LoadingText>جاري تحميل كل الأطباء للبحث</LoadingText>
             </div>
           )}

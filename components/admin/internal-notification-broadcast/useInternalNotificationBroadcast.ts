@@ -34,16 +34,20 @@ import {
   type NotificationBroadcastRecord,
 } from './constants';
 
-/** نص موجز لنتيجة البث — يعرض أعداد الأجهزة والنجاح/الفشل. */
+/**
+ * نص موجز لنتيجة البث الداخلي.
+ *
+ * البث الداخلي ما يرسل push فعلي، يكتب وثيقة فقط ويظهر الـ popup عند فتح
+ * التطبيق. لذا ما عندناش "نجاح/فشل توصيل" — فقط تقدير حجم الجمهور المستهدف.
+ */
 const buildFeedbackText = (result: SendInAppNotificationResult): string => {
-  const summary = `أجهزة متوقعة: ${result.tokenCount} • نجح: ${result.successCount} • فشل: ${result.failureCount}`;
-  const overlapSummary = `تم استبعاد ${toSafeNumber(result.excludedDueToOverlapCount)} جهاز بسبب تداخل فئات قديم.`;
-  const userScopeSummary = `مستخدمون مطابقون (Custom): ${toSafeNumber(result.matchedUserIdsCount)}.`;
-  return `${result.message}\n${summary}\n${overlapSummary}\n${userScopeSummary}`;
+  const summary = `أجهزة متوقعة: ${result.tokenCount}`;
+  const userScopeSummary = `مستخدمون مطابقون: ${toSafeNumber(result.matchedUserIdsCount)}.`;
+  return `${result.message}\n${summary}\n${userScopeSummary}`;
 };
 
 /** نوع نتيجة الـ feedback للمكون (success/error/info لتحديد الألوان). */
-export type BroadcastFeedbackType = 'success' | 'error' | 'info';
+type BroadcastFeedbackType = 'success' | 'error' | 'info';
 
 export const useInternalNotificationBroadcast = (isAdminUser: boolean) => {
   // ── حالة نموذج الإرسال ──

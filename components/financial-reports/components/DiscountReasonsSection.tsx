@@ -78,7 +78,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
     <div className="bg-white rounded-3xl shadow-xl border border-white/50 overflow-hidden">
       <button
         onClick={() => setIsOpen((value) => !value)}
-        className="w-full bg-gradient-to-r from-rose-600 to-rose-500 px-4 sm:px-6 py-4 flex items-center justify-between cursor-pointer hover:from-rose-700 hover:to-rose-600 transition-all"
+        className="w-full bg-gradient-to-r from-danger-600 to-danger-500 px-4 sm:px-6 py-4 flex items-center justify-between cursor-pointer hover:from-danger-700 hover:to-danger-600 transition-all"
       >
         <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +106,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
           {!showForm && (
             <button
               onClick={handleAdd}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold hover:from-amber-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-warning-500 to-warning-600 text-white font-bold hover:from-warning-600 hover:to-warning-700 transition-all shadow-md hover:shadow-lg"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -116,33 +116,33 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
           )}
 
           {showForm && (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200 space-y-3">
-              <h3 className="text-base font-black text-amber-800">
+            <div className="bg-gradient-to-br from-warning-50 to-warning-50 rounded-2xl p-4 border border-warning-200 space-y-3">
+              <h3 className="text-base font-black text-warning-800">
                 {editingId ? '✏️ تعديل سبب الخصم' : '➕ إضافة سبب خصم جديد'}
               </h3>
 
               <div>
-                <label className="block text-xs font-bold text-amber-700 mb-1">
-                  سبب الخصم <span className="text-red-400">*</span>
+                <label className="block text-xs font-bold text-warning-700 mb-1">
+                  سبب الخصم <span className="text-danger-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(event) => setFormName(event.target.value)}
                   placeholder="مثال: حالة اجتماعية، خصم متابعة، خصم حملة..."
-                  className="w-full px-3 py-2 rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
+                  className="w-full px-3 py-2 rounded-xl border-2 border-warning-200 focus:border-warning-500 focus:ring-2 focus:ring-warning-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
                   dir="rtl"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-amber-700 mb-1">ملاحظات (اختياري)</label>
+                <label className="block text-xs font-bold text-warning-700 mb-1">ملاحظات (اختياري)</label>
                 <input
                   type="text"
                   value={formNotes}
                   onChange={(event) => setFormNotes(event.target.value)}
                   placeholder="ملاحظات إضافية عن استخدام هذا السبب"
-                  className="w-full px-3 py-2 rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
+                  className="w-full px-3 py-2 rounded-xl border-2 border-warning-200 focus:border-warning-500 focus:ring-2 focus:ring-warning-500/20 transition-all text-sm font-bold text-slate-800 bg-white"
                   dir="rtl"
                 />
               </div>
@@ -151,7 +151,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
                 <button
                   onClick={handleSave}
                   disabled={isSaving || !formName.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-warning-600 text-white font-bold hover:bg-warning-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -191,7 +191,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
               {reasons.map((reason) => (
                 <div
                   key={reason.id}
-                  className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 sm:p-4 border border-slate-200 hover:border-amber-300 hover:shadow-md transition-all group"
+                  className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 sm:p-4 border border-slate-200 hover:border-warning-300 hover:shadow-md transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -209,7 +209,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button
                         onClick={() => handleEdit(reason)}
-                        className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        className="p-1.5 rounded-lg bg-brand-100 text-brand-600 hover:bg-brand-200 transition-colors"
                         title="تعديل"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -218,7 +218,7 @@ export const DiscountReasonsSection: React.FC<DiscountReasonsSectionProps> = ({ 
                       </button>
                       <button
                         onClick={() => handleDelete(reason.id, reason.name)}
-                        className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                        className="p-1.5 rounded-lg bg-danger-100 text-danger-600 hover:bg-danger-200 transition-colors"
                         title="حذف"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

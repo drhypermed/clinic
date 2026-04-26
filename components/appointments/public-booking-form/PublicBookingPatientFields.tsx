@@ -105,14 +105,14 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           onChange={(e) => onPhoneChange(e.target.value)}
           maxLength={maxPhoneLength}
           placeholder="01xxxxxxxxx"
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
           dir="ltr"
         />
         {latestPhoneForName && normalizePhone(phone) !== normalizePhone(latestPhoneForName.phone) && (
           <button
             type="button"
             onClick={() => applyPhoneSuggestion(latestPhoneForName)}
-            className="mt-1 inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800"
+            className="mt-1 inline-flex items-center gap-2 rounded-lg border border-warning-200 bg-warning-50 px-2.5 py-1 text-[11px] font-bold text-warning-800"
           >
             أحدث رقم لهذا الاسم: {normalizePhone(latestPhoneForName.phone)}
           </button>
@@ -125,7 +125,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => applyPhoneSuggestion(item)}
-                className="w-full text-right px-3 py-2 border-b border-slate-100 last:border-b-0 hover:bg-amber-50"
+                className="w-full text-right px-3 py-2 border-b border-slate-100 last:border-b-0 hover:bg-warning-50"
               >
                 <div className="text-sm font-black text-slate-800">{item.patientName}</div>
                 <div className="text-xs font-bold text-slate-600">{normalizePhone(item.phone)}{item.age ? ` · السن: ${item.age}` : ''}</div>
@@ -148,7 +148,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           onChange={(e) => onPatientNameChange(e.target.value)}
           maxLength={maxNameLength}
           placeholder="الاسم الكامل"
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
           dir="rtl"
         />
       </div>
@@ -161,8 +161,8 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
             ageString={age}
             onAgeChange={onAgeChange}
             placeholder="0"
-            inputClassName="focus:ring-amber-500 focus:border-amber-500"
-            selectClassName="focus:ring-amber-500"
+            inputClassName="focus:ring-warning-500 focus:border-warning-500"
+            selectClassName="focus:ring-warning-500"
           />
         </div>
         {/* الجنس بعد السن مباشرة — ثابت للمريض، ينتقل تلقائي في الحجوزات القادمة */}
@@ -174,7 +174,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
               onClick={() => onGenderChange('male')}
               className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
                 gender === 'male'
-                  ? 'bg-sky-600 text-white border-sky-700 shadow-md'
+                  ? 'bg-brand-600 text-white border-brand-700 shadow-md'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
@@ -185,7 +185,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
               onClick={() => onGenderChange('female')}
               className={`px-3 py-2.5 rounded-xl border text-sm font-black transition-all ${
                 gender === 'female'
-                  ? 'bg-pink-600 text-white border-pink-700 shadow-md'
+                  ? 'bg-slate-600 text-white border-slate-700 shadow-md'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
@@ -197,7 +197,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
 
       {/* حمل/رضاعة — مباشرة تحت الجنس، يظهر بس للإناث 18-50 */}
       {askFertility && (
-        <div className="rounded-2xl border border-pink-200 bg-pink-50/60 p-3">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-600 mb-1.5">هل حضرتك حامل؟</label>
@@ -206,7 +206,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
                   type="button"
                   onClick={() => onPregnantChange(true)}
                   className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                    pregnant === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                    pregnant === true ? 'bg-slate-600 text-white border-slate-700' : 'bg-white border-slate-200 text-slate-700'
                   }`}
                 >
                   نعم، حامل
@@ -229,7 +229,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
                   type="button"
                   onClick={() => onBreastfeedingChange(true)}
                   className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
-                    breastfeeding === true ? 'bg-pink-600 text-white border-pink-700' : 'bg-white border-slate-200 text-slate-700'
+                    breastfeeding === true ? 'bg-slate-600 text-white border-slate-700' : 'bg-white border-slate-200 text-slate-700'
                   }`}
                 >
                   نعم، مرضعة
@@ -262,7 +262,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           onChange={(e) => onVisitReasonChange(e.target.value)}
           maxLength={maxReasonLength}
           placeholder="مثال: كشف دوري، متابعة..."
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 font-bold"
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
           dir="rtl"
         />
       </div>
@@ -274,7 +274,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
             type="button"
             onClick={() => onIsFirstVisitChange(true)}
             className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${isFirstVisit === true
-              ? 'bg-emerald-600 text-white border-emerald-600'
+              ? 'bg-success-600 text-white border-success-600'
               : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
           >
@@ -284,7 +284,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
             type="button"
             onClick={() => onIsFirstVisitChange(false)}
             className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${isFirstVisit === false
-              ? 'bg-amber-600 text-white border-amber-600'
+              ? 'bg-warning-600 text-white border-warning-600'
               : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
           >

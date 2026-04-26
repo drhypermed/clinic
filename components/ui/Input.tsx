@@ -48,13 +48,13 @@ export const Input: React.FC<InputProps> = ({ label, error, className = '', id, 
         id={inputId}
         maxLength={resolvedMaxLength}
         className={[
-          'w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold',
-          error ? 'border-red-400' : 'border-slate-200',
+          'w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-success-500 text-sm font-bold',
+          error ? 'border-danger-400' : 'border-slate-200',
           className,
         ].join(' ')}
         {...props}
       />
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-danger-500">{error}</p>}
     </div>
   );
 };

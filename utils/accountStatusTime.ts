@@ -1,4 +1,4 @@
-export type EffectiveAccountType = 'free' | 'premium' | 'pro_max';
+type EffectiveAccountType = 'free' | 'premium' | 'pro_max';
 
 import { parseIsoTimeMs } from './expiryTime';
 
@@ -28,7 +28,7 @@ export const resolveEffectiveAccountTypeFromData = (
   return paidType;
 };
 
-export const getKnownPremiumExpiryMs = (data: PremiumTimingLike | null | undefined): number | null => {
+const getKnownPremiumExpiryMs = (data: PremiumTimingLike | null | undefined): number | null => {
   return parseIsoTimeMs(data?.premiumExpiryDate) ?? parseIsoTimeMs(data?.lastProExpiryDate);
 };
 

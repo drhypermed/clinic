@@ -186,10 +186,10 @@ export const NotificationTogglePrompt: React.FC = () => {
       className="no-print fixed inset-0 flex items-center justify-center z-[9998] bg-black/20 backdrop-blur-sm"
       style={{ direction: 'rtl' }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl border border-blue-300 p-6 max-w-sm w-11/12">
+      <div className="bg-white rounded-2xl shadow-2xl border border-brand-300 p-6 max-w-sm w-11/12">
         <div className="flex items-start gap-4">
           <div className="flex-1">
-            <h3 className={`font-bold text-lg mb-2 ${iosWarningMode ? 'text-red-600' : 'text-blue-700'}`}>
+            <h3 className={`font-bold text-lg mb-2 ${iosWarningMode ? 'text-danger-600' : 'text-brand-700'}`}>
               {iosWarningMode ? 'تنبيه لمستخدمي iPhone ⚠️' : 'فعّل الإشعارات'}
             </h3>
             <p className={`text-sm mb-4 ${iosWarningMode ? 'text-gray-800 font-bold leading-relaxed' : 'text-gray-600'}`}>
@@ -214,7 +214,7 @@ export const NotificationTogglePrompt: React.FC = () => {
                     type="button"
                     onClick={handleEnableNotifications}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
                   >
                     {isLoading ? 'جاري' : 'تفعيل'}
                   </button>
@@ -223,7 +223,7 @@ export const NotificationTogglePrompt: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-danger-600 text-white rounded-lg text-sm font-semibold hover:bg-danger-700 transition-colors"
                 >
                   حسناً، فهمت
                 </button>

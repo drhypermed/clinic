@@ -216,6 +216,18 @@ module.exports = ({
   };
 
   
+  // قائمة الميزات المسموحة — تطابق `AiFeatureName` في secureGeminiGateway.ts
+  // أي قيمة تانية من الـclient يتم تسجيلها كـ"unknown" بدون رفض الـrequest.
+  const ALLOWED_AI_FEATURES = new Set([
+    'case_analysis',     // تحليل الحالة
+    'translation',       // ترجمة بيانات الروشتة
+    'drug_interactions', // فحص التداخلات الدوائية
+    'pregnancy_safety',  // أمان الحمل والرضاعة
+    'renal_dose',        // تعديل جرعات الكلى
+    'medical_report',    // طباعة تقرير طبي بالـAI
+    'unknown',           // fallback لو الـclient ما بعتش feature
+  ]);
+
   const generateGeminiContent = async (request) => {
     const auth = request?.auth;
     if (!auth?.uid) {
@@ -227,6 +239,10 @@ module.exports = ({
     const responseMimeType = request?.data?.responseMimeType === 'application/json' ? 'application/json' : 'text/plain';
     const temperatureRaw = Number(request?.data?.temperature ?? 0);
     const temperature = Number.isFinite(temperatureRaw) ? Math.min(1, Math.max(0, temperatureRaw)) : 0;
+    // اسم الميزة اللي بتنادي AI — يُسجَّل في users/{id}.usageStatsByPlan.{tier}.aiFeatures
+    // عشان تقرير الأدمن يعرض عداد per-feature.
+    const rawFeature = String(request?.data?.feature || 'unknown').trim().toLowerCase();
+    const feature = ALLOWED_AI_FEATURES.has(rawFeature) ? rawFeature : 'unknown';
 
     // thinkingBudget لوضع التفكير في gemini-2.5-flash:
     // -1 = ديناميكي (default، الموديل يقرر)، 0 = تعطيل، >0 = حد أقصى tokens.
@@ -444,6 +460,33 @@ module.exports = ({
     } catch (trackErr) {
       // الفشل في تتبع التكاليف ما يمنعش إرسال الرد للمستخدم — بنلوج بس.
       console.warn('[generateGeminiContent] Token usage logging failed:', trackErr);
+    }
+
+    // ── عداد الميزات per-feature (lifetime cumulative) ──
+    // بنحدّث users/{id}.usageStatsByPlan.{tier}.aiFeatures.{feature}.count بـzیادة 1.
+    // FieldValue.increment آمن مع التوازي — مش محتاج read قبله.
+    //
+    // ملاحظة (cost optimization): شِيلنا shard collection adminDailyAiUsage عمداً
+    // لتقليل الـwrites إلى نصف العدد (write واحد بدل اثنين). الـtrade-off هو
+    // إن التقرير يعرض إجمالي lifetime فقط بدون range queries — وهذا اختيار
+    // مقصود للـlaunch (range queries تتضاف لاحقاً لو تطلبت).
+    try {
+      const tier = quota.accountType; // 'free' | 'premium' | 'pro_max'
+      const userDocRef = db.collection('users').doc(userId);
+      await userDocRef.set({
+        usageStatsByPlan: {
+          [tier]: {
+            aiFeatures: {
+              [feature]: {
+                count: admin.firestore.FieldValue.increment(1),
+              },
+            },
+          },
+        },
+      }, { merge: true });
+    } catch (featureCounterErr) {
+      // الفشل ما يمنعش الرد — بس نلوج warning عشان monitoring يشوف لو في pattern مشكلة.
+      console.warn('[generateGeminiContent] Per-feature counter failed:', featureCounterErr);
     }
 
     return {

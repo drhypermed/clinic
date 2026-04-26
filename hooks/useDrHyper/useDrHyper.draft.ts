@@ -121,7 +121,7 @@ interface UseDrHyperDraftParams {
   ) => void;
 }
 
-export interface UseDrHyperDraftReturn {
+interface UseDrHyperDraftReturn {
   /** هل توجد بيانات في الفورم غير محفوظة في سجلات المرضى؟ */
   hasUnsavedChanges: boolean;
   /** يتم استدعاؤها بعد نجاح handleSaveRecord: تحدد "البصمة المحفوظة" وتمسح الـ draft. */

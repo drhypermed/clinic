@@ -21,8 +21,18 @@ module.exports = (context) => {
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
+    // ─ recordSave اتشال من هنا 2026-04 — السجلات بقت "حد كلي" بفحص client-side
+    //   (مش حد يومي بحساب server-side عبر هذه الـquota function).
+    // ─ 🆕 ضفنا 3 ميزات جديدة 2026-04: تصدير الروشتة (طباعة + تنزيل + واتساب) ─
     const feature = String(request?.data?.feature || '');
-    if (feature !== 'recordSave' && feature !== 'readyPrescriptionSave' && feature !== 'medicalReportPrint') {
+    const validFeatures = [
+      'readyPrescriptionSave',
+      'medicalReportPrint',
+      'prescriptionPrint',
+      'prescriptionDownload',
+      'prescriptionWhatsapp',
+    ];
+    if (!validFeatures.includes(feature)) {
       throw new HttpsError('invalid-argument', 'Invalid feature');
     }
 
@@ -55,26 +65,40 @@ module.exports = (context) => {
       }
 
       // مفاتيح الـ config لكل feature × tier — نستخدم pickTierValue للاختيار الصحيح
-      const keysByFeature = feature === 'recordSave'
-        ? {
-          limit: { freeKey: 'freeRecordDailyLimit', premiumKey: 'premiumRecordDailyLimit', proMaxKey: 'proMaxRecordDailyLimit' },
-          msg: { freeKey: 'freeRecordLimitMessage', premiumKey: 'premiumRecordLimitMessage', proMaxKey: 'proMaxRecordLimitMessage' },
-          wa: { freeKey: 'freeRecordWhatsappMessage', premiumKey: 'premiumRecordWhatsappMessage', proMaxKey: 'proMaxRecordWhatsappMessage' },
-          fieldName: 'recordSaveCount',
-        }
-        : feature === 'readyPrescriptionSave'
-          ? {
-            limit: { freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
-            msg: { freeKey: 'freeReadyPrescriptionDailyLimitMessage', premiumKey: 'premiumReadyPrescriptionDailyLimitMessage', proMaxKey: 'proMaxReadyPrescriptionDailyLimitMessage' },
-            wa: { freeKey: 'freeReadyPrescriptionWhatsappMessage', premiumKey: 'premiumReadyPrescriptionWhatsappMessage', proMaxKey: 'proMaxReadyPrescriptionWhatsappMessage' },
-            fieldName: 'readyPrescriptionSaveCount',
-          }
-          : {
-            limit: { freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
-            msg: { freeKey: 'freeMedicalReportLimitMessage', premiumKey: 'premiumMedicalReportLimitMessage', proMaxKey: 'proMaxMedicalReportLimitMessage' },
-            wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
-            fieldName: 'medicalReportPrintCount',
-          };
+      const FEATURE_KEYS_MAP = {
+        readyPrescriptionSave: {
+          limit: { freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
+          msg: { freeKey: 'freeReadyPrescriptionDailyLimitMessage', premiumKey: 'premiumReadyPrescriptionDailyLimitMessage', proMaxKey: 'proMaxReadyPrescriptionDailyLimitMessage' },
+          wa: { freeKey: 'freeReadyPrescriptionWhatsappMessage', premiumKey: 'premiumReadyPrescriptionWhatsappMessage', proMaxKey: 'proMaxReadyPrescriptionWhatsappMessage' },
+          fieldName: 'readyPrescriptionSaveCount',
+        },
+        medicalReportPrint: {
+          limit: { freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
+          msg: { freeKey: 'freeMedicalReportLimitMessage', premiumKey: 'premiumMedicalReportLimitMessage', proMaxKey: 'proMaxMedicalReportLimitMessage' },
+          wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
+          fieldName: 'medicalReportPrintCount',
+        },
+        // ─ 🆕 أزرار تصدير الروشتة ─
+        prescriptionPrint: {
+          limit: { freeKey: 'freePrescriptionPrintDailyLimit', premiumKey: 'premiumPrescriptionPrintDailyLimit', proMaxKey: 'proMaxPrescriptionPrintDailyLimit' },
+          msg: { freeKey: 'freePrescriptionPrintLimitMessage', premiumKey: 'premiumPrescriptionPrintLimitMessage', proMaxKey: 'proMaxPrescriptionPrintLimitMessage' },
+          wa: { freeKey: 'freePrescriptionPrintWhatsappMessage', premiumKey: 'premiumPrescriptionPrintWhatsappMessage', proMaxKey: 'proMaxPrescriptionPrintWhatsappMessage' },
+          fieldName: 'prescriptionPrintCount',
+        },
+        prescriptionDownload: {
+          limit: { freeKey: 'freePrescriptionDownloadDailyLimit', premiumKey: 'premiumPrescriptionDownloadDailyLimit', proMaxKey: 'proMaxPrescriptionDownloadDailyLimit' },
+          msg: { freeKey: 'freePrescriptionDownloadLimitMessage', premiumKey: 'premiumPrescriptionDownloadLimitMessage', proMaxKey: 'proMaxPrescriptionDownloadLimitMessage' },
+          wa: { freeKey: 'freePrescriptionDownloadWhatsappMessage', premiumKey: 'premiumPrescriptionDownloadWhatsappMessage', proMaxKey: 'proMaxPrescriptionDownloadWhatsappMessage' },
+          fieldName: 'prescriptionDownloadCount',
+        },
+        prescriptionWhatsapp: {
+          limit: { freeKey: 'freePrescriptionWhatsappDailyLimit', premiumKey: 'premiumPrescriptionWhatsappDailyLimit', proMaxKey: 'proMaxPrescriptionWhatsappDailyLimit' },
+          msg: { freeKey: 'freePrescriptionWhatsappLimitMessage', premiumKey: 'premiumPrescriptionWhatsappLimitMessage', proMaxKey: 'proMaxPrescriptionWhatsappLimitMessage' },
+          wa: { freeKey: 'freePrescriptionWhatsappWhatsappMessage', premiumKey: 'premiumPrescriptionWhatsappWhatsappMessage', proMaxKey: 'proMaxPrescriptionWhatsappWhatsappMessage' },
+          fieldName: 'prescriptionWhatsappCount',
+        },
+      };
+      const keysByFeature = FEATURE_KEYS_MAP[feature];
 
       const featureConfig = { fieldName: keysByFeature.fieldName };
       const limitReachedMessage = pickTierValue(accountType, config, keysByFeature.msg);

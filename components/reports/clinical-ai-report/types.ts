@@ -9,7 +9,7 @@ export interface PatientAgeSnapshot {
   days: string;
 }
 
-export interface ClinicalAttachmentSnapshot {
+interface ClinicalAttachmentSnapshot {
   kind: 'image' | 'pdf' | 'document';
   title: string;
   url: string;

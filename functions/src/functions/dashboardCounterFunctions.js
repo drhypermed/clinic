@@ -176,40 +176,111 @@ const getSubscriptionPlanBucket = ({ startDate, endDate }) => {
   return 'monthly';
 };
 
+/**
+ * حساب مساهمة الإيراد التراكمي لطبيب — يجمع كل entries في subscriptionHistory
+ * اللي بتقع في السنة الحالية، مع ترجيح pricePaid المحفوظ في الـ entry لو متاح.
+ *
+ * المخرج بقى تجميعي (مش entry واحد):
+ *   - revenue: مجموع كل اشتراكات السنة
+ *   - revenueByBucket: { monthly, sixMonths, yearly } لعدد كل نوع
+ *   - planBucket: للـ legacy (آخر اشتراك)
+ *
+ * بعد إصلاح "السعر التاريخي": كل entry بيحمل سعره الفعلي وقت العملية.
+ */
 const buildDoctorRevenueContribution = async ({ userData, currentYear, getMonthPrices }) => {
-  if (!userData) return {
+  const empty = {
     revenue: 0,
     planBucket: null,
+    bucketCounts: { monthly: 0, sixMonths: 0, yearly: 0 },
   };
+  if (!userData) return empty;
 
   const accountType = String(userData?.accountType || '').trim().toLowerCase();
-  // برو وبرو ماكس الاتنين يحسبوا في الإيرادات (pro_max حالياً بنفس pricing الـ premium
-  // لحد ما الأدمن يضبط pricing مختلف — يتعالج من getMonthPrices لاحقاً)
-  if (accountType !== 'premium' && accountType !== 'pro_max') return {
-    revenue: 0,
-    planBucket: null,
-  };
-  if (!userData?.premiumStartDate || !userData?.premiumExpiryDate) return {
-    revenue: 0,
-    planBucket: null,
-  };
+  const history = Array.isArray(userData?.subscriptionHistory) ? userData.subscriptionHistory : [];
+  const hasHistoricalEntries = history.length > 0;
+
+  // حتى لو رجع free، اشتراكاته القديمة في السنة الحالية تتحسب
+  if (
+    accountType !== 'premium' &&
+    accountType !== 'pro_max' &&
+    !hasHistoricalEntries
+  ) {
+    return empty;
+  }
+
+  const doctorTier = accountType === 'pro_max' ? 'pro_max' : 'premium';
+
+  // المسار الجديد: subscriptionHistory مع pricePaid
+  if (hasHistoricalEntries) {
+    let totalRevenue = 0;
+    const bucketCounts = { monthly: 0, sixMonths: 0, yearly: 0 };
+    let lastBucket = null;
+
+    for (const entry of history) {
+      if (!entry?.startDate) continue;
+      const entryStart = new Date(entry.startDate);
+      if (!Number.isFinite(entryStart.getTime())) continue;
+      if (entryStart.getFullYear() !== currentYear) continue;
+
+      const entryEnd = entry?.endDate ? new Date(entry.endDate) : null;
+      const validEnd = entryEnd && Number.isFinite(entryEnd.getTime()) ? entryEnd : entryStart;
+
+      const tier = entry.tier || doctorTier;
+      let bucket = entry.planType;
+      if (!bucket || !['monthly', 'sixMonths', 'yearly'].includes(bucket)) {
+        bucket = getSubscriptionPlanBucket({ startDate: entryStart, endDate: validEnd });
+      }
+
+      // أولوية ١: pricePaid محفوظ في الـ entry
+      let entryRevenue = 0;
+      if (Number.isFinite(Number(entry.pricePaid)) && Number(entry.pricePaid) > 0) {
+        entryRevenue = Number(entry.pricePaid);
+      } else {
+        // أولوية ٢: حساب من جدول الأسعار (للـ entries القديمة قبل الإصلاح)
+        const monthId = `${entryStart.getFullYear()}-${String(entryStart.getMonth() + 1).padStart(2, '0')}`;
+        const monthPrices = await getMonthPrices(monthId);
+        entryRevenue = getSubscriptionPlanRevenue({
+          monthPrices,
+          startDate: entryStart,
+          endDate: validEnd,
+          tier,
+        });
+      }
+
+      if (entryRevenue > 0) {
+        totalRevenue += entryRevenue;
+        bucketCounts[bucket] = (bucketCounts[bucket] || 0) + 1;
+        lastBucket = bucket;
+      }
+    }
+
+    return {
+      revenue: totalRevenue,
+      planBucket: lastBucket,
+      bucketCounts,
+    };
+  }
+
+  // المسار القديم (Backward-compat): طبيب بدون subscriptionHistory
+  if (!userData?.premiumStartDate || !userData?.premiumExpiryDate) return empty;
 
   const startDate = new Date(userData.premiumStartDate);
   const endDate = new Date(userData.premiumExpiryDate);
-  if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime())) return {
-    revenue: 0,
-    planBucket: null,
-  };
-  if (startDate.getFullYear() !== currentYear) return {
-    revenue: 0,
-    planBucket: null,
-  };
+  if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime())) return empty;
+  if (startDate.getFullYear() !== currentYear) return empty;
 
   const monthId = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
   const monthPrices = await getMonthPrices(monthId);
+  const bucket = getSubscriptionPlanBucket({ startDate, endDate });
+  const revenue = getSubscriptionPlanRevenue({ monthPrices, startDate, endDate, tier: accountType });
+  const bucketCounts = { monthly: 0, sixMonths: 0, yearly: 0 };
+  if (revenue > 0) {
+    bucketCounts[bucket] = 1;
+  }
   return {
-    revenue: getSubscriptionPlanRevenue({ monthPrices, startDate, endDate, tier: accountType }),
-    planBucket: getSubscriptionPlanBucket({ startDate, endDate }),
+    revenue,
+    planBucket: bucket,
+    bucketCounts,
   };
 };
 
@@ -253,15 +324,17 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
   counters.totalPrintsProMax = usage.proMaxUsage.printCount;
   const revenueContribution = await buildDoctorRevenueContribution({ userData, currentYear, getMonthPrices });
   counters.totalRevenue = revenueContribution.revenue;
-  // عدادات الباقات منفصلة لـ برو وبرو ماكس
+  // عدادات الباقات: نستخدم bucketCounts (مجموع عمليات السنة) بدل planBucket واحد.
+  // ده يحسب طبيب جدد ٣ مرات في السنة كـ ٣ عمليات، مش واحدة.
+  const bc = revenueContribution.bucketCounts || { monthly: 0, sixMonths: 0, yearly: 0 };
   if (accountType === 'pro_max') {
-    if (revenueContribution.planBucket === 'yearly') counters.proMaxYearlyPlansCount = 1;
-    else if (revenueContribution.planBucket === 'sixMonths') counters.proMaxSixMonthsPlansCount = 1;
-    else if (revenueContribution.planBucket === 'monthly') counters.proMaxMonthlyPlansCount = 1;
+    counters.proMaxYearlyPlansCount = bc.yearly || 0;
+    counters.proMaxSixMonthsPlansCount = bc.sixMonths || 0;
+    counters.proMaxMonthlyPlansCount = bc.monthly || 0;
   } else {
-    if (revenueContribution.planBucket === 'yearly') counters.yearlyPlansCount = 1;
-    else if (revenueContribution.planBucket === 'sixMonths') counters.sixMonthsPlansCount = 1;
-    else if (revenueContribution.planBucket === 'monthly') counters.monthlyPlansCount = 1;
+    counters.yearlyPlansCount = bc.yearly || 0;
+    counters.sixMonthsPlansCount = bc.sixMonths || 0;
+    counters.monthlyPlansCount = bc.monthly || 0;
   }
 
   return counters;

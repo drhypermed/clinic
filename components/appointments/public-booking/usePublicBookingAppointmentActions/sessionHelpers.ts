@@ -11,7 +11,7 @@
  */
 
 /** تطبيع كود الخطأ القادم من Cloud Functions إلى نص منخفض الأحرف بدون بادئة functions/ */
-export const normalizeFunctionsErrorCode = (error: unknown): string =>
+const normalizeFunctionsErrorCode = (error: unknown): string =>
     String((error as { code?: unknown })?.code || '')
         .trim()
         .toLowerCase()

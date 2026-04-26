@@ -327,5 +327,3 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         </div>
     );
 };
-
-export default FinancialReportsPage;

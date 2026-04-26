@@ -32,6 +32,8 @@ export interface DailyInsuranceExtraEntry {
     insuranceMembershipId?: string;
     insuranceApprovalCode?: string;
     note?: string;
+    /** نسبة تحمل المريض % (0–100) — بتتنسخ من PatientInsuranceItem لما الـextra يجي من ملف مريض. */
+    patientSharePercent?: number;
     /** true when entry was created from a patient file (not free-typed here) */
     fromPatientFile?: boolean;
     patientFileId?: string;

@@ -8,7 +8,7 @@
  * 4. إدارة ظهور لوحة التحكم للمديرين (Admin Dashboard) بناءً على صلاحيات المستخدم.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useTransition } from 'react';
 import type { User } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { usePremiumExpiryCheck } from '../../hooks/usePremiumExpiryCheck';
@@ -23,6 +23,7 @@ import {
 } from 'react-icons/fa6';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from '../common/BrandLogo';
+import { UserGuideSidebarLink } from '../common/UserGuideSidebarLink';
 import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
@@ -60,6 +61,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const [loadingAction, setLoadingAction] = useState<'admin' | 'logout' | null>(null);
     const lastScrollYRef = useRef(0);
     const tickingRef = useRef(false);
+
+    // ─── Optimistic Active View ─────────────────────────────────────────────
+    // الفكرة: لما الطبيب يضغط زر، ميقعدش يستنى لحد ما الصفحة الجديدة تتحمل عشان
+    // يشوف الزر active. بنحفظ "الـview المختار" محلياً ونحدّثه فوراً على الضغط
+    // (urgent update) قبل ما نطلب من الـparent يحمل الصفحة (transition update).
+    const [optimisticView, setOptimisticView] = useState<string>(currentView);
+    const [, startTransition] = useTransition();
+
+    // مزامنة العرض المحلي مع التغييرات اللي بتيجي من برّه (مثل breadcrumbs)
+    useEffect(() => {
+        setOptimisticView(currentView);
+    }, [currentView]);
     const { isPro, tier } = usePremiumExpiryCheck(user);
     const isProMax = tier === 'pro_max';
     const pendingDoctorsCount = usePendingDoctorsCount();
@@ -69,101 +82,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // بدون ما نعتمد على حقل isVerified اللي ممكن يكون ناقص في مستند الأدمن.
     const isAdminVerified = Boolean(isAdminUser || (user as any)?.isVerified || verificationStatus === 'approved');
 
-    const navItems = [
-        {
-            id: 'home' as ViewType,
-            label: 'الرئيسية',
-            icon: <FaHouse className="w-5 h-5" />,
-            activeColor: 'bg-blue-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-blue-500',
-        },
-        {
-            id: 'prescription' as ViewType,
-            label: 'كشف جديد',
-            icon: <FaStethoscope className="w-5 h-5" />,
-            activeColor: 'bg-emerald-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-emerald-500',
-        },
-        {
-            id: 'records' as ViewType,
-            label: 'سجلات المرضى',
-            icon: <FaClipboardList className="w-5 h-5" />,
-            activeColor: 'bg-purple-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-purple-500',
-        },
-        {
-            id: 'patientFiles' as ViewType,
-            label: 'ملفات المرضى',
-            icon: <FaFolderOpen className="w-5 h-5" />,
-            activeColor: 'bg-fuchsia-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-fuchsia-500',
-        },
-        {
-            id: 'appointments' as ViewType,
-            label: 'المواعيد',
-            icon: <FaCalendarCheck className="w-5 h-5" />,
-            activeColor: 'bg-teal-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-teal-500',
-            badge: todayAppointmentsCount > 0 ? todayAppointmentsCount : undefined,
-        },
-        {
-            id: 'financialReports' as ViewType,
-            label: 'التقارير المالية',
-            icon: <FaChartPie className="w-5 h-5" />,
-            activeColor: 'bg-rose-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-rose-500',
-        },
-        {
-            id: 'drugtools' as ViewType,
-            label: 'أدوات الأدوية',
-            icon: <FaFlask className="w-5 h-5" />,
-            activeColor: 'bg-indigo-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-indigo-500',
-        },
-        {
-            id: 'secretary' as ViewType,
-            label: 'السكرتارية',
-            icon: <FaKey className="w-5 h-5" />,
-            activeColor: 'bg-violet-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-violet-500',
-        },
-        {
-            id: 'settings' as ViewType,
-            label: 'تصميم الروشتة',
-            icon: <FaPaintbrush className="w-5 h-5" />,
-            activeColor: 'bg-orange-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-orange-500',
-        },
-        {
-            id: 'advertisement' as ViewType,
-            label: 'الإعلان',
-            icon: <FaBullhorn className="w-5 h-5" />,
-            activeColor: 'bg-cyan-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-cyan-500',
-        },
-        {
-            id: 'branchSettings' as ViewType,
-            label: 'إدارة الفروع',
-            icon: <FaBuilding className="w-5 h-5" />,
-            activeColor: 'bg-amber-600',
-            activeTextColor: 'text-white',
-            iconBgActive: 'bg-amber-500',
-        },
+    // قائمة بنود التنقل — كل البنود لها نفس الاستايل (أزرق متدرج لما تكون active).
+    // مفيش استثناءات لون — موحّد بالكامل عشان مفيش تلوّث بصري.
+    const navItems: Array<{
+        id: ViewType;
+        label: string;
+        icon: React.ReactElement;
+        badge?: number;
+    }> = [
+        { id: 'home',             label: 'الرئيسية',         icon: <FaHouse className="w-5 h-5" /> },
+        { id: 'prescription',     label: 'كشف جديد',          icon: <FaStethoscope className="w-5 h-5" /> },
+        { id: 'records',          label: 'سجلات المرضى',     icon: <FaClipboardList className="w-5 h-5" /> },
+        { id: 'patientFiles',     label: 'ملفات المرضى',     icon: <FaFolderOpen className="w-5 h-5" /> },
+        { id: 'appointments',     label: 'المواعيد',           icon: <FaCalendarCheck className="w-5 h-5" />, badge: todayAppointmentsCount > 0 ? todayAppointmentsCount : undefined },
+        { id: 'financialReports', label: 'التقارير المالية',  icon: <FaChartPie className="w-5 h-5" /> },
+        { id: 'drugtools',        label: 'أدوات الأدوية',     icon: <FaFlask className="w-5 h-5" /> },
+        { id: 'secretary',        label: 'السكرتارية',         icon: <FaKey className="w-5 h-5" /> },
+        { id: 'settings',         label: 'تصميم الروشتة',     icon: <FaPaintbrush className="w-5 h-5" /> },
+        { id: 'advertisement',    label: 'الإعلان',             icon: <FaBullhorn className="w-5 h-5" /> },
+        { id: 'branchSettings',   label: 'إدارة الفروع',       icon: <FaBuilding className="w-5 h-5" /> },
     ];
 
     const handleNavClick = (viewId: ViewType) => {
-        setCurrentView(viewId);
+        // 1) تحديث فوري للـ Sidebar فقط — الزر يبان active على طول
+        setOptimisticView(viewId);
         setMobileMenuOpen(false);
+        // 2) تحديث الـ parent (تحميل الصفحة الجديدة) في الخلفية كـ transition،
+        //    عشان لو الـ render تقيل ميأخّرش الـ paint بتاع الزر.
+        startTransition(() => {
+            setCurrentView(viewId);
+        });
     };
 
     // Get display name: prefer doctorName from settings, fallback to user info
@@ -261,15 +209,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         };
     }, [mobileMenuOpen]);
 
-    const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    // ملاحظة مهمة: ده render function (مش component جوّه component) عشان يعرّف
+    // SidebarContent كمكون متداخل بيخلي React يـ unmount/mount الشجرة كلها
+    // كل ما الـ parent يعمل re-render، فبيحصل تأخير في الـ click وحركة متقطعة.
+    const renderSidebarContent = (isMobile: boolean) => (
         <div className={`flex flex-col ${isMobile ? 'min-h-full' : 'h-full'}`}>
             {/* User Profile Section - TOP */}
-            <div className={`border-b border-slate-100 flex flex-col items-center shrink-0 p-4`}>
+            {/* خلفية الـsection العلوي بـtint أزرق فاتح بدل الأبيض الباهت */}
+            <div className={`border-b border-blue-100 bg-gradient-to-b from-blue-50/50 to-transparent flex flex-col items-center shrink-0 p-4`}>
                 {/* Profile Image (Read-only, Display)
                     fallback: لو مفيش صورة أو الصورة فشلت، بنعرض أول حرف من الاسم في دايره ملوّنه
                     بدل ما تبقى بيضا فاضيه (أو تطلع كلمة "Profile" من الـalt). */}
                 <div className="relative mb-3">
-                    <div className={`mx-auto rounded-full p-[3px] bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100 w-24 h-24 shadow-lg`}>
+                    {/* حلقة حول الصورة — أزرق متدرج فقط (premium ring) بدل slate الباهت */}
+                    <div className={`mx-auto rounded-full p-[3px] bg-gradient-to-tr from-blue-600 via-blue-400 to-blue-300 w-24 h-24 shadow-[0_6px_18px_-4px_rgba(8,112,184,0.45)]`}>
                         <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
                             {showProfileImage ? (
                                 <img
@@ -279,7 +232,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-4xl select-none">
+                                /* أيقونة fallback (أول حرف): أزرق متدرج فقط */
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white font-black text-4xl select-none">
                                     {initialLetter}
                                 </div>
                             )}
@@ -295,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {/* شارة التحقق: تاج ذهبي (برو) أو تاج برو ماكس مع Pro Max label + علامة صح */}
                     {isAdminVerified && (
                         isProMax ? (
-                            // برو ماكس: تاج ذهبي أغنى + label "Pro Max" ذهبي لامع + علامة صح زرقاء
+                            // برو ماكس: تاج ذهبي + علامة صح زرقاء — استثناء دلالي (gold premium)
                             <span className="inline-flex items-center gap-1 shrink-0">
                                 <svg className="w-5 h-5 text-[#FF9800] drop-shadow-[0_2px_6px_rgba(255,152,0,0.8)] transition-all duration-300" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
@@ -303,6 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#FFD54F] via-[#FFB300] to-[#FF8F00] text-white text-[8.5px] font-black tracking-wider shadow-[0_1px_4px_rgba(255,152,0,0.5)] uppercase">
                                     Pro Max
                                 </span>
+                                {/* علامة صح زرقاء فقط (text-blue-500 بدل brand-500 اللي مش معرف) */}
                                 <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
                                     <path fill="white" d="M10 15l-3.5-3.5 1.5-1.5L10 12l6-6 1.5 1.5L10 15z" />
@@ -327,10 +282,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     )}
                 </div>
 
-                {/* Profile Button */}
+                {/* Profile Button — أزرق متدرج خفيف */}
                 <button
                     onClick={() => { onShowProfile(); if (isMobile) setMobileMenuOpen(false); }}
-                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white border border-blue-500/60 hover:brightness-105 transition-all text-sm font-bold mb-2`}
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 text-white border border-blue-400/40 hover:from-blue-700 hover:to-blue-600 shadow-[0_2px_8px_-2px_rgba(37,99,235,0.35)] hover:shadow-[0_4px_12px_-2px_rgba(37,99,235,0.45)] text-sm font-bold mb-2`}
                 >
                     <FaCircleUser className="w-4 h-4" />
                     الملف الشخصي
@@ -341,28 +296,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Navigation Items */}
             <nav className={`flex-1 flex flex-col p-3 space-y-1.5`}>
                 {navItems.map((item) => {
-                    const isActive = currentView === item.id ||
-                        (item.id === 'drugtools' && currentView === 'medicationEdit');
+                    // نقرأ من optimisticView (المحلي) عشان الزر يبان active فوراً على الضغط
+                    const isActive = optimisticView === item.id ||
+                        (item.id === 'drugtools' && optimisticView === 'medicationEdit');
+
+                    // ── ستايل موحد، أخف من قبل ──
+                    // الـactive: أزرق متدرج هادي (blue-600→500) بدل (700→500 التقيل) + ظل أخف
+                    // الـidle: نص رمادي + hover بـtint أزرق فاتح
+                    const activeBg = 'bg-gradient-to-l from-blue-600 to-blue-500 text-white shadow-[0_2px_8px_-2px_rgba(37,99,235,0.4)]';
+                    const idleBg = 'text-slate-700 bg-transparent hover:bg-blue-50 hover:text-blue-800';
+                    // أيقونة الـactive: شفافية خفيفة على الـgradient عشان تتميّز
+                    const activeIconBg = 'bg-white/25 text-white';
+                    const idleIconBg = 'bg-blue-50 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700';
 
                     return (
                         <button
                             key={item.id}
                             onClick={() => handleNavClick(item.id)}
-                            className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 relative ${isActive ? `bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg` : `text-slate-600 bg-transparent hover:bg-slate-100 hover:text-slate-800`}`}
+                            className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl relative ${isActive ? activeBg : idleBg}`}
                         >
-                            <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-all ${isActive ? `bg-blue-500 text-white` : 'bg-slate-100 group-hover:bg-slate-200 group-hover:text-slate-700'}`}>
+                            <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ${isActive ? activeIconBg : idleIconBg}`}>
                                 {item.icon}
                             </div>
                             <span className={`text-sm font-bold whitespace-nowrap`}>{item.label}</span>
 
-                            {/* Badge for appointments */}
+                            {/* Badge للمواعيد — أحمر متدرج للتنبيه (semantic) */}
                             {item.badge && (
                                 <span className={`
                   absolute left-3 top-1/2 -translate-y-1/2 min-w-[22px] h-[22px] px-1.5
                   flex items-center justify-center rounded-full text-[11px] font-black
                   ${isActive
-                                        ? 'bg-white text-teal-600'
-                                        : 'bg-red-500 text-white'
+                                        ? 'bg-white text-blue-700'
+                                        : 'bg-gradient-to-l from-rose-600 to-rose-500 text-white shadow-sm'
                                     }
                 `}>
                                     {item.badge > 99 ? '99+' : item.badge}
@@ -372,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     );
                 })}
 
-                {/* Admin Dashboard - last item before logout, only visible to admin */}
+                {/* Admin Dashboard — أزرق متدرج فقط في hover */}
                 {isAdminUser && (
                     <button
                         onClick={() => {
@@ -380,40 +345,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             if (isMobile) setMobileMenuOpen(false);
                             setTimeout(() => navigate('/admin'), 150);
                         }}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 relative text-slate-600 hover:bg-slate-100 hover:text-slate-800 bg-transparent group"
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl relative text-slate-600 hover:bg-blue-50 hover:text-blue-800 bg-transparent group"
                     >
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-slate-100 group-hover:bg-slate-200 group-hover:text-slate-700">
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-700">
                             <FaShieldHalved className="w-5 h-5" />
                         </div>
                         <span className="font-bold text-sm">الإدارة</span>
                         <div className="flex items-center gap-2 mr-auto">
                             {pendingDoctorsCount > 0 && (
-                                <span className="flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-red-500 text-white text-[11px] font-black shadow-sm">
+                                /* بادج طلبات معلقة — أحمر متدرج */
+                                <span className="flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-gradient-to-l from-rose-600 to-rose-500 text-white text-[11px] font-black shadow-sm">
                                     {pendingDoctorsCount > 99 ? '99+' : pendingDoctorsCount}
                                 </span>
                             )}
-                            <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold">Admin</span>
+                            {/* badge "Admin" — أزرق فاتح صلب (مش شفاف) */}
+                            <span className="text-xs bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-full font-bold">Admin</span>
                         </div>
                     </button>
                 )}
 
-                {/* Logout Button */}
+                {/* دليل الاستخدام — نفس الصفحه اللي برا (/user-guide) بدون تكرار للكود.
+                    بنحطه قبل زر تسجيل الخروج عشان يوصله المستخدم في أي وقت. */}
+                <div className="mt-auto">
+                    <UserGuideSidebarLink
+                        variant="doctor"
+                        onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
+                    />
+                </div>
+
+                {/* Logout Button — neutral hover (slate خفيف ميخدش هوية لون لتسجيل الخروج) */}
                 <button
                     onClick={() => {
                         setLoadingAction('logout');
                         if (isMobile) setMobileMenuOpen(false);
                         setTimeout(() => onLogout(), 150);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 relative text-slate-600 hover:bg-slate-100 hover:text-slate-800 bg-transparent group mt-auto"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl relative text-slate-600 hover:bg-slate-100 hover:text-slate-800 bg-transparent group"
                 >
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-slate-100 group-hover:bg-slate-200 group-hover:text-slate-700">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 group-hover:bg-slate-200 group-hover:text-slate-700">
                         <FaRightFromBracket className="w-5 h-5" />
                     </div>
                     <span className="font-bold text-sm">تسجيل خروج</span>
                 </button>
 
                 {/* Brand logo */}
-                <div className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 relative">
+                <div className="w-full flex items-center gap-3 px-3 py-2 rounded-xl relative">
                     <BrandLogo className="w-9 h-9 shrink-0" size={36} loading="lazy" glow={false} />
                     <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Powered by</p>
@@ -433,17 +409,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
             )}
 
-            {/* Mobile Header with Hamburger */}
+            {/* Mobile Header with Hamburger — حدود سفلية بـtint أزرق */}
             <div
-                className={`md:hidden fixed top-0 right-0 left-0 bg-white border-b border-slate-200 shadow-sm z-[999] no-print transition-transform duration-200 ease-out will-change-transform ${mobileHeaderHidden ? '-translate-y-full' : 'translate-y-0'}`}
+                className={`md:hidden fixed top-0 right-0 left-0 bg-white border-b border-blue-100 shadow-sm z-[999] no-print transition-transform duration-200 ease-out will-change-transform ${mobileHeaderHidden ? '-translate-y-full' : 'translate-y-0'}`}
             >
                 <div className="flex items-center justify-between px-4 py-3">
-                    {/* Hamburger Button */}
+                    {/* Hamburger Button — أزرق فاتح بدل slate */}
                     <button
                         onClick={() => setMobileMenuOpen(true)}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200/70 transition-colors"
                     >
-                        <FaBars className="w-5 h-5 text-slate-600" />
+                        <FaBars className="w-5 h-5 text-blue-700" />
                     </button>
 
                     {/* Breadcrumb Navigation / Page Title */}
@@ -468,11 +444,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         )}
                     </div>
 
-                    {/* User Avatar - Just opens profile
-                        نفس منطق الديسكتوب: لو مفيش صورة/فشلت، أول حرف من الاسم. */}
+                    {/* User Avatar — حلقة أزرق متدرج فقط (بدل brand→slate→slate المخلوطة) */}
                     <button
                         onClick={onShowProfile}
-                        className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500"
+                        className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-700 via-blue-500 to-blue-300 shadow-[0_2px_8px_-1px_rgba(8,112,184,0.4)]"
                     >
                         <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white">
                             {showProfileImage ? (
@@ -483,7 +458,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-sm select-none">
+                                /* fallback: أزرق متدرج فقط */
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white font-black text-sm select-none">
                                     {initialLetter}
                                 </div>
                             )}
@@ -508,20 +484,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
             >
-                {/* Close Button */}
+                {/* Close Button — أزرق فاتح بدل slate */}
                 <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="absolute top-4 left-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                    className="absolute top-4 left-4 w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200/70 transition-colors"
                 >
-                    <FaXmark className="w-5 h-5 text-slate-600" />
+                    <FaXmark className="w-5 h-5 text-blue-700" />
                 </button>
 
-                <SidebarContent isMobile={true} />
+                {renderSidebarContent(true)}
             </aside>
 
-            {/* Desktop Sidebar */}
-            <aside className={`hidden md:flex flex-col w-60 bg-white border-l border-slate-200 shadow-sm no-print fixed right-0 top-0 h-full z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent`}>
-                <SidebarContent isMobile={false} />
+            {/* Desktop Sidebar — حدود يسرى أزرق فاتح بدل slate الباهت */}
+            <aside className={`hidden md:flex flex-col w-60 bg-white border-l border-blue-100 shadow-[0_0_24px_-8px_rgba(8,112,184,0.15)] no-print fixed right-0 top-0 h-full z-50 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-100 scrollbar-track-transparent`}>
+                {renderSidebarContent(false)}
             </aside>
         </>
     );

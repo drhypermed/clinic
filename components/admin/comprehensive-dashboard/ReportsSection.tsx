@@ -3,43 +3,31 @@
  *
  * يعرض:
  *   1. إجمالي الأطباء الجدد شهرياً (آخر 12 شهر) — رسم بياني خطي
- *   2. توزيع الأطباء حسب نوع الحساب (Free/Pro) — رسم دائري
- *   3. أعلى 10 أطباء نشاطاً (حسب usage counters) — رسم أعمدة
+ *   2. توزيع الأطباء حسب نوع الحساب (Free/Pro/ProMax) — رسم دائري
+ *   3. أعلى 10 أطباء نشاطاً (حسب usage counters) — جدول
  *   4. زر تصدير CSV لكل جدول
  *
- * البيانات تُقرأ من users/* مع client-side aggregation (مناسب للأعداد الحالية).
+ * ─ مصدر البيانات (2026-04): الـsummary doc اللي بيحدّثه الـCloud Function كل 6 ساعات
+ *   (refreshAdminDashboardAggregates) + عند ضغط "تحديث الآن". قبل كده كان ReportsSection
+ *   بيقرا كل وثائق الأطباء من Firestore كل فتحة (مكلف جداً عند آلاف الأطباء).
+ *   النتيجة: قراءة 1 read بدل آلاف لكل فتحة.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend,
+  XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
 } from 'recharts';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../services/firebaseConfig';
-import { getDoctorUsersQuery } from '../../../services/firestore/profileRoles';
-import { LoadingText } from '../../ui/LoadingText';
 import { DashboardStats } from './types';
 
 interface ReportsSectionProps {
   stats: DashboardStats;
 }
 
-interface MonthlyCount {
-  month: string;      // YYYY-MM
-  monthLabel: string; // عربي للعرض
+interface MonthlyCountChart {
+  month: string;
+  monthLabel: string;
   newDoctors: number;
-}
-
-interface SpecialtyCount {
-  specialty: string;
-  count: number;
-}
-
-interface TopDoctor {
-  name: string;
-  email: string;
-  totalActions: number;
 }
 
 const CHART_COLORS = ['#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
@@ -84,103 +72,34 @@ const downloadCsv = (rows: Record<string, unknown>[], filename: string): void =>
   URL.revokeObjectURL(url);
 };
 
-const sumUsage = (stats: Record<string, unknown> | undefined | null): number => {
-  if (!stats || typeof stats !== 'object') return 0;
-  let total = 0;
-  for (const value of Object.values(stats)) {
-    const n = Number(value);
-    if (Number.isFinite(n)) total += n;
-  }
-  return total;
-};
-
 export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
-  const [loading, setLoading] = useState(true);
-  const [monthlySignups, setMonthlySignups] = useState<MonthlyCount[]>([]);
-  const [specialtyBreakdown, setSpecialtyBreakdown] = useState<SpecialtyCount[]>([]);
-  const [topDoctors, setTopDoctors] = useState<TopDoctor[]>([]);
+  // ─ القراءة من stats prop مباشرة — السيرفر بيعمل الـaggregation مرة كل 6 ساعات
+  //   (أو فوراً عند ضغط "تحديث الآن") ويخزن النتائج في settings/adminDashboardStats.
+  //   ReportsSection ما بيعملش أي قراءة من Firestore بنفسه — توفير ضخم في الـreads.
+  const monthlySignups: MonthlyCountChart[] = useMemo(
+    () => (stats.monthlySignups || []).map((item) => ({
+      month: item.month,
+      monthLabel: monthKeyToLabel(item.month),
+      newDoctors: item.newDoctors,
+    })),
+    [stats.monthlySignups],
+  );
+  const specialtyBreakdown = stats.specialtyBreakdown || [];
+  const topDoctors = stats.topDoctorsByActivity || [];
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        setLoading(true);
-        const snap = await getDocs(getDoctorUsersQuery());
-        if (cancelled) return;
-
-        // آخر 12 شهر
-        const monthCounts = new Map<string, number>();
-        const today = new Date();
-        for (let i = 11; i >= 0; i--) {
-          const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          monthCounts.set(key, 0);
-        }
-
-        const specialtyMap = new Map<string, number>();
-        const doctorsForTop: TopDoctor[] = [];
-
-        snap.docs.forEach((docSnap) => {
-          const data = docSnap.data() as Record<string, any>;
-          const createdAt = String(data.createdAt || '');
-          if (createdAt) {
-            const key = createdAt.slice(0, 7); // YYYY-MM
-            if (monthCounts.has(key)) {
-              monthCounts.set(key, (monthCounts.get(key) || 0) + 1);
-            }
-          }
-
-          const specialty = String(data.doctorSpecialty || '').trim() || 'بدون تخصص';
-          specialtyMap.set(specialty, (specialtyMap.get(specialty) || 0) + 1);
-
-          const totalActions = sumUsage(data.usageStats);
-          if (totalActions > 0) {
-            doctorsForTop.push({
-              name: String(data.doctorName || data.displayName || 'طبيب'),
-              email: String(data.doctorEmail || data.email || ''),
-              totalActions,
-            });
-          }
-        });
-
-        if (cancelled) return;
-
-        setMonthlySignups(
-          Array.from(monthCounts.entries()).map(([month, newDoctors]) => ({
-            month,
-            monthLabel: monthKeyToLabel(month),
-            newDoctors,
-          })),
-        );
-
-        setSpecialtyBreakdown(
-          Array.from(specialtyMap.entries())
-            .map(([specialty, count]) => ({ specialty, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 8),
-        );
-
-        setTopDoctors(
-          doctorsForTop.sort((a, b) => b.totalActions - a.totalActions).slice(0, 10),
-        );
-      } catch (err) {
-        console.warn('[ReportsSection] Load error:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void load();
-    return () => { cancelled = true; };
-  }, []);
+  // ─ لو الـsummary قديم (statsVersion 1) من قبل ما نضيف الـreports aggregates،
+  //   هنعرض رسالة بدل الرسومات الفاضية ونوجّه الأدمن لزر "تحديث الآن".
+  const hasReportsData =
+    stats.monthlySignups !== undefined ||
+    stats.specialtyBreakdown !== undefined ||
+    stats.topDoctorsByActivity !== undefined;
 
   const summaryNumbers = useMemo(
     () => [
-      { label: 'إجمالي الأطباء', value: stats.totalDoctors, color: 'text-cyan-700' },
-      { label: 'مقبولون', value: stats.approvedDoctors, color: 'text-emerald-700' },
+      { label: 'إجمالي الأطباء', value: stats.totalDoctors, color: 'text-brand-700' },
+      { label: 'مقبولون', value: stats.approvedDoctors, color: 'text-success-700' },
       // برو لوحده + برو ماكس لوحده — بطاقات منفصلة
-      { label: 'برو', value: stats.premiumDocsCount || 0, color: 'text-amber-700' },
+      { label: 'برو', value: stats.premiumDocsCount || 0, color: 'text-warning-700' },
       { label: 'برو ماكس', value: stats.proMaxDocsCount || 0, color: 'text-[#B45309]' },
     ],
     [stats],
@@ -196,14 +115,6 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
     [stats],
   );
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">
-        <LoadingText>جاري تحميل التقارير</LoadingText>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4 sm:space-y-5" dir="rtl">
       {/* الملخص الرقمي */}
@@ -215,6 +126,13 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
           </div>
         ))}
       </div>
+
+      {/* تنبيه لو الـsummary قديم (مفيش reports aggregates) — يطلب من الأدمن تحديث */}
+      {!hasReportsData && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">
+          ⚠️ التقارير التفصيلية لسه ما اتجهزتش بعد. اضغط "تحديث الآن" من الشريط الجانبي عشان يحسبها السيرفر.
+        </div>
+      )}
 
       {/* الأطباء الجدد شهرياً */}
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
@@ -370,7 +288,7 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
                     <td className="px-3 py-2 font-bold text-slate-500">{(idx + 1).toLocaleString('ar-EG')}</td>
                     <td className="px-3 py-2 font-semibold text-slate-800">{doc.name}</td>
                     <td className="px-3 py-2 text-xs text-slate-500 font-mono" dir="ltr">{doc.email}</td>
-                    <td className="px-3 py-2 font-black text-cyan-700">{doc.totalActions.toLocaleString('ar-EG')}</td>
+                    <td className="px-3 py-2 font-black text-brand-700">{doc.totalActions.toLocaleString('ar-EG')}</td>
                   </tr>
                 ))}
               </tbody>

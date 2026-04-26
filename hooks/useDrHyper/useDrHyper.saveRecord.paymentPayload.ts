@@ -4,7 +4,7 @@
  * مستخرج لأنه كان مكرر 3 مرات في نفس الملف (exam، consultation update، consultation new).
  */
 
-export interface PaymentPayloadArgs {
+interface PaymentPayloadArgs {
   paymentType?: string;
   insuranceCompanyId?: string;
   insuranceCompanyName?: string;

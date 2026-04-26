@@ -30,7 +30,7 @@ const applyQuotaPlaceholders = (template: string, details: SmartQuotaLimitErrorD
 
 const createQuotaActions = ({ user }: CreateQuotaActionsParams) => {
   /** استهلاك كوتا التخزين (حفظ الكشوفات أو الروشتات الجاهزة) */
-  const consumeStorageQuota = async (feature: 'recordSave' | 'readyPrescriptionSave') => {
+  const consumeStorageQuota = async (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => {
     if (!user) throw new Error('User not logged in');
     // Note: The service uses internal authentication, so we don't pass UID here anymore
     return await apiConsumeStorageQuota(feature);

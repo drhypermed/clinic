@@ -100,7 +100,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
             }
           }}
           placeholder="ابحث بالاسم أو الهاتف أو رقم الملف أو التشخيص أو الأدوية..."
-          className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+          className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
         />
         {showSuggestions && suggestions.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 overflow-hidden">
@@ -113,7 +113,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
                   setShowSuggestions(false);
                 }}
                 className={`w-full text-right px-4 py-2.5 text-sm font-medium hover:bg-slate-50 border-b border-slate-50 last:border-0 flex items-center gap-2 ${
-                  activeSuggestionIndex === i ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
+                  activeSuggestionIndex === i ? 'bg-brand-50 text-brand-700' : 'text-slate-700'
                 }`}
               >
                 {s.isFileNumber ? (
@@ -139,7 +139,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
           <select
             value={timelineSortOrder}
             onChange={(e) => setTimelineSortOrder(e.target.value as TimelineSortOrder)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
           >
             <option value="newestToOldest">من الأحدث إلى الأقدم</option>
             <option value="oldestToNewest">من الأقدم إلى الأحدث</option>
@@ -151,7 +151,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
           <select
             value={dateFilterMode}
             onChange={(e) => setDateFilterMode(e.target.value as TimelineDateFilterMode)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
           >
             <option value="all">كل التواريخ</option>
             <option value="singleDay">يوم محدد</option>
@@ -166,7 +166,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
               type="date"
               value={singleDayFilterDate}
               onChange={(e) => setSingleDayFilterDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
             />
           </div>
         )}
@@ -179,7 +179,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
                 type="date"
                 value={rangeStartDate}
                 onChange={(e) => setRangeStartDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
               />
             </div>
             <div>
@@ -188,7 +188,7 @@ export const RecordsSearchFilters: React.FC<Props> = ({
                 type="date"
                 value={rangeEndDate}
                 onChange={(e) => setRangeEndDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-50 outline-none"
               />
             </div>
           </>

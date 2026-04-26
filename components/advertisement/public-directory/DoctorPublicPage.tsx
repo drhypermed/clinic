@@ -157,7 +157,7 @@ export const DoctorPublicPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/public')}
-            className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-colors"
+            className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-colors"
           >
             <HiOutlineArrowRight className="w-4 h-4" />
             تصفّح دليل الأطباء
@@ -188,7 +188,7 @@ export const DoctorPublicPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50/40 via-white to-white" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-b from-brand-50/40 via-white to-white" dir="rtl">
       <JsonLdTag id="doctor-physician" json={physicianSchema} />
 
       {/* شريط تنقّل علوي */}
@@ -197,7 +197,7 @@ export const DoctorPublicPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/public')}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 hover:text-teal-800"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand-800"
           >
             <HiOutlineArrowRight className="w-4 h-4" />
             دليل الأطباء
@@ -214,11 +214,11 @@ export const DoctorPublicPage: React.FC = () => {
               <img
                 src={avatar}
                 alt={doctor.doctorName}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover ring-2 ring-teal-100 shadow-md"
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover ring-2 ring-brand-100 shadow-md"
                 loading="eager"
               />
             ) : (
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-white flex items-center justify-center font-black text-3xl shadow-md">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-black text-3xl shadow-md">
                 {initials}
               </div>
             )}
@@ -227,15 +227,15 @@ export const DoctorPublicPage: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
                 {doctor.doctorName}
               </h1>
-              <p className="text-base font-bold text-teal-700">{doctor.doctorSpecialty}</p>
+              <p className="text-base font-bold text-brand-700">{doctor.doctorSpecialty}</p>
               {doctor.academicDegree && (
                 <p className="text-sm text-slate-600 font-semibold">{doctor.academicDegree}</p>
               )}
               {ratingCount > 0 && (
-                <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-sm font-bold">
+                <div className="inline-flex items-center gap-1.5 bg-warning-50 text-warning-700 px-3 py-1 rounded-lg text-sm font-bold">
                   <HiOutlineStar className="w-4 h-4" />
                   <span>{ratingAvg.toFixed(1)}</span>
-                  <span className="text-amber-600 font-semibold">({ratingCount} تقييم)</span>
+                  <span className="text-warning-600 font-semibold">({ratingCount} تقييم)</span>
                 </div>
               )}
             </div>
@@ -252,7 +252,7 @@ export const DoctorPublicPage: React.FC = () => {
                   onClick={() => setActiveBranchIdx(idx)}
                   className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-colors ${
                     activeBranchIdx === idx
-                      ? 'bg-teal-600 text-white shadow-sm'
+                      ? 'bg-brand-600 text-white shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -274,20 +274,20 @@ export const DoctorPublicPage: React.FC = () => {
               </div>
             )}
             {price && (
-              <div className="bg-emerald-50 rounded-xl p-3 flex items-start gap-2">
-                <HiOutlineBanknotes className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="bg-success-50 rounded-xl p-3 flex items-start gap-2">
+                <HiOutlineBanknotes className="w-5 h-5 text-success-600 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs text-emerald-700 font-bold">سعر الكشف</div>
-                  <div className="text-sm text-emerald-900 font-bold">{price}</div>
+                  <div className="text-xs text-success-700 font-bold">سعر الكشف</div>
+                  <div className="text-sm text-success-900 font-bold">{price}</div>
                 </div>
               </div>
             )}
             {consultationPrice && (
-              <div className="bg-cyan-50 rounded-xl p-3 flex items-start gap-2">
-                <HiOutlineBanknotes className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+              <div className="bg-brand-50 rounded-xl p-3 flex items-start gap-2">
+                <HiOutlineBanknotes className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs text-cyan-700 font-bold">الاستشاره</div>
-                  <div className="text-sm text-cyan-900 font-bold">{consultationPrice}</div>
+                  <div className="text-xs text-brand-700 font-bold">الاستشاره</div>
+                  <div className="text-sm text-brand-900 font-bold">{consultationPrice}</div>
                 </div>
               </div>
             )}
@@ -297,7 +297,7 @@ export const DoctorPublicPage: React.FC = () => {
             <button
               type="button"
               onClick={handleBookClick}
-              className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-black px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+              className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
             >
               <HiOutlineCalendarDays className="w-5 h-5" />
               احجز ميعاد
@@ -330,7 +330,7 @@ export const DoctorPublicPage: React.FC = () => {
             <h2 className="text-base font-black text-slate-900 mb-2">
               عنوان العياده
               {branches.length > 1 && (
-                <span className="mr-2 text-xs text-teal-600 font-bold">
+                <span className="mr-2 text-xs text-brand-600 font-bold">
                   ({activeBranch.name || `فرع ${activeBranchIdx + 1}`})
                 </span>
               )}

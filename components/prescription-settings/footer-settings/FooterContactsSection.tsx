@@ -20,13 +20,13 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                 isOpen={openSection === 'phones'}
                 onToggle={() => toggle('phones')}
                 color="rose"
-                className="p-4 bg-gradient-to-br from-rose-50 to-white"
+                className="p-4 bg-gradient-to-br from-danger-50 to-white"
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* الهاتف */}
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-rose-800 block">نص التسمية (قبل رقم الهاتف)</label>
+                            <label className="text-sm font-bold text-danger-800 block">نص التسمية (قبل رقم الهاتف)</label>
                             <div className="border rounded-lg overflow-hidden shadow-sm">
                                 <RichTextEditor
                                     ref={el => { if (editorRefs.current) editorRefs.current['phoneLabel'] = el; }}
@@ -45,7 +45,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                         </div>
                         {/* حقل إدخال رقم الهاتف الفعلي وتنسيقه */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-rose-800 block">رقم الهاتف (اتصال)</label>
+                            <label className="text-sm font-bold text-danger-800 block">رقم الهاتف (اتصال)</label>
                             <div className="border rounded-lg overflow-hidden shadow-sm">
                                 <RichTextEditor
                                     ref={el => { if (editorRefs.current) editorRefs.current['phone'] = el; }}
@@ -67,16 +67,16 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                 type="checkbox"
                                 checked={footer.showPhoneIcon !== false}
                                 onChange={e => updateFooter({ showPhoneIcon: e.target.checked })}
-                                className="w-5 h-5 rounded accent-rose-600"
+                                className="w-5 h-5 rounded accent-danger-600"
                             />
                             <label className="text-sm font-bold text-slate-700 cursor-pointer">إظهار أيقونة الاتصال</label>
                         </div>
                         {footer.showPhoneIcon !== false && (
-                            <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 space-y-3">
-                                <h4 className="text-xs font-bold text-rose-800 mb-2">🎨 إعدادات أيقونة الاتصال</h4>
+                            <div className="p-3 bg-danger-50 rounded-lg border border-danger-200 space-y-3">
+                                <h4 className="text-xs font-bold text-danger-800 mb-2">🎨 إعدادات أيقونة الاتصال</h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs font-bold text-rose-700 mb-1 block">لون الأيقونة</label>
+                                        <label className="text-xs font-bold text-danger-700 mb-1 block">لون الأيقونة</label>
                                         <div className="flex gap-2 items-center">
                                             <input
                                                 type="color"
@@ -93,7 +93,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-rose-700 mb-1 block">الحجم: {footer.phoneIconStyle?.size || 10}px</label>
+                                        <label className="text-xs font-bold text-danger-700 mb-1 block">الحجم: {footer.phoneIconStyle?.size || 10}px</label>
                                         <input
                                             type="range"
                                             min="6"
@@ -105,13 +105,13 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     size: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-rose-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-danger-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs font-bold text-rose-700 mb-1 block">إزاحة أفقية: {footer.phoneIconStyle?.xOffset || 0}px</label>
+                                        <label className="text-xs font-bold text-danger-700 mb-1 block">إزاحة أفقية: {footer.phoneIconStyle?.xOffset || 0}px</label>
                                         <input
                                             type="range"
                                             min="-10"
@@ -123,11 +123,11 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     xOffset: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-rose-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-danger-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-rose-700 mb-1 block">إزاحة رأسية: {footer.phoneIconStyle?.yOffset || 0}px</label>
+                                        <label className="text-xs font-bold text-danger-700 mb-1 block">إزاحة رأسية: {footer.phoneIconStyle?.yOffset || 0}px</label>
                                         <input
                                             type="range"
                                             min="-10"
@@ -139,7 +139,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     yOffset: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-rose-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-danger-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                     {/* الواتساب */}
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-teal-800 block">نص التسمية (قبل رقم الواتساب)</label>
+                            <label className="text-sm font-bold text-brand-800 block">نص التسمية (قبل رقم الواتساب)</label>
                             <div className="border rounded-lg overflow-hidden shadow-sm">
                                 <RichTextEditor
                                     ref={el => { if (editorRefs.current) editorRefs.current['whatsappLabel'] = el; }}
@@ -167,7 +167,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-teal-800 block">رقم الواتساب</label>
+                            <label className="text-sm font-bold text-brand-800 block">رقم الواتساب</label>
                             <div className="border rounded-lg overflow-hidden shadow-sm">
                                 <RichTextEditor
                                     ref={el => { if (editorRefs.current) editorRefs.current['whatsapp'] = el; }}
@@ -189,16 +189,16 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                 type="checkbox"
                                 checked={footer.showWhatsappIcon !== false}
                                 onChange={e => updateFooter({ showWhatsappIcon: e.target.checked })}
-                                className="w-5 h-5 rounded accent-teal-600"
+                                className="w-5 h-5 rounded accent-brand-600"
                             />
                             <label className="text-sm font-bold text-slate-700 cursor-pointer">إظهار أيقونة الواتساب</label>
                         </div>
                         {footer.showWhatsappIcon !== false && (
-                            <div className="p-3 bg-teal-50 rounded-lg border border-teal-200 space-y-3">
-                                <h4 className="text-xs font-bold text-teal-800 mb-2">🎨 إعدادات أيقونة الواتساب</h4>
+                            <div className="p-3 bg-brand-50 rounded-lg border border-brand-200 space-y-3">
+                                <h4 className="text-xs font-bold text-brand-800 mb-2">🎨 إعدادات أيقونة الواتساب</h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs font-bold text-teal-700 mb-1 block">لون الأيقونة</label>
+                                        <label className="text-xs font-bold text-brand-700 mb-1 block">لون الأيقونة</label>
                                         <div className="flex gap-2 items-center">
                                             <input
                                                 type="color"
@@ -215,7 +215,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-teal-700 mb-1 block">الحجم: {footer.whatsappIconStyle?.size || 10}px</label>
+                                        <label className="text-xs font-bold text-brand-700 mb-1 block">الحجم: {footer.whatsappIconStyle?.size || 10}px</label>
                                         <input
                                             type="range"
                                             min="6"
@@ -227,13 +227,13 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     size: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-teal-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-xs font-bold text-teal-700 mb-1 block">إزاحة أفقية: {footer.whatsappIconStyle?.xOffset || 0}px</label>
+                                        <label className="text-xs font-bold text-brand-700 mb-1 block">إزاحة أفقية: {footer.whatsappIconStyle?.xOffset || 0}px</label>
                                         <input
                                             type="range"
                                             min="-10"
@@ -245,11 +245,11 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     xOffset: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-teal-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-teal-700 mb-1 block">إزاحة رأسية: {footer.whatsappIconStyle?.yOffset || 0}px</label>
+                                        <label className="text-xs font-bold text-brand-700 mb-1 block">إزاحة رأسية: {footer.whatsappIconStyle?.yOffset || 0}px</label>
                                         <input
                                             type="range"
                                             min="-10"
@@ -261,7 +261,7 @@ export const FooterContactsSection: React.FC<FooterSectionSharedProps> = ({ foot
                                                     yOffset: parseInt(e.target.value) 
                                                 } 
                                             })}
-                                            className="w-full accent-teal-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-brand-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
                                 </div>

@@ -50,13 +50,14 @@ export const PresetListItem: React.FC<Props> = ({
     <div
       className={`relative overflow-hidden bg-white border rounded-2xl p-3 sm:p-4 transition-all ${
         isExpanded
-          ? 'border-slate-300 shadow-md ring-2 ring-slate-100'
-          : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+          ? 'border-blue-300 shadow-md ring-2 ring-blue-100'
+          : 'border-blue-200 hover:border-blue-400 hover:shadow-md'
       }`}
     >
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400"></div>
+      {/* الشريط العلوي — أزرق متدرج */}
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500"></div>
       <div className="mb-3 mt-1">
-        <h4 className="font-black text-slate-800 text-sm sm:text-base break-words text-center">
+        <h4 className="font-black text-slate-900 text-sm sm:text-base break-words text-center">
           {preset.name}
         </h4>
       </div>
@@ -64,9 +65,10 @@ export const PresetListItem: React.FC<Props> = ({
       {summaryChips.length > 0 && (
         <div className="mb-3 ml-auto flex w-fit max-w-full flex-wrap items-center justify-end gap-2">
           {summaryChips.map((chip) => (
+            /* شارات الإحصائيات — خلفية صلبة بـtint أزرق */
             <span
               key={`${preset.id}-${chip.key}`}
-              className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 md:px-4 md:py-2 md:text-sm"
+              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-800 md:px-4 md:py-2 md:text-sm"
             >
               {chip.label}: {chip.count}
             </span>
@@ -98,25 +100,26 @@ export const PresetListItem: React.FC<Props> = ({
       </div>
 
       {isExpanded && (
-        <div className="relative overflow-hidden mb-3 rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 space-y-3 max-h-52 sm:max-h-64 overflow-y-auto custom-scrollbar">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500"></div>
+        <div className="relative overflow-hidden mb-3 rounded-2xl border border-blue-200 bg-blue-50/30 p-2 sm:p-3 space-y-3 max-h-52 sm:max-h-64 overflow-y-auto custom-scrollbar">
+          {/* شريط علوي — أزرق متدرج */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-l from-blue-700 to-blue-500"></div>
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-slate-700">
+            <div className="text-[11px] sm:text-xs font-black text-blue-900">
               الأدوية (الجرعة + التعليمات)
             </div>
             {medicationEntries.length === 0 && (
-              <div className="text-[11px] sm:text-xs font-bold text-slate-400">لا توجد أدوية</div>
+              <div className="text-[11px] sm:text-xs font-bold text-slate-500">لا توجد أدوية</div>
             )}
             {medicationEntries.map((med, index) => (
               <div
                 key={`${preset.id}-med-${index}`}
-                className="rounded-xl border border-slate-200 bg-white p-2"
+                className="rounded-xl border border-blue-200 bg-white p-2"
               >
-                <div className="text-[11px] sm:text-xs font-black text-slate-800 break-words">
+                <div className="text-[11px] sm:text-xs font-black text-slate-900 break-words">
                   {med.name || 'دواء بدون اسم'}
                 </div>
-                <div className="mt-1 text-[10px] sm:text-[11px] text-slate-600 break-words">
-                  <span className="font-black text-slate-700">الجرعة والتعليمات:</span>{' '}
+                <div className="mt-1 text-[10px] sm:text-[11px] text-slate-700 break-words">
+                  <span className="font-black text-blue-800">الجرعة والتعليمات:</span>{' '}
                   {sanitizeReadyPrescriptionText(med.instructions || med.dosage) || 'غير محددة'}
                 </div>
               </div>
@@ -124,14 +127,14 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-slate-700">الملاحظات</div>
+            <div className="text-[11px] sm:text-xs font-black text-blue-900">الملاحظات</div>
             {noteEntries.length === 0 && (
-              <div className="text-[11px] sm:text-xs font-bold text-slate-400">لا توجد ملاحظات</div>
+              <div className="text-[11px] sm:text-xs font-bold text-slate-500">لا توجد ملاحظات</div>
             )}
             {noteEntries.map((note, index) => (
               <div
                 key={`${preset.id}-note-${index}`}
-                className="text-[10px] sm:text-[11px] font-bold text-slate-600 break-words"
+                className="text-[10px] sm:text-[11px] font-bold text-slate-700 break-words"
               >
                 • {note}
               </div>
@@ -139,14 +142,14 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-slate-700">الفحوصات</div>
+            <div className="text-[11px] sm:text-xs font-black text-blue-900">الفحوصات</div>
             {labEntries.length === 0 && (
-              <div className="text-[11px] sm:text-xs font-bold text-slate-400">لا توجد فحوصات</div>
+              <div className="text-[11px] sm:text-xs font-bold text-slate-500">لا توجد فحوصات</div>
             )}
             {labEntries.map((lab, index) => (
               <div
                 key={`${preset.id}-lab-${index}`}
-                className="text-[10px] sm:text-[11px] font-bold text-slate-600 break-words"
+                className="text-[10px] sm:text-[11px] font-bold text-slate-700 break-words"
               >
                 • {lab}
               </div>
@@ -154,16 +157,16 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-slate-700">التعليمات الهامة</div>
+            <div className="text-[11px] sm:text-xs font-black text-blue-900">التعليمات الهامة</div>
             {adviceEntries.length === 0 && (
-              <div className="text-[11px] sm:text-xs font-bold text-slate-400">
+              <div className="text-[11px] sm:text-xs font-bold text-slate-500">
                 لا توجد تعليمات هامة
               </div>
             )}
             {adviceEntries.map((advice, index) => (
               <div
                 key={`${preset.id}-advice-${index}`}
-                className="text-[10px] sm:text-[11px] font-bold text-slate-600 break-words"
+                className="text-[10px] sm:text-[11px] font-bold text-slate-700 break-words"
               >
                 • {advice}
               </div>

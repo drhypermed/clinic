@@ -26,7 +26,6 @@ export {
   subscribeToSecretaryApprovedEntryIds,
   clearSecretaryEntryAlertResponse,
 } from './entryAlerts.subscribers';
-export type { ApprovedIdsBookingConfigPayload } from './entryAlerts.helpers';
 
 /**
  * إرسال طلب دخول من السكرتير للطبيب.

@@ -19,8 +19,8 @@ import {
 
 const CONTROL_CHARS_REGEX = /[\u0000-\u001f\u007f]/g;
 
-// دالة لتقييد القيمة العددية بين 0 و 5000 لضمان سلامة البيانات
-export const clampLimit = (value: number): number => Math.max(0, Math.min(5000, Math.floor(value || 0)));
+// ─ السقف الأقصى للحدود — ٦ أرقام (كان 5000 ورفعناه 2026-04 عشان السجلات لـبرو/برو ماكس) ─
+export const clampLimit = (value: number): number => Math.max(0, Math.min(999999, Math.floor(value || 0)));
 
 // دالة لاستخراج الأرقام فقط من النصوص (تستخدم لأرقام الهواتف)
 export const digitsOnly = (value: string): string => (value || '').replace(/\D/g, '').slice(0, 20);

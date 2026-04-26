@@ -10,7 +10,7 @@
  * pro_max لو مش عندها قيمة خاصة، بترجع لقيمة premium كـ fallback.
  */
 
-import { BookingQuotaResult, DrugToolQuotaFeature, DrugToolQuotaResult, SmartPrescriptionQuotaResult, StorageQuotaFeature } from './types';
+import { BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature, TranslationQuotaResult } from './types';
 import { StorageQuotaResult } from './types';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebaseConfig';
@@ -81,11 +81,18 @@ export const consumeStorageQuota = async (feature: StorageQuotaFeature): Promise
     const tier = toTier(data.accountType);
 
     // تحديد الحد الاحتياطي بناءً على الميزة × الفئة
-    const fallbackLimit = feature === 'recordSave'
-      ? pickByTier(tier, normalizedControls.freeRecordDailyLimit, normalizedControls.premiumRecordDailyLimit, normalizedControls.proMaxRecordDailyLimit)
-      : feature === 'readyPrescriptionSave'
+    // ملاحظة: recordSave اتشال — السجلات بقت بفحص "حد كلي" client-side
+    // ─ 🆕 ضفنا 3 ميزات لتصدير الروشتة (طباعة + تنزيل + واتساب) 2026-04 ─
+    const fallbackLimit =
+      feature === 'readyPrescriptionSave'
         ? pickByTier(tier, normalizedControls.freeReadyPrescriptionDailyLimit, normalizedControls.premiumReadyPrescriptionDailyLimit, normalizedControls.proMaxReadyPrescriptionDailyLimit)
-        : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
+        : feature === 'prescriptionPrint'
+          ? pickByTier(tier, normalizedControls.freePrescriptionPrintDailyLimit, normalizedControls.premiumPrescriptionPrintDailyLimit, normalizedControls.proMaxPrescriptionPrintDailyLimit)
+          : feature === 'prescriptionDownload'
+            ? pickByTier(tier, normalizedControls.freePrescriptionDownloadDailyLimit, normalizedControls.premiumPrescriptionDownloadDailyLimit, normalizedControls.proMaxPrescriptionDownloadDailyLimit)
+            : feature === 'prescriptionWhatsapp'
+              ? pickByTier(tier, normalizedControls.freePrescriptionWhatsappDailyLimit, normalizedControls.premiumPrescriptionWhatsappDailyLimit, normalizedControls.proMaxPrescriptionWhatsappDailyLimit)
+              : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
 
     return {
       accountType: tier,
@@ -131,6 +138,177 @@ export const consumeBookingQuota = async (
     return {
       accountType: tier,
       feature,
+      limit: toSafeLimit(data.limit, fallbackLimit),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+      dayKey: String(data.dayKey || ''),
+      whatsappNumber: normalizedControls.whatsappNumber,
+      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
+      limitReachedMessage: String(data.limitReachedMessage || ''),
+      whatsappMessage: String(data.whatsappMessage || ''),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
+ * فحص سعة السجلات الطبية على السيرفر — تشديد أمني 2026-04.
+ * كان قبل: العدّ في المتصفح بـ records.length (ممكن يتجاوز عبر dev tools).
+ * دلوقتي: السيرفر بيعد السجلات الفعلية ويقارنها بحد الأدمن.
+ * بيرجع النتيجة لو السعة لسه فيها مكان، وبيرمي error لو وصل للحد.
+ *
+ * @param params.recordId — لو موجود = الـclient بيعدّل سجل موجود (مش إنشاء جديد)،
+ *                          السيرفر هيتأكد من وجوده ويسمح بدون فحص الحد. ضروري
+ *                          للسماح للأطباء عند الحد بتعديل سجلاتهم.
+ */
+export const validateRecordsCapacity = async (
+  params?: { recordId?: string },
+): Promise<RecordsCapacityResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'validateRecordsCapacity');
+    // نمرر الـrecordId للسيرفر بس لو موجود (تعديل سجل قائم) — السيرفر
+    // هيستخدمه عشان يتجاوز فحص الحد بأمان.
+    const payload = params?.recordId ? { recordId: params.recordId } : {};
+    const result = await callWithAuthRetry(() => callable(payload));
+    const data = (result.data || {}) as Record<string, unknown>;
+    const normalizedControls = normalizeControls(data);
+    const tier = toTier(data.accountType);
+    const fallbackLimit = pickByTier(tier,
+      normalizedControls.freeRecordsMaxCount,
+      normalizedControls.premiumRecordsMaxCount,
+      normalizedControls.proMaxRecordsMaxCount);
+    return {
+      accountType: tier,
+      limit: toSafeLimit(data.limit, fallbackLimit),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+      whatsappNumber: normalizedControls.whatsappNumber,
+      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
+      limitReachedMessage: String(data.limitReachedMessage || ''),
+      whatsappMessage: String(data.whatsappMessage || ''),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
+ * فحص سعة الروشتات الجاهزة على السيرفر — تشديد أمني 2026-04.
+ * السيرفر بيعد الروشتات الجاهزة الفعلية ويقارنها بحد الأدمن.
+ */
+export const validateReadyPrescriptionsCapacity = async (): Promise<CapacityCheckResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'validateReadyPrescriptionsCapacity');
+    const result = await callWithAuthRetry(() => callable());
+    const data = (result.data || {}) as Record<string, unknown>;
+    const normalizedControls = normalizeControls(data);
+    const tier = toTier(data.accountType);
+    const fallbackLimit = pickByTier(tier,
+      normalizedControls.freeReadyPrescriptionsMaxCount,
+      normalizedControls.premiumReadyPrescriptionsMaxCount,
+      normalizedControls.proMaxReadyPrescriptionsMaxCount);
+    return {
+      accountType: tier,
+      limit: toSafeLimit(data.limit, fallbackLimit),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+      whatsappNumber: normalizedControls.whatsappNumber,
+      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
+      limitReachedMessage: String(data.limitReachedMessage || ''),
+      whatsappMessage: String(data.whatsappMessage || ''),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
+ * فحص سعة شركات التأمين على السيرفر — تشديد أمني 2026-04.
+ * السيرفر بيعد المجموعة الفرعية ويقارنها بحد الأدمن.
+ * لو passed companyId فيه → تعديل (سماح بدون فحص). لو فاضي → إنشاء جديد (فحص).
+ */
+export const validateInsuranceCompaniesCapacity = async (
+  payload?: { companyId?: string },
+): Promise<CapacityCheckResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'validateInsuranceCompaniesCapacity');
+    const result = await callWithAuthRetry(() => callable(payload || {}));
+    const data = (result.data || {}) as Record<string, unknown>;
+    const normalizedControls = normalizeControls(data);
+    const tier = toTier(data.accountType);
+    const fallbackLimit = pickByTier(tier,
+      normalizedControls.freeInsuranceCompaniesMaxCount,
+      normalizedControls.premiumInsuranceCompaniesMaxCount,
+      normalizedControls.proMaxInsuranceCompaniesMaxCount);
+    return {
+      accountType: tier,
+      limit: toSafeLimit(data.limit, fallbackLimit),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+      whatsappNumber: normalizedControls.whatsappNumber,
+      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
+      limitReachedMessage: String(data.limitReachedMessage || ''),
+      whatsappMessage: String(data.whatsappMessage || ''),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
+ * فحص سعة الأدوية المعدّلة على السيرفر — تشديد أمني 2026-04.
+ * السيرفر بيقرا الـmap من user doc ويعد المفاتيح ويقارنها بحد الأدمن.
+ */
+export const validateMedicationCustomizationsCapacity = async (): Promise<CapacityCheckResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'validateMedicationCustomizationsCapacity');
+    const result = await callWithAuthRetry(() => callable());
+    const data = (result.data || {}) as Record<string, unknown>;
+    const normalizedControls = normalizeControls(data);
+    const tier = toTier(data.accountType);
+    const fallbackLimit = pickByTier(tier,
+      normalizedControls.freeMedicationCustomizationsMaxCount,
+      normalizedControls.premiumMedicationCustomizationsMaxCount,
+      normalizedControls.proMaxMedicationCustomizationsMaxCount);
+    return {
+      accountType: tier,
+      limit: toSafeLimit(data.limit, fallbackLimit),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+      whatsappNumber: normalizedControls.whatsappNumber,
+      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
+      limitReachedMessage: String(data.limitReachedMessage || ''),
+      whatsappMessage: String(data.whatsappMessage || ''),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
+ * محاولة استهلاك كوتا الترجمة الذكية للروشتة (جديد).
+ * بتشتغل تلقائياً مع كل روشتة قبل ما الـAI يترجم البيانات السريرية.
+ * لو الطبيب وصل للحد اليومي، السيرفر بيرفض ويرجع رسالة الأدمن.
+ */
+export const consumeTranslationQuota = async (): Promise<TranslationQuotaResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'consumeTranslationQuota');
+    const result = await callWithAuthRetry(() => callable());
+    const data = (result.data || {}) as Record<string, unknown>;
+    const normalizedControls = normalizeControls(data);
+    const tier = toTier(data.accountType);
+    const fallbackLimit = pickByTier(tier,
+      normalizedControls.freeTranslationDailyLimit,
+      normalizedControls.premiumTranslationDailyLimit,
+      normalizedControls.proMaxTranslationDailyLimit);
+    return {
+      accountType: tier,
       limit: toSafeLimit(data.limit, fallbackLimit),
       used: toSafeLimit(data.used, 0),
       remaining: toSafeLimit(data.remaining, 0),

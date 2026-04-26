@@ -10,7 +10,7 @@
  * استخراج `error.code` كنص منخفض الأحرف مع إزالة البادئة "functions/" إن وُجدت.
  * يُرجع نصاً فارغاً إن لم يكن الخطأ كائناً أو لم يكن له `code`.
  */
-export const getErrorCode = (error: unknown): string => {
+const getErrorCode = (error: unknown): string => {
   if (!error || typeof error !== 'object') return '';
   const code = (error as { code?: unknown }).code;
   return String(code || '')
@@ -22,7 +22,7 @@ export const getErrorCode = (error: unknown): string => {
  * استخراج `error.message` كنص منخفض الأحرف.
  * يُرجع نصاً فارغاً إن لم يكن الخطأ كائناً أو لم يكن له `message`.
  */
-export const getErrorMessage = (error: unknown): string => {
+const getErrorMessage = (error: unknown): string => {
   if (!error || typeof error !== 'object') return '';
   const message = (error as { message?: unknown }).message;
   return String(message || '').toLowerCase();

@@ -63,7 +63,7 @@ export const SaveReadyPrescriptionModal: React.FC<SaveReadyPrescriptionModalProp
             }
           }}
           placeholder="مثال: نزلة شعبية حادة"
-          className="w-full p-3 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:border-violet-500"
+          className="w-full p-3 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-500"
         />
 
         {/* أزرار الإجراءات */}
@@ -78,7 +78,7 @@ export const SaveReadyPrescriptionModal: React.FC<SaveReadyPrescriptionModalProp
           <button
             onClick={onConfirm}
             disabled={isSaving || !readyPrescriptionName.trim()}
-            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 rounded-xl bg-slate-600 text-white text-sm font-bold hover:bg-slate-700 disabled:opacity-50 transition-colors"
           >
             {isSaving ? 'جاري الحفظ' : 'حفظ الروشتة'}
           </button>

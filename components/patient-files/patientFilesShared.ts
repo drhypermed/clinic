@@ -2,7 +2,7 @@ import type { PatientRecord } from '../../types';
 import { formatUserDateTime } from '../../utils/cairoTime';
 import { normalizePatientNameForFile } from '../../services/patient-files';
 
-export type PatientVisitType = 'exam' | 'consultation';
+type PatientVisitType = 'exam' | 'consultation';
 
 export interface PatientVisitEntry {
   visitId: string;
@@ -26,7 +26,7 @@ export interface PatientFileData {
   additionalInfo?: string;
 }
 
-export interface VisitContent {
+interface VisitContent {
   complaintAr: string;
   complaintEn: string;
   historyAr: string;
@@ -49,7 +49,7 @@ export interface VisitContent {
 
 export const PATIENT_FILE_DOC_PREFIX = 'patientFile__';
 
-export const asTimestamp = (date?: string): number => {
+const asTimestamp = (date?: string): number => {
   const parsed = Date.parse(String(date || ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
@@ -86,7 +86,7 @@ const toPhoneText = (value: unknown): string | undefined => {
   return normalized || undefined;
 };
 
-export const extractRecordPhoneCandidates = (record: PatientRecord): string[] => {
+const extractRecordPhoneCandidates = (record: PatientRecord): string[] => {
   const raw = record as unknown as Record<string, unknown>;
 
   return uniqueTrimmed([
@@ -102,7 +102,7 @@ export const isPositiveFileNumber = (value: unknown): value is number => {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
 };
 
-export const compareByLatestVisitDateDesc = (left: PatientFileData, right: PatientFileData): number => {
+const compareByLatestVisitDateDesc = (left: PatientFileData, right: PatientFileData): number => {
   const latestDiff = asTimestamp(right.latestVisitDate) - asTimestamp(left.latestVisitDate);
   if (latestDiff !== 0) return latestDiff;
   return left.name.localeCompare(right.name, 'ar');

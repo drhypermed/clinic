@@ -13,7 +13,7 @@ export type LegalAudience = 'doctor' | 'public';
 export type LegalDocumentKind = 'terms' | 'privacy';
 
 /** قسم واحد داخل الوثيقة — عنوان + قائمة نقاط تحته */
-export interface LegalSection {
+interface LegalSection {
   heading: string;
   points: string[];
 }

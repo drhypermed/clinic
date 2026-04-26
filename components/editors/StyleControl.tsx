@@ -52,13 +52,13 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
     return (
         <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-lg shadow-sm relative z-10 max-w-full">
-                <select value={fontFamily} onChange={handleFontChange} className="text-[10px] border border-slate-200 rounded p-1 max-w-[110px] outline-none focus:border-blue-500 font-sans" title="نوع الخط">
+                <select value={fontFamily} onChange={handleFontChange} className="text-[10px] border border-slate-200 rounded p-1 max-w-[110px] outline-none focus:border-brand-500 font-sans" title="نوع الخط">
                     {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
                 {onApplyPreset && (
                     <>
                         <div className="w-px h-4 bg-slate-200"></div>
-                        <select value={selectedPreset} onChange={(e) => { const val = e.target.value; setSelectedPreset(val); const p = PRESETS.find(x => x.id === val); if (p?.style) onApplyPreset(p.style); else if (val === 'none') onApplyPreset(''); }} className="text-[10px] border border-slate-200 rounded p-1 max-w-[80px] outline-none focus:border-blue-500" title="تأثيرات جاهزة">
+                        <select value={selectedPreset} onChange={(e) => { const val = e.target.value; setSelectedPreset(val); const p = PRESETS.find(x => x.id === val); if (p?.style) onApplyPreset(p.style); else if (val === 'none') onApplyPreset(''); }} className="text-[10px] border border-slate-200 rounded p-1 max-w-[80px] outline-none focus:border-brand-500" title="تأثيرات جاهزة">
                             <option value="none"> بدون تأثيرات </option>
                             {PRESETS.filter(p => p.id !== 'none').map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                         </select>
@@ -66,17 +66,17 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                 )}
                 <div className="w-px h-4 bg-slate-200"></div>
                 <div className="flex bg-slate-50 rounded border border-slate-200">
-                    <button onMouseDown={e => e.preventDefault()} onClick={toggleBold} className={`px-2 py-0.5 text-xs font-bold transition-colors rounded-r ${isBold ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-100'}`} title="عريض (Bold)">B</button>
+                    <button onMouseDown={e => e.preventDefault()} onClick={toggleBold} className={`px-2 py-0.5 text-xs font-bold transition-colors rounded-r ${isBold ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} title="عريض (Bold)">B</button>
                     <div className="w-px bg-slate-200"></div>
-                    <button onMouseDown={e => e.preventDefault()} onClick={toggleItalic} className={`px-2 py-0.5 text-xs italic font-serif transition-colors rounded-l ${isItalic ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-100'}`} title="مائل (Italic)">I</button>
+                    <button onMouseDown={e => e.preventDefault()} onClick={toggleItalic} className={`px-2 py-0.5 text-xs italic font-serif transition-colors rounded-l ${isItalic ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} title="مائل (Italic)">I</button>
                 </div>
                 <div className="w-px h-4 bg-slate-200"></div>
                 <input type="color" value={color} onChange={e => onChange({ ...style, color: e.target.value })} className="w-5 h-5 rounded cursor-pointer border-0 p-0 bg-transparent" title="لون الخط" />
                 <div className="flex items-center gap-1">
-                    <input type="number" value={fontSizeNum} min={6} max={60} onChange={e => onChange({ ...style, fontSize: `${e.target.value}px` })} className="w-10 h-5 text-[10px] text-center border border-slate-200 rounded focus:border-blue-500 outline-none" title="حجم الخط" />
+                    <input type="number" value={fontSizeNum} min={6} max={60} onChange={e => onChange({ ...style, fontSize: `${e.target.value}px` })} className="w-10 h-5 text-[10px] text-center border border-slate-200 rounded focus:border-brand-500 outline-none" title="حجم الخط" />
                     <span className="text-[9px] text-slate-400">px</span>
                 </div>
-                <button onClick={() => setShowAdvanced(!showAdvanced)} className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${showAdvanced ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`} title="أدوات متقدمة">
+                <button onClick={() => setShowAdvanced(!showAdvanced)} className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${showAdvanced ? 'bg-brand-100 text-brand-700 border-brand-200' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`} title="أدوات متقدمة">
                     <span className={`transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`}>⌄</span>
                     <span>أدوات متقدمة</span>
                 </button>
@@ -242,7 +242,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                     <div className="flex-1 relative">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-[10px] text-slate-500 font-medium">السمك</span>
-                                            <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{(style?.textStrokeWidth || 0).toFixed(2)}px</span>
+                                            <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{(style?.textStrokeWidth || 0).toFixed(2)}px</span>
                                         </div>
                                         <div className="slider-wrapper">
                                             <div className="slider-track"></div>
@@ -270,7 +270,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                     <div className="w-px h-10 bg-slate-200"></div>
                                     <div className="flex flex-col items-center gap-1">
                                         <span className="text-[9px] text-slate-500">اللون</span>
-                                        <input type="color" value={style?.textStrokeColor || '#000000'} onChange={e => onChange({ ...style, textStrokeColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-blue-400 transition-colors" />
+                                        <input type="color" value={style?.textStrokeColor || '#000000'} onChange={e => onChange({ ...style, textStrokeColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-brand-400 transition-colors" />
                                     </div>
                             </div>
                         </div>
@@ -299,24 +299,24 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                                 onChange(newStyle);
                                             }
                                         }}
-                                        className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer"
+                                        className="w-4 h-4 rounded text-slate-600 focus:ring-slate-500 border-slate-300 cursor-pointer"
                                     />
                                     <span className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">🎨</span>
                                     <span>خلفية النص Background</span>
                                 </label>
-                                {style?.textBgOpacity !== undefined ? <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-mono font-bold">{Math.round((style.textBgOpacity || 0) * 100)}%</span> : null}
+                                {style?.textBgOpacity !== undefined ? <span className="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-mono font-bold">{Math.round((style.textBgOpacity || 0) * 100)}%</span> : null}
                             </div>
                             {style?.textBgOpacity !== undefined && (
                                 <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="flex flex-col items-center gap-1">
                                             <span className="text-[9px] text-slate-500">اللون</span>
-                                            <input type="color" value={style?.textBgColor || '#ffffff'} onChange={e => onChange({ ...style, textBgColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-purple-400 transition-colors" />
+                                            <input type="color" value={style?.textBgColor || '#ffffff'} onChange={e => onChange({ ...style, textBgColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-slate-400 transition-colors" />
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-[10px] text-slate-500 font-medium">الشفافية</span>
-                                                <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{Math.round((style?.textBgOpacity || 0) * 100)}</span>
+                                                <span className="text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full">{Math.round((style?.textBgOpacity || 0) * 100)}</span>
                                             </div>
                                             <div className="slider-wrapper">
                                                 <div className="slider-track"></div>
@@ -329,7 +329,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[10px] text-slate-500 font-medium">استدارة</span>
-                                                <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgRadius || 0) / 20) * 100)}%</span>
+                                                <span className="text-[11px] font-bold text-danger-600 bg-danger-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgRadius || 0) / 20) * 100)}%</span>
                                             </div>
                                             <div className="slider-wrapper">
                                                 <div className="slider-track"></div>
@@ -341,17 +341,17 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                     <div className="space-y-3 border-t border-slate-200 pt-3">
                                         <div className="flex items-center justify-between">
                                             <label className="text-[10px] font-bold text-slate-600">حدود (Stroke)</label>
-                                            {style?.textBgBorderWidth ? <span className="text-[9px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full font-mono font-bold">{style.textBgBorderWidth}px</span> : null}
+                                            {style?.textBgBorderWidth ? <span className="text-[9px] bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full font-mono font-bold">{style.textBgBorderWidth}px</span> : null}
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col items-center gap-1">
                                                 <span className="text-[9px] text-slate-500">اللون</span>
-                                                <input type="color" value={style?.textBgBorderColor || '#000000'} onChange={e => onChange({ ...style, textBgBorderColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-purple-400 transition-colors" />
+                                                <input type="color" value={style?.textBgBorderColor || '#000000'} onChange={e => onChange({ ...style, textBgBorderColor: e.target.value })} className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-200 p-0.5 bg-white shadow-sm hover:border-slate-400 transition-colors" />
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="text-[10px] text-slate-500 font-medium">السمك</span>
-                                                    <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgBorderWidth || 0) / 10) * 100)}</span>
+                                                    <span className="text-[11px] font-bold text-warning-600 bg-warning-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgBorderWidth || 0) / 10) * 100)}</span>
                                                 </div>
                                                 <div className="slider-wrapper">
                                                     <div className="slider-track"></div>
@@ -367,7 +367,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] text-slate-500 font-medium">أعلى</span>
-                                                    <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingTop || 0) / 20) * 100)}%</span>
+                                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingTop || 0) / 20) * 100)}%</span>
                                                 </div>
                                                 <div className="slider-wrapper">
                                                     <div className="slider-track"></div>
@@ -378,7 +378,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] text-slate-500 font-medium">أسفل</span>
-                                                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingBottom || 0) / 20) * 100)}</span>
+                                                    <span className="text-[11px] font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingBottom || 0) / 20) * 100)}</span>
                                                 </div>
                                                 <div className="slider-wrapper">
                                                     <div className="slider-track"></div>
@@ -389,7 +389,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] text-slate-500 font-medium">يمين</span>
-                                                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingRight || 0) / 20) * 100)}</span>
+                                                    <span className="text-[11px] font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingRight || 0) / 20) * 100)}</span>
                                                 </div>
                                                 <div className="slider-wrapper">
                                                     <div className="slider-track"></div>
@@ -400,7 +400,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] text-slate-500 font-medium">يسار</span>
-                                                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingLeft || 0) / 20) * 100)}</span>
+                                                    <span className="text-[11px] font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">{Math.round(((style?.textBgPaddingLeft || 0) / 20) * 100)}</span>
                                                 </div>
                                                 <div className="slider-wrapper">
                                                     <div className="slider-track"></div>
@@ -416,7 +416,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <label className="text-[11px] font-bold text-slate-700 flex items-center gap-2"><span className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">↔️</span><span>تباعد الحروف Spacing</span></label>
-                                <span className="text-[11px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">{Math.round((((style?.letterSpacing || 0) + 2) / 12) * 100)}</span>
+                                <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{Math.round((((style?.letterSpacing || 0) + 2) / 12) * 100)}</span>
                             </div>
                             <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                                 <div className="slider-wrapper">
@@ -432,7 +432,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] text-slate-500 font-medium">أفقي (X)</span>
-                                        <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{style?.xOffset || 0}px</span>
+                                        <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{style?.xOffset || 0}px</span>
                                     </div>
                                     <div className="slider-wrapper">
                                         <div className="slider-track"></div>
@@ -456,7 +456,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] text-slate-500 font-medium">رأسي (Y)</span>
-                                        <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{style?.yOffset || 0}px</span>
+                                        <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{style?.yOffset || 0}px</span>
                                     </div>
                                     <div className="slider-wrapper">
                                         <div className="slider-track"></div>
@@ -480,7 +480,7 @@ export const StyleControl: React.FC<StyleControlProps> = ({ style, onChange, onA
                                 <div className="pt-2 border-t border-slate-200">
                                     <button
                                         onClick={() => onChange({ ...style, xOffset: 0, yOffset: 0 })}
-                                        className="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg transition text-xs border border-blue-200"
+                                        className="w-full px-3 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition text-xs border border-brand-200"
                                     >
                                         🎯 إعادة تعيين الموضع (0, 0)
                                     </button>

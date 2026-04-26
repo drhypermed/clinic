@@ -36,12 +36,13 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
   const showReason = trimmedReason.length > 0 && trimmedReason !== typeLabel;
 
   return (
-    <div className="relative bg-gradient-to-bl from-teal-500 via-teal-600 to-slate-800 rounded-2xl p-5 sm:p-6 text-white shadow-[0_4px_24px_-4px_rgba(13,148,136,0.4)] overflow-hidden">
-      {/* عناصر زخرفية — دوائر مبهمة خلفية */}
-      <div className="absolute -top-20 -left-20 w-48 h-48 bg-white/[0.05] rounded-full blur-3xl" />
-      <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-teal-300/10 rounded-full blur-3xl" />
-      <div className="absolute top-4 left-4 w-20 h-20 border border-white/[0.06] rounded-full" />
-      <div className="absolute bottom-8 right-8 w-32 h-32 border border-white/[0.04] rounded-full" />
+    /* الكرت كله: أزرق متدرج فقط (blue-only premium dark) — بدل المزيج التركوازي/slate */
+    <div className="relative bg-gradient-to-bl from-blue-600 via-blue-700 to-blue-900 rounded-2xl p-5 sm:p-6 text-white shadow-[0_4px_24px_-4px_rgba(8,112,184,0.45)] overflow-hidden">
+      {/* عناصر زخرفية — دوائر مبهمة بأزرق فاتح */}
+      <div className="absolute -top-20 -left-20 w-48 h-48 bg-white/[0.06] rounded-full blur-3xl" />
+      <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-blue-300/15 rounded-full blur-3xl" />
+      <div className="absolute top-4 left-4 w-20 h-20 border border-white/[0.07] rounded-full" />
+      <div className="absolute bottom-8 right-8 w-32 h-32 border border-white/[0.05] rounded-full" />
 
       <div className="relative z-10">
         {/* الهيدر: أيقونة مريض + تسمية + الوقت */}
@@ -50,16 +51,18 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
             <div className="w-8 h-8 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/10">
               <FaUser className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[11px] sm:text-xs font-bold text-teal-100 uppercase tracking-widest">المريض التالي</span>
+            {/* النص: درجة أزرق فاتحة (blue-100) للتباين على الـdark */}
+            <span className="text-[11px] sm:text-xs font-bold text-blue-100 uppercase tracking-widest">المريض التالي</span>
           </div>
           <span className="text-[11px] sm:text-xs font-bold font-numeric text-white bg-white/15 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">{time}</span>
         </div>
 
         {/* اسم المريض والتفاصيل */}
         <h3 className="text-xl sm:text-2xl font-black text-white mb-1.5 truncate">{appointment.patientName}</h3>
-        <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-teal-200/80 font-medium">
+        <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-blue-200/80 font-medium">
           {appointment.age && <span className="bg-white/10 rounded-full px-2 py-0.5">{appointment.age}</span>}
-          {isConsultation && <span className="bg-violet-400/30 text-violet-100 px-2.5 py-0.5 rounded-full font-bold border border-violet-300/20">استشارة</span>}
+          {/* شارة الاستشارة: أزرق فاتح (بدل البنفسجي اللي خرج عن الـpalette) */}
+          {isConsultation && <span className="bg-blue-400/30 text-blue-100 px-2.5 py-0.5 rounded-full font-bold border border-blue-300/30">استشارة</span>}
           {showReason && <span className="truncate opacity-80">{trimmedReason}</span>}
         </div>
 
@@ -69,7 +72,7 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
             {Object.entries(appointment.secretaryVitals).map(([key, val]) => {
               if (!val || (typeof val === 'string' && !val.trim())) return null;
               return (
-                <span key={key} className="bg-white/10 text-teal-100 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/[0.08]">
+                <span key={key} className="bg-white/10 text-blue-100 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/[0.08]">
                   {String(val)}
                 </span>
               );
@@ -77,10 +80,10 @@ export const NextPatientCard: React.FC<NextPatientCardProps> = ({ appointment, o
           </div>
         )}
 
-        {/* زر "ابدأ الكشف" */}
+        {/* زر "ابدأ الكشف" — أبيض بنص أزرق (يتباين بقوة مع الخلفية الأزرق الغامق) */}
         <button
           onClick={onStartExam}
-          className="group mt-5 w-full sm:w-auto flex items-center justify-center gap-2.5 bg-white text-teal-700 hover:bg-teal-50 active:bg-teal-100 px-6 py-3 rounded-xl font-black text-sm shadow-[0_4px_12px_-2px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_-2px_rgba(0,0,0,0.2)] transition-all duration-200"
+          className="group mt-5 w-full sm:w-auto flex items-center justify-center gap-2.5 bg-white text-blue-700 hover:bg-blue-50 active:bg-blue-100 px-6 py-3 rounded-xl font-black text-sm shadow-[0_4px_14px_-2px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_22px_-2px_rgba(0,0,0,0.25)] transition-all duration-200"
         >
           <FaStethoscope className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
           ابدأ الكشف

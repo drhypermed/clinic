@@ -31,13 +31,6 @@ export const LABEL_CLASS = 'block text-sm font-bold text-slate-600 mb-2';
 /** نسبة التحويل من mm إلى px عند دقة 96 DPI */
 export const MM_TO_PX = 3.7795275591;
 
-/** أبعاد المقاسات القياسية بالـ mm */
-export const PAPER_SIZE_PRESETS = {
-    A5: { widthMm: 148, heightMm: 210 },
-    A4: { widthMm: 210, heightMm: 297 },
-} as const;
-
-export const PRESCRIPTION_BASE_CANVAS_MM = PAPER_SIZE_PRESETS.A5;
 
 /** إرجاع أبعاد الورقة بالـ mm. الافتراضي: A5 */
 export function getPaperDimensions(paperSize?: PaperSizeSettings): { widthMm: number; heightMm: number } {

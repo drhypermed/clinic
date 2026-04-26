@@ -1,8 +1,10 @@
 import React from 'react';
-import { AdminView, NavItem } from './types';
+import { AdminView, NavGroup } from './types';
+import { UserGuideSidebarLink } from '../../common/UserGuideSidebarLink';
 
 interface DashboardSidebarProps {
-  navItems: readonly NavItem[];
+  /** الـnavigation منظمة في مجموعات (categories) — كل مجموعة لها header */
+  navGroups: readonly NavGroup[];
   currentView: AdminView;
   sidebarOpen: boolean;
   viewCounts: Partial<Record<AdminView, number>>;
@@ -100,7 +102,7 @@ const SvgIcon: React.FC<{ name: string; className?: string }> = ({ name, classNa
 };
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
-  navItems,
+  navGroups,
   currentView,
   sidebarOpen,
   viewCounts,
@@ -131,7 +133,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
@@ -152,46 +154,62 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             </button>
           </div>
 
-          <nav className="admin-modern-sidebar-scroll flex-1 space-y-1 overflow-y-auto px-3 py-3" dir="rtl">
-            {navItems.map((item) => {
-              const count = viewCounts[item.id];
-              const hasCount = Number.isFinite(count);
-              const isActive = currentView === item.id;
+          <nav className="admin-modern-sidebar-scroll flex-1 space-y-3 overflow-y-auto px-3 py-3" dir="rtl">
+            {/* الـnavigation منظمة في مجموعات — كل مجموعة لها header + items داخلها */}
+            {navGroups.map((group, groupIdx) => (
+              <div key={`group-${groupIdx}-${group.label}`} className="space-y-1">
+                {/* header المجموعة — يتعرض فوق الـitems */}
+                <div className="px-3 pt-2 pb-1 flex items-center gap-1.5">
+                  {group.emoji && <span className="text-[12px]">{group.emoji}</span>}
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    {group.label}
+                  </span>
+                </div>
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onSelectView(item.id)}
-                  className={`group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-right transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-200/60'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
-                  }`}
-                >
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <span
-                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'
+                {/* items داخل المجموعة */}
+                {group.items.map((item) => {
+                  const count = viewCounts[item.id];
+                  const hasCount = Number.isFinite(count);
+                  const isActive = currentView === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => onSelectView(item.id)}
+                      className={`group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-right transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md shadow-brand-200/60'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
                       }`}
                     >
-                      <SvgIcon name={item.icon} className="w-4 h-4" />
-                    </span>
-                    <span className="truncate text-[13px] font-bold">{item.label}</span>
-                  </span>
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <span
+                          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'
+                          }`}
+                        >
+                          <SvgIcon name={item.icon} className="w-4 h-4" />
+                        </span>
+                        <span className="truncate text-[13px] font-bold">{item.label}</span>
+                      </span>
 
-                  {hasCount && (
-                    <span className={`inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                      isActive ? 'bg-white/25 text-white' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {(count as number) > 99 ? '99+' : count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                      {hasCount && (
+                        <span className={`inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                          isActive ? 'bg-white/25 text-white' : 'bg-danger-100 text-danger-600'
+                        }`}>
+                          {(count as number) > 99 ? '99+' : count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
 
-          <div className="border-t border-slate-200 px-3 py-3">
+          <div className="border-t border-slate-200 px-3 py-3 space-y-2">
+            {/* دليل الاستخدام — نفس الصفحه اللي برا (/user-guide) بدون تكرار للكود */}
+            <UserGuideSidebarLink variant="admin" />
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={onNavigateHome}
@@ -204,7 +222,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               </button>
               <button
                 onClick={onLogout}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold text-red-600 transition hover:bg-red-100"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-danger-200 bg-danger-50 px-3 py-2.5 text-xs font-bold text-danger-600 transition hover:bg-danger-100"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

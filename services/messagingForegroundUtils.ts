@@ -1,5 +1,51 @@
 import { playNotificationCue } from '../utils/notificationSound';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// منع تكرار الإشعار في الـ foreground عند فتح التطبيق على أكتر من تاب.
+// ─────────────────────────────────────────────────────────────────────────────
+// المشكلة: كل تاب مفتوح بياخد نسخة من رسالة FCM ويستدعي
+// showForegroundSystemNotification → ٣ تابات = ٣ إشعارات + ٣ أصوات.
+// الحل: نستخدم localStorage (مشترك بين تابات نفس المتصفح) لتتبع آخر إشعار
+// ظهر بنفس الـ tag، وأي تاب يحاول يعرض نفس الإشعار خلال نافذة قصيرة بنرفض.
+const FG_DEDUPE_STORAGE_KEY = 'dh_recent_fg_notifs';
+const FG_DEDUPE_WINDOW_MS = 4000;
+const FG_DEDUPE_TTL_MS = 15000;
+
+const isDuplicateForegroundNotification = (rawTag: string): boolean => {
+  const tag = String(rawTag || '').trim();
+  if (!tag) return false;
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+
+  const now = Date.now();
+  let store: Record<string, number> = {};
+  try {
+    const raw = window.localStorage.getItem(FG_DEDUPE_STORAGE_KEY);
+    if (raw) store = JSON.parse(raw) as Record<string, number>;
+  } catch {
+    store = {};
+  }
+
+  // تنظيف القديم منعاً لتراكم المفاتيح بدون فائدة.
+  Object.keys(store).forEach((key) => {
+    const ts = Number(store[key] || 0);
+    if (!Number.isFinite(ts) || now - ts > FG_DEDUPE_TTL_MS) delete store[key];
+  });
+
+  const lastShownAt = Number(store[tag] || 0);
+  if (Number.isFinite(lastShownAt) && now - lastShownAt < FG_DEDUPE_WINDOW_MS) {
+    // تاب آخر عرض الإشعار توّاً — ما نعرضوش هنا.
+    return true;
+  }
+
+  store[tag] = now;
+  try {
+    window.localStorage.setItem(FG_DEDUPE_STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    // ignore (private mode أو مساحة ممتلئة) — أسوأ حالة: تكرار محدود.
+  }
+  return false;
+};
+
 const toObject = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
 
@@ -139,6 +185,9 @@ export async function showForegroundSystemNotification(payload: unknown): Promis
   const icon = toStringSafe(data.icon) || '/pwa-192x192.png';
   const badge = toStringSafe(data.badge) || '/pwa-192x192.png';
   const tag = toStringSafe(data.tag) || `fg_${Date.now()}`;
+
+  // منع التكرار عبر التابات: أول تاب يصل يعرض الإشعار، الباقي يتجاهلوا.
+  if (isDuplicateForegroundNotification(tag)) return false;
 
   const options: NotificationOptions = {
     body,
