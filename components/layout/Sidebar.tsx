@@ -24,6 +24,7 @@ import {
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from '../common/BrandLogo';
 import { UserGuideSidebarLink } from '../common/UserGuideSidebarLink';
+import { MarketingPackagesSidebarLink } from '../common/MarketingPackagesSidebarLink';
 import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
@@ -364,10 +365,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                 )}
 
-                {/* دليل الاستخدام — نفس الصفحه اللي برا (/user-guide) بدون تكرار للكود.
-                    بنحطه قبل زر تسجيل الخروج عشان يوصله المستخدم في أي وقت. */}
-                <div className="mt-auto">
+                {/* دليل الاستخدام + باقات الدعاية — قبل زر تسجيل الخروج.
+                    الـmt-auto على الـwrapper بيدفع الاتنين لأسفل السايدبار معاً. */}
+                <div className="mt-auto space-y-1">
                     <UserGuideSidebarLink
+                        variant="doctor"
+                        onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
+                    />
+                    <MarketingPackagesSidebarLink
                         variant="doctor"
                         onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
                     />

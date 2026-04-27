@@ -71,22 +71,28 @@ export const MainApp: React.FC = () => {
   // يشوف سبلاش → لوحة التحكم مباشرة، بدون شاشة بيضاء وسطانية.
   useHideBootSplash('main-app-mounted');
 
-  // preload لكل صفحات السايد بار في الخلفية بعد ما المتصفح يخلص أول رسم.
-  // النتيجة: لما المستخدم يدوس على أي تبويب، الـ chunk هيكون جاهز ومش هيشوف
-  // spinner ثقيل. الـ import() نفسه محفوظ في كاش Vite/المتصفح فمفيش download
-  // زيادة لما المستخدم يفتح الصفحة.
+  // preload لـ4 صفحات السايدبار الأكثر استخداماً (Dashboard/Prescription/Records/
+  // Appointments) في الخلفية بعد ما المتصفح يخلص أول رسم. الباقي بيتحمّل lazy
+  // عند الضغط. التحميل الكامل (12 صفحة) كان بيـsaturate الـCPU ويسبب تهنيج.
+  //
+  // ─ تأخير 5 ثواني (2026-04): قبل كده كان 1.5 ثانية، فالـpreload كان بيـcompete
+  //   مع تفاعل الطبيب الأول مع التطبيق. دلوقتي 5 ثواني = الطبيب خلص أول تفاعل
+  //   (شاف الـdashboard، ضغط على روشتة) قبل ما الـpreload يبدأ.
   React.useEffect(() => {
     const browserWindow = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      requestIdleCallback?: (cb: (deadline: { didTimeout: boolean }) => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
     let idleId: number | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    if (typeof browserWindow.requestIdleCallback === 'function') {
-      idleId = browserWindow.requestIdleCallback(() => preloadMainAppViewChunks(), { timeout: 4000 });
-    } else {
-      timeoutId = setTimeout(() => preloadMainAppViewChunks(), 1500);
-    }
+    // نأجّل بـ5 ثواني — الطبيب لازم يكون خلص أول تفاعل قبل preload
+    timeoutId = setTimeout(() => {
+      if (typeof browserWindow.requestIdleCallback === 'function') {
+        idleId = browserWindow.requestIdleCallback(() => preloadMainAppViewChunks(), { timeout: 4000 });
+      } else {
+        preloadMainAppViewChunks();
+      }
+    }, 5000);
     return () => {
       if (idleId !== null && browserWindow.cancelIdleCallback) browserWindow.cancelIdleCallback(idleId);
       if (timeoutId) clearTimeout(timeoutId);

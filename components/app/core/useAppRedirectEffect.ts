@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExtendedUser } from '../../../hooks/useAuth';
-import { PUBLIC_AUTH_ERROR_KEY } from '../../../services/auth-service';
+import { PUBLIC_AUTH_ERROR_KEY, ROLE_RESOLUTION_ERROR_KEY } from '../../../services/auth-service';
 import { safeStorageGetItem } from '../../../services/auth-service/storage';
+import { getHostMode } from '../../../utils/hostMode';
 import { isPublicGuestPathname } from './constants';
 import type { DoctorOnboardingStatus } from './useDoctorOnboardingStatus';
 
@@ -54,6 +55,22 @@ export const useAppRedirectEffect = ({
       if (pathname === '/signup/doctor') return;
       if (pathname !== '/login/public') {
         navigate('/login/public', { replace: true });
+      }
+      return;
+    }
+
+    // 2.1 معالجه فشل تحديد دور المستخدم (Role Resolution Error):
+    // الحارس في useAuth.ts عمل signout بعد timeout — نوّجه المستخدم لصفحه الدخول
+    // المناسبه للدومين (الرساله بتتعرض هناك):
+    //   • دومين المرضى → /login/public (لأن AppCoreContent بيحوّل /login → /login/public،
+    //     ولو وجّهنا لـ/login من هنا هيحصل ping-pong لانهائي)
+    //   • دومين العياده / dev → /login (شاشه اختيار الدخول)
+    const hasRoleResolutionError = safeStorageGetItem(ROLE_RESOLUTION_ERROR_KEY);
+    if (hasRoleResolutionError) {
+      const hostMode = getHostMode();
+      const targetLoginPath = hostMode === 'patient' ? '/login/public' : '/login';
+      if (pathname !== targetLoginPath) {
+        navigate(targetLoginPath, { replace: true });
       }
       return;
     }

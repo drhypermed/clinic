@@ -11,9 +11,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { auth } from '../../services/firebaseConfig';
 import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
-import { PUBLIC_AUTH_ERROR_KEY } from '../../services/auth-service';
+import { PUBLIC_AUTH_ERROR_KEY, ROLE_RESOLUTION_ERROR_KEY } from '../../services/auth-service';
 import { LegalConsentGate } from './legal/LegalConsentGate';
-import { clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
+import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
 
 const LOGIN_PUBLIC_PATH = '/login/public';
 
@@ -31,6 +31,31 @@ export const PublicLoginPage: React.FC = () => {
     return localStorage.getItem(PUBLIC_AUTH_ERROR_KEY) || '';
   });
   const [isLegalReady, setIsLegalReady] = useState(false);
+
+  // رسالة فشل تحديد الدور — لما الحارس فصل الجلسه على دومين المرضى، useAppRedirectEffect
+  // وجّه المستخدم لهنا. نقراها مرّه واحده ونمسحها من localStorage عشان ميشوفهاش لو عمل refresh.
+  const [roleErrorMessage, setRoleErrorMessage] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { return localStorage.getItem(ROLE_RESOLUTION_ERROR_KEY); } catch { return null; }
+  });
+
+  useEffect(() => {
+    if (roleErrorMessage) {
+      try { localStorage.removeItem(ROLE_RESOLUTION_ERROR_KEY); } catch { /* تجاهل: storage مغلق */ }
+    }
+  }, [roleErrorMessage]);
+
+  // ─ Safety net: فك authFlowGuard عند mount لو لسه نشط لنفس الـpath ─
+  // لو signInGoogle عمل fallback لـsignInWithRedirect (popup blocked)، الـpage
+  // تـreload ولا تستكمل سطر clearAuthFlowGuardSoon بعد الـawait. الحارس يفضل
+  // نشط فيمنع useAppRedirectEffect من توجيه المستخدم لـ/public بعد العوده.
+  // الإصلاح: نفك الحارس صراحةً عند mount مع expectedPath عشان مانـclear-ش
+  // حارس صفحه تانيه. الـcentral fix في useAuth بيغطّي معظم الحالات وده طبقه ثانيه.
+  useEffect(() => {
+    clearAuthFlowGuard(LOGIN_PUBLIC_PATH);
+  }, []);
+
+  const dismissRoleError = () => setRoleErrorMessage(null);
 
   useEffect(() => {
     const syncError = () => {
@@ -99,6 +124,26 @@ export const PublicLoginPage: React.FC = () => {
           </div>
 
           <div className="px-6 py-5 space-y-4">
+            {/* لافته خطأ تحديد الدور — تظهر فقط لما الحارس فصل الجلسه بعد timeout */}
+            {roleErrorMessage && (
+              <div
+                role="alert"
+                data-testid="role-resolution-error"
+                className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 text-sm font-semibold flex items-start gap-2"
+              >
+                <span aria-hidden="true" className="flex-shrink-0 text-base leading-none">⚠️</span>
+                <p className="flex-1 leading-relaxed">{roleErrorMessage}</p>
+                <button
+                  type="button"
+                  onClick={dismissRoleError}
+                  aria-label="إخفاء الرسالة"
+                  className="flex-shrink-0 text-red-600 hover:text-red-800 font-bold text-base leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             <LegalConsentGate
               audience="public"
               onValidityChange={(ready) => {

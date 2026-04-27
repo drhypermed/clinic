@@ -32,6 +32,7 @@ import {
   type DoctorVerificationItem,
   type RejectConfirmState,
 } from './doctorVerificationHelpers';
+import { buildApprovalWhatsAppUrl } from './approvalWhatsApp';
 
 export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null | undefined) => {
   // ── بيانات الطلبات ──
@@ -189,7 +190,19 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
 
       await setDoc(getUserProfileDocRef(id), buildDoctorUserProfilePayload(applyData), { merge: true });
 
-      showSuccess(id, 'تم اعتماد الطبيب بنجاح');
+      // ─ نفتح واتساب جاهز للطبيب ليعرف بالاعتماد. مفيش إخطار تلقائي حالياً
+      //   (لا إيميل ولا واتساب API) — الـworkaround المؤقت ده تكلفته 0.
+      //   لو الـpopup blocker منع الفتح، ما فيش مشكلة (الكارد بيختفي بعد الاعتماد
+      //   فمفيش طريقة نعرض الـlink منفصل لاحقاً — الأدمن يقدر يكرر الـapproval لو لزم).
+      const item = items.find((i) => i.id === id);
+      const waUrl = buildApprovalWhatsAppUrl(item?.doctorName, item?.doctorWhatsApp);
+      if (waUrl) {
+        try { window.open(waUrl, '_blank', 'noopener,noreferrer'); } catch { /* popup blocker */ }
+      }
+
+      showSuccess(id, waUrl
+        ? 'تم اعتماد الطبيب — افتح الواتساب لإرسال الإخطار له'
+        : 'تم اعتماد الطبيب (لا يوجد رقم واتساب لإرسال إخطار)');
       setTimeout(() => setItems((prev) => prev.filter((item) => item.id !== id)), 1500);
     } catch (err: any) {
       setCardError((prev) => ({ ...prev, [id]: err?.message || 'تعذر اعتماد الطبيب' }));

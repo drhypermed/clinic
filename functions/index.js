@@ -157,6 +157,12 @@ exports.sendExternalAudienceNotificationBroadcast = onCall(EXTERNAL_BROADCAST_CA
 exports.sendInAppAudienceNotificationBroadcast = onCall(EXTERNAL_BROADCAST_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'sendInAppAudienceNotificationBroadcast'));
 exports.estimateAudienceSize = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'estimateAudienceSize'));
 exports.notifyDoctorOnNewAppointment = onDocumentCreated({ document: 'users/{userId}/appointments/{aptId}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifyDoctorOnNewAppointment'));
+// ─ إخطار الطبيب بالإيميل لما الأدمن يعتمد حسابه (verificationStatus → 'approved').
+//   الـtrigger بيـreturn فوراً لو التغيير مش متعلق بالاعتماد (تكلفة شبه صفر).
+exports.notifyDoctorOnApproval = onDocumentWritten(
+  { document: 'users/{userId}', region: REGION },
+  lazy('./src/functions/notifyDoctorOnApproval', 'notifyDoctorOnApproval')
+);
 exports.notifyDoctorOnSecretaryEntryRequest = onDocumentWritten({ document: 'secretaryEntryRequests/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifyDoctorOnSecretaryEntryRequest'));
 exports.notifySecretaryOnBookingConfigUpdate = onDocumentWritten({ document: 'bookingConfig/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifySecretaryOnBookingConfigUpdate'));
 exports.cleanupExternalNotificationBroadcastLogs = onSchedule({ schedule: 'every day 03:30', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'cleanupExternalNotificationBroadcastLogs'));
@@ -191,8 +197,12 @@ exports.cleanupOldUsageEvents = onSchedule(
   { schedule: 'every day 03:15', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/cleanupFunctions', 'cleanupOldUsageEvents')
 );
+// المسح الكامل لكل الأطباء مرة واحدة يومياً الساعة 12:00 منتصف الليل (وقت قاهرة).
+// كان كل 6 ساعات — تم تقليله لـ24 ساعة لتوفير ~75% من قراءات المسح.
+// كل العدّادات (روشتات/طباعات/إيرادات/AI/تقارير) تتحدّث في نفس التوقيت.
+// الأدمن يقدر يضغط "تحديث الآن" أي وقت لقراءة فورية بدون انتظار.
 exports.refreshAdminDashboardAggregates = onSchedule(
-  { schedule: '0 */6 * * *', timeZone: 'Africa/Cairo', region: REGION },
+  { schedule: '0 0 * * *', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/dashboardAggregationFunctions', 'refreshAdminDashboardAggregates')
 );
 exports.refreshAdminDashboardAggregatesNow = onCall(
@@ -203,10 +213,10 @@ exports.syncAdminDashboardUserCounter = onDocumentWritten(
   { document: 'users/{userId}', region: REGION },
   lazy('./src/functions/dashboardCounterFunctions', 'syncAdminDashboardUserCounter')
 );
-// B2: مباعدة عن refreshAdminDashboardAggregates (تعمل كل ٦ ساعات على الساعات 0,6,12,18).
-// هذه تعمل بعدها بـ ٥ دقائق لتفادي الكتابة المتزامنة على settings/adminDashboardStats.
+// مباعدة عن refreshAdminDashboardAggregates بـ5 دقائق لتفادي الكتابة المتزامنة
+// على settings/adminDashboardStats. الاثنان الآن مرة واحدة يومياً الساعة 12:05 ص.
 exports.materializeAdminDashboardSummary = onSchedule(
-  { schedule: '5 */6 * * *', timeZone: 'Africa/Cairo', region: REGION },
+  { schedule: '5 0 * * *', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/dashboardCounterFunctions', 'materializeAdminDashboardSummary')
 );
 exports.materializeAdminDashboardSummaryNow = onCall(

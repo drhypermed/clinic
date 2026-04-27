@@ -17,6 +17,8 @@ import { BrandLogo } from '../common/BrandLogo';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
 // تحديد وضع التطبيق حسب الدومين — المريض يشوف خيار واحد، الطاقم الطبّي يشوف الباقي
 import { getHostMode } from '../../utils/hostMode';
+// رسالة فشل تحديد الدور — بتظهر للمستخدم لما الحارس يفصل الجلسه بسبب timeout
+import { ROLE_RESOLUTION_ERROR_KEY } from '../../services/auth-service';
 
 // المجموعات الثلاث:
 //  - 'clinic': خيارات دخول الأطباء + السكرتاريه (بتظهر على clinic.drhypermed.com)
@@ -73,6 +75,21 @@ export const LoginSelectionPage: React.FC = () => {
   useHideBootSplash('login-selection-mounted');
   const navigate = useNavigate();
 
+  // رسالة فشل تحديد الدور — نقراها مرّه واحده عند الـmount ثم نمسحها من
+  // localStorage عشان لو المستخدم عمل refresh ميشوفهاش تاني (نفس pattern PUBLIC_AUTH_ERROR).
+  const [roleErrorMessage, setRoleErrorMessage] = React.useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try { return localStorage.getItem(ROLE_RESOLUTION_ERROR_KEY); } catch { return null; }
+  });
+
+  React.useEffect(() => {
+    if (roleErrorMessage) {
+      try { localStorage.removeItem(ROLE_RESOLUTION_ERROR_KEY); } catch { /* تجاهل: storage مغلق */ }
+    }
+  }, [roleErrorMessage]);
+
+  const dismissRoleError = () => setRoleErrorMessage(null);
+
   // فلتره الخيارات حسب الدومين الحالي:
   //  - على drhypermed.com → يظهر فقط "دخول الجمهور"
   //  - على clinic.drhypermed.com → تظهر خيارات الأطباء/السكرتاريه فقط
@@ -115,6 +132,27 @@ export const LoginSelectionPage: React.FC = () => {
           <div className="relative bg-white rounded-2xl shadow-card ring-1 ring-slate-200/60 p-5 space-y-3 overflow-hidden">
             {/* شريط علوي أزرق موحّد — كان أزرق/أخضر مختلط قبل كده عشان يميز الخيارات. */}
             <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-700 via-brand-500 to-brand-400" />
+
+            {/* لافته خطأ تحديد الدور — تظهر فقط لما الحارس فصل الجلسه بعد timeout */}
+            {roleErrorMessage && (
+              <div
+                role="alert"
+                data-testid="role-resolution-error"
+                className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 text-sm font-semibold flex items-start gap-2"
+              >
+                <span aria-hidden="true" className="flex-shrink-0 text-base leading-none">⚠️</span>
+                <p className="flex-1 leading-relaxed">{roleErrorMessage}</p>
+                <button
+                  type="button"
+                  onClick={dismissRoleError}
+                  aria-label="إخفاء الرسالة"
+                  className="flex-shrink-0 text-red-600 hover:text-red-800 font-bold text-base leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             {visibleOptions.map((opt) => {
               return (
                 <button

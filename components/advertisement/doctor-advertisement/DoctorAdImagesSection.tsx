@@ -2,6 +2,8 @@
 import React from 'react';
 
 import type { DoctorAdImagesSectionProps } from './types';
+import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
   imageUrls,
@@ -9,17 +11,24 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
   onAddImageFromFile,
   onRemoveImage,
 }) => {
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
+
   return (
     <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-3 space-y-2.5">
       <h3 className="text-sm font-black text-slate-700 mb-2.5 block">الصور</h3>
       <div>
         {/* زر رفع الصورة: نفس تدرج الأزرق المستخدم في أزرار "إضافة" بباقي أقسام الإعلان */}
-        <label className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]">
+        <label
+          onClick={(e) => { if (!imageGate.requestImageUpload()) e.preventDefault(); }}
+          className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 font-bold text-white text-xs cursor-pointer shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+        >
           <input
             type="file"
             accept="image/*"
             className="hidden"
             onChange={(event) => {
+              if (!imageGate.requestImageUpload()) { event.target.value = ''; return; }
               const file = event.target.files?.[0];
               if (file) void onAddImageFromFile(file);
               event.currentTarget.value = '';
@@ -46,6 +55,14 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
           ))}
         </div>
       )}
+
+      {/* مودال الترقية — يظهر للحساب المجاني لو الأدمن مغلق رفع الصور */}
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </section>
   );
 };

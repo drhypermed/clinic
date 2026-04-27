@@ -228,6 +228,18 @@ export const createSmartRxActions = ({
     const weightNum = parseFloat(weight);
     const weightValue = Number.isNaN(weightNum) ? 0 : weightNum;
 
+    // ─ نقرأ التخصص من localStorage (نفس مصدر تحليل الحالة) عشان الترجمة تنتقي
+    //   المصطلحات الإنجليزية الأنسب للتخصص.
+    const doctorSpecialty = userId
+      ? (() => {
+          try {
+            return localStorage.getItem(`doctor_specialty_${userId}`) || '';
+          } catch {
+            return '';
+          }
+        })()
+      : '';
+
     const out = await runSmartRx({
       complaint,
       medicalHistory,
@@ -245,6 +257,7 @@ export const createSmartRxActions = ({
       totalAgeInMonths,
       vitals,
       userId, // للكاش per-doctor في الترجمة السريرية
+      doctorSpecialty, // التخصص يدخل البرومبت + cache key مفصول حسب التخصص
       skipDiagnosis: true, // ← مهم: لا نستدعي analyzeComplaint (توفير نداء AI كامل)
     });
 
@@ -431,7 +444,20 @@ export const createSmartRxActions = ({
       return;
     }
 
-    // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة (مطلب المستخدم الأساسي)
+    // ─ نقرأ تخصص الطبيب من الـlocalStorage (مكتوب من useMainAppProfile وقت
+    //   تحميل الصفحة). الموديل بيستخدمه كـrole + يكيّف الـDDx على نطاق التخصص.
+    //   لو مش موجود (signup قديم) → الموديل بيكمل بنمط طب الأسرة كـfallback.
+    const doctorSpecialty = userId
+      ? (() => {
+          try {
+            return localStorage.getItem(`doctor_specialty_${userId}`) || '';
+          } catch {
+            return '';
+          }
+        })()
+      : '';
+
+    // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة + التخصص (مطلب المستخدم الأساسي)
     const weightNum = parseFloat(weight);
     const heightNum = parseFloat(height);
     const deepInput = {
@@ -448,6 +474,7 @@ export const createSmartRxActions = ({
       pregnant,
       breastfeeding,
       vitals,
+      doctorSpecialty,
     };
 
     setAnalyzing(true);

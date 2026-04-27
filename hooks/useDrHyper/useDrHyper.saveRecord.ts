@@ -161,8 +161,11 @@ export const createSaveRecordAction = ({
     // ─── بناء تاريخ الزيارة (ISO) مع حماية السجل المحمّل ───────────────
     const buildVisitIso = () => {
       const preservedVisitIso = String(activeVisitDateTime || '').trim();
-      // لو عندنا سجل محمّل بتاريخ ISO صالح، نحافظ عليه (ما نكتبش فوقه)
-      if (activeRecordId && preservedVisitIso) {
+      // ـ نحافظ على activeVisitDateTime لو موجود — في حالتين:
+      //   (أ) سجل محمّل بتاريخ ISO صالح (ما نكتبش فوقه)
+      //   (ب) سجل جديد فائت اختار له الطبيب وقت من modal "كشف فائت"
+      //       (قبل كده كان الوقت بيتم استبداله بـ12:00:00 افتراضياً)
+      if (preservedVisitIso) {
         const preservedTs = Date.parse(preservedVisitIso);
         if (Number.isFinite(preservedTs)) {
           return new Date(preservedTs).toISOString();

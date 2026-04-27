@@ -246,14 +246,6 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
             </div>
           )}
 
-          {/* ملاحظة توجيهية للطبيب: فحص التداخلات والحمل اتنقلوا لشاشة الكشف */}
-          <div className="rounded-2xl border border-warning-200 bg-warning-50/70 p-3">
-            <p className="text-[12px] sm:text-[13px] font-bold text-warning-900 leading-relaxed">
-              💡 <span className="font-black">ملاحظة:</span> فحص التداخلات الدوائية وفحص الدواء أثناء الحمل
-              اتنقلوا لشاشة <span className="font-black">«كشف جديد»</span> — هتلاقيهم كأزرار ذهبية تحت الروشتة مباشرة.
-            </p>
-          </div>
-
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 dh-stagger-1">
             <ToolCard
               title="جرعات الكلى"

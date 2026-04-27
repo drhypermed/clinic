@@ -288,15 +288,23 @@ const buildPrompt = (
 
 Target language: ${targetLanguage}
 
-You must:
-1) Use ONLY the provided structured data. Do not invent, assume, or extrapolate any clinical facts not present in the source data.
-2) Analyse the full chronological evolution of the case across all visits; explicitly note any changes in diagnosis, regimen, or clinical status between visits.
-3) Write in formal third-person clinical language appropriate for physician-to-physician communication (e.g. "The patient presented with...", "Examination revealed...", "The treating physician documented...").
-4) Keep each section concise yet informative; avoid lay language entirely.
-5) Acknowledge diagnostic uncertainty clearly where evidence is insufficient ("No documented diagnosis in this encounter", "Clinical details are limited to the recorded chief complaint").
-6) Never fabricate drug dosings, lab values, or clinical findings absent from the source data.
-7) Write every field strictly in the requested target language: section titles, diagnoses, medication text, advice, lab notes, and timeline entries.
-8) The executiveSummary should read like the opening paragraph of a specialist referral letter summarising the case for the receiving physician.
+═══ ABSOLUTE ANTI-HALLUCINATION RULES ═══
+A) Use ONLY the provided structured data. Do NOT invent, assume, or extrapolate clinical facts.
+B) NEVER fabricate drug dosings, lab values, vital signs, or clinical findings absent from the source.
+C) "warningFlags" MUST be derived from documented evidence in the visits. If no clear warning pattern exists, return an array containing ONE honest disclaimer (e.g., "No specific warning signs derived from documentation; relies on direct clinical assessment").
+D) "recommendations" MUST be generic clinical-documentation guidance, NOT specific treatment recommendations.
+E) "confidenceStatement" MUST honestly reflect data quality:
+   - High confidence: ≥10 visits with full documentation.
+   - Moderate confidence: 3-10 visits OR partial documentation.
+   - Low confidence: <3 visits OR sparse data — say so explicitly.
+
+═══ STYLE & STRUCTURE ═══
+1) Analyse the full chronological evolution; explicitly note changes in diagnosis, regimen, or status between visits.
+2) Use formal third-person clinical language ("The patient presented with...", "Examination revealed...").
+3) Keep sections concise yet informative; avoid lay language.
+4) Acknowledge diagnostic uncertainty clearly ("No documented diagnosis in this encounter", "Clinical details limited to chief complaint").
+5) Write every field strictly in the requested target language.
+6) executiveSummary should read like the opening paragraph of a specialist referral letter.
 
 Clinical data (JSON):
 ${JSON.stringify(compressedPayload, null, 2)}
@@ -345,8 +353,10 @@ export const generateClinicalTimelineNarrative = async (
     // (بدل الـ dynamic الافتراضي اللي ممكن يديله 500 بس). ده بيعطي توازن
     // ممتاز: جودة أعلى من الـ dynamic، مع تكلفة معقولة للاشتراك $15/شهر.
     // لو لاحقاً رفعت سعر الاشتراك، ممكن ترفعه لـ 2048 لجودة أعلى.
+    // temperature=0 (كان 0.2): التقرير الطبي قرار توثيقي، مش إبداع لغوي.
+    // العشوائية بتزود مخاطر الفبركة في warningFlags و recommendations.
     const raw = await generateJson(prompt, {
-      temperature: 0.2,
+      temperature: 0,
       thinkingBudget: 1024,
       feature: 'medical_report', // تتسجل في تقارير الاستهلاك تحت "طباعة تقرير طبي"
     });

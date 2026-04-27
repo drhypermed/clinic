@@ -258,8 +258,10 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     if (!pendingCropImage) return;
 
     try {
+      // ─ JPEG بجودة 0.95 بدل PNG: جودة عالية جداً (لا فرق مرئي عن الأصل) مع حجم
+      //   ~750KB-1MB بدل 5-20 ميجا، وده يمنع فشل الرفع على Firebase Storage.
       const cropped = croppedAreaPixels
-        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels, BANNER_WIDTH)
+        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels, BANNER_WIDTH, 0, 'image/jpeg', 0.95)
         : pendingCropImage;
 
       appendItem(cropped);
@@ -325,6 +327,21 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     }
   };
 
+  // ─ تحويل data URL إلى Blob مباشرةً عبر atob بدل fetch():
+  //   fetch() على data URL ضخم بيرمي "Failed to fetch" في بعض المتصفحات (الموبايل خاصةً)،
+  //   والتحويل المباشر يفك الـbase64 لـUint8Array وينشئ Blob بدون أي طلب شبكة.
+  const dataUrlToBlob = (dataUrl: string): Blob => {
+    const commaIdx = dataUrl.indexOf(',');
+    const header = dataUrl.slice(0, commaIdx);
+    const base64 = dataUrl.slice(commaIdx + 1);
+    const mimeMatch = header.match(/data:([^;]+)/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  };
+
   const uploadBannerImages = async (items: BannerItem[]): Promise<BannerItem[]> => {
     const uploaded: BannerItem[] = [];
 
@@ -334,13 +351,15 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
         continue;
       }
 
-      const response = await fetch(item.imageUrl);
-      const blob = await response.blob();
+      // تحويل مباشر بدون fetch — يقاوم data URLs الكبيرة على الموبايل
+      const blob = dataUrlToBlob(item.imageUrl);
+      // الامتداد يتبع الـ MIME الفعلي للـblob (jpg للصور المضغوطة الجديدة، png للقديمة)
+      const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
       const storageRef = ref(
         storage,
-        `homepage-banners/banner_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.png`
+        `homepage-banners/banner_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
       );
-      const uploadResult = await uploadBytes(storageRef, blob);
+      const uploadResult = await uploadBytes(storageRef, blob, { contentType: blob.type });
       const downloadUrl = await getDownloadURL(uploadResult.ref);
       uploaded.push({ ...item, imageUrl: downloadUrl });
     }

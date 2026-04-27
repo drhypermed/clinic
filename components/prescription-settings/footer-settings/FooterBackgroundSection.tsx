@@ -10,6 +10,8 @@ import { CollapsibleSection } from '../CollapsibleSection';
 import { LABEL_CLASS } from '../utils';
 import type { FooterBackgroundSectionProps } from '../../../types';
 import { readFileAsDataUrl, validateFooterImageFile } from './securityUtils';
+import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = ({
   footer,
@@ -19,8 +21,11 @@ export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = (
   showNotification,
   setFooterBgToCrop,
 }) => {
-  /** 
-   * معالجة تغيير ملف صورة الخلفية 
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
+
+  /**
+   * معالجة تغيير ملف صورة الخلفية
    * تقوم بالتحقق من جودة الملف وحجمه، ثم تحويله إلى DataURL لتخزينه وعرضه
    */
   const handleBackgroundFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,13 +68,19 @@ export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = (
             type="file"
             accept="image/*"
             id="footerBgInput"
-            onChange={handleBackgroundFileChange}
+            onChange={(e) => {
+              if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
+              void handleBackgroundFileChange(e);
+            }}
             className="hidden"
           />
           {!footer.footerBackgroundImage ? (
             // زر الرفع في حالة عدم وجود صورة
             <button
-              onClick={() => document.getElementById('footerBgInput')?.click()}
+              onClick={() => {
+                if (!imageGate.requestImageUpload()) return;
+                document.getElementById('footerBgInput')?.click();
+              }}
               className="w-full py-4 border-2 border-dashed border-brand-300 rounded-xl hover:border-brand-400 hover:bg-brand-50 transition-all flex flex-col items-center gap-2 text-slate-500 hover:text-brand-600"
             >
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,7 +96,10 @@ export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = (
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => document.getElementById('footerBgInput')?.click()}
+                  onClick={() => {
+                    if (!imageGate.requestImageUpload()) return;
+                    document.getElementById('footerBgInput')?.click();
+                  }}
                   className="flex-1 py-2 bg-brand-100 text-brand-700 rounded-lg font-bold hover:bg-brand-200 transition-all text-sm"
                 >
                   📤 رفع صورة جديدة
@@ -231,6 +245,13 @@ export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = (
           </div>
         </div>
       </div>
+
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </CollapsibleSection>
   );
 };

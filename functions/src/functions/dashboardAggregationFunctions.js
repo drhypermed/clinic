@@ -61,13 +61,22 @@ const getUsageByPlan = (doctorData) => {
   let premiumUsage = normalizeUsageCounters(usageByPlan?.premium);
   let proMaxUsage = normalizeUsageCounters(usageByPlan?.pro_max);
 
+  // ─ نتحقق من أي عداد (روشتات/طباعات/AI) عشان نعرف لو الدكتور عنده usageStatsByPlan فعلاً.
+  //   كان فيه bug: لو الدكتور استخدم AI features بس بدون ما يطبع روشتة، الفحص القديم
+  //   كان بيرجع false ويدخل في fallback اللي بيمسح عدّادات الـ AI.
+  const hasAnyAiUsage = AI_FEATURE_NAMES.some((feature) =>
+    (freeUsage.aiFeatures?.[feature] || 0) > 0 ||
+    (premiumUsage.aiFeatures?.[feature] || 0) > 0 ||
+    (proMaxUsage.aiFeatures?.[feature] || 0) > 0
+  );
   const hasUsageByPlan =
     freeUsage.smartPrescriptionCount > 0 ||
     freeUsage.printCount > 0 ||
     premiumUsage.smartPrescriptionCount > 0 ||
     premiumUsage.printCount > 0 ||
     proMaxUsage.smartPrescriptionCount > 0 ||
-    proMaxUsage.printCount > 0;
+    proMaxUsage.printCount > 0 ||
+    hasAnyAiUsage;
 
   if (!hasUsageByPlan) {
     const fallbackUsage = normalizeUsageCounters(doctorData?.usageStats || {});

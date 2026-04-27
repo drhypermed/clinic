@@ -38,7 +38,16 @@ export default defineConfig({
         // استثناء الـlogo الضخم (1.1MB) من الـoffline cache — بيتحمّل مرة واحدة عبر الشبكة، مش محتاج يتخزن في الـSW.
         globIgnores: ['**/logo.png'],
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/__\//, /firebase-messaging-sw\.js$/, /sw\.js$/, /workbox-.*\.js$/],
+        // ─ نمنع navigateFallback من أن يرجع HTML بدل ملفات الصور/الأيقونات.
+        //   كان iOS أحياناً يستلم index.html لما يطلب apple-touch-icon → فيـfallback
+        //   لحرف اسم التطبيق ("D"). إضافة الـregexes دي بتضمن إن طلبات الأيقونات
+        //   والصور والـmanifest تروح للـnetwork مباشرة بدون تدخل من workbox.
+        navigateFallbackDenylist: [
+          /^\/__\//, /firebase-messaging-sw\.js$/, /sw\.js$/, /workbox-.*\.js$/,
+          /\.(?:png|jpg|jpeg|svg|gif|webp|ico|webmanifest)$/i,
+          /^\/apple-touch-icon/i,
+          /^\/manifest/i,
+        ],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

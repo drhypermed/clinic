@@ -146,15 +146,21 @@ export const RenalDoseAdjustment: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-2">
+                        {/* بطاقة الحالة الرئيسية:
+                            - normal/adjust/avoid: نتيجة موثوقة من الـAI
+                            - insufficient_data: الـAI مش متأكد، نوجّه الطبيب لمرجع موثوق
+                              (اللون رمادي محايد عشان مايخوّفش زي avoid، ومايضمنش زي normal) */}
                         <div className={`p-3 rounded-2xl shadow-md ${
                             result.status === 'normal' ? 'bg-gradient-to-br from-success-600 to-success-700' :
                             result.status === 'adjust' ? 'bg-gradient-to-br from-warning-500 to-warning-600' :
+                            result.status === 'insufficient_data' ? 'bg-gradient-to-br from-slate-500 to-slate-600' :
                             'bg-gradient-to-br from-danger-500 to-danger-600'
                         }`}>
                             <p className="font-black text-sm text-white mb-1">
                                 {result.status === 'normal' && 'الجرعة المعتادة (لا حاجة للتعديل)'}
                                 {result.status === 'adjust' && 'يوصى بتعديل الجرعة'}
                                 {result.status === 'avoid' && 'يفضل تجنب الدواء'}
+                                {result.status === 'insufficient_data' && '⚠️ بيانات غير كافية لتوصية موثوقة'}
                             </p>
                             <p className="font-bold text-white/90 text-xs leading-relaxed">{result.recommendation}</p>
                         </div>

@@ -13,9 +13,15 @@
 import { BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature, TranslationQuotaResult } from './types';
 import { StorageQuotaResult } from './types';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebaseConfig';
+import { auth, functions } from '../firebaseConfig';
 import { callWithAuthRetry, ensureAuthenticatedUser, mapCallableError } from './auth';
 import { normalizeControls, resolveSafeQuotaWhatsappUrl, toSafeLimit } from './normalize';
+import {
+  decrementCapacityCache,
+  isNetworkOfflineError,
+  readCapacityCache,
+  saveCapacityCache,
+} from './capacityCache';
 import type {
   BookingQuotaFeature } from '../../types';
 
@@ -166,6 +172,7 @@ export const validateRecordsCapacity = async (
   params?: { recordId?: string },
 ): Promise<RecordsCapacityResult> => {
   await ensureAuthenticatedUser();
+  const userId = auth.currentUser?.uid || '';
   try {
     const callable = httpsCallable(functions, 'validateRecordsCapacity');
     // نمرر الـrecordId للسيرفر بس لو موجود (تعديل سجل قائم) — السيرفر
@@ -179,7 +186,7 @@ export const validateRecordsCapacity = async (
       normalizedControls.freeRecordsMaxCount,
       normalizedControls.premiumRecordsMaxCount,
       normalizedControls.proMaxRecordsMaxCount);
-    return {
+    const finalResult: RecordsCapacityResult = {
       accountType: tier,
       limit: toSafeLimit(data.limit, fallbackLimit),
       used: toSafeLimit(data.used, 0),
@@ -189,7 +196,48 @@ export const validateRecordsCapacity = async (
       limitReachedMessage: String(data.limitReachedMessage || ''),
       whatsappMessage: String(data.whatsappMessage || ''),
     };
+    // ─ نخزن الفحص الناجح للاستخدام offline لاحقاً (لو إنشاء جديد بس،
+    //   مش لما يكون recordIdForUpdate لأن السيرفر هنا بيتخطى الحد).
+    if (!params?.recordId) {
+      saveCapacityCache(userId, 'records', {
+        remaining: finalResult.remaining,
+        limit: finalResult.limit,
+        accountType: finalResult.accountType,
+      });
+    }
+    return finalResult;
   } catch (error: unknown) {
+    // ─ Offline fallback: لو خطأ شبكة وعندنا فحص ناجح أقل من ساعة، نسمح بالحفظ.
+    //   التعديل (recordId موجود) مايحتاجش فحص أصلاً، فبنرجع نتيجة "كله تمام".
+    if (isNetworkOfflineError(error)) {
+      if (params?.recordId) {
+        // تعديل سجل قائم — مفيش فحص حد، نرجع نتيجة افتراضية ناجحة
+        return {
+          accountType: 'free',
+          limit: 0,
+          used: 0,
+          remaining: 9999,
+          whatsappNumber: '',
+          whatsappUrl: '',
+          limitReachedMessage: '',
+          whatsappMessage: '',
+        };
+      }
+      const cached = readCapacityCache(userId, 'records');
+      if (cached && cached.remaining > 0) {
+        decrementCapacityCache(userId, 'records');
+        return {
+          accountType: cached.accountType as TierValue,
+          limit: cached.limit,
+          used: Math.max(0, cached.limit - cached.remaining),
+          remaining: cached.remaining,
+          whatsappNumber: '',
+          whatsappUrl: '',
+          limitReachedMessage: '',
+          whatsappMessage: '',
+        };
+      }
+    }
     return mapCallableError(error);
   }
 };
@@ -200,6 +248,7 @@ export const validateRecordsCapacity = async (
  */
 export const validateReadyPrescriptionsCapacity = async (): Promise<CapacityCheckResult> => {
   await ensureAuthenticatedUser();
+  const userId = auth.currentUser?.uid || '';
   try {
     const callable = httpsCallable(functions, 'validateReadyPrescriptionsCapacity');
     const result = await callWithAuthRetry(() => callable());
@@ -210,7 +259,7 @@ export const validateReadyPrescriptionsCapacity = async (): Promise<CapacityChec
       normalizedControls.freeReadyPrescriptionsMaxCount,
       normalizedControls.premiumReadyPrescriptionsMaxCount,
       normalizedControls.proMaxReadyPrescriptionsMaxCount);
-    return {
+    const finalResult: CapacityCheckResult = {
       accountType: tier,
       limit: toSafeLimit(data.limit, fallbackLimit),
       used: toSafeLimit(data.used, 0),
@@ -220,7 +269,31 @@ export const validateReadyPrescriptionsCapacity = async (): Promise<CapacityChec
       limitReachedMessage: String(data.limitReachedMessage || ''),
       whatsappMessage: String(data.whatsappMessage || ''),
     };
+    // نخزّن الفحص الناجح للسماح بالحفظ offline لمدة ساعة
+    saveCapacityCache(userId, 'readyPrescriptions', {
+      remaining: finalResult.remaining,
+      limit: finalResult.limit,
+      accountType: finalResult.accountType,
+    });
+    return finalResult;
   } catch (error: unknown) {
+    // Offline fallback: نسمح بالحفظ لو فيه فحص ناجح أقل من ساعة
+    if (isNetworkOfflineError(error)) {
+      const cached = readCapacityCache(userId, 'readyPrescriptions');
+      if (cached && cached.remaining > 0) {
+        decrementCapacityCache(userId, 'readyPrescriptions');
+        return {
+          accountType: cached.accountType as TierValue,
+          limit: cached.limit,
+          used: Math.max(0, cached.limit - cached.remaining),
+          remaining: cached.remaining,
+          whatsappNumber: '',
+          whatsappUrl: '',
+          limitReachedMessage: '',
+          whatsappMessage: '',
+        };
+      }
+    }
     return mapCallableError(error);
   }
 };

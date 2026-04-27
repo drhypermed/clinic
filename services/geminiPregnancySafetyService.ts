@@ -95,6 +95,28 @@ const toStringArray = (value: unknown, maxItems: number): string[] => {
     .slice(0, maxItems);
 };
 
+// ─ المصادر الموثوقة المسموح بيها في حقل references (whitelist).
+//   لو الموديل ادّعى مصدر خارج القائمة دي = نعتبره مخترع ونرفضه. ده بيمنع
+//   هلوسة الـreferences اللي كانت ممكن تخدع الطبيب (الموديل ممكن يقول
+//   "Smith et al. 2023" ويكون مفيش بحث بالاسم ده).
+const ALLOWED_PREGNANCY_REFERENCES = [
+  'fda',
+  'lactmed',
+  'briggs',
+  'acog',
+  'tga',
+  'hale', // Hale's Medications and Mothers' Milk
+  'who',
+  'nih',
+  'medications and mothers milk',
+] as const;
+
+const filterTrustedReferences = (refs: string[]): string[] =>
+  refs.filter((ref) => {
+    const lower = ref.toLowerCase();
+    return ALLOWED_PREGNANCY_REFERENCES.some((allowed) => lower.includes(allowed));
+  });
+
 /** تنظيف استجابة الموديل وضمان البنية */
 const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
@@ -115,8 +137,9 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResul
         evidence: toTrimmed(it.evidence),
         recommendation: toTrimmed(it.recommendation),
         riskTrimester: normalizeTrimester(it.riskTrimester),
-        // نقتصر على مصدرين max لإبقاء البطاقة مرتبة (قبل كان 4)
-        references: toStringArray(it.references, 2),
+        // نقتصر على مصدرين max + نفلتر أي مصدر مش من الـwhitelist (anti-hallucination).
+        // لو الموديل ادّعى مصدر مخترع، نرجع مصفوفة فاضية بدل ما نضلل الطبيب.
+        references: filterTrustedReferences(toStringArray(it.references, 2)),
       };
     })
     // حماية من الهلوسة: الاسم لازم يكون واحد من اللي الطبيب اختاره

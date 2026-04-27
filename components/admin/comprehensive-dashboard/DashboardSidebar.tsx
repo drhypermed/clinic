@@ -1,6 +1,5 @@
 import React from 'react';
 import { AdminView, NavGroup } from './types';
-import { UserGuideSidebarLink } from '../../common/UserGuideSidebarLink';
 
 interface DashboardSidebarProps {
   /** الـnavigation منظمة في مجموعات (categories) — كل مجموعة لها header */
@@ -111,6 +110,39 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   onNavigateHome,
   onLogout,
 }) => {
+  // ─ قفل scroll الصفحة تحت الـsidebar على الموبايل فقط — لما المستخدم
+  //   يفتح القائمة، الصفحة اللي تحت ما تـscroll معاه بالغلط أثناء التمرير
+  //   جوّا الـsidebar. على الـdesktop (lg+) الـsidebar ثابت جنب الصفحة فمش
+  //   محتاج قفل. بنحتفظ بـscroll position ونـrestore بعد الإغلاق على iOS.
+  React.useEffect(() => {
+    if (!sidebarOpen) return;
+    const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+    if (!isMobile) return;
+
+    const scrollY = window.scrollY;
+    const previousBodyStyle = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+
+    // position:fixed أكثر موثوقية على iOS Safari (overflow:hidden لوحده مش كافي)
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+
+    return () => {
+      document.body.style.overflow = previousBodyStyle.overflow;
+      document.body.style.position = previousBodyStyle.position;
+      document.body.style.top = previousBodyStyle.top;
+      document.body.style.width = previousBodyStyle.width;
+      // نرجع للـscroll position الأصلي عشان position:fixed بيخلي البودي يقفز لأعلى
+      window.scrollTo(0, scrollY);
+    };
+  }, [sidebarOpen]);
+
   return (
     <>
       {sidebarOpen && (
@@ -208,8 +240,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           </nav>
 
           <div className="border-t border-slate-200 px-3 py-3 space-y-2">
-            {/* دليل الاستخدام — نفس الصفحه اللي برا (/user-guide) بدون تكرار للكود */}
-            <UserGuideSidebarLink variant="admin" />
+            {/* دليل الاستخدام وباقات الدعاية موجودين في sidebar الطبيب الرئيسي
+                — مش محتاجين تكرار هنا في sidebar الإدارة. */}
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={onNavigateHome}

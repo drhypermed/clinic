@@ -7,7 +7,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  signOut as firebaseSignOut,
+} from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
 import {
   FaWhatsapp,
@@ -30,6 +34,16 @@ import {
   isPublicLikeUserData,
 } from '../../services/firestore/profileRoles';
 import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
+// حفظ بيانات الـsignup قبل الـredirect — عشان لما الطبيب يرجع من Google نكمل تلقائياً
+import {
+  saveSignupForm,
+  loadSignupForm,
+  clearSignupForm,
+  setSignupRedirectFlag,
+  consumeSignupRedirectFlag,
+  fileToDataUrl,
+  dataUrlToFile,
+} from './signupFormPersistence';
 
 const SESSION_ROLE_STORAGE_KEY = 'dh_auth_role';
 const SIGNUP_DOCTOR_PATH = '/signup/doctor';
@@ -42,7 +56,7 @@ const labelBase = 'block text-sm font-bold text-slate-900 mb-1.5';
 
 export const DoctorSignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { loading, error, clearError } = useAuth();
+  const { loading, error, clearError, user } = useAuth();
 
   const [doctorName, setDoctorName] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -53,6 +67,14 @@ export const DoctorSignupPage: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [isLegalReady, setIsLegalReady] = useState(false);
+
+  // علم "الطبيب رجع للتو من signInWithRedirect".
+  // الـconsume بيحصل مرّه واحده عند الـmount (في useState init) — لو الـflag كان
+  // موجود في sessionStorage، الـstate يبقى true ونعمل auto-submit. بعدين
+  // نخليه false عشان ميشتغلش تاني.
+  const [hasReturnedFromRedirect, setHasReturnedFromRedirect] = useState<boolean>(
+    () => consumeSignupRedirectFlag(),
+  );
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -84,6 +106,60 @@ export const DoctorSignupPage: React.FC = () => {
     }
   }, []);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Auto-submit بعد الرجوع من signInWithRedirect
+  // ─────────────────────────────────────────────────────────────────────────
+  // لما الـpopup يفشل على Safari/iOS/PWA، handleGoogleSignup بيعمل
+  // signInWithRedirect وبيحفظ الـform في sessionStorage. الـpage بتتعاد تحميلها،
+  // الطبيب يدخل بـGoogle، يرجع للـapp. هنا بنلتقط الـpending form ونكمل الـsubmit
+  // تلقائياً — الطبيب ميحتاجش يضغط الزر تاني ولا يرفع الصورة من جديد.
+  useEffect(() => {
+    if (!hasReturnedFromRedirect) return;
+    // ننتظر useAuth يخلص الـinit (loading=false) و auth.currentUser يتاح
+    if (loading) return;
+    if (!auth.currentUser) {
+      // الـauth لسه ما جهزش — هنحاول تاني لما user/loading يتغير
+      return;
+    }
+
+    const pending = loadSignupForm();
+    if (!pending) {
+      // مفيش form محفوظ (TTL منتهي أو الـuser فتح الصفحه يدوياً) — اخرج
+      setHasReturnedFromRedirect(false);
+      return;
+    }
+
+    const restoredFile = dataUrlToFile(pending.licenseImageDataUrl, pending.licenseImageName);
+    if (!restoredFile) {
+      // الـbase64 تالف — نطلب من الطبيب يرفع الصوره من جديد
+      setLoginError('تعذَّر استرجاع صورة الترخيص بعد العودة من Google. يرجى رفعها من جديد.');
+      clearSignupForm();
+      setHasReturnedFromRedirect(false);
+      return;
+    }
+
+    // عرض البيانات في الـUI أثناء الـsubmit (شفافية للطبيب)
+    setDoctorName(pending.doctorName);
+    setSpecialty(pending.specialty);
+    setWhatsapp(pending.whatsapp);
+    setLicenseImage(restoredFile);
+    setImagePreview(pending.licenseImageDataUrl);
+
+    setAuthFlowGuard(SIGNUP_DOCTOR_PATH);
+    setIsChecking(true);
+    setHasReturnedFromRedirect(false);  // عشان الـeffect ميشتغلش تاني
+
+    submitDoctorProfile(auth.currentUser, {
+      doctorName: pending.doctorName,
+      specialty: pending.specialty,
+      whatsapp: pending.whatsapp,
+      licenseImage: restoredFile,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- submitDoctorProfile
+  // معرَّفه داخل الـcomponent ومش memoized — حطها في الـdeps هيخلي الـeffect يشتغل
+  // كل render. الـlogic معتمد فقط على hasReturnedFromRedirect/loading/user.
+  }, [hasReturnedFromRedirect, loading, user]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,46 +174,24 @@ export const DoctorSignupPage: React.FC = () => {
     setLoginError('');
   };
 
-  const handleGoogleSignup = async () => {
+  // ─────────────────────────────────────────────────────────────────────────
+  // submitDoctorProfile: المنطق المشترك بين تسجيل-عبر-popup وتسجيل-بعد-redirect
+  // ─────────────────────────────────────────────────────────────────────────
+  // بعد ما الطبيب يدخل بـGoogle (سواء من popup أو من redirect)، الفنكشن دي
+  // بتعمل: blacklist check → duplicate check → upload صوره → save profile → signout.
+  // الـerror handling هنا بيعرض رسالة في الـUI وبيمسح الـpending form.
+  const submitDoctorProfile = async (
+    user: import('firebase/auth').User,
+    formValues: {
+      doctorName: string;
+      specialty: string;
+      whatsapp: string;
+      licenseImage: File;
+    },
+  ): Promise<void> => {
     const clearSignupGuardSoon = (delayMs = 0) => clearAuthFlowGuardSoon(SIGNUP_DOCTOR_PATH, delayMs);
 
-    setLoginError('');
-    clearError();
-
-    if (!isLegalReady) {
-      setLoginError('يلزم الموافقة على شروط وسياسة خصوصية الأطباء قبل إنشاء الحساب.');
-      return;
-    }
-
-    if (!doctorName.trim()) {
-      setLoginError('يرجى إدخال الاسم الكامل');
-      return;
-    }
-
-    if (!specialty) {
-      setLoginError('يرجى اختيار التخصص الطبي');
-      return;
-    }
-
-    if (!whatsapp.trim() || whatsapp.trim().length < 8) {
-      setLoginError('يرجى إدخال رقم واتساب صحيح');
-      return;
-    }
-
-    if (!licenseImage) {
-      setLoginError('صورة الكارنيه أو الترخيص مطلوبة');
-      return;
-    }
-
-    localStorage.removeItem(PUBLIC_AUTH_ERROR_KEY);
-    localStorage.removeItem('blacklist_message');
-    localStorage.removeItem('duplicate_account_error');
-    setAuthFlowGuard(SIGNUP_DOCTOR_PATH);
-    setIsChecking(true);
-
     try {
-      const credential = await signInWithPopup(auth, googleProvider);
-      const user = credential.user;
       const userEmail = (user.email || '').trim().toLowerCase();
 
       const [userProfileDoc, blacklistDoc] = await Promise.all([
@@ -155,6 +209,7 @@ export const DoctorSignupPage: React.FC = () => {
           : '⛔ تم حظر هذا البريد الإلكتروني من التسجيل في النظام';
         localStorage.setItem('blacklist_message', blockMsg);
         try { await firebaseSignOut(auth); } catch { /* best effort */ }
+        clearSignupForm();
         setLoginError(blockMsg);
         clearSignupGuardSoon(500);
         setIsChecking(false);
@@ -182,6 +237,7 @@ export const DoctorSignupPage: React.FC = () => {
         localStorage.setItem(errorKey, errorMsg);
         localStorage.removeItem(SESSION_ROLE_STORAGE_KEY);
         try { await firebaseSignOut(auth); } catch { /* best effort */ }
+        clearSignupForm();
         setLoginError(errorMsg);
         clearSignupGuardSoon(500);
         setIsChecking(false);
@@ -195,22 +251,24 @@ export const DoctorSignupPage: React.FC = () => {
         localStorage.removeItem(PUBLIC_AUTH_ERROR_KEY);
         localStorage.removeItem(SESSION_ROLE_STORAGE_KEY);
         try { await firebaseSignOut(auth); } catch { /* best effort */ }
+        clearSignupForm();
         setLoginError(publicMsg);
         clearSignupGuardSoon(500);
         setIsChecking(false);
         return;
       }
 
-      const safeName = licenseImage.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      // 4. رفع صورة الترخيص + حفظ البروفايل
+      const safeName = formValues.licenseImage.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const storageRef = ref(storage, `doctor-verification/${user.uid}/${Date.now()}_${safeName}`);
-      await uploadBytes(storageRef, licenseImage);
+      await uploadBytes(storageRef, formValues.licenseImage);
       const licenseImageUrl = await getDownloadURL(storageRef);
 
       await setDoc(getUserProfileDocRef(user.uid), buildDoctorUserProfilePayload({
         uid: user.uid,
-        doctorName: doctorName.trim(),
-        doctorSpecialty: specialty,
-        doctorWhatsApp: whatsapp.trim(),
+        doctorName: formValues.doctorName.trim(),
+        doctorSpecialty: formValues.specialty,
+        doctorWhatsApp: formValues.whatsapp.trim(),
         doctorEmail: (user.email || '').trim().toLowerCase(),
         verificationDocUrl: licenseImageUrl,
         verificationStatus: 'submitted',
@@ -221,29 +279,165 @@ export const DoctorSignupPage: React.FC = () => {
 
       // ─ إجراء أمان: signout الطبيب فور تسجيل البيانات.
       // محدش يدخل التطبيق غير بعد ما الأدمن يعتمده يدوياً (verificationStatus = 'approved').
-      // الـuseAuth guard هيمنعه برضه (defense in depth)، لكن signout هنا أوضح
-      // للمستخدم: ينتقل مباشرة لـ/login بدون وميض على /home ثم signout مفاجئ.
       try { await firebaseSignOut(auth); } catch { /* best effort — الـguard في useAuth backup */ }
 
       localStorage.setItem(SESSION_ROLE_STORAGE_KEY, 'doctor');
       clearAuthFlowGuard();
+      clearSignupForm();
 
-      // رسالة واضحة للطبيب: تم استلام طلبك، استنى الموافقة
       alert(
         '✅ تم تسجيل طلبك بنجاح!\n\n' +
         '📋 سيتم مراجعة حسابك من الإدارة خلال 24 ساعة.\n' +
-        '📧 ستصلك رسالة على بريدك بمجرد الاعتماد.\n\n' +
-        '🔐 لا يمكنك الدخول قبل اعتماد الإدارة لحسابك.',
+        '🔐 جرّب تسجيل الدخول من صفحة الدخول دورياً — حسابك هيشتغل فور اعتماد الإدارة.',
       );
 
-      // redirect لـ/login (مش /home) — الطبيب يستنى الاعتماد
       window.location.href = '/login';
     } catch (err: any) {
       try { await firebaseSignOut(auth); } catch { /* best effort */ }
       localStorage.removeItem(SESSION_ROLE_STORAGE_KEY);
-      setLoginError(err.message || 'فشل تسجيل الدخول عبر Google');
+      clearSignupForm();
+
+      const errorCode = String(err?.code || '');
+      const errorMessage = String(err?.message || '');
+
+      // ─ "Missing or insufficient permissions" بيحصل لما الـuser doc موجود
+      //   بالفعل (طبيب مسجّل قبل كده) — نعرض رسالة مفهومة بدل نص الـerror الخام.
+      const isPermissionError =
+        errorCode === 'permission-denied' ||
+        /missing or insufficient permissions/i.test(errorMessage);
+
+      if (isPermissionError) {
+        setLoginError(
+          '✅ يوجد حساب مسجّل بالفعل بهذا البريد، وهو حالياً قيد مراجعة الإدارة.\n\n' +
+          '📋 سيتم تفعيل الحساب فور الاعتماد بعد الاطلاع على البيانات.\n' +
+          '🔐 لا داعي لإنشاء حساب جديد — جرّب تسجيل الدخول من صفحة الدخول دورياً.',
+        );
+      } else {
+        setLoginError(errorMessage || 'فشل في حفظ بياناتك. حاول مرة أخرى.');
+      }
+
       clearAuthFlowGuard();
-    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setLoginError('');
+    clearError();
+
+    if (!isLegalReady) {
+      setLoginError('يلزم الموافقة على شروط وسياسة خصوصية الأطباء قبل إنشاء الحساب.');
+      return;
+    }
+    if (!doctorName.trim()) { setLoginError('يرجى إدخال الاسم الكامل'); return; }
+    if (!specialty) { setLoginError('يرجى اختيار التخصص الطبي'); return; }
+    if (!whatsapp.trim() || whatsapp.trim().length < 8) { setLoginError('يرجى إدخال رقم واتساب صحيح'); return; }
+    if (!licenseImage) { setLoginError('صورة الكارنيه أو الترخيص مطلوبة'); return; }
+
+    localStorage.removeItem(PUBLIC_AUTH_ERROR_KEY);
+    localStorage.removeItem('blacklist_message');
+    localStorage.removeItem('duplicate_account_error');
+    setAuthFlowGuard(SIGNUP_DOCTOR_PATH);
+    setIsChecking(true);
+
+    // حفظ الـform في sessionStorage قبل ما نحاول signInWithPopup.
+    // ضروري عشان لو الـpopup فشل (Safari/iOS/PWA)، نـfallback لـsignInWithRedirect
+    // اللي بيـreload الصفحه. بعد ما الطبيب يرجع من Google، useEffect هيسترجع
+    // الـform ويكمل الـsubmit تلقائياً. لو الصورة كبيره (>4.5MB)، الحفظ هيفشل
+    // ونسقط لرسالة واضحه (الحل القديم).
+    let formSavedForRedirect = false;
+    try {
+      const dataUrl = await fileToDataUrl(licenseImage);
+      const saveResult = saveSignupForm({
+        doctorName: doctorName.trim(),
+        specialty,
+        whatsapp: whatsapp.trim(),
+        licenseImageDataUrl: dataUrl,
+        licenseImageName: licenseImage.name,
+      });
+      formSavedForRedirect = saveResult.ok;
+    } catch {
+      formSavedForRedirect = false;
+    }
+
+    try {
+      const credential = await signInWithPopup(auth, googleProvider);
+      // popup نجح — نـconsume أي flag قديم من محاولات سابقة، ثم نكمل الـsubmit.
+      consumeSignupRedirectFlag();
+      await submitDoctorProfile(credential.user, {
+        doctorName: doctorName.trim(),
+        specialty,
+        whatsapp: whatsapp.trim(),
+        licenseImage,
+      });
+    } catch (err: any) {
+      const errorCode = String(err?.code || '');
+      const errorMessage = String(err?.message || '');
+
+      const isPopupBlocked =
+        errorCode === 'auth/popup-blocked' ||
+        errorCode === 'auth/operation-not-supported-in-this-environment';
+      const isPopupClosed =
+        errorCode === 'auth/popup-closed-by-user' ||
+        errorCode === 'auth/cancelled-popup-request';
+      const isPermissionError =
+        errorCode === 'permission-denied' ||
+        /missing or insufficient permissions/i.test(errorMessage);
+
+      if (isPopupBlocked && formSavedForRedirect) {
+        // الـbrowser منع الـpopup → fallback لـsignInWithRedirect.
+        // الـpage هتتعاد تحميلها، useEffect عند الرجوع هيلتقط الـpending form
+        // ويكمل الـsubmit تلقائياً بدون تدخل من الطبيب.
+        setSignupRedirectFlag();
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          // العمليه سلّمت تحكّم للـbrowser — مش بنعمل setIsChecking(false)
+          // لأن الصفحه هتتعاد تحميلها فوراً.
+          return;
+        } catch (redirectErr: any) {
+          // الـredirect نفسه فشل (نادر) — نسقط لرسالة واضحه
+          clearSignupForm();
+          setLoginError(
+            '🚫 تعذَّر فتح صفحة Google لتسجيل الدخول.\n\n' +
+            '💡 الحلول:\n' +
+            '• اسمح بالنوافذ المنبثقة لهذا الموقع\n' +
+            '• على iPhone: افتح الموقع في Safari مباشرةً\n' +
+            '• جرّب متصفّح تاني زي Chrome أو Firefox',
+          );
+          clearAuthFlowGuard();
+          setIsChecking(false);
+          return;
+        }
+      }
+
+      // باقي الأخطاء — مفيش redirect fallback
+      try { await firebaseSignOut(auth); } catch { /* best effort */ }
+      localStorage.removeItem(SESSION_ROLE_STORAGE_KEY);
+      clearSignupForm();
+
+      if (isPopupBlocked && !formSavedForRedirect) {
+        // الـform كانت أكبر من حد التخزين — نعرض رسالة بديله للـuser
+        setLoginError(
+          '🚫 المتصفّح منع نافذة تسجيل دخول جوجل، وصورة الترخيص أكبر من 4.5MB ' +
+          'فتعذَّر حفظ بياناتك للمتابعة التلقائية.\n\n' +
+          '💡 الحلول:\n' +
+          '• اضغط الصورة لتقل عن 4.5MB ثم حاول تاني\n' +
+          '• اسمح بالنوافذ المنبثقة لهذا الموقع\n' +
+          '• جرّب متصفّح تاني زي Chrome أو Firefox',
+        );
+      } else if (isPopupClosed) {
+        setLoginError('تم إلغاء تسجيل الدخول. اضغط الزر مرة تانية للمتابعة — بياناتك محفوظه.');
+      } else if (isPermissionError) {
+        setLoginError(
+          '✅ يوجد حساب مسجّل بالفعل بهذا البريد، وهو حالياً قيد مراجعة الإدارة.\n\n' +
+          '📋 سيتم تفعيل الحساب فور الاعتماد بعد الاطلاع على البيانات.\n' +
+          '🔐 لا داعي لإنشاء حساب جديد — جرّب تسجيل الدخول من صفحة الدخول دورياً.',
+        );
+      } else {
+        setLoginError(errorMessage || 'فشل تسجيل الدخول عبر Google');
+      }
+
+      clearAuthFlowGuard();
       setIsChecking(false);
     }
   };
@@ -436,15 +630,6 @@ export const DoctorSignupPage: React.FC = () => {
                   <span>إنشاء حساب بـ Google</span>
                 </>
               )}
-            </button>
-
-            {/* رابط دليل المستخدم — تحت زر الإنشاء مباشرة عشان الطبيب يدخل الدليل بضغطه واحده */}
-            <button
-              type="button"
-              onClick={() => navigate('/user-guide')}
-              className="w-full py-2.5 px-4 bg-white border-2 border-brand-600 text-brand-700 hover:bg-brand-50 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2"
-            >
-              <span>دليل استخدام التطبيق</span>
             </button>
 
             <div className="pt-3 border-t border-slate-200 text-center space-y-2">

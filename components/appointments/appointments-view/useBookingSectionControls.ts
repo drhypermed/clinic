@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type {
   CustomBox,
@@ -128,16 +128,43 @@ export const useBookingSectionControls = ({
     return firestoreService.subscribeToPublicSlots(publicBookingSecret, setPublicSlots);
   }, [publicSectionOpen, publicBookingSecret]);
 
+  // Counter لحماية بيانات نموذج الجمهور من stale responses عند تغيُّر الـsecret.
+  const publicFormRequestIdRef = useRef(0);
+
   // 5. جلب إعدادات نموذج حجز الجمهور
   useEffect(() => {
     if (!publicSectionOpen || !publicBookingSecret) return;
-    firestoreService.getPublicBookingConfig(publicBookingSecret).then((config) => {
-      if (config) {
-        setPublicFormTitle(config.title ?? '');
-        setPublicFormContactInfo(config.contactInfo ?? '');
-      }
-    });
+
+    publicFormRequestIdRef.current += 1;
+    const myRequestId = publicFormRequestIdRef.current;
+
+    // مسح الحقول القديمه فوراً عند تغيُّر الـsecret — قبل الإصلاح، لو الـconfig
+    // رجع null أو الـpromise رفض، الحقول كانت تفضل بقيم دكتور سابق وممكن
+    // تتحفظ بالغلط على السياق الحالي.
+    setPublicFormTitle('');
+    setPublicFormContactInfo('');
+
+    firestoreService.getPublicBookingConfig(publicBookingSecret)
+      .then((config) => {
+        if (publicFormRequestIdRef.current !== myRequestId) return;
+        // null = الدكتور ما عملش publish لإعدادات بعد — نسيب الحقول فاضيه
+        // (المسح اللي عملناه فوق) عشان السكرتيره تكتب من الصفر للسياق الحالي.
+        if (config) {
+          setPublicFormTitle(config.title ?? '');
+          setPublicFormContactInfo(config.contactInfo ?? '');
+        }
+      })
+      .catch((err) => {
+        if (publicFormRequestIdRef.current !== myRequestId) return;
+        console.warn('[Secretary] Failed to load public booking config:', err);
+        // الحقول اتمسحت فوق فعلاً — مفيش لازم نعمل setState تاني، بس لو رجع
+        // الاتصال هي تظهر فاضيه بدل قيم قديمه ضلّاله.
+      });
   }, [publicSectionOpen, publicBookingSecret]);
+
+  // Counter يزيد مع كل تغيُّر context للسكرتارية (secret/branch/user) — يحمي من
+  // stale async responses لو السكرتيره بدّلت الفرع بسرعه ورد قديم رجع بعد الجديد.
+  const secretarySettingsRequestIdRef = useRef(0);
 
   // 6. تحميل إعدادات السكرتارية (كلمة المرور وعنوان النموذج)
   useEffect(() => {
@@ -146,45 +173,75 @@ export const useBookingSectionControls = ({
     // نوقف الـ auto-save أثناء إعادة التحميل لفرع جديد حتى لا يُحفظ بيانات قديمة
     setSecretarySettingsHydrated(false);
     setSecretarySettingsDirty(false);
-    firestoreService.getBookingConfig(bookingSecret, activeBranchId).then((config) => {
-      if (!userId) {
-        setBookingFormTitle(config?.formTitle ?? '');
-        setSecretaryPassword('');
-        setSecretaryPasswordTouched(false);
-        const rawVisibility = config?.secretaryVitalsVisibility;
-        const nextFields = normalizeSecretaryVitalFieldDefinitions(
-          config?.secretaryVitalFields,
-          prescriptionSecretaryFields
-        );
-        setSecretaryVitalFields(nextFields);
-        setSecretaryVitalsVisibility(
-          buildSecretaryVisibilityByFieldDefinitions(
-            nextFields,
-            rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
-          )
-        );
-        setSecretarySettingsHydrated(true);
-        return;
-      }
-      firestoreService.getBookingConfigByUserId(userId, activeBranchId).then((legacyConfig) => {
-        setBookingFormTitle((config?.formTitle ?? '').trim() || legacyConfig?.formTitle || '');
-        setSecretaryPassword((legacyConfig?.secretaryPasswordPlain ?? '').trim());
-        const nextFields = normalizeSecretaryVitalFieldDefinitions(
-          config?.secretaryVitalFields || legacyConfig?.secretaryVitalFields,
-          prescriptionSecretaryFields
-        );
-        const rawVisibility = config?.secretaryVitalsVisibility || legacyConfig?.secretaryVitalsVisibility;
-        const nextVisibility = buildSecretaryVisibilityByFieldDefinitions(
-          nextFields,
-          rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
-        );
 
-        setSecretaryVitalFields(nextFields);
-        setSecretaryVitalsVisibility(nextVisibility);
-        setSecretaryPasswordTouched(false);
-        setSecretarySettingsHydrated(true);
-      });
-    });
+    secretarySettingsRequestIdRef.current += 1;
+    const myRequestId = secretarySettingsRequestIdRef.current;
+
+    // ─ مسار الخطأ المشترك ─
+    // قبل الإصلاح: لو الـpromise رفض، secretarySettingsHydrated يفضل false → زر
+    // الحفظ بيبقى بلا تأثير (performSaveBookingCredentials بيخرج early). الإصلاح:
+    // نضع القيم الافتراضيه ونـset hydrated=true عشان الواجهه ترجع تشتغل.
+    const handleLoadFailure = (err: unknown) => {
+      if (secretarySettingsRequestIdRef.current !== myRequestId) return;
+      console.warn('[Secretary] Failed to load booking settings:', err);
+      setBookingFormTitle('');
+      setSecretaryPassword('');
+      setSecretaryPasswordTouched(false);
+      const fallbackFields = normalizeSecretaryVitalFieldDefinitions(prescriptionSecretaryFields);
+      setSecretaryVitalFields(fallbackFields);
+      setSecretaryVitalsVisibility(
+        buildSecretaryVisibilityByFieldDefinitions(fallbackFields, createDefaultSecretaryVitalsVisibility())
+      );
+      setSecretarySettingsHydrated(true);
+    };
+
+    firestoreService.getBookingConfig(bookingSecret, activeBranchId)
+      .then((config) => {
+        // الرد ده لطلب قديم؟ اخرج بدون setState
+        if (secretarySettingsRequestIdRef.current !== myRequestId) return;
+
+        if (!userId) {
+          setBookingFormTitle(config?.formTitle ?? '');
+          setSecretaryPassword('');
+          setSecretaryPasswordTouched(false);
+          const rawVisibility = config?.secretaryVitalsVisibility;
+          const nextFields = normalizeSecretaryVitalFieldDefinitions(
+            config?.secretaryVitalFields,
+            prescriptionSecretaryFields
+          );
+          setSecretaryVitalFields(nextFields);
+          setSecretaryVitalsVisibility(
+            buildSecretaryVisibilityByFieldDefinitions(
+              nextFields,
+              rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
+            )
+          );
+          setSecretarySettingsHydrated(true);
+          return;
+        }
+        firestoreService.getBookingConfigByUserId(userId, activeBranchId)
+          .then((legacyConfig) => {
+            if (secretarySettingsRequestIdRef.current !== myRequestId) return;
+            setBookingFormTitle((config?.formTitle ?? '').trim() || legacyConfig?.formTitle || '');
+            setSecretaryPassword((legacyConfig?.secretaryPasswordPlain ?? '').trim());
+            const nextFields = normalizeSecretaryVitalFieldDefinitions(
+              config?.secretaryVitalFields || legacyConfig?.secretaryVitalFields,
+              prescriptionSecretaryFields
+            );
+            const rawVisibility = config?.secretaryVitalsVisibility || legacyConfig?.secretaryVitalsVisibility;
+            const nextVisibility = buildSecretaryVisibilityByFieldDefinitions(
+              nextFields,
+              rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
+            );
+
+            setSecretaryVitalFields(nextFields);
+            setSecretaryVitalsVisibility(nextVisibility);
+            setSecretaryPasswordTouched(false);
+            setSecretarySettingsHydrated(true);
+          })
+          .catch(handleLoadFailure);
+      })
+      .catch(handleLoadFailure);
   }, [bookingSecret, prescriptionSecretaryFields, userId, branchesHook.activeBranchId]);
 
   useEffect(() => {

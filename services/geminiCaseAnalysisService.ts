@@ -98,10 +98,12 @@ const buildFemaleContext = (
 const sanitizeAnalysis = (raw: unknown): CaseAnalysisResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
-  // ── التشخيصات التفريقية: نحتفظ بأعلى 3 فقط ونضمن إن واحد بس يكون "most likely"
+  // ── التشخيصات التفريقية: 1-4 (مرن — كانت ثابتة 3 قبل كده).
+  //    الموديل بيرجع 1 لو الحالة pathognomonic، أو 4 لو الحالة معقدة.
+  //    دايماً أول واحد بس = isMostLikely=true.
   const rawDDx = Array.isArray(obj.differentialDiagnoses) ? obj.differentialDiagnoses : [];
   const ddx: DifferentialDiagnosisItem[] = rawDDx
-    .slice(0, 3)
+    .slice(0, 4)
     .map((item, idx) => {
       const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
       return {
@@ -174,6 +176,11 @@ interface CaseAnalysisInput {
   pregnant: boolean | null;
   breastfeeding: boolean | null;
   vitals: VitalSigns;
+  // ─ تخصص الطبيب — يُمرَّر من profile الطبيب (Arabic or English).
+  //   لو موجود، الموديل يلعب دور استشاري في هذا التخصص ويكيّف الـDDx والفحوصات
+  //   على نطاق التخصص بدل ما يجاوب كطبيب أسرة دائماً.
+  //   لو غير موجود (signup قديم) → ينحاز للنمط العام (طب أسرة).
+  doctorSpecialty?: string;
 }
 
 // ─── الدالة الرئيسية ─────────────────────────────────────────────────────
@@ -205,9 +212,23 @@ export const analyzeCaseDeeply = async (
     ? `${input.heightCm} cm`
     : 'not recorded';
 
+  // ─ تحديد التخصص: لو الطبيب مش محدد تخصص (signup قديم) نوع الافتراض = طب أسرة.
+  //   التخصص بيدخل البرومبت كـrole + بيوجّه الـDDx لمدى التخصص.
+  const specialty = (input.doctorSpecialty || '').trim();
+  const consultantRole = specialty
+    ? `Senior consultant in ${specialty} (MD, board-certified in this specialty)`
+    : 'Senior Family Medicine Consultant (MD, board-certified)';
+  const specialtyGuidance = specialty
+    ? `\n═══ SPECIALTY-AWARE REASONING ═══
+- You are practicing as a **${specialty}** specialist. Tailor differential diagnoses, must-not-miss conditions, and suggested investigations to your specialty's scope and most common presentations.
+- Use specialty-standard terminology, classification systems, and reasoning frameworks (e.g., DSM-5 for psychiatry, NYHA for cardiology, GOLD for pulmonology, DSM lesion description for dermatology, NIHSS/GCS for neurology, Salter-Harris for pediatric orthopedics, FIGO for gynecology, etc. — apply whichever frameworks fit your specialty).
+- For symptoms that overlap multiple specialties, prioritize conditions a ${specialty} specialist would commonly see in clinic — but DO NOT miss life-threatening cross-specialty emergencies (cardiac, neurological, sepsis, etc.) in the must-not-miss list.
+- Suggested investigations should reflect tests a ${specialty} clinic would order, not generic primary-care panels.`
+    : '';
+
   // Prompt محسّن (تقليص ~40%): شلنا الفواصل الزخرفية والشرح المكرر — حافظنا على
   // كل القواعد الأمنية الحرجة (حمل/رضاعة/أطفال/علامات حيوية/ممنوع أدوية) والـ schema.
-  const prompt = `Senior Family Medicine Consultant (MD, board-certified). Produce a structured case workup based ONLY on the patient data below. Zero tolerance for hallucination.
+  const prompt = `${consultantRole}. Produce a structured case workup based ONLY on the patient data below. Zero tolerance for hallucination.${specialtyGuidance}
 
 PATIENT
 Gender: ${genderLabel}
@@ -227,11 +248,37 @@ Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}
 5. If the data is ambiguous or sparse → set insufficientData=true with a brief Arabic note. Don't compensate with speculation.
 6. NEVER suggest treatments, medications, doses, or drug brands — only diagnostic reasoning.
 
+═══ MUST-NOT-MISS ADAPTIVE LOGIC (CRITICAL) ═══
+The mustNotMiss list size depends on case severity — be honest, NOT paranoid:
+• **Empty array []** if ALL these are true:
+   - Presentation is clearly mild AND localized (e.g., small skin reaction, sore throat 1 day, mild headache)
+   - No red flag in vitals, history, or exam
+   - The DDx is straightforward and doesn't suggest anything sinister
+   - Patient is otherwise healthy adult (not very young, very old, pregnant, immunocompromised)
+   Example: dermatology — "small itchy patch on forearm, no systemic symptoms" → mustNotMiss=[]
+• **1-2 entries** if the presentation has any concerning feature but is mostly benign.
+• **3 entries** ONLY if symptoms are non-specific, severe, or have systemic features that genuinely warrant ruling out life-threatening causes.
+
+NEVER pad the list to reach 3 items "just in case." Padding erodes the doctor's trust in the tool.
+
 ═══ CLINICAL SAFETY RULES ═══
 - If pregnant/breastfeeding → reflect in DDx and must-not-miss (ectopic, preeclampsia, HELLP, mastitis, etc).
-- If age<18 → pediatric-aware reasoning (weight-based, age-specific conditions).
 - Vital red flags (e.g., fever+tachycardia+hypotension→sepsis; chest pain+ECG findings→MI) MUST surface in Red Flags or Must-Not-Miss.
 - Investigations must be confirmatory/exclusionary for the DDx or Must-Not-Miss — no routine filler.
+
+═══ AGE-BAND REASONING (apply ONLY the band that fits) ═══
+- **Neonate (0-28 days)**: Sepsis / hypoglycemia / metabolic disorders / congenital anomalies are top concerns even with mild symptoms. Low threshold for must-not-miss.
+- **Infant (1-12 months)**: Bronchiolitis, dehydration, intussusception, UTI, vaccine-preventable conditions matter more than adult patterns.
+- **Toddler (1-3 years)**: Foreign body aspiration, febrile convulsions, viral exanthems are common.
+- **School age (4-12 years)**: Asthma, allergic rhinitis, viral infections, behavioral issues common; neoplasms rare but important.
+- **Adolescent (13-18 years)**: Mental health, eating disorders, sexual health, athletic injuries frequent; consider IBD, autoimmune onset.
+- **Adult (18-65 years)**: Standard adult reasoning.
+- **Elderly (>65 years)**: ATYPICAL presentations are the norm — pneumonia may present as confusion (not cough), MI as fatigue, UTI as delirium. Polypharmacy adverse effects high. Lower threshold for must-not-miss.
+
+═══ DRUG ALLERGIES & CURRENT MEDICATIONS ═══
+- Scan the History field for any mention of allergies, drug reactions, or current medications.
+- If found → factor into DDx (e.g., "rash + recent antibiotic" → drug eruption in DDx; "joint pain + statin" → statin myopathy).
+- If NOT mentioned and they would change the DDx materially → add a question in missingInformation (e.g., "Any current medications? Any drug allergies?").
 
 OUTPUT (strict JSON, no fences, no prose):
 {
@@ -250,12 +297,19 @@ OUTPUT (strict JSON, no fences, no prose):
   "insufficientDataNote": ""
 }
 
-COUNTS
-- differentialDiagnoses: exactly 3, ordered most→least likely (only first isMostLikely=true).
-- mustNotMiss: exactly 3 life-threatening. alreadyInDDx=true if overlaps DDx.
-- suggestedInvestigations: 3-6, only confirmatory/exclusionary tests (no routine filler).
-- importantInstructionsAr: 3-6 lines.
-- missingInformation: 2-5.
+COUNTS (all adaptive — be honest, not paranoid; never pad to fill quotas)
+- differentialDiagnoses: 1-4, ordered most→least likely (only first isMostLikely=true).
+   • **1 DDx** if presentation is pathognomonic (e.g., classic chickenpox in unvaccinated child, classic herpes zoster).
+   • **2-3 DDx** for typical cases.
+   • **4 DDx** only when truly multiple conditions overlap and ranking is ambiguous.
+- mustNotMiss: 0-3 entries — adaptive (see "MUST-NOT-MISS ADAPTIVE LOGIC" above). Empty [] is a valid honest answer for clearly mild localized cases.
+- suggestedInvestigations: 0-6 entries.
+   • Empty [] for clinical diagnoses that need no labs/imaging (e.g., mild URTI, classic contact dermatitis, simple migraine).
+   • Otherwise 1-6 confirmatory/exclusionary tests.
+- importantInstructionsAr: 0-6 lines.
+   • Empty [] if no specific instructions are warranted beyond standard advice.
+   • Otherwise focused, actionable items the patient must follow (e.g., "ارجع فوراً لو الحمى زادت عن 39 لأكثر من يوم").
+- missingInformation: 0-5 (empty if data is sufficient).
 - redFlags: 0-5.`;
 
   try {

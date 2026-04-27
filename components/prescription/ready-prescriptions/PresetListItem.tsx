@@ -47,16 +47,16 @@ export const PresetListItem: React.FC<Props> = ({
   ].filter((chip) => chip.count > 0);
 
   return (
+    /* البطاقة — أبيض + حد slate (هادئ بصرياً، نفس نمط لوحات الأدمن).
+       عند التوسعة: حد brand فاتح + ring خفيف بدل تأكيد بصري شديد */
     <div
-      className={`relative overflow-hidden bg-white border rounded-2xl p-3 sm:p-4 transition-all ${
+      className={`bg-white border rounded-2xl p-3 sm:p-4 transition-all ${
         isExpanded
-          ? 'border-blue-300 shadow-md ring-2 ring-blue-100'
-          : 'border-blue-200 hover:border-blue-400 hover:shadow-md'
+          ? 'border-brand-300 shadow-sm ring-1 ring-brand-100'
+          : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
       }`}
     >
-      {/* الشريط العلوي — أزرق متدرج */}
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500"></div>
-      <div className="mb-3 mt-1">
+      <div className="mb-3">
         <h4 className="font-black text-slate-900 text-sm sm:text-base break-words text-center">
           {preset.name}
         </h4>
@@ -65,10 +65,10 @@ export const PresetListItem: React.FC<Props> = ({
       {summaryChips.length > 0 && (
         <div className="mb-3 ml-auto flex w-fit max-w-full flex-wrap items-center justify-end gap-2">
           {summaryChips.map((chip) => (
-            /* شارات الإحصائيات — خلفية صلبة بـtint أزرق */
+            /* شارات الإحصائيات — تنت brand فاتح موحّد مع باقي التطبيق */
             <span
               key={`${preset.id}-${chip.key}`}
-              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-800 md:px-4 md:py-2 md:text-sm"
+              className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-black text-brand-700 md:px-4 md:py-2 md:text-sm"
             >
               {chip.label}: {chip.count}
             </span>
@@ -100,11 +100,10 @@ export const PresetListItem: React.FC<Props> = ({
       </div>
 
       {isExpanded && (
-        <div className="relative overflow-hidden mb-3 rounded-2xl border border-blue-200 bg-blue-50/30 p-2 sm:p-3 space-y-3 max-h-52 sm:max-h-64 overflow-y-auto custom-scrollbar">
-          {/* شريط علوي — أزرق متدرج */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-l from-blue-700 to-blue-500"></div>
+        /* قسم التفاصيل المفتوح — أبيض كسر بسيط على slate-50، حدود slate */
+        <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-2 sm:p-3 space-y-3 max-h-52 sm:max-h-64 overflow-y-auto custom-scrollbar">
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-blue-900">
+            <div className="text-[11px] sm:text-xs font-black text-slate-700">
               الأدوية (الجرعة + التعليمات)
             </div>
             {medicationEntries.length === 0 && (
@@ -113,13 +112,13 @@ export const PresetListItem: React.FC<Props> = ({
             {medicationEntries.map((med, index) => (
               <div
                 key={`${preset.id}-med-${index}`}
-                className="rounded-xl border border-blue-200 bg-white p-2"
+                className="rounded-xl border border-slate-200 bg-white p-2"
               >
                 <div className="text-[11px] sm:text-xs font-black text-slate-900 break-words">
                   {med.name || 'دواء بدون اسم'}
                 </div>
                 <div className="mt-1 text-[10px] sm:text-[11px] text-slate-700 break-words">
-                  <span className="font-black text-blue-800">الجرعة والتعليمات:</span>{' '}
+                  <span className="font-black text-slate-700">الجرعة والتعليمات:</span>{' '}
                   {sanitizeReadyPrescriptionText(med.instructions || med.dosage) || 'غير محددة'}
                 </div>
               </div>
@@ -127,7 +126,7 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-blue-900">الملاحظات</div>
+            <div className="text-[11px] sm:text-xs font-black text-slate-700">الملاحظات</div>
             {noteEntries.length === 0 && (
               <div className="text-[11px] sm:text-xs font-bold text-slate-500">لا توجد ملاحظات</div>
             )}
@@ -142,7 +141,7 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-blue-900">الفحوصات</div>
+            <div className="text-[11px] sm:text-xs font-black text-slate-700">الفحوصات</div>
             {labEntries.length === 0 && (
               <div className="text-[11px] sm:text-xs font-bold text-slate-500">لا توجد فحوصات</div>
             )}
@@ -157,7 +156,7 @@ export const PresetListItem: React.FC<Props> = ({
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-[11px] sm:text-xs font-black text-blue-900">التعليمات الهامة</div>
+            <div className="text-[11px] sm:text-xs font-black text-slate-700">التعليمات الهامة</div>
             {adviceEntries.length === 0 && (
               <div className="text-[11px] sm:text-xs font-bold text-slate-500">
                 لا توجد تعليمات هامة

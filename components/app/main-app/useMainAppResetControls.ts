@@ -83,21 +83,32 @@ export const useMainAppResetControls = ({
   }, []);
 
   // ── 2) Past exam/consultation handlers ──
+  // ─ defense in depth: لو حد بعدين بعت "YYYY-MM-DDTHH:mm:ss" بدل "YYYY-MM-DD"،
+  //   ناخد الجزء اللي قبل T فقط عشان خانة <input type="date"> ما تظهرش الوقت
+  //   ملصوق فيها. الـmodal الحالي بيبعت تاريخ نظيف بس، لكن الـguard هنا أمان زيادة.
+  const extractDateOnly = (datetime: string): string => {
+    const trimmed = String(datetime || '').trim();
+    const tIndex = trimmed.indexOf('T');
+    return tIndex === -1 ? trimmed : trimmed.slice(0, tIndex);
+  };
+
   /** إضافة كشف قديم: ريست كامل + تعيين التاريخ المحدد + تبديل للروشتة. */
-  const handleAddPastExam = useCallback((date: string) => {
+  const handleAddPastExam = useCallback((datetime: string) => {
+    const dateOnly = extractDateOnly(datetime);
     handleReset();
-    setVisitDate(date);
-    setConsultationDate(date);
+    setVisitDate(dateOnly);
+    setConsultationDate(dateOnly);
     setVisitType('exam');
     setIsPastConsultationMode(false);
     navigateToView('prescription');
   }, [handleReset, setVisitDate, setConsultationDate, setVisitType, setIsPastConsultationMode, navigateToView]);
 
   /** إضافة استشارة قديمة: نفس الفكرة لكن مع تفعيل وضع الاستشارة التاريخية. */
-  const handleAddPastConsultation = useCallback((date: string) => {
+  const handleAddPastConsultation = useCallback((datetime: string) => {
+    const dateOnly = extractDateOnly(datetime);
     handleReset();
-    setVisitDate(date);
-    setConsultationDate(date);
+    setVisitDate(dateOnly);
+    setConsultationDate(dateOnly);
     setVisitType('consultation');
     setIsPastConsultationMode(true);
     navigateToView('prescription');

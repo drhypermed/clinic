@@ -38,6 +38,9 @@ interface CaseAnalysisCacheKeyInput {
   pregnant: boolean | null;
   breastfeeding: boolean | null;
   vitals: VitalSigns;
+  // ─ التخصص جزء من المفتاح: نتيجة "ألم صدر" لطبيب قلب ≠ نتيجة لطبيب أسرة،
+  //   فلو طبيب غيّر تخصصه أو زميل بنفس userId مختلف، الكاش بيصدر key مختلف.
+  doctorSpecialty?: string;
 }
 
 /**
@@ -101,6 +104,8 @@ const serializeInput = (input: CaseAnalysisCacheKeyInput): string => {
     // العلامات الحيوية — أي تغير في أي قياس = كاش جديد
     'v=' + [input.vitals.bp, input.vitals.pulse, input.vitals.temp, input.vitals.rbs, input.vitals.spo2, input.vitals.rr]
       .map(toText).join('|'),
+    // التخصص — جزء من الـkey لأن الـDDx يختلف جذرياً بين التخصصات
+    's=' + toText(input.doctorSpecialty).toLowerCase(),
   ];
   return parts.join('\n');
 };

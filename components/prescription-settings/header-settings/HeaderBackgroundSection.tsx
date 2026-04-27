@@ -8,8 +8,12 @@ import { CollapsibleSection } from '../CollapsibleSection';
 import { LABEL_CLASS } from '../utils';
 import type { HeaderSectionSharedProps } from '../../../types';
 import { readFileAsDataUrl, validateHeaderImageFile } from './securityUtils';
+import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const HeaderBackgroundSection: React.FC<HeaderSectionSharedProps> = ({ header, updateHeader, openSection, toggle, showNotification, setHeaderBgToCrop }) => {
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
   /** معالج تغيير ملف صورة الخلفية */
   const handleBackgroundFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -50,13 +54,19 @@ export const HeaderBackgroundSection: React.FC<HeaderSectionSharedProps> = ({ he
                         type="file"
                         accept="image/*"
                         id="headerBgInput"
-                        onChange={handleBackgroundFileChange}
+                        onChange={(e) => {
+                          if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
+                          void handleBackgroundFileChange(e);
+                        }}
                         className="hidden"
                     />
                     {/* زر الرفع في حال عدم وجود صورة */}
                     {!header.headerBackgroundImage ? (
                         <button
-                            onClick={() => document.getElementById('headerBgInput')?.click()}
+                            onClick={() => {
+                              if (!imageGate.requestImageUpload()) return;
+                              document.getElementById('headerBgInput')?.click();
+                            }}
                             className="w-full py-4 border-2 border-dashed border-brand-300 rounded-xl hover:border-brand-400 hover:bg-brand-50 transition-all flex flex-col items-center gap-2 text-slate-500 hover:text-brand-600"
                         >
                             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,7 +82,10 @@ export const HeaderBackgroundSection: React.FC<HeaderSectionSharedProps> = ({ he
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => document.getElementById('headerBgInput')?.click()}
+                                    onClick={() => {
+                                      if (!imageGate.requestImageUpload()) return;
+                                      document.getElementById('headerBgInput')?.click();
+                                    }}
                                     className="flex-1 py-2 bg-brand-100 text-brand-700 rounded-lg font-bold hover:bg-brand-200 transition-all text-sm"
                                 >
                                     📤 رفع صورة جديدة
@@ -221,6 +234,13 @@ export const HeaderBackgroundSection: React.FC<HeaderSectionSharedProps> = ({ he
                         </div>
                     </div>
                 </CollapsibleSection>
+
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </>
   );
 };

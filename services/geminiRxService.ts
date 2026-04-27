@@ -197,7 +197,10 @@ export const translateClinicalData = async (
   diagnosis: string,
   investigations: string,
   /** userId اختياري للكاش per-doctor. لو undefined بنتعدى الكاش. */
-  userId?: string | null
+  userId?: string | null,
+  /** تخصص الطبيب — يساعد الموديل يختار مصطلحات دقيقة (eruption للجلدية،
+   *  cephalalgia للأعصاب، إلخ). الكاش مفصول حسب التخصص لتفادي خلط المصطلحات. */
+  doctorSpecialty?: string,
 ): Promise<{ complaintEn: string; historyEn: string; examEn: string; investigationsEn: string; diagnosisEn: string }> => {
 
   const pickText = (...values: Array<string | undefined | null>): string => {
@@ -232,9 +235,14 @@ export const translateClinicalData = async (
     { field: 'diagnosisEn',      label: 'Diagnosis',      inputText: dxText        },
   ];
 
-  // نبني cache subkey لكل حقل = "field:hash(input)"
+  // ─ التخصص جزء من cache key:
+  //   نفس النص ممكن يترجم بشكل مختلف حسب التخصص (rash للأسرة vs eruption للجلدية).
+  //   لو غير محدد، نستخدم 'general' كقيمة افتراضية ثابتة.
+  const specialtyKey = (doctorSpecialty || '').trim().toLowerCase() || 'general';
+
+  // نبني cache subkey لكل حقل = "specialty:field:hash(input)"
   const cacheSubkey = (field: TranslationField, text: string): string =>
-    `${field}:${hashText(text)}`;
+    `${specialtyKey}:${field}:${hashText(text)}`;
 
   // قراءة متوازية للكاش (كل الحقول مع بعض) — IndexedDB أسرع بكتير من التتابع
   const cacheResults = await Promise.all(
@@ -276,33 +284,42 @@ export const translateClinicalData = async (
     .join('\n');
   const jsonKeys = missingFields.map((spec) => `"${spec.field}": "..."`).join(', ');
 
-  const prompt = `You are a bilingual clinician and medical editor.
-TASK: Produce accurate, professional medical English for the fields below.
-Input may be Arabic, English, or mixed — and may contain spelling mistakes, abbreviations, shorthand, or unstructured phrasing.
-GOAL: Not just translation or passthrough. You must also CLEAN UP and NORMALIZE English input so the output reads like proper medical documentation.
+  // ─ تخصص الطبيب يدخل البرومبت كـcontext (مش role كامل زي تحليل الحالة)
+  //   لأن الترجمة في الأساس مهمة ميكانيكية — التخصص يساعد بس في انتقاء المصطلح
+  //   الأدق وقت ما يكون فيه أكتر من مصطلح صحيح.
+  const specialtyContext = (doctorSpecialty || '').trim()
+    ? `\n\nCLINICAL CONTEXT: These notes are from a **${(doctorSpecialty || '').trim()}** clinic. When a term has multiple valid English translations, choose the one most precise for this specialty (e.g., dermatology prefers "eruption/exanthem" over "rash" when describing specific lesion patterns; cardiology prefers "palpitations" over "heart racing"; psychiatry uses DSM-5 terminology). DO NOT add specialty-specific findings that aren't in the input — only refine word choice.`
+    : '';
 
-CLEANUP REQUIREMENTS (for English-heavy input):
-A) Fix spelling mistakes (e.g., "dyspnia" → "dyspnea", "diarhea" → "diarrhea", "headche" → "headache").
-B) Fix capitalization (sentence-case; uppercase standard abbreviations like CBC, CRP, HbA1c, BP, RBS, ECG, CXR, U/S).
-C) Normalize punctuation and spacing; join broken phrases into coherent short clinical statements.
-D) Replace colloquial/shorthand with proper clinical terms (e.g., "belly pain" → "abdominal pain", "SOB" → "dyspnea", "temp high" → "fever").
-E) Re-order fragments into logical clinical flow when the input is unstructured (e.g., symptom + duration + severity).
-F) Deduplicate redundant phrasing.
+  // ─ البرومبت اتعاد كتابته 2026-04-27:
+  //   المشكلة الأقدم: "CLEANUP REQUIREMENTS" كانت قبل قواعد المنع، فالموديل
+  //   كان ممكن يضيف أعراض في معرض "التنظيف" (مثلاً يترجم "دوخة" لـvertigo
+  //   بدل dizziness). الإصلاح: قواعد المنع الصارمة في الأول قبل أي تعليمات تنظيف.
+  const prompt = `You are a medical translator. Translate Arabic/English clinical notes into professional medical English.${specialtyContext}
 
-STRICT PRESERVATION RULES (never modify these):
-1) Preserve all numbers, units, durations, dates, and measurements exactly.
-2) Preserve drug names and brand names as-is (never translate or "correct" medication names).
-3) Preserve common test abbreviations in uppercase (CBC, CRP, ESR, RBS, HbA1c, LFTs, RFTs, UA, CXR, ECG, U/S, MRI, CT).
-4) Keep negations intact ("لا يوجد" → "no ..."; "denies ..." stays "denies ...").
-5) Keep each field focused and concise; do not add labels like "C/O:" or "Dx:".
-6) Use abbreviations ONLY if very common (DM, HTN, COPD, URTI, UTI). Otherwise, write in full.
+═══ ABSOLUTE RULES — VIOLATING ANY OF THESE IS A FAILURE ═══
+1. **DO NOT add ANY symptom, finding, diagnosis, test, or detail not in the input.**
+2. **DO NOT change the meaning.** If unsure, keep the original wording.
+3. **DO NOT invent** severity (mild/severe/acute), duration, frequency, laterality, or anatomical specificity.
+4. **DO NOT translate ambiguous Arabic terms aggressively.** Examples:
+   - "دوخة" → "dizziness" (NOT "vertigo" — that's a specific vestibular disorder).
+   - "ألم" → "pain" (NOT "severe pain" or "dull pain" unless stated).
+   - "تعب" → "fatigue" (NOT "exhaustion" or "weakness").
+5. **PRESERVE EXACTLY** all numbers, units, dates, drug names, brand names, dosages, and measurements.
+6. **PRESERVE NEGATIONS** intact (e.g., "لا يوجد" → "no ...", "denies ..." stays "denies ...").
 
-DO NOT:
-- Add new symptoms, findings, diagnoses, or tests that weren't in the input.
-- Invent severity, duration, or laterality if not stated.
-- Change the meaning; only clarify the wording.
+═══ ALLOWED CLEANUP (only these — nothing else) ═══
+- Fix obvious spelling errors only (e.g., "dyspnia" → "dyspnea"). DO NOT change words you're not 100% sure are misspellings.
+- Capitalize standard abbreviations: CBC, CRP, ESR, RBS, HbA1c, BP, ECG, CXR, U/S, MRI, CT, UA, LFTs, RFTs.
+- Replace ONLY these exact mappings (very high-confidence colloquialisms):
+   "belly pain"→"abdominal pain", "SOB"→"dyspnea", "نهجان"→"dyspnea", "كحة"→"cough", "سخونية"→"fever", "حرارة"→"fever".
+- Trim extra spaces and punctuation noise.
 
-INPUT:
+═══ FINAL CHECK BEFORE RESPONDING ═══
+For each output field, ask yourself: "Did I add any word/concept that wasn't in the input?"
+If yes → remove it. If you couldn't translate something cleanly → leave it as-is (close to the original).
+
+═══ INPUT ═══
 ${inputSection}
 
 Return STRICT JSON ONLY with these keys only:

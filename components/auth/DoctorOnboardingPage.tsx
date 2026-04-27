@@ -63,11 +63,44 @@ export const DoctorOnboardingPage: React.FC = () => {
           return;
         }
 
-        // أي حالة أخرى، اذهب للصفحة الرئيسية
+        // ─ [P2] فحص اكتمال البيانات الأساسيه قبل التوجيه لـ/home ─
+        // الحارس useDoctorOnboardingStatus بيعتبر الحساب 'incomplete' لو ناقص
+        // verificationDocUrl أو doctorSpecialty أو doctorWhatsApp، وبيرجّع المستخدم
+        // لـ/doctor/onboarding. لو هنا وجّهنا لـ/home في الحالات دي، هيحصل ping-pong
+        // بين الصفحتين. الحل: نعرض رساله ونعمل signout بدل ما نوجّه لـ/home.
+        const hasBasics = Boolean(
+          data?.doctorSpecialty && data?.doctorWhatsApp && data?.verificationDocUrl,
+        );
+
+        if (!hasBasics) {
+          setError('بيانات حسابك غير مكتملة. تواصل مع الإدارة لاستكمالها أو سجّل من جديد.');
+          setChecking(false);
+          await signOut();
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              navigate('/login/doctor', { replace: true });
+            }
+          }, 2500);
+          return;
+        }
+
+        // البيانات مكتمله وغير مرفوضه → الصفحه الرئيسيه
         navigate('/home', { replace: true });
       } catch (err) {
+        // ─ [P1] تصليح الشاشه الفارغه ─
+        // لو فشل قراءة البيانات (شبكه/permissions/Firestore down)، كان الكود
+        // بيعمل setChecking(false) فقط بدون setError → return null = شاشه فاضيه.
+        // الحل: نعرض رساله واضحه ونعمل signout + redirect عشان المستخدم يقدر يحاول.
         console.error('Error checking account:', err);
+        if (!isMountedRef.current) return;
+        setError('تعذَّر قراءة بيانات حسابك. تأكَّد من اتصالك بالإنترنت ثم سجَّل دخول مرة أخرى.');
         setChecking(false);
+        setTimeout(async () => {
+          try { await signOut(); } catch { /* best effort: ممكن يكون اتسجّل خروج بالفعل */ }
+          if (isMountedRef.current) {
+            navigate('/login/doctor', { replace: true });
+          }
+        }, 2500);
       }
     };
 

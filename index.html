@@ -29,44 +29,47 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="DrHyper Med">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- apple-touch-icon: لازم تكون 180×180 PNG بدون alpha channel (opaque background)
+         iOS بيرفض الـPNG اللي فيها transparency وبيـfallback لأول حرف من اسم التطبيق ("D").
+         الإصدار الـprecomposed بيخلي iOS يستخدم الصورة كما هي بدون أي معالجة (highlight/rounding). -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon.png">
     <!-- ═════════════════════════════════════════════════════════════════════
-         SEO defaults — موجهه للجمهور (drhypermed.com) لأنه الدومين العامّ الأكثر مشاركه.
-         سكريبت تحت في الـhead بيبدّلهم للعيادات لمّا الدومين clinic.drhypermed.com.
-         السوشيال (واتساب/فيسبوك) بتقرا الـHTML الثابت فقط بدون JS — فلازم الديفولت يكون نظيف.
+         SEO defaults — موجهه للعيادات (clinic.drhypermed.com) لأن دي الـlink اللي
+         بيتشارك على واتساب لاعتماد الأطباء وروابط الدخول للطاقم الطبي.
+         واتساب/فيسبوك بتقرا الـHTML الثابت بدون JS، فلازم الديفولت يطابق الاستخدام
+         الأكثر شيوعاً. السكريبت تحت بيبدّل لـ"الجمهور" لو الدومين drhypermed.com.
          ═══════════════════════════════════════════════════════════════════════ -->
-    <title>دكتور هايبر — احجز دكتور أون لاين في مصر</title>
-    <meta name="description" content="دكتور هايبر — دوّر على دكتور قريب منّك في مصر، شوف مواعيد العيادة وتقييمات المرضى، واحجز ميعادك من الموبايل بدون اتصالات. حجزك كـمريض مجاني.">
-    <meta name="keywords" content="حجز دكتور, حجز مواعيد طبيب, ميعاد دكتور اون لاين, دليل أطباء مصر, تقييمات أطباء, عيادات قريبه, أسعار الكشف, دكتور هايبر">
+    <title>Dr Hyper Clinic — برنامج إدارة العيادات والروشتة الإلكترونيّة</title>
+    <meta name="description" content="نظام متكامل لإدارة العيادة: روشتة إلكترونيّة احترافيّة، أكتر من 10,000 دواء بأسعارهم وجرعاتهم وتفاعلاتهم، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإدارة فروع — كل ده في مكان واحد.">
+    <meta name="keywords" content="برنامج عياده, روشته إلكترونيه, إدارة عيادات, نظام عياده, Dr Hyper Clinic, طبيب مصر">
     <!-- canonical و og:url بيتحدّدوا من سكريبت الدومين تحت — بدل ما يكونوا ثابتين -->
-    <link rel="canonical" href="https://www.drhypermed.com/" id="dh-canonical">
+    <link rel="canonical" href="https://clinic.drhypermed.com/" id="dh-canonical">
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.drhypermed.com/">
-    <meta property="og:title" content="دكتور هايبر — احجز دكتور أون لاين في مصر">
-    <meta property="og:description" content="دوّر على دكتور قريب منّك، شوف مواعيد العيادة وتقييمات المرضى، واحجز ميعادك من الموبايل بدون اتصالات. مجاني للمرضى.">
-    <meta property="og:image" content="https://www.drhypermed.com/pwa-512x512.png">
+    <meta property="og:url" content="https://clinic.drhypermed.com/">
+    <meta property="og:title" content="Dr Hyper Clinic — برنامج إدارة العيادات والروشتة الإلكترونيّة">
+    <meta property="og:description" content="نظام متكامل لإدارة العيادة: روشتة إلكترونيّة احترافيّة، أكتر من 10,000 دواء، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإدارة فروع.">
+    <meta property="og:image" content="https://clinic.drhypermed.com/pwa-512x512.png">
     <meta property="og:locale" content="ar_EG">
-    <meta property="og:site_name" content="Dr Hyper">
+    <meta property="og:site_name" content="Dr Hyper Clinic">
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="دكتور هايبر — احجز دكتور أون لاين في مصر">
-    <meta name="twitter:description" content="دوّر على دكتور قريب منّك، شوف مواعيد العيادة وتقييمات المرضى، واحجز ميعادك من الموبايل بدون اتصالات. مجاني للمرضى.">
-    <meta name="twitter:image" content="https://www.drhypermed.com/pwa-512x512.png">
+    <meta name="twitter:title" content="Dr Hyper Clinic — برنامج إدارة العيادات والروشتة الإلكترونيّة">
+    <meta name="twitter:description" content="نظام متكامل لإدارة العيادة: روشتة إلكترونيّة، 10,000 دواء، حجز مواعيد، سكرتاريه، ملفات مرضى، تقارير ماليّه، وإدارة فروع.">
+    <meta name="twitter:image" content="https://clinic.drhypermed.com/pwa-512x512.png">
     <script type="application/ld+json" id="dh-jsonld">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "دكتور هايبر",
-      "alternateName": "Dr Hyper",
-      "url": "https://www.drhypermed.com",
-      "description": "منصّه حجز مواعيد الأطباء في مصر — دليل أطباء، مواعيد العيادات، تقييمات المرضى، وحجز أون لاين من الموبايل.",
+      "@type": "SoftwareApplication",
+      "name": "Dr Hyper Clinic",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "url": "https://clinic.drhypermed.com",
+      "description": "نظام متكامل لإدارة العيادة: روشتة إلكترونيّة، حجز مواعيد، سكرتاريه، ملفات مرضى، تقارير ماليّه.",
       "inLanguage": "ar",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.drhypermed.com/public?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "image": "https://clinic.drhypermed.com/pwa-512x512.png",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EGP" }
     }
     </script>
     <style>
@@ -270,56 +273,60 @@
                 var themeColor = isClinic ? '#2563eb' : '#0d9488';
 
                 // ═══════════════════════════════════════════════════════════════
-                // تبديل الـSEO meta للدومين عيادات (الـdefaults في HTML موجّهه للمريض).
-                // بيشتغل قبل ما JS modules تتحمّل، فـGooglebot والـsocial scrapers
-                // بيقرا الـcanonical وog:url الصح من أول render.
+                // تبديل الـSEO meta للدومين الجمهور (الـdefaults في HTML موجّهه للعيادة).
+                // بيشتغل قبل ما JS modules تتحمّل، فـGooglebot بيقرا الصح من أول render.
+                // ⚠️ ملاحظة: واتساب/فيسبوك بيقرا الـHTML الثابت فقط (مش بينفّذ JS)،
+                //   فالـpreview للدومين drhypermed.com هيظهر defaults العيادة. ده مقبول
+                //   لأن المشاركات الأكثر = روابط dr/:slug (لها meta منفصلة في فنكشن SSR).
                 // ═══════════════════════════════════════════════════════════════
-                if (isClinic) {
-                    var clinicUrl = 'https://clinic.drhypermed.com/';
-                    var clinicTitle = 'Dr Hyper Clinic — برنامج إداره العيادات والروشته الإلكترونيّه';
-                    var clinicDesc = 'نظام متكامل لإداره العياده: روشته إلكترونيّه احترافيّه، أكتر من 10,000 دواء بأسعارهم وجرعاتهم وتفاعلاتهم، حجز مواعيد أون لاين، سكرتاريه مربوطه، ملفات مرضى، تقارير ماليّه، وإداره فروع — كل ده في مكان واحد.';
-                    var clinicImg = 'https://clinic.drhypermed.com/pwa-512x512.png';
+                if (isPatient) {
+                    var patientUrl = 'https://www.drhypermed.com/';
+                    var patientTitle = 'دكتور هايبر — احجز دكتور أون لاين في مصر';
+                    var patientDesc = 'دكتور هايبر — دوّر على دكتور قريب منّك في مصر، شوف مواعيد العيادة وتقييمات المرضى، واحجز ميعادك من الموبايل بدون اتصالات. حجزك كـمريض مجاني.';
+                    var patientImg = 'https://www.drhypermed.com/pwa-512x512.png';
 
-                    document.title = clinicTitle;
+                    document.title = patientTitle;
 
                     var descMeta = document.querySelector('meta[name="description"]');
-                    if (descMeta) descMeta.setAttribute('content', clinicDesc);
+                    if (descMeta) descMeta.setAttribute('content', patientDesc);
 
                     var canonicalEl = document.getElementById('dh-canonical');
-                    if (canonicalEl) canonicalEl.setAttribute('href', clinicUrl);
+                    if (canonicalEl) canonicalEl.setAttribute('href', patientUrl);
 
                     var ogUrl = document.querySelector('meta[property="og:url"]');
-                    if (ogUrl) ogUrl.setAttribute('content', clinicUrl);
+                    if (ogUrl) ogUrl.setAttribute('content', patientUrl);
                     var ogTitle = document.querySelector('meta[property="og:title"]');
-                    if (ogTitle) ogTitle.setAttribute('content', clinicTitle);
+                    if (ogTitle) ogTitle.setAttribute('content', patientTitle);
                     var ogDesc = document.querySelector('meta[property="og:description"]');
-                    if (ogDesc) ogDesc.setAttribute('content', clinicDesc);
+                    if (ogDesc) ogDesc.setAttribute('content', patientDesc);
                     var ogImg = document.querySelector('meta[property="og:image"]');
-                    if (ogImg) ogImg.setAttribute('content', clinicImg);
+                    if (ogImg) ogImg.setAttribute('content', patientImg);
                     var ogSite = document.querySelector('meta[property="og:site_name"]');
-                    if (ogSite) ogSite.setAttribute('content', 'Dr Hyper Clinic');
+                    if (ogSite) ogSite.setAttribute('content', 'Dr Hyper');
 
                     var twTitle = document.querySelector('meta[name="twitter:title"]');
-                    if (twTitle) twTitle.setAttribute('content', clinicTitle);
+                    if (twTitle) twTitle.setAttribute('content', patientTitle);
                     var twDesc = document.querySelector('meta[name="twitter:description"]');
-                    if (twDesc) twDesc.setAttribute('content', clinicDesc);
+                    if (twDesc) twDesc.setAttribute('content', patientDesc);
                     var twImg = document.querySelector('meta[name="twitter:image"]');
-                    if (twImg) twImg.setAttribute('content', clinicImg);
+                    if (twImg) twImg.setAttribute('content', patientImg);
 
-                    // JSON-LD: SoftwareApplication للبرنامج بدل الـWebSite الافتراضي للمريض
+                    // JSON-LD: WebSite للجمهور بدل الـSoftwareApplication الافتراضي للعيادة
                     var jsonld = document.getElementById('dh-jsonld');
                     if (jsonld) {
                         jsonld.textContent = JSON.stringify({
                             '@context': 'https://schema.org',
-                            '@type': 'SoftwareApplication',
-                            'name': 'Dr Hyper Clinic',
-                            'applicationCategory': 'HealthApplication',
-                            'operatingSystem': 'Web',
-                            'url': clinicUrl,
-                            'description': clinicDesc,
+                            '@type': 'WebSite',
+                            'name': 'دكتور هايبر',
+                            'alternateName': 'Dr Hyper',
+                            'url': patientUrl,
+                            'description': 'منصّه حجز مواعيد الأطباء في مصر — دليل أطباء، مواعيد العيادات، تقييمات المرضى، وحجز أون لاين من الموبايل.',
                             'inLanguage': 'ar',
-                            'image': clinicImg,
-                            'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'EGP' }
+                            'potentialAction': {
+                                '@type': 'SearchAction',
+                                'target': 'https://www.drhypermed.com/public?q={search_term_string}',
+                                'query-input': 'required name=search_term_string'
+                            }
                         });
                     }
                 }

@@ -9,6 +9,8 @@ import React from 'react';
 import { CollapsibleSection } from '../CollapsibleSection';
 import type { FooterLogoSectionProps } from '../../../types';
 import { readFileAsDataUrl, validateFooterImageFile } from './securityUtils';
+import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
   footer,
@@ -18,6 +20,8 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
   showNotification,
   setFooterLogoToCrop,
 }) => {
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
   /** 
    * معالجة رفع ملف الشعار 
    * يتم التحقق من جودة الملف ثم إرساله إلى مكون القص (Cropper) قبل اعتماده نهائياً
@@ -61,13 +65,19 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
           type="file"
           accept="image/*"
           id="footerLogoInput"
-          onChange={handleLogoFileChange}
+          onChange={(e) => {
+            if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
+            void handleLogoFileChange(e);
+          }}
           className="hidden"
         />
         {!footer.logoBase64 && (
           // زر اختيار الملف في حالة عدم وجود شعار مسبق
           <button
-            onClick={() => document.getElementById('footerLogoInput')?.click()}
+            onClick={() => {
+              if (!imageGate.requestImageUpload()) return;
+              document.getElementById('footerLogoInput')?.click();
+            }}
             className="w-full py-4 border-2 border-dashed border-brand-300 rounded-xl hover:border-brand-400 hover:bg-brand-50 transition-all flex flex-col items-center gap-2 text-brand-500 hover:text-brand-600"
           >
             <span className="text-2xl">📂</span>
@@ -134,7 +144,10 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => document.getElementById('footerLogoInput')?.click()}
+              onClick={() => {
+                if (!imageGate.requestImageUpload()) return;
+                document.getElementById('footerLogoInput')?.click();
+              }}
               className="px-3 py-1 bg-brand-50 text-brand-600 text-xs font-bold rounded hover:bg-brand-100 transition-colors"
             >
               تغيير
@@ -148,6 +161,13 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
           </div>
         </div>
       )}
+
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </CollapsibleSection>
   );
 };

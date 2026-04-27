@@ -13,6 +13,9 @@ export const PUBLIC_PENDING_PROFILE_KEY = 'dh_public_pending_profile'; // بيا
 export const PUBLIC_AUTH_ERROR_KEY = 'dh_public_auth_error';     // رسائل خطأ دخول الجمهور
 export const PENDING_GOOGLE_REDIRECT_ROLE_KEY = 'dh_pending_google_redirect_role'; // الدور عند العودة من جوجل
 export const PENDING_GOOGLE_AUTH_ROLE_KEY = 'dh_pending_google_auth_role'; // الدور أثناء عملية النافذة المنبثقة
+// رسالة فشل تحديد دور المستخدم — بتترسم في صفحة الدخول لما الحارس يفصل الجلسة
+// بعد timeout (مثلاً Firestore بطيء أو البروفايل ناقص). الصياغه عربيه عشان تظهر للمستخدم.
+export const ROLE_RESOLUTION_ERROR_KEY = 'dh_role_resolution_error';
 
 /** إعدادات تحديد عدد المحاولات (Rate Limiting) */
 export const MAX_ATTEMPTS = 5;               // أقصى عدد للمحاولات الفاشلة

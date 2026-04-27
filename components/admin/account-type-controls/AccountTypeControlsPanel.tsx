@@ -170,12 +170,14 @@ export const AccountTypeControlsPanel: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-5 pb-24">
 
-      {/* ═══ Header ═══ */}
-      <div className="flex items-center gap-2">
-        <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shadow-sm">
+      {/* ═══ Header ═══
+          shrink-0 على الأيقونة + min-w-0 flex-1 على كتلة النص = عشان النص يتلف
+          بأمان من غير ما يخرج برا الشاشة على الموبايل. */}
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shrink-0 shadow-sm">
           <FaSliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h2 className="text-base sm:text-lg lg:text-xl font-black text-slate-800 tracking-tight">
             ضبط أنواع الحساب
           </h2>
@@ -215,9 +217,10 @@ export const AccountTypeControlsPanel: React.FC = () => {
       <fieldset disabled={!!loadError} className="space-y-4 sm:space-y-5 disabled:opacity-60">
 
         {/* ═══ WhatsApp Number Card ═══ */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="bg-gradient-to-br from-success-500 to-success-700 text-white rounded-lg p-1.5 shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-2.5 sm:p-4 min-w-0">
+          {/* flex-wrap عشان "(دولي بدون +)" يلف لسطر تاني على الموبايل بدل ما يخرج برا */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 min-w-0">
+            <div className="bg-gradient-to-br from-success-500 to-success-700 text-white rounded-lg p-1.5 shrink-0 shadow-sm">
               <FaWhatsapp className="w-3 h-3 text-white" />
             </div>
             <label className="text-xs sm:text-sm font-black text-slate-800">رقم واتساب الاشتراك</label>
@@ -232,14 +235,72 @@ export const AccountTypeControlsPanel: React.FC = () => {
             }
             placeholder="201092805293"
             dir="ltr"
-            className="w-full max-w-md h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors"
+            className="w-full max-w-md min-w-0 h-[44px] rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors"
           />
+        </div>
+
+        {/* ═══ 🆕 رفع الصور للحساب المجاني — toggle بسيط ═══
+            القاعدة: Pro/Pro Max دايماً يقدروا. Free يقدر فقط لو الـtoggle مفعّل هنا.
+            المنع بيظهر للطبيب كمودال "ترقية للـPro" بدل ما يفتح متصفح الملفات. */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4 min-w-0">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm sm:text-base font-black text-slate-800 mb-1">
+                🖼️ السماح برفع الصور للحساب المجاني
+              </h3>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                لو مغلق: الطبيب المجاني هيشوف مودال "ترقية للـPro" لما يحاول يرفع أي صورة
+                (بروفايل / شعار الروشتة / إعلان العيادة). Pro و Pro Max مش متأثرين.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={form.freeImageUploadsEnabled}
+                onChange={(e) =>
+                  setFormAndMarkDirty((prev) => ({ ...prev, freeImageUploadsEnabled: e.target.checked }))
+                }
+              />
+              <div className="w-12 h-7 bg-slate-200 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-brand-500 peer-checked:to-brand-600 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm" />
+            </label>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <label className="block text-[11px] font-black text-slate-600 mb-1.5">
+              رسالة الترقية (تظهر في المودال)
+            </label>
+            <textarea
+              rows={2}
+              value={form.freeImageUploadsUpgradeMessage}
+              onChange={(e) =>
+                setFormAndMarkDirty((prev) => ({ ...prev, freeImageUploadsUpgradeMessage: e.target.value }))
+              }
+              maxLength={500}
+              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
+              placeholder="عزيزي الطبيب، ميزة رفع الصور متاحة للحسابات المدفوعة..."
+            />
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <label className="block text-[11px] font-black text-slate-600 mb-1.5">
+              رسالة الواتساب (تتبعت لما الطبيب يضغط "تواصل للترقية")
+            </label>
+            <textarea
+              rows={2}
+              value={form.freeImageUploadsUpgradeWhatsappMessage}
+              onChange={(e) =>
+                setFormAndMarkDirty((prev) => ({ ...prev, freeImageUploadsUpgradeWhatsappMessage: e.target.value }))
+              }
+              maxLength={500}
+              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
+              placeholder="تحية طيبة، أرغب في تفعيل ميزة رفع الصور..."
+            />
+          </div>
         </div>
 
         {/* ═══ Features Section ═══ */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 px-1 flex-wrap">
-            <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shadow-sm">
+          <div className="flex items-center gap-2 px-1 flex-wrap min-w-0">
+            <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shrink-0 shadow-sm">
               <FaListCheck className="w-3.5 h-3.5 text-white" />
             </div>
             <h3 className="text-sm sm:text-base font-black text-slate-800">حدود الميزات</h3>
@@ -250,10 +311,10 @@ export const AccountTypeControlsPanel: React.FC = () => {
             <button
               type="button"
               onClick={handleResetMessagesToDefaults}
-              className="mr-auto inline-flex items-center gap-1.5 rounded-lg border border-warning-200 bg-warning-50 px-2.5 py-1.5 text-[11px] font-black text-warning-700 hover:bg-warning-100 transition"
+              className="mr-auto inline-flex items-center gap-1.5 rounded-lg border border-warning-200 bg-warning-50 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-[11px] font-black text-warning-700 hover:bg-warning-100 transition"
               title="استبدال كل رسائل تجاوز الحد ورسائل الواتساب بالقيم الافتراضية الجديدة"
             >
-              <FaArrowRotateLeft className="w-3 h-3" />
+              <FaArrowRotateLeft className="w-3 h-3 shrink-0" />
               إعادة تعيين الرسائل
             </button>
           </div>
@@ -275,18 +336,19 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
       </fieldset>
 
-      {/* ═══ Sticky Save Bar ═══ */}
-      <div className="sticky bottom-2 z-20 mt-6 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.15)] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      {/* ═══ Sticky Save Bar ═══
+          min-w-0 على الـmessage box عشان النص الطويل يلف بدل ما يخرج برا الشاشة. */}
+      <div className="sticky bottom-2 z-20 mt-6 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.15)] px-3 sm:px-4 py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3 min-w-0">
         {message ? (
           <div
-            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${
+            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold min-w-0 max-w-full ${
               messageType === 'success'
                 ? 'border-success-200 bg-success-50 text-success-700'
                 : 'border-danger-200 bg-danger-50 text-danger-700'
             }`}
           >
             {messageType === 'success' ? <FaCircleCheck className="w-3 h-3 shrink-0" /> : <FaCircleXmark className="w-3 h-3 shrink-0" />}
-            {message}
+            <span className="min-w-0 break-words">{message}</span>
           </div>
         ) : isDirty ? (
           <p className="text-[11px] font-black text-warning-600">تعديلات غير محفوظة</p>
@@ -297,13 +359,13 @@ export const AccountTypeControlsPanel: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saveDisabled}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-4 sm:px-5 py-2.5 text-[13px] sm:text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600 shrink-0"
         >
           {saving ? (
             <LoadingText>جاري الحفظ</LoadingText>
           ) : (
             <>
-              <FaFloppyDisk className="w-3.5 h-3.5" />
+              <FaFloppyDisk className="w-3.5 h-3.5 shrink-0" />
               حفظ الإعدادات
             </>
           )}

@@ -3,7 +3,17 @@ import React, { useState, useEffect } from 'react';
 // استيراد أنواع بيانات Firebase لإدارة المستخدمين وقاعدة البيانات
 import type { User } from 'firebase/auth';
 import { auth, authPersistenceReady } from '../services/firebaseConfig';
-import { PENDING_GOOGLE_AUTH_ROLE_KEY } from '../services/auth-service/constants';
+import {
+    PENDING_GOOGLE_AUTH_ROLE_KEY,
+    ROLE_RESOLUTION_ERROR_KEY,
+} from '../services/auth-service/constants';
+// مفتاح authFlowGuard — لما يكون نشط، يعني المستخدم في عمليه signup/login حساسه،
+// والحارس ميـsignout-ش حتى لو الدور لسه مش متحدد (العمليه لسه شغّاله بتحفظ البروفايل).
+import { AUTH_FLOW_GUARD_KEY } from '../components/app/core/constants';
+// helper بيمسح الحارس + يطلق event عشان useAuthFlowGuard hook يعرف يـrefresh.
+// مهم نستخدم ده بدل sessionStorage.removeItem المباشر — لأن الـhook بيعتمد على
+// الـevent عشان يحدّث state الـin-memory، ومن غيره الـguard يفضل ظاهر "نشط".
+import { clearAuthFlowGuard } from '../components/auth/authFlowGuard';
 import { getDocCacheFirst } from '../services/firestore/cacheFirst';
 import {
     getUserProfileDocRef,
@@ -25,6 +35,27 @@ import { normalizeEmail } from '../services/auth-service/validation';
 const PENDING_GOOGLE_AUTH_WAIT_MS = 6000; // مدة انتظار معالجة بيانات جوجل
 const PENDING_GOOGLE_AUTH_POLL_MS = 50;   // فترة الاستعلام المتكرر
 const LAST_UID_KEY = 'dh_last_uid';        // آخر UID مسجل دخول — لاستعادة optimistic
+
+// حارس الوقت لتحديد دور المستخدم (Role Resolution Timeout):
+// لو فضل user مسجَّل دخول لكن بدون authRole أكتر من المهلة دي (مثلاً Firestore بطيء،
+// أو البروفايل ناقص، أو فشل قراءة البيانات)، نعمل محاوله أخيره لجلب البروفايل،
+// ولو فشلت نعمل signout تلقائي مع رساله واضحه عشان المستخدم ميتعلّقش على شاشه تحميل.
+const ROLE_RESOLUTION_TIMEOUT_MS = 6000;
+const ROLE_RESOLUTION_FAILURE_MESSAGE =
+    'تعذَّر تحديد نوع حسابك. تأكَّد من اتصالك بالإنترنت ثم سجَّل دخول مرة أخرى.';
+
+/**
+ * فحص لو في authFlowGuard نشط في sessionStorage.
+ * authFlowGuard بيتفعّل قبل عمليه signup/login حساسه (مثلاً قبل signInWithPopup
+ * في DoctorSignupPage). أثناء ما العمليه شغّاله، الـuser ممكن يكون authenticated
+ * بـGoogle لكن لسه ما عملش setDoc للبروفايل — فالدور غير محدد بشكل طبيعي.
+ * الحارس ميشتغلش في الحاله دي عشان ميقطعش العمليه قبل ما تخلص.
+ */
+const hasAuthFlowGuardActive = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    try { return Boolean(sessionStorage.getItem(AUTH_FLOW_GUARD_KEY)); }
+    catch { return false; }
+};
 
 type ProfileCollectionSource = 'users';
 
@@ -129,6 +160,59 @@ export const useAuth = (): UseAuthReturn => {
     const [loading, setLoading] = useState<boolean>(!optimisticUserRef.current);
     const [error, setError] = useState<string | null>(null);
 
+    // حارس وقت تحديد الدور — يلغى لما الدور يتحدّد بنجاح، أو يطلق المعالجة
+    // الاضطرارية (retry → signout) لو الدور فضل ناقص بعد المهلة.
+    const roleResolutionTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearRoleResolutionTimer = React.useCallback(() => {
+        if (roleResolutionTimerRef.current) {
+            clearTimeout(roleResolutionTimerRef.current);
+            roleResolutionTimerRef.current = null;
+        }
+    }, []);
+
+    /**
+     * يبدأ مؤقت يقوم بمحاولة أخيرة لقراءة البروفايل وتحديد الدور بعد ROLE_RESOLUTION_TIMEOUT_MS.
+     * لو فشلت المحاوله، يعمل signout تلقائي ويحفظ رساله واضحه في localStorage
+     * عشان صفحه الدخول تعرضها للمستخدم بدل ما يتعلّق على شاشه تحميل.
+     */
+    const startRoleResolutionTimer = React.useCallback((uid: string) => {
+        clearRoleResolutionTimer();
+        roleResolutionTimerRef.current = setTimeout(async () => {
+            try {
+                // محاوله أخيره: ممكن Firestore يكون رد متأخّر، أو الأدمن أكمل البروفايل
+                const { data: retryData } = await loadResolvedProfile(uid);
+                const retryRole = resolveAuthRoleFromProfileData(retryData);
+                const stillSameUser = (auth.currentUser?.uid || '') === uid;
+
+                if (retryRole && stillSameUser && auth.currentUser) {
+                    // نجحت — حدّث الـstate وكمل عادي بدون signout
+                    setUser({
+                        ...auth.currentUser,
+                        verificationStatus: retryData?.verificationStatus,
+                        isVerified: retryData?.isVerified,
+                        authRole: retryRole,
+                        createdAt: retryData?.createdAt,
+                    } as ExtendedUser);
+                    return;
+                }
+
+                // فشلت — signout مع رساله واضحه للمستخدم
+                console.warn('[useAuth] Role resolution timeout — forcing signout');
+                try { localStorage.setItem(ROLE_RESOLUTION_ERROR_KEY, ROLE_RESOLUTION_FAILURE_MESSAGE); } catch { /* تجاهل: storage مغلق */ }
+                try { await authSignOut(); } catch { /* تجاهل: ممكن يكون متسجّل خروج بالفعل */ }
+                setUser(null);
+                setLoading(false);
+            } catch (retryError) {
+                console.warn('[useAuth] Role resolution retry failed:', retryError);
+                try { localStorage.setItem(ROLE_RESOLUTION_ERROR_KEY, ROLE_RESOLUTION_FAILURE_MESSAGE); } catch { /* تجاهل */ }
+                try { await authSignOut(); } catch { /* تجاهل */ }
+                setUser(null);
+                setLoading(false);
+            }
+        }, ROLE_RESOLUTION_TIMEOUT_MS);
+    }, [clearRoleResolutionTimer]);
+
     /** استرجاع "الدور" المحفوظ مؤقتاً في localStorage أثناء عملية الـ Redirect الخاصة بـ Google */
     const getPendingGoogleAuthRole = (): 'doctor' | 'public' | null => {
         if (typeof window === 'undefined') return null;
@@ -228,7 +312,9 @@ export const useAuth = (): UseAuthReturn => {
                         }
 
                         // دمج البيانات المستخرجة وتحديث الحالة العامة للمستخدِم
-                        if (userData) {
+                        if (userData && resolvedAuthRole) {
+                            // نجح تحديد الدور — ألغي حارس الوقت لو كان شغّال من محاوله سابقه
+                            clearRoleResolutionTimer();
 
                             const enrichedUser = {
                                 ...authUser,
@@ -250,17 +336,29 @@ export const useAuth = (): UseAuthReturn => {
                             // تخزين آخر UID — عشان الفتحة الجاية نقدر نعمل optimistic render.
                             localStorage.setItem(LAST_UID_KEY, authUser.uid);
                         } else {
-                            // مستخدم جديد مسجل بـ Google لم ينشئ ملفاً شخصياً بعد
+                            // مستخدم بدون بروفايل أو بدون دور صالح — ابدأ حارس الوقت.
+                            // الحارس هيعمل retry بعد المهله، ولو فشل هيعمل signout مع رساله.
+                            // الاستثناء: لو في authFlowGuard نشط (مثلاً signup شغّال بيحفظ البروفايل)،
+                            // الحارس ميشتغلش عشان ميقطعش العمليه قبل ما تخلص.
                             setUser({ ...authUser } as ExtendedUser);
+                            if (!hasAuthFlowGuardActive()) {
+                                startRoleResolutionTimer(authUser.uid);
+                            }
                         }
                         setLoading(false);
                     } catch (fetchError) {
                         console.warn('Error fetching user data:', fetchError);
                         setUser({ ...authUser } as ExtendedUser);
+                        // فشل قراءة البروفايل — حارس الوقت هيحاول تاني وبعدها signout لو لسه فاشل.
+                        // نفس الاستثناء: مفيش حارس لو signup/login حساس شغّال.
+                        if (!hasAuthFlowGuardActive()) {
+                            startRoleResolutionTimer(authUser.uid);
+                        }
                         setLoading(false);
                     }
                 } else {
-                    // المستخدم غير مسجل دخول (Logged Out)
+                    // المستخدم غير مسجل دخول (Logged Out) — ألغي أي حارس وقت شغّال
+                    clearRoleResolutionTimer();
                     setUser(null);
                     setLoading(false);
                 }
@@ -301,6 +399,19 @@ export const useAuth = (): UseAuthReturn => {
                     }
                 }
             } finally {
+                // ─ فك authFlowGuard بعد الرجوع من signInWithRedirect ─
+                // صفحات الـlogin (DoctorGoogleLoginPage / PublicLoginPage) بتعمل
+                // setAuthFlowGuard قبل signInGoogle و clearAuthFlowGuardSoon بعده.
+                // لكن في حالة popup-blocked، signInGoogle ينتقل لـsignInWithRedirect
+                // اللي بيـreload الصفحه — فالأسطر اللي بعد الـawait مش بتتنفّذ
+                // ويفضل الـguard نشط. الـguard النشط بيمنع useAppRedirectEffect من
+                // توجيه المستخدم لـ/home بعد الـlogin، فيعلق على شاشه الدخول.
+                // الحل المركزي: نفك الـguard هنا بعد ما الـredirect يخلص. مهم نستخدم
+                // clearAuthFlowGuard() بدل sessionStorage.removeItem المباشر — لأن
+                // الـhelper بيطلق AUTH_FLOW_GUARD_EVENT اللي useAuthFlowGuard بيستمع
+                // له عشان يـrefresh state الـin-memory. بدون الـevent، الـhook يفضل
+                // يقرا القيمه القديمه ويعتبر الـguard نشط فيمنع الـredirect لـ/home.
+                try { clearAuthFlowGuard(); } catch { /* تجاهل */ }
                 clearTimeout(timeout);
                 if (isMounted) {
                     startAuthListener();
@@ -320,8 +431,10 @@ export const useAuth = (): UseAuthReturn => {
         return () => {
             isMounted = false;
             if (authListenerTimeout) clearTimeout(authListenerTimeout);
+            clearRoleResolutionTimer();
             unsubscribe?.();
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- الـeffect لازم يشتغل مرّه واحده فقط عند mount
     }, []);
 
     /** تفعيل تسجيل الدخول بـ Google مع تحديد غرض الحساب (طبيب أم مستخدم عام) */

@@ -266,7 +266,17 @@ export const useAppointmentFormState = ({
     const resolvedType = appointmentType;
 
     const editingAppointment = editingAppointmentId ? appointments.find(a => a.id === editingAppointmentId) : null;
-    
+
+    // ─ حماية من تحويل تعديل لإضافة جديده بالغلط ─
+    // لو السكرتيره داخله في وضع تعديل لكن الموعد اختفى من القائمه (اتشال من جهاز
+    // تاني مثلاً)، الكود قبل الإصلاح كان بيكمل كأنه إضافه جديده ويولّد id جديد —
+    // ده كمان كان بيعدّي الـquota check (لأن editingAppointmentId لسه مش فاضي).
+    // الإصلاح: نوقف العمليه ونرشد السكرتيره لإعاده فتح النموذج بحاله محدّثه.
+    if (editingAppointmentId && !editingAppointment) {
+      setFormError('الموعد ده مش موجود في القائمه (يمكن اتحذف من جهاز تاني). أغلق النموذج وافتحه من جديد.');
+      return;
+    }
+
     // تطبيع الحقول الجديدة قبل الحفظ (undefined لو فاضي عشان Firestore ما يحفظش قيم فارغة)
     const genderForPayload = normalizeGender(gender);
     const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;

@@ -49,7 +49,9 @@
       "Bash(xargs -I {} sh -c 'echo \"=== {} ===\"; grep -o \"authDomain[^,]*,\" {} | head -3')",
       "Bash(echo \"EXIT: $?\")",
       "Bash(cd /f)",
-      "Bash(find \"تطبيقات/تطبيق الروشته/النسخة الاصلية/drhyperclinic/components/admin\" -name \"*.tsx\" -type f -exec grep -l \"window\\\\.prompt\\\\|window\\\\.confirm\\\\|window\\\\.alert\" {} \\\\;)"
+      "Bash(find \"تطبيقات/تطبيق الروشته/النسخة الاصلية/drhyperclinic/components/admin\" -name \"*.tsx\" -type f -exec grep -l \"window\\\\.prompt\\\\|window\\\\.confirm\\\\|window\\\\.alert\" {} \\\\;)",
+      "Bash(npm run *)",
+      "Bash(echo \"EXIT_CODE=$?\")"
     ]
   }
 }

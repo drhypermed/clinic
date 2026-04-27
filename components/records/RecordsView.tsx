@@ -313,13 +313,10 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
           <div className="flex flex-row gap-2">
             <button
               onClick={() => {
-                // نلتقط التوقيت الحالي كقيمة افتراضية (يمكن للمستخدم تعديلها)
-                const t = new Date().toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: 'Africa/Cairo',
-                });
-                setDateModal({ isOpen: true, type: 'exam', selectedDate: todayStr, selectedTime: t });
+                // selectedTime فاضي عمداً — كنا بنبعت الوقت الحالي وكان بيتلصق
+                // مع التاريخ في خانة الـ date (شكل غريب). saveRecord بيحط 12:00:00
+                // افتراضياً للسجلات الفائتة، فالوقت الحقيقي مش لازم يتحدد هنا.
+                setDateModal({ isOpen: true, type: 'exam', selectedDate: todayStr, selectedTime: '' });
               }}
               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
             >
@@ -340,16 +337,13 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
             </button>
             <button
               onClick={() => {
-                const t = new Date().toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: 'Africa/Cairo',
-                });
+                // نفس سبب زر الكشف الفائت فوق — selectedTime فاضي عشان خانة
+                // التاريخ ما تظهرش الوقت ملصوق فيها. الحفظ بيحط الظهر افتراضياً.
                 setDateModal({
                   isOpen: true,
                   type: 'consultation',
                   selectedDate: todayStr,
-                  selectedTime: t,
+                  selectedTime: '',
                 });
               }}
               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white font-black text-xs shadow-sm hover:shadow-md transition-all active:scale-[0.99]"

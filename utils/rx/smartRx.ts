@@ -23,6 +23,8 @@ type SmartRxInput = {
     records?: PatientRecord[];  // سجلات سابقة للمقارنة
     /** userId اختياري — يُمرَّر للكاش per-doctor في ترجمة الحقول السريرية */
     userId?: string | null;
+    /** تخصص الطبيب — يساعد الموديل ينتقي المصطلحات الإنجليزية الأنسب للتخصص. */
+    doctorSpecialty?: string;
     /**
      * لو true — نتخطى استدعاء analyzeComplaint نهائياً (نوفر نداء AI كامل)
      * ونخلي diagnosisEn فاضي للطبيب يكتبه بنفسه أو يضيفه من نافذة التحليل.
@@ -148,6 +150,7 @@ export const runSmartRx = async (input: SmartRxInput): Promise<SmartRxOutput> =>
         diagnosisForTranslation,
         input.investigations,
         input.userId,
+        input.doctorSpecialty,
     );
 
     return {

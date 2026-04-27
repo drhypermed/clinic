@@ -611,9 +611,11 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
     
-    // أسعار الاشتراكات - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن.
+    // أسعار الاشتراكات — قراءة عامة (معلومات تسويقية، تظهر في دليل الاستخدام
+    // قبل تسجيل الدخول عشان الطبيب يشوف التسعير قبل ما يقرر يسجّل).
+    // الكتابة للأدمن فقط.
     match /subscriptionPrices/{month} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create, update, delete: if isAdmin();
     }
     

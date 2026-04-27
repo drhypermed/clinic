@@ -1,6 +1,8 @@
 import React from 'react';
 import type { PrescriptionMiddleSettings } from '../../types';
 import { CollapsibleSection } from './CollapsibleSection';
+import { useImageUploadGate } from '../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../common/ImageUploadUpgradeModal';
 
 interface MiddleSettingsTabProps {
     middle: PrescriptionMiddleSettings; // إعدادات المنتصف الحالية
@@ -20,6 +22,8 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
     setMiddleBgToCrop,
 }) => {
     const toggle = (id: string) => setOpenSection(openSection === id ? '' : id);
+    // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+    const imageGate = useImageUploadGate();
 
     return (
         <div className="space-y-6">
@@ -36,6 +40,7 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
                     accept="image/*"
                     id="middleBgInput"
                     onChange={e => {
+                        if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
                         const f = e.target.files?.[0];
                         if (f) {
                             if (f.size > 5 * 1024 * 1024) {
@@ -55,7 +60,10 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
                 />
                 {!middle.middleBackgroundImage ? (
                     <button
-                        onClick={() => document.getElementById('middleBgInput')?.click()}
+                        onClick={() => {
+                            if (!imageGate.requestImageUpload()) return;
+                            document.getElementById('middleBgInput')?.click();
+                        }}
                         className="w-full py-4 border-2 border-dashed border-brand-300 rounded-xl hover:border-brand-400 hover:bg-brand-50 transition-all flex flex-col items-center gap-2 text-slate-500 hover:text-brand-600"
                     >
                         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +78,10 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
                         </div>
                         <div className="flex gap-2">
                             <button
-                                onClick={() => document.getElementById('middleBgInput')?.click()}
+                                onClick={() => {
+                                    if (!imageGate.requestImageUpload()) return;
+                                    document.getElementById('middleBgInput')?.click();
+                                }}
                                 className="flex-1 py-2 bg-brand-100 text-brand-700 rounded-lg font-bold hover:bg-brand-200 transition-all text-sm"
                             >
                                 🖼️ رفع صورة جديدة
@@ -186,6 +197,13 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
                     </div>
                 )}
             </CollapsibleSection>
+
+            <ImageUploadUpgradeModal
+                isOpen={imageGate.showUpgradeModal}
+                onClose={imageGate.closeUpgradeModal}
+                message={imageGate.upgradeMessage}
+                whatsappUrl={imageGate.whatsappUrl}
+            />
         </div>
     );
 };

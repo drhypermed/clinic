@@ -54,24 +54,27 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
   };
 
   return (
-    <article className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4">
-      {/* Header: unified blue gradient icon + title */}
-      <div className="flex items-center gap-2.5 mb-3">
+    // ─ min-w-0 ضروري لإن الـarticle جوّه grid/flex يقدر يـshrink (مايخرجش برا الشاشة).
+    //   p-2.5 على الموبايل عشان نوسّع المساحة الداخلية لخانات الأرقام (3 أعمدة).
+    <article className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-2.5 sm:p-4">
+      {/* Header: أيقونة زرقاء موحّدة + عنوان (truncate لمنع الخروج للأطراف) */}
+      <div className="flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 min-w-0">
         <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shrink-0 shadow-sm">
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5 text-white' })}
         </div>
-        <h3 className="flex-1 min-w-0 text-sm sm:text-base font-black text-slate-800 tracking-tight truncate">
+        <h3 className="flex-1 min-w-0 text-[13px] sm:text-base font-black text-slate-800 tracking-tight truncate">
           {group.title}
         </h3>
       </div>
 
-      {/* Unified input boxes — 3 أعمدة: مجاني / برو / برو ماكس */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+      {/* خانات الأرقام — 3 أعمدة: مجاني / برو / برو ماكس
+          gap-1.5 على الموبايل عشان نكسب كل بكسل ممكن لكتابة 6 أرقام */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-2.5 sm:mb-3 min-w-0">
         {/* Free */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5 px-1">
-            <FaUser className="w-3 h-3 text-slate-500" />
-            <span className="text-[11px] sm:text-[12px] font-black text-slate-700">مجاني</span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
+            <FaUser className="w-3 h-3 text-slate-500 shrink-0" />
+            <span className="text-[10px] sm:text-[12px] font-black text-slate-700 truncate">مجاني</span>
           </div>
           <input
             type="number"
@@ -79,15 +82,15 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             max={999999}
             value={form[group.free.limitKey]}
             onChange={(e) => updateLimit(group.free.limitKey, e.target.value)}
-            className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric"
+            className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric text-center sm:text-start"
           />
         </div>
 
         {/* Pro (premium) */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5 px-1">
-            <FaCrown className="w-3 h-3 text-warning-500" />
-            <span className="text-[11px] sm:text-[12px] font-black text-warning-700">برو</span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
+            <FaCrown className="w-3 h-3 text-warning-500 shrink-0" />
+            <span className="text-[10px] sm:text-[12px] font-black text-warning-700 truncate">برو</span>
           </div>
           <input
             type="number"
@@ -95,16 +98,17 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             max={999999}
             value={form[group.premium.limitKey]}
             onChange={(e) => updateLimit(group.premium.limitKey, e.target.value)}
-            className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-slate-200 bg-white text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric"
+            className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric text-center sm:text-start"
           />
         </div>
 
         {/* Pro Max — ذهبي لامع (أغنى من برو) */}
         {group.proMax && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5 px-1">
-              <FaCrown className="w-3 h-3 text-[#E65100] drop-shadow-soft" />
-              <span className="text-[11px] sm:text-[12px] font-black text-[#B45309]">برو ماكس</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
+              <FaCrown className="w-3 h-3 text-[#E65100] drop-shadow-soft shrink-0" />
+              {/* "برو ماكس" بيتلف لسطرين على شاشات صغيرة لو لازم بدل ما يضغط الإدخال */}
+              <span className="text-[10px] sm:text-[12px] font-black text-[#B45309] truncate">برو ماكس</span>
             </div>
             <input
               type="number"
@@ -112,7 +116,7 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
               max={999999}
               value={(form[group.proMax.limitKey] as number | undefined) ?? 0}
               onChange={(e) => updateLimit(group.proMax!.limitKey, e.target.value)}
-              className="w-full h-[44px] px-3 sm:px-4 rounded-2xl border-2 border-[#FFE082] bg-gradient-to-br from-white to-[#FFFDE7] text-sm font-black text-slate-900 placeholder-slate-400 focus:border-[#FFB300] hover:border-[#FFD54F] focus:outline-none transition-colors font-numeric"
+              className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-[#FFE082] bg-gradient-to-br from-white to-[#FFFDE7] text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-[#FFB300] hover:border-[#FFD54F] focus:outline-none transition-colors font-numeric text-center sm:text-start"
             />
           </div>
         )}
@@ -122,15 +126,15 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
       <button
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
-        className={`w-full flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-colors ${
+        className={`w-full min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border-2 px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-black transition-colors ${
           isExpanded
             ? 'border-brand-400 bg-brand-50 text-brand-700 hover:bg-brand-100'
             : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:bg-brand-50/50'
         }`}
       >
-        <FaPenToSquare className="w-3 h-3" />
-        {isExpanded ? 'إخفاء الرسائل' : 'تعديل الرسائل والواتساب'}
-        <FaChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+        <FaPenToSquare className="w-3 h-3 shrink-0" />
+        <span className="truncate">{isExpanded ? 'إخفاء الرسائل' : 'تعديل الرسائل والواتساب'}</span>
+        <FaChevronDown className={`w-2.5 h-2.5 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Inline expansion */}

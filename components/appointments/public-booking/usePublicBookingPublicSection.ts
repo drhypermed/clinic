@@ -7,7 +7,7 @@
  * 3. حذف الفتحات أو المواعيد الملغاة. 
  * 4. تزويد السكرتير بخيارات لنسخ الرابط ومشاركته مع المرضى عبر واتساب أو غيره.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { FormEvent } from 'react';
 import { firestoreService } from '../../../services/firestore';
@@ -63,12 +63,28 @@ export const usePublicBookingPublicSection = ({
   const publicSlotTodayStr = currentDayStr;
   const publicTimeMin = publicSlotDateStr === publicSlotTodayStr ? currentTimeMin() : undefined;
 
+  // Counter يزيد مع كل تغيُّر userId — يحمي من stale async responses عشان الرابط
+  // العام ميـلصق-ش بدكتور سابق لو اتنقلنا لرابط تاني وقت ما الـlookup شغّال.
+  const secretRequestIdRef = useRef(0);
+
   useEffect(() => {
+    // مسح الـsecret القديم فوراً عند تغيُّر userId — قبل الإصلاح كان بيفضل
+    // معلَّق بقيمته القديمه لو الـlookup الجديد فشل أو رجع null.
+    secretRequestIdRef.current += 1;
+    setPublicSecret(null);
+
     if (!userId) return;
+    const myRequestId = secretRequestIdRef.current;
+
     firestoreService.getPublicSecretByUserId(userId).then((s) => {
-      if (s) setPublicSecret(s);
+      if (secretRequestIdRef.current !== myRequestId) return;
+      // s ممكن يكون null/undefined لو الدكتور ما عملش publish — نحط القيمه كما هي
+      // (null) عشان نعكس الواقع بدل ما نسيب سر قديم متعلق.
+      setPublicSecret(s || null);
     }).catch((err) => {
+      if (secretRequestIdRef.current !== myRequestId) return;
       console.error('[Secretary] Failed to resolve public secret:', err);
+      setPublicSecret(null);
     });
   }, [userId]);
 

@@ -8,7 +8,11 @@ export async function getRectCroppedImg(
     imageSrc: string,
     pixelCrop: { x: number; y: number; width: number; height: number },
     outputWidth?: number, // اختياري: لفرض عرض محدد للنتيجة (مع الحفاظ على التناسب)
-    rotation: number = 0
+    rotation: number = 0,
+    // ─ صيغة وجودة الإخراج: PNG بجودة 1.0 للحالات اللي محتاجة شفافية (default)،
+    //   لكن البانرات والصور الكبيرة المفروض تستخدم JPEG عشان حجم أقل بكتير ورفع أسرع.
+    outputFormat: 'image/png' | 'image/jpeg' = 'image/png',
+    outputQuality: number = 1.0
 ): Promise<string> {
     const image = await createImage(imageSrc)
     const canvas = document.createElement('canvas')
@@ -47,7 +51,7 @@ export async function getRectCroppedImg(
     croppedCtx.putImageData(imageData, 0, 0)
 
     if (!outputWidth || outputWidth <= 0) {
-        return croppedCanvas.toDataURL('image/png', 1.0)
+        return croppedCanvas.toDataURL(outputFormat, outputQuality)
     }
 
     const scaledWidth = Math.max(1, Math.floor(outputWidth))
@@ -63,6 +67,6 @@ export async function getRectCroppedImg(
     scaledCanvas.height = scaledHeight
     scaledCtx.drawImage(croppedCanvas, 0, 0, scaledWidth, scaledHeight)
 
-    // إرجاع الصورة بصيغة Base64 مع تحديد الجودة القصوى
-    return scaledCanvas.toDataURL('image/png', 1.0)
+    // إرجاع الصورة بصيغة Base64 مع الصيغة/الجودة المحددة
+    return scaledCanvas.toDataURL(outputFormat, outputQuality)
 }

@@ -8,8 +8,13 @@ import { CollapsibleSection } from '../CollapsibleSection';
 import { LABEL_CLASS } from '../utils';
 import type { HeaderSectionSharedProps } from '../../../types';
 import { readFileAsDataUrl, validateHeaderImageFile } from './securityUtils';
+import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, updateHeader, openSection, toggle, showNotification, fileInputRef, setLogoToCrop }) => {
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
+
   /** معالج تغيير ملف شعار العيادة (اللوجو) */
   const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -51,12 +56,18 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                             type="file"
                             accept="image/*"
                             ref={fileInputRef}
-                            onChange={handleLogoFileChange}
+                            onChange={(e) => {
+                              if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
+                              void handleLogoFileChange(e);
+                            }}
                             className="hidden"
                         />
                         {!header.logoBase64 && (
                             <button
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={() => {
+                                  if (!imageGate.requestImageUpload()) return;
+                                  fileInputRef.current?.click();
+                                }}
                                 className="px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
                             >
                                 <span className="text-xl">📂</span>
@@ -125,7 +136,10 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                             <img src={header.logoBase64} alt="Logo Preview" className="h-24 max-w-full object-contain rounded-lg border p-1" />
                             <div className="flex gap-2 w-full max-w-[250px] justify-center">
                                 <button
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() => {
+                                      if (!imageGate.requestImageUpload()) return;
+                                      fileInputRef.current?.click();
+                                    }}
                                     className="flex-1 px-2 py-2.5 bg-brand-50 text-brand-600 text-sm font-bold rounded-lg hover:bg-brand-100 transition-colors active:scale-95"
                                 >
                                     تغيير
@@ -143,6 +157,13 @@ export const HeaderLogoSection: React.FC<HeaderSectionSharedProps> = ({ header, 
                         </div>
                     )}
                 </CollapsibleSection>
+
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </>
   );
 };

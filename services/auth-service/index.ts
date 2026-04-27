@@ -7,6 +7,7 @@
 export {
   SESSION_ROLE_STORAGE_KEY,
   PUBLIC_AUTH_ERROR_KEY,
+  ROLE_RESOLUTION_ERROR_KEY,
 } from './constants';
 
 export {

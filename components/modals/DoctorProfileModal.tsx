@@ -23,6 +23,8 @@ import { useDoctorProfileData } from './doctor-profile/useDoctorProfileData';
 import { useProfileImageCropper } from './doctor-profile/useProfileImageCropper';
 import { saveDoctorProfile } from './doctor-profile/saveDoctorProfile';
 import { MEDICAL_SPECIALTIES } from '../auth/medicalSpecialties';
+import { useImageUploadGate } from '../../hooks/useImageUploadGate';
+import { ImageUploadUpgradeModal } from '../common/ImageUploadUpgradeModal';
 
 interface DoctorProfileModalProps {
   isOpen: boolean;
@@ -92,6 +94,9 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
     onCroppedReady: (base64) => setProfileImage(base64),
     onError: (msg) => setError(msg),
   });
+
+  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  const imageGate = useImageUploadGate();
 
   // فحص حالة اشتراك برو لعرض شارة التميز
   const { isPro } = usePremiumExpiryCheck(userId ? { uid: userId } : null);
@@ -311,7 +316,11 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={cropper.handleImageChange}
+                    onChange={(e) => {
+                      // الـlabel.onClick gate لو الـbrowser تخطّاه (rare) — defense in depth
+                      if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
+                      cropper.handleImageChange(e);
+                    }}
                   />
                 </div>
 
@@ -319,6 +328,11 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                   {/* زر "تعديل" — أزرق فاتح فقط */}
                   <label
                     htmlFor="profile-image-upload"
+                    onClick={(e) => {
+                      // gate قبل ما متصفح الملفات يفتح — لو الحساب free مش مفعّل،
+                      // نمنع الـclick ونعرض مودال الترقية بدلاً من ذلك
+                      if (!imageGate.requestImageUpload()) e.preventDefault();
+                    }}
                     className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-full text-sm font-bold hover:bg-blue-100 cursor-pointer transition-colors"
                   >
                     <svg
@@ -500,6 +514,14 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
           onCancel={cropper.cancelCrop}
         />
       )}
+
+      {/* مودال الترقية — يظهر للحساب المجاني لو الأدمن مغلق رفع الصور */}
+      <ImageUploadUpgradeModal
+        isOpen={imageGate.showUpgradeModal}
+        onClose={imageGate.closeUpgradeModal}
+        message={imageGate.upgradeMessage}
+        whatsappUrl={imageGate.whatsappUrl}
+      />
     </div>,
     document.body
   );

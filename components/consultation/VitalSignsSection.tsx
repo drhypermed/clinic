@@ -11,6 +11,27 @@
 import React from 'react';
 import { VitalSignConfig, CustomBox, VitalsSectionSettings } from '../../types';
 
+// تصنيف مؤشر كتلة الجسم — نفس الحدود المستخدمة في الشريط الجانبي للروشتة
+// عشان الطبيب يلاقي نفس الكلام في الاتنين بدون ازدواج.
+const getBMICategory = (bmi: string): string => {
+  const bmiValue = parseFloat(bmi);
+  if (isNaN(bmiValue) || bmiValue === 0) return '';
+  if (bmiValue < 18.5) return 'نحافة';
+  if (bmiValue < 25) return 'طبيعي';
+  if (bmiValue < 30) return 'وزن زائد';
+  return 'سمنة';
+};
+
+// لون التصنيف — نحافة أزرق فاتح، طبيعي أخضر، زائد برتقالي، سمنة أحمر.
+// ألوان متناسقة مع باقي التطبيق (success/warning/danger).
+const getBMICategoryColor = (category: string): string => {
+  if (category === 'نحافة') return 'text-sky-600';
+  if (category === 'طبيعي') return 'text-success-600';
+  if (category === 'وزن زائد') return 'text-warning-600';
+  if (category === 'سمنة') return 'text-danger-600';
+  return 'text-slate-500';
+};
+
 interface VitalSignsSectionProps {
   weight: string; setWeight: (v: string) => void;        // الوزن كجم
   height?: string; setHeight?: (v: string) => void;      // الطول سم
@@ -117,18 +138,36 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
               </div>
             )}
 
-            {/* حقل BMI + حقل السكر في نفس الصف */}
-            {isBmiEnabled && (
-              <div className="flex-1 flex flex-col">
-                <p className={fieldTitleClass}>{bmiConfig?.labelAr || 'مؤشر الكتلة'}</p>
-                <input
-                  type="text"
-                  readOnly
-                  value={bmi || ''}
-                  className="clinic-field clinic-field--readonly w-full h-[44px] px-4 rounded-2xl font-black text-slate-700 text-base text-center cursor-not-allowed !bg-slate-50/50 !border-2 !border-slate-200 dropdown-shadow"
-                />
-              </div>
-            )}
+            {/* حقل BMI + حقل السكر في نفس الصف
+                المربع ده readonly لأن الـBMI بيتحسب تلقائياً من الوزن والطول.
+                لما الحقل فاضي → نظهر "يُحسب تلقائياً" بخط رمادي صغير.
+                لما فيه قيمة → نظهر الرقم مع تصنيف ملوّن (نحافة/طبيعي/وزن زائد/سمنة)
+                نفس اللي بيظهر في الشريط الجانبي للروشتة. */}
+            {isBmiEnabled && (() => {
+              const bmiCategory = bmi ? getBMICategory(bmi) : '';
+              return (
+                <div className="flex-1 flex flex-col">
+                  <p className={fieldTitleClass}>{bmiConfig?.labelAr || 'مؤشر الكتلة'}</p>
+                  <div
+                    aria-label={bmiConfig?.labelAr || 'مؤشر الكتلة'}
+                    className="clinic-field clinic-field--readonly w-full h-[44px] px-2 rounded-2xl font-black text-slate-700 text-base text-center cursor-not-allowed !bg-slate-50/50 !border-2 !border-slate-200 dropdown-shadow flex items-center justify-center gap-1.5 min-w-0"
+                  >
+                    {bmi ? (
+                      <>
+                        <span className="truncate">{bmi}</span>
+                        {bmiCategory && (
+                          <span className={`text-[10px] font-bold truncate ${getBMICategoryColor(bmiCategory)}`}>
+                            ({bmiCategory})
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[11px] font-bold text-slate-400">يُحسب تلقائياً</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {isRbsEnabled && (
               <div className="flex-1 flex flex-col">

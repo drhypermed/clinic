@@ -55,28 +55,24 @@ const FinancialReportsPage = React.lazy(loadFinancialReports);
 const BranchSettingsPage = React.lazy(loadBranchSettings);
 
 /**
- * Preload لكل صفحات السايد بار — بيستدعي نفس دوال الـ import عشان الـ browser
- * يحمّلهم في الخلفية. الـ import() كاش في Vite — استدعائه تاني لما المستخدم
- * يدوس على الصفحة مش بيحمّل مرة تانية، بيجيب النسخة المحمّلة فوراً.
+ * Preload لصفحات السايد بار الأكثر استخداماً فقط — بيستدعي نفس دوال الـimport
+ * عشان الـbrowser يحمّلهم في الخلفية. الـimport() كاش في Vite — استدعاؤه تاني
+ * لما المستخدم يدوس على الصفحة مش بيحمّل مرة تانية، بيجيب النسخة المحمّلة فوراً.
  *
- * الترتيب: الصفحات اللي الطبيب بيفتحها كتير الأول (أولوية عالية)، ثم الباقي.
+ * ─ تقليل من 12 صفحة لـ4 صفحات (2026-04): الـpreloading الكامل كان بيـsaturate
+ *   الـCPU والشبكة في أول 10 ثواني من فتح التطبيق ويسبب تهنيج. دلوقتي بنـpreload
+ *   الـ4 الأكثر استخداماً فقط، والباقي بيتحمّل لما الطبيب يضغط عليه (تأخير ~1
+ *   ثانية أول مرة، ثم كاش بعدها).
  */
 export const preloadMainAppViewChunks = () => {
-  // أولوية عالية — صفحات الاستخدام اليومي
+  // الـ4 صفحات الأكثر استخداماً يومياً — preload في الخلفية
   void loadDashboard();
   void loadPrescription();
-  void loadAppointments();
-  void loadPatientFiles();
   void loadRecords();
-  // أولوية متوسطة — بتستخدم في الأسبوع
-  void loadSecretary();
-  void loadFinancialReports();
-  void loadDrugTools();
-  // أولوية منخفضة — إعدادات ومحتوى تانوي
-  void loadPrescriptionSettings();
-  void loadBranchSettings();
-  void loadAdvertisement();
-  void loadMedicationEdit();
+  void loadAppointments();
+  // باقي الصفحات (Secretary/PatientFiles/FinancialReports/DrugTools/Settings/...)
+  // بتتحمّل lazy عند الضغط عليها — وفرنا بكدا تحميل ~3 ميجا في الخلفية وقت
+  // الإقلاع، ودا بيخلي التطبيق responsive من أول ثانية.
 };
 
 // القوائم دي طويلة جداً عمداً — Props متجمعة لتجنب ترتيب متناثر.

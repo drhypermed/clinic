@@ -174,6 +174,15 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-col lg:flex-row-reverse items-center justify-center gap-6 lg:gap-14 mb-6 sm:mb-8">
               <BrandLogo className="w-56 h-56 sm:w-64 sm:h-64 lg:w-80 lg:h-80 shrink-0" size={320} fetchPriority="high" />
               <div className="flex flex-col items-center lg:items-start gap-3 text-center lg:text-right max-w-lg">
+                {/* Badge ثقة: بيقول للزائر إن اللي صمّم التطبيق أطباء فاهمين الشغل ─
+                    أهم رسالة قبل التسجيل عشان الطبيب يحس إن المنتج مش جنرال
+                    ولكنه متظبط على workflow الكشف الفعلي. ─ */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-l from-brand-50 via-white to-success-50 ring-1 ring-brand-200/70 shadow-sm lg:self-center">
+                  <FaUserDoctor className="w-3.5 h-3.5 text-brand-700 shrink-0" aria-hidden="true" />
+                  <span className="text-[11px] sm:text-xs font-black text-slate-800 tracking-tight">
+                    من تصميم أطباء · لأطباء زيك
+                  </span>
+                </div>
                 <div className="flex items-center gap-2 lg:self-center">
                   <p className="text-lg sm:text-2xl font-bold text-slate-800">نظام متكامل لإدارة العيادات</p>
                   <HiOutlineSparkles className="w-6 h-6 sm:w-7 sm:h-7 text-brand-600 shrink-0" aria-hidden="true" />

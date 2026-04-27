@@ -20,7 +20,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
 import {
   LuBookOpen,         // شعار الدليل
@@ -37,6 +37,8 @@ import { USER_GUIDE_CATEGORIES, USER_GUIDE_ALL_TOPICS } from './userGuideData';
 import type { GuideTopic, GuideSection } from './userGuideData';
 // 🆕 جدول مقارنة حي بين الباقات — يقرأ القيم من إعدادات الأدمن لحظياً
 import { TierComparisonTable } from './TierComparisonTable';
+// 🆕 جدول أسعار الباقات الحي — يقرأ الأسعار من Firestore
+import { TierPricingTable } from './TierPricingTable';
 
 // ═════════════════════════════════════════════════════════════════════════════
 // الـsidebar اللي بيعرض الـcategories والـtopics
@@ -148,6 +150,25 @@ const SectionRenderer: React.FC<{ section: GuideSection; index: number; anchorId
       </div>
     );
   }
+  // 🆕 قسم خاص: جدول أسعار الباقات الحي
+  if (section.tierPricing) {
+    return (
+      <div id={anchorId} className="my-5 scroll-mt-20">
+        {section.heading && (
+          <h3 className="text-base sm:text-lg font-black text-slate-900 mb-2">
+            <span className="inline-block w-7 h-7 rounded-lg bg-slate-900 text-white text-xs font-black ml-2 text-center leading-7">{index + 1}</span>
+            {section.heading}
+          </h3>
+        )}
+        {section.body && (
+          <p className="text-sm sm:text-base text-slate-700 font-semibold leading-relaxed mb-3 pr-9">
+            {renderMarkdownBody(section.body)}
+          </p>
+        )}
+        <TierPricingTable />
+      </div>
+    );
+  }
   // قسم نصيحه محترف (Pro Tip) — خلفيّه صفرا
   if (section.tip) {
     return (
@@ -254,10 +275,24 @@ const TopicTableOfContents: React.FC<{ sections: GuideSection[]; topicId: string
 export const UserGuidePage: React.FC = () => {
   useHideBootSplash('user-guide-mounted');
   const navigate = useNavigate();
+  const location = useLocation();
 
   // الموضوع الحالي — افتراضياً أول موضوع (تسجيل الدخول)
   const [selectedTopicId, setSelectedTopicId] = useState<string>(USER_GUIDE_ALL_TOPICS[0]?.id || '');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // ─ زر الرجوع الذكي:
+  //   لو المستخدم جاي من صفحة تانية داخل التطبيق (location.key مش 'default')
+  //   → نرجّعه للسابقة عبر history.
+  //   لو فتح اللينك مباشرة (مثلاً نسخه ولصقه أو إشارة مرجعية)
+  //   → نوديه للصفحة الرئيسية كـfallback آمن.
+  const handleBack = () => {
+    if (location.key !== 'default') {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const currentTopic = useMemo<GuideTopic | undefined>(
     () => USER_GUIDE_ALL_TOPICS.find((t) => t.id === selectedTopicId),
@@ -277,12 +312,12 @@ export const UserGuidePage: React.FC = () => {
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {/* زر الرجوع للصفحه الرئيسيّه */}
+            {/* زر الرجوع — يرجع للصفحه السابقة لو فيه history، وإلا الصفحه الرئيسيّه */}
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={handleBack}
               className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
-              title="رجوع للصفحه الرئيسيّه"
+              title="رجوع للصفحه السابقة"
             >
               <LuArrowRight className="w-4 h-4 text-slate-700" />
             </button>

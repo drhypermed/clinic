@@ -89,6 +89,10 @@ export const useMainAppRouteSync = ({
         return;
       }
 
+      // مسار غير معروف داخل MainApp — نـredirect للـcurrentView لتصحيح الـURL.
+      // قبل الإصلاح كان الكود يخرج بـreturn فيبقى الـURL غريب (مثل /typo) في
+      // الـbrowser والـUI تعرض الـcurrentView القديم — حالة عدم تطابق محيره.
+      navigate(VIEW_TO_PATH[currentView], { replace: true });
       return;
     }
 

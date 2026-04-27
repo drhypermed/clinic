@@ -80,6 +80,12 @@ export interface AccountTypeControls {
   // ─── 🆕 رسائل تجاوز سعة شركات التأمين ───
   freeInsuranceCompaniesCapacityMessage: string;
   premiumInsuranceCompaniesCapacityMessage: string;
+  // ─── 🆕 رفع الصور: لو false (الافتراضي) → الحساب المجاني يشوف مودال
+  //     "ترقية للـPro" بدل ما يقدر يرفع صورة. الـPro/ProMax مش متأثرين.
+  //     الاستثناء الوحيد: صورة الترخيص في إنشاء حساب (مش بتمر بهذا الفحص).
+  freeImageUploadsEnabled: boolean;
+  freeImageUploadsUpgradeMessage: string;
+  freeImageUploadsUpgradeWhatsappMessage: string;
   // بيانات التواصل (واتساب)
   whatsappNumber: string;
   freeAnalysisWhatsappMessage: string;

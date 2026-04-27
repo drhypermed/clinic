@@ -33,6 +33,12 @@ import { useDirectoryFilters } from './useDirectoryFilters';
 import { usePublicBookingReviews } from './usePublicBookingReviews';
 import { getCachedDirectoryPage, setCachedDirectoryPage } from './directoryCache';
 
+// مفتاح sessionStorage لحفظ doctor id اللي المريض كان بيحاول يحجز معاه قبل ما
+// يضغط Google login. لو signInWithGoogle عمل fallback لـsignInWithRedirect،
+// الـpage بتـreload وكل state بيضيع. بنحفظ الـintent هنا عشان نـauto-resume
+// الحجز بعد ما المريض يرجع من Google.
+const PENDING_BOOKING_INTENT_KEY = 'dh_pending_booking_intent';
+
 export const usePublicDoctorsDirectoryController = ({
   user,
   profile,
@@ -258,12 +264,20 @@ export const usePublicDoctorsDirectoryController = ({
 
     let active = true;
     setMyBookingsLoading(true);
-    firestoreService.getPublicUserBookingsOnce(user.uid).then((bookings) => {
-      if (active) {
-        setMyBookings(bookings);
-        setMyBookingsLoading(false);
-      }
-    });
+    // catch + finally — قبل الإصلاح، الـpromise لو رفض كان loading يفضل true للأبد.
+    // دلوقتي finally يضمن إن الـloading يقفل في كل الحالات (success/failure).
+    firestoreService
+      .getPublicUserBookingsOnce(user.uid)
+      .then((bookings) => {
+        if (active) setMyBookings(bookings);
+      })
+      .catch((err) => {
+        console.warn('[publicDirectory] getPublicUserBookingsOnce failed:', err);
+        if (active) setMyBookings([]);
+      })
+      .finally(() => {
+        if (active) setMyBookingsLoading(false);
+      });
 
     return () => {
       active = false;
@@ -287,17 +301,26 @@ export const usePublicDoctorsDirectoryController = ({
   }, [reviewsDoctor?.doctorId, showDoctorReviewsModal]);
 
   useEffect(() => {
-    // الـuser ممكن يكون null (ضيف) — نتعامل مع ده بـoptional chaining.
-    // الاسم الافتراضي بقى = displayName من جوجل أو الجزء قبل @ في الإيميل
-    // (بدل "مستخدم عام")، عشان المريض يلاقي اسم معقول مكتوب من أوّل تسجيل دخول.
+    // ─ مسح الـsnapshot كاملاً عند logout (user=null) ─
+    // قبل الإصلاح: الـprev fallback (`prev.name || prev.email || prev.phone`)
+    // كان بيحتفظ بقيم المستخدم السابق حتى بعد ما يسجّل خروج. على جهاز مشترك،
+    // المستخدم الجديد كان ممكن يلاقي بيانات المستخدم السابق ظاهره في "حسابي".
+    if (!user) {
+      setAccountSnapshot({ name: '', email: '', phone: '' });
+      return;
+    }
+
+    // المستخدم مسجَّل دخول — نملأ القيم من profile/user. بنحط prev.name/email/phone
+    // كـfallback تالت بس (بعد user data) عشان لو الـprofile لسه ما اتحملش من
+    // Firestore، ميمسحش القيم اللي المستخدم لسه ضايفها يدوياً في الجلسه دي.
     const fallbackEmail = (profile?.email || user?.email || '').trim().toLowerCase();
     const emailLocalPart = fallbackEmail ? fallbackEmail.split('@')[0] : '';
     setAccountSnapshot((prev) => ({
-      name: (profile?.name || prev.name || user?.displayName || emailLocalPart || '').trim(),
-      email: (profile?.email || prev.email || user?.email || '').trim().toLowerCase(),
+      name: (profile?.name || user?.displayName || prev.name || emailLocalPart || '').trim(),
+      email: (profile?.email || user?.email || prev.email || '').trim().toLowerCase(),
       phone: (profile?.phone || prev.phone || '').trim(),
     }));
-  }, [profile?.email, profile?.name, profile?.phone, user?.displayName, user?.email]);
+  }, [user, profile?.email, profile?.name, profile?.phone, user?.displayName, user?.email]);
 
   useEffect(() => {
     // للضيف، مفيش verified email — نسيب publicAccountVerified = false.
@@ -369,17 +392,47 @@ export const usePublicDoctorsDirectoryController = ({
     navigate(buildSiteBookingUrl(targetDoctorId));
   };
 
+  // Auto-resume الحجز بعد الرجوع من signInWithRedirect.
+  // لو الـpage تـreload بسبب popup-blocked → redirect، الـin-memory state ضاع
+  // لكن الـintent محفوظ في sessionStorage. لما user يتحدد (auth جاهز)، نلتقط
+  // الـintent ونكمل الحجز تلقائياً بدون تدخل من المريض.
+  useEffect(() => {
+    if (!user) return;
+    let pendingDoctorId: string | null = null;
+    try { pendingDoctorId = sessionStorage.getItem(PENDING_BOOKING_INTENT_KEY); }
+    catch { /* تجاهل: storage مغلق */ }
+    if (!pendingDoctorId) return;
+
+    try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
+    continueBookingFlow(pendingDoctorId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- continueBookingFlow معرَّفه
+  // داخل الـcomponent ومش memoized. الـlogic معتمد فقط على user يتحدد بعد الـredirect.
+  }, [user]);
+
   const handlePublicGoogleLogin = async () => {
     setAuthError('');
     setAuthInfo('');
     setAuthWorking(true);
+
+    // حفظ doctor intent قبل signInWithGoogle عشان لو حصل redirect fallback
+    // (popup blocked) الصفحه هتـreload وكل الـin-memory state هيضيع. الـmount
+    // effect أدناه بيلتقط الـintent بعد الرجوع ويكمّل الحجز تلقائياً.
+    if (authPromptDoctorId) {
+      try { sessionStorage.setItem(PENDING_BOOKING_INTENT_KEY, authPromptDoctorId); }
+      catch { /* تجاهل: storage مغلق */ }
+    }
+
     try {
       const credential = await signInWithGoogle('public');
       const email = (credential.user.email || '').trim().toLowerCase();
       await upsertPublicAccountProfile(credential.user, email);
       setPublicAccountVerified(true);
+      // popup نجح — نمسح الـintent ونكمل في نفس الـsession (الـmount effect مش هيـtrigger)
+      try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
       continueBookingFlow();
     } catch (err: any) {
+      // المستخدم لغى الـpopup أو حصل خطأ — نمسح الـintent عشان ميـauto-resume غلط
+      try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
       setAuthError(err?.message || 'تعذر تسجيل الدخول عبر Google.');
     } finally {
       setAuthWorking(false);

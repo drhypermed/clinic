@@ -24,6 +24,8 @@ const LandingPage = React.lazy(() => import('../../landing/LandingPage').then(m 
 const PatientLandingPage = React.lazy(() => import('../../landing/PatientLandingPage').then(m => ({ default: m.PatientLandingPage })));
 // دليل المستخدم — صفحه عامّه (بدون تسجيل دخول) على دومين العياده فقط
 const UserGuidePage = React.lazy(() => import('../../landing/user-guide/UserGuidePage').then(m => ({ default: m.UserGuidePage })));
+// باقات الدعاية والتسويق — صفحه عامّه على دومين العياده فقط
+const MarketingPackagesPage = React.lazy(() => import('../../landing/marketing-packages/MarketingPackagesPage').then(m => ({ default: m.MarketingPackagesPage })));
 
 /**
  * مكون محتوى التطبيق الأساسي (App Core Content Component)
@@ -137,7 +139,8 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
     pathname === '/admin' ||
     pathname === '/app/admin' ||
     pathname.startsWith('/app/') ||
-    pathname === '/user-guide'      // دليل المستخدم مخصوص للدكاتره — مش هيظهر على دومين المرضى
+    pathname === '/user-guide' ||   // دليل المستخدم مخصوص للدكاتره — مش هيظهر على دومين المرضى
+    pathname === '/marketing-packages' // باقات الدعاية مخصوصة للدكاتره — مش هتظهر على دومين المرضى
   );
   const isPublicOnlyPath = (
     pathname === '/login/public' ||
@@ -224,6 +227,11 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
   // فوق في isClinicOnlyPath). لمّا دكتور يزورها قبل ما يسجّل، يقرا ويفهم التطبيق.
   if (pathname === '/user-guide') {
     return <UserGuidePage />;
+  }
+
+  // 4.2 باقات الدعاية — صفحه عامّه (بدون تسجيل دخول مطلوب) على دومين العياده فقط
+  if (pathname === '/marketing-packages') {
+    return <MarketingPackagesPage />;
   }
 
   // 5. مسارات المصادقة والتسجيل

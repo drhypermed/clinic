@@ -130,7 +130,18 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const renalToolPremiumOnly = toBoolean(raw?.renalToolPremiumOnly, DEFAULT_CONTROLS.renalToolPremiumOnly);
   const pregnancyToolPremiumOnly = toBoolean(raw?.pregnancyToolPremiumOnly, DEFAULT_CONTROLS.pregnancyToolPremiumOnly);
   const whatsappNumber = normalizeDigits(raw?.whatsappNumber || DEFAULT_CONTROLS.whatsappNumber);
-  
+
+  // ─── 🆕 رفع الصور للحساب المجاني (toggle + رسالتين) ───
+  const freeImageUploadsEnabled = toBoolean(raw?.freeImageUploadsEnabled, DEFAULT_CONTROLS.freeImageUploadsEnabled);
+  const freeImageUploadsUpgradeMessage = normalizeMessageAllowEmpty(
+    raw?.freeImageUploadsUpgradeMessage,
+    DEFAULT_CONTROLS.freeImageUploadsUpgradeMessage,
+  );
+  const freeImageUploadsUpgradeWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeImageUploadsUpgradeWhatsappMessage,
+    DEFAULT_CONTROLS.freeImageUploadsUpgradeWhatsappMessage,
+  );
+
   const legacyMessage = String(raw?.whatsappMessage || '').trim().slice(0, 500);
 
   // معالجة رسائل التنبيه مع دعم التوافق مع النسخ القديمة (Legacy)
@@ -570,6 +581,9 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     freeBranchesCapacityMessage,
     premiumBranchesCapacityMessage,
     freeInsuranceCompaniesCapacityMessage,
+    freeImageUploadsEnabled,
+    freeImageUploadsUpgradeMessage,
+    freeImageUploadsUpgradeWhatsappMessage,
     premiumInsuranceCompaniesCapacityMessage,
     whatsappNumber,
     freeAnalysisWhatsappMessage,

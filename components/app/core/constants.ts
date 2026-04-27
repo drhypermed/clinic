@@ -49,6 +49,7 @@ export const isPublicGuestPathname = (pathname: string): boolean => {
   return (
     pathname === '/' ||              // الـlanding (للأطباء أو المرضى حسب الدومين)
     pathname === '/user-guide' ||    // دليل المستخدم على دومين العيادة
+    pathname === '/marketing-packages' || // باقات الدعاية على دومين العيادة
     pathname === '/public' ||        // دليل الأطباء العام
     pathname.startsWith('/public/') ||
     pathname.startsWith('/book-public/')  // صفحات حجز العيادات للمرضى

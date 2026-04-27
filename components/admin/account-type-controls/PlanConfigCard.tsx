@@ -33,18 +33,19 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
   const whatsappMessageValue = form[plan.whatsappMessageKey] as string;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+    // ─ min-w-0 ضروري عشان البطاقة تـshrink داخل الـgrid على الموبايل ─
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden min-w-0">
       {/* Mini-header — subtle */}
-      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 bg-slate-50/60">
+      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 bg-slate-50/60 min-w-0">
         {isPro ? (
           <>
-            <FaCrown className="w-3 h-3 text-warning-500" />
-            <h4 className="text-xs font-black text-warning-700">{plan.name}</h4>
+            <FaCrown className="w-3 h-3 text-warning-500 shrink-0" />
+            <h4 className="text-xs font-black text-warning-700 truncate">{plan.name}</h4>
           </>
         ) : (
           <>
-            <FaUser className="w-3 h-3 text-slate-500" />
-            <h4 className="text-xs font-black text-slate-700">{plan.name}</h4>
+            <FaUser className="w-3 h-3 text-slate-500 shrink-0" />
+            <h4 className="text-xs font-black text-slate-700 truncate">{plan.name}</h4>
           </>
         )}
       </div>
@@ -98,10 +99,10 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
             href={previewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-xl border-2 border-success-200 bg-success-50/80 hover:bg-success-100 px-3 py-2 transition group"
+            className="flex items-center gap-2 rounded-xl border-2 border-success-200 bg-success-50/80 hover:bg-success-100 px-3 py-2 transition group min-w-0"
           >
             <FaWhatsapp className="w-3 h-3 text-success-600 shrink-0" />
-            <span className="flex-1 text-[11px] font-bold text-success-700">معاينة رسالة الواتساب</span>
+            <span className="flex-1 min-w-0 text-[11px] font-bold text-success-700 truncate">معاينة رسالة الواتساب</span>
             <FaArrowLeft className="w-2.5 h-2.5 text-success-500 shrink-0 transition-transform group-hover:-translate-x-1" />
           </a>
         ) : (

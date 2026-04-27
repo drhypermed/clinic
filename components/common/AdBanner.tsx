@@ -7,15 +7,21 @@
  * 2. فلترة الإعلانات المنتهية الصلاحية أو غير النشطة تلقائياً.
  * 3. دعم الروابط الخارجية عند الضغط على الإعلان.
  * 4. الحفاظ على نسبة العرض إلى الارتفاع (Aspect Ratio) لضمان عدم تشوه الصور.
- * 5. تقليب يدوي بأسهم (يمين/شمال) + نقاط مباشرة، والـauto-rotation
+ * 5. تقليب يدوي بالسحب (swipe يمين/شمال) + نقاط مباشرة، والـauto-rotation
  *    بيـreset عند أي تدخّل يدوي عشان نفس مدة الأدمن تبدأ من الأول.
  * 6. تخطّي الصور الفاشلة بدل ما يختفي البانر بالكامل لمجرد فشل صورة وسط مجموعة.
  */
 
-import React, { useEffect, useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTrustedNow } from '../../hooks/useTrustedNow';
 import { filterActiveBannerItems } from '../../utils/homepageBannerTime';
+
+// ─ أقل مسافة سحب أفقي (px) عشان نعتبر اللمسة swipe — أقل من كده يبقى مجرد لمسة
+//   عرضية. 40px رقم متوازن: مش ضعيف يعمل تقليب غلط، ومش قوي يحتاج جهد.
+const SWIPE_DISTANCE_THRESHOLD_PX = 40;
+// ─ لو الحركة العمودية أكبر من الأفقية بكتير، يبقى المستخدم بيـscroll الصفحة،
+//   مش بيقلّب البانر — نتجاهل اللمسة.
+const SWIPE_VERTICAL_TOLERANCE_PX = 60;
 
 interface AdBannerItem {
   imageUrl: string; // رابط الصورة
@@ -78,6 +84,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
   // ─ علامة إن الصورة الحالية تحمّلت بنجاح — تتحكم في الـsilent-failure timer.
   const [currentLoaded, setCurrentLoaded] = useState(false);
+  // ─ نحتفظ بنقطة بداية اللمسة (X و Y) عشان نحسب اتجاه/مسافة الـswipe في touchEnd.
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // ─ reset كامل لما قائمة الصور تتغير (الأدمن غيّر البانر، أو مدّة انتهت).
   useEffect(() => {
@@ -173,11 +181,40 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     : (link || '').trim();
   const resolvedAlt = currentItem?.title || altText;
 
-  // عدد الصور الصالحة — لإظهار/إخفاء عناصر التحكم (أسهم + نقاط)
+  // عدد الصور الصالحة — لإظهار/إخفاء عناصر التحكم (نقاط)
   const validImagesCount = allImages.length - failedIndices.size;
 
+  // ─ بداية اللمسة: نسجّل النقطة فقط، من غير ما نوقف الحدث (عشان الـscroll يفضل شغّال).
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (validImagesCount <= 1) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  // ─ نهاية اللمسة: نحسب الفرق الأفقي/العمودي. لو السحب أفقي وكافٍ، نقلّب.
+  //   في RTL: السحب لليمين = نرجع للسابق، السحب للشمال = نروح للتالي
+  //   (نفس سلوك أي قارئ RTL — يدك بتمشي مع اتجاه القراءة).
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start || validImagesCount <= 1) return;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    if (Math.abs(deltaY) > SWIPE_VERTICAL_TOLERANCE_PX) return; // المستخدم بيـscroll
+    if (Math.abs(deltaX) < SWIPE_DISTANCE_THRESHOLD_PX) return; // لمسة قصيرة
+    if (deltaX > 0) goPrev(); // سحب يمين → السابق
+    else goNext();            // سحب شمال → التالي
+  };
+
   const BannerContent = (
-    <div className={`relative w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}>
+    <div
+      className={`relative w-full rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div
         className="relative w-full"
         style={{ aspectRatio: `${bannerAspectRatio}` }}
@@ -195,31 +232,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         />
       </div>
 
-      {/* أسهم التنقل اليدوي — تظهر بس لو في أكتر من صورة صالحة.
-          الاتجاه: يمين = التالي، شمال = السابق.
-          الشكل: صغير + شفاف + ثابت بدون أي حركة عند hover. */}
-      {validImagesCount > 1 && (
-        <>
-          <button
-            type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goPrev(); }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center"
-            aria-label="الإعلان السابق"
-          >
-            <FaChevronLeft className="w-2.5 h-2.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goNext(); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center"
-            aria-label="الإعلان التالي"
-          >
-            <FaChevronRight className="w-2.5 h-2.5" />
-          </button>
-        </>
-      )}
-
-      {/* نقاط للقفز المباشر لصورة معينة — بنخفي نقاط الصور الفاشلة. */}
+      {/* نقاط للقفز المباشر لصورة معينة — بنخفي نقاط الصور الفاشلة.
+          التقليب اليدوي بقى بالـswipe (يمين/شمال) من اللمس على الموبايل،
+          والنقاط للوصول السريع لصورة محددة. */}
       {validImagesCount > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/35 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
           {allImages.map((_, idx) => {

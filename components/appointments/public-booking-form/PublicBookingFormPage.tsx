@@ -41,6 +41,14 @@ import {
   MAX_PUBLIC_REASON_LENGTH,
 } from './constants';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
+// حفظ بيانات الحجز قبل Google signin — عشان لو الـpopup فشل ووحينا redirect،
+// نسترجع البيانات بعد رجوع المريض ونكمّل الحجز تلقائياً بدل ما يضيع كل شيء.
+import {
+  savePendingBooking,
+  loadPendingBooking,
+  clearPendingBooking,
+  type PendingBookingFormValues,
+} from './bookingFormPersistence';
 
 export const PublicBookingFormPage: React.FC = () => {
   useHideBootSplash('public-booking-form-mounted');
@@ -65,13 +73,29 @@ export const PublicBookingFormPage: React.FC = () => {
     branches,
   } = usePublicBookingBootstrap(slugParam, secretParam, userIdRouteParam);
 
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(preselectedBranchId);
+  // قراءه pending booking مرّه واحده عند الـmount — لو المريض رجع للتو من
+  // signInWithRedirect، الـsnapshot هيكون موجود في sessionStorage. بنحمّله هنا
+  // ونـreuse-ه في useState inits أدناه عشان الـUI يطلع بالقيم المحفوظه فوراً.
+  // currentContext يضمن إن الـsnapshot لنفس رابط الحجز (slug + userIdRouteParam).
+  const [pendingBookingSnapshot] = useState(() =>
+    loadPendingBooking({ slug: slugParam, userIdRouteParam: userIdRouteParam }),
+  );
+
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(
+    pendingBookingSnapshot?.formValues.selectedBranchId || preselectedBranchId,
+  );
 
   // ─── نظام تسجيل الدخول بعد ملء الفورم (بدل قبله) ───
   // لو المريض ضغط "حجز" وهو غير مسجل → نفتح Google popup ثم نُكمل الحجز تلقائياً
   // pendingSubmit: علم لتشغيل handleSubmit تلقائياً بعد نجاح تسجيل الدخول
-  const [pendingSubmit, setPendingSubmit] = useState(false);
-  const pendingSlotIdRef = React.useRef<string>('');
+  // عند الرجوع من redirect: pendingSubmit يبدأ true عشان الـauto-submit useEffect
+  // يـtrigger handleSubmit لما user يجهز.
+  const [pendingSubmit, setPendingSubmit] = useState<boolean>(
+    Boolean(pendingBookingSnapshot?.pendingSlotId),
+  );
+  const pendingSlotIdRef = React.useRef<string>(
+    pendingBookingSnapshot?.pendingSlotId || '',
+  );
 
   // لو في فرع واحد فقط، نثبّته تلقائياً حتى يُحفظ الحجز بـ branchId صحيح وليس undefined.
   // لو المريض جاي من الديركتوري بفرع محدّد مسبّقاً (preselectedBranchId)، بنتأكّد إنه
@@ -132,21 +156,33 @@ export const PublicBookingFormPage: React.FC = () => {
     return baseSlots.filter((slot) => !myBookedDateTimes.has(slot.dateTime));
   }, [slots, selectedBranchId, branches.length, myBookedDateTimes]);
 
-  const [patientName, setPatientName] = useState('');
-  const [age, setAge] = useState('');
-  const [phone, setPhone] = useState('');
+  // ـــ initial values مع استرجاع pending booking لو موجود ـــ
+  // pendingBookingSnapshot؟.formValues = القيم المحفوظه قبل redirect.
+  // لو null (الحاله العاديه) = نبدأ بقيم فاضيه/افتراضيه.
+  const initialForm = pendingBookingSnapshot?.formValues;
+  const [patientName, setPatientName] = useState(initialForm?.patientName || '');
+  const [age, setAge] = useState(initialForm?.age || '');
+  const [phone, setPhone] = useState(initialForm?.phone || '');
   // حقول الهوية الجديدة (الجنس ثابت، الحمل والرضاعة متغيران لكل زيارة)
-  const [gender, setGender] = useState<PatientGender | ''>('');
-  const [pregnant, setPregnant] = useState<boolean | null>(null);
-  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
-  const [visitReason, setVisitReason] = useState('');
-  const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
-  const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
-  const [selectedConsultationCandidateId, setSelectedConsultationCandidateId] = useState<string>('');
+  const [gender, setGender] = useState<PatientGender | ''>(
+    (initialForm?.gender as PatientGender | '' | undefined) || '',
+  );
+  const [pregnant, setPregnant] = useState<boolean | null>(initialForm?.pregnant ?? null);
+  const [breastfeeding, setBreastfeeding] = useState<boolean | null>(initialForm?.breastfeeding ?? null);
+  const [visitReason, setVisitReason] = useState(initialForm?.visitReason || '');
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(initialForm?.isFirstVisit ?? null);
+  const [appointmentType, setAppointmentType] = useState<AppointmentType>(
+    (initialForm?.appointmentType as AppointmentType | undefined) || 'exam',
+  );
+  const [selectedConsultationCandidateId, setSelectedConsultationCandidateId] = useState<string>(
+    initialForm?.selectedConsultationCandidateId || '',
+  );
   const [activeSuggestionField, setActiveSuggestionField] = useState<'name' | 'phone' | null>(null);
   const [recentExamPatients, setRecentExamPatients] = useState<RecentExamPatientOption[]>([]);
   const [patientDirectory, setPatientDirectory] = useState<PatientSuggestionOption[]>([]);
-  const [selectedSlotId, setSelectedSlotId] = useState<string>('');
+  const [selectedSlotId, setSelectedSlotId] = useState<string>(
+    pendingBookingSnapshot?.pendingSlotId || '',
+  );
   const [success, setSuccess] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
 
@@ -196,7 +232,11 @@ export const PublicBookingFormPage: React.FC = () => {
     visitReason,
     isFirstVisit,
     selectedBranchId,
-    onSuccess: () => setSuccess(true),
+    onSuccess: () => {
+      setSuccess(true);
+      // الحجز اتسجّل بنجاح — امسح أي pending snapshot عشان ميـauto-fill-ش لو رجع
+      clearPendingBooking();
+    },
   });
 
   useEffect(() => {
@@ -278,6 +318,9 @@ export const PublicBookingFormPage: React.FC = () => {
   useEffect(() => {
     if (!user || !pendingSubmit || !pendingSlotIdRef.current) return;
     setPendingSubmit(false);
+    // مسح الـsnapshot من sessionStorage قبل الـsubmit — عشان لو الـsubmit فشل
+    // أو المريض رفرش الصفحه بعد كده، ميحصلش auto-fill غير مقصود.
+    clearPendingBooking();
     // إنشاء submit event وهمي لاستدعاء handleSubmit
     const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
     void handleSubmit(fakeEvent, pendingSlotIdRef.current);
@@ -420,12 +463,34 @@ export const PublicBookingFormPage: React.FC = () => {
             // احفظ الـ slotId وارفع علم الانتظار قبل فتح Google login
             pendingSlotIdRef.current = slotId;
             setPendingSubmit(true);
+            // حفظ الـbooking في sessionStorage قبل signInGoogle. لو الـpopup فشل
+            // و signInGoogle عمل fallback لـsignInWithRedirect، الـpage هتـreload
+            // وهنحتاج نسترجع البيانات دي عشان نكمّل الحجز تلقائياً بدل ما يضيع.
+            const formValues: PendingBookingFormValues = {
+              patientName,
+              age,
+              phone,
+              gender: gender || '',
+              pregnant,
+              breastfeeding,
+              visitReason,
+              isFirstVisit,
+              appointmentType,
+              selectedConsultationCandidateId,
+              selectedBranchId,
+            };
+            savePendingBooking(
+              { slug: slugParam, userIdRouteParam },
+              formValues,
+              slotId,
+            );
             try {
               await signInGoogle('public');
             } catch {
-              // المريض أغلق الـpopup أو رفض — نعيد الزر لحالته الطبيعية
+              // المريض أغلق الـpopup أو رفض — نعيد الزر لحالته الطبيعية ونمسح الـsnapshot
               setPendingSubmit(false);
               pendingSlotIdRef.current = '';
+              clearPendingBooking();
             }
           }}
           onSubmit={(e) => handleSubmit(e, selectedSlotId)}

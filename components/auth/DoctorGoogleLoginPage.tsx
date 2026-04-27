@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
 import { LegalConsentGate } from './legal/LegalConsentGate';
-import { clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
+import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
 
 const LOGIN_DOCTOR_PATH = '/login/doctor';
@@ -32,6 +32,18 @@ export const DoctorGoogleLoginPage: React.FC = () => {
     'not_found_error',
     'rejection_error',
   ];
+
+  // ─ Safety net: فك authFlowGuard عند mount لو لسه نشط لنفس الـpath ─
+  // السيناريو: المستخدم ضغط Google login، الـpopup اتمنع، signInGoogle ينتقل
+  // لـsignInWithRedirect — الـpage تـreload (تروح لـGoogle ثم ترجع). أسطر فك
+  // الحارس بعد الـawait مش بتتنفّذ. لو الحارس فضل نشط، useAppRedirectEffect
+  // يخرج بـreturn ميـredirect المستخدم لـ/home → علقان على شاشه الدخول.
+  // الإصلاح: عند mount نفك الحارس صراحةً (مع expectedPath عشان مانـclear-ش
+  // حارس صفحه تانيه بالغلط). الـcentral fix في useAuth بيغطّي معظم الحالات،
+  // وده defense in depth للـedge cases ولتطمين القارئ من الكود.
+  useEffect(() => {
+    clearAuthFlowGuard(LOGIN_DOCTOR_PATH);
+  }, []);
 
   useEffect(() => {
     const readStoredErrors = () => {
