@@ -63,7 +63,9 @@
   border: 2px solid rgba(14, 165, 233, 0.28) !important;
   border-radius: 22px !important;
   box-shadow: 0 22px 44px -34px rgba(8, 47, 73, 0.28) !important;
-  backdrop-filter: blur(10px);
+  /* شيلنا backdrop-filter: blur(10px) — كان السبب الرئيسي لثقل الـscroll
+     على الموبايل (الخلفية 95% معتمة فالـblur بالكاد كان ظاهر، بس بيُجبر
+     المتصفح على repaint كل القسم في كل frame scroll). */
 }
 
 .apple-exam-shell .clinic-section::before {
@@ -213,7 +215,7 @@
   background: linear-gradient(180deg, rgba(209, 250, 229, 0.7), rgba(224, 242, 254, 0.74), rgba(255, 255, 255, 0.96)) !important;
   border: 2px solid rgba(16, 185, 129, 0.45) !important;
   box-shadow: 0 20px 40px -28px rgba(6, 95, 70, 0.32) !important;
-  backdrop-filter: blur(10px);
+  /* شيلنا backdrop-filter: blur(10px) — perf-killer على الـscroll في الموبايل. */
 }
 
 .apple-exam-shell .apple-quick-search__title {
@@ -316,7 +318,7 @@
 
 .apple-exam-shell .apple-quick-search__alert {
   box-shadow: 0 12px 22px -18px rgba(15, 23, 42, 0.25) !important;
-  backdrop-filter: blur(6px);
+  /* شيلنا backdrop-filter: blur(6px) — perf-killer على الـscroll. */
 }
 
 .apple-exam-shell .apple-quick-search__empty {

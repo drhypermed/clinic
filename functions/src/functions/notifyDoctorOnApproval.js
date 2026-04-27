@@ -154,4 +154,11 @@ const notifyDoctorOnApproval = async (event) => {
   }
 };
 
-module.exports = { notifyDoctorOnApproval };
+// ─ نفس الـpattern اللي في باقي الفنكشنز (مثل dashboardAggregationFunctions.js):
+//   الـmodule بيـexport دالة بتاخد context وترجع handlers. الـlazy() helper في
+//   index.js بيستدعيها بالـcontext (admin/getDb/etc) عشان نتجنب double-init.
+//   كان قبل كده exports = { notifyDoctorOnApproval } مباشرة، فالـlazy بيرمي
+//   "TypeError: registration is not a function" وقت التشغيل.
+module.exports = () => ({
+  notifyDoctorOnApproval,
+});

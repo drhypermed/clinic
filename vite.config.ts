@@ -26,12 +26,19 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      // ─ تحديث تلقائي عشان سفاري آيفون ما يفضّلش ماسك بنسخه قديمه.
+      //   على iOS التبويب بيفضل صاحي في الخلفيّه لمّا التطبيق متثبّت على الشاشه،
+      //   فالموظّف القديم (Service Worker) ما يتنحّاش أبداً مع 'prompt'.
+      //   autoUpdate + skipWaiting + clientsClaim بيخلّوا الموظّف الجديد ياخد
+      //   الدفّه فوراً من غير انتظار قفل التبويبات.
+      registerType: 'autoUpdate',
       injectRegister: false,
       includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png', 'firebase-messaging-sw.js'],
       workbox: {
-        skipWaiting: false,
-        clientsClaim: false,
+        // الموظّف الجديد ينشّط نفسه فوراً بدل ما يدخل في حالة "waiting"
+        skipWaiting: true,
+        // ياخد دفّة كل التبويبات المفتوحه من غير ما تتقفل وتتفتح من تاني
+        clientsClaim: true,
         inlineWorkboxRuntime: true,
         importScripts: ['/firebase-messaging-sw.js'],
         globPatterns: ['**/*.{css,html,ico,png,svg,webmanifest,woff2,woff,ttf}', 'assets/!(drug-*)*.js'],
@@ -150,6 +157,16 @@ export default defineConfig({
       Expires: '0',
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
+  },
+  // ─ esbuild يستخدم في:
+  //   1) source transformation (TS/JSX/etc) أثناء dev و build
+  //   2) minification في الـbuild (لو minify: 'esbuild')
+  //   pure: ['console.log', ...] يخلي esbuild يعتبرهم side-effect-free،
+  //   فالـtree-shaker بيشيلهم من الـproduction bundle لو الناتج مش مستخدم.
+  //   النتيجة: bundle أصغر + JS execution أسرع (مفيش log overhead في hot loops).
+  //   سيبنا console.warn و console.error عشان الـmonitoring يلتقطهم في الإنتاج.
+  esbuild: {
+    pure: ['console.log', 'console.debug', 'console.info'],
   },
   build: {
     target: 'safari13',

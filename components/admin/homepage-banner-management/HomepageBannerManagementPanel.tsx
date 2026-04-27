@@ -6,7 +6,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CropAreaPixels, HomeBannerData, HomepageBannerManagementPanelProps } from './types';
 import { doc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { db, storage } from '../../../services/firebaseConfig';
 import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import { getRectCroppedImg } from '../../../utils/rectCropImage';
@@ -194,7 +194,84 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     });
   };
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // ─ ضغط شديد للصورة — نضمن إن الـoutput < 1.5MB يقدر الـbrowser يعالجه:
+  //   • max 1600px (يكفي تماماً للـbanner لأن BANNER_WIDTH=1600)
+  //   • JPEG @ 0.75 quality (جودة ممتازة بصرياً، حجم 5-10x أصغر من PNG)
+  //   • لو الـoutput لسه > 1.5MB، نضغط تاني بـquality أقل (loop)
+  //
+  //   السبب: data URLs > 2MB بترفضها كل المتصفحات في src/href (Chrome
+  //   بيرجع ERR_INVALID_URL، Safari بيـcrash). نخلي الـtarget دايماً
+  //   تحت 1.5MB كهامش أمان.
+  const compressImageFile = async (file: File): Promise<string> => {
+    const MAX_DIMENSION = 1600;
+    const TARGET_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB safety margin
+
+    // نـload الـfile كـObjectURL (يدعم أي حجم بدون قيود data URL)
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('فشل تحميل الصورة'));
+        i.src = objectUrl;
+      });
+
+      // حساب الأبعاد الجديدة (الحفاظ على نسبة العرض/الارتفاع)
+      let { naturalWidth: width, naturalHeight: height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        const scale = MAX_DIMENSION / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D context unavailable');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // ضغط متدرج: نبدأ بـ0.85 ونقلل لو الـoutput لسه كبير
+      const qualityLevels = [0.85, 0.75, 0.65, 0.55];
+      for (const q of qualityLevels) {
+        const dataUrl = canvas.toDataURL('image/jpeg', q);
+        // تقدير الحجم: data URL طوله ~1.37x من الـbinary
+        const estimatedBytes = (dataUrl.length * 3) / 4;
+        if (estimatedBytes <= TARGET_MAX_BYTES) return dataUrl;
+      }
+      // حتى عند 0.55، الصورة كبيرة → نرجعها زي ما هي (الـuser يقدر يصلّح يدوياً)
+      return canvas.toDataURL('image/jpeg', 0.55);
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
+  // ─ helper مشابه — لكن بياخد data URL بدل File (للـapplyCrop اللي مفيهش crop).
+  //   بنستدعي canvas re-encoding لضمان إن أي صورة في الـitems تكون مضغوطة JPEG.
+  const reEncodeDataUrlToCompressedJpeg = async (dataUrl: string): Promise<string> => {
+    const MAX_DIMENSION = 1600;
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('فشل تحميل الصورة لإعادة الترميز'));
+      i.src = dataUrl;
+    });
+    let { naturalWidth: width, naturalHeight: height } = img;
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      const scale = MAX_DIMENSION / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context unavailable');
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+  };
+
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -208,23 +285,27 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageDataUrl = String(reader.result || '');
-      if (!imageDataUrl) {
-        setStatusMessage('❌ تعذر تحميل الصورة المختارة.');
+    try {
+      setStatusMessage('⏳ جاري ضغط الصورة...');
+      const compressedDataUrl = await compressImageFile(file);
+      if (!compressedDataUrl || !compressedDataUrl.startsWith('data:')) {
+        setStatusMessage('❌ تعذر معالجة الصورة المختارة.');
         return;
       }
 
-      setPendingCropImage(imageDataUrl);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCroppedAreaPixels(null);
-      setStatusMessage('');
-    };
-
-    reader.onerror = () => setStatusMessage('❌ تعذر قراءة ملف الصورة.');
-    reader.readAsDataURL(file);
+      // ـ اختصرنا الـworkflow (2026-04): الصورة تتضاف للمعاينة مباشرة بدون
+      //   نافذة قص. الـuser كان زهق من الـsteps الكتيرة (اختار → نافذة قص →
+      //   تطبيق → حفظ). دلوقتي: اختار → ✅ ظهرت في المعاينة → حفظ.
+      //   الـcompression خلاص اشتغل في compressImageFile (max 1600px).
+      appendItem(compressedDataUrl);
+      setStatusMessage('✅ تم إضافة الصورة. اضغط حفظ لتطبيق التغييرات.');
+    } catch (err) {
+      console.error('[BannerCompress] failed', err);
+      setStatusMessage(`❌ تعذر معالجة الصورة: ${(err as Error)?.message || 'خطأ غير معروف'}`);
+    } finally {
+      // مسح قيمة الـinput عشان لو الـuser اختار نفس الملف تاني، الـonChange يطلق
+      event.target.value = '';
+    }
   };
 
   const onCropComplete = React.useCallback(
@@ -258,11 +339,13 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     if (!pendingCropImage) return;
 
     try {
-      // ─ JPEG بجودة 0.95 بدل PNG: جودة عالية جداً (لا فرق مرئي عن الأصل) مع حجم
-      //   ~750KB-1MB بدل 5-20 ميجا، وده يمنع فشل الرفع على Firebase Storage.
+      // ـ JPEG بجودة 0.85 + max 1600px = حجم 300-700KB (مضمون < 1.5MB):
+      //   • مع crop: نستخدم getRectCroppedImg مع نفس الـsettings
+      //   • بدون crop: نـrun re-encoding عبر canvas لضمان الضغط
+      //   ده بيمنع الـERR_INVALID_URL على كل المتصفحات.
       const cropped = croppedAreaPixels
-        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels, BANNER_WIDTH, 0, 'image/jpeg', 0.95)
-        : pendingCropImage;
+        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels, BANNER_WIDTH, 0, 'image/jpeg', 0.85)
+        : await reEncodeDataUrlToCompressedJpeg(pendingCropImage);
 
       appendItem(cropped);
       setStatusMessage('✅ تم إضافة الصورة بعد التعديل.');
@@ -327,23 +410,35 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     }
   };
 
-  // ─ تحويل data URL إلى Blob مباشرةً عبر atob بدل fetch():
-  //   fetch() على data URL ضخم بيرمي "Failed to fetch" في بعض المتصفحات (الموبايل خاصةً)،
-  //   والتحويل المباشر يفك الـbase64 لـUint8Array وينشئ Blob بدون أي طلب شبكة.
-  const dataUrlToBlob = (dataUrl: string): Blob => {
-    const commaIdx = dataUrl.indexOf(',');
-    const header = dataUrl.slice(0, commaIdx);
-    const base64 = dataUrl.slice(commaIdx + 1);
-    const mimeMatch = header.match(/data:([^;]+)/);
-    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Blob([bytes], { type: mime });
+  const getDataUrlImageMeta = (dataUrl: string): { mimeType: string; extension: string } => {
+    const match = dataUrl.match(/^data:(image\/(?:jpeg|jpg|png|webp|gif));base64,/i);
+    const mimeType = match?.[1]?.toLowerCase() || 'image/jpeg';
+    const extension = mimeType === 'image/jpeg' || mimeType === 'image/jpg'
+      ? 'jpg'
+      : mimeType.replace('image/', '');
+    return { mimeType, extension };
   };
 
-  const uploadBannerImages = async (items: BannerItem[]): Promise<BannerItem[]> => {
+  // ─ آخر خط دفاع: لو data URL لسه ضخم (من state قديم قبل تعديلات الضغط)،
+  //   نـre-compress عبر canvas قبل التحويل لـBlob. ضمان 100% إن أي صورة
+  //   تتحوّل لـBlob بنجاح، حتى لو state فيه صور كبيرة من زمان.
+  const ensureCompressedDataUrl = async (dataUrl: string): Promise<string> => {
+    // الـthreshold: 1.5MB كـdata URL = ~1.1MB binary
+    const SAFETY_THRESHOLD_BYTES = 1.5 * 1024 * 1024;
+    if (dataUrl.length <= SAFETY_THRESHOLD_BYTES) return dataUrl;
+    // الصورة كبيرة → نـre-compress
+    try {
+      return await reEncodeDataUrlToCompressedJpeg(dataUrl);
+    } catch {
+      // فشل re-encoding (الـImage مش قادر يحمّل الـURL لأنه ضخم جداً)
+      // → نرجعها زي ما هي وuploadString هيعرض خطأ واضح لو البيانات غير صالحة.
+      return dataUrl;
+    }
+  };
+
+  const uploadBannerImages = async (items: BannerItem[]): Promise<{ uploaded: BannerItem[]; skippedCount: number }> => {
     const uploaded: BannerItem[] = [];
+    let skippedCount = 0;
 
     for (const item of items) {
       if (!isDataUrl(item.imageUrl)) {
@@ -351,20 +446,31 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
         continue;
       }
 
-      // تحويل مباشر بدون fetch — يقاوم data URLs الكبيرة على الموبايل
-      const blob = dataUrlToBlob(item.imageUrl);
-      // الامتداد يتبع الـ MIME الفعلي للـblob (jpg للصور المضغوطة الجديدة، png للقديمة)
-      const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
-      const storageRef = ref(
-        storage,
-        `homepage-banners/banner_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
-      );
-      const uploadResult = await uploadBytes(storageRef, blob, { contentType: blob.type });
-      const downloadUrl = await getDownloadURL(uploadResult.ref);
-      uploaded.push({ ...item, imageUrl: downloadUrl });
+      try {
+        // 1) ضغط دفاعي للصور القديمة قبل التحويل
+        const safeDataUrl = await ensureCompressedDataUrl(item.imageUrl);
+        if (!isDataUrl(safeDataUrl)) {
+          throw new Error('Invalid image data URL');
+        }
+        const { mimeType, extension } = getDataUrlImageMeta(safeDataUrl);
+        const storageRef = ref(
+          storage,
+          `homepage-banners/banner_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`
+        );
+        const uploadResult = await uploadString(storageRef, safeDataUrl, 'data_url', {
+          contentType: mimeType,
+          cacheControl: 'public,max-age=31536000,immutable',
+        });
+        const downloadUrl = await getDownloadURL(uploadResult.ref);
+        uploaded.push({ ...item, imageUrl: downloadUrl });
+      } catch (err) {
+        // ـ صورة قديمة من state معطوب → نـskip ونكمل بدل ما نـfail الكل
+        console.warn('[BannerSave] Skipping corrupt image:', err);
+        skippedCount += 1;
+      }
     }
 
-    return uploaded;
+    return { uploaded, skippedCount };
   };
 
   const handleSave = async () => {
@@ -384,7 +490,22 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
     setStatusMessage('');
 
     try {
-      const uploadedItems = await uploadBannerImages(normalizedItems);
+      const { uploaded: uploadedItems, skippedCount } = await uploadBannerImages(normalizedItems);
+      // لو كل الصور فشلت، نـauto-clean الـstate ونوضّح للـuser إنه يرفع جديد
+      if (uploadedItems.length === 0) {
+        // مسح كل الـitems من الـform — الـpreview هيبقى فاضي تلقائياً
+        setForm((prev) => ({
+          ...prev,
+          items: [],
+          imageUrls: [],
+          imageUrl: '',
+        }));
+        setActivePreviewIndex(0);
+        setStatusMessage(
+          `🧹 اتحذفت ${skippedCount} صورة قديمة معطوبة. دلوقتي ارفع صور جديدة من زر "أو ارفع صورة" واضغط حفظ.`,
+        );
+        return;
+      }
       const storedItems = uploadedItems.map((item) => ({
         ...item,
         expiresAt: toStoredBannerExpiryValue(item.expiresAt) || item.expiresAt,
@@ -422,7 +543,14 @@ export const HomepageBannerManagementPanel: React.FC<HomepageBannerManagementPan
         updatedBy: payload.updatedBy,
       }));
       setActivePreviewIndex(0);
-      setStatusMessage('✅ تم حفظ البانر بنجاح.');
+      // ـ لو في صور اتخطت (قديمة معطوبة)، نخبر الأدمن بصراحة
+      if (skippedCount > 0) {
+        setStatusMessage(
+          `✅ تم حفظ ${uploadedItems.length} صورة. ⚠️ تخطّينا ${skippedCount} صورة قديمة معطوبة — ارفعها من جديد.`,
+        );
+      } else {
+        setStatusMessage('✅ تم حفظ البانر بنجاح.');
+      }
     } catch (error) {
       // لوج تفصيلي يساعدنا نشوف نوع الخطأ الفعلي (Storage/Firestore/Network)
       console.error('[BannerSave] failed', { settingsDocId: safeSettingsDocId, error });

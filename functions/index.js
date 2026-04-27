@@ -74,7 +74,10 @@ const ENFORCE_APP_CHECK_ROOT = String(process.env.ENFORCE_APP_CHECK || 'true').t
 // لو حصل كسر في الإنتاج، اضبط GEMINI_ENFORCE_APP_CHECK=false في functions/.env وأعد النشر.
 const GEMINI_ENFORCE_APP_CHECK = String(process.env.GEMINI_ENFORCE_APP_CHECK || 'true').toLowerCase() !== 'false';
 // App Check على دوال الاستهلاك (quota) - طبقة دفاع إضافية فوق quota + auth.
-const ACCOUNT_CONTROLS_ENFORCE_APP_CHECK = String(process.env.ACCOUNT_CONTROLS_ENFORCE_APP_CHECK || 'true').toLowerCase() !== 'false';
+// Quota/account-control callables already enforce auth, doctor ownership/secrets,
+// admin checks, and Firestore transactions. Keeping App Check optional here avoids
+// blocking real doctors when reCAPTCHA/App Check is flaky on a device/network.
+const ACCOUNT_CONTROLS_ENFORCE_APP_CHECK = String(process.env.ACCOUNT_CONTROLS_ENFORCE_APP_CHECK || 'false').toLowerCase() !== 'false';
 const REGION = 'us-central1';
 
 const parseScalingEnvInt = (name, fallback, min, max) => {

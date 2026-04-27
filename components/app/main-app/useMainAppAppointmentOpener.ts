@@ -55,6 +55,8 @@ interface UseMainAppAppointmentOpenerParams {
   // setters الهوية الجديدة — الجنس (ثابت) + الحمل/الرضاعة (snapshot)
   setGender: (v: import('../../../types').PatientGender | '') => void;
   setPregnant: (v: boolean | null) => void;
+  // setter لعمر الحمل بالأسابيع — يُملأ من الموعد لو السكرتارية دخّلته
+  setGestationalAgeWeeks: (v: number | null) => void;
   setBreastfeeding: (v: boolean | null) => void;
   setVisitDate: (v: string) => void;
   setVisitType: (v: 'exam' | 'consultation') => void;
@@ -135,7 +137,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     handleOpenConsultation,
     navigateToView,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
-    setGender, setPregnant, setBreastfeeding,
+    setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setWeight, setHeight, setVitals,
@@ -179,6 +181,14 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // تحميل الهوية المحفوظة مع الموعد (السكرتارية قد تكون دخلتها)
     setGender((apt.gender === 'male' || apt.gender === 'female') ? apt.gender : '');
     setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
+    // تحميل عمر الحمل من الموعد لو السكرتارية دخّلته (رقم صالح 1-42)
+    setGestationalAgeWeeks(
+      typeof apt.gestationalAgeWeeks === 'number'
+        && Number.isFinite(apt.gestationalAgeWeeks)
+        && apt.gestationalAgeWeeks > 0
+        ? apt.gestationalAgeWeeks
+        : null,
+    );
     setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
     const { years, months, days } = parseAgeToYearsMonthsDays(apt.age || '');
     setAgeYears(years);
@@ -209,7 +219,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleResetAndClearOpenedAppointment,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
-    setGender, setPregnant, setBreastfeeding,
+    setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setWeight, setHeight, setVitals,

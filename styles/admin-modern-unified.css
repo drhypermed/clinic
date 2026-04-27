@@ -12,9 +12,12 @@
   color: var(--adm-text);
 }
 
+/* شيلنا backdrop-filter: blur(8px) من mobile-bar و view-header — كان بيسبب
+   ثقل scroll على الموبايل لأن الـheader sticky فالـbrowser بيـrepaint blur
+   على frame scroll. الخلفيات أصلاً 90-96% معتمة فالـblur ما كانش ظاهر. */
 .admin-modern-scope .admin-modern-mobile-bar,
 .admin-modern-scope .admin-modern-view-header {
-  backdrop-filter: blur(8px);
+  /* backdrop-filter: blur(8px); — removed for scroll perf */
 }
 
 .admin-modern-scope .admin-modern-view-header {

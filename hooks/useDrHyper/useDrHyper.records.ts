@@ -36,6 +36,8 @@ interface CreateRecordActionsParams {
     setDateOfBirth?: React.Dispatch<React.SetStateAction<string>>;
     setGender?: React.Dispatch<React.SetStateAction<any>>;
     setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+    // setter لعمر الحمل بالأسابيع
+    setGestationalAgeWeeks?: React.Dispatch<React.SetStateAction<number | null>>;
     setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
     setWeight: React.Dispatch<React.SetStateAction<string>>;
     setHeight: React.Dispatch<React.SetStateAction<string>>;
@@ -91,6 +93,7 @@ export const createRecordActions = ({
     setDateOfBirth,
     setGender,
     setPregnant,
+    setGestationalAgeWeeks,
     setBreastfeeding,
     setWeight,
     setHeight,
@@ -144,6 +147,7 @@ export const createRecordActions = ({
             setDateOfBirth,
             setGender,
             setPregnant,
+            setGestationalAgeWeeks,
             setBreastfeeding,
         });
     };

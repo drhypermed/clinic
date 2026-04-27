@@ -11,8 +11,10 @@ import { mapFirebaseActionError } from '../../../utils/firebaseErrorMap';
 import { CONTROL_CHARS_REGEX } from '../../../utils/controlChars';
 
 const SETTINGS_DOC_ID_REGEX = /^[A-Za-z0-9_-]{3,80}$/;
+const REMOTE_IMAGE_URL_MAX_LENGTH = 2000;
 
-export const isDataUrl = (value: string) => value.startsWith('data:image');
+export const isDataUrl = (value: string) =>
+  /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,/i.test(String(value || '').trim());
 
 export const sanitizeText = (value: unknown, maxLength: number) =>
   String(value || '')
@@ -39,8 +41,19 @@ export const sanitizeSettingsDocId = (value: string) => {
   return normalized;
 };
 
+const sanitizeImageUrl = (value: unknown) => {
+  const normalized = String(value || '')
+    .replace(CONTROL_CHARS_REGEX, '')
+    .trim();
+  if (!normalized) return '';
+
+  if (isDataUrl(normalized)) return normalized;
+  if (!isSafeLinkUrl(normalized)) return '';
+  return sanitizeText(normalized, REMOTE_IMAGE_URL_MAX_LENGTH);
+};
+
 const sanitizeBannerItem = (item: Partial<BannerItem>): BannerItem | null => {
-  const imageUrl = sanitizeText(item.imageUrl, 2000);
+  const imageUrl = sanitizeImageUrl(item.imageUrl);
   if (!imageUrl) return null;
 
   return {

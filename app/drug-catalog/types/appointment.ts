@@ -45,6 +45,8 @@ export interface ClinicAppointment {
   dateOfBirth?: string;
   /** حامل؟ snapshot لهذا الموعد فقط (يُسأل كل مرة) */
   pregnant?: boolean;
+  /** عمر الحمل بالأسابيع — snapshot لهذا الموعد فقط، يُسجَّل بس لو pregnant=true */
+  gestationalAgeWeeks?: number;
   /** مرضعة؟ snapshot لهذا الموعد فقط */
   breastfeeding?: boolean;
 

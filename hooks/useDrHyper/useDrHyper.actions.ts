@@ -92,6 +92,7 @@ export const useDrHyperActions = ({
     // setters الهوية الجديدة — منصمّمين من patientState عشان نمرّرهم لأنظمه الـ history/records
     setGender,
     setPregnant,
+    setGestationalAgeWeeks,
     setBreastfeeding,
     setVitals,
     setErrorMsg,
@@ -125,6 +126,7 @@ export const useDrHyperActions = ({
     ageDays,
     gender,
     pregnant,
+    gestationalAgeWeeks,
     breastfeeding,
     weight,
     height,
@@ -194,6 +196,7 @@ export const useDrHyperActions = ({
     // setters الهوية الجديدة — تُمرَّر تلقائياً لـ history/records/smartActions
     setGender,
     setPregnant,
+    setGestationalAgeWeeks,
     setBreastfeeding,
   };
 
@@ -267,6 +270,7 @@ export const useDrHyperActions = ({
     ageDays,
     gender,
     pregnant,
+    gestationalAgeWeeks,
     breastfeeding,
     weight,
     height,
@@ -390,6 +394,7 @@ export const useDrHyperActions = ({
     // حقول الهوية الجديدة (مهمة للتحليل الغني بالنوع/الحمل/الرضاعة)
     gender,
     pregnant,
+    gestationalAgeWeeks,
     breastfeeding,
     totalAgeInMonths,
     vitals,

@@ -14,7 +14,11 @@ import { useTabSync } from '../../hooks/useTabSync';
 
 import { useAuth } from '../../hooks/useAuth';
 import { consumeDrugToolQuota, getAccountTypeControls } from '../../services/accountTypeControlsService';
-import { isQuotaLimitExceededError } from '../../services/account-type-controls/quotaErrors';
+import {
+  getQuotaVerificationFailureMessage,
+  isQuotaLimitExceededError,
+  retryOnTransientError,
+} from '../../services/account-type-controls/quotaErrors';
 import { usageTrackingService } from '../../services/usageTrackingService';
 import { resolveEffectiveAccountTypeFromData } from '../../utils/accountStatusTime';
 import { getTrustedNowMs, syncTrustedTime } from '../../utils/trustedTime';
@@ -61,6 +65,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     renalToolPremiumOnly: true,
     freeRenalToolDailyLimit: 5000,
     premiumRenalToolDailyLimit: 5000,
+    proMaxRenalToolDailyLimit: 5000,
     renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
     premiumTagLabel: 'Pro',
     whatsappNumber: '',
@@ -78,6 +83,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
           renalToolPremiumOnly: !!controls.renalToolPremiumOnly,
           freeRenalToolDailyLimit: Number(controls.freeRenalToolDailyLimit || 0),
           premiumRenalToolDailyLimit: Number(controls.premiumRenalToolDailyLimit || 0),
+          proMaxRenalToolDailyLimit: Number(controls.proMaxRenalToolDailyLimit || controls.premiumRenalToolDailyLimit || 0),
           renalToolLockedMessage:
             String(controls.renalToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Pro',
@@ -148,35 +154,26 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     }
 
     const feature = 'renalTool';
-    const configuredLimit = isPro
+    const configuredLimit = accountType === 'pro_max'
+      ? accessControls.proMaxRenalToolDailyLimit
+      : isPro
       ? accessControls.premiumRenalToolDailyLimit
       : accessControls.freeRenalToolDailyLimit;
 
     // حساب برو + حد يومي عالي (≥500) = فتح فوري وتتبع الكوتا في الخلفية
     // بدل ما ننتظر الـCloud Function (1-3 ثانيه) — السيرفر لسه بيتحقق عند كل استخدام فعلي
-    if (isPro && configuredLimit >= 500) {
-      void consumeDrugToolQuota(feature).catch(() => {});
-      return true;
-    }
-
     try {
-      await consumeDrugToolQuota(feature);
+      // retry تلقائي على أخطاء النت العابرة (3 محاولات بـbackoff)
+      await retryOnTransientError(() => consumeDrugToolQuota(feature));
       return true;
     } catch (error: unknown) {
       const isLimitError = isQuotaLimitExceededError(error);
       if (!isLimitError) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const fallbackErrorMessage = errorMessage.trim();
-        console.warn('[DrugToolsView] Quota check failed; denying tool access:', {
-          tool,
-          isPro,
-          error,
-        });
-
         setLockedNotice({
           title: rule.title,
-          message: fallbackErrorMessage || 'تعذر التحقق من الحد اليومي الآن. حاول مرة أخرى.',
+          message: getQuotaVerificationFailureMessage('تعذر التحقق من الحد اليومي لهذه الأداة الآن. حاول مرة أخرى.'),
         });
+        console.warn('[DrugToolsView] Quota check failed; blocking tool access:', { tool, error });
         return false;
       }
 

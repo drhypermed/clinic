@@ -15,7 +15,11 @@
  */
 import React from 'react';
 import { validateRecordsCapacity } from '../../services/accountTypeControlsService';
-import { isQuotaLimitExceededError } from '../../services/account-type-controls/quotaErrors';
+import {
+  getQuotaVerificationFailureMessage,
+  isQuotaLimitExceededError,
+  retryOnTransientError,
+} from '../../services/account-type-controls/quotaErrors';
 
 /** نتيجة فحص السعة: إمّا نكمل الحفظ أو نرجع بسبب محدّد. */
 type QuotaCheckResult =
@@ -79,8 +83,12 @@ export async function runPreSaveQuotaCheck({
     // السيرفر بيعد السجلات الفعلية ويقارنها بحد الأدمن.
     // لو فيه recordIdForUpdate (تعديل سجل قائم) → السيرفر بيتأكد من وجوده
     // وبيسمح بدون فحص الحد (لأن العدد الكلي مش هيزيد).
-    await validateRecordsCapacity(
-      recordIdForUpdate ? { recordId: recordIdForUpdate } : undefined,
+    // ─ retry تلقائي على أخطاء النت العابرة (3 محاولات، إجمالي ~5 ثواني) ─
+    //   ده بيحل 90% من مشاكل النت السيئ بدون ما الطبيب يحس بأي حاجة.
+    await retryOnTransientError(() =>
+      validateRecordsCapacity(
+        recordIdForUpdate ? { recordId: recordIdForUpdate } : undefined,
+      ),
     );
     return { ok: true };
   } catch (err: unknown) {
@@ -101,23 +109,9 @@ export async function runPreSaveQuotaCheck({
       }
     }
 
-    // خطأ شبكة/auth → تشديد أمني: نمنع الحفظ بدل ما نكمل
-    // (ميزة الحفظ محتاجة السيرفر دلوقتي عشان تتأكد من السعة)
-    const errorMessage = err instanceof Error ? err.message : '';
-    const isAuth = errorMessage.includes('فشلت المصادقة') || errorMessage.toLowerCase().includes('unauthenticated');
-    if (isAuth) {
-      showNotification(
-        errorMessage || 'فشلت المصادقة. أعد تسجيل الدخول ثم حاول مرة أخرى.',
-        'error', e,
-      );
-      return { ok: false, reason: 'auth' };
-    }
-
-    console.error('Records capacity check failed:', err);
-    showNotification(
-      'تعذّر التحقق من سعة السجلات. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
-      'error', e,
-    );
+    const message = getQuotaVerificationFailureMessage('تعذر التحقق من سعة السجلات الطبية الآن. حاول مرة أخرى.');
+    openQuotaNoticeModal({ message });
+    console.warn('Records capacity check failed; blocking save:', err);
     return { ok: false, reason: 'quota' };
   }
 }

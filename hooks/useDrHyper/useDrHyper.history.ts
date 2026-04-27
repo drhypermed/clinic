@@ -42,6 +42,8 @@ interface CreateHistoryActionsParams {
     setDateOfBirth?: SetString;
     setGender?: React.Dispatch<React.SetStateAction<any>>;
     setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+    // setter لعمر الحمل بالأسابيع
+    setGestationalAgeWeeks?: React.Dispatch<React.SetStateAction<number | null>>;
     setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
     setVitals: React.Dispatch<React.SetStateAction<{ bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string }>>;
     setErrorMsg: SetNullableString;
@@ -107,6 +109,7 @@ export const createHistoryActions = ({
     setDateOfBirth,
     setGender,
     setPregnant,
+    setGestationalAgeWeeks,
     setBreastfeeding,
     setVitals,
     setErrorMsg,
@@ -186,6 +189,7 @@ export const createHistoryActions = ({
             setDateOfBirth,
             setGender,
             setPregnant,
+            setGestationalAgeWeeks,
             setBreastfeeding,
             setVitals,
             setRxItems,

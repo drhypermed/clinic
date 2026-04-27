@@ -74,6 +74,7 @@ export const createSaveRecordAction = ({
   ageDays,
   gender,
   pregnant,
+  gestationalAgeWeeks,
   breastfeeding,
   weight,
   height,
@@ -230,6 +231,15 @@ export const createSaveRecordAction = ({
     // تطبيع حقول الهوية الجديدة قبل الحفظ (undefined لو فاضي)
     const genderForSave = gender === 'male' || gender === 'female' ? gender : undefined;
     const pregnantForSave = typeof pregnant === 'boolean' ? pregnant : undefined;
+    // عمر الحمل يُحفظ بس لو الـpregnant=true ورقم صالح (1-42 أسبوع)
+    const gestationalAgeWeeksForSave =
+      pregnantForSave === true
+        && typeof gestationalAgeWeeks === 'number'
+        && Number.isFinite(gestationalAgeWeeks)
+        && gestationalAgeWeeks >= 1
+        && gestationalAgeWeeks <= 42
+        ? gestationalAgeWeeks
+        : undefined;
     const breastfeedingForSave = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
 
     const currentData = {
@@ -238,6 +248,7 @@ export const createSaveRecordAction = ({
       age: { years: ageYears, months: ageMonths, days: ageDays },
       gender: genderForSave,
       pregnant: pregnantForSave,
+      gestationalAgeWeeks: gestationalAgeWeeksForSave,
       breastfeeding: breastfeedingForSave,
       weight,
       height: height || undefined,

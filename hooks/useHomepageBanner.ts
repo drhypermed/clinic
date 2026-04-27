@@ -13,6 +13,7 @@ import { db } from '../services/firebaseConfig';
 import { getDocCacheFirst } from '../services/firestore/cacheFirst';
 import { useTrustedNow } from './useTrustedNow';
 import { filterActiveBannerItems } from '../utils/homepageBannerTime';
+import { warmBannerImages } from '../utils/bannerImageCache';
 
 /** الفئات المستهدفة للبنرات */
 type HomepageBannerAudience = 'doctors' | 'public';
@@ -49,6 +50,44 @@ const BANNER_SETTINGS_DOC_BY_AUDIENCE: Record<HomepageBannerAudience, string> = 
   public: 'homepageBannerPublic',
 };
 
+const BANNER_CACHE_PREFIX = 'dh_homepage_banner_v2_';
+const bannerMemoryCache = new Map<HomepageBannerAudience, HomepageBannerData>();
+
+const readStoredBanner = (audience: HomepageBannerAudience): HomepageBannerData | null => {
+  if (typeof window === 'undefined') return null;
+
+  const memoryValue = bannerMemoryCache.get(audience);
+  if (memoryValue) return memoryValue;
+
+  try {
+    const raw = window.localStorage.getItem(`${BANNER_CACHE_PREFIX}${audience}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as HomepageBannerData;
+    if (!parsed || typeof parsed !== 'object') return null;
+    bannerMemoryCache.set(audience, parsed);
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const storeBanner = (audience: HomepageBannerAudience, data: HomepageBannerData | null) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const key = `${BANNER_CACHE_PREFIX}${audience}`;
+    if (!data) {
+      bannerMemoryCache.delete(audience);
+      window.localStorage.removeItem(key);
+      return;
+    }
+    bannerMemoryCache.set(audience, data);
+    window.localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // localStorage may be unavailable in private mode; Firestore cache still works.
+  }
+};
+
 /**
  * وظيفة توحيد البيانات (Normalization) لضمان العمل مع الإصدارات القديمة والجديدة للهيكل
  */
@@ -83,9 +122,9 @@ const normalizeBannerData = (data: HomepageBannerData, nowMs: number): HomepageB
 
   return {
     ...data,
-    items: normalizedItems,
+    items: activeItems,
     imageUrls: activeItems.map((item) => item.imageUrl),
-    imageUrl: activeItems[0]?.imageUrl || normalizedUrls[0] || data.imageUrl,
+    imageUrl: activeItems[0]?.imageUrl || '',
     title: activeItems[0]?.title || data.title,
     subtitle: activeItems[0]?.subtitle || data.subtitle,
     ctaText: activeItems[0]?.ctaText || data.ctaText,
@@ -100,14 +139,29 @@ const normalizeBannerData = (data: HomepageBannerData, nowMs: number): HomepageB
  * @param audience الجمهور المستهدف (doctors افتراضياً).
  */
 export const useHomepageBanner = (audience: HomepageBannerAudience = 'doctors') => {
-  const [rawBanner, setRawBanner] = useState<HomepageBannerData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [rawBanner, setRawBanner] = useState<HomepageBannerData | null>(() => readStoredBanner(audience));
+  const [loading, setLoading] = useState(() => !readStoredBanner(audience));
   // البنرات تنتهي صلاحيتها بالأيام وليس الثواني، 5 دقائق كافية لإعادة الحساب
   const { nowMs } = useTrustedNow({ tickMs: 5 * 60 * 1000, syncIntervalMs: 30 * 60 * 1000 });
 
   const banner = useMemo(() => {
     return rawBanner ? normalizeBannerData(rawBanner, nowMs) : null;
   }, [rawBanner, nowMs]);
+
+  useEffect(() => {
+    const cached = readStoredBanner(audience);
+    setRawBanner(cached);
+    setLoading(!cached);
+  }, [audience]);
+
+  useEffect(() => {
+    const urls = [
+      ...(banner?.imageUrls || []),
+      ...(banner?.items || []).map((item) => item.imageUrl),
+      banner?.imageUrl || '',
+    ].filter(Boolean);
+    warmBannerImages(urls);
+  }, [banner?.imageUrl, banner?.imageUrls, banner?.items]);
 
   useEffect(() => {
     const docId = BANNER_SETTINGS_DOC_BY_AUDIENCE[audience] || 'homepageBannerDoctors';
@@ -121,11 +175,14 @@ export const useHomepageBanner = (audience: HomepageBannerAudience = 'doctors') 
         const snap = await getDocCacheFirst(docRef);
         if (isCancelled) return;
         if (!snap.exists()) {
+          storeBanner(audience, null);
           setRawBanner(null);
           setLoading(false);
           return;
         }
-        setRawBanner(snap.data() as HomepageBannerData);
+        const data = snap.data() as HomepageBannerData;
+        storeBanner(audience, data);
+        setRawBanner(data);
         setLoading(false);
       } catch (err) {
         if (!isCancelled) setLoading(false);
@@ -146,7 +203,7 @@ export const useHomepageBanner = (audience: HomepageBannerAudience = 'doctors') 
     loading,
     isVisible: !!(
       banner?.isActive &&
-      ((banner?.items && banner.items.some((item) => item.isActive !== false && !!item.imageUrl)) ||
+      ((banner?.items && banner.items.length > 0) ||
         (banner?.imageUrls && banner.imageUrls.length > 0) ||
         banner?.imageUrl)
     ),

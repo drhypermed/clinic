@@ -21,6 +21,10 @@ service cloud.firestore {
         request.auth.token.email == email;
     }
 
+    function isHomepageBannerSetting(settingId) {
+      return settingId == 'homepageBanner' || settingId == 'homepageBannerPublic';
+    }
+
     function bookingConfigExists(secret) {
       return exists(/databases/$(database)/documents/bookingConfig/$(secret));
     }
@@ -635,9 +639,11 @@ service cloud.firestore {
     // الإعدادات العامة - قراءة للمستخدمين المسجلين فقط، والكتابة للأدمن.
     // ملاحظة: وثائق لوحة الأدمن الحساسة مستثناة صراحة لأن قواعد Firestore تجمع الأذونات بـ OR.
     match /settings/{settingId} {
-      allow read: if request.auth != null
+      allow read: if isHomepageBannerSetting(settingId) || (
+        request.auth != null
         && settingId != 'adminDashboardStats'
-        && settingId != 'adminDashboardStatsBaseline';
+        && settingId != 'adminDashboardStatsBaseline'
+      );
       allow write: if isAdmin();
     }
 

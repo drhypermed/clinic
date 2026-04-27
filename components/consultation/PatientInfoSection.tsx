@@ -52,6 +52,9 @@ interface PatientInfoSectionProps {
   /** حامل؟ — يظهر بس للإناث 18-50 (snapshot للزيارة الحالية) */
   pregnant?: boolean | null;
   setPregnant?: (v: boolean | null) => void;
+  /** عمر الحمل بالأسابيع — يظهر بس لو pregnant=true (snapshot للزيارة الحالية) */
+  gestationalAgeWeeks?: number | null;
+  setGestationalAgeWeeks?: (v: number | null) => void;
   /** مرضعة؟ — يظهر بس للإناث 18-50 */
   breastfeeding?: boolean | null;
   setBreastfeeding?: (v: boolean | null) => void;
@@ -69,6 +72,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
   patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
   gender = '', setGender,
   pregnant = null, setPregnant,
+  gestationalAgeWeeks = null, setGestationalAgeWeeks,
   breastfeeding = null, setBreastfeeding,
   patientSuggestions = [], onSelectPatientSuggestion, visitDate, setVisitDate, visitType, setVisitType, paymentType, setPaymentType, onReset
 }) => {
@@ -323,7 +327,11 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPregnant(false)}
+                      onClick={() => {
+                        // عند اختيار "لا"، نمسح عمر الحمل لأنه ما له معنى
+                        setPregnant(false);
+                        if (setGestationalAgeWeeks) setGestationalAgeWeeks(null);
+                      }}
                       className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${
                         pregnant === false ? 'clinic-toggle-btn--active' : 'clinic-toggle-btn--idle'
                       }`}
@@ -332,6 +340,33 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                     </button>
                   </div>
                 </div>
+                {/* خانة عمر الحمل بالأسابيع — تظهر بس لو ضغط الطبيب "نعم" على الحمل.
+                    النطاق المسموح: 1–42 أسبوع. القيمة null = الطبيب لسه ما دخّلش رقم.
+                    البيانات هتروح للذكاء الاصطناعي عند تحليل الحالة. */}
+                {pregnant === true && setGestationalAgeWeeks && (
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={42}
+                      step={1}
+                      value={gestationalAgeWeeks ?? ''}
+                      onChange={(e) => {
+                        const raw = e.target.value.trim();
+                        if (raw === '') { setGestationalAgeWeeks(null); return; }
+                        const parsed = parseInt(raw, 10);
+                        if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 42) {
+                          setGestationalAgeWeeks(parsed);
+                        }
+                      }}
+                      placeholder="عمر الحمل (أسبوع)"
+                      className="clinic-field w-full h-[40px] px-3 rounded-2xl !bg-white !border-2 !border-pink-200 focus:!border-pink-500 hover:!border-pink-400 transition-colors text-[12px] font-bold text-slate-700"
+                      dir="ltr"
+                      aria-label="عمر الحمل بالأسابيع"
+                    />
+                  </div>
+                )}
               </div>
             )}
             {setBreastfeeding && (

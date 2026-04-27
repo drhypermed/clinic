@@ -16,6 +16,8 @@ export const useDrHyperPatientState = () => {
   // حقول هوية المريض الجديدة: الجنس ثابت، والحمل + الرضاعة snapshot لكل زيارة
   const [gender, setGender] = useState<PatientGender | ''>('');
   const [pregnant, setPregnant] = useState<boolean | null>(null);
+  // عمر الحمل بالأسابيع — يُملأ بس لو الطبيب اختار pregnant=true
+  const [gestationalAgeWeeks, setGestationalAgeWeeks] = useState<number | null>(null);
   const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
@@ -126,6 +128,8 @@ export const useDrHyperPatientState = () => {
     setGender,
     pregnant,
     setPregnant,
+    gestationalAgeWeeks,
+    setGestationalAgeWeeks,
     breastfeeding,
     setBreastfeeding,
     weight,

@@ -24,7 +24,9 @@ interface Props {
   onStartApply: (preset: ReadyPrescription) => void;
 }
 
-export const PresetListItem: React.FC<Props> = ({
+// ─ React.memo لمنع re-render لكل بطاقة عند تغيير state آخر في الـparent
+//   (البطاقات بتتعرض في قائمة طويلة، فالـmemo يوفّر renders كتيرة).
+const PresetListItemComponent: React.FC<Props> = ({
   preset,
   isExpanded,
   deletingId,
@@ -187,3 +189,5 @@ export const PresetListItem: React.FC<Props> = ({
     </div>
   );
 };
+
+export const PresetListItem = React.memo(PresetListItemComponent);

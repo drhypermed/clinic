@@ -54,19 +54,18 @@ module.exports = (context) => {
         }), { merge: true });
       }
 
-      const toolTitle = feature === 'interactionTool'
-        ? 'التفاعلات الدوائية'
+      const messageKeys = feature === 'interactionTool'
+        ? { freeKey: 'freeInteractionToolLimitMessage', premiumKey: 'premiumInteractionToolLimitMessage', proMaxKey: 'proMaxInteractionToolLimitMessage' }
         : feature === 'renalTool'
-          ? 'جرعات الكلى'
-          : 'الأمان في الحمل والرضاعة';
-      // 3 فئات: المجاني / برو / برو ماكس
-      const planLabel = accountType === 'pro_max' ? 'برو ماكس' : accountType === 'premium' ? 'برو' : 'المجاني';
-      const limitReachedMessage = `تم استهلاك الحد اليومي لأداة ${toolTitle} ({limit}) للحساب ${planLabel}. للتواصل واتساب`;
-      const whatsappMessage = pickTierValue(accountType, config, {
-        freeKey: 'freeAnalysisWhatsappMessage',
-        premiumKey: 'premiumAnalysisWhatsappMessage',
-        proMaxKey: 'proMaxAnalysisWhatsappMessage',
-      });
+          ? { freeKey: 'freeRenalToolLimitMessage', premiumKey: 'premiumRenalToolLimitMessage', proMaxKey: 'proMaxRenalToolLimitMessage' }
+          : { freeKey: 'freePregnancyToolLimitMessage', premiumKey: 'premiumPregnancyToolLimitMessage', proMaxKey: 'proMaxPregnancyToolLimitMessage' };
+      const whatsappKeys = feature === 'interactionTool'
+        ? { freeKey: 'freeInteractionToolWhatsappMessage', premiumKey: 'premiumInteractionToolWhatsappMessage', proMaxKey: 'proMaxInteractionToolWhatsappMessage' }
+        : feature === 'renalTool'
+          ? { freeKey: 'freeRenalToolWhatsappMessage', premiumKey: 'premiumRenalToolWhatsappMessage', proMaxKey: 'proMaxRenalToolWhatsappMessage' }
+          : { freeKey: 'freePregnancyToolWhatsappMessage', premiumKey: 'premiumPregnancyToolWhatsappMessage', proMaxKey: 'proMaxPregnancyToolWhatsappMessage' };
+      const limitReachedMessage = pickTierValue(accountType, config, messageKeys);
+      const whatsappMessage = pickTierValue(accountType, config, whatsappKeys);
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
 
       // حماية server-side: الأداة مقفولة للمجاني فقط — برو وبرو ماكس متاح لهم.

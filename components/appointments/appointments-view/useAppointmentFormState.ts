@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import type { ClinicAppointment, PatientGender, PatientRecord } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
 import { consumeBookingQuota } from '../../../services/accountTypeControlsService';
-import { isQuotaTransientError } from '../../../services/account-type-controls/quotaErrors';
+import { getQuotaVerificationFailureMessage } from '../../../services/account-type-controls/quotaErrors';
 import { discountReasonService, type DiscountReason } from '../../../services/discountReasonService';
 import type {
   AppointmentType,
@@ -50,6 +50,8 @@ export const useAppointmentFormState = ({
   // حقول الهوية الجديدة: الجنس ثابت، الحمل/الرضاعة متغيرين لكل زيارة
   const [gender, setGender] = useState<PatientGender | ''>('');
   const [pregnant, setPregnant] = useState<boolean | null>(null);
+  // عمر الحمل بالأسابيع — null = غير مدخل بعد، رقم = القيمة الفعلية (1-42)
+  const [gestationalAgeWeeks, setGestationalAgeWeeks] = useState<number | null>(null);
   const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
   const [currentDayStr, setCurrentDayStr] = useState(() => toLocalDateStr(new Date()));
   const [dateStr, setDateStr] = useState(() => toLocalDateStr(new Date()));
@@ -172,8 +174,9 @@ export const useAppointmentFormState = ({
     // نقل الجنس (ثابت) + حساب السن الحالي من فرق الوقت
     setGender(normalizeGender(candidate.gender) ?? '');
     setAge(resolveAdvancedAgeText({ age: candidate.age, lastExamDate: candidate.examCompletedAt }));
-    // الحمل/الرضاعة يُسألوا من الصفر (متغيرين لكل زيارة)
+    // الحمل/الرضاعة + عمر الحمل يُسألوا من الصفر (متغيرين لكل زيارة)
     setPregnant(null);
+    setGestationalAgeWeeks(null);
     setBreastfeeding(null);
   };
 
@@ -184,6 +187,7 @@ export const useAppointmentFormState = ({
     setGender(normalizeGender(candidate.gender) ?? '');
     setAge(resolveAdvancedAgeText(candidate));
     setPregnant(null);
+    setGestationalAgeWeeks(null);
     setBreastfeeding(null);
   };
 
@@ -206,6 +210,14 @@ export const useAppointmentFormState = ({
     // تحميل حقول الهوية لو الموعد القديم محفوظ بها
     setGender(normalizeGender(apt.gender) ?? '');
     setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
+    // تحميل عمر الحمل لو الموعد القديم محفوظ به (رقم صحيح 1-42)
+    setGestationalAgeWeeks(
+      typeof apt.gestationalAgeWeeks === 'number'
+        && Number.isFinite(apt.gestationalAgeWeeks)
+        && apt.gestationalAgeWeeks > 0
+        ? apt.gestationalAgeWeeks
+        : null,
+    );
     setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
 
     // استعادة بيانات التأمين المحفوظة في الموعد
@@ -280,6 +292,15 @@ export const useAppointmentFormState = ({
     // تطبيع الحقول الجديدة قبل الحفظ (undefined لو فاضي عشان Firestore ما يحفظش قيم فارغة)
     const genderForPayload = normalizeGender(gender);
     const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;
+    // عمر الحمل يُحفظ بس لو الـpregnant=true ورقم صالح في النطاق 1-42
+    const gestationalAgeWeeksForPayload =
+      pregnantForPayload === true
+        && typeof gestationalAgeWeeks === 'number'
+        && Number.isFinite(gestationalAgeWeeks)
+        && gestationalAgeWeeks >= 1
+        && gestationalAgeWeeks <= 42
+        ? gestationalAgeWeeks
+        : undefined;
     const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
 
     // بناء كائن الموعد (Payload)
@@ -289,6 +310,7 @@ export const useAppointmentFormState = ({
       age: ageVal, visitReason: reasonVal, appointmentType: resolvedType,
       gender: genderForPayload,
       pregnant: pregnantForPayload,
+      gestationalAgeWeeks: gestationalAgeWeeksForPayload,
       breastfeeding: breastfeedingForPayload,
     } : {
       id: `apt-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -297,6 +319,7 @@ export const useAppointmentFormState = ({
       source: 'clinic', appointmentType: resolvedType,
       gender: genderForPayload,
       pregnant: pregnantForPayload,
+      gestationalAgeWeeks: gestationalAgeWeeksForPayload,
       breastfeeding: breastfeedingForPayload,
       // استخدم الفرع المثبّت وقت فتح النموذج لا وقت الحفظ (تفادي التضارب)
       branchId: formBranchIdRef.current
@@ -350,7 +373,9 @@ export const useAppointmentFormState = ({
         } catch (quotaErr: any) {
           const notice = extractBookingQuotaNotice(quotaErr);
           if (notice) { setBookingQuotaNotice(notice); setFormError(notice.message); return; }
-          if (!isQuotaTransientError(quotaErr)) { setFormError('تعذر التحقق من حد المواعيد'); return; }
+          console.warn('Appointment quota check failed; blocking save:', quotaErr);
+          setFormError(getQuotaVerificationFailureMessage('تعذر التحقق من حد المواعيد الآن. حاول مرة أخرى.'));
+          return;
         }
       }
 
@@ -359,7 +384,7 @@ export const useAppointmentFormState = ({
       
       // 4. تصفير النموذج
       setPatientName(''); setAge(''); setPhone(''); setVisitReason('');
-      setGender(''); setPregnant(null); setBreastfeeding(null);
+      setGender(''); setPregnant(null); setGestationalAgeWeeks(null); setBreastfeeding(null);
       setAppointmentType('exam'); setSelectedConsultationCandidateId('');
       setEditingAppointmentId(null); setAddSuccessToast(true);
       // تصفير الفرع المثبّت بعد نجاح الحفظ
@@ -400,7 +425,7 @@ export const useAppointmentFormState = ({
 
   return {
     patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
-    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
+    gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
     formError, bookingQuotaNotice, saving, addSuccessToast, addAppointmentFormOpen,

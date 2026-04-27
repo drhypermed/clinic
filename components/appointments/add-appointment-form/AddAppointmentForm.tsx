@@ -40,6 +40,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   patientName, onPatientNameChange, age, onAgeChange, phone, onPhoneChange,
   gender = '', onGenderChange,
   pregnant = null, onPregnantChange,
+  gestationalAgeWeeks = null, onGestationalAgeWeeksChange,
   breastfeeding = null, onBreastfeedingChange,
   dateStr, onDateStrChange, timeStr, onTimeStrChange, visitReason, onVisitReasonChange,
   secretaryVitals = {}, secretaryVitalFields = [], secretaryVitalsVisibility, onSecretaryVitalsChange,
@@ -385,7 +386,11 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => onPregnantChange(true)}
+                        onClick={() => {
+                          // عند اختيار "حامل"، نمسح أي قيمة لعمر الحمل لو كانت موجودة من قبل
+                          // (لأنه snapshot للزيارة الحالية، ولا يُنقل من زيارة لأخرى)
+                          onPregnantChange(true);
+                        }}
                         className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
                           pregnant === true
                             ? 'bg-pink-600 text-white border-pink-700'
@@ -396,7 +401,11 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                       </button>
                       <button
                         type="button"
-                        onClick={() => onPregnantChange(false)}
+                        onClick={() => {
+                          // عند اختيار "لا"، نلغي عمر الحمل لأنه ما يبقاش له معنى
+                          onPregnantChange(false);
+                          if (onGestationalAgeWeeksChange) onGestationalAgeWeeksChange(null);
+                        }}
                         className={`px-3 py-2 rounded-xl border text-xs font-black transition-all ${
                           pregnant === false
                             ? 'bg-slate-700 text-white border-slate-800'
@@ -406,6 +415,34 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                         لا
                       </button>
                     </div>
+                    {/* حقل عمر الحمل بالأسابيع — يظهر بس لو ضغطت "نعم، حامل"
+                        النطاق المسموح 1–42 أسبوع (الحمل الطبيعي ≈ 40 أسبوع، ونسمح لـ42 لتغطية حالات تأخر الولادة).
+                        القيمة null = الطبيب/السكرتيرة لسه ما دخّلش رقم. */}
+                    {pregnant === true && onGestationalAgeWeeksChange && (
+                      <div className="mt-2">
+                        <label className="block text-[11px] font-bold text-pink-700 mb-1">عمر الحمل (أسبوع)</label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={1}
+                          max={42}
+                          step={1}
+                          value={gestationalAgeWeeks ?? ''}
+                          onChange={(e) => {
+                            const raw = e.target.value.trim();
+                            if (raw === '') { onGestationalAgeWeeksChange(null); return; }
+                            const parsed = parseInt(raw, 10);
+                            // نقبل بس أرقام صحيحة من 1 لـ42؛ غير كده نتجاهل
+                            if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 42) {
+                              onGestationalAgeWeeksChange(parsed);
+                            }
+                          }}
+                          placeholder="مثال: 24"
+                          className="w-full px-3 py-2 rounded-xl border-2 border-pink-200 bg-white text-xs font-bold text-slate-700 focus:border-pink-500 focus:outline-none transition-colors"
+                          dir="ltr"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
                 {onBreastfeedingChange && (

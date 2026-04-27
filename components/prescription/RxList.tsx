@@ -50,7 +50,11 @@ interface RxListProps {
   arabicStyle?: TextStyle;  // أنماط مخصصة للنصوص العربية (التعليمات)
 }
 
-export const RxList: React.FC<RxListProps> = ({
+// ─ مغلّف بـ React.memo لمنع re-render كامل لقائمة الأدوية في كل state change.
+//   الـRxList بيتعمله re-render مع أي تغيير في الـparent (تايمر، notification، إلخ).
+//   الـmemo بيقارن props الـshallow ولو ما اتغيّرتش، ميعملش re-render — توفير
+//   كبير في صفحة كشف جديد على الموبايل.
+const RxListComponent: React.FC<RxListProps> = ({
   rxItems, medNameSize, medInstSize, medNamePx, medInstPx, notePx,
   medNameColor, medInstColor, noteColor,
   medNameFontFamily, medInstFontFamily, noteFontFamily,
@@ -299,3 +303,5 @@ export const RxList: React.FC<RxListProps> = ({
     </div>
   );
 };
+
+export const RxList = React.memo(RxListComponent);

@@ -113,6 +113,8 @@ interface MainAppViewRouterProps {
   // حقول الهوية الجديدة: الجنس ثابت + الحمل/الرضاعة snapshot
   gender: import('../../types').PatientGender | ''; setGender: (v: import('../../types').PatientGender | '') => void;
   pregnant: boolean | null; setPregnant: (v: boolean | null) => void;
+  // عمر الحمل بالأسابيع — يُمرَّر للـPatientInfoSection ويُسجَّل لو pregnant=true
+  gestationalAgeWeeks: number | null; setGestationalAgeWeeks: (v: number | null) => void;
   breastfeeding: boolean | null; setBreastfeeding: (v: boolean | null) => void;
   setActivePatientFileId: (v: string | null) => void;
   setActivePatientFileNumber: (v: number | null) => void;
@@ -244,6 +246,11 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           stats={p.dashboardStats}
           onNavigate={(view) => p.navigateToView(view as AppView)}
           onStartNewExam={p.onStartNewExam}
+          /* نفس الـopenExam المستخدم في صفحة المواعيد — بيحمّل بيانات المريض
+             كاملة (اسم، هاتف، عمر، دفع، تأمين، علامات السكرتارية) ويفتح
+             شاشة الروشتة. كده زرار "ابدأ الكشف" في الرئيسية يبقى زي زرار
+             المواعيد بالظبط. */
+          onStartExamForAppointment={p.openExam}
           doctorName={p.normalizedDoctorName || undefined}
           todayAppointments={p.todayAppointmentsList}
           records={p.records}
@@ -263,6 +270,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           ageDays={p.ageDays} setAgeDays={p.setAgeDays}
           gender={p.gender} setGender={p.setGender}
           pregnant={p.pregnant} setPregnant={p.setPregnant}
+          gestationalAgeWeeks={p.gestationalAgeWeeks} setGestationalAgeWeeks={p.setGestationalAgeWeeks}
           breastfeeding={p.breastfeeding} setBreastfeeding={p.setBreastfeeding}
           setActivePatientFileId={p.setActivePatientFileId}
           setActivePatientFileNumber={p.setActivePatientFileNumber}

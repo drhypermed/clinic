@@ -87,7 +87,9 @@ const observeRegistrationForUpdate = (registration: ServiceWorkerRegistration) =
 };
 
 registerSW({
-  immediate: false,
+  // التسجيل الفوري عشان أي تحديث جديد يلحق المستخدم من أوّل فتح للتطبيق،
+  // مش يتأخّر لـ idle — مهمّ خصوصاً على سفاري آيفون اللي ما بيقفلش التبويب.
+  immediate: true,
   onNeedRefresh() {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       emitPwaUpdateAvailable();

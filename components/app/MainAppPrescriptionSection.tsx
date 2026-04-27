@@ -21,7 +21,9 @@ import {
 // ─ تشديد أمني 2026-04: الأزرار الذهبية كانت بتستهلك AI بدون احتساب الحد ─
 import { consumeDrugToolQuota } from '../../services/accountTypeControlsService';
 import {
+  getQuotaVerificationFailureMessage,
   isQuotaLimitExceededError,
+  retryOnTransientError,
 } from '../../services/account-type-controls/quotaErrors';
 import type {
   AlternativeMed,
@@ -70,6 +72,9 @@ interface MainAppPrescriptionSectionProps {
   setGender: (value: PatientGender | '') => void;
   pregnant: boolean | null;
   setPregnant: (value: boolean | null) => void;
+  // عمر الحمل بالأسابيع — يُمرَّر لشاشة الطبيب (PatientInfoSection)
+  gestationalAgeWeeks: number | null;
+  setGestationalAgeWeeks: (value: number | null) => void;
   breastfeeding: boolean | null;
   setBreastfeeding: (value: boolean | null) => void;
   setActivePatientFileId: (value: string | null) => void;
@@ -218,7 +223,7 @@ interface MainAppPrescriptionSectionProps {
 
 export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProps> = ({
   analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
-  gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
+  gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
   complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
   caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
@@ -429,24 +434,37 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
       return;
     }
 
-    // ─ تشديد أمني 2026-04: نستهلك الكوتا قبل أي مكالمة AI أو حتى فتح المودال ─
-    // كان قبل: الزرار بيستدعي الـAI مباشرة بدون احتساب الحد اليومي.
-    // التغيير: نستدعي الـserver عشان يخصم من الحد ويرجع رسالة الأدمن لو الحد انتهى.
+    // ─ نفعّل الـloading state فوراً قبل أي Cloud Function call عشان الزر يعرض
+    //   spinner مباشرة على الضغط (مش بعد 1-3 ثواني). الـquota check + الـAI call
+    //   هياخدوا وقت — الـUX المهم إن المستخدم يحس إن الزر بيرد فوراً.
+    setInteractionsLoading(true);
+
+    // قاعدة بسيطة: لو الطبيب وصل للحد الأقصى فعلاً → نمنع برسالة الأدمن.
+    // أي خطأ تاني (شبكة، App Check، 403، internal، إلخ) → نسمح بالفحص.
+    // الـAI call اللي بعديها محتاج نت أصلاً، فلو فيه مشكلة حقيقية هتظهر هناك.
+    // الفايدة: شغل الطبيب ميتعطلش بسبب أي مشكلة تقنية مؤقتة في فحص الكوتا.
     try {
-      await consumeDrugToolQuota('interactionTool');
+      await retryOnTransientError(() => consumeDrugToolQuota('interactionTool'));
     } catch (quotaError: unknown) {
-      const isLimit = isQuotaLimitExceededError(quotaError);
-      const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
-      const messageRaw = isLimit && details?.limitReachedMessage
-        ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
-        : 'تعذّر التحقق من حد فحص التداخلات الدوائية. تأكد من اتصال الإنترنت وحاول مرة أخرى.';
-      setInteractionsNoDrugsNotice(messageRaw);
+      // مهم: نطفي الـloading قبل ما نرجع عشان الزر يرجع لوضعه الطبيعي
+      setInteractionsLoading(false);
+      if (isQuotaLimitExceededError(quotaError)) {
+        const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
+        const messageRaw = details?.limitReachedMessage
+          ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
+          : 'تم استهلاك حد فحص التداخلات الدوائية اليومي.';
+        setInteractionsNoDrugsNotice(messageRaw);
+        window.setTimeout(() => setInteractionsNoDrugsNotice(null), 8000);
+        return;
+      }
+      const message = getQuotaVerificationFailureMessage('تعذر التحقق من حد فحص التداخلات الدوائية الآن. حاول مرة أخرى.');
+      setInteractionsNoDrugsNotice(message);
       window.setTimeout(() => setInteractionsNoDrugsNotice(null), 8000);
+      console.warn('Drug interactions quota check failed; blocking action:', quotaError);
       return;
     }
 
     setInteractionsOpen(true);
-    setInteractionsLoading(true);
     setInteractionsResult(null);
     setInteractionsDrugCount(prescriptionDrugNames.length);
     try {
@@ -478,19 +496,24 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   const handlePregnancyStartCheck = React.useCallback(async (selectedDrugs: string[]) => {
     if (pregnancyLoading) return;
 
-    // ─ تشديد أمني 2026-04: نستهلك الكوتا قبل أي مكالمة AI ─
-    // كان قبل: الزرار بيستدعي الـAI مباشرة بدون احتساب الحد اليومي.
+    // قاعدة بسيطة: حد الكوتا فقط بيمنع — أي خطأ تاني نعدّيه ونسمح بالفحص.
     setPregnancyLoading(true);
     try {
-      await consumeDrugToolQuota('pregnancyTool');
+      await retryOnTransientError(() => consumeDrugToolQuota('pregnancyTool'));
     } catch (quotaError: unknown) {
-      const isLimit = isQuotaLimitExceededError(quotaError);
-      const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
-      const messageRaw = isLimit && details?.limitReachedMessage
-        ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
-        : 'تعذّر التحقق من حد فحص الحمل والرضاعة. تأكد من اتصال الإنترنت وحاول مرة أخرى.';
-      showNotification(messageRaw, 'error');
+      if (isQuotaLimitExceededError(quotaError)) {
+        const details = (quotaError as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
+        const messageRaw = details?.limitReachedMessage
+          ? String(details.limitReachedMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
+          : 'تم استهلاك حد فحص الحمل والرضاعة اليومي.';
+        showNotification(messageRaw, 'error');
+        setPregnancyLoading(false);
+        return;
+      }
+      const message = getQuotaVerificationFailureMessage('تعذر التحقق من حد فحص الحمل والرضاعة الآن. حاول مرة أخرى.');
+      showNotification(message, 'error');
       setPregnancyLoading(false);
+      console.warn('Pregnancy quota check failed; blocking action:', quotaError);
       return;
     }
 
@@ -536,6 +559,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   ageDays={ageDays} setAgeDays={setAgeDays}
                   gender={gender} setGender={setGender}
                   pregnant={pregnant} setPregnant={setPregnant}
+                  gestationalAgeWeeks={gestationalAgeWeeks} setGestationalAgeWeeks={setGestationalAgeWeeks}
                   breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
                   patientSuggestions={patientSuggestions}
                   onSelectPatientSuggestion={(item) => {
@@ -565,8 +589,9 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                       setAgeMonths(item.ageMonths || '');
                       setAgeDays(item.ageDays || '');
                     }
-                    // الحمل/الرضاعة لا يُنقلا — بنسأل كل زيارة من الصفر
+                    // الحمل/عمر الحمل/الرضاعة لا يُنقلوا — بنسأل كل زيارة من الصفر
                     setPregnant(null);
+                    setGestationalAgeWeeks(null);
                     setBreastfeeding(null);
                     setActivePatientFileId(null);
                     setActivePatientFileNumber(Number.isFinite(parsedFileNumber) && parsedFileNumber > 0 ? Math.floor(parsedFileNumber) : null);

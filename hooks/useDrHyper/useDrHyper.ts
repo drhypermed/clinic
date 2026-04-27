@@ -59,6 +59,8 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         setGender,
         pregnant,
         setPregnant,
+        gestationalAgeWeeks,
+        setGestationalAgeWeeks,
         breastfeeding,
         setBreastfeeding,
         weight,
@@ -271,6 +273,7 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         // حقول الهوية الجديدة — الجنس ثابت، الحمل والرضاعه snapshot للزيارة
         gender, setGender,
         pregnant, setPregnant,
+        gestationalAgeWeeks, setGestationalAgeWeeks,
         breastfeeding, setBreastfeeding,
         weight, setWeight,
         height, setHeight,

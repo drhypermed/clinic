@@ -20,6 +20,8 @@ interface PatientDemographicsSetters {
   setDateOfBirth?: SetString;
   setGender?: React.Dispatch<React.SetStateAction<any>>;
   setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  // setter لعمر الحمل بالأسابيع — اختياري لـbackward compat
+  setGestationalAgeWeeks?: React.Dispatch<React.SetStateAction<number | null>>;
   setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
 }
 
@@ -65,6 +67,8 @@ interface ResetPatientFormSetters {
   setDateOfBirth?: SetString;
   setGender?: React.Dispatch<React.SetStateAction<any>>;
   setPregnant?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  // setter لعمر الحمل بالأسابيع — اختياري لـbackward compat
+  setGestationalAgeWeeks?: React.Dispatch<React.SetStateAction<number | null>>;
   setBreastfeeding?: React.Dispatch<React.SetStateAction<boolean | null>>;
   setVitals: React.Dispatch<React.SetStateAction<VitalSigns>>;
   setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
@@ -163,6 +167,7 @@ export const applyPatientDemographicsFromRecord = (
     setDateOfBirth,
     setGender,
     setPregnant,
+    setGestationalAgeWeeks,
     setBreastfeeding,
   }: PatientDemographicsSetters
 ) => {
@@ -173,9 +178,10 @@ export const applyPatientDemographicsFromRecord = (
   setAgeDays(record.age?.days || '');
   // الجنس ثابت — ينتقل لو السجل القديم محفوظ بيه (السجلات الأقدم قد لا تحتوي)
   if (setGender) setGender(record.gender ?? '');
-  // ملاحظة: الحمل/الرضاعة يُعاد سؤالهم كل زيارة — بنمسحهم عند تحميل السجل القديم
+  // ملاحظة: الحمل/الرضاعة + عمر الحمل يُعاد سؤالهم كل زيارة — بنمسحهم عند تحميل السجل القديم
   // (القيم القديمة ممكن تكون تغيرت)
   if (setPregnant) setPregnant(null);
+  if (setGestationalAgeWeeks) setGestationalAgeWeeks(null);
   if (setBreastfeeding) setBreastfeeding(null);
 };
 
@@ -281,6 +287,7 @@ export const resetPatientFormState = ({
   setDateOfBirth,
   setGender,
   setPregnant,
+  setGestationalAgeWeeks,
   setBreastfeeding,
   setVitals,
   setRxItems,
@@ -335,6 +342,7 @@ export const resetPatientFormState = ({
   if (setDateOfBirth) setDateOfBirth('');
   if (setGender) setGender('');
   if (setPregnant) setPregnant(null);
+  if (setGestationalAgeWeeks) setGestationalAgeWeeks(null);
   if (setBreastfeeding) setBreastfeeding(null);
   setVitals(EMPTY_VITALS);
   setRxItems([]);

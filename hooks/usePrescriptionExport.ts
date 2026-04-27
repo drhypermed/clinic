@@ -56,7 +56,10 @@ interface UsePrescriptionExportReturn {
     handleShareWhatsApp: () => Promise<void>;
 }
 
-const REENTRY_GUARD_MS = 1500;
+// زدنا من 1500 → 3000ms عشان iOS Safari أحياناً بيرسل touchstart + click
+// متعاقبين مع فاصل أكبر من 1.5 ثانية على نت بطيء (المستخدم بيضغط مرتين بدون
+// ما يلاحظ). 3 ثواني آمنة لأن window.print() نفسها بتاخد ثانية على الأقل.
+const REENTRY_GUARD_MS = 3000;
 
 export function usePrescriptionExport(
     options: UsePrescriptionExportOptions,
@@ -131,14 +134,16 @@ export function usePrescriptionExport(
 
     const handlePrint = useCallback(async () => {
         if (!guard('print')) return;
-        // 🆕 فحص الحد اليومي قبل الطباعة
-        if (!(await checkQuota('print', 'prescriptionPrint'))) return;
-        onTrack?.('print');
+        // ـ نـset isPrinting=true فوراً (قبل أي async) — يخلي الزر disabled قبل
+        //   ما الـbrowser يرسل أي click event ثاني (iOS bug: double-click).
         setIsPrinting(true);
-        await new Promise<void>((resolve) =>
-            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        );
         try {
+            // 🆕 فحص الحد اليومي قبل الطباعة
+            if (!(await checkQuota('print', 'prescriptionPrint'))) return;
+            onTrack?.('print');
+            await new Promise<void>((resolve) =>
+                requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            );
             await printPrescription(paperSize);
         } catch (err) {
             onError?.('print', err);
@@ -149,17 +154,17 @@ export function usePrescriptionExport(
 
     const handleDownload = useCallback(async () => {
         if (!guard('download')) return;
-        // 🆕 فحص الحد اليومي قبل التنزيل
-        if (!(await checkQuota('download', 'prescriptionDownload'))) return;
-        onTrack?.('download');
+        // ـ نـset isDownloading=true فوراً قبل أي async — يحمي من double-click
+        //   على الموبايل (نفس الـpattern في handlePrint).
         setIsDownloading(true);
-        // ننتظر إطارين من rAF عشان React يعمل commit للـ loading state
-        // (الـ spinner + "جاري التنزيل…") قبل ما html2canvas يبدأ ويحبس
-        // الـ main thread. بدون ده الـ spinner مش بيظهر.
-        await new Promise<void>((resolve) =>
-            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        );
         try {
+            // 🆕 فحص الحد اليومي قبل التنزيل
+            if (!(await checkQuota('download', 'prescriptionDownload'))) return;
+            onTrack?.('download');
+            // ننتظر إطارين من rAF عشان React يعمل commit للـ loading state
+            await new Promise<void>((resolve) =>
+                requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            );
             // اسم الملف = اسم المريض كما هو، أو "روشتة" لو مفيش اسم
             const trimmedName = patientName?.trim();
             const fileName = trimmedName && trimmedName.length > 0 ? trimmedName : 'روشتة';
@@ -185,13 +190,14 @@ export function usePrescriptionExport(
             return;
         }
 
-        // 🆕 فحص الحد اليومي قبل فتح واتساب
-        if (!(await checkQuota('whatsapp', 'prescriptionWhatsapp'))) return;
-
-        // خطوة 2: بعد التنزيل، افتح محادثة واتساب مباشرة بالرقم المسجّل.
-        onTrack?.('whatsapp');
+        // ـ نـset isSharingViaWhatsApp=true فوراً (حماية من double-click) ـ
         setIsSharingViaWhatsApp(true);
         try {
+            // 🆕 فحص الحد اليومي قبل فتح واتساب
+            if (!(await checkQuota('whatsapp', 'prescriptionWhatsapp'))) return;
+
+            // خطوة 2: بعد التنزيل، افتح محادثة واتساب مباشرة بالرقم المسجّل.
+            onTrack?.('whatsapp');
             sharePrescriptionViaWhatsApp({ patientName, phone });
             // نعيد ضبط العلم — لو الطبيب عايز يبعت تاني لازم ينزّل مرة أخرى
             // (أو يضغط تنزيل بعد تعديل الروشتة).

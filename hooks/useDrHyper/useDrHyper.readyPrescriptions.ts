@@ -13,7 +13,11 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'fir
 import { PrescriptionItem, ReadyPrescription } from '../../types';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST, normalizeAdviceList } from '../../utils/rx/rxUtils';
 import { SmartQuotaLimitErrorDetails, validateReadyPrescriptionsCapacity } from '../../services/accountTypeControlsService';
-import { isQuotaLimitExceededError, isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
+import {
+    getQuotaVerificationFailureMessage,
+    isQuotaLimitExceededError,
+    retryOnTransientError,
+} from '../../services/account-type-controls/quotaErrors';
 import {
     extractDoctorFinalInstruction,
     sanitizeReadyPrescriptionRxItems,
@@ -141,11 +145,12 @@ export const createReadyPrescriptionActions = ({
         showNotification(onlineMessage, 'success', e);
     };
 
-    // ─ تشديد أمني 2026-04: السيرفر بيعد الروشتات الفعلية ويقارنها بحد الأدمن.
-    //   كان قبل client-side فقط (readyPrescriptions.length) — ممكن يتجاوز عبر dev tools.
+    // ─ السيرفر بيعد الروشتات الفعلية ويقارنها بحد الأدمن.
+    //   مع retry تلقائي على أخطاء النت العابرة (3 محاولات، إجمالي ~5 ثواني).
+    //   قاعدة بسيطة: حد الكوتا فقط بيمنع. أي خطأ تاني نعدّيه ونسمح بالحفظ.
     const ensureReadyPrescriptionCapacity = async (): Promise<boolean> => {
         try {
-            await validateReadyPrescriptionsCapacity();
+            await retryOnTransientError(() => validateReadyPrescriptionsCapacity());
             return true;
         } catch (capacityError: unknown) {
             const isLimit = isQuotaLimitExceededError(capacityError);
@@ -162,22 +167,18 @@ export const createReadyPrescriptionActions = ({
                 });
                 return false;
             }
-            // ─ تشديد أمني 2026-04: أي خطأ تاني (شبكة/auth) → نمنع الحفظ.
-            //   كان قبل بيكمّل الحفظ بحجة "السيرفر هيفحص تاني عند الكتابة"
-            //   لكن مفيش أي rule في firestore.rules بتفحص الحد عند الكتابة،
-            //   فالطبيب اللي بيقطع نته لحظة الحفظ كان بيتجاوز الحد فعلاً.
-            console.error('Ready prescriptions capacity check failed:', capacityError);
-            showNotification(
-                'تعذّر التحقق من حد الروشتات الجاهزة. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
-                'error',
-            );
+            const message = getQuotaVerificationFailureMessage('تعذر التحقق من سعة الروشتات الجاهزة الآن. حاول مرة أخرى.');
+            dismissNotification();
+            openQuotaNoticeModal({ message });
+            console.warn('Ready prescriptions capacity check failed; blocking save:', capacityError);
             return false;
         }
     };
 
     const ensureReadyPrescriptionDailyQuota = async (): Promise<boolean> => {
         try {
-            await consumeStorageQuota('readyPrescriptionSave');
+            // retry تلقائي على أخطاء النت العابرة (3 محاولات بـbackoff)
+            await retryOnTransientError(() => consumeStorageQuota('readyPrescriptionSave'));
             return true;
         } catch (quotaError: any) {
             const isDailyLimit = quotaError?.code === 'resource-exhausted'
@@ -201,13 +202,10 @@ export const createReadyPrescriptionActions = ({
                 return false;
             }
 
-            if (isQuotaTransientError(quotaError)) {
-                console.warn('Ready prescription quota check transient/offline failure, continuing local-first save:', quotaError);
-                return true;
-            }
-
-            console.error('Error consuming ready prescription save quota:', quotaError);
-            showNotification(getReadableErrorMessage(quotaError, 'حدث خطأ أثناء التحقق من حد الحفظ اليومي للروشتات'), 'error');
+            const message = getQuotaVerificationFailureMessage('تعذر التحقق من حد حفظ الروشتات الجاهزة اليومي الآن. حاول مرة أخرى.');
+            dismissNotification();
+            openQuotaNoticeModal({ message });
+            console.warn('Ready prescription daily quota check failed; blocking save:', quotaError);
             return false;
         }
     };

@@ -77,17 +77,32 @@ const buildVitalsSummary = (v: VitalSigns | undefined): string => {
   return parts.length ? parts.join(', ') : 'N/A';
 };
 
-/** بناء ملخص نصي لحالة المرأة: حمل/رضاعة/سن خصوبة (مهم للسلامة الدوائية والتشخيص) */
+/** بناء ملخص نصي لحالة المرأة: حمل/رضاعة/سن خصوبة (مهم للسلامة الدوائية والتشخيص)
+ *  لو حامل ومعها عمر حمل بالأسابيع → نُضيفه للسياق عشان الموديل يقدر يفرّق
+ *  بين تشخيصات الترايمستر الأول/التاني/التالت (مثل ectopic مقابل preeclampsia/HELLP).
+ */
 const buildFemaleContext = (
   gender: PatientGender | '' | undefined,
   pregnant: boolean | null | undefined,
   breastfeeding: boolean | null | undefined,
+  gestationalAgeWeeks: number | null | undefined,
 ): string => {
   // لو مش أنثى نخرج بدون أي تفاصيل (الذكور لا يحملون ولا يرضعون)
   if (gender !== 'female') return '';
   const flags: string[] = [];
-  if (pregnant === true) flags.push('PREGNANT');
-  else if (pregnant === false) flags.push('not pregnant');
+  if (pregnant === true) {
+    // لو فيه عمر حمل صالح (1-42 أسبوع) نضمّه مع علامة الحمل عشان الموديل ياخذه في الحسبان
+    if (
+      typeof gestationalAgeWeeks === 'number'
+      && Number.isFinite(gestationalAgeWeeks)
+      && gestationalAgeWeeks >= 1
+      && gestationalAgeWeeks <= 42
+    ) {
+      flags.push(`PREGNANT at ${gestationalAgeWeeks} weeks gestation`);
+    } else {
+      flags.push('PREGNANT (gestational age not specified)');
+    }
+  } else if (pregnant === false) flags.push('not pregnant');
   if (breastfeeding === true) flags.push('BREASTFEEDING');
   else if (breastfeeding === false) flags.push('not breastfeeding');
   return flags.length ? ` (${flags.join(' / ')})` : ' (pregnancy/breastfeeding status unknown)';
@@ -133,14 +148,42 @@ const sanitizeAnalysis = (raw: unknown): CaseAnalysisResult => {
     .filter((m) => m.diagnosis.length > 0);
 
   // ── الفحوصات المقترحة
+  // Sanitization إضافي بعد الـAI: لو الموديل خالف القواعد ورجّع "اسم كامل (اختصار)"
+  // أو "Full Name [ABBR]" أو ضمّن أقواس داخل أقواس → نقصر على الاختصار/الجزء داخل
+  // الأقواس ونزيل الـduplicate. ده backstop ضد الـhallucination، الـprompt هو خط الدفاع
+  // الأول لكن الـsanitizer هنا يمنع أي تسرّب يصل للطبيب.
+  const stripNestedParens = (text: string): string => {
+    // مرّة واحدة: نشيل أي أقواس داخل أقواس متبقية بإزالة المستوى الداخلي فقط
+    // مثال: "ألم (شديد (مفاجئ))" → "ألم (شديد مفاجئ)"
+    let out = text;
+    let prev = '';
+    while (prev !== out) {
+      prev = out;
+      out = out.replace(/\(([^()]*)\(([^()]*)\)([^()]*)\)/g, '($1$2$3)');
+    }
+    return out.trim();
+  };
+  const cleanInvestigationName = (raw: string): string => {
+    let name = raw.trim();
+    // لو الموديل كتب "Full Name (ABBR)" ناخد الاختصار اللي بين القوسين بس
+    const parenMatch = name.match(/^[^()]+\(([A-Za-z0-9/&\-\s]{2,15})\)$/);
+    if (parenMatch && parenMatch[1]) {
+      name = parenMatch[1].trim();
+    }
+    // لو الموديل كرر الاختصار مرتين بفصلة "/" أو مسافة: "CBC CBC" أو "CBC/CBC"
+    const dupMatch = name.match(/^([A-Za-z0-9&\-]{2,10})[\s/]+\1$/);
+    if (dupMatch) name = dupMatch[1];
+    // إزالة أي أقواس متداخلة كنوع من الحماية النهائية
+    return stripNestedParens(name);
+  };
   const rawInvs = Array.isArray(obj.suggestedInvestigations) ? obj.suggestedInvestigations : [];
   const investigations: SuggestedInvestigationItem[] = rawInvs
     .slice(0, 8)
     .map((item) => {
       const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
       return {
-        nameEn: toTrimmed(it.nameEn),
-        reasonAr: toTrimmed(it.reasonAr),
+        nameEn: cleanInvestigationName(toTrimmed(it.nameEn)),
+        reasonAr: stripNestedParens(toTrimmed(it.reasonAr)),
       };
     })
     .filter((x) => x.nameEn.length > 0);
@@ -174,6 +217,8 @@ interface CaseAnalysisInput {
   heightCm?: number;          // اختياري
   gender: PatientGender | '';
   pregnant: boolean | null;
+  // عمر الحمل بالأسابيع — يُمرَّر بس لو الحالة pregnant=true (snapshot للزيارة)
+  gestationalAgeWeeks: number | null;
   breastfeeding: boolean | null;
   vitals: VitalSigns;
   // ─ تخصص الطبيب — يُمرَّر من profile الطبيب (Arabic or English).
@@ -195,8 +240,8 @@ export const analyzeCaseDeeply = async (
 ): Promise<CaseAnalysisResult> => {
   const totalMonths = (input.ageYears || 0) * 12 + (input.ageMonths || 0);
   const vitalsSummary = buildVitalsSummary(input.vitals);
-  // ملخص حالة الأنثى (حمل/رضاعة) — يظهر فقط للإناث
-  const femaleContext = buildFemaleContext(input.gender, input.pregnant, input.breastfeeding);
+  // ملخص حالة الأنثى (حمل/رضاعة + عمر الحمل لو حامل) — يظهر فقط للإناث
+  const femaleContext = buildFemaleContext(input.gender, input.pregnant, input.breastfeeding, input.gestationalAgeWeeks);
   // النوع نفسه — male / female / unspecified
   const genderLabel = input.gender === 'male'
     ? 'Male'
@@ -289,7 +334,7 @@ OUTPUT (strict JSON, no fences, no prose):
     {"diagnosis":"<...>","reasoning":"<...>","isMostLikely":false}
   ],
   "mustNotMiss": [{"diagnosis":"<English life-threatening>","reasoning":"<1-2 English sentences>","alreadyInDDx":false}],
-  "suggestedInvestigations": [{"nameEn":"<Standard test e.g. CBC, CRP, U/S abdomen, ECG>","reasonAr":"<سبب قصير عربي مصري>"}],
+  "suggestedInvestigations": [{"nameEn":"<STANDARD short abbreviation ONLY: CBC, CRP, ESR, U/S abdomen, ECG, TSH, HbA1c, RFT, LFT, U&E, etc. NEVER write full names. NEVER repeat the full name then the abbreviation. NEVER use parentheses inside this field>","reasonAr":"<سبب قصير عربي مصري بدون أقواس داخل أقواس>"}],
   "importantInstructionsAr": ["<تعليمة مصرية بسيطة ≤15 كلمة بدون أدوية>"],
   "missingInformation": ["<Short English question that could change diagnosis>"],
   "redFlags": ["<Short English urgent sign; [] if none>"],
@@ -306,6 +351,13 @@ COUNTS (all adaptive — be honest, not paranoid; never pad to fill quotas)
 - suggestedInvestigations: 0-6 entries.
    • Empty [] for clinical diagnoses that need no labs/imaging (e.g., mild URTI, classic contact dermatitis, simple migraine).
    • Otherwise 1-6 confirmatory/exclusionary tests.
+   ═══ INVESTIGATION NAMING RULES (STRICT — apply to EVERY entry) ═══
+   1. nameEn MUST be ONLY a globally recognized standard medical abbreviation. Examples of accepted forms: CBC, CRP, ESR, TSH, FT4, HbA1c, FBS, RBS, RFT, LFT, U&E, ABG, PT/INR, D-dimer, ECG, EEG, EMG, U/S abdomen, U/S pelvis, CT brain, MRI spine, CXR, KUB, Echo, Urine analysis, Stool analysis, Pap smear, β-hCG, LH, FSH, PSA, Vit D, Vit B12, Ferritin, Lipid profile, HBsAg, Anti-HCV.
+   2. NEVER write the full name. Do NOT write "Complete Blood Count (CBC)" — write only "CBC". Do NOT write "Electrocardiogram (ECG)" — write only "ECG".
+   3. NEVER duplicate the abbreviation: write it ONCE, no repetition like "CBC (CBC)" or "ECG/ECG".
+   4. NEVER invent or guess abbreviations. If a test has no widely recognized abbreviation, write the short standard English name instead (e.g., "Urine analysis", "Pap smear") — but do NOT manufacture acronyms.
+   5. NO parentheses inside parentheses in either nameEn or reasonAr. Use a single level only if absolutely needed; otherwise rephrase to avoid parentheses entirely.
+   6. reasonAr: short Egyptian Arabic clause stating WHY this test is needed (≤12 words). No nested parentheses, no English words mixed in.
 - importantInstructionsAr: 0-6 lines.
    • Empty [] if no specific instructions are warranted beyond standard advice.
    • Otherwise focused, actionable items the patient must follow (e.g., "ارجع فوراً لو الحمى زادت عن 39 لأكثر من يوم").

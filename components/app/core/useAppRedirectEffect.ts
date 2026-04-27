@@ -129,18 +129,16 @@ export const useAppRedirectEffect = ({
     const userRole = user.authRole === 'doctor' || user.authRole === 'public' ? user.authRole : null;
 
     if (!userRole) {
-      // مستخدم مسجّل دخول لكن بدون دور معروف — حالات ممكنة:
-      //   • Google login جديد بدون profile في Firestore
-      //   • فشل تحميل البيانات (شبكة أو صلاحيات)
-      //   • بروفايل قديم اتمسح من قاعدة البيانات
-      // لو هو في صفحة auth (login/signup) أو صفحة عامّه، نخليه يكمل عادي.
-      // غير كده، نوجّهه لـ/login عشان ميقعدش على شاشة بيضاء كاملة.
-      if (!isAuthPath && !isPublicGuestPathname(pathname)) {
-        if (lastRedirectPathRef.current !== '/login') {
-          lastRedirectPathRef.current = '/login';
-          navigate('/login', { replace: true });
-        }
-      }
+      // مستخدم مسجّل دخول لكن بدون دور معروف — ممكن يحصل لحظياً أثناء:
+      //   • تنقّل بين الشاشات (لحظات قبل ما تنحلّ الـauthRole من جديد)
+      //   • Google login جديد بدون profile لسه
+      //   • شبكة بطيئه في تحميل البروفايل
+      // ─ مهم جداً: مش بنوجّه لـ/login من هنا ─
+      //   useAuth عنده ROLE_RESOLUTION_TIMEOUT_MS = 6 ثواني بيتعامل مع الحالة دي
+      //   بشكل صحيح: محاولة أخيرة لقراءة البروفايل، ولو فشلت يـsignOut تلقائياً
+      //   مع رسالة واضحة. التوجيه السريع هنا كان بيطرد مستخدمين شرعيين برّا
+      //   لمجرد ميلي ثانية من race condition أثناء التنقل في السايد بار.
+      //   شاشة الـloading في AppCoreContent بتظهر تلقائياً لحد ما الدور يتحلّ.
       return;
     }
 

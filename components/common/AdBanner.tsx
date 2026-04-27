@@ -15,6 +15,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTrustedNow } from '../../hooks/useTrustedNow';
 import { filterActiveBannerItems } from '../../utils/homepageBannerTime';
+import { warmBannerImage, warmBannerImages } from '../../utils/bannerImageCache';
 
 // ─ أقل مسافة سحب أفقي (px) عشان نعتبر اللمسة swipe — أقل من كده يبقى مجرد لمسة
 //   عرضية. 40px رقم متوازن: مش ضعيف يعمل تقليب غلط، ومش قوي يحتاج جهد.
@@ -100,6 +101,46 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     setCurrentLoaded(false);
   }, [activeIndex]);
 
+  useEffect(() => {
+    const currentUrl = allImages[activeIndex];
+    if (!currentUrl) return;
+
+    let cancelled = false;
+    void warmBannerImage(currentUrl)
+      .then(() => {
+        if (!cancelled) setCurrentLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) markIndexFailed(activeIndex);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex, imagesKey]);
+
+  useEffect(() => {
+    if (allImages.length <= 1 || typeof window === 'undefined') return;
+
+    const preloadRest = () => {
+      warmBannerImages(allImages.filter((_, idx) => idx !== activeIndex));
+    };
+
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(preloadRest, { timeout: 1500 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timer = window.setTimeout(preloadRest, 250);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, allImages.length, imagesKey]);
+
   // ─ يلاقي أول index صالح في الاتجاه المطلوب (1 = الأمام، -1 = الخلف).
   //   يتخطى الـfailedIndices. يرجع -1 لو كل الصور فشلت.
   const findNextValidIndex = (current: number, direction: 1 | -1): number => {
@@ -112,16 +153,6 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return -1;
   };
 
-  const goNext = () => {
-    const next = findNextValidIndex(activeIndex, 1);
-    if (next !== -1 && next !== activeIndex) setActiveIndex(next);
-  };
-
-  const goPrev = () => {
-    const prev = findNextValidIndex(activeIndex, -1);
-    if (prev !== -1 && prev !== activeIndex) setActiveIndex(prev);
-  };
-
   // ─ يضيف index للـfailed set (idempotent — لو موجود مش بيعمل re-render).
   const markIndexFailed = (idx: number) => {
     setFailedIndices((prev) => {
@@ -130,6 +161,24 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       next.add(idx);
       return next;
     });
+  };
+
+  const goToIndex = (index: number) => {
+    if (index < 0 || index >= allImages.length || failedIndices.has(index) || index === activeIndex) return;
+
+    void warmBannerImage(allImages[index])
+      .then(() => setActiveIndex(index))
+      .catch(() => markIndexFailed(index));
+  };
+
+  const goNext = () => {
+    const next = findNextValidIndex(activeIndex, 1);
+    if (next !== -1 && next !== activeIndex) goToIndex(next);
+  };
+
+  const goPrev = () => {
+    const prev = findNextValidIndex(activeIndex, -1);
+    if (prev !== -1 && prev !== activeIndex) goToIndex(prev);
   };
 
   // ─ لو الصورة الحالية بقت في الـfailed set، نقفز للتانية الصالحة فوراً.
@@ -228,7 +277,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           className="w-full h-full object-cover"
           onLoad={() => setCurrentLoaded(true)}
           onError={() => markIndexFailed(activeIndex)}
-          loading="lazy"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
       </div>
 
@@ -243,11 +294,11 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               <button
                 key={`banner-dot-${idx}`}
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setActiveIndex(idx);
-                }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToIndex(idx);
+                  }}
                 className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/80'}`}
                 aria-label={`إعلان ${idx + 1}`}
               />

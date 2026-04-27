@@ -21,7 +21,11 @@ import {
 } from '../../reports/clinical-ai-report';
 import type { PatientFileData } from '../../patient-files/patientFilesShared';
 import { consumeStorageQuota } from '../../../services/accountTypeControlsService';
-import { isQuotaLimitExceededError } from '../../../services/account-type-controls/quotaErrors';
+import {
+    getQuotaVerificationFailureMessage,
+    isQuotaLimitExceededError,
+    retryOnTransientError,
+} from '../../../services/account-type-controls/quotaErrors';
 import { usageTrackingService } from '../../../services/usageTrackingService';
 import { applyQuotaPlaceholders, extractQuotaErrorDetails } from './helpers';
 
@@ -48,7 +52,8 @@ export const useMedicalReportPrinter = ({
     const handleGeneratePatientMedicalReport = React.useCallback(
         async (payload: GeneratePatientMedicalReportPayload) => {
             try {
-                await consumeStorageQuota('medicalReportPrint');
+                // retry تلقائي على أخطاء النت العابرة (3 محاولات بـbackoff)
+                await retryOnTransientError(() => consumeStorageQuota('medicalReportPrint'));
             } catch (error) {
                 const quotaDetails = extractQuotaErrorDetails(error);
 
@@ -69,36 +74,13 @@ export const useMedicalReportPrinter = ({
                     throw new Error(`${fromBackend || fallback}${supportLine}`.trim());
                 }
 
-                const rawMessage = error instanceof Error ? error.message : '';
-                const normalized = rawMessage.toLowerCase();
-                const isAuthFailure = normalized.includes('unauthenticated') || rawMessage.includes('فشلت المصادقة');
-                const isAppCheckFailure = normalized.includes('app check') || rawMessage.includes('App Check');
+                console.warn('Medical report quota check failed; blocking print:', error);
+                throw new Error(getQuotaVerificationFailureMessage(
+                    payload.language === 'ar'
+                        ? 'تعذر التحقق من حد طباعة التقرير الطبي الآن. حاول مرة أخرى.'
+                        : 'Could not verify the medical report print limit. Please try again.',
+                ));
 
-                // في بيئة التطوير على الجهاز المحلي: لو فشل التحقق بسبب App Check أو المصادقة
-                // (بسبب عدم تسجيل Debug Token)، نسمح بمواصلة الطباعة عشان ما نعطّلش التطوير.
-                const isDevEnv = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV === true;
-                const isLocalhost = typeof window !== 'undefined' && (
-                    window.location.hostname === 'localhost' ||
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.hostname === '[::1]'
-                );
-                if ((isDevEnv || isLocalhost) && (isAuthFailure || isAppCheckFailure)) {
-                    console.warn('[dev] تجاوز فحص حد الطباعة بسبب فشل App Check/المصادقة في بيئة التطوير:', error);
-                } else if (isAuthFailure) {
-                    throw new Error(
-                        rawMessage
-                        || (payload.language === 'ar'
-                            ? 'فشلت المصادقة. أعد تسجيل الدخول ثم حاول مرة أخرى.'
-                            : 'Authentication failed. Please sign in again and retry.')
-                    );
-                } else {
-                    console.error('Failed to consume medical report print quota:', error);
-                    throw new Error(
-                        payload.language === 'ar'
-                            ? 'تعذر التحقق من حد طباعة التقرير الآن. حاول مرة أخرى بعد قليل.'
-                            : 'Unable to verify report printing quota right now. Please try again shortly.'
-                    );
-                }
             }
 
             const doctorSignature = (doctorName || user?.displayName || '').trim() || 'الطبيب المعالج';

@@ -69,6 +69,9 @@ export interface AddAppointmentFormProps {
   /** حامل؟ — يظهر بس لو أنثى وسنها 18-50، ويُسأل كل زيارة */
   pregnant?: boolean | null;
   onPregnantChange?: (value: boolean | null) => void;
+  /** عمر الحمل بالأسابيع — يظهر بس لو pregnant=true (snapshot لكل زيارة) */
+  gestationalAgeWeeks?: number | null;
+  onGestationalAgeWeeksChange?: (value: number | null) => void;
   /** مرضعة؟ — يظهر بس لو أنثى وسنها 18-50، ويُسأل كل زيارة */
   breastfeeding?: boolean | null;
   onBreastfeedingChange?: (value: boolean | null) => void;

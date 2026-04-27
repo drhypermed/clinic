@@ -75,8 +75,13 @@ export const mapCallableError = (error: unknown): never => {
     throw new Error('فشلت المصادقة. أعد تسجيل الدخول ثم حاول مرة أخرى.');
   }
 
+  // ملحوظة: permission-denied مش بالضرورة معناه "admin only" — دي رسالة عامة
+  // من الـCloud Functions ممكن تيجي من فشل App Check (reCAPTCHA) أو أي مشكلة
+  // صلاحية تانية. نخليها رسالة مفهومة بدل الرسالة المضلّلة القديمة.
+  // الـcaller (لو quota function) بيعدّي الخطأ ده وبيسمح بالعمل. لو admin
+  // function، الرسالة دي بتظهر للأدمن.
   if (normalized.includes('permission-denied')) {
-    throw new Error('هذا الإجراء متاح لحساب الأدمن فقط.');
+    throw new Error('تعذّر إكمال الطلب. جرّب تحديث الصفحة وحاول مرة أخرى.');
   }
 
   throw error;
@@ -95,7 +100,7 @@ export const ensureAuthenticatedUser = async (): Promise<void> => {
   }
   // نحدِّث الرمز بالقوة قبل الاستدعاء لمنع حالات الفشل المتقطع للمستخدمين المميزين
   // حيث كان الرمز المخزن مؤقتاً يمر الفحص المحلي لكنه يُرفض من الـ Cloud Function.
-  await user.getIdToken(true).catch(() => user!.getIdToken());
+  await user.getIdToken();
 };
 
 /**
@@ -104,7 +109,7 @@ export const ensureAuthenticatedUser = async (): Promise<void> => {
  * الرمز بالقوة مع فاصل زمني قصير يسمح لانتشار التوكن في الخدمة الخلفية.
  */
 export const callWithAuthRetry = async <T>(fn: () => Promise<T>): Promise<T> => {
-  const MAX_ATTEMPTS = 3;
+  const MAX_ATTEMPTS = 2;
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -126,9 +131,8 @@ export const callWithAuthRetry = async <T>(fn: () => Promise<T>): Promise<T> => 
       } catch {
         throw error;
       }
-      await new Promise((resolve) => setTimeout(resolve, attempt * 400));
+      await new Promise((resolve) => setTimeout(resolve, attempt * 250));
     }
   }
   throw lastError;
 };
-

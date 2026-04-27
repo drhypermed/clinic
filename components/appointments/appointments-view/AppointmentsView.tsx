@@ -59,7 +59,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
    */
   const {
     patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
-    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
+    gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
     formError, bookingQuotaNotice, saving, addSuccessToast, addAppointmentFormOpen,
@@ -245,6 +245,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
           phone={phone} onPhoneChange={setPhone}
           gender={gender} onGenderChange={setGender}
           pregnant={pregnant} onPregnantChange={setPregnant}
+          gestationalAgeWeeks={gestationalAgeWeeks} onGestationalAgeWeeksChange={setGestationalAgeWeeks}
           breastfeeding={breastfeeding} onBreastfeedingChange={setBreastfeeding}
           dateStr={dateStr} onDateStrChange={setDateStr}
           timeStr={timeStr} onTimeStrChange={setTimeStr} visitReason={visitReason} onVisitReasonChange={setVisitReason}

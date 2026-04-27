@@ -37,7 +37,9 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
   return 'bg-brand-100 text-brand-800 border-brand-300';
 };
 
-export const AppointmentCardPending: React.FC<AppointmentCardPendingProps> = ({
+// ─ React.memo: قائمة المواعيد طويلة (10-50 موعد) في صفحة المواعيد، وكل re-render
+//   كان يعيد render كل البطاقات. الـmemo يخفّض ده لـbatches خفيفة.
+const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = ({
   apt, patientFileNumber, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
   secretaryApprovedEntryIds, secretaryEntryAlertResponse, entrySendingId,
   onSendEntryRequest, onOpenExam, onOpenConsultation, onEditAppointment, onRemoveAppointment,
@@ -186,5 +188,7 @@ export const AppointmentCardPending: React.FC<AppointmentCardPendingProps> = ({
     </li>
   );
 };
+
+export const AppointmentCardPending = React.memo(AppointmentCardPendingComponent);
 
 

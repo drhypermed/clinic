@@ -15,7 +15,7 @@ import { Medication, PatientGender, PrescriptionItem, VitalSigns } from '../../t
 import { runSmartRx } from '../../utils/rx/smartRx';
 import { buildAlternativesSameScientific, MAX_PRESCRIPTION_ITEMS_PER_LIST, sanitizeDosageText } from '../../utils/rx/rxUtils';
 import type { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
-import { isQuotaTransientError } from '../../services/account-type-controls/quotaErrors';
+import { isQuotaTransientError, retryOnTransientError } from '../../services/account-type-controls/quotaErrors';
 import { SMART_QUOTA_NOTICE_STORAGE_KEY } from './useDrHyper.helpers';
 // خدمة التحليل الغني (DDx + Must-Not-Miss + Investigations + ...)
 // منفصلة عن runSmartRx عشان كل فلو ياخد نداء AI مستقل ومناسب
@@ -47,6 +47,8 @@ interface CreateSmartRxActionsParams {
   // حقول الهوية الجديدة: حرجة للتحليل الغني لأنها تحدد الـ DDx في الإناث
   gender: PatientGender | '';
   pregnant: boolean | null;
+  // عمر الحمل بالأسابيع — يُمرَّر للذكاء الاصطناعي عند تحليل الحالة لو حامل
+  gestationalAgeWeeks: number | null;
   breastfeeding: boolean | null;
   totalAgeInMonths: number;
   vitals: VitalSigns;
@@ -133,6 +135,7 @@ export const createSmartRxActions = ({
   height,
   gender,
   pregnant,
+  gestationalAgeWeeks,
   breastfeeding,
   totalAgeInMonths,
   vitals,
@@ -170,7 +173,10 @@ export const createSmartRxActions = ({
    */
   const checkQuotaBeforeAnalyze = async (e?: React.MouseEvent<any>): Promise<boolean> => {
     try {
-      await consumeSmartPrescriptionQuota();
+      // retry تلقائي على أخطاء النت العابرة (محاولتين بـbackoff خفيف ~1 ثانية)
+      // ملاحظة: تحليل الحالة بـAI محتاج نت أصلاً، فلو النت مقطوع ميشتغلش.
+      // الـretry هنا بيحل blips العابرة. لو فضل فاشل، نمنع (أمن — موجود تحت).
+      await retryOnTransientError(() => consumeSmartPrescriptionQuota());
       return true;
     } catch (error: unknown) {
       const details = extractSmartQuotaErrorDetails(error);
@@ -361,6 +367,8 @@ export const createSmartRxActions = ({
       heightCm: Number.isNaN(heightNum) ? undefined : heightNum,
       gender,
       pregnant,
+      // نمرّر عمر الحمل للـ quick action — null لو الطبيب ما دخّلش رقم
+      gestationalAgeWeeks,
       breastfeeding,
       vitals,
     };
@@ -472,6 +480,8 @@ export const createSmartRxActions = ({
       heightCm: Number.isNaN(heightNum) ? undefined : heightNum,
       gender,
       pregnant,
+      // عمر الحمل بالأسابيع للـ deep analysis — يدخل في prompt الـAI لو الحالة حامل
+      gestationalAgeWeeks,
       breastfeeding,
       vitals,
       doctorSpecialty,

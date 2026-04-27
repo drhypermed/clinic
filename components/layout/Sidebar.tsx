@@ -8,7 +8,7 @@
  * 4. إدارة ظهور لوحة التحكم للمديرين (Admin Dashboard) بناءً على صلاحيات المستخدم.
  */
 
-import React, { useEffect, useRef, useState, useTransition } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { usePremiumExpiryCheck } from '../../hooks/usePremiumExpiryCheck';
@@ -66,9 +66,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // ─── Optimistic Active View ─────────────────────────────────────────────
     // الفكرة: لما الطبيب يضغط زر، ميقعدش يستنى لحد ما الصفحة الجديدة تتحمل عشان
     // يشوف الزر active. بنحفظ "الـview المختار" محلياً ونحدّثه فوراً على الضغط
-    // (urgent update) قبل ما نطلب من الـparent يحمل الصفحة (transition update).
+    // قبل ما نطلب من الـparent يحمل الصفحة.
+    //
+    // ─ مهم: شيلنا startTransition (كان كارثة) ─
+    //   كان الـbug ده بيخلي الـsidebar يبان قلب لكن الصفحة الفعلية تفضل ثابتة.
+    //   السبب: React 18 بيؤجّل تحديثات الـtransition وممكن يلغيها لو في
+    //   تحديث urgent تاني. فالـoptimisticView (urgent) كان بيتحدث، لكن
+    //   setCurrentView في الـtransition كان بيتأجّل ولا بيوصل.
+    //   الحل: نستدعي setCurrentView مباشرة. آلية الـrAF في useMainAppRouteSync
+    //   بتتولّى الـdeferring بشكل موثوق (spinner فوري + render في frame تالي).
     const [optimisticView, setOptimisticView] = useState<string>(currentView);
-    const [, startTransition] = useTransition();
 
     // مزامنة العرض المحلي مع التغييرات اللي بتيجي من برّه (مثل breadcrumbs)
     useEffect(() => {
@@ -105,14 +112,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     const handleNavClick = (viewId: ViewType) => {
-        // 1) تحديث فوري للـ Sidebar فقط — الزر يبان active على طول
+        // 1) تحديث فوري للـ Sidebar — الزر يبان active على طول
         setOptimisticView(viewId);
         setMobileMenuOpen(false);
-        // 2) تحديث الـ parent (تحميل الصفحة الجديدة) في الخلفية كـ transition،
-        //    عشان لو الـ render تقيل ميأخّرش الـ paint بتاع الزر.
-        startTransition(() => {
-            setCurrentView(viewId);
-        });
+        // 2) تحديث الصفحة فعلياً عبر الـparent. مفيش startTransition هنا
+        //    لأنه كان بيسبب bug إن الـsidebar يقلب بس الصفحة تفضل قديمة.
+        //    آلية الـrAF في useMainAppRouteSync بتعرض spinner فوري وبتأجّل
+        //    الـrender الثقيل لـframe تالي بشكل موثوق.
+        setCurrentView(viewId);
     };
 
     // Get display name: prefer doctorName from settings, fallback to user info

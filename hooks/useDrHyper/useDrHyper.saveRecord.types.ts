@@ -21,6 +21,8 @@ export interface CreateSaveRecordActionParams {
     // حقول الهوية الجديدة: الجنس ثابت للمريض، والحمل والرضاعة snapshot للزيارة
     gender: PatientGender | '';
     pregnant: boolean | null;
+    // عمر الحمل بالأسابيع — يُحفظ في الـrecord لو الطبيب أدخله
+    gestationalAgeWeeks: number | null;
     breastfeeding: boolean | null;
     weight: string;
     height: string;

@@ -10,7 +10,7 @@
 import { addDoc, collection, getDocs, limit, query, where } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { consumeBookingQuota } from '../../accountTypeControlsService';
-import { isQuotaLimitExceededError, isQuotaTransientError } from '../../account-type-controls/quotaErrors';
+import { getQuotaVerificationFailureMessage, isQuotaLimitExceededError } from '../../account-type-controls/quotaErrors';
 import { omitUndefined, normalizeBookingSecret, sanitizeDocSegment, toOptionalText } from './helpers';
 import type { PaymentType } from '../../../types';
 
@@ -76,16 +76,8 @@ export const createAppointmentFromSecret = async (
     if (isQuotaLimitExceededError(error)) {
       throw error; // إذا تجاوز الحد، نوقف العملية
     }
-    // في حال وجود خطأ عابر (مثل ضعف الإنترنت)، نستمر في الحجز لضمان انسيابية العمل في العيادة
-    if (isQuotaTransientError(error)) {
-      console.warn(
-        '[Firestore] consumeBookingQuota failed (transient/offline) in secretary booking, continuing with local-first write:',
-        error
-      );
-    } else {
-      // خطأ غير عابر (مثل خطأ مصادقة أو تكوين) — نوقف الحجز
-      throw error;
-    }
+    console.warn('[Firestore] consumeBookingQuota failed in secretary booking; blocking write:', error);
+    throw new Error(getQuotaVerificationFailureMessage('تعذر التحقق من حد إرسال مواعيد السكرتارية الآن. حاول مرة أخرى.'));
   }
 
   const appointmentsRef = collection(db, 'users', normalizedUserId, 'appointments');
@@ -171,4 +163,3 @@ export const createAppointmentFromSecret = async (
   console.log('[Firestore] Appointment created successfully');
   return { appointmentId: createdRef.id };
 };
-

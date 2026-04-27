@@ -107,7 +107,7 @@ export const MainApp: React.FC = () => {
     notifications,
     showNotification,
     patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
-    gender, setGender, pregnant, setPregnant, breastfeeding, setBreastfeeding,
+    gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     weight, setWeight, height, setHeight, bmi, vitals, setVitals, updateVital,
     complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations,
     complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
@@ -430,7 +430,7 @@ export const MainApp: React.FC = () => {
     handleOpenConsultation,
     navigateToView,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
-    setGender, setPregnant, setBreastfeeding,
+    setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setPaymentType, setInsuranceCompanyId, setInsuranceCompanyName,
@@ -512,6 +512,7 @@ export const MainApp: React.FC = () => {
               ageDays={ageDays} setAgeDays={setAgeDays}
               gender={gender} setGender={setGender}
               pregnant={pregnant} setPregnant={setPregnant}
+              gestationalAgeWeeks={gestationalAgeWeeks} setGestationalAgeWeeks={setGestationalAgeWeeks}
               breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
               setActivePatientFileId={setActivePatientFileId}
               setActivePatientFileNumber={setActivePatientFileNumber}

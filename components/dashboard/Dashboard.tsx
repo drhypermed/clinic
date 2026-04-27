@@ -29,6 +29,13 @@ interface DashboardProps {
     };
     onNavigate: (view: string) => void;
     onStartNewExam: () => void;
+    /**
+     * فتح كشف لمريض الموعد التالي مع تحميل كل بياناته (الاسم، الهاتف، العمر،
+     * الدفع، التأمين، علامات السكرتارية، إلخ). نفس الـcallback اللي بيستخدمه
+     * زرار "بدء الكشف" في صفحة المواعيد. لو مش موجود، الكرت بيرجع لـ
+     * onStartNewExam (سلوك قديم — كشف فاضي).
+     */
+    onStartExamForAppointment?: (apt: ClinicAppointment) => void;
     doctorName?: string;
     todayAppointments?: ClinicAppointment[];
     records?: PatientRecord[];
@@ -53,6 +60,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     stats,
     onNavigate,
     onStartNewExam,
+    onStartExamForAppointment,
     doctorName,
     todayAppointments = [],
     records = [],
@@ -361,7 +369,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 ═══════════════════════════════════════════ */}
                 {nextPatient ? (
                     <div className="dh-stagger-2">
-                        <NextPatientCard appointment={nextPatient} onStartExam={onStartNewExam} />
+                        {/* لو الـcallback المتخصص متوفر، نفتح الكشف ببيانات المريض كاملة
+                            (نفس سلوك زرار "بدء الكشف" في صفحة المواعيد).
+                            لو مش متوفر (احتياطي)، نرجع للسلوك القديم: كشف فاضي. */}
+                        <NextPatientCard
+                            appointment={nextPatient}
+                            onStartExam={() => {
+                                if (onStartExamForAppointment) {
+                                    onStartExamForAppointment(nextPatient);
+                                } else {
+                                    onStartNewExam();
+                                }
+                            }}
+                        />
                     </div>
                 ) : totalToday > 0 ? (
                     /* كرت "تم الانتهاء" — أخضر متدرج بخلفية صلبة (إنجاز/نجاح) */
