@@ -1,10 +1,10 @@
+/* كل ملفات الـCSS المخصصة بتتجمّع هنا عشان Vite يعدّيها على PostCSS/Tailwind ويبني bundle واحد.
+   كان فيه قبل كده 3 لينكات منفصلة في index.html بتتحوّل لـdata: URIs (CSP بيمنعها)؛ النقل لهنا
+   بيخلّي Vite يعالجهم صح ويحطهم في /assets/index-*.css بدون أي data: URIs. */
 @import './styles/admin-modern-unified.css';
 @import './styles/brand-logo.css';
+@import './styles/apple-exam-shell.css';
+@import './styles/records-tools-theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/*
-  تم نقل كل الـ CSS المخصص إلى ملفات مجزأة داخل مجلد styles/ للمحافظة على التنظيم.
-  ترتيب التحميل يتم من index.html بنفس المنطق السابق وبدون تغيير سلوك التطبيق.
-*/

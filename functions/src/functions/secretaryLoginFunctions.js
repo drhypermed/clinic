@@ -317,6 +317,21 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     return Math.round(parsed * 100) / 100;
   };
 
+  // تطبيع الجنس: نقبل بس 'male' أو 'female' — أي قيمه تانيه بترجع null
+  // الهدف: السكرتاريه تختار الجنس وينحفظ مع الموعد، فيظهر للطبيب لما يفتح الكشف.
+  const normalizeGenderValue = (value) => {
+    const normalized = normalizeText(value).toLowerCase();
+    if (normalized === 'male' || normalized === 'female') return normalized;
+    return null;
+  };
+
+  // تطبيع الحقول المنطقيه (حامل/مرضعه): نقبل true/false فقط، أي حاجه تانيه null
+  const normalizeOptionalBoolean = (value) => {
+    if (value === true) return true;
+    if (value === false) return false;
+    return null;
+  };
+
   const SECRETARY_VITAL_KEYS = ['weight', 'height', 'bmi', 'rbs', 'bp', 'pulse', 'temp', 'spo2', 'rr'];
   const SECRETARY_VITAL_KEY_SET = new Set(SECRETARY_VITAL_KEYS);
   const SECRETARY_VITAL_DYNAMIC_KEY_PATTERN = /^[a-zA-Z0-9:_-]{1,96}$/;
@@ -432,6 +447,12 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const discountReasonId = normalizeOptionalText(appointmentInput.discountReasonId);
     const discountReasonLabel = normalizeOptionalText(appointmentInput.discountReasonLabel);
 
+    // تطبيع حقول الهويه: الجنس + الحمل + الرضاعه
+    // الهدف: السكرتاريه تختار وتظهر للطبيب لما يفتح الكشف
+    const genderForUpdate = normalizeGenderValue(appointmentInput.gender);
+    const pregnantForUpdate = normalizeOptionalBoolean(appointmentInput.pregnant);
+    const breastfeedingForUpdate = normalizeOptionalBoolean(appointmentInput.breastfeeding);
+
     const appointmentRef = db.collection('users').doc(userId).collection('appointments').doc(appointmentId);
     const appointmentSnap = await appointmentRef.get();
     if (!appointmentSnap.exists) {
@@ -448,6 +469,11 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       secretaryVitals: secretaryVitals || admin.firestore.FieldValue.delete(),
       appointmentType,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      // الجنس: يتحفظ لو متختار، ويتمسح لو السكرتاريه شالت الاختيار
+      gender: genderForUpdate || admin.firestore.FieldValue.delete(),
+      // الحمل والرضاعه: snapshot للموعد ده فقط
+      pregnant: pregnantForUpdate === null ? admin.firestore.FieldValue.delete() : pregnantForUpdate,
+      breastfeeding: breastfeedingForUpdate === null ? admin.firestore.FieldValue.delete() : breastfeedingForUpdate,
       paymentType,
       insuranceCompanyId:
         paymentType === 'insurance' ? normalizeOptionalText(appointmentInput.insuranceCompanyId) : admin.firestore.FieldValue.delete(),
@@ -581,6 +607,15 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (age) appointmentData.age = age;
     if (visitReason) appointmentData.visitReason = visitReason;
     if (secretaryVitals) appointmentData.secretaryVitals = secretaryVitals;
+
+    // حقول الهويه (الجنس + الحمل + الرضاعه) — السكرتاريه بتختارها وبتتنقل للطبيب
+    // الجنس ثابت مدى الحياة، أما الحمل والرضاعه snapshot للموعد فقط
+    const genderForCreate = normalizeGenderValue(appointmentInput.gender);
+    if (genderForCreate) appointmentData.gender = genderForCreate;
+    const pregnantForCreate = normalizeOptionalBoolean(appointmentInput.pregnant);
+    if (pregnantForCreate !== null) appointmentData.pregnant = pregnantForCreate;
+    const breastfeedingForCreate = normalizeOptionalBoolean(appointmentInput.breastfeeding);
+    if (breastfeedingForCreate !== null) appointmentData.breastfeeding = breastfeedingForCreate;
     if (paymentType === 'insurance') {
       const insuranceCompanyId = normalizeOptionalText(appointmentInput.insuranceCompanyId);
       const insuranceCompanyName = normalizeOptionalText(appointmentInput.insuranceCompanyName);
@@ -672,6 +707,11 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (typeof data.discountPercent === 'number') out.discountPercent = data.discountPercent;
     if (data.discountReasonId) out.discountReasonId = data.discountReasonId;
     if (data.discountReasonLabel) out.discountReasonLabel = data.discountReasonLabel;
+    // إرجاع حقول الهويه للسكرتاريه عشان تشوفها في القائمه
+    // ولما تعدل الموعد ميرجعوش فاضيين في الفورم.
+    if (data.gender === 'male' || data.gender === 'female') out.gender = data.gender;
+    if (typeof data.pregnant === 'boolean') out.pregnant = data.pregnant;
+    if (typeof data.breastfeeding === 'boolean') out.breastfeeding = data.breastfeeding;
     return out;
   };
 

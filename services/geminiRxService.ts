@@ -170,7 +170,7 @@ Return STRICT JSON ONLY:
   } catch (error) {
     console.error('Gemini Rx Error:', error);
     // تظهر هذه الرسالة للمستخدم في حال حدوث فشل في الاتصال بالخادم
-    throw new Error('حدث خطأ أثناء تحليل الحالة بالذكاء الاصطناعي. حاول مرة أخرى.');
+    throw new Error('حدث خطأ أثناء تحليل الحالة. حاول مرة أخرى.');
   }
 };
 

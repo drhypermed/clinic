@@ -117,33 +117,72 @@ const filterTrustedReferences = (refs: string[]): string[] =>
     return ALLOWED_PREGNANCY_REFERENCES.some((allowed) => lower.includes(allowed));
   });
 
-/** تنظيف استجابة الموديل وضمان البنية */
+/**
+ * تطبيع اسم دواء لمقارنة مرنة بين اللي الطبيب كتبه واللي رجع من الموديل.
+ *
+ * نفس منطق normalizeDrugForMatch في geminiDrugInteractionsService — بنشيل
+ * الجرعة والشكل الصيدلاني وعلامات الترقيم. الهدف: لو الطبيب كتب
+ * "Augmentin 1g" والموديل رجع "Augmentin"، الاتنين يطابقوا.
+ */
+const normalizeDrugForMatch = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\([^)]*\)|\[[^\]]*\]/g, ' ')
+    .replace(/\d+(\.\d+)?\s*(mg\/ml|mg\/kg|mcg\/ml|mg|mcg|µg|g|ml|iu|kg|%)\b/gi, ' ')
+    .replace(/\b(tablets?|tabs?|capsules?|caps?|syrup|drops?|amp(oules?)?|vials?|cream|gel|injections?|inj|suspensions?|susp|solutions?|sol|spray|patch(es)?|sachets?|ointment|lozenges?|effervescent)\b/gi, ' ')
+    .replace(/[.,\-_/\\(){}[\]:;|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+/**
+ * تنظيف استجابة الموديل وضمان البنية.
+ *
+ * المنطق:
+ *   1) نبني خريطة من "اسم مُطبَّع" → "الاسم الأصلي اللي الطبيب اختاره".
+ *   2) لكل تقييم رجع من الموديل، نطبّع drugName ونحاول نلاقيه في الخريطة.
+ *   3) لو لقيناه → نستبدل اسم الموديل بالاسم الأصلي للعرض المتسق.
+ *   4) لو مش موجود → نتجاهل التقييم (anti-hallucination guard).
+ */
 const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
-  // أسماء الأدوية المطلوبة (عشان نمنع هلوسة أدوية مش مذكورة)
-  const drugsLower = new Set(drugNames.map((d) => d.toLowerCase().trim()));
+  // خريطة: اسم مُطبَّع → الاسم الأصلي
+  const inputByNormalized = new Map<string, string>();
+  for (const original of drugNames) {
+    const norm = normalizeDrugForMatch(original);
+    if (norm && !inputByNormalized.has(norm)) {
+      inputByNormalized.set(norm, original);
+    }
+  }
 
   const rawAssessments = Array.isArray(obj.assessments) ? obj.assessments : [];
-  const assessments: PregnancyDrugAssessment[] = rawAssessments
-    .map((item) => {
-      const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
-      return {
-        drugName: toTrimmed(it.drugName),
-        level: normalizeLevel(it.level),
-        // القيم المقيدة A/B/C/D/X و L1..L5 فقط — أي هلوسة تترفض لتفادي شارة مضللة
-        fdaCategory: normalizeFdaCategory(it.fdaCategory),
-        lactationCategory: normalizeLactationCategory(it.lactationCategory),
-        evidence: toTrimmed(it.evidence),
-        recommendation: toTrimmed(it.recommendation),
-        riskTrimester: normalizeTrimester(it.riskTrimester),
-        // نقتصر على مصدرين max + نفلتر أي مصدر مش من الـwhitelist (anti-hallucination).
-        // لو الموديل ادّعى مصدر مخترع، نرجع مصفوفة فاضية بدل ما نضلل الطبيب.
-        references: filterTrustedReferences(toStringArray(it.references, 2)),
-      };
-    })
-    // حماية من الهلوسة: الاسم لازم يكون واحد من اللي الطبيب اختاره
-    .filter((x) => x.drugName.length > 0 && drugsLower.has(x.drugName.toLowerCase()));
+  const assessments: PregnancyDrugAssessment[] = [];
+
+  for (const item of rawAssessments) {
+    const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+    const rawName = toTrimmed(it.drugName);
+    if (!rawName) continue;
+
+    // نطبّع ونحاول نلاقي الاسم الأصلي في قائمة الطبيب
+    const matched = inputByNormalized.get(normalizeDrugForMatch(rawName));
+    if (!matched) continue; // anti-hallucination: الاسم مش في القائمة
+
+    assessments.push({
+      // نعرض الاسم زي ما الطبيب كتبه — مش الصيغة اللي الموديل ممكن غيّرها
+      drugName: matched,
+      level: normalizeLevel(it.level),
+      // القيم المقيدة A/B/C/D/X و L1..L5 فقط — أي هلوسة تترفض لتفادي شارة مضللة
+      fdaCategory: normalizeFdaCategory(it.fdaCategory),
+      lactationCategory: normalizeLactationCategory(it.lactationCategory),
+      evidence: toTrimmed(it.evidence),
+      recommendation: toTrimmed(it.recommendation),
+      riskTrimester: normalizeTrimester(it.riskTrimester),
+      // نقتصر على مصدرين max + نفلتر أي مصدر مش من الـwhitelist (anti-hallucination).
+      references: filterTrustedReferences(toStringArray(it.references, 2)),
+    });
+  }
 
   return {
     assessments,
@@ -297,7 +336,7 @@ OUTPUT (strict JSON, no fences, no prose):
         assessments: [],
         overallSummaryAr: '',
         insufficientData: true,
-        insufficientDataNote: 'تعذّر تحليل استجابة الذكاء الاصطناعي. حاول مرة أخرى.',
+        insufficientDataNote: 'تعذّر قراءة نتيجة الفحص. حاول مرة أخرى.',
       };
     }
 
@@ -345,7 +384,7 @@ OUTPUT (strict JSON, no fences, no prose):
       assessments: [],
       overallSummaryAr: '',
       insufficientData: true,
-      insufficientDataNote: 'حدث خطأ أثناء الاتصال بالذكاء الاصطناعي لفحص سلامة الحمل.',
+      insufficientDataNote: 'حدث خطأ أثناء فحص سلامة الحمل، حاول مرة أخرى.',
     };
   }
 };

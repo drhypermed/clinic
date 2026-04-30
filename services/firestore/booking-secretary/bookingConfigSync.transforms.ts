@@ -23,6 +23,20 @@ const toNonNegativeNumber = (value: unknown): number | undefined => {
   return parsed;
 };
 
+// تطبيع الجنس: نقبل بس 'male' أو 'female' — أي قيمه تانيه undefined
+// عشان السكرتاريه تشاهد الجنس وقت تختار مريض، والطبيب يشوفه في فتح الكشف.
+const toGenderOrUndefined = (value: unknown): 'male' | 'female' | undefined => {
+  if (value === 'male' || value === 'female') return value;
+  return undefined;
+};
+
+// تطبيع منطقي اختياري: undefined لو مش boolean صريح
+const toOptionalBoolean = (value: unknown): boolean | undefined => {
+  if (value === true) return true;
+  if (value === false) return false;
+  return undefined;
+};
+
 // ─── Sanitizers (قبل الكتابة) ────────────────────────────────────────
 
 /** تنظيف عنصر موعد واحد قبل الحفظ (يحافظ على branchId) */
@@ -64,6 +78,10 @@ export const sanitizeTodayAppointment = (item: BookingConfigTodayAppointment) =>
       item.paymentType === 'discount' ? toOptionalText(item.discountReasonLabel) : undefined,
     examCompletedAt: item.examCompletedAt ? toOptionalText(item.examCompletedAt) : undefined,
     branchId: toOptionalText(item.branchId) || 'main',
+    // حقول الهويه — السكرتاريه تختارها وتظهر للطبيب بعد فتح الموعد
+    gender: toGenderOrUndefined(item.gender),
+    pregnant: toOptionalBoolean(item.pregnant),
+    breastfeeding: toOptionalBoolean(item.breastfeeding),
   });
 };
 
@@ -82,6 +100,8 @@ export const sanitizeRecentExamPatient = (item: RecentExamPatient) =>
           .filter((value): value is string => Boolean(value))
       : undefined,
     consultationSourceRecordId: item.consultationSourceRecordId,
+    // الجنس ثابت مدى الحياه — ينتقل للاستشاره الجديده تلقائياً
+    gender: toGenderOrUndefined(item.gender),
   });
 
 /** تنظيف عنصر دليل المرضى قبل الحفظ */
@@ -94,6 +114,8 @@ export const sanitizePatientDirectoryItem = (item: PatientDirectoryItem) =>
     lastExamDate: item.lastExamDate,
     lastConsultationDate: item.lastConsultationDate,
     patientFileNumber: toPositiveFileNumber(item.patientFileNumber),
+    // الجنس ثابت — يظهر تلقائياً وقت السكرتاريه تختار المريض من قائمه البحث
+    gender: toGenderOrUndefined(item.gender),
   });
 
 // ─── Mappers (بعد القراءة من Firestore) ──────────────────────────────
@@ -165,6 +187,10 @@ export const mapTodayAppointments = (
           item.paymentType === 'discount' ? toOptionalText(item.discountReasonId) : undefined,
         discountReasonLabel:
           item.paymentType === 'discount' ? toOptionalText(item.discountReasonLabel) : undefined,
+        // حقول الهويه (الجنس + الحمل + الرضاعه) — تنتقل من السكرتاريه للطبيب
+        gender: toGenderOrUndefined(item.gender),
+        pregnant: toOptionalBoolean(item.pregnant),
+        breastfeeding: toOptionalBoolean(item.breastfeeding),
       };
     });
 };
@@ -187,6 +213,7 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
         consultationCompletedAt?: string;
         consultationCompletedDates?: string[];
         consultationSourceRecordId?: string;
+        gender?: unknown;
       }) => ({
         id: item.id,
         patientName: toOptionalText(item.patientName) || 'بدون اسم',
@@ -206,6 +233,9 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
           typeof item.consultationSourceRecordId === 'string'
             ? item.consultationSourceRecordId
             : undefined,
+        // الجنس — لازم يتحفظ مع المريض المرشح للاستشاره
+        // عشان لما السكرتاريه تختاره، الجنس ينتقل للفورم تلقائياً
+        gender: toGenderOrUndefined(item.gender),
       }),
     );
 };
@@ -227,6 +257,7 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         lastExamDate?: string;
         lastConsultationDate?: string;
         patientFileNumber?: number;
+        gender?: unknown;
       }) => ({
         id: item.id,
         patientName: toOptionalText(item.patientName) || '',
@@ -236,6 +267,8 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         lastConsultationDate:
           typeof item.lastConsultationDate === 'string' ? item.lastConsultationDate : undefined,
         patientFileNumber: toPositiveFileNumber(item.patientFileNumber),
+        // الجنس ثابت — يظهر تلقائياً وقت السكرتاريه تختار المريض من قائمه البحث
+        gender: toGenderOrUndefined(item.gender),
       }),
     );
 };

@@ -42,7 +42,10 @@ interface UseMainAppAppointmentOpenerParams {
   ) => Record<string, string>;
   setAppointmentSecretaryCustomValues: (values: Record<string, string>) => void;
   setOpenedAppointmentContext: (apt: ClinicAppointment | null) => void;
-  handleResetAndClearOpenedAppointment: () => void;
+  // النسخة الآمنة من الـreset — تستقبل callback ينفذ بعد الـreset
+  // (سواء فوراً لو مفيش بيانات غير محفوظة، أو بعد ما المستخدم يأكد المودال).
+  // البراميتر الثاني وصف بشري للإجراء يظهر في رسالة المودال.
+  handleResetAndClearOpenedAppointment: (afterReset?: () => void, actionLabel?: string) => void;
   handleOpenConsultation: (record: PatientRecord) => void;
   navigateToView: (view: AppView) => void;
 
@@ -171,49 +174,69 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     );
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
-    // إعادة ضبط الفورم قبل تحميل البيانات الجديدة (مع حماية من فقدان بيانات غير محفوظة)
-    handleResetAndClearOpenedAppointment();
-    setOpenedAppointmentContext(apt);
+    // ─────────────────────────────────────────────────────────
+    // كل تعبئة بيانات الموعد ملفوفة في closure واحدة (applyAppointmentData).
+    // السبب: لو في بيانات غير محفوظة، الـreset بيظهر مودال تأكيد وبيرجع فوراً.
+    // قبل الإصلاح ده كان الكود يكمل ويعبي البيانات، وبعدها لما المستخدم يأكد
+    // المودال الـreset كان يمسح البيانات الجديدة (race condition).
+    // الحل: نمرر التعبئة كـ "إجراء معلق" ينفذ بعد الـreset في الترتيب الصحيح.
+    // ─────────────────────────────────────────────────────────
+    const applyAppointmentData = () => {
+      setOpenedAppointmentContext(apt);
 
-    // بيانات المريض الأساسية
-    setPatientName(apt.patientName || '');
-    setPhone(apt.phone || '');
-    // تحميل الهوية المحفوظة مع الموعد (السكرتارية قد تكون دخلتها)
-    setGender((apt.gender === 'male' || apt.gender === 'female') ? apt.gender : '');
-    setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
-    // تحميل عمر الحمل من الموعد لو السكرتارية دخّلته (رقم صالح 1-42)
-    setGestationalAgeWeeks(
-      typeof apt.gestationalAgeWeeks === 'number'
-        && Number.isFinite(apt.gestationalAgeWeeks)
-        && apt.gestationalAgeWeeks > 0
-        ? apt.gestationalAgeWeeks
-        : null,
-    );
-    setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
-    const { years, months, days } = parseAgeToYearsMonthsDays(apt.age || '');
-    setAgeYears(years);
-    setAgeMonths(months);
-    setAgeDays(days);
+      // بيانات المريض الأساسية
+      setPatientName(apt.patientName || '');
+      setPhone(apt.phone || '');
+      // تحميل الهوية المحفوظة مع الموعد (السكرتارية قد تكون دخلتها)
+      setGender((apt.gender === 'male' || apt.gender === 'female') ? apt.gender : '');
+      setPregnant(typeof apt.pregnant === 'boolean' ? apt.pregnant : null);
+      // تحميل عمر الحمل من الموعد لو السكرتارية دخّلته (رقم صالح 1-42)
+      setGestationalAgeWeeks(
+        typeof apt.gestationalAgeWeeks === 'number'
+          && Number.isFinite(apt.gestationalAgeWeeks)
+          && apt.gestationalAgeWeeks > 0
+          ? apt.gestationalAgeWeeks
+          : null,
+      );
+      setBreastfeeding(typeof apt.breastfeeding === 'boolean' ? apt.breastfeeding : null);
+      const { years, months, days } = parseAgeToYearsMonthsDays(apt.age || '');
+      setAgeYears(years);
+      setAgeMonths(months);
+      setAgeDays(days);
 
-    const appointmentVisitDate = resolveAppointmentVisitDate(apt.dateTime);
-    if (appointmentVisitDate) setVisitDate(appointmentVisitDate);
+      const appointmentVisitDate = resolveAppointmentVisitDate(apt.dateTime);
+      if (appointmentVisitDate) setVisitDate(appointmentVisitDate);
 
-    // ملف المريض الموحد
-    setActivePatientFileId(rawPatientFileId || null);
-    setActivePatientFileNumber(normalizedPatientFileNumber);
-    setActivePatientFileNameKey(rawPatientFileNameKey || (apt.patientName || '').trim() || null);
+      // ملف المريض الموحد
+      setActivePatientFileId(rawPatientFileId || null);
+      setActivePatientFileNumber(normalizedPatientFileNumber);
+      setActivePatientFileNameKey(rawPatientFileNameKey || (apt.patientName || '').trim() || null);
 
-    setVisitType(openAsConsultation ? 'consultation' : 'exam');
-    setIsPastConsultationMode(openAsConsultation);
+      setVisitType(openAsConsultation ? 'consultation' : 'exam');
+      setIsPastConsultationMode(openAsConsultation);
 
-    // الدفع + التأمين + الخصم
-    applyPaymentFieldsFromAppointment(apt, params);
+      // الدفع + التأمين + الخصم
+      applyPaymentFieldsFromAppointment(apt, params);
 
-    // العلامات الحيوية من السكرتارية
-    applySecretaryVitalsFromAppointment(appointmentSecretaryVitals, { setWeight, setHeight, setVitals });
-    setAppointmentSecretaryCustomValues(appointmentCustomValues);
+      // العلامات الحيوية من السكرتارية
+      applySecretaryVitalsFromAppointment(appointmentSecretaryVitals, { setWeight, setHeight, setVitals });
+      setAppointmentSecretaryCustomValues(appointmentCustomValues);
 
-    navigateToView('prescription');
+      navigateToView('prescription');
+    };
+
+    // وصف بشري للإجراء — يظهر في مودال التحذير عشان المستخدم يفهم هيحصل إيه بعد التأكيد.
+    // الكشف والاستشارة لكل واحد رسالته الخاصة (مش نموذج عام) — كلمة "كشف" للموعد العادي
+    // و"استشارة" لو الموعد من نوع استشارة.
+    const patientLabel = (apt.patientName || '').trim();
+    const visitLabel = openAsConsultation ? 'استشارة' : 'كشف';
+    const actionLabel = patientLabel
+      ? `فتح ${visitLabel} للمريض: ${patientLabel}`
+      : `فتح ${visitLabel} جديد من الموعد`;
+
+    // إعادة ضبط الفورم ثم تعبئة بيانات الموعد — الـcallback ينفذ في الوقت الصحيح
+    // سواء فوراً (لو مفيش بيانات غير محفوظة) أو بعد ما المستخدم يأكد المودال.
+    handleResetAndClearOpenedAppointment(applyAppointmentData, actionLabel);
   }, [
     appointments, records, prescriptionSecretaryFieldDefinitions,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,

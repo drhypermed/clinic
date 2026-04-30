@@ -80,7 +80,14 @@ const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
   { key: 'rr', label: 'RR', labelAr: 'التنفس', unit: '/min', enabled: true, order: 9 },
 ];
 
-export const PrescriptionPreview = forwardRef<HTMLDivElement, PrescriptionPreviewProps>(({
+// ─── PrescriptionPreview ملفوف بـ React.memo ────────────────────────────
+// السبب: الـ component ده ضخم وفيه ResizeObserver + auto-scale + 103 props.
+// قبل التغيير: أي state change في الـ parent (مثل interactionsLoading,
+// addedDiagnosesFromModal، حروف بتتكتب في خانات إنجليزية مش متمررة هنا) كان
+// بيعمل re-render كامل للـ component والـ children كلهم. مع memo، الـ shallow
+// compare بيمنع re-render لو الـ props ما اتغيرتش reference (المهم إن الـ
+// parent يمرر callbacks مستقرة و actionsBar memoized).
+export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, PrescriptionPreviewProps>(({
   patientName, setPatientName,
   ageYears, ageMonths, ageDays,
   weight, setWeight, height, setHeight, bmi,
@@ -492,6 +499,6 @@ export const PrescriptionPreview = forwardRef<HTMLDivElement, PrescriptionPrevie
       />
     </>
   );
-});
+}));
 
 PrescriptionPreview.displayName = 'PrescriptionPreview';

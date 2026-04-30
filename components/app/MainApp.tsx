@@ -302,6 +302,7 @@ export const MainApp: React.FC = () => {
   // Reset controls + past exam/consultation helpers + push prompt — hook مجمع
   const {
     showUnsavedResetModal,
+    pendingActionLabel,
     handleResetAndClearOpenedAppointment,
     handleConfirmUnsavedReset,
     handleCancelUnsavedReset,
@@ -624,11 +625,20 @@ export const MainApp: React.FC = () => {
         onClose={() => setWhatsappGuideOpen(false)}
       />
 
+      {/*
+        مودال تحذير "بيانات غير محفوظة":
+        - الرسالة بتوضح إن البيانات الحالية هتنمسح + إن الإجراء التالي هينفذ بعد التأكيد
+          (مثلاً: فتح بيانات المريض الجديد من الموعد).
+        - pendingActionLabel بييجي من الـreset hook ويحتوي على وصف الإجراء
+          (zb. "فتح كشف للمريض: أحمد محمد") عشان المستخدم يفهم بالضبط هيحصل إيه.
+      */}
       <ConfirmModal
         isOpen={showUnsavedResetModal}
         title="بيانات غير محفوظة"
-        message="لم يتم حفظ بيانات المريض الحالي في سجلات المرضى. هل تريد المتابعة لمريض جديد وفقدان البيانات الحالية؟"
-        confirmText="نعم، متابعة"
+        message={pendingActionLabel
+          ? `بيانات المريض الحالي لم تُحفظ في سجلات المرضى وسيتم مسحها، وسيتم ${pendingActionLabel} وعرض كل البيانات المسجلة. هل تريد المتابعة؟`
+          : 'لم يتم حفظ بيانات المريض الحالي في سجلات المرضى. هل تريد المتابعة وفقدان البيانات الحالية؟'}
+        confirmText={pendingActionLabel ? 'نعم، احذف وافتح الجديد' : 'نعم، متابعة'}
         cancelText="إلغاء"
         isDanger
         onConfirm={handleConfirmUnsavedReset}

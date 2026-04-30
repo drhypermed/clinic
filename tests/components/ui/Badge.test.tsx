@@ -8,25 +8,28 @@ describe('Badge', () => {
     expect(screen.getByText('مميز')).toBeInTheDocument();
   });
 
+  // الـtests دي بتطابق الـunified design system aliases في tailwind.config.ts:
+  //   success → emerald, danger → rose, warning → amber, brand → blue
+  // الـcomponent بيستخدم الـsemantic aliases مش الـraw color names.
   it('applies success classes', () => {
     render(<Badge variant="success">نجح</Badge>);
     const el = screen.getByText('نجح');
-    expect(el).toHaveClass('bg-emerald-100', 'text-emerald-700');
+    expect(el).toHaveClass('bg-success-100', 'text-success-700');
   });
 
   it('applies error classes', () => {
     render(<Badge variant="error">فشل</Badge>);
-    expect(screen.getByText('فشل')).toHaveClass('bg-red-100', 'text-red-700');
+    expect(screen.getByText('فشل')).toHaveClass('bg-danger-100', 'text-danger-700');
   });
 
   it('applies warning classes', () => {
     render(<Badge variant="warning">تحذير</Badge>);
-    expect(screen.getByText('تحذير')).toHaveClass('bg-amber-100', 'text-amber-700');
+    expect(screen.getByText('تحذير')).toHaveClass('bg-warning-100', 'text-warning-700');
   });
 
   it('applies info classes', () => {
     render(<Badge variant="info">معلومة</Badge>);
-    expect(screen.getByText('معلومة')).toHaveClass('bg-blue-100', 'text-blue-700');
+    expect(screen.getByText('معلومة')).toHaveClass('bg-brand-100', 'text-brand-700');
   });
 
   it('applies neutral classes by default', () => {

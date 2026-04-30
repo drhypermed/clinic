@@ -358,22 +358,19 @@
         })();
     </script>
 
-    <!-- Stylesheets — تحميل غير معطِّل عشان الـ splash يبان فوراً -->
-    <link rel="stylesheet" href="/index.css" media="print" onload="this.media='all'">
+    <!-- Stylesheets — تحميل غير معطِّل عشان الـ splash يبان فوراً.
+         ملاحظة: index.css + apple-exam-shell.css + records-tools-theme.css بقت مستوردة
+         من index.tsx (عشان Vite يبنيها كـbundle واحد بدل ما يحوّلها لـdata: URIs).
+         الباقي هنا ملفات CSS مستقلّة بتتحمّل بشكل غير معطِّل. -->
     <link rel="stylesheet" href="/styles/animations-loading.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="/styles/layout-viewport.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="/styles/clinic-design-system.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="/styles/apple-exam-shell.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="/styles/print-a5.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="/styles/records-tools-theme.css" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="/index.css">
         <link rel="stylesheet" href="/styles/animations-loading.css">
         <link rel="stylesheet" href="/styles/layout-viewport.css">
         <link rel="stylesheet" href="/styles/clinic-design-system.css">
-        <link rel="stylesheet" href="/styles/apple-exam-shell.css">
         <link rel="stylesheet" href="/styles/print-a5.css">
-        <link rel="stylesheet" href="/styles/records-tools-theme.css">
     </noscript>
 </head>
 

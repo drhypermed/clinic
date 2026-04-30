@@ -396,7 +396,7 @@ COUNTS (all adaptive — be honest, not paranoid; never pad to fill quotas)
         missingInformation: [],
         redFlags: [],
         insufficientData: true,
-        insufficientDataNote: 'تعذّر تحليل استجابة الذكاء الاصطناعي. حاول مرة أخرى.',
+        insufficientDataNote: 'تعذّر قراءة نتيجة التحليل. حاول مرة أخرى.',
       };
     }
 
@@ -414,7 +414,7 @@ COUNTS (all adaptive — be honest, not paranoid; never pad to fill quotas)
       missingInformation: [],
       redFlags: [],
       insufficientData: true,
-      insufficientDataNote: 'حدث خطأ أثناء الاتصال بالذكاء الاصطناعي لتحليل الحالة.',
+      insufficientDataNote: 'حدث خطأ أثناء تحليل الحالة، حاول مرة أخرى.',
     };
   }
 };

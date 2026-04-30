@@ -51,7 +51,8 @@
       "Bash(cd /f)",
       "Bash(find \"تطبيقات/تطبيق الروشته/النسخة الاصلية/drhyperclinic/components/admin\" -name \"*.tsx\" -type f -exec grep -l \"window\\\\.prompt\\\\|window\\\\.confirm\\\\|window\\\\.alert\" {} \\\\;)",
       "Bash(npm run *)",
-      "Bash(echo \"EXIT_CODE=$?\")"
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(git stash *)"
     ]
   }
 }

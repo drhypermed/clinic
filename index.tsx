@@ -3,6 +3,9 @@
 // modulepreload hints لكل الـ chunks المطلوبة — ده بيحمّلهم بالتوازي
 // بدل ما يعمل waterfall متسلسل.
 
+// استيراد CSS الرئيسي من JS عشان Vite يعالجه عبر PostCSS/Tailwind ويبني bundle واحد
+// مع كل @imports جواه — كده ما يبقاش فيه data: URIs لـCSS تتعارض مع الـCSP.
+import './index.css';
 import './services/disablePersistentWebStorage';
 import { applyHostAwareMeta } from './utils/hostAwareMeta';
 import { mountRootApp } from './components/app/bootstrap/AppBootstrap';

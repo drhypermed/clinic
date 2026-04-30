@@ -30,11 +30,69 @@ import { injectPrintPageStyle, applyPaperSizeCssVars } from '../prescription-set
 // ─── الأساس: تشغيل حوار الطباعة الأصلي ────────────────────────────
 
 const REENTRY_GUARD_MS = 1200;
+const FONTS_READY_TIMEOUT_MS = 3000;
 let lastPrintInvocation = 0;
 
+/**
+ * يضمن إن خط Cairo (وأي خط CSS لسه بيتحمّل) خلص تحميل قبل ما نفتح حوار الطباعة.
+ *
+ * المشكلة على الموبايل: index.html بيحمّل Cairo بـ <link media="print" onload="this.media='all'">
+ * — أسلوب deferred-load عشان الـ splash يبان بسرعة. على اللابتوب النت بيخلّص الخط
+ * في ميلي ثواني قبل ما الطبيب يضغط طباعة. على الموبايل النت أبطأ وممكن الطبيب
+ * يضغط الزر قبل ما الـ@font-face حتى تتسجّل في document.fonts، فالـ PDF يطلع
+ * بخط fallback (Times/Arial) والتنسيق يتغيّر لأن عرض الحروف مختلف.
+ *
+ * الحل: قبل الطباعة:
+ *   1) نستنى الـ<link> بتاع Cairo يتأكد إنه حُمّل (لو لسه بيتحمّل).
+ *   2) نطلب تحميل وزن Cairo الصريح (400/700/800) عشان نضمن إن الـwoff2 موجود.
+ *   3) نستنى document.fonts.ready مع timeout ٣ ثواني (أمان لو النت بطيء جداً).
+ */
+async function ensureFontsReady(): Promise<void> {
+    if (typeof document === 'undefined') return;
+
+    // (1) لو لينك Cairo Google Fonts لسه بيتحمّل، استنى يخلّص.
+    const cairoLink = document.querySelector<HTMLLinkElement>(
+        'link[rel="stylesheet"][href*="fonts.googleapis.com"][href*="Cairo"]',
+    );
+    if (cairoLink && !cairoLink.sheet) {
+        await new Promise<void>((resolve) => {
+            const cleanup = () => {
+                cairoLink.removeEventListener('load', cleanup);
+                cairoLink.removeEventListener('error', cleanup);
+                resolve();
+            };
+            cairoLink.addEventListener('load', cleanup, { once: true });
+            cairoLink.addEventListener('error', cleanup, { once: true });
+            // أمان: لو الـlink مش هيخلّص (مثلاً: انقطاع شبكة)، استمر بعد ثانيتين.
+            window.setTimeout(cleanup, 2000);
+        });
+    }
+
+    // (2) نجبر تحميل أوزان Cairo الشائعة قبل ما نطبع — fail silent على كل وزن.
+    if (document.fonts && typeof document.fonts.load === 'function') {
+        await Promise.all(
+            ['400 1em "Cairo"', '700 1em "Cairo"', '800 1em "Cairo"'].map((spec) =>
+                document.fonts.load(spec).catch(() => undefined),
+            ),
+        );
+    }
+
+    // (3) ننتظر document.fonts.ready مع timeout أمان عشان ما نعلّقش حوار الطباعة.
+    if (document.fonts && document.fonts.ready) {
+        await Promise.race([
+            document.fonts.ready.then(() => undefined),
+            new Promise<void>((resolve) => window.setTimeout(resolve, FONTS_READY_TIMEOUT_MS)),
+        ]);
+    }
+}
+
 async function waitForPreviewLayout(): Promise<void> {
-    // ننتظر إطارين عشان React يطبّق isPrintMode (تخفي أزرار التحرير)
-    // قبل أن يُلتقط DOM في حوار الطباعة.
+    // أولاً: نضمن إن الخطوط حمّلت (Cairo + أي خط CSS) — ده اللي بيظبط
+    // الموبايل لما الطبيب يضغط طباعة قبل ما deferred-load Google Fonts يخلّص.
+    await ensureFontsReady();
+    // بعدين ننتظر إطارين عشان React يطبّق isPrintMode (تخفي أزرار التحرير)
+    // و ResizeObserver يعيد حساب auto-scale بناءً على الخط الصح، قبل
+    // ما DOM يُلتقط في حوار الطباعة.
     await new Promise<void>((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );

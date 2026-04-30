@@ -56,30 +56,85 @@ const normalizeSeverity = (v: unknown): InteractionSeverity => {
   return 'moderate';
 };
 
-/** تنظيف استجابة الموديل وضمان البنية حتى لو جاء ناقص */
+/**
+ * تطبيع اسم دواء لمقارنة مرنة بين اللي الطبيب كتبه واللي رجع من الموديل.
+ *
+ * ليه ده مهم؟ الطبيب بيكتب أحياناً "Augmentin 1g" والموديل بيرجع "Augmentin" —
+ * المقارنة المباشرة بـ exact-string بتفشل والتداخل بينحذف، فالطبيب يحس إن
+ * الفحص فشل يتعرف على الدواء. التطبيع بيشيل:
+ *   • محتوى الأقواس (غالباً جرعة أو شكل)
+ *   • الجرعات بالأرقام مع وحدات شائعة (mg, g, mcg, ml, IU, kg, %)
+ *   • الأشكال الصيدلانية الإنجليزية (tablet/capsule/syrup/...إلخ)
+ *   • علامات الترقيم والمسافات الزائدة
+ *
+ * النتيجة: "Augmentin 1g" و "augmentin" و "Augmentin (1 g) tab" كلهم → "augmentin".
+ */
+const normalizeDrugForMatch = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    // أي محتوى داخل أقواس — غالباً جرعة أو شكل صيدلاني
+    .replace(/\([^)]*\)|\[[^\]]*\]/g, ' ')
+    // أرقام متبوعة بوحدات الجرعة الشائعة (مع \b بعدها لمنع match جزئي)
+    .replace(/\d+(\.\d+)?\s*(mg\/ml|mg\/kg|mcg\/ml|mg|mcg|µg|g|ml|iu|kg|%)\b/gi, ' ')
+    // أشكال صيدلانية إنجليزية ككلمات كاملة
+    .replace(/\b(tablets?|tabs?|capsules?|caps?|syrup|drops?|amp(oules?)?|vials?|cream|gel|injections?|inj|suspensions?|susp|solutions?|sol|spray|patch(es)?|sachets?|ointment|lozenges?|effervescent)\b/gi, ' ')
+    // علامات الترقيم → space (يضمن إن "5-HTP" و "5 HTP" يطابقوا بعض)
+    .replace(/[.,\-_/\\(){}[\]:;|]+/g, ' ')
+    // collapse مسافات
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+/**
+ * تنظيف استجابة الموديل وضمان البنية حتى لو جاء ناقص.
+ *
+ * المنطق:
+ *   1) نبني خريطة من "اسم مُطبَّع" → "الاسم الأصلي اللي الطبيب كتبه".
+ *   2) لكل تداخل رجع من الموديل، نطبّع drugA/drugB ونحاول نلاقيهم في الخريطة.
+ *   3) لو لقيناهم → نستبدل اسم الموديل بالاسم الأصلي (للعرض المتسق).
+ *   4) لو واحد منهم مش موجود → نتجاهل التداخل (anti-hallucination guard).
+ */
 const sanitizeResult = (raw: unknown, drugNames: string[]): DrugInteractionsResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
-  // قائمة أدوية موحّدة lowercase للتحقق من عدم الهلوسة
-  // أي تداخل يذكر دواء مش في القائمة = نتجاهله (حماية من الهلوسة)
-  const drugsLower = new Set(drugNames.map((d) => d.toLowerCase().trim()));
+  // خريطة: اسم مُطبَّع → الاسم الأصلي. لو فيه دواءين بنفس التطبيع
+  // (نادر) نحتفظ بأول واحد ظهر — الطبيب هيشوف اسم متّسق على أي حال.
+  const inputByNormalized = new Map<string, string>();
+  for (const original of drugNames) {
+    const norm = normalizeDrugForMatch(original);
+    if (norm && !inputByNormalized.has(norm)) {
+      inputByNormalized.set(norm, original);
+    }
+  }
 
   const rawInteractions = Array.isArray(obj.interactions) ? obj.interactions : [];
-  const interactions: DrugInteraction[] = rawInteractions
-    .map((item) => {
-      const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
-      return {
-        drugA: toTrimmed(it.drugA),
-        drugB: toTrimmed(it.drugB),
-        severity: normalizeSeverity(it.severity),
-        mechanism: toTrimmed(it.mechanism),
-        recommendation: toTrimmed(it.recommendation),
-      };
-    })
-    // فلترة: ما نقبلش تداخل فيه دواء مش مذكور أصلاً في الروشتة
-    .filter((x) => x.drugA && x.drugB && x.drugA.toLowerCase() !== x.drugB.toLowerCase())
-    .filter((x) => drugsLower.has(x.drugA.toLowerCase()) && drugsLower.has(x.drugB.toLowerCase()))
-    .slice(0, 15); // حد أقصى 15 تداخل (واقعياً نادر يتعدى 10)
+  const interactions: DrugInteraction[] = [];
+
+  for (const item of rawInteractions) {
+    if (interactions.length >= 15) break; // حد أقصى 15 تداخل
+    const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+    const rawA = toTrimmed(it.drugA);
+    const rawB = toTrimmed(it.drugB);
+    if (!rawA || !rawB) continue;
+
+    // نطبّع اسمي الدوائين ونحاول نلاقيهم في قائمة الطبيب
+    const matchedA = inputByNormalized.get(normalizeDrugForMatch(rawA));
+    const matchedB = inputByNormalized.get(normalizeDrugForMatch(rawB));
+    // anti-hallucination: لو دواء واحد مش في القائمة، نرفض التداخل بالكامل
+    if (!matchedA || !matchedB) continue;
+    // ما نقبلش تداخل دواء مع نفسه (بعد التطبيع)
+    if (matchedA.toLowerCase() === matchedB.toLowerCase()) continue;
+
+    interactions.push({
+      // نعرض الاسم زي ما الطبيب كتبه — مش الصيغة اللي الموديل ممكن غيّرها
+      drugA: matchedA,
+      drugB: matchedB,
+      severity: normalizeSeverity(it.severity),
+      mechanism: toTrimmed(it.mechanism),
+      recommendation: toTrimmed(it.recommendation),
+    });
+  }
 
   return {
     hasInteractions: interactions.length > 0,
@@ -217,7 +272,7 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
         interactions: [],
         summaryAr: '',
         insufficientData: true,
-        insufficientDataNote: 'تعذّر تحليل استجابة الذكاء الاصطناعي. حاول مرة أخرى.',
+        insufficientDataNote: 'تعذّر قراءة نتيجة الفحص. حاول مرة أخرى.',
       };
     }
 
@@ -235,7 +290,7 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
       interactions: [],
       summaryAr: '',
       insufficientData: true,
-      insufficientDataNote: 'حدث خطأ أثناء الاتصال بالذكاء الاصطناعي لفحص التداخلات.',
+      insufficientDataNote: 'حدث خطأ أثناء فحص التداخلات، حاول مرة أخرى.',
     };
   }
 };

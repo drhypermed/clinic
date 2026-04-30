@@ -18,7 +18,7 @@
 //      - canShowPushPrompt: هل نعرض التنبيه حالياً؟
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { AppView } from '../utils';
 import { safeStorageSetItem } from '../../../services/auth-service/storage';
 import type { ClinicAppointment } from '../../../types';
@@ -63,23 +63,52 @@ export const useMainAppResetControls = ({
 
   // تحذير داخلي قبل تفريغ الفورم لو فيه بيانات غير محفوظة في سجلات المرضى
   const [showUnsavedResetModal, setShowUnsavedResetModal] = useState(false);
+  // إجراء معلق ينفذ بعد ما المستخدم يأكد المودال (مثلاً: تعبئة بيانات الموعد الجديد).
+  // نستخدم ref بدل state عشان نتجنب re-render إضافي ونضمن إن الـcallback الأحدث هو اللي ينفذ.
+  const pendingAfterResetRef = useRef<(() => void) | null>(null);
+  // وصف بشري للإجراء المعلق — يظهر في رسالة المودال عشان المستخدم يفهم هيحصل إيه بعد التأكيد.
+  const [pendingActionLabel, setPendingActionLabel] = useState<string | null>(null);
 
-  /** ريست آمن: لو في تعديلات غير محفوظة، نعرض مودال التأكيد أولاً. */
-  const handleResetAndClearOpenedAppointment = useCallback(() => {
+  /**
+   * ريست آمن: لو في تعديلات غير محفوظة، نعرض مودال التأكيد أولاً ونحفظ
+   * أي إجراء بعدي (zb. فتح موعد جديد) عشان ينفذ بعد الـreset.
+   * لو مفيش تعديلات: ينفذ الـreset والإجراء فوراً.
+   *
+   * @param afterReset - callback اختياري ينفذ بعد الـreset مباشرة
+   * @param actionLabel - وصف للإجراء يظهر في المودال (مثلاً "فتح بيانات المريض الجديد")
+   */
+  const handleResetAndClearOpenedAppointment = useCallback((
+    afterReset?: () => void,
+    actionLabel?: string,
+  ) => {
     if (hasUnsavedChanges) {
+      // نخزن الإجراء المعلق ووصفه ثم نظهر المودال — التنفيذ يحصل في handleConfirmUnsavedReset
+      pendingAfterResetRef.current = afterReset || null;
+      setPendingActionLabel(actionLabel || null);
       setShowUnsavedResetModal(true);
       return;
     }
+    // مفيش بيانات غير محفوظة — ننفذ الـreset والإجراء فوراً (الترتيب مهم)
     performReset();
+    if (afterReset) afterReset();
   }, [hasUnsavedChanges, performReset]);
 
   const handleConfirmUnsavedReset = useCallback(() => {
     setShowUnsavedResetModal(false);
+    // الترتيب حرج: الـreset أولاً (يمسح الفورم القديم)، ثم الإجراء المعلق (يعبي البيانات الجديدة).
+    // لو عكسنا الترتيب، الـreset هيمسح البيانات الجديدة اللي للتو اتعبت — وده كان أصل البق الأصلي.
     performReset();
+    const pending = pendingAfterResetRef.current;
+    pendingAfterResetRef.current = null;
+    setPendingActionLabel(null);
+    if (pending) pending();
   }, [performReset]);
 
   const handleCancelUnsavedReset = useCallback(() => {
     setShowUnsavedResetModal(false);
+    // المستخدم رفض — نلغي الإجراء المعلق عشان ما ينفذش لاحقاً عن طريق الخطأ
+    pendingAfterResetRef.current = null;
+    setPendingActionLabel(null);
   }, []);
 
   // ── 2) Past exam/consultation handlers ──
@@ -127,6 +156,7 @@ export const useMainAppResetControls = ({
   return {
     performReset,
     showUnsavedResetModal,
+    pendingActionLabel,
     handleResetAndClearOpenedAppointment,
     handleConfirmUnsavedReset,
     handleCancelUnsavedReset,

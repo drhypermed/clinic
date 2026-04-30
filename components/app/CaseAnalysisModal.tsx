@@ -236,8 +236,9 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
       />
 
       {/* ═══ رأس النافذة (بريميوم: gradient عميق + pattern خفيف) ═══ */}
+      {/* زر X مثبّت absolute في الركن — مضمون يبان كامل مهما طال العنوان */}
       <div
-        className="relative px-5 sm:px-7 py-5 text-white overflow-hidden"
+        className="relative px-4 sm:px-6 pt-4 pb-4 sm:pb-5 text-white overflow-hidden"
         dir="rtl"
         style={{
           background:
@@ -254,17 +255,30 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             backgroundSize: '20px 20px',
           }}
         />
-        {/* توهج ذهبي خفيف على الركن */}
+        {/* توهج ذهبي خفيف على الركن — مع تصغير حجمه عشان ما يطغي على زر X */}
         <span
           aria-hidden
-          className="absolute -top-12 -left-12 w-44 h-44 rounded-full opacity-30 pointer-events-none"
+          className="absolute -top-16 -left-16 w-40 h-40 rounded-full opacity-25 pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.8) 0%, transparent 70%)' }}
         />
 
-        <div className="relative flex items-center gap-3.5">
+        {/* زر الإغلاق (X) — أبيض صريح مثبّت بالركن، تباين عالي ومرئي 100% */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="إغلاق"
+          className="absolute top-3 left-3 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-violet-900 hover:bg-white/95 ring-2 ring-white/70 hover:ring-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all active:scale-90"
+        >
+          <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        {/* صف العنوان — بـ padding على اليسار يضمن إن النص ما يدخلش تحت زر X */}
+        <div className="relative flex items-center gap-3 pl-12 sm:pl-14">
           {/* أيقونة مخ داخل إطار زجاجي */}
-          <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm ring-1 ring-white/40 flex items-center justify-center shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-[26px] h-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/15 backdrop-blur-sm ring-1 ring-white/40 flex items-center justify-center shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 sm:w-[26px] sm:h-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M8.4 4.8a3.3 3.3 0 0 0-2.9 5 3.8 3.8 0 0 0 .5 7.2 3.6 3.6 0 0 0 6 2.2" />
               <path d="M15.6 4.8a3.3 3.3 0 0 1 2.9 5 3.8 3.8 0 0 1-.5 7.2 3.6 3.6 0 0 1-6 2.2" />
               <path d="M12 6.2v11.2" />
@@ -273,22 +287,13 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 id="case-analysis-title" className="text-[1.15rem] sm:text-[1.3rem] font-black tracking-tight">تحليل الحالة</h2>
-            <p className="text-[11px] sm:text-[12px] text-white/80 font-bold mt-1 leading-relaxed">
-              تحليل سريري استشاري مدعوم بالذكاء الاصطناعي — لن يُضاف للروشتة إلا ما تختاره
+            <h2 id="case-analysis-title" className="text-[1.1rem] sm:text-[1.3rem] font-black tracking-tight leading-tight">تحليل الحالة</h2>
+            {/* الجملة التوضيحية — مختصرة على الموبايل عشان ما تزدحمش */}
+            <p className="text-[11px] sm:text-[12px] text-white/85 font-bold mt-1 leading-relaxed">
+              <span className="sm:hidden">تحليل سريري استشاري — اختر ما يضاف للروشتة</span>
+              <span className="hidden sm:inline">تحليل سريري استشاري — لن يُضاف للروشتة إلا ما تختاره</span>
             </p>
           </div>
-          {/* زر الإغلاق (X) — محسّن */}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="إغلاق"
-            className="shrink-0 w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 ring-1 ring-white/25 flex items-center justify-center transition-colors active:scale-95"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -314,7 +319,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             </div>
             <div className="text-center space-y-1">
               <p className="text-sm font-black text-slate-700">جاري تحليل الحالة</p>
-              <p className="text-[11px] font-bold text-slate-500">الذكاء الاصطناعي يراجع البيانات…</p>
+              <p className="text-[11px] font-bold text-slate-500">جاري مراجعة البيانات السريرية…</p>
             </div>
           </div>
         )}

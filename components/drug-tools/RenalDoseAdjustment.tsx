@@ -49,7 +49,7 @@ export const RenalDoseAdjustment: React.FC = () => {
             });
             setResult(aiResult);
         } catch (err: any) {
-            setError(err.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي");
+            setError(err.message || "حدث خطأ أثناء حساب الجرعة، حاول مرة أخرى");
         } finally {
             setLoading(false);
         }

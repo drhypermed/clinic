@@ -185,7 +185,7 @@ export const DrugInteractionsModal: React.FC<DrugInteractionsModalProps> = ({
               <span className="absolute inset-0 rounded-full border-4 border-warning-200" />
               <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-600 animate-spin" />
             </div>
-            <p className="text-slate-700 font-bold text-sm">الذكاء الاصطناعي بيفحص التداخلات…</p>
+            <p className="text-slate-700 font-bold text-sm">جاري فحص التداخلات الدوائية…</p>
             <p className="text-slate-500 text-xs mt-1">ثواني ومعاك النتيجة</p>
           </div>
         )}

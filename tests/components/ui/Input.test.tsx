@@ -20,10 +20,11 @@ describe('Input', () => {
     expect(screen.getByText('هذا الحقل مطلوب')).toBeInTheDocument();
   });
 
-  it('يضيف border-red عند وجود خطأ', () => {
+  it('يضيف border-danger عند وجود خطأ', () => {
     render(<Input label="الاسم" error="خطأ" />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('border-red-400');
+    // الـcomponent بيستخدم danger alias من الـunified design system (=rose)
+    expect(input).toHaveClass('border-danger-400');
   });
 
   it('يستخدم border-slate-200 عند غياب الخطأ', () => {

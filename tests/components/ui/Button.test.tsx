@@ -45,12 +45,14 @@ describe('Button', () => {
 
   it('applies info variant classes', () => {
     render(<Button variant="info">تعديل</Button>);
-    expect(screen.getByRole('button')).toHaveClass('from-blue-600', 'to-indigo-500');
+    // الـinfo بيستخدم blue gradient (from-blue-600 to-blue-500) من appActionButtonStyles
+    expect(screen.getByRole('button')).toHaveClass('from-blue-600', 'to-blue-500');
   });
 
   it('applies danger variant classes', () => {
     render(<Button variant="danger">حذف</Button>);
-    expect(screen.getByRole('button')).toHaveClass('from-red-600', 'to-red-700', 'text-white');
+    // الـdanger بيستخدم rose (مش red) — danger في الـtailwind config = rose alias
+    expect(screen.getByRole('button')).toHaveClass('from-rose-600', 'to-rose-700', 'text-white');
   });
 
   it('applies secondary variant classes', () => {
@@ -60,6 +62,7 @@ describe('Button', () => {
 
   it('auto-applies danger style for delete labels', () => {
     render(<Button>حذف</Button>);
-    expect(screen.getByRole('button')).toHaveClass('from-red-600', 'to-red-700', 'text-white');
+    // auto-detect "حذف" → danger style (rose gradient)
+    expect(screen.getByRole('button')).toHaveClass('from-rose-600', 'to-rose-700', 'text-white');
   });
 });

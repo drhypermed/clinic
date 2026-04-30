@@ -52,6 +52,13 @@ import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
  * 2. الجانب الأيسر (Preview): يحتوي على الروشتة بشكلها الوردي النهائي القابل للطباعة.
  */
 
+// ─── Class strings ثابتة على مستوى الموديول ─────────────────────────────
+// السبب: قبل التغيير كانت متعرّفة جوّه الـ component → نص جديد يتعمل في كل
+// render حتى لو محتواه ثابت. النقل برّه يخلّيها reference واحد طول العمر.
+const PREVIEW_PRIMARY_ACTION_CLASS = 'prescription-save-cta rx-gradient-btn rx-gradient-btn--blue flex items-center gap-2 px-4 md:px-3 lg:px-5 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
+const PREVIEW_SECONDARY_ACTION_CLASS = 'rx-gradient-btn flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-2.5 lg:px-4 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
+const HISTORY_ARROW_ICON_CLASS = 'w-4 h-4 md:w-[18px] md:h-[18px]';
+
 interface MainAppPrescriptionSectionProps {
   analyzing: boolean; // هل الذكاء الاصطناعي يقوم بالتحليل حالياً؟
   onCancelAnalyze: () => void;
@@ -312,12 +319,11 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     setPatientSharePercent,
     setPaymentType,
   ]);
-  // نظام موحد: نفس روح زر "كشف جديد" في الألوان لتقليل التشتيت البصري.
-  const previewPrimaryActionClass = 'prescription-save-cta rx-gradient-btn rx-gradient-btn--blue flex items-center gap-2 px-4 md:px-3 lg:px-5 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
-  const previewSecondaryActionClass = 'rx-gradient-btn flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-2.5 lg:px-4 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
-  const historyArrowIconClass = 'w-4 h-4 md:w-[18px] md:h-[18px]';
-
-  const handleSaveClick = async (e?: React.MouseEvent<any>) => {
+  // ـ تثبيت handler زر الحفظ بـ useCallback ـ
+  // قبل التغيير: function عادية بتتعمل من جديد كل render → onClick في الـ
+  // actionsBar JSX يحصله reference جديد → الزر يفقد memoization. الـ deps
+  // محدودة (isSavingRecord + onSaveRecord) فبتتغير نادراً.
+  const handleSaveClick = React.useCallback(async (e?: React.MouseEvent<any>) => {
     if (isSavingRecord) return;
     setIsSavingRecord(true);
     try {
@@ -325,7 +331,14 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     } finally {
       setIsSavingRecord(false);
     }
-  };
+  }, [isSavingRecord, onSaveRecord]);
+
+  // ـ زر "بيانات فقط / عرض كامل" — استخدمنا functional setter بدل قراءة
+  //   isDataOnlyMode عشان الـ callback يفضل مستقر (deps فيها setter بس،
+  //   وهو stable من React useState).
+  const handleToggleDataOnly = React.useCallback(() => {
+    setIsDataOnlyMode(prev => !prev);
+  }, [setIsDataOnlyMode]);
 
   React.useEffect(() => {
     if (!analyzing) {
@@ -543,6 +556,174 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
       setAddedInstructionsFromModal([]);
     }
   }, [caseAnalysisLoading, setAddedDiagnosesFromModal, setAddedInvestigationsFromModal, setAddedInstructionsFromModal]);
+
+  // ─── شريط الأزرار تحت الروشتة (memoized) ──────────────────────────────
+  // الفكرة الجوهرية: قبل التغيير الـ JSX ده كان يتعمل من الصفر مع كل حرف
+  // بيتكتب في أي خانة في الـ editor (لأن الـ parent يعمل re-render). دلوقتي
+  // مع useMemo + deps محدودة، الـ JSX يتعمل مرة واحدة وما يتجدّدش إلا لما
+  // يتغير حاجة بتعرض في الأزرار فعلاً (loading state، history length، notice،
+  // dataOnlyMode). بكده الأزرار بتفضل في الذاكرة جاهزة للضغط بدون تأخير.
+  const actionsBarNode = React.useMemo(() => (
+    <div className="prescription-actions-wrapper">
+      <div className="prescription-actions-print-row">
+        <button onClick={onPrint} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${PREVIEW_SECONDARY_ACTION_CLASS} rx-gradient-btn--green flex-1`}>
+          {isPrinting ? (
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          )}
+          {isPrinting ? 'جاري الطباعة…' : 'طباعة'}
+        </button>
+
+        <button onClick={onDownloadPdf} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${PREVIEW_SECONDARY_ACTION_CLASS} rx-gradient-btn--green flex-1`} title="تنزيل الروشتة كملف PDF">
+          {isDownloadingPdf ? (
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
+          )}
+          {isDownloadingPdf ? 'جاري التنزيل…' : 'تنزيل الروشتة'}
+        </button>
+
+        <button onClick={onShareWhatsApp} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${PREVIEW_SECONDARY_ACTION_CLASS} rx-gradient-btn--green flex-1`} title="إرسال الروشتة عبر واتساب كملف PDF">
+          {isSharingViaWhatsApp ? (
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          ) : (
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.5 0 .14 5.36.14 11.92c0 2.1.55 4.16 1.6 5.97L0 24l6.27-1.64a11.9 11.9 0 0 0 5.79 1.48h.01c6.56 0 11.92-5.36 11.92-11.92 0-3.18-1.24-6.18-3.47-8.44ZM12.07 21.8h-.01a9.85 9.85 0 0 1-5.02-1.37l-.36-.21-3.72.97.99-3.63-.23-.37a9.86 9.86 0 0 1-1.51-5.27c0-5.45 4.43-9.88 9.87-9.88 2.64 0 5.12 1.03 6.99 2.9a9.84 9.84 0 0 1 2.9 6.99c0 5.45-4.44 9.87-9.9 9.87Zm5.42-7.4c-.3-.15-1.76-.87-2.04-.97-.27-.1-.47-.15-.66.15-.2.3-.76.97-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.88-.78-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.5.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.5-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.21 5.1 4.5.71.3 1.27.49 1.7.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.69.25-1.28.18-1.41-.07-.13-.27-.2-.57-.35Z"/></svg>
+          )}
+          {isSharingViaWhatsApp ? 'جاري الإرسال…' : 'إرسال واتساب'}
+        </button>
+      </div>
+
+      <div className="prescription-actions-save-row">
+        <button
+          onClick={handleSaveClick}
+          disabled={isSavingRecord}
+          className={`${PREVIEW_PRIMARY_ACTION_CLASS} prescription-action-save flex-1 md:w-auto md:min-w-[172px] lg:min-w-[220px] justify-center ${isSavingRecord ? 'opacity-60 cursor-not-allowed' : ''}`}
+        >
+          {isSavingRecord ? (
+            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />جاري الحفظ</>
+          ) : (
+            <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>حفظ في سجلات المرضى</>
+          )}
+        </button>
+
+        <button onClick={onOpenSaveReadyPrescriptionModal} className={`${PREVIEW_SECONDARY_ACTION_CLASS} rx-gradient-btn--violet flex-1 md:flex-none`}>
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          حفظ روشتة جاهزة
+        </button>
+      </div>
+
+      <div className="prescription-actions-tools-row">
+        <button onClick={handleToggleDataOnly} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${PREVIEW_SECONDARY_ACTION_CLASS} rx-gradient-btn--amber flex-1 md:flex-none`}>
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          {isDataOnlyMode ? 'عرض كامل' : 'بيانات فقط'}
+        </button>
+
+        <div className="prescription-actions-history-group">
+          <button onClick={onUndo} disabled={historyLength === 0} className="rx-icon-btn" title="رجوع" aria-label="رجوع">
+            <svg className={HISTORY_ARROW_ICON_CLASS} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+          </button>
+          <button onClick={onRedo} disabled={futureLength === 0} className="rx-icon-btn" title="إعادة" aria-label="إعادة">
+            <svg className={HISTORY_ARROW_ICON_CLASS} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── صف الأزرار الذهبية (تحت الروشتة مباشرة) ─── */}
+      {/* الزرين جنب بعض على الديسكتوب، فوق بعض على الموبايل. */}
+      {/* كلاهما مدعوم بكاش per-user عشان يوفر تكلفة API عند التكرار. */}
+      <div className="prescription-actions-ai-row">
+        {/* ─── زر "فحص التداخلات الدوائية" ─── */}
+        {/* متاح دايماً — لو الروشتة فاضية يطلع تنبيه بدل ما يكون disabled */}
+        <div className="relative flex-1 min-w-0">
+          <span className="gold-premium-halo" aria-hidden />
+          <button
+            type="button"
+            onClick={handleOpenInteractionsCheck}
+            disabled={interactionsLoading}
+            aria-busy={interactionsLoading}
+            title="فحص التداخلات الدوائية"
+            className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
+          >
+            {!interactionsLoading && <span className="gold-premium-shimmer" aria-hidden />}
+            {interactionsLoading ? (
+              <>
+                <span className="inline-block h-[0.95rem] w-[0.95rem] shrink-0 rounded-full border-[2px] border-warning-900/30 border-t-amber-900 animate-spin" aria-hidden />
+                <span className="relative z-10">جاري الفحص</span>
+              </>
+            ) : (
+              <>
+                <span className="relative z-10 tracking-tight">فحص التداخلات الدوائية</span>
+                <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
+                  {/* أيقونة: كبسولتين متقاطعتين بشكل واضح (Lucide pills) */}
+                  <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    {/* الكبسولة الأولى — مائلة من أعلى يمين لأسفل يسار */}
+                    <path d="M10.5 20.5a4.95 4.95 0 01-7-7l3.5-3.5 7 7-3.5 3.5z" />
+                    {/* الكبسولة الثانية — مائلة من أسفل يسار لأعلى يمين */}
+                    <path d="M13.5 3.5a4.95 4.95 0 017 7L17 14l-7-7 3.5-3.5z" />
+                  </svg>
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* ─── زر "فحص الدواء أثناء الحمل والرضاعة" ─── */}
+        {/* متاح دائماً — المودال بيتعامل مع الحالة الفاضية */}
+        <div className="relative flex-1 min-w-0">
+          <span className="gold-premium-halo" aria-hidden />
+          <button
+            type="button"
+            onClick={handleOpenPregnancyCheck}
+            className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
+          >
+            <span className="gold-premium-shimmer" aria-hidden />
+            <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل والرضاعة</span>
+            <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
+              {/* أيقونة: امرأة حامل بشكل أوضح (رأس + جسم + بطن بيضاوي + ساقين) */}
+              <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                {/* الرأس */}
+                <circle cx="12" cy="4" r="2" />
+                {/* الرقبة */}
+                <path d="M12 6v2" />
+                {/* الذراع — تشير للبطن */}
+                <path d="M9 11c0-1.5 1-2 2-2" />
+                {/* البطن البارز (الحمل) */}
+                <ellipse cx="13" cy="13" rx="4" ry="3" />
+                {/* الساقين */}
+                <path d="M11 17v4" />
+                <path d="M14 17v4" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* تنبيه: لو الطبيب ضغط فحص التداخلات والروشتة فاضية/فيها دواء واحد */}
+      {interactionsNoDrugsNotice && (
+        <div
+          role="alert"
+          className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl border border-warning-300 bg-warning-50 text-warning-900 text-[0.8rem] font-bold shadow-sm"
+        >
+          <svg className="w-4 h-4 shrink-0 mt-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span className="leading-relaxed">{interactionsNoDrugsNotice}</span>
+        </div>
+      )}
+    </div>
+  ), [
+    onPrint, isPrinting, isDownloadingPdf, isSharingViaWhatsApp,
+    onDownloadPdf, onShareWhatsApp,
+    handleSaveClick, isSavingRecord, onOpenSaveReadyPrescriptionModal,
+    handleToggleDataOnly, isDataOnlyMode,
+    onUndo, onRedo, historyLength, futureLength,
+    handleOpenInteractionsCheck, interactionsLoading,
+    handleOpenPregnancyCheck,
+    interactionsNoDrugsNotice,
+  ]);
 
   return (
     <>
@@ -769,158 +950,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
             isPrintMode={isPrintMode} isDataOnlyMode={isDataOnlyMode} ref={prescriptionRef} usageStats={usageStats} prescriptionSettings={prescriptionSettings ?? undefined}
             // forceShowDx يُجبر ظهور صف Dx فاضي بعد التحليل لتنبيه الطبيب بالكتابة اليدوية
             forceShowDx={needsManualDxHint && !diagnosisEn.trim()}
-            actionsBar={
-              <div className="prescription-actions-wrapper">
-                <div className="prescription-actions-print-row">
-                  <button onClick={onPrint} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${previewSecondaryActionClass} rx-gradient-btn--green flex-1`}>
-                    {isPrinting ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                    )}
-                    {isPrinting ? 'جاري الطباعة…' : 'طباعة'}
-                  </button>
-
-                  <button onClick={onDownloadPdf} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${previewSecondaryActionClass} rx-gradient-btn--green flex-1`} title="تنزيل الروشتة كملف PDF">
-                    {isDownloadingPdf ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
-                    )}
-                    {isDownloadingPdf ? 'جاري التنزيل…' : 'تنزيل الروشتة'}
-                  </button>
-
-                  <button onClick={onShareWhatsApp} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${previewSecondaryActionClass} rx-gradient-btn--green flex-1`} title="إرسال الروشتة عبر واتساب كملف PDF">
-                    {isSharingViaWhatsApp ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.5 0 .14 5.36.14 11.92c0 2.1.55 4.16 1.6 5.97L0 24l6.27-1.64a11.9 11.9 0 0 0 5.79 1.48h.01c6.56 0 11.92-5.36 11.92-11.92 0-3.18-1.24-6.18-3.47-8.44ZM12.07 21.8h-.01a9.85 9.85 0 0 1-5.02-1.37l-.36-.21-3.72.97.99-3.63-.23-.37a9.86 9.86 0 0 1-1.51-5.27c0-5.45 4.43-9.88 9.87-9.88 2.64 0 5.12 1.03 6.99 2.9a9.84 9.84 0 0 1 2.9 6.99c0 5.45-4.44 9.87-9.9 9.87Zm5.42-7.4c-.3-.15-1.76-.87-2.04-.97-.27-.1-.47-.15-.66.15-.2.3-.76.97-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.88-.78-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.5.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.5-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.21 5.1 4.5.71.3 1.27.49 1.7.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.69.25-1.28.18-1.41-.07-.13-.27-.2-.57-.35Z"/></svg>
-                    )}
-                    {isSharingViaWhatsApp ? 'جاري الإرسال…' : 'إرسال واتساب'}
-                  </button>
-                </div>
-
-                <div className="prescription-actions-save-row">
-                  <button
-                    onClick={(e) => handleSaveClick(e)}
-                    disabled={isSavingRecord}
-                    className={`${previewPrimaryActionClass} prescription-action-save flex-1 md:w-auto md:min-w-[172px] lg:min-w-[220px] justify-center ${isSavingRecord ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  >
-                    {isSavingRecord ? (
-                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />جاري الحفظ</>
-                    ) : (
-                      <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>حفظ في سجلات المرضى</>
-                    )}
-                  </button>
-
-                  <button onClick={onOpenSaveReadyPrescriptionModal} className={`${previewSecondaryActionClass} rx-gradient-btn--violet flex-1 md:flex-none`}>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                    حفظ روشتة جاهزة
-                  </button>
-                </div>
-
-                <div className="prescription-actions-tools-row">
-                  <button onClick={() => setIsDataOnlyMode(!isDataOnlyMode)} disabled={isPrinting || isDownloadingPdf || isSharingViaWhatsApp} className={`${previewSecondaryActionClass} rx-gradient-btn--amber flex-1 md:flex-none`}>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    {isDataOnlyMode ? 'عرض كامل' : 'بيانات فقط'}
-                  </button>
-
-                  <div className="prescription-actions-history-group">
-                    <button onClick={onUndo} disabled={historyLength === 0} className="rx-icon-btn" title="رجوع" aria-label="رجوع">
-                      <svg className={historyArrowIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-                    </button>
-                    <button onClick={onRedo} disabled={futureLength === 0} className="rx-icon-btn" title="إعادة" aria-label="إعادة">
-                      <svg className={historyArrowIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
-                    </button>
-                  </div>
-                </div>
-
-                {/* ─── صف الأزرار الذهبية (تحت الروشتة مباشرة) ─── */}
-                {/* الزرين جنب بعض على الديسكتوب، فوق بعض على الموبايل. */}
-                {/* كلاهما مدعوم بكاش per-user عشان يوفر تكلفة API عند التكرار. */}
-                <div className="prescription-actions-ai-row">
-                  {/* ─── زر "فحص التداخلات الدوائية" ─── */}
-                  {/* متاح دايماً — لو الروشتة فاضية يطلع تنبيه بدل ما يكون disabled */}
-                  <div className="relative flex-1 min-w-0">
-                    <span className="gold-premium-halo" aria-hidden />
-                    <button
-                      type="button"
-                      onClick={handleOpenInteractionsCheck}
-                      disabled={interactionsLoading}
-                      aria-busy={interactionsLoading}
-                      title="فحص التداخلات الدوائية"
-                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
-                    >
-                      {!interactionsLoading && <span className="gold-premium-shimmer" aria-hidden />}
-                      {interactionsLoading ? (
-                        <>
-                          <span className="inline-block h-[0.95rem] w-[0.95rem] shrink-0 rounded-full border-[2px] border-warning-900/30 border-t-amber-900 animate-spin" aria-hidden />
-                          <span className="relative z-10">جاري الفحص</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="relative z-10 tracking-tight">فحص التداخلات الدوائية</span>
-                          <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
-                            {/* أيقونة: كبسولتين متقاطعتين بشكل واضح (Lucide pills) */}
-                            <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              {/* الكبسولة الأولى — مائلة من أعلى يمين لأسفل يسار */}
-                              <path d="M10.5 20.5a4.95 4.95 0 01-7-7l3.5-3.5 7 7-3.5 3.5z" />
-                              {/* الكبسولة الثانية — مائلة من أسفل يسار لأعلى يمين */}
-                              <path d="M13.5 3.5a4.95 4.95 0 017 7L17 14l-7-7 3.5-3.5z" />
-                            </svg>
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* ─── زر "فحص الدواء أثناء الحمل والرضاعة" ─── */}
-                  {/* متاح دائماً — المودال بيتعامل مع الحالة الفاضية */}
-                  <div className="relative flex-1 min-w-0">
-                    <span className="gold-premium-halo" aria-hidden />
-                    <button
-                      type="button"
-                      onClick={handleOpenPregnancyCheck}
-                      className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
-                    >
-                      <span className="gold-premium-shimmer" aria-hidden />
-                      <span className="relative z-10 tracking-tight">فحص الدواء أثناء الحمل والرضاعة</span>
-                      <span className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner">
-                        {/* أيقونة: امرأة حامل بشكل أوضح (رأس + جسم + بطن بيضاوي + ساقين) */}
-                        <svg className="h-[16px] w-[16px] text-warning-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          {/* الرأس */}
-                          <circle cx="12" cy="4" r="2" />
-                          {/* الرقبة */}
-                          <path d="M12 6v2" />
-                          {/* الذراع — تشير للبطن */}
-                          <path d="M9 11c0-1.5 1-2 2-2" />
-                          {/* البطن البارز (الحمل) */}
-                          <ellipse cx="13" cy="13" rx="4" ry="3" />
-                          {/* الساقين */}
-                          <path d="M11 17v4" />
-                          <path d="M14 17v4" />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* تنبيه: لو الطبيب ضغط فحص التداخلات والروشتة فاضية/فيها دواء واحد */}
-                {interactionsNoDrugsNotice && (
-                  <div
-                    role="alert"
-                    className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl border border-warning-300 bg-warning-50 text-warning-900 text-[0.8rem] font-bold shadow-sm"
-                  >
-                    <svg className="w-4 h-4 shrink-0 mt-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <span className="leading-relaxed">{interactionsNoDrugsNotice}</span>
-                  </div>
-                )}
-              </div>
-            }
+            actionsBar={actionsBarNode}
           />
         </div>
       </div>
