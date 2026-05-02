@@ -7,7 +7,7 @@
  * 2. مجموعات التحكم (GROUPS): تعريف هيكل الأقسام (تحليل الحالة، الترجمة، الروشتات...) وعرضها.
  * 3. مفاتيح البيانات (Keys): مصفوفات لتسهيل عملية التكرار وحفظ البيانات في Firestore.
  *
- * 🆕 أُضيفت ميزة "الترجمة الذكية" (translation) للـadmin panel.
+ * 🗑️ (2026-05) شيلنا جروب الترجمة — كانت بتقفل الزرّين، الترجمة دلوقتي جزء من الزر
  */
 
 import type { LimitKey, MessageKey, WhatsappMessageKey } from './types';
@@ -23,6 +23,10 @@ export const DEFAULT_FORM: AccountTypeControls = DEFAULT_CONTROLS;
 export const LIMIT_KEYS: LimitKey[] = [
   'freeDailyLimit',
   'premiumDailyLimit',
+  // 🆕 الزر السريع "إضافة بدون تحليل" (2026-05) — عداد منفصل عن التحليل العميق
+  'freeQuickAddDailyLimit',
+  'premiumQuickAddDailyLimit',
+  'proMaxQuickAddDailyLimit',
   // ─ السجلات بقت سعة كلية مش يومية ─
   'freeRecordsMaxCount',
   'premiumRecordsMaxCount',
@@ -36,9 +40,7 @@ export const LIMIT_KEYS: LimitKey[] = [
   'premiumReadyPrescriptionDailyLimit',
   'freeMedicalReportDailyLimit',
   'premiumMedicalReportDailyLimit',
-  // ─── الترجمة الذكية للروشتة 🆕 ───
-  'freeTranslationDailyLimit',
-  'premiumTranslationDailyLimit',
+  // ✂️ شيلنا حد الترجمة (2026-05) — الترجمة بقت جزء طبيعي من شغل الزرّين، مفيش حد منفصل
   // ─── الأزرار الذهبية + الكلى تحت "حدود الميزات" 🆕 ───
   'freeInteractionToolDailyLimit',
   'premiumInteractionToolDailyLimit',
@@ -71,7 +73,6 @@ export const LIMIT_KEYS: LimitKey[] = [
   'proMaxSecretaryEntryRequestDailyLimit',
   'proMaxReadyPrescriptionDailyLimit',
   'proMaxMedicalReportDailyLimit',
-  'proMaxTranslationDailyLimit',
   'proMaxInteractionToolDailyLimit',
   'proMaxPregnancyToolDailyLimit',
   'proMaxRenalToolDailyLimit',
@@ -109,6 +110,10 @@ export const DRUG_TOOLS_LIMIT_KEYS: Array<
 export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'freeAnalysisLimitMessage',
   'premiumAnalysisLimitMessage',
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  'freeQuickAddLimitMessage',
+  'premiumQuickAddLimitMessage',
+  'proMaxQuickAddLimitMessage',
   'freeRecordsCapacityMessage',
   'premiumRecordsCapacityMessage',
   'freePublicBookingLimitMessage',
@@ -121,9 +126,7 @@ export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'premiumReadyPrescriptionDailyLimitMessage',
   'freeMedicalReportLimitMessage',
   'premiumMedicalReportLimitMessage',
-  // ─── الترجمة الذكية ───
-  'freeTranslationLimitMessage',
-  'premiumTranslationLimitMessage',
+  // ✂️ شيلنا رسائل الترجمة (2026-05) — الترجمة بقت جزء من الزرّين
   // ─── 🆕 الأزرار الذهبية (التداخلات + الحمل/الرضاعة) + الكلى ───
   'freeInteractionToolLimitMessage',
   'premiumInteractionToolLimitMessage',
@@ -156,7 +159,6 @@ export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'proMaxSecretaryEntryRequestLimitMessage',
   'proMaxReadyPrescriptionDailyLimitMessage',
   'proMaxMedicalReportLimitMessage',
-  'proMaxTranslationLimitMessage',
   'proMaxInteractionToolLimitMessage',
   'proMaxPregnancyToolLimitMessage',
   'proMaxRenalToolLimitMessage',
@@ -172,6 +174,10 @@ export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
 export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'freeAnalysisWhatsappMessage',
   'premiumAnalysisWhatsappMessage',
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  'freeQuickAddWhatsappMessage',
+  'premiumQuickAddWhatsappMessage',
+  'proMaxQuickAddWhatsappMessage',
   'freeRecordsCapacityWhatsappMessage',
   'premiumRecordsCapacityWhatsappMessage',
   'freePublicBookingWhatsappMessage',
@@ -184,9 +190,7 @@ export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'premiumReadyPrescriptionWhatsappMessage',
   'freeMedicalReportWhatsappMessage',
   'premiumMedicalReportWhatsappMessage',
-  // ─── الترجمة الذكية ───
-  'freeTranslationWhatsappMessage',
-  'premiumTranslationWhatsappMessage',
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   // ─── 🆕 الأزرار الذهبية + الكلى ───
   'freeInteractionToolWhatsappMessage',
   'premiumInteractionToolWhatsappMessage',
@@ -219,7 +223,6 @@ export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'proMaxSecretaryEntryRequestWhatsappMessage',
   'proMaxReadyPrescriptionWhatsappMessage',
   'proMaxMedicalReportWhatsappMessage',
-  'proMaxTranslationWhatsappMessage',
   'proMaxInteractionToolWhatsappMessage',
   'proMaxPregnancyToolWhatsappMessage',
   'proMaxRenalToolWhatsappMessage',
@@ -271,50 +274,53 @@ const GROUPS: GroupConfig[] = [
     },
   },
   // ═══════════════════════════════════════════════════════════════════════
-  // 🆕 الترجمة الذكية للروشتة (Smart RX Translation)
-  // ─ كانت ميزة AI شغالة بدون حد للأدمن — أُضيفت لتحت تحكم الأدمن.
-  // ─ بتشتغل تلقائياً مع كل روشتة (Translation Layer في runSmartRx).
+  // 🆕 (2026-05) إضافة إلى الروشتة والسجلات بدون تحليل (الزر السريع)
+  // ─ كان مشترك على نفس عداد التحليل العميق فاستهلاك زر بيقفل التاني.
+  // ─ اتفصل لعداد منفصل: كل زر له حد يومي خاص + رسائل خاصة لكل باقة.
+  // ─ الزر ده أرخص في AI (ترجمة فقط) فمنطقي حده أعلى من التحليل العميق.
   // ═══════════════════════════════════════════════════════════════════════
   {
-    id: 'translation',
-    title: 'الترجمة الذكية للروشتة (حد يومي)',
+    id: 'quick_add',
+    title: 'إضافة إلى الروشتة والسجلات بدون تحليل (حد يومي)',
     free: {
       name: 'مجاني',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (مجاني)',
+      whatsappPreviewLabel: 'معاينة واتساب الزر السريع (مجاني)',
       messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
-      whatsappPlaceholder: 'رسالة الترجمة الذكية - مجاني',
-      limitKey: 'freeTranslationDailyLimit',
-      messageKey: 'freeTranslationLimitMessage',
-      whatsappMessageKey: 'freeTranslationWhatsappMessage',
+      whatsappPlaceholder: 'رسالة الزر السريع - مجاني',
+      limitKey: 'freeQuickAddDailyLimit',
+      messageKey: 'freeQuickAddLimitMessage',
+      whatsappMessageKey: 'freeQuickAddWhatsappMessage',
     },
     premium: {
       name: 'برو',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (برو)',
+      whatsappPreviewLabel: 'معاينة واتساب الزر السريع (برو)',
       messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
-      whatsappPlaceholder: 'رسالة الترجمة الذكية - برو',
-      limitKey: 'premiumTranslationDailyLimit',
-      messageKey: 'premiumTranslationLimitMessage',
-      whatsappMessageKey: 'premiumTranslationWhatsappMessage',
+      whatsappPlaceholder: 'رسالة الزر السريع - برو',
+      limitKey: 'premiumQuickAddDailyLimit',
+      messageKey: 'premiumQuickAddLimitMessage',
+      whatsappMessageKey: 'premiumQuickAddWhatsappMessage',
     },
     proMax: {
       name: 'برو ماكس',
       limitLabel: 'الحد اليومي',
       messageLabel: 'رسالة تجاوز الحد',
       whatsappLabel: 'رسالة واتساب',
-      whatsappPreviewLabel: 'معاينة واتساب الترجمة الذكية (برو ماكس)',
+      whatsappPreviewLabel: 'معاينة واتساب الزر السريع (برو ماكس)',
       messagePlaceholder: 'استخدم {limit} لإظهار الرقم',
-      whatsappPlaceholder: 'رسالة الترجمة الذكية - برو ماكس',
-      limitKey: 'proMaxTranslationDailyLimit',
-      messageKey: 'proMaxTranslationLimitMessage',
-      whatsappMessageKey: 'proMaxTranslationWhatsappMessage',
+      whatsappPlaceholder: 'رسالة الزر السريع - برو ماكس',
+      limitKey: 'proMaxQuickAddDailyLimit',
+      messageKey: 'proMaxQuickAddLimitMessage',
+      whatsappMessageKey: 'proMaxQuickAddWhatsappMessage',
     },
   },
+  // ✂️ شيلنا جروب الترجمة (2026-05) — الترجمة بقت جزء طبيعي من الزرّين،
+  //   حد كل زر هو اللي بيتحكم فيها. كانت بتقفل الزرّين الاتنين لما حدها يخلص.
   // ═══════════════════════════════════════════════════════════════════════
   // 🆕 الأزرار الذهبية تحت الروشتة — التداخلات الدوائية
   // ─ كانت في قسم "أدوات الأدوية" المنفصل، اتنقلت 2026-04 لقسم "حدود الميزات"

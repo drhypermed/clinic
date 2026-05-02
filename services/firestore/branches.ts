@@ -117,49 +117,72 @@ export const branchesService = {
             throw new Error('لا يمكن حذف الفرع الرئيسي');
         }
         try {
+            // ⚠️ Firestore بيحدد كل batch بـ500 عملية. لو فرع نشط عنده آلاف
+            // المواعيد/السجلات، batch واحد بيرفض → الحذف بيفشل تماماً.
+            // الإصلاح: نقسم العمليات على chunks آمنة. نختار 450 عشان نسيب
+            // مساحة لو احتجنا نضيف عمليات إضافية لنفس الـ batch مستقبلاً.
+            const BATCH_CHUNK_SIZE = 450;
+
+            // مساعد عام: ينفذ دالة على docs على شكل chunks ويـcommit كل chunk منفصل.
+            // كل chunk في batch مستقل → فشل chunk ميمنعش الباقي + ميتعديش حد الـ500.
+            const commitInChunks = async <T extends { ref: import('firebase/firestore').DocumentReference }>(
+                docs: T[],
+                applyToBatch: (batch: ReturnType<typeof writeBatch>, docSnap: T) => void
+            ) => {
+                for (let i = 0; i < docs.length; i += BATCH_CHUNK_SIZE) {
+                    const chunk = docs.slice(i, i + BATCH_CHUNK_SIZE);
+                    const batch = writeBatch(db);
+                    chunk.forEach((d) => applyToBatch(batch, d));
+                    await batch.commit();
+                }
+            };
+
             // نقل المواعيد التابعه للفرع المحذوف إلى الفرع الرئيسي.
-            // الـbug القديم: getDocs(appointmentsRef) كان بيقرا كل المواعيد للدكتور
-            // (10K+ reads). الـwhere('branchId') بيخلّي الـquery يجيب اللي تخص الفرع فقط.
+            // الـwhere('branchId') بيخلّي الـquery يجيب اللي تخص الفرع فقط (مش كل المواعيد).
             const appointmentsRef = collection(db, 'users', userId, 'appointments');
             const appointmentsSnap = await getDocs(query(appointmentsRef, where('branchId', '==', branchId)));
             if (!appointmentsSnap.empty) {
-                const batch1 = writeBatch(db);
-                appointmentsSnap.forEach((d) => batch1.update(d.ref, { branchId: DEFAULT_BRANCH_ID }));
-                await batch1.commit();
+                await commitInChunks(appointmentsSnap.docs, (batch, d) => {
+                    batch.update(d.ref, { branchId: DEFAULT_BRANCH_ID });
+                });
             }
 
-            // نقل سجلات المرضى التابعه للفرع المحذوف — نفس التحسين.
+            // نقل سجلات المرضى التابعه للفرع المحذوف — نفس التقسيم لتجنب حد الـ500.
             const recordsRef = collection(db, 'users', userId, 'records');
             const recordsSnap = await getDocs(query(recordsRef, where('branchId', '==', branchId)));
             if (!recordsSnap.empty) {
-                const batch2 = writeBatch(db);
-                recordsSnap.forEach((d) => batch2.update(d.ref, { branchId: DEFAULT_BRANCH_ID }));
-                await batch2.commit();
+                await commitInChunks(recordsSnap.docs, (batch, d) => {
+                    batch.update(d.ref, { branchId: DEFAULT_BRANCH_ID });
+                });
             }
 
-            // تنظيف الـ slots و secretaryAuth المرتبطين بالفرع المحذوف
+            // تنظيف الـ slots و secretaryAuth المرتبطين بالفرع المحذوف.
+            // مهم: الفرع الفرعي بيخزن سرّ السكرتيرة في Branch.secretarySecret (مش في users/{uid}.bookingSecret).
+            // بما إن الفرع الرئيسي ممنوع حذفه أصلاً، فالـcleanup هنا دايماً لفرع فرعي → لازم نقرأ الـsecret من document الفرع نفسه.
             try {
-                const userRootSnap = await getDoc(doc(db, 'users', userId));
-                const userData = userRootSnap.exists() ? (userRootSnap.data() as { bookingSecret?: string; publicBookingSecret?: string }) : {};
-                const bookingSecret = String(userData?.bookingSecret || '').trim();
-                const publicSecret = String(userData?.publicBookingSecret || '').trim();
+                // قراءة document الفرع للحصول على الـ secretarySecret الخاص به
+                const branchSnap = await getDoc(doc(db, 'users', userId, 'branches', branchId));
+                const branchSecret = String((branchSnap.data() as Partial<Branch> | undefined)?.secretarySecret || '').trim();
 
-                // مسح الـslots المتاحه للحجز العام اللي تخص الفرع المحذوف.
-                // نفس تحسين الـquery: where('branchId') بدل قراءه كل الـslots ثم الفلتره client-side.
+                // الـ publicBookingSecret موحّد لكل العيادة (مش لكل فرع) → قراءته من user root
+                const userRootSnap = await getDoc(doc(db, 'users', userId));
+                const publicSecret = String((userRootSnap.data() as { publicBookingSecret?: string } | undefined)?.publicBookingSecret || '').trim();
+
+                // مسح الـslots المتاحه للحجز العام اللي تخص الفرع المحذوف فقط (الـwhere بيفلتر بالـbranchId)
                 if (publicSecret) {
                     const slotsRef = collection(db, 'publicBookingConfig', publicSecret, 'slots');
                     const slotsSnap = await getDocs(query(slotsRef, where('branchId', '==', branchId)));
                     if (!slotsSnap.empty) {
-                        const batch3 = writeBatch(db);
-                        slotsSnap.forEach((s) => batch3.delete(s.ref));
-                        await batch3.commit();
+                        await commitInChunks(slotsSnap.docs, (batch, s) => {
+                            batch.delete(s.ref);
+                        });
                     }
                 }
 
-                // مسح كلمة سر السكرتارية المرتبطة بالفرع (يبطل أي session نشطة)
-                if (bookingSecret) {
-                    await deleteDoc(doc(db, 'secretaryAuth', bookingSecret, 'branches', branchId)).catch(() => {
-                        // best-effort: المستند قد لا يكون موجوداً أصلاً
+                // مسح كلمة سر السكرتيرة المرتبطة بالفرع (يبطل أي session نشطة فوراً)
+                if (branchSecret) {
+                    await deleteDoc(doc(db, 'secretaryAuth', branchSecret, 'branches', branchId)).catch(() => {
+                        // best-effort: المستند قد لا يكون موجوداً أصلاً (لو الفرع ما عيّنش كلمة سر)
                     });
                 }
             } catch (cleanupError) {

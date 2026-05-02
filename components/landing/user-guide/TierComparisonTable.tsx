@@ -25,6 +25,11 @@ type FeatureRow = {
   freeKey: keyof AccountTypeControls;
   premiumKey: keyof AccountTypeControls;
   proMaxKey: keyof AccountTypeControls;
+  /**
+   * 🆕 (2026-05): الميزات المفتوحة للـ paid tiers بلا حد —
+   * الجدول يعرض "∞ مفتوح" بدل رقم للـ برو والبرو ماكس.
+   */
+  unlimitedForPaid?: boolean;
 };
 
 type FeatureGroup = {
@@ -41,10 +46,10 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     title: 'ميزات الذكاء الاصطناعي (يومياً)',
     icon: <LuStar className="w-4 h-4" />,
     rows: [
-      { label: 'تحليل الحالة', unit: 'مرة/يوم',
+      { label: 'إضافة للروشتة مع تحليل الحالة', unit: 'مرة/يوم',
         freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', proMaxKey: 'proMaxDailyLimit' },
-      { label: 'الترجمة الذكية للروشتة', unit: 'مرة/يوم',
-        freeKey: 'freeTranslationDailyLimit', premiumKey: 'premiumTranslationDailyLimit', proMaxKey: 'proMaxTranslationDailyLimit' },
+      { label: 'إضافة للروشتة بدون تحليل', unit: 'مرة/يوم',
+        freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' },
       { label: 'فحص التداخلات الدوائية', unit: 'مرة/يوم',
         freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' },
       { label: 'فحص الدواء أثناء الحمل والرضاعة', unit: 'مرة/يوم',
@@ -61,11 +66,14 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuDatabase className="w-4 h-4" />,
     rows: [
       { label: 'حفظ السجلات الطبية', unit: 'سجل',
-        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount' },
+        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount',
+        unlimitedForPaid: true },
       { label: 'تخزين الروشتات الجاهزة', unit: 'روشتة',
-        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount' },
+        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount',
+        unlimitedForPaid: true },
       { label: 'تخزين الأدوية المعدّلة', unit: 'دواء',
-        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount' },
+        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
+        unlimitedForPaid: true },
       { label: 'عدد الفروع (إعلان الطبيب)', unit: 'فرع',
         freeKey: 'freeBranchesMaxCount', premiumKey: 'premiumBranchesMaxCount', proMaxKey: 'proMaxBranchesMaxCount' },
       { label: 'شركات التأمين', unit: 'شركة',
@@ -78,13 +86,17 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuFileText className="w-4 h-4" />,
     rows: [
       { label: 'حفظ روشتة جاهزة', unit: 'روشتة/يوم',
-        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
+        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit',
+        unlimitedForPaid: true },
       { label: 'طباعة الروشتة', unit: 'مرة/يوم',
-        freeKey: 'freePrescriptionPrintDailyLimit', premiumKey: 'premiumPrescriptionPrintDailyLimit', proMaxKey: 'proMaxPrescriptionPrintDailyLimit' },
+        freeKey: 'freePrescriptionPrintDailyLimit', premiumKey: 'premiumPrescriptionPrintDailyLimit', proMaxKey: 'proMaxPrescriptionPrintDailyLimit',
+        unlimitedForPaid: true },
       { label: 'تنزيل الروشتة', unit: 'مرة/يوم',
-        freeKey: 'freePrescriptionDownloadDailyLimit', premiumKey: 'premiumPrescriptionDownloadDailyLimit', proMaxKey: 'proMaxPrescriptionDownloadDailyLimit' },
+        freeKey: 'freePrescriptionDownloadDailyLimit', premiumKey: 'premiumPrescriptionDownloadDailyLimit', proMaxKey: 'proMaxPrescriptionDownloadDailyLimit',
+        unlimitedForPaid: true },
       { label: 'إرسال الروشتة عبر واتساب', unit: 'مرة/يوم',
-        freeKey: 'freePrescriptionWhatsappDailyLimit', premiumKey: 'premiumPrescriptionWhatsappDailyLimit', proMaxKey: 'proMaxPrescriptionWhatsappDailyLimit' },
+        freeKey: 'freePrescriptionWhatsappDailyLimit', premiumKey: 'premiumPrescriptionWhatsappDailyLimit', proMaxKey: 'proMaxPrescriptionWhatsappDailyLimit',
+        unlimitedForPaid: true },
     ],
   },
   {
@@ -201,13 +213,26 @@ export const TierComparisonTable: React.FC = () => {
                       {getValue(controls, row.freeKey)}
                       <span className="text-[10px] font-bold text-slate-400 mr-1">{row.unit}</span>
                     </td>
+                    {/* 🆕 (2026-05): الميزات المفتوحة للـ paid → "∞ مفتوح" بدل رقم */}
                     <td className="text-center text-[12px] sm:text-sm font-black text-warning-800 px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-warning-50/30">
-                      {getValue(controls, row.premiumKey)}
-                      <span className="text-[10px] font-bold text-warning-600 mr-1">{row.unit}</span>
+                      {row.unlimitedForPaid ? (
+                        <span className="font-black text-warning-700">∞ مفتوح</span>
+                      ) : (
+                        <>
+                          {getValue(controls, row.premiumKey)}
+                          <span className="text-[10px] font-bold text-warning-600 mr-1">{row.unit}</span>
+                        </>
+                      )}
                     </td>
                     <td className="text-center text-[12px] sm:text-sm font-black text-[#B45309] px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-gradient-to-br from-[#FFF8E1]/40 to-[#FFE0B2]/40">
-                      {getValue(controls, row.proMaxKey)}
-                      <span className="text-[10px] font-bold text-[#B45309]/70 mr-1">{row.unit}</span>
+                      {row.unlimitedForPaid ? (
+                        <span className="font-black text-[#B45309]">∞ مفتوح</span>
+                      ) : (
+                        <>
+                          {getValue(controls, row.proMaxKey)}
+                          <span className="text-[10px] font-bold text-[#B45309]/70 mr-1">{row.unit}</span>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

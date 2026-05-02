@@ -23,7 +23,6 @@ import {
   LIMIT_MESSAGE_KEYS, WHATSAPP_MESSAGE_KEYS,
 } from './constants';
 import { AccountTypeControlsForm } from '../../../types';
-// ─ DrugToolsSection اتشال 2026-04 — التداخلات + الحمل + الكلى كلهم في "حدود الميزات" دلوقتي ─
 import { PlanGroupSection } from './PlanGroupSection';
 import { buildPayloadForSave, digitsOnly, getErrorMessage } from './utils';
 import { LoadingText } from '../../ui/LoadingText';
@@ -111,10 +110,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
       WHATSAPP_MESSAGE_KEYS.forEach((key) => {
         next[key] = DEFAULT_FORM[key] || '';
       });
-      // ورسائل القفل لأدوات الأدوية (لو الأدمن مفعّل premiumOnly)
-      next.interactionToolLockedMessage = DEFAULT_FORM.interactionToolLockedMessage;
-      next.renalToolLockedMessage = DEFAULT_FORM.renalToolLockedMessage;
-      next.pregnancyToolLockedMessage = DEFAULT_FORM.pregnancyToolLockedMessage;
+      // ✂️ شيلنا رسائل القفل للأدوات — مش مستخدمة دلوقتي.
       return next;
     });
     setMessage('تم تحميل الرسائل الافتراضية. اضغط "حفظ الإعدادات" للتطبيق.');

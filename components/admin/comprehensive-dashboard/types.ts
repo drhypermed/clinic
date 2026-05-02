@@ -24,6 +24,7 @@ export type AdminView =
   | 'reports'
   | 'homeBanner'
   | 'prescriptionFooterLine'
+  | 'doctorDesignEditor'   // ─ مساعدة طبيب في تصميم روشتته/إعلانه (وصول مقيّد على المستندين دول فقط)
   | 'settings';
 
 export interface DashboardStats {
@@ -51,15 +52,12 @@ export interface DashboardStats {
   totalExpenses: number;
   netProfit: number;
 
-  // ═══ عدادات استهلاك ميزات الذكاء الاصطناعي (6 ميزات × 3 فئات = 18 حقل) ═══
+  // ═══ عدادات استهلاك ميزات الذكاء الاصطناعي (5 ميزات × 3 فئات = 15 حقل) ═══
+  // ✂️ شيلنا الترجمة (2026-05) — بقت بدون حد منفصل
   // تحليل الحالة (Case Analysis)
   caseAnalysisFreeCount: number;
   caseAnalysisProCount: number;
   caseAnalysisProMaxCount: number;
-  // الترجمة الذكية (Smart RX Translation)
-  translationFreeCount: number;
-  translationProCount: number;
-  translationProMaxCount: number;
   // فحص التداخلات الدوائية
   drugInteractionsFreeCount: number;
   drugInteractionsProCount: number;

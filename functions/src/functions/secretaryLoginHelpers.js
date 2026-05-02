@@ -80,9 +80,12 @@ const generateSessionToken = () => {
   return `st:${randomHex}`;
 };
 const SECRETARY_LOGIN_RATE_LIMIT_COLLECTION = 'secretaryLoginRateLimit';
+// نافذة عدّ المحاولات الفاشلة (لو عدّت من غير ما تتجاوز الحد، العداد بيتصفّر)
 const SECRETARY_LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const SECRETARY_LOGIN_BLOCK_MS = 60 * 60 * 1000;
-const SECRETARY_LOGIN_MAX_FAILED_ATTEMPTS = 3;
+// مدة الحظر بعد تجاوز عدد المحاولات: ربع ساعة
+const SECRETARY_LOGIN_BLOCK_MS = 15 * 60 * 1000;
+// أقصى عدد محاولات فاشلة قبل الحظر
+const SECRETARY_LOGIN_MAX_FAILED_ATTEMPTS = 10;
 const SECRETARY_SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const timestampToMs = (value) =>
   value && typeof value.toMillis === 'function' ? value.toMillis() : 0;

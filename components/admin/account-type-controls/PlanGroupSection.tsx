@@ -39,6 +39,35 @@ const GROUP_ICON: Record<string, React.ReactElement> = {
   medication_customizations_capacity: <FaSliders />,
 };
 
+/**
+ * 🆕 (2026-05): الميزات اللي اتفتحت للـ paid tiers بلا حد — التشغيل أسرع.
+ * في الـ Admin UI: حقول الأرقام للـ برو/برو ماكس بتختفي وتظهر علامة "مفتوح بلا حد"
+ * بدل ما الأدمن يدخل أرقام بدون فايدة (الفرونت/السيرفر بيتخطى الفحص أصلاً).
+ */
+const GROUPS_OPEN_FOR_PAID = new Set([
+  'prescription_print',
+  'prescription_download',
+  'prescription_whatsapp',
+  'records_capacity',
+  'ready_daily',
+  'ready_capacity',
+  'medication_customizations_capacity',
+]);
+
+/** بادج "مفتوح بلا حد" — يظهر بدل input في الميزات اللي اتفتحت للـ paid tiers */
+const UnlimitedBadge: React.FC<{ tier: 'pro' | 'pro_max' }> = ({ tier }) => (
+  <div
+    className={`w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-3 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center gap-1 sm:gap-1.5 ${
+      tier === 'pro_max'
+        ? 'border-[#FFE082] bg-gradient-to-br from-[#FFFDE7] to-[#FFF59D] text-[#B45309]'
+        : 'border-warning-200 bg-warning-50 text-warning-700'
+    }`}
+    title="هذه الميزة مفتوحة للحساب المدفوع بلا حد — التشغيل أسرع لأن مفيش فحص كوتا."
+  >
+    <span className="text-[10px] sm:text-[12px] font-black truncate">∞ مفتوح</span>
+  </div>
+);
+
 export const PlanGroupSection: React.FC<FeatureRowProps> = ({
   group,
   form,
@@ -47,6 +76,8 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
 }) => {
   const icon = GROUP_ICON[group.id] || <FaSliders />;
   const [isExpanded, setIsExpanded] = useState(false);
+  // 🆕 لو الميزة اتفتحت للـ paid tiers بلا حد، نخفي حقول الأرقام للبرو والبرو ماكس
+  const isOpenForPaid = GROUPS_OPEN_FOR_PAID.has(group.id);
 
   const updateLimit = (key: keyof AccountTypeControlsForm, raw: string) => {
     const value = clampLimit(Number(raw || 0));
@@ -92,14 +123,19 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             <FaCrown className="w-3 h-3 text-warning-500 shrink-0" />
             <span className="text-[10px] sm:text-[12px] font-black text-warning-700 truncate">برو</span>
           </div>
-          <input
-            type="number"
-            min={0}
-            max={999999}
-            value={form[group.premium.limitKey]}
-            onChange={(e) => updateLimit(group.premium.limitKey, e.target.value)}
-            className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric text-center sm:text-start"
-          />
+          {/* 🆕 (2026-05): الميزات المفتوحة للـ paid → عرض "∞ مفتوح" بدل input */}
+          {isOpenForPaid ? (
+            <UnlimitedBadge tier="pro" />
+          ) : (
+            <input
+              type="number"
+              min={0}
+              max={999999}
+              value={form[group.premium.limitKey]}
+              onChange={(e) => updateLimit(group.premium.limitKey, e.target.value)}
+              className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric text-center sm:text-start"
+            />
+          )}
         </div>
 
         {/* Pro Max — ذهبي لامع (أغنى من برو) */}
@@ -110,14 +146,19 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
               {/* "برو ماكس" بيتلف لسطرين على شاشات صغيرة لو لازم بدل ما يضغط الإدخال */}
               <span className="text-[10px] sm:text-[12px] font-black text-[#B45309] truncate">برو ماكس</span>
             </div>
-            <input
-              type="number"
-              min={0}
-              max={999999}
-              value={(form[group.proMax.limitKey] as number | undefined) ?? 0}
-              onChange={(e) => updateLimit(group.proMax!.limitKey, e.target.value)}
-              className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-[#FFE082] bg-gradient-to-br from-white to-[#FFFDE7] text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-[#FFB300] hover:border-[#FFD54F] focus:outline-none transition-colors font-numeric text-center sm:text-start"
-            />
+            {/* 🆕 (2026-05): الميزات المفتوحة للـ paid → عرض "∞ مفتوح" بدل input */}
+            {isOpenForPaid ? (
+              <UnlimitedBadge tier="pro_max" />
+            ) : (
+              <input
+                type="number"
+                min={0}
+                max={999999}
+                value={(form[group.proMax.limitKey] as number | undefined) ?? 0}
+                onChange={(e) => updateLimit(group.proMax!.limitKey, e.target.value)}
+                className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-[#FFE082] bg-gradient-to-br from-white to-[#FFFDE7] text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-[#FFB300] hover:border-[#FFD54F] focus:outline-none transition-colors font-numeric text-center sm:text-start"
+              />
+            )}
           </div>
         )}
       </div>

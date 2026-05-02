@@ -67,26 +67,9 @@ export default defineConfig({
               },
             },
           },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'ext-google-fonts-styles',
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'ext-google-fonts-webfonts',
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
+          // ملاحظة: قواعد Google Fonts (fonts.googleapis.com / fonts.gstatic.com) اتشالت
+          // لأن خط Cairo بقى محلي 100% في /fonts/cairo/ — بيتـprecache مع باقي
+          // الأصول عبر globPatterns (woff2 + css) فمفيش طلب خارجي محتاج caching.
           {
             urlPattern: /\/assets\/.*\.js$/,
             handler: 'NetworkFirst',
@@ -151,6 +134,12 @@ export default defineConfig({
   ],
   envDir: '.',
   server: {
+    // ─ إيقاف التحديث التلقائي (HMR) في وضع التطوير.
+    //   السبب: كل reload تلقائي بيعيد تشغيل Firebase listeners → قراءات إضافية
+    //   من Firestore + استهلاك انترنت. لما HMR = false، أي تعديل في الكود
+    //   ما يعملش reload لوحده — لازم المستخدم يضغط F5 / Ctrl+R بنفسه.
+    //   ملاحظة: ده بيأثر بس على dev server، مش على الـbuild الإنتاجي.
+    hmr: false,
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       Pragma: 'no-cache',
@@ -192,7 +181,6 @@ export default defineConfig({
           if (normalized.includes('vendor-firebase-analytics-')) return false;
           // المكتبات التقيلة اللي ما تتستخدم إلا في ميزات متأخرة (طباعة/رسوم/قص صور):
           if (normalized.includes('vendor-html2canvas-')) return false;
-          if (normalized.includes('vendor-jspdf-')) return false;
           if (normalized.includes('vendor-recharts-')) return false;
           if (normalized.includes('vendor-easy-crop-')) return false;
           return true;
@@ -234,7 +222,7 @@ export default defineConfig({
             }
             if (normalizedId.includes('/node_modules/@google/genai/')) return 'vendor-genai';
             // فصل المكتبات التقيلة (كانت كلها مدمجة في vendor = 1.1MB):
-            //   - html2canvas/jspdf: طباعة الروشتات (lazy)
+            //   - html2canvas: تحويل DOM لصورة (lazy، في BookingSuccessCard)
             //   - recharts: الـdashboard charts (lazy)
             //   - react-easy-crop: قص الصور (lazy)
             //   - react-router: راوتينج (startup)
@@ -243,7 +231,6 @@ export default defineConfig({
             // ملاحظة: @sentry/react مش منفصل — بيعمل circular dependency مع vendor العام
             // (بعض utilities الـsentry مشتركة مع حاجات تانية)، فسايبينه داخل vendor.
             if (normalizedId.includes('/node_modules/html2canvas/')) return 'vendor-html2canvas';
-            if (normalizedId.includes('/node_modules/jspdf/')) return 'vendor-jspdf';
             if (normalizedId.includes('/node_modules/recharts/')) return 'vendor-recharts';
             if (normalizedId.includes('/node_modules/react-easy-crop/')) return 'vendor-easy-crop';
             if (

@@ -19,6 +19,8 @@ import { normalizeScheduleRows } from './utils';
 import { useDoctorAdvertisementController } from './useDoctorAdvertisementController';
 import type { DoctorAdvertisementPageProps } from '../../../types';
 import { LoadingStateScreen } from '../../app/LoadingStateScreen';
+import { AdminAccessToggle } from '../../shared/AdminAccessToggle';
+import { auth } from '../../../services/firebaseConfig';
 
 export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (props) => {
   const {
@@ -171,6 +173,16 @@ export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (
 
       {/* زرار المعاينه اتنقل هنا تحت خالص — بعد كل المحتوى وأزرار الحفظ/النشر */}
       <DoctorAdPreviewButton onClick={() => setShowPreview(true)} />
+
+      {/* زر إذن الأدمن — يظهر للطبيب بس. لمّا الأدمن بيساعد، الـauth.uid مختلف
+          عن doctorId، فبنخفي الزر علشان الأدمن مايقدرش يقفل وصول نفسه. */}
+      {auth.currentUser?.uid && auth.currentUser.uid === props.doctorId && (
+        <AdminAccessToggle
+          field="allowAdminAdEdit"
+          title="السماح للإدارة بمساعدتك في تصميم الإعلان"
+          description="لمّا تكون مفعّلة، فريق الإدارة يقدر يفتح صفحة إعلانك ويعدّلها معاك. الإدارة مش بتشوف بياناتك التانية (المرضى، التقارير، المالية) — الحماية مفروضة من قواعد التطبيق."
+        />
+      )}
     </div>
   );
 };

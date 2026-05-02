@@ -202,5 +202,13 @@ export const finalizeDoctorGoogleSignIn = async (user: User): Promise<void> => {
   clearSignInAttempts(user.uid);
   clearDoctorAuthErrors();
   setStoredRole('doctor');
+
+  // 🆕 (2026-05) تحديث lastActiveAt — مؤشر تتبع آخر دخول للأدمن.
+  // ⚠️ best-effort: لو فشل، الـ login ينجح. الفشل بيتسجل بس بدون قطع المسار.
+  try {
+    await setDoc(userRef, { lastActiveAt: new Date().toISOString() }, { merge: true });
+  } catch (err) {
+    console.warn('[doctor-account] Failed to update lastActiveAt:', err);
+  }
 };
 

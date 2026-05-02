@@ -30,27 +30,6 @@ const resolveAudienceRoleKeys = (audience) => {
   return AUDIENCE_ROLE_KEYS[normalized] ? [...AUDIENCE_ROLE_KEYS[normalized]] : [];
 };
 
-const resolveAudienceTopics = (audience) => {
-  const roles = resolveAudienceRoleKeys(audience);
-  const topics = roles
-    .map((role) => ROLE_TOPICS[role])
-    .map((topic) => String(topic || '').trim())
-    .filter(Boolean);
-  return Array.from(new Set(topics));
-};
-
-const buildTopicCondition = (topics) => {
-  const safeTopics = Array.isArray(topics)
-    ? topics.map((topic) => String(topic || '').trim()).filter(Boolean)
-    : [];
-
-  if (!safeTopics.length) return '';
-
-  return safeTopics
-    .map((topic) => `'${topic.replace(/'/g, "")}' in topics`)
-    .join(' || ');
-};
-
 module.exports = {
   ROLE_TOPICS,
   ALL_ROLE_TOPICS,
@@ -58,6 +37,4 @@ module.exports = {
   SUPPORTED_BROADCAST_AUDIENCES,
   normalizeAudience,
   resolveAudienceRoleKeys,
-  resolveAudienceTopics,
-  buildTopicCondition,
 };

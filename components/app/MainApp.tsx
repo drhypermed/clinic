@@ -383,6 +383,7 @@ export const MainApp: React.FC = () => {
     patientName,
     phone,
     userId,
+    cachedAccountType: accountType, // 🆕 (2026-05): paid tiers يتخطوا فحص الكوتا — التشغيل أسرع
     showNotification,
     setWhatsappGuideOpen,
     openQuotaNoticeModal, // 🆕 عشان لما الحد ينتهي يفتح المودال (مع زرار واتساب) بدل toast

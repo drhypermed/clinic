@@ -43,12 +43,6 @@ const buildDoctorUserProfilePayload = (payload) => ({
   ...payload,
 });
 
-const buildPublicUserProfilePayload = (payload) => ({
-  authRole: 'public',
-  userRole: 'public',
-  ...payload,
-});
-
 const getUserProfileRef = (db, userId) => db.collection('users').doc(String(userId || '').trim());
 const getUserUsageDailyRef = (db, userId, usageDocId) => getUserProfileRef(db, userId).collection('usageDaily').doc(usageDocId);
 
@@ -89,7 +83,6 @@ module.exports = {
   resolveAuthRoleFromProfileData,
   mergePrimaryProfileData,
   buildDoctorUserProfilePayload,
-  buildPublicUserProfilePayload,
   getUserProfileRef,
   getUserUsageDailyRef,
   loadUnifiedDoctorProfile,

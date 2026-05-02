@@ -206,6 +206,10 @@ function buildInternalNotificationLink(data, baseLink, action) {
       if (appointmentType) url.searchParams.set('appointmentType', appointmentType);
       if (source) url.searchParams.set('source', source);
       if (dateTime) url.searchParams.set('dateTime', dateTime);
+      // وقت إنشاء الإشعار — يستخدمه الـ deep link handler لتجاهل الإشعارات
+      // الأقدم من 3 أيام (مثل ضغط إشعار قديم في درج الموبايل).
+      const createdAt = toString(data.createdAt);
+      if (createdAt) url.searchParams.set('createdAt', createdAt);
       SECRETARY_VITAL_FIELDS.forEach(({ key }) => {
         const vitalValue = toString(data[`sv_${key}`]);
         if (!vitalValue) return;
@@ -293,10 +297,49 @@ function resolveTypeSpecificCopy(data, fallbackTitle, fallbackBody) {
   };
 }
 
+// مسح إشعارات بـ tag محدد من درج النظام — يُستدعى لما جهاز تاني يتعامل مع
+// الإشعار، فالـ Cloud Function تبعث silent push بـ dh_action='dismiss_notification'
+// والـ SW يمسح الإشعار من هنا.
+function dismissNotificationsByTag(tag) {
+  const normalizedTag = toString(tag);
+  if (!normalizedTag) return Promise.resolve();
+  return self.registration.getNotifications({ tag: normalizedTag })
+    .then((notifications) => {
+      notifications.forEach((notif) => {
+        try { notif.close(); } catch (_) { /* ignore */ }
+      });
+    })
+    .catch((err) => {
+      console.warn('[SW] dismissNotificationsByTag failed:', err);
+    });
+}
+
+// قاعدة موحَّدة عبر التطبيق: أي إشعار عمره أكتر من 3 أيام يتم تجاهله نهائياً
+// (في الـ SW، الـ foreground handler، الـ deep link، الـ toast الداخلي).
+const NOTIFICATION_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+
+function isNotificationTooOld(data) {
+  const createdAt = toString(data && data.createdAt);
+  if (!createdAt) return false;
+  const ageMs = Date.now() - new Date(createdAt).getTime();
+  if (!Number.isFinite(ageMs)) return false;
+  return ageMs > NOTIFICATION_MAX_AGE_MS;
+}
+
 function showBackgroundNotification(payload) {
   const payloadObj = toObject(payload);
   const data = extractNotificationData(payloadObj.data || payloadObj);
   const eventType = resolveEventType(data);
+
+  // إشعار صامت من السيرفر = أمر بمسح إشعار من درج النظام (cross-device sync).
+  // ما نظهرش حاجة، فقط نقفل الإشعارات بنفس الـ tag.
+  const dhAction = toString(data.dh_action);
+  if (dhAction === 'dismiss_notification') {
+    return dismissNotificationsByTag(data.tag);
+  }
+
+  // إشعار قديم > 3 أيام — ما نعرضوش (تجنب تكرار إشعارات قديمة عند فتح الموبايل بعد غياب).
+  if (isNotificationTooOld(data)) return Promise.resolve();
 
   const fallbackTitle =
     toString(data.title) ||

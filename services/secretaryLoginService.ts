@@ -102,6 +102,13 @@ export const getSecretaryLoginErrorMessage = (error: unknown): string => {
     return 'لم يتم اختيار كلمة سر من قبل الطبيب';
   }
 
+  // كلمة السر متطابقة في أكثر من فرع للطبيب نفسه — السكرتيرة لازم تفهم
+  // إن المشكلة من إعداد الطبيب مش من كتابتها للكلمة. الطبيب يحتاج يغير
+  // كلمة سر فرع عشان النظام يميز.
+  if (normalizedMessage.includes('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES')) {
+    return 'كلمة السر متكررة في أكثر من فرع لنفس الطبيب.\n\nيرجى التواصل مع الطبيب لتغيير كلمة سر أحد الفروع حتى يميز النظام بينها.';
+  }
+
   if (
     code === 'permission-denied' ||
     code === 'not-found' ||

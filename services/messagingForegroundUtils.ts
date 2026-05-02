@@ -171,6 +171,32 @@ export async function showForegroundSystemNotification(payload: unknown): Promis
   const base = toObject(payload);
   const notification = toObject(base.notification);
 
+  // إشعار صامت = أمر بمسح إشعار من درج النظام بنفس الـ tag (cross-device sync).
+  // ما نعرضش حاجة جديدة، فقط نقفل الموجود — راجع
+  // notifyDevicesToDismissAppointmentNotification.js + firebase-messaging-sw.js.
+  if (normalizeLower(data.dh_action) === 'dismiss_notification') {
+    const tagToDismiss = toStringSafe(data.tag);
+    if (tagToDismiss && 'serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const matches = await registration.getNotifications({ tag: tagToDismiss });
+        matches.forEach((n) => { try { n.close(); } catch { /* ignore */ } });
+      } catch {
+        // التطبيق المفتوح هياخد الـ Firestore subscription ويتعامل — مفيش حاجة كارثية
+      }
+    }
+    return false;
+  }
+
+  // فحص العمر — أي إشعار عمره أكتر من 3 أيام لا يُعرض كـ system notification
+  // (التطبيق المفتوح ممكن يستقبل push مكدّس من فترة inactivity على بعض المتصفحات).
+  const NOTIFICATION_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+  const createdAt = toStringSafe(data.createdAt);
+  if (createdAt) {
+    const ageMs = Date.now() - new Date(createdAt).getTime();
+    if (Number.isFinite(ageMs) && ageMs > NOTIFICATION_MAX_AGE_MS) return false;
+  }
+
   // تحديد العنوان والمحتوى
   const title =
     toStringSafe(data.title) ||

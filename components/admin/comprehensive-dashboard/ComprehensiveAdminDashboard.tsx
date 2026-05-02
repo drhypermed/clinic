@@ -26,6 +26,7 @@ import { AccountManagementPanel } from '../account-management/AccountManagementP
 import { FinancialPanel } from '../financial-panel/FinancialPanel';
 import { HomepageBannerManagementPanel } from '../homepage-banner-management/HomepageBannerManagementPanel';
 import { PrescriptionFooterLineManagementPanel } from '../prescription-footer-line-management/PrescriptionFooterLineManagementPanel';
+import { AdminDoctorDesignEditorPage } from '../doctor-design-editor/AdminDoctorDesignEditorPage';
 import { AccountTypeControlsPanel } from '../account-type-controls/AccountTypeControlsPanel';
 import { UpdateBroadcastManagementPanel } from '../update-broadcast/UpdateBroadcastManagementPanel';
 import { ExternalNotificationBroadcastPanel } from '../external-notification-broadcast/ExternalNotificationBroadcastPanel';
@@ -59,6 +60,7 @@ const VIEW_META: Record<AdminView, { title: string }> = {
   reports: { title: 'التقارير والإحصاءات' },
   homeBanner: { title: 'بانرات الصفحة الرئيسية' },
   prescriptionFooterLine: { title: 'سطر أسفل الروشتة' },
+  doctorDesignEditor: { title: 'مساعدة في تصميم الطبيب' },
   settings: { title: 'إعدادات النظام' },
 };
 
@@ -184,6 +186,8 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
       reports: stats.totalDoctors,
       homeBanner: stats.homeBannerItems,
       prescriptionFooterLine: stats.footerContacts,
+      // ─ مفيش عداد منطقي للقسم ده (هو مجرد بحث عند الطلب)
+      doctorDesignEditor: 0,
       settings: adminList.length,
     }),
     [stats, effectivePendingDoctorsCount, adminList.length],
@@ -269,6 +273,14 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
         return (
           <AdminViewShell view="prescriptionFooterLine">
             <PrescriptionFooterLineManagementPanel adminEmail={user.email} />
+          </AdminViewShell>
+        );
+      // ─ شاشة الأدمن لمساعدة طبيب في تصميم روشتته أو إعلانه — الوصول مقيّد
+      //   على المستندين دول بس (تأكيد الحماية في firestore.rules + storage.rules)
+      case 'doctorDesignEditor':
+        return (
+          <AdminViewShell view="doctorDesignEditor">
+            <AdminDoctorDesignEditorPage />
           </AdminViewShell>
         );
       case 'settings':

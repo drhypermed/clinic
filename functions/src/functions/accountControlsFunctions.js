@@ -4,7 +4,7 @@ const makeConsumeSmartPrescriptionQuota = require('./account-controls/consumeSma
 const makeConsumeStorageQuota = require('./account-controls/consumeStorageQuota');
 const makeConsumeBookingQuota = require('./account-controls/consumeBookingQuota');
 const makeConsumeDrugToolQuota = require('./account-controls/consumeDrugToolQuota');
-const makeConsumeTranslationQuota = require('./account-controls/consumeTranslationQuota');
+// ✂️ شيلنا makeConsumeTranslationQuota (2026-05) — الترجمة بقت بدون حد منفصل
 const makeValidateRecordsCapacity = require('./account-controls/validateRecordsCapacity');
 const makeValidateReadyPrescriptionsCapacity = require('./account-controls/validateReadyPrescriptionsCapacity');
 const makeValidateMedicationCustomizationsCapacity = require('./account-controls/validateMedicationCustomizationsCapacity');
@@ -18,8 +18,7 @@ module.exports = (context) => {
     consumeStorageQuota: makeConsumeStorageQuota(context),
     consumeBookingQuota: makeConsumeBookingQuota(context),
     consumeDrugToolQuota: makeConsumeDrugToolQuota(context),
-    // ─── الترجمة الذكية للروشتة (جديد — كانت بتشتغل بدون حد قبل كده) ───
-    consumeTranslationQuota: makeConsumeTranslationQuota(context),
+    // ✂️ شيلنا consumeTranslationQuota (2026-05)
     // ─── فحص سعة السجلات على السيرفر (تشديد أمني 2026-04) ───
     validateRecordsCapacity: makeValidateRecordsCapacity(context),
     // ─── فحص سعة الروشتات الجاهزة + الأدوية المعدّلة (تشديد أمني 2026-04) ───

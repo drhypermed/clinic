@@ -79,12 +79,7 @@ export const buildPayloadForSave = (form: AccountTypeControls): Partial<AccountT
 
   // معالجة الحقول الفردية الأخرى
   payload.whatsappNumber = digitsOnly(form.whatsappNumber);
-  payload.interactionToolPremiumOnly = !!form.interactionToolPremiumOnly;
-  payload.renalToolPremiumOnly = !!form.renalToolPremiumOnly;
-  payload.pregnancyToolPremiumOnly = !!form.pregnancyToolPremiumOnly;
-  payload.interactionToolLockedMessage = trimTo(form.interactionToolLockedMessage);
-  payload.renalToolLockedMessage = trimTo(form.renalToolLockedMessage);
-  payload.pregnancyToolLockedMessage = trimTo(form.pregnancyToolLockedMessage);
+  // ✂️ شيلنا premiumOnly + lockedMessage — مش مكتوبين في الفورم ولا الـ UI بعد التبسيط.
   payload.premiumTagLabel = trimTo(form.premiumTagLabel, 40);
 
   return payload;

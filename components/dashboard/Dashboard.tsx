@@ -4,6 +4,8 @@ import type { ClinicAppointment, PatientRecord } from '../../types';
 import { AdBanner } from '../common/AdBanner';
 import { PremiumExpiryWarning } from '../common/PremiumExpiryWarning';
 import { usePremiumExpiryCheck } from '../../hooks/usePremiumExpiryCheck';
+import { InactivityWarning } from '../common/InactivityWarning';
+import { useInactivityWarning } from '../../hooks/useInactivityWarning';
 import { useHomepageBanner } from '../../hooks/useHomepageBanner';
 import { formatUserDate, formatUserTime, getUserHour } from '../../utils/cairoTime';
 import { computePaymentBreakdownForBasePrice } from '../../utils/paymentDiscount';
@@ -79,6 +81,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     });
 
     const expiryWarning = usePremiumExpiryCheck(user);
+    // 🆕 (2026-05) تنبيه الخمول للحساب المجاني — يظهر قبل التعطيل التلقائي بـ ≤ 30 يوم
+    const inactivityWarning = useInactivityWarning(user);
     const { banner, loading: bannerLoading, isVisible: isHomepageBannerVisible } = useHomepageBanner('doctors');
 
     const bannerPrimaryImageUrl = React.useMemo(() => {
@@ -323,12 +327,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     />
                 )}
 
-                {/* ─── Pro Warning ─── */}
+                {/* ─── Pro Warning (للبرو/برو ماكس قبل انتهاء الاشتراك) ─── */}
                 {expiryWarning.isExpired && expiryWarning.expiryDate ? (
                     <PremiumExpiryWarning expiryDate={expiryWarning.expiryDate} mode="expired" />
                 ) : expiryWarning.show && expiryWarning.expiryDate ? (
                     <PremiumExpiryWarning expiryDate={expiryWarning.expiryDate} mode="expiring" />
                 ) : null}
+
+                {/* 🆕 (2026-05) Free Trial Expiry Warning (للمجاني قبل انتهاء المدة بشهر) */}
+                {inactivityWarning.show && inactivityWarning.expectedDisableDate && (
+                    <InactivityWarning
+                        daysRemaining={inactivityWarning.daysRemaining}
+                        expectedDisableDate={inactivityWarning.expectedDisableDate}
+                    />
+                )}
 
                 {/* ═══════════════════════════════════════════
                     HEADER — كرت ترحيب بخلفية صلبة (مش شفاف عشان الكلام يبان)

@@ -56,6 +56,8 @@ export interface ApprovedDoctor {
   doctorSpecialty?: string;
   doctorEmail?: string;
   doctorWhatsApp?: string;
+  /** رابط مستند التحقق (الكارنيه/الترخيص) — يعرضه الأدمن داخل بطاقة الطبيب. */
+  verificationDocUrl?: string;
   accountType?: AccountType;
   premiumExpiryDate?: string;
   premiumStartDate?: string;

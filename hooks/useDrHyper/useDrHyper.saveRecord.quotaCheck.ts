@@ -15,6 +15,7 @@
  */
 import React from 'react';
 import { validateRecordsCapacity } from '../../services/accountTypeControlsService';
+import { readCachedAccountType } from '../../services/account-type-controls/quotas';
 import {
   getQuotaVerificationFailureMessage,
   isQuotaLimitExceededError,
@@ -74,6 +75,8 @@ export async function runPreSaveQuotaCheck({
   showNotification,
   e,
 }: CapacityCheckArgs): Promise<QuotaCheckResult> {
+  // 🆕 (2026-05): paid tiers يتخطوا الـ Cloud Function call تلقائياً (التشغيل أسرع).
+  const cachedAccountType = readCachedAccountType(user?.uid);
   if (!user?.uid) {
     showNotification('يجب تسجيل الدخول أولاً ثم إعادة المحاولة.', 'error', e);
     return { ok: false, reason: 'auth' };
@@ -88,6 +91,7 @@ export async function runPreSaveQuotaCheck({
     await retryOnTransientError(() =>
       validateRecordsCapacity(
         recordIdForUpdate ? { recordId: recordIdForUpdate } : undefined,
+        { cachedAccountType },
       ),
     );
     return { ok: true };

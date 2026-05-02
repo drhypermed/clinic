@@ -52,6 +52,8 @@ const mapDoctorSnapshot = (snapshotDoc: DoctorDocSnapshot): ApprovedDoctor => {
     doctorSpecialty: userData?.doctorSpecialty || '',
     doctorEmail: normalizeEmail(userData?.doctorEmail || userData?.email),
     doctorWhatsApp: userData?.doctorWhatsApp || '',
+    // رابط مستند التحقق — لازم يتنقل من الـdoc حتى يظهر في كارت الإدارة
+    verificationDocUrl: userData?.verificationDocUrl || '',
     accountType: userData?.accountType === 'premium' ? 'premium'
       : userData?.accountType === 'pro_max' ? 'pro_max'
       : 'free',

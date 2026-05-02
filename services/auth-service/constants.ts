@@ -17,10 +17,6 @@ export const PENDING_GOOGLE_AUTH_ROLE_KEY = 'dh_pending_google_auth_role'; // ا
 // بعد timeout (مثلاً Firestore بطيء أو البروفايل ناقص). الصياغه عربيه عشان تظهر للمستخدم.
 export const ROLE_RESOLUTION_ERROR_KEY = 'dh_role_resolution_error';
 
-/** إعدادات تحديد عدد المحاولات (Rate Limiting) */
-export const MAX_ATTEMPTS = 5;               // أقصى عدد للمحاولات الفاشلة
-export const LOCKOUT_TIME = 15 * 60 * 1000;   // وقت الحظر (15 دقيقة) بالملي ثانية
-
 /** الروابط وإعدادات إعادة التوجيه للرسائل البريدية */
 // روابط الإيميلات للدكاتره (تأكيد/إعاده تعيين) لازم ترجع لدومين العياده
 // عشان ما يحصلش: دكتور يضغط رابط → يلاقي نفسه على صفحه المريض (drhypermed.com)

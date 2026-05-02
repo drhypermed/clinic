@@ -118,8 +118,21 @@ module.exports = (context) => {
       // نكمّل لحجز الجمهور لأن إشعار السكرتارية لا يزال مطلوباً حتى لو الطبيب مش مسجّل tokens.
     }
 
-    // تجميع tokens السكرتارية منفصلة: (1) لاستبعادها من إرسال الطبيب، (2) لإرسال push موازٍ لها.
-    const secretaryTokensSet = new Set();
+    // فرع الموعد — لازم يتحدد قبل قراءة الـ tokens لأن الإشعار يخص فرع واحد فقط
+    const branchId = String(data?.branchId || '').trim() || 'main';
+
+    // تجميع tokens السكرتارية:
+    //   - allSecretaryTokensSet = كل الـ tokens (لكل الفروع) → للاستبعاد من إرسال الطبيب
+    //     (لو نفس الجهاز عليه طبيب وسكرتيرة، مش عاوزين الطبيب يستلم نسختين).
+    //   - branchSecretaryTokensSet = tokens الفرع المستهدف فقط → للإرسال الفعلي.
+    //
+    // ⚠️ إصلاح bug تسريب إشعارات بين الفروع:
+    //   الكود القديم كان بيستخدم getFcmTokensFromDoc اللي بيقرا حقل fcmTokens الجذري
+    //   اللي فيه كل الـ tokens مدمجة. النتيجة: إشعار موعد على فرع شبرا كان بيوصل
+    //   لسكرتيرة فرع المعادي. الإصلاح: نستخدم tokensByBranch[branchId] لو موجود.
+    //   نسقط على الجذر فقط لو الـ doc كله legacy schema (ميفهمش tokensByBranch).
+    const allSecretaryTokensSet = new Set();
+    const branchSecretaryTokensSet = new Set();
     const relatedSecretsSet = new Set();
     try {
       const secretsToCheck = new Set();
@@ -141,19 +154,47 @@ module.exports = (context) => {
         if (!sec) continue;
         relatedSecretsSet.add(sec);
         const secTokenSnap = await db2.doc(`secretaryFcmTokens/${sec}`).get().catch(() => null);
-        if (secTokenSnap?.exists) {
-          getFcmTokensFromDoc(secTokenSnap.data()).forEach((t) => secretaryTokensSet.add(t));
+        if (!secTokenSnap?.exists) continue;
+        const tokenData = secTokenSnap.data() || {};
+
+        // كل tokens المستند (الجذر + كل الفروع) → للاستبعاد من إرسال الطبيب
+        getFcmTokensFromDoc(tokenData).forEach((t) => allSecretaryTokensSet.add(t));
+        const tokensByBranchMap =
+          tokenData.tokensByBranch && typeof tokenData.tokensByBranch === 'object'
+            ? tokenData.tokensByBranch
+            : null;
+        if (tokensByBranchMap) {
+          Object.values(tokensByBranchMap).forEach((arr) => {
+            if (Array.isArray(arr)) {
+              arr.forEach((t) => {
+                if (typeof t === 'string' && t) allSecretaryTokensSet.add(t);
+              });
+            }
+          });
         }
+
+        // tokens الفرع المستهدف فقط → للإرسال
+        const branchTokens =
+          tokensByBranchMap && Array.isArray(tokensByBranchMap[branchId])
+            ? tokensByBranchMap[branchId].filter((t) => typeof t === 'string' && t)
+            : null;
+        if (branchTokens && branchTokens.length > 0) {
+          // الفرع المستهدف عنده tokens مسجلة صراحة → نستخدمها فقط
+          branchTokens.forEach((t) => branchSecretaryTokensSet.add(t));
+        } else if (!tokensByBranchMap) {
+          // legacy schema بالكامل (الـ doc ميعرفش tokensByBranch) → نسقط على الجذر
+          // ده مسار توافق مع أجهزة قديمة لم تُسجل بعد على الـ schema الجديد.
+          getFcmTokensFromDoc(tokenData).forEach((t) => branchSecretaryTokensSet.add(t));
+        }
+        // غير ذلك: الفرع مفيهوش tokens لكن في فروع تانية → ميتبعتش (منع تسريب).
       }
-      if (secretaryTokensSet.size > 0) {
-        const filteredTokens = tokens.filter((t) => !secretaryTokensSet.has(t));
+      if (allSecretaryTokensSet.size > 0) {
+        const filteredTokens = tokens.filter((t) => !allSecretaryTokensSet.has(t));
         tokens = filteredTokens;
       }
     } catch (_) {
       // Non-fatal: if we can't filter, send to all doctor tokens
     }
-
-    const branchId = String(data?.branchId || '').trim() || 'main';
     const notificationTitle = 'موعد جديد';
 
     // ينفِّذ send + cleanup tokens الفاسدة لمستلم واحد (طبيب/سكرتيرة).
@@ -173,6 +214,9 @@ module.exports = (context) => {
         branchId,
         patientName: String(data.patientName || ''),
         dateTime: String(data.dateTime || ''),
+        // وقت إنشاء الإشعار — يستخدمه الـ client لتجاهل الإشعارات الأقدم من 3 أيام
+        // (لو الموعد ما عندوش createdAt مسجَّل، نستخدم وقت الـ trigger كقيمة احتياطية).
+        createdAt: String(data.createdAt || new Date().toISOString()),
         source: String(data.source || ''),
         appointmentType: String(data.appointmentType || 'exam'),
         ...(data.age ? { age: String(data.age) } : {}),
@@ -227,10 +271,11 @@ module.exports = (context) => {
         });
 
     // لا نرسل للسكرتارية لو هي اللي حجزت (source === 'secretary') لتجنب إشعار ذاتي.
-    const secretaryPush = (sourceKey === 'public' && secretaryTokensSet.size > 0)
+    // نستخدم branchSecretaryTokensSet (فرع الموعد فقط) عشان متبعتش لسكرتيرة فرع تاني.
+    const secretaryPush = (sourceKey === 'public' && branchSecretaryTokensSet.size > 0)
       ? sendPush({
           logLabel: 'notifySecretaryOnNewPublicAppointment',
-          tokens: Array.from(secretaryTokensSet),
+          tokens: Array.from(branchSecretaryTokensSet),
           type: 'new_public_appointment',
           tag: `new_public_appointment_${branchId}_${aptId}`,
           link: `/book/s/${encodeURIComponent(Array.from(relatedSecretsSet)[0] || '')}?branchId=${encodeURIComponent(branchId)}`,

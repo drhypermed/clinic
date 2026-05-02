@@ -27,6 +27,12 @@ interface UsePrescriptionExportOptions {
     paperSize?: PaperSizeSettings;
     patientName?: string;
     phone?: string;
+    /**
+     * 🆕 (2026-05): الـ accountType الـ cached من الـ user document.
+     * لو 'premium' أو 'pro_max' بنتخطى فحص الكوتا تماماً → التشغيل أسرع ٢-٥ ثواني.
+     * لو 'free' أو undefined بنفحص بالطريقة العادية.
+     */
+    cachedAccountType?: 'free' | 'premium' | 'pro_max';
     onError?: (operation: PrescriptionExportOperation, error: unknown) => void;
     onTrack?: (operation: PrescriptionExportOperation) => void;
     /** يُستدعى قبل فتح حوار الطباعة — للتنبيهات التوجيهية (مثلاً: اختر حفظ كـ PDF). */
@@ -64,7 +70,7 @@ const REENTRY_GUARD_MS = 3000;
 export function usePrescriptionExport(
     options: UsePrescriptionExportOptions,
 ): UsePrescriptionExportReturn {
-    const { paperSize, patientName, phone, onError, onTrack, onPrompt, onQuotaLimitReached } = options;
+    const { paperSize, patientName, phone, cachedAccountType, onError, onTrack, onPrompt, onQuotaLimitReached } = options;
 
     /**
      * 🆕 فحص الكوتا قبل أي إجراء تصدير. بيرجع true لو نقدر نكمل، false لو الكوتا
@@ -78,7 +84,7 @@ export function usePrescriptionExport(
             feature: 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp',
         ): Promise<boolean> => {
             try {
-                await consumeStorageQuota(feature);
+                await consumeStorageQuota(feature, { cachedAccountType });
                 return true;
             } catch (err: unknown) {
                 if (isQuotaLimitExceededError(err) && onQuotaLimitReached) {
@@ -98,7 +104,7 @@ export function usePrescriptionExport(
                 return false;
             }
         },
-        [onError, onQuotaLimitReached],
+        [onError, onQuotaLimitReached, cachedAccountType],
     );
 
     const [isPrinting, setIsPrinting] = useState(false);
@@ -138,12 +144,18 @@ export function usePrescriptionExport(
         //   ما الـbrowser يرسل أي click event ثاني (iOS bug: double-click).
         setIsPrinting(true);
         try {
-            // 🆕 فحص الحد اليومي قبل الطباعة
-            if (!(await checkQuota('print', 'prescriptionPrint'))) return;
-            onTrack?.('print');
-            await new Promise<void>((resolve) =>
+            // 🆕 توازي 2026-05: نبدأ فحص الكوتا (٢-٥ ثواني cloud function call)
+            //   في الخلفية، ونعمل React commit للـ loading state بالتوازي بدل
+            //   تسلسلياً. الكوتا هي الـbottleneck — أي حاجة تانية بنخليها تتم
+            //   جنبها بدل ما تضيف على الانتظار.
+            const quotaPromise = checkQuota('print', 'prescriptionPrint');
+            const prepPromise = new Promise<void>((resolve) =>
                 requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
             );
+            onTrack?.('print');
+            // ننتظر الاتنين — الـtotal بيبقى max(quota, prep) بدل sum
+            const [quotaOk] = await Promise.all([quotaPromise, prepPromise]);
+            if (!quotaOk) return;
             await printPrescription(paperSize);
         } catch (err) {
             onError?.('print', err);
@@ -158,13 +170,15 @@ export function usePrescriptionExport(
         //   على الموبايل (نفس الـpattern في handlePrint).
         setIsDownloading(true);
         try {
-            // 🆕 فحص الحد اليومي قبل التنزيل
-            if (!(await checkQuota('download', 'prescriptionDownload'))) return;
-            onTrack?.('download');
-            // ننتظر إطارين من rAF عشان React يعمل commit للـ loading state
-            await new Promise<void>((resolve) =>
+            // 🆕 توازي 2026-05: فحص الكوتا + commit الـloading state في نفس
+            //   الوقت (نفس منطق handlePrint).
+            const quotaPromise = checkQuota('download', 'prescriptionDownload');
+            const prepPromise = new Promise<void>((resolve) =>
                 requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
             );
+            onTrack?.('download');
+            const [quotaOk] = await Promise.all([quotaPromise, prepPromise]);
+            if (!quotaOk) return;
             // اسم الملف = اسم المريض كما هو، أو "روشتة" لو مفيش اسم
             const trimmedName = patientName?.trim();
             const fileName = trimmedName && trimmedName.length > 0 ? trimmedName : 'روشتة';

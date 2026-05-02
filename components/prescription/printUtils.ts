@@ -34,25 +34,26 @@ const FONTS_READY_TIMEOUT_MS = 3000;
 let lastPrintInvocation = 0;
 
 /**
- * يضمن إن خط Cairo (وأي خط CSS لسه بيتحمّل) خلص تحميل قبل ما نفتح حوار الطباعة.
+ * يضمن إن خط Cairo خلص تحميل قبل ما نفتح حوار الطباعة.
  *
- * المشكلة على الموبايل: index.html بيحمّل Cairo بـ <link media="print" onload="this.media='all'">
- * — أسلوب deferred-load عشان الـ splash يبان بسرعة. على اللابتوب النت بيخلّص الخط
- * في ميلي ثواني قبل ما الطبيب يضغط طباعة. على الموبايل النت أبطأ وممكن الطبيب
- * يضغط الزر قبل ما الـ@font-face حتى تتسجّل في document.fonts، فالـ PDF يطلع
- * بخط fallback (Times/Arial) والتنسيق يتغيّر لأن عرض الحروف مختلف.
+ * بعد ما الخط بقى محلي 100% في /fonts/cairo/ (مش من Google Fonts):
+ *   - أول زيارة: الـSW بياخد ميلي ثواني عشان يـcache الـwoff2 الـ٣ ملفات.
+ *   - كل زيارة بعدها: الخط جاهز فوراً من الـcache المحلي (شبه صفر تأخير).
  *
- * الحل: قبل الطباعة:
- *   1) نستنى الـ<link> بتاع Cairo يتأكد إنه حُمّل (لو لسه بيتحمّل).
- *   2) نطلب تحميل وزن Cairo الصريح (400/700/800) عشان نضمن إن الـwoff2 موجود.
- *   3) نستنى document.fonts.ready مع timeout ٣ ثواني (أمان لو النت بطيء جداً).
+ * بنستخدم نفس الحماية الموجودة بالظبط لأنها idempotent وآمنة:
+ *   1) لو لينك /fonts/cairo/cairo.css لسه ما اتطبّقش (نادر — أول 50-100ms
+ *      من تحميل الصفحة بسبب media="print" onload trick)، نستناه.
+ *   2) نطلب تحميل وزن Cairo الصريح (400/700/800) عشان document.fonts يعرفهم.
+ *   3) ننتظر document.fonts.ready مع timeout أمان (٣ ثواني — نادراً ما يتفعّل
+ *      مع خط محلي، بس موجود لأمان iOS Safari القديم).
  */
 async function ensureFontsReady(): Promise<void> {
     if (typeof document === 'undefined') return;
 
-    // (1) لو لينك Cairo Google Fonts لسه بيتحمّل، استنى يخلّص.
+    // (1) لو ملف cairo.css المحلي لسه ما اتطبّقش، استنى يخلّص.
+    //     ده بيحصل في أول 50-100ms من تحميل الصفحة بسبب media="print" trick.
     const cairoLink = document.querySelector<HTMLLinkElement>(
-        'link[rel="stylesheet"][href*="fonts.googleapis.com"][href*="Cairo"]',
+        'link[rel="stylesheet"][href*="cairo.css"]',
     );
     if (cairoLink && !cairoLink.sheet) {
         await new Promise<void>((resolve) => {
@@ -63,12 +64,12 @@ async function ensureFontsReady(): Promise<void> {
             };
             cairoLink.addEventListener('load', cleanup, { once: true });
             cairoLink.addEventListener('error', cleanup, { once: true });
-            // أمان: لو الـlink مش هيخلّص (مثلاً: انقطاع شبكة)، استمر بعد ثانيتين.
-            window.setTimeout(cleanup, 2000);
+            // أمان: ثانية كافية لملف محلي (3KB CSS).
+            window.setTimeout(cleanup, 1000);
         });
     }
 
-    // (2) نجبر تحميل أوزان Cairo الشائعة قبل ما نطبع — fail silent على كل وزن.
+    // (2) نجبر تحميل أوزان Cairo الشائعة — fail silent على كل وزن.
     if (document.fonts && typeof document.fonts.load === 'function') {
         await Promise.all(
             ['400 1em "Cairo"', '700 1em "Cairo"', '800 1em "Cairo"'].map((spec) =>
@@ -77,7 +78,7 @@ async function ensureFontsReady(): Promise<void> {
         );
     }
 
-    // (3) ننتظر document.fonts.ready مع timeout أمان عشان ما نعلّقش حوار الطباعة.
+    // (3) ننتظر document.fonts.ready مع timeout أمان.
     if (document.fonts && document.fonts.ready) {
         await Promise.race([
             document.fonts.ready.then(() => undefined),

@@ -1,65 +1,13 @@
 /**
- * خدمة التحقق والتحجيم (Validation & Throttling Service):
- * هذا الملف يحتوي على وظائف مساعدة للتحقق من المدخلات (مثل البريد وكلمة المرور)
- * بالإضافة إلى منطق لتقليل عدد محاولات الدخول الفاشلة (Throttling) على مستوى العميل.
+ * خدمة التحقق (Validation Service):
+ * هذا الملف يحتوي على وظائف مساعدة للتحقق من المدخلات (مثل البريد).
  */
-
-import { LOCKOUT_TIME, MAX_ATTEMPTS } from './constants';
-
-// تخزين محاولات الدخول في الذاكرة (سيبقى مفعلاً ما دامت الصفحة مفتوحة)
-// ملاحظة: يجب أن يكون هناك تحديد للمعدل (Rate Limiting) في الخادم (Server-side) أيضاً للأمان الكامل.
-const loginAttempts: { [email: string]: { count: number; timestamp: number } } = {};
 
 /** توحيد تنسيق البريد الإلكتروني (إزالة المسافات وتحويل للأحرف الصغيرة) */
 export const normalizeEmail = (email?: string | null) => (email || '').trim().toLowerCase();
-
-/** مفتاح فريد لكل مستخدم بناءً على بريده الإلكتروني للتحجيم */
-const toRateLimitKey = (email: string) => normalizeEmail(email);
-
-/**
- * التحقق مما إذا كان المستخدم قد تجاوز عدد محاولات الدخول المسموح بها.
- */
-export const checkRateLimit = (email: string): boolean => {
-  const key = toRateLimitKey(email);
-  const now = Date.now();
-  const attempt = loginAttempts[key];
-
-  if (!attempt) return true;
-
-  // إذا مر وقت كافٍ (LOCKOUT_TIME)، نقوم بتصفير العداد والسماح بالمحاولة
-  if (now - attempt.timestamp > LOCKOUT_TIME) {
-    delete loginAttempts[key];
-    return true;
-  }
-
-  return attempt.count < MAX_ATTEMPTS;
-};
-
-/**
- * تسجيل نتيجة محاولة الدخول.
- * في حال النجاح: يتم تصفير العداد.
- * في حال الفشل: يتم زيادة العداد وتحديث وقت آخر محاولة.
- */
-export const recordAttempt = (email: string, success: boolean) => {
-  const key = toRateLimitKey(email);
-  const now = Date.now();
-
-  if (!loginAttempts[key]) {
-    loginAttempts[key] = { count: 0, timestamp: now };
-  }
-
-  if (success) {
-    delete loginAttempts[key];
-  } else {
-    loginAttempts[key].count++;
-    loginAttempts[key].timestamp = now;
-  }
-};
 
 /** التحقق من صحة هيكل البريد الإلكتروني باستخدام التعبيرات النمطية (Regex) */
 export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-
-

@@ -94,6 +94,9 @@ const buildWhatsAppUrl = (digits: string, message: string): string => {
 export const normalizeControls = (raw: any): AccountTypeControls => {
   const freeDailyLimit = toSafeLimit(raw?.freeDailyLimit, DEFAULT_CONTROLS.freeDailyLimit);
   const premiumDailyLimit = toSafeLimit(raw?.premiumDailyLimit, DEFAULT_CONTROLS.premiumDailyLimit);
+  // 🆕 حدود الزر السريع "إضافة بدون تحليل" (2026-05) — منفصل عن التحليل العميق
+  const freeQuickAddDailyLimit = toSafeLimit(raw?.freeQuickAddDailyLimit, DEFAULT_CONTROLS.freeQuickAddDailyLimit);
+  const premiumQuickAddDailyLimit = toSafeLimit(raw?.premiumQuickAddDailyLimit, DEFAULT_CONTROLS.premiumQuickAddDailyLimit);
   // ─── سعة السجلات (حد كلي مش يومي) ───
   const freeRecordsMaxCount = toSafeLimit(raw?.freeRecordsMaxCount, DEFAULT_CONTROLS.freeRecordsMaxCount);
   const premiumRecordsMaxCount = toSafeLimit(raw?.premiumRecordsMaxCount, DEFAULT_CONTROLS.premiumRecordsMaxCount);
@@ -107,9 +110,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumReadyPrescriptionDailyLimit = toSafeLimit(raw?.premiumReadyPrescriptionDailyLimit, DEFAULT_CONTROLS.premiumReadyPrescriptionDailyLimit);
   const freeMedicalReportDailyLimit = toSafeLimit(raw?.freeMedicalReportDailyLimit, DEFAULT_CONTROLS.freeMedicalReportDailyLimit);
   const premiumMedicalReportDailyLimit = toSafeLimit(raw?.premiumMedicalReportDailyLimit, DEFAULT_CONTROLS.premiumMedicalReportDailyLimit);
-  // ─── حدود الترجمة الذكية ───
-  const freeTranslationDailyLimit = toSafeLimit(raw?.freeTranslationDailyLimit, DEFAULT_CONTROLS.freeTranslationDailyLimit);
-  const premiumTranslationDailyLimit = toSafeLimit(raw?.premiumTranslationDailyLimit, DEFAULT_CONTROLS.premiumTranslationDailyLimit);
+  // ✂️ شيلنا حدود الترجمة (2026-05)
   const freeReadyPrescriptionsMaxCount = toSafeLimit(raw?.freeReadyPrescriptionsMaxCount, DEFAULT_CONTROLS.freeReadyPrescriptionsMaxCount);
   const premiumReadyPrescriptionsMaxCount = toSafeLimit(raw?.premiumReadyPrescriptionsMaxCount, DEFAULT_CONTROLS.premiumReadyPrescriptionsMaxCount);
   const freeMedicationCustomizationsMaxCount = toSafeLimit(raw?.freeMedicationCustomizationsMaxCount, DEFAULT_CONTROLS.freeMedicationCustomizationsMaxCount);
@@ -126,9 +127,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumRenalToolDailyLimit = toSafeLimit(raw?.premiumRenalToolDailyLimit, DEFAULT_CONTROLS.premiumRenalToolDailyLimit);
   const freePregnancyToolDailyLimit = toSafeLimit(raw?.freePregnancyToolDailyLimit, DEFAULT_CONTROLS.freePregnancyToolDailyLimit);
   const premiumPregnancyToolDailyLimit = toSafeLimit(raw?.premiumPregnancyToolDailyLimit, DEFAULT_CONTROLS.premiumPregnancyToolDailyLimit);
-  const interactionToolPremiumOnly = toBoolean(raw?.interactionToolPremiumOnly, DEFAULT_CONTROLS.interactionToolPremiumOnly);
-  const renalToolPremiumOnly = toBoolean(raw?.renalToolPremiumOnly, DEFAULT_CONTROLS.renalToolPremiumOnly);
-  const pregnancyToolPremiumOnly = toBoolean(raw?.pregnancyToolPremiumOnly, DEFAULT_CONTROLS.pregnancyToolPremiumOnly);
+  // ✂️ شيلنا normalize الـ flags premiumOnly — الحد اليومي وحده يحدد دلوقتي.
   const whatsappNumber = normalizeDigits(raw?.whatsappNumber || DEFAULT_CONTROLS.whatsappNumber);
 
   // ─── 🆕 رفع الصور للحساب المجاني (toggle + رسالتين) ───
@@ -152,6 +151,15 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumAnalysisLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.premiumAnalysisLimitMessage, raw?.premiumLimitMessage, raw?.premiumWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumAnalysisLimitMessage
+  );
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  const freeQuickAddLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeQuickAddLimitMessage,
+    DEFAULT_CONTROLS.freeQuickAddLimitMessage,
+  );
+  const premiumQuickAddLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumQuickAddLimitMessage,
+    DEFAULT_CONTROLS.premiumQuickAddLimitMessage,
   );
   // ─── رسائل سعة السجلات الطبية ───
   const freeRecordsCapacityMessage = normalizeMessageAllowEmpty(
@@ -202,15 +210,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     firstDefined(raw?.premiumMedicalReportLimitMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumMedicalReportLimitMessage
   );
-  // ─── رسائل تجاوز حد الترجمة الذكية ───
-  const freeTranslationLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freeTranslationLimitMessage, legacyMessage),
-    DEFAULT_CONTROLS.freeTranslationLimitMessage
-  );
-  const premiumTranslationLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumTranslationLimitMessage, legacyMessage),
-    DEFAULT_CONTROLS.premiumTranslationLimitMessage
-  );
+  // ✂️ شيلنا رسائل الترجمة (2026-05)
   const freeReadyPrescriptionsCapacityMessage = normalizeMessageAllowEmpty(
     raw?.freeReadyPrescriptionsCapacityMessage,
     DEFAULT_CONTROLS.freeReadyPrescriptionsCapacityMessage
@@ -252,6 +252,15 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumAnalysisWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.premiumAnalysisWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumAnalysisWhatsappMessage
+  );
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  const freeQuickAddWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeQuickAddWhatsappMessage,
+    DEFAULT_CONTROLS.freeQuickAddWhatsappMessage,
+  );
+  const premiumQuickAddWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumQuickAddWhatsappMessage,
+    DEFAULT_CONTROLS.premiumQuickAddWhatsappMessage,
   );
   // ─── رسائل واتساب سعة السجلات الطبية ───
   const freeRecordsCapacityWhatsappMessage = normalizeMessageAllowEmpty(
@@ -302,15 +311,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     firstDefined(raw?.premiumMedicalReportWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumMedicalReportWhatsappMessage
   );
-  // ─── رسائل واتساب الترجمة الذكية ───
-  const freeTranslationWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freeTranslationWhatsappMessage, legacyMessage),
-    DEFAULT_CONTROLS.freeTranslationWhatsappMessage
-  );
-  const premiumTranslationWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumTranslationWhatsappMessage, legacyMessage),
-    DEFAULT_CONTROLS.premiumTranslationWhatsappMessage
-  );
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   const freeReadyPrescriptionsCapacityWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeReadyPrescriptionsCapacityWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.freeReadyPrescriptionsCapacityWhatsappMessage
@@ -345,10 +346,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     firstDefined(raw?.premiumInsuranceCompaniesCapacityWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumInsuranceCompaniesCapacityWhatsappMessage
   );
-  const interactionToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.interactionToolLockedMessage, legacyMessage),
-    DEFAULT_CONTROLS.interactionToolLockedMessage
-  );
+  // ✂️ شيلنا normalize لرسائل الـ locked القديمه (الأداه دلوقتي بتعتمد على الحد).
   // ─── 🆕 رسائل الأزرار الذهبية (التداخلات + الحمل/الرضاعة) ───
   const freeInteractionToolLimitMessage = normalizeMessageAllowEmpty(
     raw?.freeInteractionToolLimitMessage,
@@ -420,14 +418,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     raw?.premiumRenalToolWhatsappMessage,
     DEFAULT_CONTROLS.premiumRenalToolWhatsappMessage,
   );
-  const renalToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.renalToolLockedMessage, legacyMessage),
-    DEFAULT_CONTROLS.renalToolLockedMessage
-  );
-  const pregnancyToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.pregnancyToolLockedMessage, legacyMessage),
-    DEFAULT_CONTROLS.pregnancyToolLockedMessage
-  );
+  // ✂️ شيلنا renalToolLockedMessage و pregnancyToolLockedMessage — مش مستخدمين دلوقتي.
   // نعمل force override للقيم القديمة المحفوظة في Firestore من قبل إعادة التسمية.
   // لو الأدمن اتحفظ عنده 'Premium' أو 'premium' أو 'بريميوم' قديماً، نستخدم 'Pro'.
   const rawTagLabel = String(raw?.premiumTagLabel || '').trim();
@@ -439,13 +430,22 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   // ═══ برو ماكس — القيم المحفوظة من الأدمن (مع fallback لـ DEFAULT_CONTROLS) ═══
   const proMaxDefaults = DEFAULT_CONTROLS as Required<AccountTypeControls>;
   const proMaxDailyLimit = toSafeLimit(raw?.proMaxDailyLimit, proMaxDefaults.proMaxDailyLimit);
+  // 🆕 برو ماكس: حد + رسائل الزر السريع "إضافة بدون تحليل"
+  const proMaxQuickAddDailyLimit = toSafeLimit(raw?.proMaxQuickAddDailyLimit, proMaxDefaults.proMaxQuickAddDailyLimit);
+  const proMaxQuickAddLimitMessage = normalizeMessageAllowEmpty(
+    raw?.proMaxQuickAddLimitMessage,
+    proMaxDefaults.proMaxQuickAddLimitMessage,
+  );
+  const proMaxQuickAddWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.proMaxQuickAddWhatsappMessage,
+    proMaxDefaults.proMaxQuickAddWhatsappMessage,
+  );
   const proMaxRecordsMaxCount = toSafeLimit(raw?.proMaxRecordsMaxCount, proMaxDefaults.proMaxRecordsMaxCount);
   const proMaxPublicBookingDailyLimit = toSafeLimit(raw?.proMaxPublicBookingDailyLimit, proMaxDefaults.proMaxPublicBookingDailyLimit);
   const proMaxPublicFormBookingDailyLimit = toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, proMaxDefaults.proMaxPublicFormBookingDailyLimit);
   const proMaxSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, proMaxDefaults.proMaxSecretaryEntryRequestDailyLimit);
   const proMaxReadyPrescriptionDailyLimit = toSafeLimit(raw?.proMaxReadyPrescriptionDailyLimit, proMaxDefaults.proMaxReadyPrescriptionDailyLimit);
   const proMaxMedicalReportDailyLimit = toSafeLimit(raw?.proMaxMedicalReportDailyLimit, proMaxDefaults.proMaxMedicalReportDailyLimit);
-  const proMaxTranslationDailyLimit = toSafeLimit(raw?.proMaxTranslationDailyLimit, proMaxDefaults.proMaxTranslationDailyLimit);
   const proMaxReadyPrescriptionsMaxCount = toSafeLimit(raw?.proMaxReadyPrescriptionsMaxCount, proMaxDefaults.proMaxReadyPrescriptionsMaxCount);
   const proMaxMedicationCustomizationsMaxCount = toSafeLimit(raw?.proMaxMedicationCustomizationsMaxCount, proMaxDefaults.proMaxMedicationCustomizationsMaxCount);
   const proMaxBranchesMaxCount = toSafeLimit(raw?.proMaxBranchesMaxCount, proMaxDefaults.proMaxBranchesMaxCount);
@@ -500,7 +500,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const proMaxSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, proMaxDefaults.proMaxSecretaryEntryRequestLimitMessage);
   const proMaxReadyPrescriptionDailyLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, proMaxDefaults.proMaxReadyPrescriptionDailyLimitMessage);
   const proMaxMedicalReportLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportLimitMessage, proMaxDefaults.proMaxMedicalReportLimitMessage);
-  const proMaxTranslationLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxTranslationLimitMessage, proMaxDefaults.proMaxTranslationLimitMessage);
   const proMaxReadyPrescriptionsCapacityMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityMessage, proMaxDefaults.proMaxReadyPrescriptionsCapacityMessage);
   const proMaxMedicationCustomizationsCapacityMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityMessage, proMaxDefaults.proMaxMedicationCustomizationsCapacityMessage);
   const proMaxBranchesCapacityMessage = normalizeMessageAllowEmpty(raw?.proMaxBranchesCapacityMessage, proMaxDefaults.proMaxBranchesCapacityMessage);
@@ -515,7 +514,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const proMaxSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, proMaxDefaults.proMaxSecretaryEntryRequestWhatsappMessage);
   const proMaxReadyPrescriptionWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionWhatsappMessage, proMaxDefaults.proMaxReadyPrescriptionWhatsappMessage);
   const proMaxMedicalReportWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportWhatsappMessage, proMaxDefaults.proMaxMedicalReportWhatsappMessage);
-  const proMaxTranslationWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxTranslationWhatsappMessage, proMaxDefaults.proMaxTranslationWhatsappMessage);
   const proMaxReadyPrescriptionsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionsCapacityWhatsappMessage, proMaxDefaults.proMaxReadyPrescriptionsCapacityWhatsappMessage);
   const proMaxMedicationCustomizationsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicationCustomizationsCapacityWhatsappMessage, proMaxDefaults.proMaxMedicationCustomizationsCapacityWhatsappMessage);
   const proMaxBranchesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxBranchesCapacityWhatsappMessage, proMaxDefaults.proMaxBranchesCapacityWhatsappMessage);
@@ -530,6 +528,13 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   return {
     freeDailyLimit,
     premiumDailyLimit,
+    // 🆕 الزر السريع
+    freeQuickAddDailyLimit,
+    premiumQuickAddDailyLimit,
+    freeQuickAddLimitMessage,
+    premiumQuickAddLimitMessage,
+    freeQuickAddWhatsappMessage,
+    premiumQuickAddWhatsappMessage,
     freeRecordsMaxCount,
     premiumRecordsMaxCount,
     freePublicBookingDailyLimit,
@@ -542,8 +547,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumReadyPrescriptionDailyLimit,
     freeMedicalReportDailyLimit,
     premiumMedicalReportDailyLimit,
-    freeTranslationDailyLimit,
-    premiumTranslationDailyLimit,
     freeReadyPrescriptionsMaxCount,
     premiumReadyPrescriptionsMaxCount,
     freeMedicationCustomizationsMaxCount,
@@ -572,8 +575,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumReadyPrescriptionDailyLimitMessage,
     freeMedicalReportLimitMessage,
     premiumMedicalReportLimitMessage,
-    freeTranslationLimitMessage,
-    premiumTranslationLimitMessage,
     freeReadyPrescriptionsCapacityMessage,
     premiumReadyPrescriptionsCapacityMessage,
     freeMedicationCustomizationsCapacityMessage,
@@ -600,8 +601,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumReadyPrescriptionWhatsappMessage,
     freeMedicalReportWhatsappMessage,
     premiumMedicalReportWhatsappMessage,
-    freeTranslationWhatsappMessage,
-    premiumTranslationWhatsappMessage,
     freeReadyPrescriptionsCapacityWhatsappMessage,
     premiumReadyPrescriptionsCapacityWhatsappMessage,
     freeMedicationCustomizationsCapacityWhatsappMessage,
@@ -610,12 +609,7 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumBranchesCapacityWhatsappMessage,
     freeInsuranceCompaniesCapacityWhatsappMessage,
     premiumInsuranceCompaniesCapacityWhatsappMessage,
-    interactionToolPremiumOnly,
-    renalToolPremiumOnly,
-    pregnancyToolPremiumOnly,
-    interactionToolLockedMessage,
-    renalToolLockedMessage,
-    pregnancyToolLockedMessage,
+    // ✂️ شيلنا premiumOnly + lockedMessage — الحد اليومي وحده يحدد دلوقتي.
     // ─── 🆕 رسائل الأزرار الذهبية ───
     freeInteractionToolLimitMessage,
     premiumInteractionToolLimitMessage,
@@ -653,13 +647,16 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
     // برو ماكس
     proMaxDailyLimit,
+    // 🆕 برو ماكس: الزر السريع
+    proMaxQuickAddDailyLimit,
+    proMaxQuickAddLimitMessage,
+    proMaxQuickAddWhatsappMessage,
     proMaxRecordsMaxCount,
     proMaxPublicBookingDailyLimit,
     proMaxPublicFormBookingDailyLimit,
     proMaxSecretaryEntryRequestDailyLimit,
     proMaxReadyPrescriptionDailyLimit,
     proMaxMedicalReportDailyLimit,
-    proMaxTranslationDailyLimit,
     proMaxReadyPrescriptionsMaxCount,
     proMaxMedicationCustomizationsMaxCount,
     proMaxBranchesMaxCount,
@@ -691,7 +688,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxSecretaryEntryRequestLimitMessage,
     proMaxReadyPrescriptionDailyLimitMessage,
     proMaxMedicalReportLimitMessage,
-    proMaxTranslationLimitMessage,
     proMaxReadyPrescriptionsCapacityMessage,
     proMaxMedicationCustomizationsCapacityMessage,
     proMaxBranchesCapacityMessage,
@@ -703,7 +699,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxSecretaryEntryRequestWhatsappMessage,
     proMaxReadyPrescriptionWhatsappMessage,
     proMaxMedicalReportWhatsappMessage,
-    proMaxTranslationWhatsappMessage,
     proMaxReadyPrescriptionsCapacityWhatsappMessage,
     proMaxMedicationCustomizationsCapacityWhatsappMessage,
     proMaxBranchesCapacityWhatsappMessage,

@@ -32,13 +32,11 @@ export const INITIAL_DASHBOARD_STATS: DashboardStats = {
   totalRevenue: 0,
   totalExpenses: 0,
   netProfit: 0,
-  // عدادات ميزات الـAI الـ6 × 3 فئات (تبدأ كلها صفر، تتحدّث من Cloud Function)
+  // عدادات ميزات الـAI الـ5 × 3 فئات (تبدأ كلها صفر، تتحدّث من Cloud Function)
+  // ✂️ شيلنا الترجمة (2026-05) — بقت بدون حد منفصل
   caseAnalysisFreeCount: 0,
   caseAnalysisProCount: 0,
   caseAnalysisProMaxCount: 0,
-  translationFreeCount: 0,
-  translationProCount: 0,
-  translationProMaxCount: 0,
   drugInteractionsFreeCount: 0,
   drugInteractionsProCount: 0,
   drugInteractionsProMaxCount: 0,
@@ -101,6 +99,9 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     items: [
       { id: 'homeBanner', label: 'بانر الصفحة الرئيسية', icon: 'homeBanner' },
       { id: 'prescriptionFooterLine', label: 'سطر أسفل الروشتة', icon: 'prescriptionFooterLine' },
+      // ─ مساعدة الطبيب في تصميم روشتته أو إعلانه — الأدمن بيدخل إيميل الطبيب
+      //   ويفتح نفس شاشات الطبيب (وصول مقيّد على المستندين دول فقط)
+      { id: 'doctorDesignEditor', label: 'مساعدة في تصميم الطبيب', icon: 'prescriptionFooterLine' },
     ],
   },
   {

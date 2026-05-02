@@ -12,6 +12,13 @@ const DEFAULT_SKIPPED_COLLECTIONS = Object.freeze([
   'appUpdateRollouts',
 ]);
 
+// subcollections يستحيل تحتوي على نصوص للمستخدم — تخطيها بيوفر آلاف الـ
+// invocations يومياً (الحقول كلها appointmentId/branchId/tag/timestamp قصيرة).
+const DEFAULT_SKIPPED_SUB_COLLECTIONS = Object.freeze([
+  'dismissedBroadcasts',
+  'dismissedAppointmentNotifications',
+]);
+
 const parsePositiveInt = (rawValue, fallback) => {
   const parsed = Number.parseInt(String(rawValue || ''), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
@@ -28,6 +35,15 @@ const getSkippedCollections = () => {
     .filter(Boolean);
 
   return new Set([...DEFAULT_SKIPPED_COLLECTIONS, ...fromEnv]);
+};
+
+const getSkippedSubCollections = () => {
+  const fromEnv = String(process.env.TEXT_LENGTH_SKIP_SUB_COLLECTIONS || '')
+    .split(',')
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+
+  return new Set([...DEFAULT_SKIPPED_SUB_COLLECTIONS, ...fromEnv]);
 };
 
 const isPlainObject = (value) => {
@@ -114,6 +130,13 @@ module.exports = () => {
     const topCollection = String(event?.params?.collectionId || '').trim();
     const skippedCollections = getSkippedCollections();
     if (topCollection && skippedCollections.has(topCollection)) return;
+
+    // تخطي subcollections التشغيلية (مفيش نصوص مستخدم فيها) — توفير invocations.
+    const subCollection = String(event?.params?.subCollectionId || '').trim();
+    if (subCollection) {
+      const skippedSubCollections = getSkippedSubCollections();
+      if (skippedSubCollections.has(subCollection)) return;
+    }
 
     const currentData = snapshot.data();
     if (!isPlainObject(currentData)) return;

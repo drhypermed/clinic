@@ -11,6 +11,11 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeDailyLimit: 2,
   premiumDailyLimit: 50,
   proMaxDailyLimit: 50,                   // (برو ماكس) الأدمن يضبطها لاحقاً
+  // 🆕 الزر السريع "إضافة بدون تحليل" — حدود منفصلة عن التحليل العميق (2026-05)
+  // كان مشترك على نفس عداد التحليل فاستهلاك زر بيقفل التاني — اتفصل
+  freeQuickAddDailyLimit: 5,
+  premiumQuickAddDailyLimit: 100,
+  proMaxQuickAddDailyLimit: 200,
   // ─ السجلات بقت "حد كلي" (سعة تخزين) — تغيّرت 2026-04 ─
   freeRecordsMaxCount: 100,
   premiumRecordsMaxCount: 1000,
@@ -40,10 +45,11 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeMedicalReportDailyLimit: 3,
   premiumMedicalReportDailyLimit: 80,
   proMaxMedicalReportDailyLimit: 80,
-  // ─── الترجمة الذكية للروشتة (جديد — كانت بتشتغل بدون حد) ───
-  freeTranslationDailyLimit: 5,
-  premiumTranslationDailyLimit: 100,
-  proMaxTranslationDailyLimit: 200,
+  // ✂️ شيلنا حد الترجمة (2026-05) — الترجمة بقت جزء من الزرّين
+  // 🆕 (2026-05) الزر السريع "إضافة بدون تحليل" — حد منفصل عن التحليل العميق
+  freeQuickAddDailyLimit: 5,
+  premiumQuickAddDailyLimit: 100,
+  proMaxQuickAddDailyLimit: 200,
   freeReadyPrescriptionsMaxCount: 5,
   premiumReadyPrescriptionsMaxCount: 100,
   proMaxReadyPrescriptionsMaxCount: 100,
@@ -72,6 +78,10 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (3 مرات) للحساب المجاني. للتواصل واتساب',
   premiumAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (50 مرة) لحساب برو. للتواصل واتساب',
   proMaxAnalysisLimitMessage: 'تم استهلاك الحد اليومي لتحليل الحالة (50 مرة) لحساب برو ماكس. للتواصل واتساب',
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  freeQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) للحساب المجاني. للتواصل واتساب',
+  premiumQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو. للتواصل واتساب',
+  proMaxQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو ماكس. للتواصل واتساب',
   freeRecordsCapacityMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية ({limit} سجل) للحساب المجاني. احذف سجل قبل الإضافة.',
   premiumRecordsCapacityMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية ({limit} سجل) لحساب برو. احذف سجل قبل الإضافة.',
   proMaxRecordsCapacityMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية ({limit} سجل) لحساب برو ماكس. احذف سجل قبل الإضافة.',
@@ -90,10 +100,11 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) للحساب المجاني. للتواصل واتساب',
   premiumMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو. للتواصل واتساب',
   proMaxMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  // ─── الترجمة الذكية للروشتة (جديد) ───
-  freeTranslationLimitMessage: 'تم استهلاك الحد اليومي للترجمة الذكية للروشتة ({limit} مرة) للحساب المجاني. للتواصل واتساب',
-  premiumTranslationLimitMessage: 'تم استهلاك الحد اليومي للترجمة الذكية للروشتة ({limit} مرة) لحساب برو. للتواصل واتساب',
-  proMaxTranslationLimitMessage: 'تم استهلاك الحد اليومي للترجمة الذكية للروشتة ({limit} مرة) لحساب برو ماكس. للتواصل واتساب',
+  // ✂️ شيلنا رسائل الترجمة (2026-05)
+  // 🆕 (2026-05) رسائل الزر السريع "إضافة بدون تحليل"
+  freeQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) للحساب المجاني. للتواصل واتساب',
+  premiumQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو. للتواصل واتساب',
+  proMaxQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو ماكس. للتواصل واتساب',
   // ─── أدوات الأدوية (التداخلات + الحمل + الكلى) — اتنقلوا لـ"حدود الميزات" ───
   freeInteractionToolLimitMessage: 'تم استهلاك الحد اليومي لفحص التداخلات الدوائية ({limit} مرة) للحساب المجاني. للتواصل واتساب',
   premiumInteractionToolLimitMessage: 'تم استهلاك الحد اليومي لفحص التداخلات الدوائية ({limit} مرة) لحساب برو. للتواصل واتساب',
@@ -133,6 +144,10 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeAnalysisWhatsappMessage: 'تجاوزت حد تحليل الحالة وأرغب في الاشتراك.',
   premiumAnalysisWhatsappMessage: 'استهلكت حد تحليل الحالة وأرغب في ترقية الباقة.',
   proMaxAnalysisWhatsappMessage: 'استهلكت حد تحليل الحالة في باقة برو ماكس وأرغب في التواصل.',
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  freeQuickAddWhatsappMessage: 'تجاوزت حد الإضافة بدون تحليل وأرغب في الاشتراك.',
+  premiumQuickAddWhatsappMessage: 'استهلكت حد الإضافة بدون تحليل وأرغب في ترقية الباقة.',
+  proMaxQuickAddWhatsappMessage: 'استهلكت حد الإضافة بدون تحليل في باقة برو ماكس وأرغب في التواصل.',
   freeRecordsCapacityWhatsappMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية وأرغب في ترقية باقتي لزيادة السعة.',
   premiumRecordsCapacityWhatsappMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية وأرغب في زيادة السعة.',
   proMaxRecordsCapacityWhatsappMessage: 'وصلت للحد الأقصى لتخزين السجلات الطبية في باقة برو ماكس وأرغب في زيادة السعة.',
@@ -151,10 +166,11 @@ const DEFAULT_SMART_RX_CONFIG = {
   freeMedicalReportWhatsappMessage: 'تجاوزت الحد اليومي لطباعة التقرير الطبي للحالة وأرغب في الاشتراك.',
   premiumMedicalReportWhatsappMessage: 'استهلكت الحد اليومي لطباعة التقرير الطبي للحالة وأرغب في ترقية الباقة.',
   proMaxMedicalReportWhatsappMessage: 'استهلكت الحد اليومي لطباعة التقرير الطبي للحالة في باقة برو ماكس وأرغب في التواصل.',
-  // ─── الترجمة الذكية للروشتة (جديد) ───
-  freeTranslationWhatsappMessage: 'تجاوزت الحد اليومي للترجمة الذكية للروشتة وأرغب في الاشتراك.',
-  premiumTranslationWhatsappMessage: 'استهلكت الحد اليومي للترجمة الذكية للروشتة وأرغب في ترقية الباقة.',
-  proMaxTranslationWhatsappMessage: 'استهلكت الحد اليومي للترجمة الذكية للروشتة في باقة برو ماكس وأرغب في التواصل.',
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
+  // 🆕 (2026-05) رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  freeQuickAddWhatsappMessage: 'تجاوزت الحد اليومي للإضافة بدون تحليل وأرغب في الاشتراك.',
+  premiumQuickAddWhatsappMessage: 'استهلكت الحد اليومي للإضافة بدون تحليل وأرغب في ترقية الباقة.',
+  proMaxQuickAddWhatsappMessage: 'استهلكت الحد اليومي للإضافة بدون تحليل في باقة برو ماكس وأرغب في التواصل.',
   // ─── أدوات الأدوية (التداخلات + الحمل + الكلى) ───
   freeInteractionToolWhatsappMessage: 'تجاوزت الحد اليومي لفحص التداخلات الدوائية وأرغب في الاشتراك.',
   premiumInteractionToolWhatsappMessage: 'استهلكت الحد اليومي لفحص التداخلات الدوائية وأرغب في ترقية الباقة.',
@@ -189,14 +205,9 @@ const DEFAULT_SMART_RX_CONFIG = {
   premiumInsuranceCompaniesCapacityWhatsappMessage: 'وصلت للحد الأقصى لعدد شركات التأمين وأرغب في ترقية الباقة.',
   proMaxInsuranceCompaniesCapacityWhatsappMessage: 'وصلت للحد الأقصى لعدد شركات التأمين في باقة برو ماكس وأرغب في التواصل.',
 
-  // ─── تحكم الأدوات الخاصة (قفل/فتح) ───
-  // premium*Only keys اتسموا كده تاريخياً — دلوقتي بيعنوا "مدفوع (برو أو برو ماكس)".
-  interactionToolPremiumOnly: true,
-  renalToolPremiumOnly: true,
-  pregnancyToolPremiumOnly: true,
-  interactionToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
-  renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
-  pregnancyToolLockedMessage: 'هذه الأداة متاحة لحساب برو وبرو ماكس فقط.',
+  // ✂️ شيلنا الـ flags premiumOnly + رسائل الـ locked القديمه.
+  // المنطق دلوقتي موحّد: الحد اليومي للمجاني وحده يحدد. لو الحد = 0
+  // → الأداه مقفولة عليه ورسالة الـ limit بتظهر (مش رسالة قفل منفصلة).
 
   // ─── شارات العرض في الـ UI ───
   premiumTagLabel: 'Pro',              // كان Pro — دلوقتي Pro (هو هو الـ tier بس بلمح اسم)

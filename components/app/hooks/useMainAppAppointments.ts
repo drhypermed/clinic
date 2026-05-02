@@ -45,6 +45,14 @@ export interface NewAppointmentToastData {
   consultationSourceRecordId?: string;
   /** الفرع الذي يخصه الموعد — للتوجيه الصحيح من push notification. */
   branchId?: string;
+  /**
+   * معرّف الموعد — مطلوب لمزامنة "تم رؤية الإشعار" بين الأجهزة.
+   * عند إغلاق الإشعار على هذا الجهاز نكتب dismiss على Firestore، باقي الأجهزة
+   * تستقبل التحديث وتمسح إشعارها فوراً (داخل التطبيق + درج النظام).
+   */
+  appointmentId?: string;
+  /** وقت إنشاء الإشعار — يُستخدم لتجاهل الإشعارات الأقدم من 3 أيام. */
+  createdAt?: string;
 }
 
 export interface SecretaryEntryRequestData {
@@ -80,8 +88,11 @@ interface UseMainAppAppointmentsParams {
   branchIds?: string[];
 }
 
-// ثوابت زمنية لتجاهل الإشعارات القديمة
-const NOTIFICATION_STALE_AFTER_MS = 3 * 60 * 60 * 1000;
+// ثوابت زمنية لتجاهل الإشعارات القديمة — أي إشعار عمره أكتر من 3 أيام يتجاهل في
+// كل مسارات العرض (toast داخلي، deep link، foreground، background SW).
+// النافذة الزمنية موحَّدة عبر الكود لضمان سلوك ثابت.
+export const NOTIFICATION_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+const NOTIFICATION_STALE_AFTER_MS = NOTIFICATION_MAX_AGE_MS;
 const formatLocalDayStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 const isNewAppointmentToastData = (value: unknown): value is NewAppointmentToastData => {
@@ -93,6 +104,12 @@ const isNewAppointmentToastData = (value: unknown): value is NewAppointmentToast
     (toast.source === 'secretary' || toast.source === 'public')
   );
 };
+
+/** مرجع الموعد الحالي المعروض كـ toast — نحتاجه عند الإغلاق لكتابة dismiss على Firestore. */
+type CurrentToastRef = {
+  appointmentId: string;
+  branchId?: string;
+} | null;
 
 const getTimeMs = (value?: string | null): number | null => {
   if (!value) return null;
@@ -119,6 +136,16 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   const [pushEnableSuccessMessage, setPushEnableSuccessMessage] = useState<string | null>(null);
   const [todayStr, setTodayStr] = useState<string>(() => formatLocalDayStr(new Date()));
   const newAppointmentToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // الـ Set دي بتيجي من Firestore — كل أجهزة الطبيب بتشاركها، فلو جهاز عمل dismiss،
+  // باقي الأجهزة تعرف فوراً ومتعرضش الـ toast من جديد.
+  const dismissedAppointmentIdsRef = useRef<Set<string>>(new Set());
+  // مرجع للموعد المعروض حالياً — نحتاجه عند الإغلاق لإرسال dismiss للسيرفر.
+  const currentToastRef = useRef<CurrentToastRef>(null);
+  // علامة "وصل أول snapshot من قائمة الإشعارات المُتعامل معاها".
+  // نحتاج state (مش ref) عشان الـ effects تعيد التشغيل لما الـ subscription يجاهز —
+  // وإلا في race: snapshot المواعيد يصل قبل snapshot dismissed، الـ toast يطلع
+  // ويلعب صوت لـ ms قليلة، ثم يختفي = تجربة "تكرار" مزعجة.
+  const [dismissedSubscriptionReady, setDismissedSubscriptionReady] = useState(false);
 
   // تحديث "تاريخ اليوم" تلقائياً عند منتصف الليل حتى تعكس عدادات مواعيد اليوم اليوم الصحيح
   useEffect(() => {
@@ -141,9 +168,12 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
       clearTimeout(newAppointmentToastTimerRef.current);
       newAppointmentToastTimerRef.current = null;
     }
+    currentToastRef.current = null;
     setNewAppointmentToast(null);
     if (!userId) return;
     clearTimedPayload(buildDoctorNewAppointmentToastKey(userId));
+    // ملاحظة: تسجيل dismiss على Firestore بيحصل عند **عرض** الـ toast (مش عند الإغلاق)،
+    // لضمان "إشعار ظهر مرة = ما يظهرش تاني" حتى لو الجهاز قُفل قبل الـ TTL.
   }, [userId]);
 
   const scheduleNewAppointmentToastClear = useCallback(
@@ -160,7 +190,33 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
 
   const showNewAppointmentToastForMinute = useCallback(
     (toast: NewAppointmentToastData) => {
+      // فحص cross-device: لو جهاز تاني تعامل مع الإشعار ده قبل كده، ما نعرضوش
+      if (toast.appointmentId && dismissedAppointmentIdsRef.current.has(toast.appointmentId)) {
+        return;
+      }
+      // فحص العمر — أي إشعار عمره أكتر من 3 أيام ميظهرش
+      if (toast.createdAt) {
+        const ageMs = Date.now() - new Date(toast.createdAt).getTime();
+        if (Number.isFinite(ageMs) && ageMs > NOTIFICATION_MAX_AGE_MS) return;
+      }
       setNewAppointmentToast(toast);
+      currentToastRef.current = toast.appointmentId
+        ? { appointmentId: toast.appointmentId, branchId: toast.branchId }
+        : null;
+      // ضمان "ظهر = اتسجل dismissed": نكتب على Firestore فوراً عند العرض،
+      // قبل ما يقفل الـ user أو يخرج من التطبيق. ده يمنع تكرار العرض على
+      // أي جهاز تاني، حتى لو الجهاز ده اتقفل قبل الـ TTL.
+      if (toast.appointmentId && userId) {
+        dismissedAppointmentIdsRef.current.add(toast.appointmentId);
+        void firestoreService
+          .markAppointmentNotificationDismissed(userId, {
+            appointmentId: toast.appointmentId,
+            branchId: toast.branchId,
+          })
+          .catch((err) => {
+            console.warn('[useMainAppAppointments] failed to mark dismissed:', err);
+          });
+      }
       if (!userId) return;
       const storageKey = buildDoctorNewAppointmentToastKey(userId);
       persistTimedPayload(storageKey, toast, INTERNAL_TOAST_MIN_VISIBLE_MS);
@@ -185,13 +241,57 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
       clearNewAppointmentToast();
       return;
     }
+    // ننتظر وصول قائمة "اللي اتعالج" قبل ما نستعيد toast من localStorage —
+    // وإلا الـ toast هيظهر للحظة قبل ما نعرف إنه اتعالج على جهاز تاني (flicker + صوت).
+    if (!dismissedSubscriptionReady) return;
     const storageKey = buildDoctorNewAppointmentToastKey(userId);
     const restored = readTimedPayload(storageKey, isNewAppointmentToastData);
     if (!restored) return;
+    // فحص cross-device عند التحميل — لو جهاز تاني تعامل مع الإشعار، ما نعيد عرضه
+    if (
+      restored.value.appointmentId &&
+      dismissedAppointmentIdsRef.current.has(restored.value.appointmentId)
+    ) {
+      clearTimedPayload(storageKey);
+      return;
+    }
     setNewAppointmentToast(restored.value);
+    currentToastRef.current = restored.value.appointmentId
+      ? { appointmentId: restored.value.appointmentId, branchId: restored.value.branchId }
+      : null;
     const remainingMs = Math.max(0, restored.expiresAt - Date.now());
     scheduleNewAppointmentToastClear(remainingMs);
-  }, [userId, clearNewAppointmentToast, scheduleNewAppointmentToastClear]);
+  }, [userId, dismissedSubscriptionReady, clearNewAppointmentToast, scheduleNewAppointmentToastClear]);
+
+  // الاشتراك في "الإشعارات المُتعامل معاها" — مزامنة لحظية بين كل أجهزة الطبيب.
+  // أول جهاز يقفل الإشعار → السيرفر يخبر باقي الأجهزة → نمسح الـ toast الحالي إن كان معروضاً.
+  useEffect(() => {
+    if (!userId) {
+      dismissedAppointmentIdsRef.current = new Set();
+      setDismissedSubscriptionReady(false);
+      return;
+    }
+    const unsub = firestoreService.subscribeToDismissedAppointmentNotifications(
+      userId,
+      (ids) => {
+        dismissedAppointmentIdsRef.current = ids;
+        // أول snapshot يحرّر الـ effects الأخرى لتعمل (انظر التعليق فوق على الـ ref/state).
+        setDismissedSubscriptionReady(true);
+        // لو الـ toast المعروض حالياً اتعالج على جهاز تاني → اقفله من غير ما نسجل dismiss تاني
+        const current = currentToastRef.current;
+        if (current?.appointmentId && ids.has(current.appointmentId)) {
+          if (newAppointmentToastTimerRef.current) {
+            clearTimeout(newAppointmentToastTimerRef.current);
+            newAppointmentToastTimerRef.current = null;
+          }
+          currentToastRef.current = null;
+          setNewAppointmentToast(null);
+          clearTimedPayload(buildDoctorNewAppointmentToastKey(userId));
+        }
+      },
+    );
+    return () => unsub();
+  }, [userId]);
 
   useEffect(() => {
     return () => {
@@ -228,40 +328,85 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   // 2. كشف المواعيد الجديدة وإطلاق صوت التنبيه والـ Toast
   //    المقارنة بالمحتوى (ids غير موجودة سابقاً) وليس بالأحجام، حتى لا يضيع أي موعد بعد حذف موعد آخر.
   useEffect(() => {
+    // ننتظر قائمة "اللي اتعالج" قبل أي معالجة — مهم لتفادي إظهار toast + صوت
+    // لإشعار سبق التعامل معاه على جهاز تاني (race بين subscription المواعيد و dismissed).
+    if (!dismissedSubscriptionReady) return;
     const currentIds = new Set(appointments.map((a) => a.id));
     if (prevAppointmentIdsRef.current.size === 0) {
-      // أول تعبئة (بعد mount أو بعد تبديل الفرع): املأ بصمت بدون تنبيهات.
+      // أول تعبئة (بعد mount أو بعد تبديل الفرع): املأ بصمت — لكن لو فيه موعد
+      // اتحجز خلال آخر 60 ثانية، اعرض toast له. ده بيحل race تبديل الفرع:
+      // لو سكرتيرة الفرع الجديد حجزت موعد لحظة التبديل، الموعد كان هيدخل ضمن
+      // أول تعبئة بدون تنبيه — دلوقتي بنمسكه عبر createdAt.
+      const RECENT_BRANCH_SWITCH_WINDOW_MS = 60_000;
+      const cutoffMs = Date.now() - RECENT_BRANCH_SWITCH_WINDOW_MS;
+      const veryRecent = appointments.find((a) => {
+        if (a.source !== 'secretary' && a.source !== 'public') return false;
+        const createdMs = a.createdAt ? new Date(a.createdAt).getTime() : NaN;
+        return Number.isFinite(createdMs) && createdMs >= cutoffMs;
+      });
+      if (
+        veryRecent &&
+        (veryRecent.source === 'secretary' || veryRecent.source === 'public') &&
+        !dismissedAppointmentIdsRef.current.has(veryRecent.id)
+      ) {
+        void playNotificationCue('new_appointment');
+        showNewAppointmentToastForMinute({
+          patientName: veryRecent.patientName || '-',
+          age: veryRecent.age,
+          visitReason: veryRecent.visitReason,
+          dateTime: veryRecent.dateTime,
+          source: veryRecent.source,
+          appointmentType: veryRecent.appointmentType,
+          secretaryVitals: veryRecent.secretaryVitals,
+          consultationSourceAppointmentId: veryRecent.consultationSourceAppointmentId,
+          consultationSourceCompletedAt: veryRecent.consultationSourceCompletedAt,
+          consultationSourceRecordId: veryRecent.consultationSourceRecordId,
+          branchId: veryRecent.branchId,
+          appointmentId: veryRecent.id,
+          createdAt: veryRecent.createdAt,
+        });
+      }
       prevAppointmentIdsRef.current = currentIds;
       return;
     }
     const newIds = [...currentIds].filter((id) => !prevAppointmentIdsRef.current.has(id));
     if (newIds.length > 0) {
       const newApts = appointments.filter((a) => newIds.includes(a.id));
-      // البحث عن أول موعد خارجي (من السكرتارية أو الجمهور) لعمل تنبيه له
+      // البحث عن أول موعد خارجي (من السكرتارية أو الجمهور) لعمل تنبيه له.
+      // ملاحظة: نعتمد على createdAt فقط — مفيش fallback على dateTime لأن وقت
+      // الموعد ممكن يكون مستقبلي بأيام (يخدع الفحص: "غير stale") أو ماضي بساعات
+      // (يقفل toast لموعد لسه اتحجز). لو ما عندناش createdAt (موعد legacy)،
+      // نعتبره recent — أصل البراءة.
       const firstExternal = newApts.find((a) => {
         if (a.source !== 'secretary' && a.source !== 'public') return false;
-        return isRecentNotification(a.createdAt || a.dateTime);
+        return a.createdAt ? isRecentNotification(a.createdAt) : true;
       });
       if (firstExternal && (firstExternal.source === 'secretary' || firstExternal.source === 'public')) {
-        void playNotificationCue('new_appointment');
-        showNewAppointmentToastForMinute({
-          patientName: firstExternal.patientName || '-',
-          age: firstExternal.age,
-          visitReason: firstExternal.visitReason,
-          dateTime: firstExternal.dateTime,
-          source: firstExternal.source,
-          appointmentType: firstExternal.appointmentType,
-          secretaryVitals: firstExternal.secretaryVitals,
-          consultationSourceAppointmentId: firstExternal.consultationSourceAppointmentId,
-          consultationSourceCompletedAt: firstExternal.consultationSourceCompletedAt,
-          consultationSourceRecordId: firstExternal.consultationSourceRecordId,
-          branchId: firstExternal.branchId,
-        });
+        // فحص cross-device قبل التشغيل والعرض — لو جهاز تاني تعامل مع الإشعار،
+        // متشغّلش حتى الصوت (الطبيب أصلاً سمع التنبيه على الجهاز التاني).
+        if (!dismissedAppointmentIdsRef.current.has(firstExternal.id)) {
+          void playNotificationCue('new_appointment');
+          showNewAppointmentToastForMinute({
+            patientName: firstExternal.patientName || '-',
+            age: firstExternal.age,
+            visitReason: firstExternal.visitReason,
+            dateTime: firstExternal.dateTime,
+            source: firstExternal.source,
+            appointmentType: firstExternal.appointmentType,
+            secretaryVitals: firstExternal.secretaryVitals,
+            consultationSourceAppointmentId: firstExternal.consultationSourceAppointmentId,
+            consultationSourceCompletedAt: firstExternal.consultationSourceCompletedAt,
+            consultationSourceRecordId: firstExternal.consultationSourceRecordId,
+            branchId: firstExternal.branchId,
+            appointmentId: firstExternal.id,
+            createdAt: firstExternal.createdAt,
+          });
+        }
       }
     }
     // تحديث المرجع دائماً (حتى عند نقصان العدد) حتى تبقى المقارنة دقيقة في التحديث التالي.
     prevAppointmentIdsRef.current = currentIds;
-  }, [appointments, showNewAppointmentToastForMinute]);
+  }, [appointments, dismissedSubscriptionReady, showNewAppointmentToastForMinute]);
 
   // 3. استقبال إشعارات الـ Push في المقدمة (Foreground)
   useEffect(() => {

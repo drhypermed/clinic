@@ -21,11 +21,22 @@ module.exports = (context) => {
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
+    // 🆕 (2026-05) — mode بيحدد الزر:
+    //   'analyze' (الافتراضي): زر "تحليل الحالة" (الزر العميق) — عداد smartPrescriptionCount
+    //   'quickAdd': زر "إضافة بدون تحليل" (الزر السريع) — عداد منفصل quickAddCount
+    // كان الزرّين بيشاركوا نفس العداد فاستهلاك زر بيقفل التاني (bug). دلوقتي كل واحد عداده.
+    const rawMode = String(request?.data?.mode || 'analyze');
+    if (rawMode !== 'analyze' && rawMode !== 'quickAdd') {
+      throw new HttpsError('invalid-argument', 'Invalid mode');
+    }
+    const mode = rawMode;
+
     const userId = auth.uid;
     const db = getDb();
     const config = await getSmartRxConfig();
     const dayKey = getCairoDateKey(new Date());
-    const usageDocId = `smartRx-${dayKey}`;
+    // doc منفصل لكل mode عشان العدّادين ميتداخلوش
+    const usageDocId = mode === 'quickAdd' ? `quickAdd-${dayKey}` : `smartRx-${dayKey}`;
 
     const result = await db.runTransaction(async (tx) => {
       const doctorProfile = await loadUnifiedDoctorProfile({ db, userId, tx });
@@ -48,30 +59,34 @@ module.exports = (context) => {
           syncedFromLegacyDoctorAt: admin.firestore.FieldValue.serverTimestamp(),
         }), { merge: true });
       }
-      // 3 فئات: free/premium/pro_max — pro_max بيرث من premium لحد ما الأدمن يضبط حدود خاصة
-      const limitReachedMessage = pickTierValue(accountType, config, {
-        freeKey: 'freeAnalysisLimitMessage',
-        premiumKey: 'premiumAnalysisLimitMessage',
-        proMaxKey: 'proMaxAnalysisLimitMessage',
-      });
-      const whatsappMessage = pickTierValue(accountType, config, {
-        freeKey: 'freeAnalysisWhatsappMessage',
-        premiumKey: 'premiumAnalysisWhatsappMessage',
-        proMaxKey: 'proMaxAnalysisWhatsappMessage',
-      });
-      const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
 
-      const limit = pickTierValue(accountType, config, {
-        freeKey: 'freeDailyLimit',
-        premiumKey: 'premiumDailyLimit',
-        proMaxKey: 'proMaxDailyLimit',
-      });
-  const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
-  const used = Number(usageDoc.mergedUsageData?.smartPrescriptionCount || 0);
+      // مفاتيح الرسالة + الحد + اسم الحقل بناءً على الـmode (analyze vs quickAdd)
+      const messageKeys = mode === 'quickAdd'
+        ? { freeKey: 'freeQuickAddLimitMessage', premiumKey: 'premiumQuickAddLimitMessage', proMaxKey: 'proMaxQuickAddLimitMessage' }
+        : { freeKey: 'freeAnalysisLimitMessage', premiumKey: 'premiumAnalysisLimitMessage', proMaxKey: 'proMaxAnalysisLimitMessage' };
+      const whatsappKeys = mode === 'quickAdd'
+        ? { freeKey: 'freeQuickAddWhatsappMessage', premiumKey: 'premiumQuickAddWhatsappMessage', proMaxKey: 'proMaxQuickAddWhatsappMessage' }
+        : { freeKey: 'freeAnalysisWhatsappMessage', premiumKey: 'premiumAnalysisWhatsappMessage', proMaxKey: 'proMaxAnalysisWhatsappMessage' };
+      const limitKeys = mode === 'quickAdd'
+        ? { freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' }
+        : { freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', proMaxKey: 'proMaxDailyLimit' };
+      // اسم الحقل في usage doc — منفصل لكل mode
+      const fieldName = mode === 'quickAdd' ? 'quickAddCount' : 'smartPrescriptionCount';
+
+      const limitReachedMessage = pickTierValue(accountType, config, messageKeys);
+      const whatsappMessage = pickTierValue(accountType, config, whatsappKeys);
+      const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
+      const limit = pickTierValue(accountType, config, limitKeys);
+
+      const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
+      const used = Number(usageDoc.mergedUsageData?.[fieldName] || 0);
 
       if (used >= limit) {
+        // كود الخطأ بيتطابق مع الموجود في الـfrontend (SMART_RX_DAILY_LIMIT_REACHED) — نفس الـmessage
+        // لكلا الـmodes عشان handler واحد في useDrHyper.smartActions يتعامل مع الاتنين
         throw new HttpsError('resource-exhausted', 'SMART_RX_DAILY_LIMIT_REACHED', {
           accountType,
+          mode,
           limit,
           used,
           remaining: 0,
@@ -88,7 +103,8 @@ module.exports = (context) => {
         doctorId: userId,
         dayKey,
         accountType,
-        smartPrescriptionCount: nextUsed,
+        mode, // نخزن الـmode في الـdoc للـdebugging والـanalytics
+        [fieldName]: nextUsed,
         limitApplied: limit,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         createdAt: usageDoc.userUsageSnap.exists
@@ -98,6 +114,7 @@ module.exports = (context) => {
 
       return {
         accountType,
+        mode,
         limit,
         used: nextUsed,
         remaining: Math.max(limit - nextUsed, 0),
@@ -112,6 +129,6 @@ module.exports = (context) => {
     return result;
   };
 
-  
+
   return consumeSmartPrescriptionQuota;
 };

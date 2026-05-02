@@ -286,7 +286,11 @@ const AD_COMPRESSION_OPTIONS = { maxDimension: MAX_IMAGE_DIMENSION_AD, quality: 
 /** رفع صور إعلانات الطبيب (Base64) مع توليد اسم فريد للصور المتعددة */
 export const uploadDoctorAdImageBase64 = async (doctorId: string, base64Data: string): Promise<string> => {
     try {
-        const ownerId = auth.currentUser?.uid || doctorId;
+        // الأولوية لـdoctorId المُمرّر صراحةً عشان الأدمن لمّا بيساعد طبيب
+        // في تعديل إعلانه يبقى اسم الملف بـUID الطبيب نفسه (مش الأدمن).
+        // ده مهم عشان `isDoctorAdImageOwnedByDoctor` بتفحص الـUID في اسم الملف
+        // عند تنظيف الصور المحذوفة. للطبيب نفسه: doctorId == auth.uid فالنتيجة واحدة.
+        const ownerId = doctorId || auth.currentUser?.uid;
         const response = await fetch(base64Data);
         const blob = await response.blob();
         const compressed = await compressImage(blob, AD_COMPRESSION_OPTIONS);

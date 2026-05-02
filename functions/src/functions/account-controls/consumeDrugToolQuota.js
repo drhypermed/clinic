@@ -68,31 +68,9 @@ module.exports = (context) => {
       const whatsappMessage = pickTierValue(accountType, config, whatsappKeys);
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
 
-      // حماية server-side: الأداة مقفولة للمجاني فقط — برو وبرو ماكس متاح لهم.
-      // (الـ flag في الـ config اسمه premiumOnly تاريخياً لكن معناه "مدفوع فقط")
-      const isProOnly = feature === 'interactionTool'
-        ? Boolean(config.interactionToolPremiumOnly)
-        : feature === 'renalTool'
-          ? Boolean(config.renalToolPremiumOnly)
-          : Boolean(config.pregnancyToolPremiumOnly);
-
-      const isPaidTier = accountType === 'premium' || accountType === 'pro_max';
-      if (isProOnly && !isPaidTier) {
-        const lockedMessage = feature === 'interactionTool'
-          ? config.interactionToolLockedMessage
-          : feature === 'renalTool'
-            ? config.renalToolLockedMessage
-            : config.pregnancyToolLockedMessage;
-        throw new HttpsError('permission-denied', 'DRUG_TOOL_PREMIUM_ONLY', {
-          accountType,
-          feature,
-          premiumOnly: true,
-          lockedMessage,
-          whatsappNumber: config.whatsappNumber,
-          whatsappUrl,
-          whatsappMessage,
-        });
-      }
+      // المنطق الموحّد: الحد اليومي وحده يحدد. لو الأدمن خلى الحد للباقة دي = 0
+      // → الـ check تحت بيرفض تلقائياً (used >= 0 = true) ويرجع رسالة الـ limit.
+      // ✂️ شيلنا block premiumOnly القديم (كان بيتحقق من flag منفصل).
 
       const limit = feature === 'interactionTool'
         ? pickTierValue(accountType, config, { freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' })

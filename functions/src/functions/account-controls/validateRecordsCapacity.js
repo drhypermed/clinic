@@ -43,6 +43,21 @@ module.exports = (context) => {
     }
     const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
+    // 🆕 (2026-05): paid tiers بدون فحص حد كلي للسجلات — نوفر count aggregation
+    // وتخطي قراءة الـrecord. التشغيل أسرع وتكلفة Firebase أقل.
+    if (accountType === 'premium' || accountType === 'pro_max') {
+      return {
+        accountType,
+        limit: 0, // 0 = unlimited
+        used: 0,
+        remaining: Number.MAX_SAFE_INTEGER,
+        whatsappNumber: '',
+        whatsappUrl: '',
+        limitReachedMessage: '',
+        whatsappMessage: '',
+      };
+    }
+
     // 2) نختار الحد المسموح حسب الباقة
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeRecordsMaxCount',

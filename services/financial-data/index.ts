@@ -41,7 +41,6 @@ import {
 } from './priceHistory';
 import { migratePriceSnapshots } from './priceSnapshotMigration';
 import {
-    getAllMonthlyPrices,
     getMonthlyPrices,
     getMonthlyPricesBySecret,
     getPrices,
@@ -92,7 +91,6 @@ export const financialDataService = {
     // Prices — Monthly overrides
     saveMonthlyPrices,
     getMonthlyPrices,
-    getAllMonthlyPrices,
     subscribeToMonthlyPrices,
 
     // Prices — By Secret (booking mirror)

@@ -270,31 +270,6 @@ export const getMonthlyPrices = async (
     }
 };
 
-/** جلب سجل جميع الأسعار الشهرية المسجلة مسبقاً (الأحدث أولاً) */
-export const getAllMonthlyPrices = async (
-    userId: string
-): Promise<Array<{ month: string; examinationPrice?: string; consultationPrice?: string; updatedAt?: number }>> => {
-    try {
-        const collectionRef = collection(db, 'users', userId, 'monthlyPrices');
-        const snapshot = await getDocsCacheFirst(query(collectionRef));
-
-        const allPrices: Array<{ month: string; examinationPrice?: string; consultationPrice?: string; updatedAt?: number }> = [];
-        snapshot.forEach(doc => {
-            allPrices.push({
-                month: doc.id,
-                ...doc.data() as PricesTextPayload,
-            });
-        });
-
-        // ترتيب النتائج تنازلياً حسب الشهر (الأحدث أولاً)
-        allPrices.sort((a, b) => b.month.localeCompare(a.month));
-        return allPrices;
-    } catch (error) {
-        console.error('[FinancialData] Error getting all monthly prices:', error);
-        return [];
-    }
-};
-
 /** الاشتراك اللحظي في الأسعار الشهريه (cache-first + onSnapshot حقيقي) */
 export const subscribeToMonthlyPrices = (
     userId: string,

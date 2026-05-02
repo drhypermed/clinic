@@ -186,6 +186,18 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
           premiumExpiryDate: expiryDate.toISOString(),
           premiumNotificationSent: false,
         };
+      } else {
+        // 🆕 (2026-05) للحساب المجاني: 3 شهور من تاريخ الاعتماد
+        // بعدها يتعطل تلقائياً (سياسة الحسابات المجانية).
+        // الإدارة تقدر تعدّل freeAccountExpiryDate يدوياً لتمديد المدة.
+        const now = new Date();
+        const FREE_TRIAL_DAYS = 90;
+        const freeExpiry = new Date(now.getTime() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
+        applyData = {
+          ...applyData,
+          freeAccountExpiryDate: freeExpiry.toISOString(),
+          freeAccountStartDate: now.toISOString(),
+        };
       }
 
       await setDoc(getUserProfileDocRef(id), buildDoctorUserProfilePayload(applyData), { merge: true });

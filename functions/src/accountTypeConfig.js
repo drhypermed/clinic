@@ -37,12 +37,13 @@ const buildWhatsAppUrl = (digits, message) => {
 const normalizeSmartRxConfig = (raw) => {
   const freeDailyLimit = toSafeLimit(raw?.freeDailyLimit, DEFAULT_SMART_RX_CONFIG.freeDailyLimit);
   const premiumDailyLimit = toSafeLimit(raw?.premiumDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumDailyLimit);
+  // 🆕 حدود الزر السريع "إضافة بدون تحليل" (2026-05) — منفصل عن التحليل العميق
+  const freeQuickAddDailyLimit = toSafeLimit(raw?.freeQuickAddDailyLimit, DEFAULT_SMART_RX_CONFIG.freeQuickAddDailyLimit);
+  const premiumQuickAddDailyLimit = toSafeLimit(raw?.premiumQuickAddDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumQuickAddDailyLimit);
   // ─ السجلات بقت "حد كلي" (سعة) — تغيّرت 2026-04 من حد يومي ─
   const freeRecordsMaxCount = toSafeLimit(raw?.freeRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.freeRecordsMaxCount);
   const premiumRecordsMaxCount = toSafeLimit(raw?.premiumRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.premiumRecordsMaxCount);
-  // ─ الترجمة الذكية للروشتة (جديد 2026-04) ─
-  const freeTranslationDailyLimit = toSafeLimit(raw?.freeTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.freeTranslationDailyLimit);
-  const premiumTranslationDailyLimit = toSafeLimit(raw?.premiumTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumTranslationDailyLimit);
+  // ✂️ شيلنا حدود الترجمة (2026-05)
   // ─ الفروع (جديد 2026-04) ─
   const freeBranchesMaxCount = toSafeLimit(raw?.freeBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.freeBranchesMaxCount);
   const premiumBranchesMaxCount = toSafeLimit(raw?.premiumBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.premiumBranchesMaxCount);
@@ -74,9 +75,7 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumRenalToolDailyLimit = toSafeLimit(raw?.premiumRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumRenalToolDailyLimit);
   const freePregnancyToolDailyLimit = toSafeLimit(raw?.freePregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.freePregnancyToolDailyLimit);
   const premiumPregnancyToolDailyLimit = toSafeLimit(raw?.premiumPregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPregnancyToolDailyLimit);
-  const interactionToolPremiumOnly = toBoolean(raw?.interactionToolPremiumOnly, DEFAULT_SMART_RX_CONFIG.interactionToolPremiumOnly);
-  const renalToolPremiumOnly = toBoolean(raw?.renalToolPremiumOnly, DEFAULT_SMART_RX_CONFIG.renalToolPremiumOnly);
-  const pregnancyToolPremiumOnly = toBoolean(raw?.pregnancyToolPremiumOnly, DEFAULT_SMART_RX_CONFIG.pregnancyToolPremiumOnly);
+  // ✂️ شيلنا premiumOnly flags — الحد اليومي وحده يحدد دلوقتي.
   const whatsappNumber = normalizeWhatsAppDigits(raw?.whatsappNumber || DEFAULT_SMART_RX_CONFIG.whatsappNumber);
   const legacyMessage = String(raw?.whatsappMessage || '').trim().slice(0, 500);
   const freeAnalysisLimitMessage = normalizeMessageAllowEmpty(
@@ -87,6 +86,15 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumAnalysisLimitMessage, raw?.premiumLimitMessage, raw?.premiumWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumAnalysisLimitMessage
   );
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  const freeQuickAddLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeQuickAddLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freeQuickAddLimitMessage,
+  );
+  const premiumQuickAddLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumQuickAddLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumQuickAddLimitMessage,
+  );
   // ─ رسائل سعة السجلات (تغيّرت من daily للحد الكلي) ─
   const freeRecordsCapacityMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeRecordsCapacityMessage, raw?.freeRecordLimitMessage, legacyMessage),
@@ -96,15 +104,7 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumRecordsCapacityMessage, raw?.premiumRecordLimitMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumRecordsCapacityMessage
   );
-  // ─ رسائل الترجمة الذكية (جديد) ─
-  const freeTranslationLimitMessage = normalizeMessageAllowEmpty(
-    raw?.freeTranslationLimitMessage,
-    DEFAULT_SMART_RX_CONFIG.freeTranslationLimitMessage,
-  );
-  const premiumTranslationLimitMessage = normalizeMessageAllowEmpty(
-    raw?.premiumTranslationLimitMessage,
-    DEFAULT_SMART_RX_CONFIG.premiumTranslationLimitMessage,
-  );
+  // ✂️ شيلنا رسائل الترجمة (2026-05)
   // ─ رسائل أدوات الأدوية (الأزرار الذهبية + الكلى) — اتنقلوا لـ"حدود الميزات" ─
   const freeInteractionToolLimitMessage = normalizeMessageAllowEmpty(
     raw?.freeInteractionToolLimitMessage,
@@ -214,6 +214,15 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumAnalysisWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumAnalysisWhatsappMessage
   );
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  const freeQuickAddWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeQuickAddWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freeQuickAddWhatsappMessage,
+  );
+  const premiumQuickAddWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumQuickAddWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumQuickAddWhatsappMessage,
+  );
   // ─ رسائل واتساب السجلات (تغيّرت من daily للحد الكلي) ─
   const freeRecordsCapacityWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeRecordsCapacityWhatsappMessage, raw?.freeRecordWhatsappMessage, legacyMessage),
@@ -223,15 +232,7 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumRecordsCapacityWhatsappMessage, raw?.premiumRecordWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumRecordsCapacityWhatsappMessage
   );
-  // ─ رسائل واتساب الترجمة الذكية (جديد) ─
-  const freeTranslationWhatsappMessage = normalizeMessageAllowEmpty(
-    raw?.freeTranslationWhatsappMessage,
-    DEFAULT_SMART_RX_CONFIG.freeTranslationWhatsappMessage,
-  );
-  const premiumTranslationWhatsappMessage = normalizeMessageAllowEmpty(
-    raw?.premiumTranslationWhatsappMessage,
-    DEFAULT_SMART_RX_CONFIG.premiumTranslationWhatsappMessage,
-  );
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   // ─ رسائل واتساب أدوات الأدوية (التداخلات + الحمل + الكلى) ─
   const freeInteractionToolWhatsappMessage = normalizeMessageAllowEmpty(
     raw?.freeInteractionToolWhatsappMessage,
@@ -313,18 +314,7 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumMedicationCustomizationsCapacityWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumMedicationCustomizationsCapacityWhatsappMessage
   );
-  const interactionToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.interactionToolLockedMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.interactionToolLockedMessage
-  );
-  const renalToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.renalToolLockedMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.renalToolLockedMessage
-  );
-  const pregnancyToolLockedMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.pregnancyToolLockedMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.pregnancyToolLockedMessage
-  );
+  // ✂️ شيلنا lockedMessage للأدوات الـ٣ — مش مستخدمة دلوقتي.
   // override للقيم القديمة ('Premium'/'بريميوم'/'مميز') المحفوظة قبل إعادة التسمية
   const _rawTagLabel = String(raw?.premiumTagLabel || '').trim();
   const _isLegacyTag = _rawTagLabel === 'Premium' || _rawTagLabel === 'premium' || _rawTagLabel === 'بريميوم' || _rawTagLabel === 'مميز';
@@ -335,12 +325,17 @@ const normalizeSmartRxConfig = (raw) => {
   return {
     freeDailyLimit,
     premiumDailyLimit,
+    // 🆕 الزر السريع "إضافة بدون تحليل"
+    freeQuickAddDailyLimit,
+    premiumQuickAddDailyLimit,
+    freeQuickAddLimitMessage,
+    premiumQuickAddLimitMessage,
+    freeQuickAddWhatsappMessage,
+    premiumQuickAddWhatsappMessage,
     // ─ السجلات (سعة كلية بعد 2026-04) ─
     freeRecordsMaxCount,
     premiumRecordsMaxCount,
     // ─ الترجمة الذكية ─
-    freeTranslationDailyLimit,
-    premiumTranslationDailyLimit,
     // ─ الفروع ─
     freeBranchesMaxCount,
     premiumBranchesMaxCount,
@@ -376,8 +371,6 @@ const normalizeSmartRxConfig = (raw) => {
     // ─ رسائل سعة السجلات + الترجمة (جديد 2026-04) ─
     freeRecordsCapacityMessage,
     premiumRecordsCapacityMessage,
-    freeTranslationLimitMessage,
-    premiumTranslationLimitMessage,
     // ─ رسائل أدوات الأدوية (التداخلات + الحمل + الكلى) ─
     freeInteractionToolLimitMessage,
     premiumInteractionToolLimitMessage,
@@ -424,8 +417,6 @@ const normalizeSmartRxConfig = (raw) => {
     // ─ رسائل واتساب: السجلات (سعة) + الترجمة (جديد 2026-04) ─
     freeRecordsCapacityWhatsappMessage,
     premiumRecordsCapacityWhatsappMessage,
-    freeTranslationWhatsappMessage,
-    premiumTranslationWhatsappMessage,
     // ─ رسائل واتساب أدوات الأدوية ─
     freeInteractionToolWhatsappMessage,
     premiumInteractionToolWhatsappMessage,
@@ -447,19 +438,17 @@ const normalizeSmartRxConfig = (raw) => {
     premiumReadyPrescriptionsCapacityWhatsappMessage,
     freeMedicationCustomizationsCapacityWhatsappMessage,
     premiumMedicationCustomizationsCapacityWhatsappMessage,
-    interactionToolPremiumOnly,
-    renalToolPremiumOnly,
-    pregnancyToolPremiumOnly,
-    interactionToolLockedMessage,
-    renalToolLockedMessage,
-    pregnancyToolLockedMessage,
+    // ✂️ شيلنا premiumOnly + lockedMessage للأدوات — الحد اليومي وحده يحدد دلوقتي.
     premiumTagLabel,
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
     // ═══ حقول الفئة الجديدة "برو ماكس" — pass-through مع fallback للـ defaults ═══
     proMaxDailyLimit: toSafeLimit(raw?.proMaxDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxDailyLimit),
+    // 🆕 برو ماكس: الزر السريع "إضافة بدون تحليل"
+    proMaxQuickAddDailyLimit: toSafeLimit(raw?.proMaxQuickAddDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxQuickAddDailyLimit),
+    proMaxQuickAddLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxQuickAddLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxQuickAddLimitMessage),
+    proMaxQuickAddWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxQuickAddWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxQuickAddWhatsappMessage),
     // ─ السجلات (سعة كلية) + الترجمة + الفروع — جديد 2026-04 ─
     proMaxRecordsMaxCount: toSafeLimit(raw?.proMaxRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxRecordsMaxCount),
-    proMaxTranslationDailyLimit: toSafeLimit(raw?.proMaxTranslationDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxTranslationDailyLimit),
     proMaxBranchesMaxCount: toSafeLimit(raw?.proMaxBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxBranchesMaxCount),
     // ─ 🆕 برو ماكس: شركات التأمين ─
     proMaxInsuranceCompaniesMaxCount: toSafeLimit(raw?.proMaxInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesMaxCount),
@@ -480,10 +469,6 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxRecordsCapacityMessage: normalizeMessageAllowEmpty(
       firstDefined(raw?.proMaxRecordsCapacityMessage, raw?.proMaxRecordLimitMessage),
       DEFAULT_SMART_RX_CONFIG.proMaxRecordsCapacityMessage,
-    ),
-    proMaxTranslationLimitMessage: normalizeMessageAllowEmpty(
-      raw?.proMaxTranslationLimitMessage,
-      DEFAULT_SMART_RX_CONFIG.proMaxTranslationLimitMessage,
     ),
     // ─ رسائل برو ماكس: أدوات الأدوية ─
     proMaxInteractionToolLimitMessage: normalizeMessageAllowEmpty(
@@ -520,10 +505,6 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxRecordsCapacityWhatsappMessage: normalizeMessageAllowEmpty(
       firstDefined(raw?.proMaxRecordsCapacityWhatsappMessage, raw?.proMaxRecordWhatsappMessage),
       DEFAULT_SMART_RX_CONFIG.proMaxRecordsCapacityWhatsappMessage,
-    ),
-    proMaxTranslationWhatsappMessage: normalizeMessageAllowEmpty(
-      raw?.proMaxTranslationWhatsappMessage,
-      DEFAULT_SMART_RX_CONFIG.proMaxTranslationWhatsappMessage,
     ),
     // ─ رسائل واتساب برو ماكس: أدوات الأدوية ─
     proMaxInteractionToolWhatsappMessage: normalizeMessageAllowEmpty(

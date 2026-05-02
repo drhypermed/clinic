@@ -15,10 +15,10 @@ const normalizeVerificationStatus = (value) => {
   return 'submitted';
 };
 
-// أسماء ميزات الـAI الـ6 — لازم تطابق `ALLOWED_AI_FEATURES` في adminFunctions.js
+// أسماء ميزات الـAI الـ5 — لازم تطابق `ALLOWED_AI_FEATURES` في adminFunctions.js
+// ✂️ شيلنا 'translation' (2026-05) — بقت بدون حد منفصل، dead counter
 const AI_FEATURE_NAMES = [
   'case_analysis',
-  'translation',
   'drug_interactions',
   'pregnancy_safety',
   'renal_dose',
@@ -28,7 +28,6 @@ const AI_FEATURE_NAMES = [
 // تحويل الـsnake_case إلى camelCase لأسماء الحقول في الـpayload
 const FEATURE_CAMEL_MAP = {
   case_analysis: 'caseAnalysis',
-  translation: 'translation',
   drug_interactions: 'drugInteractions',
   pregnancy_safety: 'pregnancySafety',
   renal_dose: 'renalDose',

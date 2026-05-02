@@ -1,22 +1,14 @@
 /**
- * إدارة الكوتا والصلاحيات (createQuotaActions):
- * يتحكم هذا الملف في التواصل مع نظام التحقق من حدود الاستخدام (Quota System).
- * 
- * المهام الرئيسية:
- * 1. استهلاك كوتا الحفظ (Record Saving Quota).
- * 2. استهلاك كوتا التحليل الذكي (Smart Analysis Quota).
- * 3. استخراج تفاصيل الخطأ في حالة الوصول للحد الأقصى (WhatsApp Support info, etc).
+ * أدوات الكوتا — helpers مشتركة (extract error details + URL helpers + placeholders).
+ *
+ * ملاحظة (2026-05): شيلنا `createQuotaActions` factory — كانت dead code (مفيش حد
+ * بيستوردها). الكود اللي كان داخلها كان wrapper بسيط حوالين الـAPI calls، والـuseDrHyper
+ * بقى بيستدعي الـservice مباشرة بدون الـwrapper ده.
  */
 
-import { 
+import {
   SmartQuotaLimitErrorDetails,
-  consumeSmartPrescriptionQuota as apiConsumeSmartPrescriptionQuota,
-  consumeStorageQuota as apiConsumeStorageQuota,
 } from '../../services/accountTypeControlsService';
-
-interface CreateQuotaActionsParams {
-  user: { uid: string } | null | undefined;
-}
 
 const applyQuotaPlaceholders = (template: string, details: SmartQuotaLimitErrorDetails): string => {
   const raw = String(template || '').trim();
@@ -26,40 +18,6 @@ const applyQuotaPlaceholders = (template: string, details: SmartQuotaLimitErrorD
     .replace(/\{\s*limit\s*\}/gi, String(Number(details.limit || 0)))
     .replace(/\{\s*used\s*\}/gi, String(Number(details.used || 0)))
     .replace(/\{\s*remaining\s*\}/gi, String(Number(details.remaining || 0)));
-};
-
-const createQuotaActions = ({ user }: CreateQuotaActionsParams) => {
-  /** استهلاك كوتا التخزين (حفظ الكشوفات أو الروشتات الجاهزة) */
-  const consumeStorageQuota = async (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => {
-    if (!user) throw new Error('User not logged in');
-    // Note: The service uses internal authentication, so we don't pass UID here anymore
-    return await apiConsumeStorageQuota(feature);
-  };
-
-  /** استهلاك كوتا التحليل الذكي باستخدام الذكاء الاصطناعي */
-  const consumeSmartPrescriptionQuota = async () => {
-    if (!user) throw new Error('User not logged in');
-    return await apiConsumeSmartPrescriptionQuota();
-  };
-
-  /** استخراج تفاصيل خطأ الكوتا لعرضها في مودال مخصص (مثل رابط واتساب للدعم) */
-  const extractSmartQuotaErrorDetails = (error: unknown) => {
-    // This function is defined below in this file
-    return internalExtractSmartQuotaErrorDetails(error);
-  };
-
-  /** صياغة رسالة واضحة للمستخدم عند الوصول للحد الأقصى */
-  const getQuotaReachedMessage = (details: SmartQuotaLimitErrorDetails, fallback: string) => {
-    const fromBackend = applyQuotaPlaceholders(details.limitReachedMessage || '', details);
-    return fromBackend || fallback;
-  };
-
-  return {
-    consumeStorageQuota,
-    consumeSmartPrescriptionQuota,
-    extractSmartQuotaErrorDetails,
-    getQuotaReachedMessage,
-  };
 };
 
 const internalExtractSmartQuotaErrorDetails = (error: any): SmartQuotaLimitErrorDetails | null => {

@@ -168,21 +168,64 @@ exports.notifyDoctorOnApproval = onDocumentWritten(
 );
 exports.notifyDoctorOnSecretaryEntryRequest = onDocumentWritten({ document: 'secretaryEntryRequests/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifyDoctorOnSecretaryEntryRequest'));
 exports.notifySecretaryOnBookingConfigUpdate = onDocumentWritten({ document: 'bookingConfig/{secret}', region: REGION }, lazy('./src/functions/pushFunctions', 'notifySecretaryOnBookingConfigUpdate'));
+// مزامنة "تم رؤية إشعار الحجز" بين كل أجهزة الطبيب — يبعث silent push يحذف
+// الإشعار من درج النظام على الأجهزة الأخرى (راجع dismissedAppointmentNotifications.ts).
+exports.notifyDevicesToDismissAppointmentNotification = onDocumentCreated(
+  { document: 'users/{userId}/dismissedAppointmentNotifications/{appointmentId}', region: REGION },
+  lazy('./src/functions/pushFunctions', 'notifyDevicesToDismissAppointmentNotification')
+);
 exports.cleanupExternalNotificationBroadcastLogs = onSchedule({ schedule: 'every day 03:30', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'cleanupExternalNotificationBroadcastLogs'));
 exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 30 minutes', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
 exports.onDoctorAdReviewWrite = onDocumentWritten({ document: 'doctorAdReviews/{doctorId}/items/{reviewId}', region: REGION }, lazy('./src/functions/reviewFunctions', 'onDoctorAdReviewWrite'));
-exports.enforceUserTextLengthTopLevel = onDocumentWritten(
-  { document: '{collectionId}/{docId}', region: REGION },
-  lazy('./src/functions/securityFunctions', 'enforceFirestoreTextLengthOnWrite')
-);
-exports.enforceUserTextLengthSubLevel = onDocumentWritten(
-  { document: '{collectionId}/{docId}/{subCollectionId}/{subDocId}', region: REGION },
-  lazy('./src/functions/securityFunctions', 'enforceFirestoreTextLengthOnWrite')
-);
-exports.enforceUserTextLengthNestedLevel = onDocumentWritten(
-  { document: '{collectionId}/{docId}/{subCollectionId}/{subDocId}/{nestedCollectionId}/{nestedDocId}', region: REGION },
-  lazy('./src/functions/securityFunctions', 'enforceFirestoreTextLengthOnWrite')
-);
+// ─────────────────────────────────────────────────────────────────────
+// محفّزات حماية طول النص — استبدلت 3 wildcards كانت تشتغل على كل كتابة
+// في القاعدة بـ 17 محفّز محدد، يقتصر على الجداول اللي فيها نص طويل من
+// المستخدم. توفير ~70% من الاستدعاءات بدون فقدان أمان (الواجهة بالفعل
+// بتفرض حد 1000 حرف عبر installUserTextLengthGuard في index.tsx).
+//
+// ⚠️ لو ضفت في المستقبل جدول جديد فيه نص طويل من المستخدم،
+//    لازم تضيف سطر له هنا. لو نسيت → النصوص الطويلة هتعدي بدون قص.
+//
+// ⚠️ بعد النشر (deploy) Firebase هيسأل عن حذف الدوال القديمة:
+//    enforceUserTextLengthTopLevel / SubLevel / NestedLevel
+//    وافق على الحذف — مكانها بقى الدوال الـ17 الجديدة.
+// ─────────────────────────────────────────────────────────────────────
+const enforceTextLengthHandler = lazy('./src/functions/securityFunctions', 'enforceFirestoreTextLengthOnWrite');
+
+// 1) بيانات الطبيب الأساسية (سيرة، عنوان، مؤهلات)
+exports.enforceTextLengthOnUserDoc = onDocumentWritten({ document: 'users/{userId}', region: REGION }, enforceTextLengthHandler);
+// 2) سجلات المرضى — أطول حقل في التطبيق (تاريخ، ملاحظات الكشف)
+exports.enforceTextLengthOnRecord = onDocumentWritten({ document: 'users/{userId}/records/{recordId}', region: REGION }, enforceTextLengthHandler);
+// 3) المواعيد — قد تحتوي ملاحظات
+exports.enforceTextLengthOnAppointment = onDocumentWritten({ document: 'users/{userId}/appointments/{aptId}', region: REGION }, enforceTextLengthHandler);
+// 4) الروشتات الجاهزة — نصوص دواء وتعليمات
+exports.enforceTextLengthOnReadyPrescription = onDocumentWritten({ document: 'users/{userId}/readyPrescriptions/{presetId}', region: REGION }, enforceTextLengthHandler);
+// 5) ملفات المرضى — أسماء وملاحظات
+exports.enforceTextLengthOnPatientFile = onDocumentWritten({ document: 'users/{userId}/patientFileData/{fileId}', region: REGION }, enforceTextLengthHandler);
+// 6) الفروع — أسماء وعناوين
+exports.enforceTextLengthOnBranch = onDocumentWritten({ document: 'users/{userId}/branches/{branchId}', region: REGION }, enforceTextLengthHandler);
+// 7) شركات التأمين — أسماء وأوصاف
+exports.enforceTextLengthOnInsuranceCompany = onDocumentWritten({ document: 'users/{userId}/insuranceCompanies/{companyId}', region: REGION }, enforceTextLengthHandler);
+// 8) أسباب الخصم — أوصاف
+exports.enforceTextLengthOnDiscountReason = onDocumentWritten({ document: 'users/{userId}/discountReasons/{reasonId}', region: REGION }, enforceTextLengthHandler);
+// 9) الحجوزات العامة — أسماء مرضى وملاحظات
+exports.enforceTextLengthOnPublicBooking = onDocumentWritten({ document: 'users/{userId}/publicBookings/{bookingId}', region: REGION }, enforceTextLengthHandler);
+// 10) الإشعارات — نصوص رسائل
+exports.enforceTextLengthOnNotification = onDocumentWritten({ document: 'users/{userId}/notifications/{notificationId}', region: REGION }, enforceTextLengthHandler);
+// 11) إعدادات الحجز — معلومات العيادة وجداول
+exports.enforceTextLengthOnBookingConfig = onDocumentWritten({ document: 'bookingConfig/{secret}', region: REGION }, enforceTextLengthHandler);
+// 12) شركات التأمين المرآة (السكرتيرة بتقرأها بالـ secret)
+exports.enforceTextLengthOnBookingInsurance = onDocumentWritten({ document: 'bookingConfig/{secret}/insuranceCompanies/{companyId}', region: REGION }, enforceTextLengthHandler);
+// 13) أسباب الخصم المرآة (السكرتيرة بتقرأها بالـ secret)
+exports.enforceTextLengthOnBookingDiscount = onDocumentWritten({ document: 'bookingConfig/{secret}/discountReasons/{reasonId}', region: REGION }, enforceTextLengthHandler);
+// 14) إعدادات الحجز العام (الواجهة العامة للمرضى)
+exports.enforceTextLengthOnPublicBookingConfig = onDocumentWritten({ document: 'publicBookingConfig/{secret}', region: REGION }, enforceTextLengthHandler);
+// 15) إعلانات الأطباء — وصف وعناوين
+exports.enforceTextLengthOnDoctorAd = onDocumentWritten({ document: 'doctorAds/{doctorId}', region: REGION }, enforceTextLengthHandler);
+// 16) تقييمات المرضى للأطباء — نصوص تعليقات
+exports.enforceTextLengthOnDoctorAdReview = onDocumentWritten({ document: 'doctorAdReviews/{doctorId}/items/{reviewId}', region: REGION }, enforceTextLengthHandler);
+// 17) طلبات تسجيل أطباء جدد — بيانات السيرة الذاتية
+exports.enforceTextLengthOnPendingDoctor = onDocumentWritten({ document: 'pending_doctors/{doctorId}', region: REGION }, enforceTextLengthHandler);
 
 // --- Cleanup Functions ---
 exports.runCleanupNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/cleanupFunctions', 'runCleanupNow'));
@@ -199,6 +242,38 @@ exports.cleanupOldErrorLogs = onSchedule(
 exports.cleanupOldUsageEvents = onSchedule(
   { schedule: 'every day 03:15', timeZone: 'Africa/Cairo', region: REGION },
   lazy('./src/functions/cleanupFunctions', 'cleanupOldUsageEvents')
+);
+// تنظيف سجلات "تم رؤية إشعار الحجز" الأقدم من 30 يوم — كل يوم الساعة 3:45 الفجر
+// (تباعد عن باقي الـ cleanups في 03:00/03:15/03:30 لتجنب الكتابة المتزامنة).
+exports.cleanupOldDismissedAppointmentNotifications = onSchedule(
+  { schedule: 'every day 03:45', timeZone: 'Africa/Cairo', region: REGION },
+  lazy('./src/functions/cleanupFunctions', 'cleanupOldDismissedAppointmentNotifications')
+);
+// 🆕 (2026-05) تنظيف سجلات المرضى — شهرياً (يوم 1 من كل شهر الساعة 4:00 الفجر).
+// المدد حسب الباقة: مجاني = 5 سنين، برو = 5 سنين، برو ماكس = 7 سنين.
+// (سياسة الاحتفاظ Retention Policy — موضّحة للأطباء في دليل الاستخدام).
+// تغيرنا من daily لـ monthly عشان نوفر ~95% من قراءات users + iterations
+// (الفرونت إند مش محتاج cleanup يومي مع retention طويل بالسنين).
+// timeoutSeconds=540 (9 دقايق) لأن المسح بيلف على كل الأطباء.
+exports.cleanupOldPatientRecords = onSchedule(
+  { schedule: '0 4 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
+  lazy('./src/functions/cleanupFunctions', 'cleanupOldPatientRecords')
+);
+
+// 🆕 (2026-05) تعطيل الحسابات المجانية الخاملة — يوم 1 من كل شهر الساعة 5:00 الفجر.
+// طبيب accountType='free' + lastActiveAt > 3 شهور → isAccountDisabled=true.
+// عند محاولة الـ login بعد التعطيل: رسالة "تواصل مع الإدارة لإعادة التفعيل".
+exports.disableInactiveFreeAccounts = onSchedule(
+  { schedule: '0 5 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
+  lazy('./src/functions/cleanupFunctions', 'disableInactiveFreeAccounts')
+);
+
+// 🆕 (2026-05) حذف نهائي للحسابات المتعطلة لأكتر من سنة — يوم 1 من كل شهر الساعة 5:30.
+// disabledAt > 1 سنة → حذف Auth + Firestore + كل الـ subcollections.
+// ⚠️ ROOT_ADMIN_UID مستثنى من الحذف مهما حصل.
+exports.deleteAbandonedDisabledAccounts = onSchedule(
+  { schedule: '30 5 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
+  lazy('./src/functions/cleanupFunctions', 'deleteAbandonedDisabledAccounts')
 );
 // المسح الكامل لكل الأطباء مرة واحدة يومياً الساعة 12:00 منتصف الليل (وقت قاهرة).
 // كان كل 6 ساعات — تم تقليله لـ24 ساعة لتوفير ~75% من قراءات المسح.
@@ -258,8 +333,7 @@ exports.consumeSmartPrescriptionQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS
 exports.consumeStorageQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeStorageQuota'));
 exports.consumeBookingQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeBookingQuota'));
 exports.consumeDrugToolQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeDrugToolQuota'));
-// ─── الترجمة الذكية للروشتة — وظيفة جديدة بتعد الترجمة وتقفلها لما توصل لحد الأدمن ───
-exports.consumeTranslationQuota = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'consumeTranslationQuota'));
+// ✂️ شيلنا exports.consumeTranslationQuota (2026-05) — Firebase هيشيلها من production في الـdeploy التالي
 // ─── فحص سعة السجلات على السيرفر — تشديد أمني 2026-04 ───
 exports.validateRecordsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateRecordsCapacity'));
 // ─── فحص سعة الروشتات الجاهزة + الأدوية المعدّلة على السيرفر — تشديد أمني 2026-04 ───

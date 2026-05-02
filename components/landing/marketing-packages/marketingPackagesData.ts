@@ -343,8 +343,7 @@ export const MARKETING_PACKAGE_ALL_TOPICS: PackageTopic[] =
 
 // ─ معلومات التواصل (نفس الرقم المستخدم في باقي التطبيق كـcontact للأدمن).
 //   لو الرقم اتغيّر لاحقاً، نعدّله من مكان واحد هنا.
-export const MARKETING_WHATSAPP_NUMBER = '201092805293';
-export const MARKETING_WHATSAPP_DISPLAY = '+20 109 280 5293';
-export const MARKETING_WHATSAPP_MESSAGE = 'أريد الاستفسار عن باقات الدعاية والتسويق';
+const MARKETING_WHATSAPP_NUMBER = '201092805293';
+const MARKETING_WHATSAPP_MESSAGE = 'أريد الاستفسار عن باقات الدعاية والتسويق';
 export const MARKETING_WHATSAPP_URL =
   `https://wa.me/${MARKETING_WHATSAPP_NUMBER}?text=${encodeURIComponent(MARKETING_WHATSAPP_MESSAGE)}`;

@@ -84,10 +84,10 @@ const countFooterContacts = (raw: RawDoc): number => {
   ).length;
 };
 
-// أسماء ميزات الـAI الـ6 — لازم تطابق الـbackend (dashboardAggregationFunctions.js)
+// أسماء ميزات الـAI الـ5 — لازم تطابق الـbackend (dashboardAggregationFunctions.js)
+// ✂️ شيلنا 'translation' (2026-05) — بقت بدون حد منفصل، dead counter
 const AI_FEATURE_CAMEL_NAMES = [
   'caseAnalysis',
-  'translation',
   'drugInteractions',
   'pregnancySafety',
   'renalDose',

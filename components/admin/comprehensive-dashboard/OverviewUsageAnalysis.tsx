@@ -52,10 +52,10 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
     total: free + premium + proMax,
   });
 
-  // 6 ميزات الـAI (cumulative lifetime من stats)
+  // 5 ميزات الـAI (cumulative lifetime من stats)
+  // ✂️ شيلنا الترجمة (2026-05) — بقت بدون حد منفصل (جزء من الزرّين)
   const aiFeatureRows: UsageRow[] = [
     buildRow('ai', 'تحليل الحالة',                    stats.caseAnalysisFreeCount,    stats.caseAnalysisProCount,    stats.caseAnalysisProMaxCount,    '🩺'),
-    buildRow('ai', 'الترجمة الذكية للروشتة',           stats.translationFreeCount,     stats.translationProCount,     stats.translationProMaxCount,     '🌐'),
     buildRow('ai', 'فحص التداخلات الدوائية',           stats.drugInteractionsFreeCount, stats.drugInteractionsProCount, stats.drugInteractionsProMaxCount, '💊'),
     buildRow('ai', 'أمان الحمل والرضاعة',              stats.pregnancySafetyFreeCount, stats.pregnancySafetyProCount, stats.pregnancySafetyProMaxCount, '🤰'),
     buildRow('ai', 'تعديل جرعات الكلى',                stats.renalDoseFreeCount,        stats.renalDoseProCount,        stats.renalDoseProMaxCount,        '🧪'),

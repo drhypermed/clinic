@@ -53,7 +53,9 @@ interface CreateSmartRxActionsParams {
   totalAgeInMonths: number;
   vitals: VitalSigns;
   userId?: string;
-  consumeSmartPrescriptionQuota: () => Promise<unknown>;
+  // 🆕 (2026-05) — `mode` يحدد العداد: 'analyze' للزر العميق، 'quickAdd' للزر السريع.
+  // الزرين كان عندهم نفس العداد، فاستهلاك واحد بيقفل التاني — اتفصلوا على عدّادين.
+  consumeSmartPrescriptionQuota: (mode?: 'analyze' | 'quickAdd') => Promise<unknown>;
   extractSmartQuotaErrorDetails: (error: unknown) => SmartQuotaLimitErrorDetails | null;
   openQuotaNoticeModal: (payload: {
     message: string;
@@ -170,13 +172,21 @@ export const createSmartRxActions = ({
   /**
    * تشغيل التحقق من الكوتا — دالة مشتركة بين الزرّين.
    * ترجع true لو نقدر نكمل، false لو الكوتا انتهت (وبتفتح مودال الكوتا لوحدها).
+   *
+   * 🆕 (2026-05) — `mode` يحدد العداد:
+   *   • 'analyze' (الافتراضي): زر "تحليل الحالة" (الزر العميق)
+   *   • 'quickAdd': زر "إضافة بدون تحليل" (الزر السريع)
+   * الزرّين كانوا بيشاركوا نفس العداد فاستهلاك زر بيقفل التاني — اتفصلوا.
    */
-  const checkQuotaBeforeAnalyze = async (e?: React.MouseEvent<any>): Promise<boolean> => {
+  const checkQuotaBeforeAnalyze = async (
+    e?: React.MouseEvent<any>,
+    mode: 'analyze' | 'quickAdd' = 'analyze',
+  ): Promise<boolean> => {
     try {
       // retry تلقائي على أخطاء النت العابرة (محاولتين بـbackoff خفيف ~1 ثانية)
       // ملاحظة: تحليل الحالة بـAI محتاج نت أصلاً، فلو النت مقطوع ميشتغلش.
       // الـretry هنا بيحل blips العابرة. لو فضل فاشل، نمنع (أمن — موجود تحت).
-      await retryOnTransientError(() => consumeSmartPrescriptionQuota());
+      await retryOnTransientError(() => consumeSmartPrescriptionQuota(mode));
       return true;
     } catch (error: unknown) {
       const details = extractSmartQuotaErrorDetails(error);
@@ -403,7 +413,8 @@ export const createSmartRxActions = ({
     }
 
     // ─── 2) Cache miss — نشيّك الكوتا ثم نعمل الترجمة ───
-    const canProceed = await checkQuotaBeforeAnalyze(e);
+    // 🆕 mode='quickAdd' عشان يستهلك من عداد الزر السريع، مش عداد التحليل العميق
+    const canProceed = await checkQuotaBeforeAnalyze(e, 'quickAdd');
     if (!canProceed) {
       setAnalyzing(false);
       return;

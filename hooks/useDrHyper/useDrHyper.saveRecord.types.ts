@@ -9,7 +9,6 @@
 
 import type React from 'react';
 import type { PatientGender, PatientRecord, PaymentType, PrescriptionItem, VitalSigns } from '../../types';
-import type { SmartQuotaLimitErrorDetails } from '../../services/accountTypeControlsService';
 
 export interface CreateSaveRecordActionParams {
     user: { uid: string } | null | undefined;

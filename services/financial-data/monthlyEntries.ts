@@ -12,11 +12,11 @@
  *   - `getYearlyMonthlyEntries`: جلب كل الأشهر لسنة (لتقارير سنوية).
  */
 
-import { collection, doc, query, setDoc } from 'firebase/firestore';
+import { collection, doc, documentId, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocCacheFirst, getDocsCacheFirst, subscribeDocCacheFirst } from '../firestore/cacheFirst';
 import type { MonthlyFinancialData } from './types';
-import { branchDocKey, parseBranchDocKey } from './normalizers';
+import { branchDocIdRange, branchDocKey, parseBranchDocKey } from './normalizers';
 
 /** جلب المصروفات الشهرية لمفتاح شهر محدد (بصيغة YYYY-MM) */
 export const getMonthlyData = async (userId: string, monthKey: string, branchId?: string): Promise<MonthlyFinancialData> => {
@@ -81,16 +81,18 @@ export const getYearlyMonthlyEntries = async (
 ): Promise<Record<string, MonthlyFinancialData>> => {
     try {
         const entriesRef = collection(db, 'users', userId, 'financialData', 'monthly', 'entries');
-        const snapshot = await getDocsCacheFirst(query(entriesRef));
+        // قراءة وثائق الفرع/السنة المطلوبَين فقط من Firestore (range query على documentId)
+        const { start, end } = branchDocIdRange(`${year}-`, branchId);
+        const snapshot = await getDocsCacheFirst(query(
+            entriesRef,
+            where(documentId(), '>=', start),
+            where(documentId(), '<=', end),
+        ));
 
         const entries: Record<string, MonthlyFinancialData> = {};
-        const prefix = `${year}-`;
         snapshot.forEach((d) => {
-            const parsed = parseBranchDocKey(d.id);
-            const targetBranch = branchId || 'main';
-            if (parsed.branchId === targetBranch && parsed.key.startsWith(prefix)) {
-                entries[parsed.key] = d.data() as MonthlyFinancialData;
-            }
+            const { key } = parseBranchDocKey(d.id);
+            entries[key] = d.data() as MonthlyFinancialData;
         });
 
         return entries;

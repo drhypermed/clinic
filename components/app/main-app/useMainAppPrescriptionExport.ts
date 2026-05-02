@@ -19,6 +19,11 @@ interface UseMainAppPrescriptionExportParams {
   patientName: string;
   phone: string;
   userId: string;
+  /**
+   * 🆕 (2026-05): الـ accountType الـ cached من الـ user document.
+   * 'premium' أو 'pro_max' → بنتخطى فحص الكوتا تماماً (التشغيل أسرع).
+   */
+  cachedAccountType?: 'free' | 'premium' | 'pro_max';
   showNotification: (msg: string, type?: any, options?: any) => void;
   setWhatsappGuideOpen: (open: boolean) => void;
   /** 🆕 يُستدعى لما الكوتا تنتهي لأي إجراء تصدير — لفتح مودال الحد + الواتساب */
@@ -35,6 +40,7 @@ export const useMainAppPrescriptionExport = ({
   patientName,
   phone,
   userId,
+  cachedAccountType,
   showNotification,
   setWhatsappGuideOpen,
   openQuotaNoticeModal,
@@ -101,6 +107,7 @@ export const useMainAppPrescriptionExport = ({
     paperSize,
     patientName,
     phone,
+    cachedAccountType,
     onTrack,
     onPrompt,
     onError,

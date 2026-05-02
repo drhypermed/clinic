@@ -37,6 +37,21 @@ export const parseBranchDocKey = (docId: string): { key: string; branchId: strin
     };
 };
 
+/**
+ * بناء نطاق documentId() لقراءة وثائق فرع معيّن تبدأ بـ keyPrefix محدد من Firestore مباشرة.
+ * - الفرع الرئيسي (main): النطاق على الـ keyPrefix كما هو (بدون بادئة).
+ * - الفروع الأخرى: النطاق بيشمل بادئة الفرع `{branchId}__`.
+ *
+ * المنفعة: استبدال "اقرأ الكل ثم فلترة في الذاكرة" بـ Firestore range query.
+ * مثال: لجلب كل وثائق سنة 2026 لفرع main → keyPrefix = "2026-"، النطاق:
+ *   start = "2026-",  end = "2026-"  (بيقطع كل YYYY-MM-DD اللي تبدأ بـ "2026-")
+ *  رمز Unicode عالي بيتفسّر كنهاية أي prefix في الـ string sort الخاص بـ Firestore.
+ */
+export const branchDocIdRange = (keyPrefix: string, branchId?: string): { start: string; end: string } => {
+    const fullPrefix = !branchId || branchId === 'main' ? keyPrefix : `${branchId}__${keyPrefix}`;
+    return { start: fullPrefix, end: `${fullPrefix}` };
+};
+
 /** هل الخطأ ناتج عن نقص الصلاحيات في Firestore Rules؟ */
 export const isPermissionDeniedError = (error: unknown): boolean => {
     const rawCode = String((error as { code?: unknown })?.code || '').trim().toLowerCase();

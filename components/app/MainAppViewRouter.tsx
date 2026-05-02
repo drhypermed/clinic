@@ -445,7 +445,6 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
         <PrescriptionSettingsPage
           settings={p.prescriptionSettings}
           onSave={p.savePrescriptionSettings}
-          onBack={() => p.navigateToView('prescription')}
         />
       )}
 

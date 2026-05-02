@@ -12,11 +12,11 @@
  *   - `getYearlyDailyEntries`: جلب كل أيام سنة معيّنة (لتقارير الأرباح السنوية).
  */
 
-import { collection, doc, query, setDoc } from 'firebase/firestore';
+import { collection, doc, documentId, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocCacheFirst, getDocsCacheFirst, subscribeDocCacheFirst } from '../firestore/cacheFirst';
 import type { DailyFinancialData } from './types';
-import { branchDocKey, parseBranchDocKey } from './normalizers';
+import { branchDocIdRange, branchDocKey, parseBranchDocKey } from './normalizers';
 
 /** جلب البيانات المالية اليومية لتاريخ محدد (مفتاح التاريخ بصيغة YYYY-MM-DD) */
 export const getDailyData = async (userId: string, dateKey: string, branchId?: string): Promise<DailyFinancialData> => {
@@ -81,16 +81,19 @@ export const getAllDailyEntriesForMonth = async (
 ): Promise<Record<string, DailyFinancialData>> => {
     try {
         const entriesRef = collection(db, 'users', userId, 'financialData', 'daily', 'entries');
-        const snapshot = await getDocsCacheFirst(query(entriesRef));
+        // قراءة الفرع المطلوب للشهر فقط من Firestore مباشرة (بدل قراءة كل البيانات وفلترة في الذاكرة)
+        const { start, end } = branchDocIdRange(`${monthKey}-`, branchId);
+        const snapshot = await getDocsCacheFirst(query(
+            entriesRef,
+            where(documentId(), '>=', start),
+            where(documentId(), '<=', end),
+        ));
 
         const entries: Record<string, DailyFinancialData> = {};
         snapshot.forEach((d) => {
-            const parsed = parseBranchDocKey(d.id);
-            // فلترة حسب الفرع ثم حسب الشهر
-            const targetBranch = branchId || 'main';
-            if (parsed.branchId === targetBranch && parsed.key.startsWith(monthKey)) {
-                entries[parsed.key] = d.data() as DailyFinancialData;
-            }
+            // الـ Firestore range ضمن إن النتائج تخص الفرع والشهر المطلوبَين فقط — parseBranchDocKey للحصول على المفتاح المنظف
+            const { key } = parseBranchDocKey(d.id);
+            entries[key] = d.data() as DailyFinancialData;
         });
 
         return entries;
@@ -108,16 +111,18 @@ export const getYearlyDailyEntries = async (
 ): Promise<Record<string, DailyFinancialData>> => {
     try {
         const entriesRef = collection(db, 'users', userId, 'financialData', 'daily', 'entries');
-        const snapshot = await getDocsCacheFirst(query(entriesRef));
+        // قراءة وثائق الفرع/السنة المطلوبَين فقط — يقلل القراءات بكتير عند ٣ فروع × عدة سنوات
+        const { start, end } = branchDocIdRange(`${year}-`, branchId);
+        const snapshot = await getDocsCacheFirst(query(
+            entriesRef,
+            where(documentId(), '>=', start),
+            where(documentId(), '<=', end),
+        ));
 
         const entries: Record<string, DailyFinancialData> = {};
-        const prefix = `${year}-`;
         snapshot.forEach((d) => {
-            const parsed = parseBranchDocKey(d.id);
-            const targetBranch = branchId || 'main';
-            if (parsed.branchId === targetBranch && parsed.key.startsWith(prefix)) {
-                entries[parsed.key] = d.data() as DailyFinancialData;
-            }
+            const { key } = parseBranchDocKey(d.id);
+            entries[key] = d.data() as DailyFinancialData;
         });
 
         return entries;

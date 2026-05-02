@@ -11,6 +11,10 @@ export interface AccountTypeControls {
   // حدود التحليل الذكي للروشتة
   freeDailyLimit: number;
   premiumDailyLimit: number;
+  // 🆕 حدود الزر السريع "إضافة بدون تحليل" — منفصل عن التحليل العميق (2026-05)
+  // كان مشترك على نفس العداد فاستهلاك زر بيقفل التاني — اتفصل لكل واحد عداده
+  freeQuickAddDailyLimit: number;
+  premiumQuickAddDailyLimit: number;
   // ─── السعة القصوى لتخزين السجلات الطبية (حد كلي مش يومي — تغيّرت 2026-04 ───
   freeRecordsMaxCount: number;
   premiumRecordsMaxCount: number;
@@ -29,9 +33,7 @@ export interface AccountTypeControls {
   // حدود طباعة التقرير الطبي للحالة يومياً
   freeMedicalReportDailyLimit: number;
   premiumMedicalReportDailyLimit: number;
-  // ─── حدود الترجمة الذكية للروشتة (Smart RX Translation) — ميزة AI كانت بتشتغل بدون حد ───
-  freeTranslationDailyLimit: number;
-  premiumTranslationDailyLimit: number;
+  // ✂️ شيلنا حدود الترجمة (2026-05) — بقت جزء من الزرّين، حد كل زر هو الحاكم
   // السعة القصوى لتخزين الروشتات الجاهزة في الحساب
   freeReadyPrescriptionsMaxCount: number;
   premiumReadyPrescriptionsMaxCount: number;
@@ -54,6 +56,9 @@ export interface AccountTypeControls {
   // رسائل التنبيه عند الوصول للحد الأقصى
   freeAnalysisLimitMessage: string;
   premiumAnalysisLimitMessage: string;
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  freeQuickAddLimitMessage: string;
+  premiumQuickAddLimitMessage: string;
   // ─── رسائل تجاوز سعة السجلات الطبية ───
   freeRecordsCapacityMessage: string;
   premiumRecordsCapacityMessage: string;
@@ -67,9 +72,7 @@ export interface AccountTypeControls {
   premiumReadyPrescriptionDailyLimitMessage: string;
   freeMedicalReportLimitMessage: string;
   premiumMedicalReportLimitMessage: string;
-  // ─── رسائل تجاوز حد الترجمة الذكية ───
-  freeTranslationLimitMessage: string;
-  premiumTranslationLimitMessage: string;
+  // ✂️ شيلنا رسائل الترجمة (2026-05)
   freeReadyPrescriptionsCapacityMessage: string;
   premiumReadyPrescriptionsCapacityMessage: string;
   freeMedicationCustomizationsCapacityMessage: string;
@@ -90,6 +93,9 @@ export interface AccountTypeControls {
   whatsappNumber: string;
   freeAnalysisWhatsappMessage: string;
   premiumAnalysisWhatsappMessage: string;
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  freeQuickAddWhatsappMessage: string;
+  premiumQuickAddWhatsappMessage: string;
   // ─── رسائل واتساب لسعة السجلات الطبية ───
   freeRecordsCapacityWhatsappMessage: string;
   premiumRecordsCapacityWhatsappMessage: string;
@@ -103,9 +109,7 @@ export interface AccountTypeControls {
   premiumReadyPrescriptionWhatsappMessage: string;
   freeMedicalReportWhatsappMessage: string;
   premiumMedicalReportWhatsappMessage: string;
-  // ─── رسائل واتساب الترجمة الذكية ───
-  freeTranslationWhatsappMessage: string;
-  premiumTranslationWhatsappMessage: string;
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   freeReadyPrescriptionsCapacityWhatsappMessage: string;
   premiumReadyPrescriptionsCapacityWhatsappMessage: string;
   freeMedicationCustomizationsCapacityWhatsappMessage: string;
@@ -116,13 +120,8 @@ export interface AccountTypeControls {
   // ─── 🆕 رسائل واتساب لسعة شركات التأمين ───
   freeInsuranceCompaniesCapacityWhatsappMessage: string;
   premiumInsuranceCompaniesCapacityWhatsappMessage: string;
-  // صلاحيات الأدوات الطبية المتخصصة
-  interactionToolPremiumOnly: boolean;
-  renalToolPremiumOnly: boolean;
-  pregnancyToolPremiumOnly: boolean;
-  interactionToolLockedMessage: string;
-  renalToolLockedMessage: string;
-  pregnancyToolLockedMessage: string;
+  // ✂️ شيلنا الـ flags premiumOnly + رسائل الـ locked القديمه.
+  // المنطق دلوقتي موحّد: الحد اليومي للمجاني وحده يحدد (= 0 يعني مقفولة).
   // ─── 🆕 رسائل تجاوز الحد اليومي للأزرار الذهبية تحت الروشتة (التداخلات + الحمل/الرضاعة) ───
   // ─ اتنقلوا من قسم "أدوات الأدوية" لقسم "حدود الميزات" — كحدود يومية ـ
   freeInteractionToolLimitMessage: string;
@@ -163,13 +162,16 @@ export interface AccountTypeControls {
 
   // ═══ فئة "برو ماكس" الجديدة — كل الحقول optional لأن الأدمن بيضبطها لاحقاً ═══
   proMaxDailyLimit?: number;
+  // 🆕 برو ماكس: حد + رسائل الزر السريع "إضافة بدون تحليل"
+  proMaxQuickAddDailyLimit?: number;
+  proMaxQuickAddLimitMessage?: string;
+  proMaxQuickAddWhatsappMessage?: string;
   proMaxRecordsMaxCount?: number;
   proMaxPublicBookingDailyLimit?: number;
   proMaxPublicFormBookingDailyLimit?: number;
   proMaxSecretaryEntryRequestDailyLimit?: number;
   proMaxReadyPrescriptionDailyLimit?: number;
   proMaxMedicalReportDailyLimit?: number;
-  proMaxTranslationDailyLimit?: number;
   proMaxReadyPrescriptionsMaxCount?: number;
   proMaxMedicationCustomizationsMaxCount?: number;
   proMaxBranchesMaxCount?: number;
@@ -202,7 +204,6 @@ export interface AccountTypeControls {
   proMaxSecretaryEntryRequestLimitMessage?: string;
   proMaxReadyPrescriptionDailyLimitMessage?: string;
   proMaxMedicalReportLimitMessage?: string;
-  proMaxTranslationLimitMessage?: string;
   proMaxReadyPrescriptionsCapacityMessage?: string;
   proMaxMedicationCustomizationsCapacityMessage?: string;
   proMaxBranchesCapacityMessage?: string;
@@ -214,7 +215,6 @@ export interface AccountTypeControls {
   proMaxSecretaryEntryRequestWhatsappMessage?: string;
   proMaxReadyPrescriptionWhatsappMessage?: string;
   proMaxMedicalReportWhatsappMessage?: string;
-  proMaxTranslationWhatsappMessage?: string;
   proMaxReadyPrescriptionsCapacityWhatsappMessage?: string;
   proMaxMedicationCustomizationsCapacityWhatsappMessage?: string;
   proMaxBranchesCapacityWhatsappMessage?: string;
@@ -225,6 +225,8 @@ export interface AccountTypeControls {
 /** نتيجة فحص الكوتة للتحليل الذكي للروشتة */
 export interface SmartPrescriptionQuotaResult {
   accountType: 'free' | 'premium' | 'pro_max';
+  // 🆕 الـmode اللي اتفحص عليه: 'analyze' (الزر العميق) أو 'quickAdd' (الزر السريع)
+  mode?: 'analyze' | 'quickAdd';
   limit: number;
   used: number;
   remaining: number;
@@ -259,18 +261,7 @@ export interface CapacityCheckResult {
   whatsappMessage: string;
 }
 
-/** نتيجة فحص كوتة الترجمة الذكية للروشتة (Smart RX Translation) */
-export interface TranslationQuotaResult {
-  accountType: 'free' | 'premium' | 'pro_max';
-  limit: number;
-  used: number;
-  remaining: number;
-  dayKey: string;
-  whatsappNumber: string;
-  whatsappUrl: string;
-  limitReachedMessage: string;
-  whatsappMessage: string;
-}
+// ✂️ شيلنا TranslationQuotaResult (2026-05) — الترجمة بقت بدون حد منفصل
 
 // ─ recordSave اتشال 2026-04 — السجلات بقت "حد كلي" بفحص client-side ─
 // ─ 🆕 ضفنا تصدير الروشتة (طباعة + تنزيل + واتساب) كـserver-side quotas 2026-04 ─

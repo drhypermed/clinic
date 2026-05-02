@@ -9,15 +9,12 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- Unified UI font: Cairo — تحميل غير معطِّل للعرض -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"></noscript>
+    <!-- Unified UI font: Cairo — محلي 100% (٣ ملفات woff2 في /fonts/cairo/).
+         مفيش أي طلب خارجي على Google Fonts، الطباعة فورية بمجرد ما الـSW يـcache الملفات.
+         preload للـsubset العربي (الأكثر استخداماً) عشان يبدأ التحميل بالتوازي مع الـHTML. -->
+    <link rel="preload" as="font" href="/fonts/cairo/cairo-arabic.woff2" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/fonts/cairo/cairo.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="/fonts/cairo/cairo.css"></noscript>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#16a34a">
     <!-- favicon setup: Google بيستخدم أصغر أيقونة متاحة (32x32 preferred) وبيشترط accessibility بدون login -->

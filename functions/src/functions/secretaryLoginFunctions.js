@@ -175,16 +175,29 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     });
 
     const preferredBranchId = String(request?.data?.preferredBranchId || '').trim();
-    const matchResult = await tryMatchSecretaryPasswordAcrossBranches({
-      db, admin, auth, secret, userId, secretaryPassword, resolvedDoctorEmail,
-      verifyPassword: verifySecretaryPassword,
-      hashPassword: hashSecretaryPassword,
-      generateSessionToken,
-      nowMs,
-      nowTs,
-      HttpsError,
-      preferredBranchId: preferredBranchId || undefined,
-    });
+    let matchResult;
+    try {
+      matchResult = await tryMatchSecretaryPasswordAcrossBranches({
+        db, admin, auth, secret, userId, secretaryPassword, resolvedDoctorEmail,
+        verifyPassword: verifySecretaryPassword,
+        hashPassword: hashSecretaryPassword,
+        generateSessionToken,
+        nowMs,
+        nowTs,
+        HttpsError,
+        preferredBranchId: preferredBranchId || undefined,
+      });
+    } catch (matchError) {
+      // ⚠️ AMBIGUOUS_PASSWORD: لو كلمة السر متطابقة في فرعين بدون تحديد المفضّل،
+      // الدالة بترمي الخطأ ده. الإصلاح: نسجلها كمحاولة فاشلة في rate limit
+      // عشان ميقدرش حد يستغل الحالة دي للـ brute-force، ثم نعيد الـ throw.
+      // الرسالة الواضحة بتتحدد في الـ client (services/secretaryLoginService.ts).
+      const matchMessage = String(matchError?.message || '').toUpperCase();
+      if (matchMessage.includes('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES')) {
+        await registerFailedAttempt();
+      }
+      throw matchError;
+    }
 
     const matchedBranchId = matchResult?.matchedBranchId || null;
     const matchedSessionToken = matchResult?.sessionToken || null;

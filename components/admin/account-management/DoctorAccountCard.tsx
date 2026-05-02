@@ -32,6 +32,7 @@ import {
   getStatusConfig,
 } from './accountTableHelpers';
 import { DoctorSubscriptionDetails } from './DoctorSubscriptionDetails';
+import { DoctorLicenseSection } from './DoctorLicenseSection';
 
 interface DoctorAccountCardProps {
   doctor: ApprovedDoctor;
@@ -245,6 +246,13 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
               </div>
             )}
           </div>
+
+          {/* ── قسم صورة الترخيص — كومبوننت منفصلة بتعالج العرض والاسترداد من Storage ── */}
+          <DoctorLicenseSection
+            doctorId={doctor.id}
+            firestoreLicenseUrl={doctor.verificationDocUrl}
+            isExpanded={isExpanded}
+          />
 
           {/* ── اختيار نوع الحساب (أدمن = برو ماكس مدى الحياة / غير أدمن = مجاني/برو/برو ماكس) ── */}
           {isAdmin ? (

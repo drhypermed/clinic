@@ -10,7 +10,7 @@
  * pro_max لو مش عندها قيمة خاصة، بترجع لقيمة premium كـ fallback.
  */
 
-import { BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature, TranslationQuotaResult } from './types';
+import { BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature } from './types';
 import { StorageQuotaResult } from './types';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '../firebaseConfig';
@@ -38,6 +38,80 @@ const toTier = (value: unknown): TierValue => {
   return 'free';
 };
 
+/**
+ * 🆕 (2026-05): الفحص بقى مقصور على الحساب المجاني فقط في الميزات المدفوعة.
+ * الـ premium/pro_max بياخدوا "تخطي مباشر" للـ Cloud Function call عشان السرعة:
+ *   - الطباعة + التنزيل + واتساب
+ *   - حفظ روشتة جاهزة + عدد الروشتات الكلي
+ *   - السجلات الطبية (الحد الكلي)
+ *   - الأدوية المعدّلة (الحد الكلي)
+ *
+ * مكاسب الأداء: كل Cloud Function call بياخد ٢-٥ ثواني، فالتخطي بيوفر الوقت ده.
+ * الأمان: الـ Cloud Function نفسها فيها نفس الفحص (لو حد عمل bypass على الـ frontend).
+ */
+const isPaidTier = (cachedAccountType?: TierValue): boolean =>
+  cachedAccountType === 'premium' || cachedAccountType === 'pro_max';
+
+/**
+ * يقرأ الـ accountType من localStorage (الـ key متطابق مع `getAccountTypeCacheKey`).
+ * بنستخدمه عشان الـ services اللي مش متاح ليها الـ accountType من الـ caller
+ * تقدر تتخطى الـ Cloud Function call تلقائياً للـ paid tiers.
+ *
+ * فايدة: الـ cache بيتحدث لحظياً من Firestore subscription في useMainAppProfile.
+ * فلو الطبيب الـ accountType اتغير، الـ cache بيتحدث في ثواني.
+ */
+export const readCachedAccountType = (uid?: string | null): TierValue | undefined => {
+  if (!uid || typeof window === 'undefined') return undefined;
+  try {
+    const cached = window.localStorage.getItem(`account_type_${uid}`);
+    if (cached === 'premium' || cached === 'pro_max' || cached === 'free') {
+      return cached as TierValue;
+    }
+  } catch {
+    // localStorage مش متاح (incognito/قديم) — نرجع undefined → الـ Cloud call يحصل عادي
+  }
+  return undefined;
+};
+
+/** نتيجة "كوتا غير محدودة" للـ paid tiers — ترجع بدون استدعاء السيرفر. */
+const buildUnlimitedStorageResult = (
+  feature: StorageQuotaFeature,
+  tier: TierValue,
+): StorageQuotaResult => ({
+  accountType: tier,
+  feature,
+  limit: 0, // 0 = unlimited في هذا السياق
+  used: 0,
+  remaining: Number.MAX_SAFE_INTEGER,
+  dayKey: '',
+  whatsappNumber: '',
+  whatsappUrl: '',
+  limitReachedMessage: '',
+  whatsappMessage: '',
+});
+
+const buildUnlimitedCapacityResult = (tier: TierValue): CapacityCheckResult => ({
+  accountType: tier,
+  limit: 0,
+  used: 0,
+  remaining: Number.MAX_SAFE_INTEGER,
+  whatsappNumber: '',
+  whatsappUrl: '',
+  limitReachedMessage: '',
+  whatsappMessage: '',
+});
+
+const buildUnlimitedRecordsResult = (tier: TierValue): RecordsCapacityResult => ({
+  accountType: tier,
+  limit: 0,
+  used: 0,
+  remaining: Number.MAX_SAFE_INTEGER,
+  whatsappNumber: '',
+  whatsappUrl: '',
+  limitReachedMessage: '',
+  whatsappMessage: '',
+});
+
 /** اختيار القيمة من الـ controls حسب الفئة — pro_max يقع على premium لو مش محدد */
 const pickByTier = <T>(tier: TierValue, freeVal: T, premiumVal: T, proMaxVal: T | undefined): T => {
   if (tier === 'pro_max') {
@@ -47,19 +121,37 @@ const pickByTier = <T>(tier: TierValue, freeVal: T, premiumVal: T, proMaxVal: T 
   return freeVal;
 };
 
-/** محاولة استهلاك كوتا للتحليل الذكي للروشتة */
-export const consumeSmartPrescriptionQuota = async (): Promise<SmartPrescriptionQuotaResult> => {
+/**
+ * محاولة استهلاك كوتا للتحليل الذكي للروشتة.
+ *
+ * 🆕 (2026-05) — `mode` بيحدد الزر:
+ *   • 'analyze' (الافتراضي): زر "تحليل الحالة" (الزر العميق) — عداد smartPrescriptionCount
+ *   • 'quickAdd': زر "إضافة بدون تحليل" (الزر السريع) — عداد منفصل quickAddCount
+ *
+ * كان الزرّين بيشاركوا نفس العداد فاستهلاك زر بيقفل التاني (bug). دلوقتي عداد لكل واحد.
+ */
+export type SmartPrescriptionQuotaMode = 'analyze' | 'quickAdd';
+
+export const consumeSmartPrescriptionQuota = async (
+  mode: SmartPrescriptionQuotaMode = 'analyze',
+): Promise<SmartPrescriptionQuotaResult> => {
   await ensureAuthenticatedUser();
   try {
     const callable = httpsCallable(functions, 'consumeSmartPrescriptionQuota');
-    const result = await callWithAuthRetry(() => callable());
+    const result = await callWithAuthRetry(() => callable({ mode }));
     const data = (result.data || {}) as Record<string, unknown>;
     const normalizedControls = normalizeControls(data);
     const tier = toTier(data.accountType);
-    const fallbackLimit = pickByTier(tier,
-      normalizedControls.freeDailyLimit,
-      normalizedControls.premiumDailyLimit,
-      normalizedControls.proMaxDailyLimit);
+    // الحد الاحتياطي يختلف حسب الـmode — كل زر له حده الخاص في الإعدادات
+    const fallbackLimit = mode === 'quickAdd'
+      ? pickByTier(tier,
+          normalizedControls.freeQuickAddDailyLimit,
+          normalizedControls.premiumQuickAddDailyLimit,
+          normalizedControls.proMaxQuickAddDailyLimit)
+      : pickByTier(tier,
+          normalizedControls.freeDailyLimit,
+          normalizedControls.premiumDailyLimit,
+          normalizedControls.proMaxDailyLimit);
     return {
       accountType: tier,
       limit: toSafeLimit(data.limit, fallbackLimit),
@@ -76,8 +168,26 @@ export const consumeSmartPrescriptionQuota = async (): Promise<SmartPrescription
   }
 };
 
-/** محاولة استهلاك كوتا لعمليات التخزين (سجلات المرضى أو الروشتات الجاهزة) */
-export const consumeStorageQuota = async (feature: StorageQuotaFeature): Promise<StorageQuotaResult> => {
+/**
+ * محاولة استهلاك كوتا لعمليات التخزين (سجلات المرضى أو الروشتات الجاهزة).
+ *
+ * 🆕 (2026-05) — `cachedAccountType`: لو الـ caller عارف الحساب premium/pro_max
+ * بنتخطى الـ Cloud Function call تماماً للميزات المدفوعة (طباعة/تنزيل/واتساب/
+ * حفظ روشتة جاهزة). ده بيوفر ٢-٥ ثواني انتظار في كل ضغطة. الـ medicalReport
+ * يفضل بفحص (خرج عن نطاق الترقية).
+ */
+export const consumeStorageQuota = async (
+  feature: StorageQuotaFeature,
+  options?: { cachedAccountType?: TierValue },
+): Promise<StorageQuotaResult> => {
+  // التخطي: الميزات اللي اتفتحت للـ paid في 2026-05 فقط
+  const SKIP_FOR_PAID: ReadonlySet<StorageQuotaFeature> = new Set([
+    'prescriptionPrint', 'prescriptionDownload', 'prescriptionWhatsapp', 'readyPrescriptionSave',
+  ] as StorageQuotaFeature[]);
+  if (SKIP_FOR_PAID.has(feature) && isPaidTier(options?.cachedAccountType)) {
+    return buildUnlimitedStorageResult(feature, options!.cachedAccountType as TierValue);
+  }
+
   await ensureAuthenticatedUser();
   try {
     const callable = httpsCallable(functions, 'consumeStorageQuota');
@@ -170,7 +280,12 @@ export const consumeBookingQuota = async (
  */
 export const validateRecordsCapacity = async (
   params?: { recordId?: string },
+  options?: { cachedAccountType?: TierValue },
 ): Promise<RecordsCapacityResult> => {
+  // 🆕 (2026-05): paid tiers بدون فحص حد كلي للسجلات الطبية — التشغيل أسرع
+  if (isPaidTier(options?.cachedAccountType)) {
+    return buildUnlimitedRecordsResult(options!.cachedAccountType as TierValue);
+  }
   await ensureAuthenticatedUser();
   const userId = auth.currentUser?.uid || '';
   try {
@@ -246,7 +361,13 @@ export const validateRecordsCapacity = async (
  * فحص سعة الروشتات الجاهزة على السيرفر — تشديد أمني 2026-04.
  * السيرفر بيعد الروشتات الجاهزة الفعلية ويقارنها بحد الأدمن.
  */
-export const validateReadyPrescriptionsCapacity = async (): Promise<CapacityCheckResult> => {
+export const validateReadyPrescriptionsCapacity = async (
+  options?: { cachedAccountType?: TierValue },
+): Promise<CapacityCheckResult> => {
+  // 🆕 (2026-05): paid tiers بدون فحص حد كلي للروشتات الجاهزة
+  if (isPaidTier(options?.cachedAccountType)) {
+    return buildUnlimitedCapacityResult(options!.cachedAccountType as TierValue);
+  }
   await ensureAuthenticatedUser();
   const userId = auth.currentUser?.uid || '';
   try {
@@ -336,7 +457,13 @@ export const validateInsuranceCompaniesCapacity = async (
  * فحص سعة الأدوية المعدّلة على السيرفر — تشديد أمني 2026-04.
  * السيرفر بيقرا الـmap من user doc ويعد المفاتيح ويقارنها بحد الأدمن.
  */
-export const validateMedicationCustomizationsCapacity = async (): Promise<CapacityCheckResult> => {
+export const validateMedicationCustomizationsCapacity = async (
+  options?: { cachedAccountType?: TierValue },
+): Promise<CapacityCheckResult> => {
+  // 🆕 (2026-05): paid tiers بدون فحص حد كلي للأدوية المعدّلة
+  if (isPaidTier(options?.cachedAccountType)) {
+    return buildUnlimitedCapacityResult(options!.cachedAccountType as TierValue);
+  }
   await ensureAuthenticatedUser();
   try {
     const callable = httpsCallable(functions, 'validateMedicationCustomizationsCapacity');
@@ -363,38 +490,8 @@ export const validateMedicationCustomizationsCapacity = async (): Promise<Capaci
   }
 };
 
-/**
- * محاولة استهلاك كوتا الترجمة الذكية للروشتة (جديد).
- * بتشتغل تلقائياً مع كل روشتة قبل ما الـAI يترجم البيانات السريرية.
- * لو الطبيب وصل للحد اليومي، السيرفر بيرفض ويرجع رسالة الأدمن.
- */
-export const consumeTranslationQuota = async (): Promise<TranslationQuotaResult> => {
-  await ensureAuthenticatedUser();
-  try {
-    const callable = httpsCallable(functions, 'consumeTranslationQuota');
-    const result = await callWithAuthRetry(() => callable());
-    const data = (result.data || {}) as Record<string, unknown>;
-    const normalizedControls = normalizeControls(data);
-    const tier = toTier(data.accountType);
-    const fallbackLimit = pickByTier(tier,
-      normalizedControls.freeTranslationDailyLimit,
-      normalizedControls.premiumTranslationDailyLimit,
-      normalizedControls.proMaxTranslationDailyLimit);
-    return {
-      accountType: tier,
-      limit: toSafeLimit(data.limit, fallbackLimit),
-      used: toSafeLimit(data.used, 0),
-      remaining: toSafeLimit(data.remaining, 0),
-      dayKey: String(data.dayKey || ''),
-      whatsappNumber: normalizedControls.whatsappNumber,
-      whatsappUrl: resolveWhatsappUrl(data, normalizedControls.whatsappUrl),
-      limitReachedMessage: String(data.limitReachedMessage || ''),
-      whatsappMessage: String(data.whatsappMessage || ''),
-    };
-  } catch (error: unknown) {
-    return mapCallableError(error);
-  }
-};
+// ✂️ شيلنا consumeTranslationQuota (2026-05) — الترجمة بقت بدون حد منفصل،
+//   حد كل زر (التحليل العميق + الزر السريع) هو الحاكم الفعلي للترجمة.
 
 /** محاولة استهلاك كوتا للأدوات الطبيبة المساعدة */
 export const consumeDrugToolQuota = async (

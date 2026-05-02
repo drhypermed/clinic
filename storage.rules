@@ -23,6 +23,11 @@ service firebase.storage {
       return request.resource.size < 5 * 1024 * 1024; // 5MB
     }
 
+    // السماح بقائمة الفولدر (list) — للاسترداد التلقائي للحسابات القديمة
+    // اللي صورتها مرفوعة في Storage لكن الـURL مش محفوظ في Firestore.
+    match /doctor-verification/{userId} {
+      allow list: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
     match /doctor-verification/{userId}/{fileName} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow read: if isAdmin();
@@ -30,6 +35,9 @@ service firebase.storage {
                    && (request.resource == null || (isValidSize() && isImageOrPdf()));
     }
     // Legacy path used by uploadVerificationDoc in storageService.ts
+    match /verification_docs/{userId} {
+      allow list: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
     match /verification_docs/{userId}/{fileName} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow read: if isAdmin();
@@ -38,13 +46,19 @@ service firebase.storage {
     }
     match /profile_images/{imageId} {
       allow read: if true;
-      allow write: if request.auth != null && imageId.matches(request.auth.uid + '.*')
+      // المستخدم العادي: ملفاته باسم بيبدأ بـUID بتاعه. الأدمن: مسموح يرفع
+      // أي ملف هنا (لمساعدة طبيب في صور إعلانه)، نفس الحدّ في الحجم/النوع.
+      allow write: if request.auth != null
+                   && (imageId.matches(request.auth.uid + '.*') || isAdmin())
                    && (request.resource == null || (isValidSize() && isImage()));
     }
     // Path used by uploadProfilePhoto / uploadBase64Photo in storageService.ts
     match /users/{userId}/profile/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId
+      // الطبيب: يعدّل صور بروفايله/تصميم روشتته. الأدمن: مسموح يرفع/يعدّل
+      // عند مساعدة طبيب في تصميم الروشتة (شعار، خلفيات).
+      allow write: if request.auth != null
+                   && (request.auth.uid == userId || isAdmin())
                    && (request.resource == null || (isValidSize() && isImage()));
     }
 

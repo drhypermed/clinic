@@ -14,6 +14,7 @@ import { bookingPublicService } from './bookingPublic';
 import { userProfileService } from './userProfile';
 import { doctorAdsService } from './doctorAds';
 import { branchesService } from './branches';
+import { dismissedAppointmentNotificationsService } from './dismissedAppointmentNotifications';
 
 export const firestoreService = {
     ...patientsService,
@@ -25,4 +26,5 @@ export const firestoreService = {
     ...userProfileService,
     ...doctorAdsService,
     ...branchesService,
+    ...dismissedAppointmentNotificationsService,
 };

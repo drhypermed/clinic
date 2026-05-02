@@ -62,11 +62,11 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
   const [accountTypeResolved, setAccountTypeResolved] = useState(false);
   const [lockedNotice, setLockedNotice] = useState<{ title: string; message: string } | null>(null);
   const [accessControls, setAccessControls] = useState({
-    renalToolPremiumOnly: true,
+    // المنطق الموحّد: الحد اليومي للمجاني هو الحاكم — لو = 0 يعني الأداه مقفولة عليه.
+    // مفيش toggle منفصل لـ premiumOnly، الأدمن بيحط رقم لكل باقة وبس.
     freeRenalToolDailyLimit: 5000,
     premiumRenalToolDailyLimit: 5000,
     proMaxRenalToolDailyLimit: 5000,
-    renalToolLockedMessage: 'هذه الأداة متاحة لحساب برو فقط.',
     premiumTagLabel: 'Pro',
     whatsappNumber: '',
   });
@@ -80,12 +80,9 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
         const controls = await getAccountTypeControls();
         if (!mounted) return;
         setAccessControls({
-          renalToolPremiumOnly: !!controls.renalToolPremiumOnly,
           freeRenalToolDailyLimit: Number(controls.freeRenalToolDailyLimit || 0),
           premiumRenalToolDailyLimit: Number(controls.premiumRenalToolDailyLimit || 0),
           proMaxRenalToolDailyLimit: Number(controls.proMaxRenalToolDailyLimit || controls.premiumRenalToolDailyLimit || 0),
-          renalToolLockedMessage:
-            String(controls.renalToolLockedMessage || '').trim() || 'هذه الأداة متاحة لحساب برو فقط.',
           premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Pro',
           whatsappNumber: String(controls.whatsappNumber || '').replace(/\D/g, ''),
         });
@@ -130,28 +127,22 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
     };
   }, [userId]);
 
-  // برو وبرو ماكس الاتنين "Pro" لأغراض فتح الأدوات (اللي كانت premiumOnly)
+  // برو وبرو ماكس الاتنين "Pro" لأغراض الحدود (الـ Cloud Function بيستخدم نفس التصنيف)
   const isPro = accountType === 'premium' || accountType === 'pro_max';
+  // الأداه "مقفولة على المجاني" لو الأدمن خلى الحد اليومي للمجاني = 0.
+  // ده الحاكم الوحيد دلوقتي — مفيش toggle منفصل.
+  const isLockedForFree = accessControls.freeRenalToolDailyLimit === 0;
   const toolRules = useMemo(
     () => ({
       renal: {
-        premiumOnly: accessControls.renalToolPremiumOnly,
-        message: accessControls.renalToolLockedMessage,
         title: 'جرعات الكلى',
       },
     }),
-    [accessControls]
+    []
   );
 
   const canOpenTool = async (tool: DrugToolKey): Promise<boolean> => {
     const rule = toolRules[tool];
-    if (rule.premiumOnly && !isPro) {
-      setLockedNotice({
-        title: rule.title,
-        message: rule.message || 'هذه الأداة متاحة لحساب برو فقط.',
-      });
-      return false;
-    }
 
     const feature = 'renalTool';
     const configuredLimit = accountType === 'pro_max'
@@ -249,7 +240,14 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMed
               description="تعديل الجرعات بناءً على وظائف الكلى"
               icon={<span className="text-lg">🧪</span>}
               tone={TOOL_TONES.renal}
-              badgeLabel={accountTypeResolved && toolRules.renal.premiumOnly && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
+              // اللون يعكس قرار الأدمن من خلال الحد اليومي للمجاني:
+              //   - الأدمن خلى الحد للمجاني = 0 → الأداه مقفولة عليه → ذهبي بريميوم
+              //     (متطابق مع أزرار التداخلات/الحمل في كشف جديد).
+              //   - الأدمن حط حد > 0 → الأداه متاحة للجميع → أخضر عادي.
+              // accountTypeResolved لازم يكون true عشان نتجنب وميض اللون قبل ما القيم
+              // الفعلية تتحمّل من Firestore (الـ default الـ initial = 5000 = أخضر).
+              premiumGold={accountTypeResolved && isLockedForFree}
+              badgeLabel={accountTypeResolved && isLockedForFree && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('renal')) {

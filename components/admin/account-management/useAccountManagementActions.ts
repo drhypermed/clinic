@@ -181,6 +181,13 @@ export const useAccountManagementActions = ({
       if (newType === 'free') {
         updateData.premiumExpiryDate = null;
         updateData.premiumStartDate = null;
+        // 🆕 (2026-05) عند التحويل للمجاني: نمنح الطبيب 3 شهور جديده من اليوم
+        // قبل التعطيل التلقائي. الإدارة تقدر تعدل freeAccountExpiryDate لاحقاً.
+        const FREE_TRIAL_DAYS = 90;
+        const now = new Date();
+        const freeExpiry = new Date(now.getTime() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
+        updateData.freeAccountExpiryDate = freeExpiry.toISOString();
+        updateData.freeAccountStartDate = now.toISOString();
       } else if (newType === 'premium' || newType === 'pro_max') {
         // برو وبرو ماكس بيشاركوا نفس حقول الـ expiry (premiumStartDate/premiumExpiryDate)
         // — الفرق بس في accountType. الأدمن بيضبط مميزات برو ماكس من AccountTypeControls.

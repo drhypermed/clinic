@@ -3,6 +3,7 @@ const makeUnregisterPushToken = require('./push/unregisterPushToken');
 const makeNotifyDoctorOnNewAppointment = require('./push/notifyDoctorOnNewAppointment');
 const makeNotifyDoctorOnSecretaryEntryRequest = require('./push/notifyDoctorOnSecretaryEntryRequest');
 const makeNotifySecretaryOnBookingConfigUpdate = require('./push/notifySecretaryOnBookingConfigUpdate');
+const makeNotifyDevicesToDismissAppointmentNotification = require('./push/notifyDevicesToDismissAppointmentNotification');
 const makeSendAppUpdateBroadcast = require('./push/sendAppUpdateBroadcast');
 const makeSendExternalAudienceNotificationBroadcast = require('./push/sendExternalAudienceNotificationBroadcast');
 const makeSendInAppAudienceNotificationBroadcast = require('./push/sendInAppAudienceNotificationBroadcast');
@@ -23,6 +24,7 @@ module.exports = (context) => {
     notifyDoctorOnNewAppointment: makeNotifyDoctorOnNewAppointment(sharedContext),
     notifyDoctorOnSecretaryEntryRequest: makeNotifyDoctorOnSecretaryEntryRequest(sharedContext),
     notifySecretaryOnBookingConfigUpdate: makeNotifySecretaryOnBookingConfigUpdate(sharedContext),
+    notifyDevicesToDismissAppointmentNotification: makeNotifyDevicesToDismissAppointmentNotification(sharedContext),
     sendAppUpdateBroadcast: makeSendAppUpdateBroadcast(sharedContext),
     sendExternalAudienceNotificationBroadcast: makeSendExternalAudienceNotificationBroadcast(sharedContext),
     sendInAppAudienceNotificationBroadcast: makeSendInAppAudienceNotificationBroadcast(sharedContext),

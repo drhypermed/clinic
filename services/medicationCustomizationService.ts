@@ -5,6 +5,7 @@ import {
 import { getDocCacheFirst } from './firestore/cacheFirst';
 import { MedicationCustomization } from '../types';
 import { getAccountTypeControls, validateMedicationCustomizationsCapacity } from './accountTypeControlsService';
+import { readCachedAccountType } from './account-type-controls/quotas';
 import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime';
 import { getTrustedNowMs, syncTrustedTime } from '../utils/trustedTime';
 import { getUserProfileDocRef } from './firestore/profileRoles';
@@ -139,8 +140,10 @@ export const medicationCustomizationService = {
                 // ─ تشديد أمني 2026-04: السيرفر بيعد الـmap ويقارن بحد الأدمن ─
                 // كان قبل client-side فقط — ممكن يتجاوز عبر dev tools.
                 // السيرفر بيرمي error بكل التفاصيل (resource-exhausted) لو وصل للحد.
+                // 🆕 (2026-05): paid tiers يتخطوا الفحص (الحد كلي مفتوح ليهم)
+                const cachedAccountType = readCachedAccountType(userId);
                 try {
-                    await validateMedicationCustomizationsCapacity();
+                    await validateMedicationCustomizationsCapacity({ cachedAccountType });
                 } catch (capacityError: unknown) {
                     if (isQuotaLimitExceededError(capacityError)) {
                         // الـerror جاي من السيرفر فيه code='resource-exhausted' + details كاملة

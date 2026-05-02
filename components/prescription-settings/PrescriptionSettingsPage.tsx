@@ -23,11 +23,14 @@ import { getPaperWidthPx } from './utils';
 import { LogoCropper } from '../croppers/LogoCropper';
 import { HeaderBgCropper } from '../croppers/HeaderBgCropper';
 import { MiddleBgCropper } from '../croppers/MiddleBgCropper';
+import { AdminAccessToggle } from '../shared/AdminAccessToggle';
 
 interface PrescriptionSettingsPageProps {
     settings: PrescriptionSettings;
     onSave: (settings: PrescriptionSettings) => Promise<void>;
-    onBack: () => void;
+    // اختياري: لمّا الأدمن بيستعمل الشاشة لمساعده طبيب — بنخفي زر إذن الأدمن
+    // (الأدمن مش لازم يقفل وصول نفسه). الافتراضي false = الطبيب بيشوف الزر.
+    isAdminImpersonation?: boolean;
 }
 
 /** عنوان التبويب لزر إعادة الضبط */
@@ -39,7 +42,7 @@ const TAB_RESET_LABEL: Record<SettingsTabId, string> = {
     print: 'إعدادات الطباعة',
 };
 
-export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> = ({ settings, onSave, onBack }) => {
+export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> = ({ settings, onSave, isAdminImpersonation }) => {
     // التبويب النشط (متزامن مع URL ?tab=...)
     const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState<SettingsTabId>(
@@ -213,6 +216,14 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
                                     typography={form.localSettings.typography}
                                     onChange={form.updateTypography}
                                 />
+                                {/* زر إذن الأدمن — يظهر للطبيب بس (مش للأدمن وهو بيساعد) */}
+                                {!isAdminImpersonation && (
+                                    <AdminAccessToggle
+                                        field="allowAdminPrescriptionEdit"
+                                        title="السماح للإدارة بمساعدتك في تصميم الروشتة"
+                                        description="لمّا تكون مفعّلة، فريق الإدارة يقدر يفتح صفحة تصميم روشتتك ويعدّلها معاك. الإدارة مش بتشوف بياناتك التانية (المرضى، المواعيد، التقارير) — الحماية مفروضة من قواعد التطبيق."
+                                    />
+                                )}
                             </div>
                         )}
 

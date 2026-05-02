@@ -16,6 +16,10 @@ export type LimitKey =
   // ─── free + premium (=برو) موجودين من الأول ───
   | 'freeDailyLimit'
   | 'premiumDailyLimit'
+  // 🆕 (2026-05) الزر السريع "إضافة بدون تحليل" — عداد منفصل عن التحليل العميق
+  | 'freeQuickAddDailyLimit'
+  | 'premiumQuickAddDailyLimit'
+  | 'proMaxQuickAddDailyLimit'
   // ─── سعة السجلات الطبية (حد كلي مش يومي — تغيّرت 2026-04) ───
   | 'freeRecordsMaxCount'
   | 'premiumRecordsMaxCount'
@@ -44,9 +48,7 @@ export type LimitKey =
   | 'premiumReadyPrescriptionDailyLimit'
   | 'freeMedicalReportDailyLimit'
   | 'premiumMedicalReportDailyLimit'
-  // ─── الترجمة الذكية للروشتة (Smart RX Translation) ───
-  | 'freeTranslationDailyLimit'
-  | 'premiumTranslationDailyLimit'
+  // ✂️ شيلنا حدود الترجمة (2026-05) — بقت جزء من الزرّين
   | 'freeReadyPrescriptionsMaxCount'
   | 'premiumReadyPrescriptionsMaxCount'
   | 'freeMedicationCustomizationsMaxCount'
@@ -71,7 +73,6 @@ export type LimitKey =
   | 'proMaxSecretaryEntryRequestDailyLimit'
   | 'proMaxReadyPrescriptionDailyLimit'
   | 'proMaxMedicalReportDailyLimit'
-  | 'proMaxTranslationDailyLimit'
   | 'proMaxReadyPrescriptionsMaxCount'
   | 'proMaxMedicationCustomizationsMaxCount'
   | 'proMaxBranchesMaxCount'
@@ -80,6 +81,10 @@ export type LimitKey =
 export type MessageKey =
   | 'freeAnalysisLimitMessage'
   | 'premiumAnalysisLimitMessage'
+  // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
+  | 'freeQuickAddLimitMessage'
+  | 'premiumQuickAddLimitMessage'
+  | 'proMaxQuickAddLimitMessage'
   // ─── رسائل سعة السجلات الطبية ───
   | 'freeRecordsCapacityMessage'
   | 'premiumRecordsCapacityMessage'
@@ -93,9 +98,7 @@ export type MessageKey =
   | 'premiumReadyPrescriptionDailyLimitMessage'
   | 'freeMedicalReportLimitMessage'
   | 'premiumMedicalReportLimitMessage'
-  // ─── الترجمة الذكية ───
-  | 'freeTranslationLimitMessage'
-  | 'premiumTranslationLimitMessage'
+  // ✂️ شيلنا رسائل الترجمة (2026-05)
   // ─── 🆕 الأزرار الذهبية تحت الروشتة (التداخلات + الحمل/الرضاعة) ───
   | 'freeInteractionToolLimitMessage'
   | 'premiumInteractionToolLimitMessage'
@@ -129,7 +132,6 @@ export type MessageKey =
   | 'proMaxSecretaryEntryRequestLimitMessage'
   | 'proMaxReadyPrescriptionDailyLimitMessage'
   | 'proMaxMedicalReportLimitMessage'
-  | 'proMaxTranslationLimitMessage'
   | 'proMaxInteractionToolLimitMessage'
   | 'proMaxPregnancyToolLimitMessage'
   | 'proMaxRenalToolLimitMessage'
@@ -144,6 +146,10 @@ export type MessageKey =
 export type WhatsappMessageKey =
   | 'freeAnalysisWhatsappMessage'
   | 'premiumAnalysisWhatsappMessage'
+  // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
+  | 'freeQuickAddWhatsappMessage'
+  | 'premiumQuickAddWhatsappMessage'
+  | 'proMaxQuickAddWhatsappMessage'
   // ─── رسائل واتساب سعة السجلات الطبية ───
   | 'freeRecordsCapacityWhatsappMessage'
   | 'premiumRecordsCapacityWhatsappMessage'
@@ -157,9 +163,7 @@ export type WhatsappMessageKey =
   | 'premiumReadyPrescriptionWhatsappMessage'
   | 'freeMedicalReportWhatsappMessage'
   | 'premiumMedicalReportWhatsappMessage'
-  // ─── الترجمة الذكية ───
-  | 'freeTranslationWhatsappMessage'
-  | 'premiumTranslationWhatsappMessage'
+  // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   // ─── 🆕 الأزرار الذهبية تحت الروشتة ───
   | 'freeInteractionToolWhatsappMessage'
   | 'premiumInteractionToolWhatsappMessage'
@@ -193,7 +197,6 @@ export type WhatsappMessageKey =
   | 'proMaxSecretaryEntryRequestWhatsappMessage'
   | 'proMaxReadyPrescriptionWhatsappMessage'
   | 'proMaxMedicalReportWhatsappMessage'
-  | 'proMaxTranslationWhatsappMessage'
   | 'proMaxInteractionToolWhatsappMessage'
   | 'proMaxPregnancyToolWhatsappMessage'
   | 'proMaxRenalToolWhatsappMessage'

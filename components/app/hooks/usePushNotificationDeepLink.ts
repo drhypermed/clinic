@@ -104,6 +104,18 @@ export const usePushNotificationDeepLink = ({
 
       // ── حالة 2: عرض Toast لموعد جديد من notification ──
       if (openType === 'new_appointment') {
+        // فحص العمر — لو الإشعار عمره أكتر من 3 أيام (مثل ضغط إشعار قديم في درج
+        // الموبايل)، ما نعرضش toast نهائياً. النافذة الزمنية موحَّدة عبر التطبيق.
+        const NOTIFICATION_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+        const createdAtFromPush = (params.get('createdAt') || '').trim();
+        if (createdAtFromPush) {
+          const ageMs = Date.now() - new Date(createdAtFromPush).getTime();
+          if (Number.isFinite(ageMs) && ageMs > NOTIFICATION_MAX_AGE_MS) {
+            navigate(pathname, { replace: true });
+            return;
+          }
+        }
+
         const patientName = (params.get('patientName') || '').trim() || 'مريض';
         const source = (params.get('source') || '').trim() === 'secretary' ? 'secretary' : 'public';
         const dateTime = (params.get('dateTime') || '').trim() || new Date().toISOString();
@@ -113,6 +125,8 @@ export const usePushNotificationDeepLink = ({
           ? 'consultation' : 'exam';
         // الفرع الذي يخصه الموعد — يأتي من payload الإشعار الجديد
         const branchIdFromPush = (params.get('branchId') || '').trim() || undefined;
+        // معرّف الموعد — لمزامنة "تم الرؤية" مع باقي الأجهزة عند إغلاق الـ toast
+        const appointmentIdFromPush = (params.get('appointmentId') || '').trim() || undefined;
 
         requestBranchSwitchIfNeeded(branchIdFromPush);
 
@@ -132,6 +146,8 @@ export const usePushNotificationDeepLink = ({
           appointmentType,
           secretaryVitals,
           branchId: branchIdFromPush,
+          appointmentId: appointmentIdFromPush,
+          createdAt: createdAtFromPush || undefined,
         });
         navigate(pathname, { replace: true });
         return;

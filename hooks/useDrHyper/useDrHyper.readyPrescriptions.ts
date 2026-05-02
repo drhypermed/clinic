@@ -13,6 +13,7 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'fir
 import { PrescriptionItem, ReadyPrescription } from '../../types';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST, normalizeAdviceList } from '../../utils/rx/rxUtils';
 import { SmartQuotaLimitErrorDetails, validateReadyPrescriptionsCapacity } from '../../services/accountTypeControlsService';
+import { readCachedAccountType } from '../../services/account-type-controls/quotas';
 import {
     getQuotaVerificationFailureMessage,
     isQuotaLimitExceededError,
@@ -149,8 +150,10 @@ export const createReadyPrescriptionActions = ({
     //   مع retry تلقائي على أخطاء النت العابرة (3 محاولات، إجمالي ~5 ثواني).
     //   قاعدة بسيطة: حد الكوتا فقط بيمنع. أي خطأ تاني نعدّيه ونسمح بالحفظ.
     const ensureReadyPrescriptionCapacity = async (): Promise<boolean> => {
+        // 🆕 (2026-05): paid tiers يتخطوا الفحص → بدون انتظار Cloud Function
+        const cachedAccountType = readCachedAccountType(user?.uid);
         try {
-            await retryOnTransientError(() => validateReadyPrescriptionsCapacity());
+            await retryOnTransientError(() => validateReadyPrescriptionsCapacity({ cachedAccountType }));
             return true;
         } catch (capacityError: unknown) {
             const isLimit = isQuotaLimitExceededError(capacityError);
@@ -176,6 +179,11 @@ export const createReadyPrescriptionActions = ({
     };
 
     const ensureReadyPrescriptionDailyQuota = async (): Promise<boolean> => {
+        // 🆕 (2026-05): paid tiers بدون فحص يومي لحفظ الروشتة الجاهزة
+        const cachedAccountType = readCachedAccountType(user?.uid);
+        if (cachedAccountType === 'premium' || cachedAccountType === 'pro_max') {
+            return true; // skip Cloud Function call
+        }
         try {
             // retry تلقائي على أخطاء النت العابرة (3 محاولات بـbackoff)
             await retryOnTransientError(() => consumeStorageQuota('readyPrescriptionSave'));

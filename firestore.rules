@@ -21,6 +21,22 @@ service cloud.firestore {
         request.auth.token.email == email;
     }
 
+    // الطبيب يقدر يقفل وصول الأدمن لتصميم روشتته من جوّا التطبيق
+    // (زر السماح/المنع في تبويب إعدادات الطباعه). الافتراضي مسموح.
+    // الـrule بترجع true لو الحقل مش موجود (طبيب قديم) أو موجود ومش false.
+    function adminCanEditPrescriptionFor(userId) {
+      return !exists(/databases/$(database)/documents/users/$(userId))
+        || !('allowAdminPrescriptionEdit' in get(/databases/$(database)/documents/users/$(userId)).data)
+        || get(/databases/$(database)/documents/users/$(userId)).data.allowAdminPrescriptionEdit != false;
+    }
+
+    // نفس الفكره لصفحه الإعلان — زر السماح/المنع موجود في صفحه الإعلان نفسها.
+    function adminCanEditAdFor(userId) {
+      return !exists(/databases/$(database)/documents/users/$(userId))
+        || !('allowAdminAdEdit' in get(/databases/$(database)/documents/users/$(userId)).data)
+        || get(/databases/$(database)/documents/users/$(userId)).data.allowAdminAdEdit != false;
+    }
+
     function isHomepageBannerSetting(settingId) {
       return settingId == 'homepageBanner' || settingId == 'homepageBannerPublic';
     }
@@ -200,11 +216,29 @@ service cloud.firestore {
       // الحذف للأدمن فقط.
       allow delete: if isAdmin();
       match /settings/{settingId} {
+        // الطبيب: وصول كامل لكل مستندات الإعدادات الخاصة بيه
         allow read, write: if request.auth != null && request.auth.uid == userId;
+        // الأدمن: وصول مقيّد على مستندات تصميم الروشتة فقط.
+        // البنية الفعلية لاسم المستند (من branchDocKey في normalizers.ts):
+        //   • الفرع الرئيسي: `prescription`
+        //   • أي فرع تاني: `{branchId}__prescription`  (مش `prescription-{branchId}`)
+        // أي مستندات تانيه في settings (ملفات المرضى patientFile__*، تفضيلات
+        // التقارير reportPreferences، عداد الملفات) تفضل ممنوعه على الأدمن.
+        // كمان: لازم الطبيب ميكونش قافل إذن مساعدة الأدمن في التصميم.
+        allow read, write: if isAdmin() &&
+          (settingId == 'prescription' || settingId.matches('.*__prescription')) &&
+          adminCanEditPrescriptionFor(userId);
       }
       // الإشعارات الداخلية التي أغلقها المستخدم — مخزنة per-user حتى لا تتكرر عبر الأجهزة.
       // (حل محل localStorage الذي كان يجعل البانر يظهر مع كل جهاز/متصفح جديد).
       match /dismissedBroadcasts/{broadcastId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      // إشعارات الحجز التي تعامل معاها أحد أجهزة الطبيب — مزامنة cross-device.
+      // الجهاز اللي يقفل الإشعار يكتب وثيقة هنا، Cloud Function تبعت silent push
+      // لباقي الأجهزة لمسح الإشعار من درج النظام (راجع
+      // notifyDevicesToDismissAppointmentNotification.js).
+      match /dismissedAppointmentNotifications/{appointmentId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
       match /appointments/{aptId} {
@@ -271,11 +305,14 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
       match /branches/{branchId} {
-        // القراءة: الطبيب نفسه + السكرتيرة المرتبطة بـ secret تابع لنفس الطبيب.
+        // القراءة: الطبيب نفسه + السكرتيرة المرتبطة بـ secret تابع لنفس الطبيب
+        //   + الأدمن (محتاج يقرا عشان يفتح اختيار الفرع لمّا يساعد طبيب في
+        //   تصميم روشتته). الأدمن مش بيقدر يكتب في الفروع — بس يقرا.
         // السكرتيرة UID = `secretary:{secret}:{branchId}` — نتحقق أن الـ secret
         // في الـ UID مرتبط بنفس userId في bookingConfig.
         allow read: if request.auth != null && (
           request.auth.uid == userId ||
+          isAdmin() ||
           (
             request.auth.uid.matches('secretary:.+:.+') &&
             exists(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])) &&
@@ -563,7 +600,12 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == doctorId;
       // Client-side updates are limited to doctor owner/admin only.
       // Rating counters are aggregated server-side via Cloud Functions.
-      allow update: if request.auth != null && (request.auth.uid == doctorId || isAdmin())
+      // الأدمن: لازم الطبيب ميكونش قافل إذن مساعدة الإعلان (الافتراضي مفتوح).
+      allow update: if request.auth != null
+        && (
+          request.auth.uid == doctorId ||
+          (isAdmin() && adminCanEditAdFor(doctorId))
+        )
         && (!request.resource.data.keys().hasAny(['branches']) || request.resource.data.branches.size() <= 50);
     }
 
