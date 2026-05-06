@@ -69,7 +69,39 @@ module.exports = (context) => {
         const relatedSecretaryTokenDocs = await db.collection('secretaryFcmTokens').where('userId', '==', userId).limit(20).get();
         relatedSecretaryTokenDocs.forEach((docSnap) => {
           relatedSecrets.add(String(docSnap.id || '').trim());
-          getFcmTokensFromDoc(docSnap.data()).forEach((token) => legacyTokenSet.add(token));
+          const data = docSnap.data() || {};
+          // (أ) tokens القديمة من الجذر (legacy fcmTokens array)
+          getFcmTokensFromDoc(data).forEach((token) => legacyTokenSet.add(token));
+          // (ب) tokens المنظمة بالفرع — nested map (الشكل الصحيح)
+          if (data.tokensByBranch && typeof data.tokensByBranch === 'object') {
+            Object.keys(data.tokensByBranch).forEach((branchId) => {
+              const branchTokens = data.tokensByBranch[branchId];
+              if (Array.isArray(branchTokens)) {
+                branchTokens.forEach((t) => {
+                  if (typeof t === 'string' && t) {
+                    if (!tokensByBranch[branchId]) tokensByBranch[branchId] = [];
+                    tokensByBranch[branchId].push(t);
+                  }
+                });
+              }
+            });
+          }
+          // (ج) flat dot-notation keys (legacy bug — قبل إصلاح registerPushToken)
+          // الباج كان بيحفظ tokens باسم حرفي زي "tokensByBranch.main" بدل nested map.
+          // بنفك الحقول دي يدوياً عشان السكرتيرة تاخد إشعارات.
+          Object.keys(data).forEach((rawKey) => {
+            if (!rawKey.startsWith('tokensByBranch.')) return;
+            const flatBranch = rawKey.substring('tokensByBranch.'.length);
+            if (!flatBranch) return;
+            const flatTokens = data[rawKey];
+            if (!Array.isArray(flatTokens) || flatTokens.length === 0) return;
+            if (!tokensByBranch[flatBranch]) tokensByBranch[flatBranch] = [];
+            flatTokens.forEach((t) => {
+              if (typeof t === 'string' && t && !tokensByBranch[flatBranch].includes(t)) {
+                tokensByBranch[flatBranch].push(t);
+              }
+            });
+          });
         });
       } catch (error) {
         console.warn('[notifySecretaryOnBookingConfigUpdate] fallback secretary tokens lookup failed:', { userId, error });
