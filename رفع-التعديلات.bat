@@ -7,6 +7,11 @@ echo   Deploy Updates to GitHub
 echo ========================================
 echo.
 
+REM Show current branch (helps user know which branch is being pushed)
+for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set CURRENT_BRANCH=%%b
+echo Current branch: %CURRENT_BRANCH%
+echo.
+
 git status --short
 
 echo.
@@ -20,7 +25,10 @@ echo.
 
 git add .
 git commit -m "%MESSAGE%"
-git push origin main
+
+REM Push current branch (HEAD) to remote main, regardless of which local branch we're on.
+REM This handles both main repo (on main) and worktrees (on feature branches).
+git push origin HEAD:main
 
 if errorlevel 1 (
     echo.
