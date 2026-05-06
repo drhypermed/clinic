@@ -146,6 +146,9 @@ const EXTERNAL_BROADCAST_CALLABLE_OPTIONS = {
 exports.sendPublicEmailOtpCode = onCall(CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/publicOtpFunctions', 'sendPublicEmailOtpCode'));
 exports.verifyPublicEmailOtpCode = onCall(CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/publicOtpFunctions', 'verifyPublicEmailOtpCode'));
 exports.secretaryLoginWithDoctorEmail = onCall(SECRETARY_CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'secretaryLoginWithDoctorEmail'));
+// تجديد Firebase Auth للسكرتيرة من الـ sessionToken (بدون باسوورد) — يحل
+// مشكلة فقد Firebase Auth بعد ساعة (ا لجلسة في localStorage بتفضل ٣٠ يوم).
+exports.refreshSecretaryAuth = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/refreshSecretaryAuth', 'refreshSecretaryAuth'));
 exports.deleteAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'deleteAppointmentBySecretary'));
 exports.updateAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'updateAppointmentBySecretary'));
 exports.createAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'createAppointmentBySecretary'));

@@ -6,7 +6,7 @@
  */
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import { normalizeBookingSecret } from './helpers';
+import { normalizeBookingSecret, omitUndefined } from './helpers';
 import type { PatientDirectoryItem, RecentExamPatient } from './types';
 import type { BookingConfigTodayAppointment } from '../../../types';
 import { DEFAULT_BRANCH_ID } from './bookingConfigSync.types';
@@ -119,7 +119,10 @@ export const setBookingConfigCompletedAppointmentsByBranch = async (
     const normalizedBranch = branchId || DEFAULT_BRANCH_ID;
     const list = (listByBranch[branchId] || []).slice(0, 20);
     // حقول مختصرة جداً لتقليل حجم الـ document
-    const compactList = list.map((item) => ({
+    // ⚠️ مهم: omitUndefined بيشيل أي حقل قيمته undefined قبل الكتابة —
+    // Firestore بيرفض كتابة undefined ويرمي "Unsupported field value: undefined"
+    // (ده كان السبب في فشل setDoc لمواعيد منفذة بدون phone/visitReason/source/appointmentType).
+    const compactList = list.map((item) => omitUndefined({
       id: item.id,
       patientName: String(item.patientName || '').slice(0, 60),
       dateTime: item.dateTime,

@@ -132,6 +132,40 @@ export const getSecretaryLoginErrorMessage = (error: unknown): string => {
   return 'تعذر تسجيل دخول السكرتارية الآن. حاول مرة أخرى';
 };
 
+/**
+ * تجديد Firebase Auth للسكرتيرة بـ sessionToken الموجود في localStorage —
+ * يستخدم لما الـ Firebase Auth بينتهي بعد ساعة لكن جلسة السكرتيرة لسه صالحة.
+ * بيرجع true لو نجح التجديد، وfalse لو الجلسة منتهية أو السيرفر رفض.
+ *
+ * بدونه: السكرتيرة بعد ساعة بتفقد قدرتها على قراءة الفروع وتسجيل التوكن للإشعارات.
+ */
+export const refreshSecretaryFirebaseAuth = async (params: {
+  secret: string;
+  sessionToken: string;
+  branchId?: string;
+}): Promise<boolean> => {
+  const secret = String(params.secret || '').trim();
+  const sessionToken = String(params.sessionToken || '').trim();
+  const branchId = String(params.branchId || 'main').trim() || 'main';
+
+  if (!secret || !sessionToken) return false;
+
+  try {
+    const callable = httpsCallable(functions, 'refreshSecretaryAuth');
+    const response = await callable({ secret, sessionToken, branchId });
+    const data = (response.data || {}) as { customAuthToken?: string; ok?: boolean };
+    if (!data.ok || !data.customAuthToken) return false;
+
+    await signInWithCustomToken(auth, data.customAuthToken);
+    return true;
+  } catch (error) {
+    // INVALID_SESSION_TOKEN/SECRETARY_SESSION_EXPIRED بيرجعوا code = unauthenticated.
+    // الـ caller المفروض يعمل logout أو يطلب login تاني في الحالات دي.
+    console.warn('[refreshSecretaryFirebaseAuth] Failed:', error);
+    return false;
+  }
+};
+
 export const secretaryLogin = async (
   payload: SecretaryLoginPayload
 ): Promise<SecretaryLoginResult> => {

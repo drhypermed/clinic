@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { firestoreService } from '../../../services/firestore';
+import { auth } from '../../../services/firebaseConfig';
 import { unregisterPushTokenForSecretary } from '../../../services/messagingService';
-import { getSecretaryLoginErrorMessage, secretaryLogin } from '../../../services/secretaryLoginService';
+import {
+  getSecretaryLoginErrorMessage,
+  refreshSecretaryFirebaseAuth,
+  secretaryLogin,
+} from '../../../services/secretaryLoginService';
 import { SECRETARY_LAST_SECRET_KEY } from './constants';
 import { secretaryAuthSecretKey, secretaryAuthUserKey, secretaryBranchKey } from './helpers';
 import { sanitizeSecretaryName } from './securityUtils';
@@ -105,6 +110,56 @@ export const usePublicBookingAuthProfile = ({
   useEffect(() => {
     isAuthenticatedRef.current = isAuthenticated;
   }, [isAuthenticated]);
+
+  // ─────────────────────────────────────────────────────────────────────
+  // تجديد Firebase Auth تلقائياً عند فتح الصفحة لو الجلسة موجودة لكن
+  // Firebase Auth ضايع (ا لـ custom token بينتهي بعد ساعة من login).
+  //
+  // بدون التجديد ده: السكرتيرة بتشوف "permission denied" على قراءة
+  // الفروع وتسجيل توكن الإشعارات لأن Firestore rules بتطلب Firebase Auth
+  // مش بس sessionToken في localStorage.
+  // ─────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!secret) return;
+    let cancelled = false;
+
+    const tryRefresh = async () => {
+      // لو Firebase Auth موجود فعلاً، مفيش سبب نعمل refresh
+      if (auth.currentUser) return;
+
+      // قراءة sessionToken من localStorage (نفس مكان حفظ login)
+      const tokenFromSecret = String(localStorage.getItem(secretaryAuthSecretKey(secret)) || '').trim();
+      const tokenFromUser = userId
+        ? String(localStorage.getItem(secretaryAuthUserKey(userId)) || '').trim()
+        : '';
+      const sessionToken = tokenFromSecret || tokenFromUser;
+      if (!sessionToken) return; // مفيش جلسة محفوظة — السكرتيرة محتاجة login عادي
+
+      // قراءة الفرع المربوط بالجلسة (محفوظ مع الـ login)
+      const branchId = String(localStorage.getItem(secretaryBranchKey(secret)) || 'main').trim() || 'main';
+
+      const ok = await refreshSecretaryFirebaseAuth({ secret, sessionToken, branchId });
+      if (cancelled) return;
+
+      if (!ok) {
+        // الجلسة مرفوضه (منتهيه أو السيرفر ضربها) — نمسحها ونطلب login جديد
+        invalidateSecretarySession();
+      }
+    };
+
+    tryRefresh().catch(() => {
+      // لو فشل الـ refresh لأي سبب غير متوقع، السكرتيرة هتشوف خطأ صلاحيات
+      // ولازم تعمل login يدوي — الـ flow الموجود هيعالج ده.
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // نشتغل مرة واحدة عند تحميل الصفحة (والـ secret/userId مش بيتغيروا
+    // بدون unmount). invalidateSecretarySession مش في الـ deps لأنه stable
+    // داخل الـ closure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secret, userId]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

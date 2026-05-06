@@ -87,7 +87,18 @@ export const branchesService = {
 
             onUpdate(branches);
         }, (error) => {
-            console.error('[Firestore] Error subscribing to branches:', error);
+            // الـ permission-denied متوقع لو السكرتارية فقدت Firebase Auth (custom token
+            // بينتهي بعد ساعة) لكن جلستها في localStorage لسه صالحة (٣٠ يوم).
+            // ما نسيبش الكونسول يصرخ على حالة متوقعه — بس نـ fallback لـ [].
+            const code = String((error as { code?: unknown })?.code || '').toLowerCase();
+            const message = String((error as { message?: unknown })?.message || '').toLowerCase();
+            const isExpectedAuthError =
+                code === 'permission-denied' ||
+                code === 'unauthenticated' ||
+                message.includes('missing or insufficient permissions');
+            if (!isExpectedAuthError) {
+                console.error('[Firestore] Error subscribing to branches:', error);
+            }
             onUpdate([]);
         });
 

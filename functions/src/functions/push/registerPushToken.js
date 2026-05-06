@@ -132,21 +132,41 @@ module.exports = (context) => {
       let sessionAccepted = authUidMatchesSecret;
 
       if (!sessionAccepted && providedSessionToken) {
-        // تحقق من sessionToken في secretaryAuth/{secret}
+        // تحقق من sessionToken — مكان حفظ الجلسة بيختلف حسب نوع الفرع:
+        //   • الفرع الرئيسي (main): secretaryAuth/{secret}.secretarySessionToken
+        //   • فرع فرعي: secretaryAuth/{secret}/branches/{branchId}.sessionToken
+        // لو دورنا على المسار الرئيسي بس، سكرتيرة الفرع الفرعي هترفض دايماً —
+        // وده اللي كان بيعمل AUTH_REQUIRED_FOR_SECRETARY_PUSH.
         try {
-          const authSnap = await db.doc(`secretaryAuth/${secret}`).get();
-          if (authSnap.exists) {
-            const authData = authSnap.data() || {};
-            const storedSessionToken = String(authData.secretarySessionToken || '').trim();
-            if (storedSessionToken && storedSessionToken === providedSessionToken) {
-              sessionAccepted = true;
+          if (branchId !== 'main') {
+            // فرع فرعي — اقرأ من subcollection
+            const branchAuthSnap = await db
+              .doc(`secretaryAuth/${secret}/branches/${branchId}`)
+              .get()
+              .catch(() => null);
+            if (branchAuthSnap && branchAuthSnap.exists) {
+              const branchAuthData = branchAuthSnap.data() || {};
+              const branchSessionToken = String(branchAuthData.sessionToken || '').trim();
+              if (branchSessionToken && branchSessionToken === providedSessionToken) {
+                sessionAccepted = true;
+              }
             }
-          }
-          // Fallback: التحقق من legacy session في bookingConfig
-          if (!sessionAccepted) {
-            const legacySessionToken = String(configData?.secretarySessionToken || '').trim();
-            if (legacySessionToken && legacySessionToken === providedSessionToken) {
-              sessionAccepted = true;
+          } else {
+            // الفرع الرئيسي — top-level doc
+            const authSnap = await db.doc(`secretaryAuth/${secret}`).get();
+            if (authSnap.exists) {
+              const authData = authSnap.data() || {};
+              const storedSessionToken = String(authData.secretarySessionToken || '').trim();
+              if (storedSessionToken && storedSessionToken === providedSessionToken) {
+                sessionAccepted = true;
+              }
+            }
+            // Fallback قديم جداً — جلسة كانت متخزنة في bookingConfig قبل migration
+            if (!sessionAccepted) {
+              const legacySessionToken = String(configData?.secretarySessionToken || '').trim();
+              if (legacySessionToken && legacySessionToken === providedSessionToken) {
+                sessionAccepted = true;
+              }
             }
           }
         } catch (sessionError) {
