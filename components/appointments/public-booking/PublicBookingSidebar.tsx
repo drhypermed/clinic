@@ -10,6 +10,8 @@ interface PublicBookingSidebarProps {
   upcomingAppointmentsCount?: number;
   onLogout: () => void;
   onOpenProfile: () => void;
+  // اسم الفرع النشط للسكرتيرة — يظهر تحت زر "الملف الشخصي" لو الطبيب عنده فروع متعددة.
+  activeBranchName?: string;
 }
 
 const navItems: {
@@ -95,6 +97,7 @@ export const PublicBookingSidebar: React.FC<PublicBookingSidebarProps> = ({
   upcomingAppointmentsCount = 0,
   onLogout,
   onOpenProfile,
+  activeBranchName,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
@@ -157,6 +160,16 @@ export const PublicBookingSidebar: React.FC<PublicBookingSidebarProps> = ({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           الملف الشخصي
         </button>
+
+        {/* اسم الفرع النشط للسكرتيرة — يظهر فقط لما الطبيب عنده أكتر من فرع */}
+        {activeBranchName && (
+          <div className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-200 text-brand-800 text-xs font-bold truncate">
+            <svg className="w-3 h-3 shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0v-3m-4 3v-6a1 1 0 00-1-1h-2a1 1 0 00-1 1v6m-4 0h2m-2 0v-3m0 0h.01M9 13h.01M9 9h.01M15 9h.01M15 13h.01" />
+            </svg>
+            <span className="truncate">الفرع: {activeBranchName}</span>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

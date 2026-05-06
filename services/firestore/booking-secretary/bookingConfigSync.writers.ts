@@ -105,17 +105,21 @@ export const setBookingConfigCompletedAppointmentsByBranch = async (
   branchKeys.forEach((branchId) => {
     const normalizedBranch = branchId || DEFAULT_BRANCH_ID;
     const list = (listByBranch[branchId] || []).slice(0, 20);
-    // حقول مختصرة جداً لتقليل حجم الـ document
-    branchMap[normalizedBranch] = list.map((item) => ({
-      id: item.id,
-      patientName: String(item.patientName || '').slice(0, 60),
-      dateTime: item.dateTime,
-      examCompletedAt: item.examCompletedAt || '',
-      phone: item.phone ? String(item.phone).slice(0, 15) : undefined,
-      visitReason: item.visitReason ? String(item.visitReason).slice(0, 80) : undefined,
-      source: item.source,
-      appointmentType: item.appointmentType,
-    }));
+    // حقول مختصرة جداً لتقليل حجم الـ document — Firestore بيرفض أي قيمة undefined،
+    // فلازم نحذف المفاتيح اللي قيمتها undefined بدل ما نحطها بقيمة فاضية.
+    branchMap[normalizedBranch] = list.map((item) => {
+      const entry: Record<string, unknown> = {
+        id: item.id,
+        patientName: String(item.patientName || '').slice(0, 60),
+        dateTime: item.dateTime,
+        examCompletedAt: item.examCompletedAt || '',
+      };
+      if (item.phone) entry.phone = String(item.phone).slice(0, 15);
+      if (item.visitReason) entry.visitReason = String(item.visitReason).slice(0, 80);
+      if (item.source !== undefined) entry.source = item.source;
+      if (item.appointmentType !== undefined) entry.appointmentType = item.appointmentType;
+      return entry;
+    });
   });
 
   await setDoc(

@@ -237,6 +237,8 @@ export const PublicBookingPage: React.FC = () => {
         upcomingAppointmentsCount={upcomingAppointments.length}
         onLogout={handleSecretaryLogout}
         onOpenProfile={() => setShowProfile(true)}
+        // اسم الفرع النشط — يتعرض تحت زر الملف الشخصي فقط لو الطبيب عنده فروع متعددة
+        activeBranchName={hasMultipleBranches ? currentBranchName : undefined}
       />
 
       {/* المحتوى الرئيسي */}
