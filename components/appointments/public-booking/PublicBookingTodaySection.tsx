@@ -106,8 +106,9 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
                         بانتظار الرد
                       </span>
                     ) : (
+                      // زر "إدخال الآن" — أزرق متدرج (primary CTA) بدل الرمادي الباهت
                       <button type="button" onClick={() => onRequestEntryNow(apt)} disabled={entryRequestSendingId === apt.id}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-600 hover:bg-slate-700 text-white font-bold text-xs shadow-md transition-all disabled:opacity-60">
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500 hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 text-white font-bold text-xs shadow-[0_4px_12px_-2px_rgba(8,112,184,0.45)] hover:shadow-[0_6px_18px_-2px_rgba(8,112,184,0.55)] transition-all disabled:opacity-60">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
                         {entryRequestSendingId === apt.id ? 'جاري الإرسال' : 'إدخال الآن'}
                       </button>

@@ -13,7 +13,9 @@ import type { NavigateFunction } from 'react-router-dom';
 import {
   closePushNotificationsByContext,
   getPushSupportInfo,
+  onForegroundMessage,
   requestPermissionAndSaveTokenForSecretaryWithDetails,
+  showForegroundSystemNotification,
 } from '../../../services/messagingService';
 import { firestoreService } from '../../../services/firestore';
 import { resolveNotificationActionStatus } from '../../../utils/notificationAction';
@@ -205,6 +207,24 @@ export const usePublicBookingPushNotifications = ({
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [secret, isAuthenticated, sessionBranchId]);
+
+  /**
+   * استقبال الإشعارات وعرضها وقت ما الصفحة فاتحة (Foreground).
+   * بدون هذا الـ listener، الإشعارات اللي بترسلها Cloud Function (مثل
+   * "يتم الانتظار قليلاً" لما الطبيب يضغط انتظار، أو "موعد جديد") ما تظهرش
+   * للسكرتيرة طول ما هي فاتحة الصفحة — لأن الـ FCM SDK في الـ foreground
+   * مش بيعرضها تلقائياً، لازم نستقبلها يدوياً ونعرضها كـ system notification.
+   */
+  useEffect(() => {
+    if (!secret || !isAuthenticated) return;
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+
+    const cleanup = onForegroundMessage((payload) => {
+      void showForegroundSystemNotification(payload);
+    });
+    return cleanup ? () => { cleanup(); } : undefined;
+  }, [secret, isAuthenticated]);
 
   /**
    * بدء عملية تفعيل الإشعارات يدوياً عند النقر على الزر

@@ -29,6 +29,9 @@ export interface BookingConfigView {
   /** خرائط per-branch لإعدادات رؤية العلامات الحيوية وحقولها. المفتاح 'main' للفرع الرئيسي. */
   secretaryVitalsVisibilityByBranch?: Record<string, SecretaryVitalsVisibility>;
   secretaryVitalFieldsByBranch?: Record<string, SecretaryVitalFieldDefinition[]>;
+  // مرآة publicBookingSecret تتكتب من جانب الطبيب — السكرتيرة محرومة من list على
+  // publicBookingConfig و من قراءة users/{uid}، فبدون المرآة دي مش هتلاقي رابط الفورم العام.
+  publicBookingSecret?: string;
 }
 
 export interface SecretaryProfile {
@@ -124,6 +127,11 @@ export interface SecretaryEntryRequest {
   pregnant?: boolean;
   /** حالة الرضاعة وقت هذا الموعد — للإناث 18-50 فقط */
   breastfeeding?: boolean;
+  /** الـsecret اللي الطلب اتكتب تحته — يحفظ مكان الكتابة عشان الرد يمسح الـdoc الصح
+   *  حتى لو الطبيب على فرع نشط مختلف. (يضاف client-side لما الطلب يتم استلامه.) */
+  sourceSecret?: string;
+  /** اسم الفرع للعرض في الإشعار — لو الطبيب عنده أكتر من فرع. */
+  branchName?: string;
 }
 
 /** بيانات جلسة تسجيل دخول السكرتير */

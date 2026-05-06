@@ -79,8 +79,9 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
       )}
 
       {/* التنبيه اللحظي: الطبيب يطلب فلان بالاسم من السكرتارية الآن */}
+      {/* أزرق متدرج (brand) — يلفت النظر للطلب العاجل من الطبيب بدل الرمادي الباهت */}
       {entryAlert && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto p-4 rounded-xl bg-slate-600 text-white shadow-xl border border-slate-700 animate-fadeIn flex flex-col gap-3">
+        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto p-4 rounded-xl bg-gradient-to-l from-brand-700 via-brand-600 to-brand-500 text-white shadow-xl border border-brand-700 animate-fadeIn flex flex-col gap-3">
           <div className="flex items-start gap-3">
             <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

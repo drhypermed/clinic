@@ -122,6 +122,10 @@ export const MainApp: React.FC = () => {
     addedInstructionsFromModal, setAddedInstructionsFromModal,
     needsManualDxHint,
     records, totalAgeInMonths,
+    recordsLoadingMore, recordsHasMore,
+    recordsPagingEnabled, recordsFullyLoaded,
+    loadMoreRecords, ensureFullRecordsLoaded,
+    searchRecordsOnServer, fetchRecordsByDateRange,
     readyPrescriptions,
     handleUndo, handleRedo, handleReset, handleSaveRecord, handleLoadRecord, handleLoadConsultation, handleOpenConsultation,
     handleNewExamFromRecord, handleDeleteRecord, handleDeleteConsultation, handleDeleteExam,
@@ -222,6 +226,15 @@ export const MainApp: React.FC = () => {
     // قائمة فروع الطبيب — تستخدم لضمان كتابة `todayAppointmentsByBranch.{X} = []`
     // لكل فرع بدون مواعيد اليوم (تجنب استمرار مواعيد قديمة).
     branchIds: branches.map((b) => b.id),
+    // كل secrets الفروع — نشترك في كل secret عشان طلبات السكرتارية تظهر
+    // داخل التطبيق حتى لو السكرتيرة على فرع مختلف عن اللي الطبيب فاتحه دلوقتي.
+    branchSubscriptions: branches
+      .filter((b) => Boolean(b.secretarySecret))
+      .map((b) => ({
+        secret: b.secretarySecret as string,
+        branchId: b.id,
+        branchName: b.name || '',
+      })),
   });
 
   // فلترة مواعيد اليوم للصفحة الرئيسية — نستخدم todayStr المُشترك من الـ hook حتى يتحدّث تلقائياً عند منتصف الليل
@@ -501,6 +514,14 @@ export const MainApp: React.FC = () => {
               normalizedDoctorSpecialty={normalizedDoctorSpecialty}
               profileImage={profileImage}
               records={records}
+              recordsLoadingMore={recordsLoadingMore}
+              recordsHasMore={recordsHasMore}
+              recordsPagingEnabled={recordsPagingEnabled}
+              recordsFullyLoaded={recordsFullyLoaded}
+              loadMoreRecords={loadMoreRecords}
+              ensureFullRecordsLoaded={ensureFullRecordsLoaded}
+              searchRecordsOnServer={searchRecordsOnServer}
+              fetchRecordsByDateRange={fetchRecordsByDateRange}
               appointments={appointments}
               todayAppointmentsList={todayAppointmentsList}
               dashboardStats={dashboardStats}

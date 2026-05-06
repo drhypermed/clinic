@@ -1,7 +1,13 @@
+/**
+ * الملف التعريفي للسكرتيرة — تصميم متطابق مع DoctorProfileModal
+ * (أزرق متدرج للهيدر، حقول بحدود زرقاء، زر حفظ أخضر، خروج أحمر)
+ * بدون صور (السكرتيرة ما عندهاش avatar/profile image).
+ */
 import React from 'react';
 
 type PublicBookingProfileViewProps = {
-  secretaryAvatarText: string;
+  /** غير مستخدم (نُبقيه للتوافق مع callers) */
+  secretaryAvatarText?: string;
   secretaryNameInput: string;
   onSecretaryNameInputChange: (value: string) => void;
   profileSaving: boolean;
@@ -14,7 +20,6 @@ type PublicBookingProfileViewProps = {
 };
 
 export const PublicBookingProfileView: React.FC<PublicBookingProfileViewProps> = ({
-  secretaryAvatarText,
   secretaryNameInput,
   onSecretaryNameInputChange,
   profileSaving,
@@ -26,105 +31,100 @@ export const PublicBookingProfileView: React.FC<PublicBookingProfileViewProps> =
   onLogout,
 }) => {
   return (
-    <div className="px-3 py-4 sm:px-5 sm:py-6 max-w-md mx-auto" dir="rtl">
-      {/* كارت واحد متصل — نفس نمط بروفايل الطبيب */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+    <div className="px-3 py-4 sm:px-5 sm:py-6 max-w-2xl mx-auto" dir="rtl">
+      {/* الكارت الرئيسي — نفس بنية كارت بروفايل الطبيب */}
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
 
-        {/* الهيدر — الأفاتار */}
-        <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-5 py-6 flex flex-col items-center">
-          <div className="rounded-full p-[3px] bg-gradient-to-tr from-white/40 via-white/20 to-white/10 w-20 h-20 shadow-lg mb-3">
-            <div className="w-full h-full rounded-full bg-white/20 flex items-center justify-center text-white font-black text-2xl border-2 border-white/60">
-              {secretaryAvatarText}
-            </div>
-          </div>
-          <p className="text-white font-black text-base">{secretaryNameInput || 'السكرتيرة'}</p>
-          <p className="text-white/70 text-xs font-bold mt-1">الملف التعريفي</p>
+        {/* الهيدر — أزرق متدرج (نفس DoctorProfileModal) */}
+        <div className="bg-gradient-to-l from-blue-700 via-blue-600 to-blue-500 text-white px-6 py-4 shadow-[0_2px_12px_-2px_rgba(8,112,184,0.4)]">
+          <h2 className="text-2xl font-black">الملف الشخصي</h2>
+          <p className="text-white/80 text-xs font-bold mt-1">بيانات السكرتيرة والطبيب المرتبط</p>
         </div>
 
         {/* المحتوى */}
-        <div className="p-5 space-y-4">
+        <div className="p-6 space-y-6">
 
-          {/* اسم السكرتيرة */}
+          {/* رسالة نجاح/معلومة بعد الحفظ — أخضر دلالي */}
+          {profileSaveMessage && (
+            <div className="bg-emerald-50 border-r-4 border-emerald-500 p-4 rounded-lg">
+              <p className="text-emerald-700 font-bold text-sm">{profileSaveMessage}</p>
+            </div>
+          )}
+
+          {/* اسم السكرتيرة — input editable */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1.5">اسم السكرتيرة</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              اسم السكرتيرة <span className="text-rose-500">*</span>
+            </label>
             <input
               type="text"
               value={secretaryNameInput}
               onChange={(e) => onSecretaryNameInputChange(e.target.value)}
               placeholder="اكتب اسم السكرتيرة"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 font-bold text-base transition-all"
+              className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 font-semibold"
             />
+            <p className="text-xs text-slate-500 mt-1 font-semibold">
+              الاسم يظهر للطبيب لتمييز كل سكرتيرة
+            </p>
           </div>
 
-          {/* زر الحفظ */}
-          <button
-            type="button"
-            onClick={onSaveSecretaryName}
-            disabled={profileSaving}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white border border-brand-500/60 hover:brightness-105 font-bold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-          >
-            {profileSaving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                جاري الحفظ
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                حفظ الاسم
-              </>
-            )}
-          </button>
-
-          {profileSaveMessage && (
-            <p className="text-sm text-success-600 font-bold text-center">{profileSaveMessage}</p>
-          )}
-
-          {/* خط فاصل */}
-          <div className="border-t border-slate-100" />
-
-          {/* الطبيب المرتبط */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          {/* الطبيب المرتبط — read-only بخلفية زرقاء فاتحة (نفس حقل الإيميل عند الطبيب) */}
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              الطبيب المرتبط
+            </label>
+            <div className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-blue-50 text-slate-800 font-semibold truncate">
+              {doctorDisplayName}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-slate-400 font-bold">الطبيب المرتبط</p>
-              <p className="text-sm text-slate-800 font-black leading-tight truncate">{doctorDisplayName}</p>
-            </div>
+            <p className="text-xs text-slate-600 mt-1 font-semibold">
+              لا يمكن تغيير الطبيب المرتبط من هنا
+            </p>
           </div>
 
-          {/* الفرع */}
+          {/* الفرع — يظهر لو الطبيب عنده فروع متعددة */}
           {hasMultipleBranches && branchName && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                الفرع
+              </label>
+              <div className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-blue-50 text-slate-800 font-semibold truncate">
+                {branchName}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-slate-400 font-bold">الفرع</p>
-                <p className="text-sm text-slate-800 font-black leading-tight truncate">{branchName}</p>
-              </div>
+              <p className="text-xs text-slate-600 mt-1 font-semibold">
+                الفرع المسجَّل عليه الجلسة الحالية
+              </p>
             </div>
           )}
 
-          {/* خط فاصل */}
-          <div className="border-t border-slate-100" />
+          {/* الأزرار — حفظ أخضر متدرج / خروج أحمر متدرج (نفس DoctorProfileModal) */}
+          <div className="flex gap-3 pt-2">
+            {/* زر حفظ — أخضر متدرج (CTA إيجابي) */}
+            <button
+              type="button"
+              onClick={onSaveSecretaryName}
+              disabled={profileSaving}
+              className="flex-1 bg-gradient-to-l from-emerald-700 via-emerald-600 to-emerald-500 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-black shadow-[0_4px_14px_-2px_rgba(5,150,105,0.45)] hover:shadow-[0_6px_22px_-2px_rgba(5,150,105,0.55)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {profileSaving ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  جاري الحفظ
+                </span>
+              ) : (
+                'حفظ التعديلات'
+              )}
+            </button>
 
-          {/* تسجيل الخروج */}
-          <button
-            type="button"
-            onClick={onLogout}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-danger-50 hover:bg-danger-100 text-danger-600 font-bold text-sm border border-danger-200 transition-all active:scale-[0.98]"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />
-            </svg>
-            تسجيل الخروج
-          </button>
+            {/* زر تسجيل خروج — أحمر متدرج (action سلبي/خروج) */}
+            <button
+              type="button"
+              onClick={onLogout}
+              disabled={profileSaving}
+              className="px-6 py-3 rounded-xl bg-gradient-to-l from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-black shadow-[0_4px_12px_-2px_rgba(225,29,72,0.4)] hover:shadow-[0_6px_18px_-2px_rgba(225,29,72,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              تسجيل الخروج
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -51,6 +51,8 @@ export const setEntryAlert = async (
     branchId: normalizedBranch,
   };
 
+  // ⚠️ ممنوع dot-notation في setDoc — Firebase JS SDK ما بيفسرش الـ keys
+  // اللي فيها نقاط في setDoc كـ nested paths. الحل nested object + merge:true.
   await setDoc(
     configRef,
     {
@@ -58,7 +60,7 @@ export const setEntryAlert = async (
       entryAlert: alertPayload,
       entryAlertResponse: null,
       // الحقل الجديد المُقسَّم بالفرع — السكرتيرة تقرأ فرعها فقط
-      [`entryAlertByBranch.${normalizedBranch}`]: alertPayload,
+      entryAlertByBranch: { [normalizedBranch]: alertPayload },
     },
     { merge: true },
   );
@@ -89,8 +91,8 @@ export const setSecretaryEntryAlertResponse = async (
     {
       // الحقل القديم (legacy) — آخر رد لأي فرع
       ...payload,
-      // الحقل الجديد المُقسَّم
-      [`responsesByBranch.${normalizedBranch}`]: payload,
+      // الحقل الجديد المُقسَّم — nested map، مش dot-notation
+      responsesByBranch: { [normalizedBranch]: payload },
     },
     { merge: true },
   );
@@ -131,12 +133,14 @@ export const addSecretaryApprovedEntryId = async (
   // كتابة متوازية للمصدرين (لا نحتاج transaction — idempotent):
   //   1. الـ collection التاريخي
   //   2. bookingConfig (لإطلاق push trigger)
+  // ⚠️ كل الحقول per-branch nested objects (مش dot-notation) — setDoc بيخزن
+  // الـ keys فيها نقاط كـ literals وما بيفسرهاش nested.
   await Promise.all([
     setDoc(
       approvedIdsRef,
       {
         ids: built.legacyIds,
-        [`idsByBranch.${built.normalizedBranch}`]: built.branchIds,
+        idsByBranch: { [built.normalizedBranch]: built.branchIds },
       },
       { merge: true },
     ),
@@ -144,11 +148,15 @@ export const addSecretaryApprovedEntryId = async (
       configRef,
       {
         approvedEntryAppointmentIds: built.legacyIds,
-        [`approvedEntryAppointmentIdsByBranch.${built.normalizedBranch}`]: built.branchIds,
+        approvedEntryAppointmentIdsByBranch: {
+          [built.normalizedBranch]: built.branchIds,
+        },
         // علامة زمنية فريدة لضمان اكتشاف الـ trigger حتى لو الـ id موجود مسبقاً
         // (مثلاً الطبيب فتح الكشف مرة تانية بعد إلغاء)
-        [`lastExamOpenedAt.${built.normalizedBranch}`]: built.openedAt,
-        [`lastExamOpenedAppointmentId.${built.normalizedBranch}`]: built.normalizedAppointmentId,
+        lastExamOpenedAt: { [built.normalizedBranch]: built.openedAt },
+        lastExamOpenedAppointmentId: {
+          [built.normalizedBranch]: built.normalizedAppointmentId,
+        },
       },
       { merge: true },
     ),
@@ -185,12 +193,12 @@ export const writeApprovedEntryIdToCollectionOnly = async (
     normalizedBranch,
   );
 
-  // كتابة فقط على الـ collection التاريخي
+  // كتابة فقط على الـ collection التاريخي — nested object (مش dot-notation)
   await setDoc(
     approvedIdsRef,
     {
       ids: built.legacyIds,
-      [`idsByBranch.${built.normalizedBranch}`]: built.branchIds,
+      idsByBranch: { [built.normalizedBranch]: built.branchIds },
     },
     { merge: true },
   );
@@ -244,11 +252,12 @@ export const respondToDoctorEntryAlert = async (
     source: 'secretary' as const,
   };
 
+  // ⚠️ ممنوع dot-notation في setDoc — كل الحقول per-branch nested objects.
   const configPayload: Record<string, unknown> = {
     entryAlert: null,
-    [`entryAlertByBranch.${normalizedBranch}`]: null,
+    entryAlertByBranch: { [normalizedBranch]: null },
     doctorEntryResponse: responsePayload,
-    [`doctorEntryResponseByBranch.${normalizedBranch}`]: responsePayload,
+    doctorEntryResponseByBranch: { [normalizedBranch]: responsePayload },
   };
 
   if (status === 'approved' && normalizedAppointmentId) {
@@ -260,11 +269,15 @@ export const respondToDoctorEntryAlert = async (
       );
       if (approvedPayload) {
         configPayload.approvedEntryAppointmentIds = approvedPayload.legacyIds;
-        configPayload[`approvedEntryAppointmentIdsByBranch.${normalizedBranch}`] =
-          approvedPayload.branchIds;
-        configPayload[`lastExamOpenedAt.${normalizedBranch}`] = approvedPayload.openedAt;
-        configPayload[`lastExamOpenedAppointmentId.${normalizedBranch}`] =
-          approvedPayload.normalizedAppointmentId;
+        configPayload.approvedEntryAppointmentIdsByBranch = {
+          [normalizedBranch]: approvedPayload.branchIds,
+        };
+        configPayload.lastExamOpenedAt = {
+          [normalizedBranch]: approvedPayload.openedAt,
+        };
+        configPayload.lastExamOpenedAppointmentId = {
+          [normalizedBranch]: approvedPayload.normalizedAppointmentId,
+        };
       }
     } catch (approvedErr) {
       console.warn(

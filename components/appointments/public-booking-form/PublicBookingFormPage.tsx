@@ -146,12 +146,20 @@ export const PublicBookingFormPage: React.FC = () => {
     return () => unsub();
   }, [user?.uid, userId]);
 
-  // فلترة slots: المواعيد القديمة (بدون branchId) تظهر في كل الفروع،
-  // مع استبعاد المواعيد التي حجزها المستخدم الحالي من قبل عند نفس الطبيب.
+  // فلترة slots: عزل صارم بين الفروع — كل سكرتيرة بتشوف مواعيدها بس في فرعها.
+  //  • طبيب بدون فروع أو بفرع واحد: نعرض كل المواعيد (مفيش ازدواج).
+  //  • طبيب بفروع متعددة: لازم branchId يطابق الفرع المختار بالضبط.
+  // المواعيد القديمة بدون branchId مش هتظهر في حالة الفروع المتعددة — وده مقصود
+  // علشان السكرتيرات الجديدة ميشوفوش مواعيد فروع تانية.
   const filteredSlots = React.useMemo(() => {
-    const baseSlots = (!selectedBranchId || branches.length <= 1)
-      ? slots
-      : slots.filter((slot) => !slot.branchId || slot.branchId === selectedBranchId);
+    let baseSlots: typeof slots;
+    if (branches.length <= 1) {
+      baseSlots = slots;
+    } else if (!selectedBranchId) {
+      baseSlots = [];
+    } else {
+      baseSlots = slots.filter((slot) => slot.branchId === selectedBranchId);
+    }
     if (myBookedDateTimes.size === 0) return baseSlots;
     return baseSlots.filter((slot) => !myBookedDateTimes.has(slot.dateTime));
   }, [slots, selectedBranchId, branches.length, myBookedDateTimes]);

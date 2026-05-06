@@ -35,15 +35,13 @@ import {
   mapTodayAppointments,
 } from './bookingConfigSync.transforms';
 
-// إعادة تصدير الـ writers حتى لا تنكسر الـ imports القديمة
+// إعادة تصدير الـ writers — كلها per-branch (الـ flat versions القديمة اتشالت
+// لأنها ما كانتش متستدعية من أي مكان بعد التحول لنظام الفروع).
 export {
-  setBookingConfigTodayAppointments,
   setBookingConfigTodayAppointmentsByBranch,
   setBookingConfigUpcomingAppointmentsByBranch,
   setBookingConfigCompletedAppointmentsByBranch,
-  setBookingConfigRecentExamPatients,
   setBookingConfigRecentExamPatientsByBranch,
-  setBookingConfigPatientDirectory,
   setBookingConfigPatientDirectoryByBranch,
 } from './bookingConfigSync.writers';
 

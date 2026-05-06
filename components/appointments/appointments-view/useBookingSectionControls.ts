@@ -122,6 +122,18 @@ export const useBookingSectionControls = ({
     });
   }, [userId]);
 
+  // 3.1 مرآة publicBookingSecret على bookingConfig — السكرتيرة محرومة من قراءة
+  // users/{uid} ومن list على publicBookingConfig، فبدون المرآة دي مش هتعرف رابط
+  // الفورم العام وهيظهرلها "جاري تجهيز فورم الجمهور" للأبد.
+  useEffect(() => {
+    if (!userId || !bookingSecret || !publicBookingSecret) return;
+    firestoreService
+      .mirrorPublicSecretToBookingConfig(bookingSecret, userId, publicBookingSecret)
+      .catch((err) =>
+        console.warn('[Booking] Failed to mirror public secret to bookingConfig:', err),
+      );
+  }, [userId, bookingSecret, publicBookingSecret]);
+
   // 4. مزامنة فترات الحجز المتاحة (Slots) للجمهور
   useEffect(() => {
     if (!publicSectionOpen || !publicBookingSecret) return;

@@ -9,13 +9,11 @@ import {
 import { firestoreService } from '../../../services/firestore';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import {
-  INTERNAL_TOAST_MIN_VISIBLE_MS,
+  DOCTOR_NEW_APPOINTMENT_TOAST_MS,
   buildDoctorNewAppointmentToastKey,
   clearTimedPayload,
-  markNotificationSeen,
   persistTimedPayload,
   readTimedPayload,
-  wasNotificationSeen,
 } from '../../appointments/internalToastStorage';
 import type { ClinicAppointment, PatientRecord } from '../../../types';
 import { useBookingConfigSync } from './useBookingConfigSync';
@@ -86,6 +84,11 @@ interface UseMainAppAppointmentsParams {
    * بدون مواعيد اليوم — بدون هذا، فرع بدون مواعيد اليوم يحتفظ بقائمة مواعيد أمس القديمة.
    */
   branchIds?: string[];
+  /**
+   * كل secrets الفروع — نشترك فيها كلها في طلبات دخول السكرتارية حتى لو الطبيب
+   * مش على الفرع اللي السكرتيرة بتطلب منه.
+   */
+  branchSubscriptions?: ReadonlyArray<{ secret: string; branchId: string; branchName: string }>;
 }
 
 // ثوابت زمنية لتجاهل الإشعارات القديمة — أي إشعار عمره أكتر من 3 أيام يتجاهل في
@@ -123,7 +126,7 @@ const isRecentNotification = (value?: string | null) => {
   return Date.now() - createdMs <= NOTIFICATION_STALE_AFTER_MS;
 };
 
-export const useMainAppAppointments = ({ userId, userEmail, records, pathname, search, navigate, activeBranchId, onRequestBranchSwitch, branchIds }: UseMainAppAppointmentsParams) => {
+export const useMainAppAppointments = ({ userId, userEmail, records, pathname, search, navigate, activeBranchId, onRequestBranchSwitch, branchIds, branchSubscriptions }: UseMainAppAppointmentsParams) => {
   const [appointments, setAppointments] = useState<ClinicAppointment[]>([]);
   const prevAppointmentIdsRef = useRef<Set<string>>(new Set());
   const [newAppointmentToast, setNewAppointmentToast] = useState<NewAppointmentToastData | null>(null);
@@ -168,12 +171,27 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
       clearTimeout(newAppointmentToastTimerRef.current);
       newAppointmentToastTimerRef.current = null;
     }
+    // عند الإغلاق (يدوياً أو بانتهاء الـ timer): نسجل dismissed على Firestore
+    // عشان أي جهاز تاني للطبيب يعرف إن الإشعار اتعالج. لازم يحصل هنا (مش وقت
+    // العرض) لأن الكتابة الفورية وقت العرض كانت تـ trigger الـ subscription على
+    // dismissed → يقرا نفس الـ id → يستدعي setNewAppointmentToast(null) →
+    // الـ toast يختفي في أقل من ثانية (race condition).
+    const current = currentToastRef.current;
+    if (current?.appointmentId && userId) {
+      dismissedAppointmentIdsRef.current.add(current.appointmentId);
+      void firestoreService
+        .markAppointmentNotificationDismissed(userId, {
+          appointmentId: current.appointmentId,
+          branchId: current.branchId,
+        })
+        .catch((err) => {
+          console.warn('[useMainAppAppointments] failed to mark dismissed:', err);
+        });
+    }
     currentToastRef.current = null;
     setNewAppointmentToast(null);
     if (!userId) return;
     clearTimedPayload(buildDoctorNewAppointmentToastKey(userId));
-    // ملاحظة: تسجيل dismiss على Firestore بيحصل عند **عرض** الـ toast (مش عند الإغلاق)،
-    // لضمان "إشعار ظهر مرة = ما يظهرش تاني" حتى لو الجهاز قُفل قبل الـ TTL.
   }, [userId]);
 
   const scheduleNewAppointmentToastClear = useCallback(
@@ -203,24 +221,16 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
       currentToastRef.current = toast.appointmentId
         ? { appointmentId: toast.appointmentId, branchId: toast.branchId }
         : null;
-      // ضمان "ظهر = اتسجل dismissed": نكتب على Firestore فوراً عند العرض،
-      // قبل ما يقفل الـ user أو يخرج من التطبيق. ده يمنع تكرار العرض على
-      // أي جهاز تاني، حتى لو الجهاز ده اتقفل قبل الـ TTL.
-      if (toast.appointmentId && userId) {
-        dismissedAppointmentIdsRef.current.add(toast.appointmentId);
-        void firestoreService
-          .markAppointmentNotificationDismissed(userId, {
-            appointmentId: toast.appointmentId,
-            branchId: toast.branchId,
-          })
-          .catch((err) => {
-            console.warn('[useMainAppAppointments] failed to mark dismissed:', err);
-          });
-      }
+      // ⚠️ مش بنكتب dismissed على Firestore هنا — الكتابة بقت في
+      // `clearNewAppointmentToast` لتجنّب race condition (الـ subscription على
+      // dismissed كان بيستلم الكتابة فوراً ويخفي الـ toast في أقل من ثانية).
+      // الـ ref `dismissedAppointmentIdsRef` ما نضيفش له `toast.appointmentId`
+      // عشان لو الـ toast يـ re-render (مثلاً تبديل صفحة) خلال الـ 5 ثواني،
+      // ما ينظرش له كـ dismissed محلياً.
       if (!userId) return;
       const storageKey = buildDoctorNewAppointmentToastKey(userId);
-      persistTimedPayload(storageKey, toast, INTERNAL_TOAST_MIN_VISIBLE_MS);
-      scheduleNewAppointmentToastClear(INTERNAL_TOAST_MIN_VISIBLE_MS);
+      persistTimedPayload(storageKey, toast, DOCTOR_NEW_APPOINTMENT_TOAST_MS);
+      scheduleNewAppointmentToastClear(DOCTOR_NEW_APPOINTMENT_TOAST_MS);
     },
     [userId, scheduleNewAppointmentToastClear]
   );
@@ -320,26 +330,34 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     return () => unsub();
   }, [userId]);
 
-  // 1.أ — تصفير مرجع الـ ids عند تبديل المستخدم أو الفرع حتى لا تُطلَق تنبيهات كاذبة لمواعيد فرع جديد كأنها "جديدة"
+  // 1.أ — تصفير مرجع الـ ids عند تبديل المستخدم فقط.
+  //
+  // ⚠️ ما بنصفّرش عند تبديل الفرع: الـ effect أسفل بقى يعتمد على
+  // `allAppointmentsAcrossBranches` (مش على الفرع الـ active)، فالقائمة لا تتغير
+  // عند التبديل بين الفروع — وبالتالي مفيش race يستدعي الـ reset.
   useEffect(() => {
     prevAppointmentIdsRef.current = new Set();
-  }, [userId, activeBranchId]);
+  }, [userId]);
 
-  // 2. كشف المواعيد الجديدة وإطلاق صوت التنبيه والـ Toast
-  //    المقارنة بالمحتوى (ids غير موجودة سابقاً) وليس بالأحجام، حتى لا يضيع أي موعد بعد حذف موعد آخر.
+  // 2. كشف المواعيد الجديدة وإطلاق صوت التنبيه والـ Toast.
+  //
+  // ⚠️ نستخدم `allAppointmentsAcrossBranches` (كل الفروع) بدلاً من `appointments`
+  // (المفلترة بالفرع الـ active) عشان الطبيب يستلم تنبيه لأي حجز جديد على أي فرع
+  // مهما كانت الصفحة/الفرع اللي هو فيه دلوقت.
+  //
+  // المقارنة بالمحتوى (ids غير موجودة سابقاً) وليس بالأحجام، حتى لا يضيع أي موعد بعد حذف موعد آخر.
   useEffect(() => {
     // ننتظر قائمة "اللي اتعالج" قبل أي معالجة — مهم لتفادي إظهار toast + صوت
     // لإشعار سبق التعامل معاه على جهاز تاني (race بين subscription المواعيد و dismissed).
     if (!dismissedSubscriptionReady) return;
-    const currentIds = new Set(appointments.map((a) => a.id));
+    const currentIds = new Set(allAppointmentsAcrossBranches.map((a) => a.id));
     if (prevAppointmentIdsRef.current.size === 0) {
-      // أول تعبئة (بعد mount أو بعد تبديل الفرع): املأ بصمت — لكن لو فيه موعد
-      // اتحجز خلال آخر 60 ثانية، اعرض toast له. ده بيحل race تبديل الفرع:
-      // لو سكرتيرة الفرع الجديد حجزت موعد لحظة التبديل، الموعد كان هيدخل ضمن
-      // أول تعبئة بدون تنبيه — دلوقتي بنمسكه عبر createdAt.
-      const RECENT_BRANCH_SWITCH_WINDOW_MS = 60_000;
-      const cutoffMs = Date.now() - RECENT_BRANCH_SWITCH_WINDOW_MS;
-      const veryRecent = appointments.find((a) => {
+      // أول تعبئة (بعد mount أو login جديد): املأ بصمت — لكن لو فيه موعد
+      // اتحجز خلال آخر 60 ثانية، اعرض toast له. ده بيمسك أي حجز قبل ما الـ
+      // subscription يتم الـ initial sync.
+      const RECENT_LOAD_WINDOW_MS = 60_000;
+      const cutoffMs = Date.now() - RECENT_LOAD_WINDOW_MS;
+      const veryRecent = allAppointmentsAcrossBranches.find((a) => {
         if (a.source !== 'secretary' && a.source !== 'public') return false;
         const createdMs = a.createdAt ? new Date(a.createdAt).getTime() : NaN;
         return Number.isFinite(createdMs) && createdMs >= cutoffMs;
@@ -371,7 +389,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     }
     const newIds = [...currentIds].filter((id) => !prevAppointmentIdsRef.current.has(id));
     if (newIds.length > 0) {
-      const newApts = appointments.filter((a) => newIds.includes(a.id));
+      const newApts = allAppointmentsAcrossBranches.filter((a) => newIds.includes(a.id));
       // البحث عن أول موعد خارجي (من السكرتارية أو الجمهور) لعمل تنبيه له.
       // ملاحظة: نعتمد على createdAt فقط — مفيش fallback على dateTime لأن وقت
       // الموعد ممكن يكون مستقبلي بأيام (يخدع الفحص: "غير stale") أو ماضي بساعات
@@ -406,7 +424,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     }
     // تحديث المرجع دائماً (حتى عند نقصان العدد) حتى تبقى المقارنة دقيقة في التحديث التالي.
     prevAppointmentIdsRef.current = currentIds;
-  }, [appointments, dismissedSubscriptionReady, showNewAppointmentToastForMinute]);
+  }, [allAppointmentsAcrossBranches, dismissedSubscriptionReady, showNewAppointmentToastForMinute]);
 
   // 3. استقبال إشعارات الـ Push في المقدمة (Foreground)
   useEffect(() => {
@@ -479,28 +497,70 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   }, [userId, userEmail]);
 
   // 6. متابعة طلبات دخول السكرتارية (Secretary Entry)
-  //    الطبيب يشترك بدون branchId — يستقبل أحدث طلب من أي فرع، مع الحفاظ على branchId
-  //    في بيانات الطلب حتى يوجَّه الرد للفرع الصحيح.
+  //    قبل: كنا نشترك في bookingSecret الفرع النشط فقط — السكرتيرة في فرع مختلف
+  //    عن اللي الطبيب على شاشته كانت طلباتها متجاش (الـin-app notification ضايع).
+  //    دلوقتي: نشترك في bookingSecret + كل secrets الفروع (من branchSubscriptions)،
+  //    وبنحفظ مع الطلب اسم الفرع + الـsecret اللي جا منه عشان الرد يمسح الـdoc الصح.
+  // ─────────────────────────────────────────────────────────────────────
+  // نبني signature ثابت من قائمة الـsecrets عشان الـeffect ما يعيدش subscribe
+  // على كل render (آرايات الـbranches بتتغير reference كل render).
+  const branchSubscriptionsKey = (branchSubscriptions || [])
+    .map((b) => `${b.secret}|${b.branchId}|${b.branchName}`)
+    .sort()
+    .join(',');
   useEffect(() => {
-    if (!bookingSecret) return;
-    const unsub = firestoreService.subscribeToSecretaryEntryRequest(bookingSecret, (data) => {
-      if (!data) { setSecretaryEntryRequest(null); return; }
-      // لو الإشعار ده ظهر قبل كده، ما نعرضوش تاني حتى لو الطبيب ما ردش عليه.
-      // السكرتيرة تقدر ترسل طلب جديد من "إدخال الآن" (createdAt جديد → يظهر طبيعي).
-      if (wasNotificationSeen('secretary_entry_req', bookingSecret, data.appointmentId, data.createdAt)) {
-        setSecretaryEntryRequest(null);
-        return;
-      }
-      setSecretaryEntryRequest(data);
-      markNotificationSeen('secretary_entry_req', bookingSecret, data.appointmentId, data.createdAt);
-      if (data.createdAt !== lastSecretaryRequestCreatedRef.current) {
-        lastSecretaryRequestCreatedRef.current = data.createdAt;
-        const ageSeconds = (Date.now() - new Date(data.createdAt).getTime()) / 1000;
-        if (ageSeconds < 60) void playNotificationCue('entry_request');
+    // اجمع كل الـsecrets المحتملة (الـactive + كل فروع الطبيب)
+    const subs = new Map<string, { branchId: string; branchName: string }>();
+    if (bookingSecret) {
+      // الفرع النشط — لو مش في القائمة أصلاً نضيفه (ممكن يكون main)
+      const fromList = (branchSubscriptions || []).find((b) => b.secret === bookingSecret);
+      subs.set(bookingSecret, {
+        branchId: fromList?.branchId || activeBranchId || 'main',
+        branchName: fromList?.branchName || '',
+      });
+    }
+    (branchSubscriptions || []).forEach((b) => {
+      if (b.secret && !subs.has(b.secret)) {
+        subs.set(b.secret, { branchId: b.branchId, branchName: b.branchName });
       }
     });
-    return () => unsub();
-  }, [bookingSecret]);
+
+    if (subs.size === 0) {
+      setSecretaryEntryRequest(null);
+      return;
+    }
+
+    const unsubs: Array<() => void> = [];
+    subs.forEach((meta, secret) => {
+      const unsub = firestoreService.subscribeToSecretaryEntryRequest(secret, (data) => {
+        if (!data) return; // فرع تاني خلص — لا نمسح الـstate (ممكن طلب فرع تاني نشط)
+        // ⚠️ تم إزالة `wasNotificationSeen` + `markNotificationSeen` كانوا
+        // بيخلقوا race condition: المعلم بينحفظ في localStorage وقت العرض، ثم
+        // الـ snapshot التالي (بعد ms) يقرأه ويرى true ويستدعي return، فالـ
+        // toast كان يظهر للحظة ثم تختفي علاماته.
+        //
+        // البديل: الاعتماد على `lastSecretaryRequestCreatedRef` لمنع تكرار
+        // الصوت (مش لإخفاء الـ toast). الـ toast يفضل ظاهر لحد ما الطبيب يرد.
+        // نضيف للطلب الـsecret + اسم الفرع — الـUI يستخدم اسم الفرع، والرد
+        // يستخدم الـsecret عشان يمسح الـdoc الصح.
+        const enrichedRequest = {
+          ...data,
+          sourceSecret: secret,
+          branchId: data.branchId || meta.branchId,
+          branchName: meta.branchName,
+        };
+        setSecretaryEntryRequest(enrichedRequest);
+        if (data.createdAt !== lastSecretaryRequestCreatedRef.current) {
+          lastSecretaryRequestCreatedRef.current = data.createdAt;
+          const ageSeconds = (Date.now() - new Date(data.createdAt).getTime()) / 1000;
+          if (ageSeconds < 60) void playNotificationCue('entry_request');
+        }
+      });
+      unsubs.push(unsub);
+    });
+    return () => unsubs.forEach((u) => u());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingSecret, branchSubscriptionsKey]);
 
   // 7. معالجة الروابط التفاعلية من الإشعارات (Deep Linking Actions) — hook مستخرج
   usePushNotificationDeepLink({

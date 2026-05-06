@@ -83,13 +83,16 @@ export const fcmService = {
             // ⚠️ عزل الفروع: قبل إضافة الـ token للفرع الحالي، نزيله من أي فرع
             //    سابق (لو نفس الجهاز سجل دخول على فرع مختلف قبل كده). بدون هذه الخطوة،
             //    الإشعار المخصص لفرع A يصل للجهاز الذي يعرض فرع B — تسريب.
-            const writePayload: Record<string, unknown> = {
-                fcmToken: token,
-                fcmTokens: arrayUnion(token),
-                [`tokensByBranch.${normalizedBranchId}`]: arrayUnion(token),
-                [`tokensByBranchUpdatedAt.${normalizedBranchId}`]: nowIso,
-                ...(userId ? { userId } : {}),
-                updatedAt: nowIso,
+            //
+            // ⚠️ ممنوع dot-notation في setDoc — Firebase JS SDK ما بيفسرش
+            // الـ keys اللي فيها نقاط في setDoc كـ nested paths. الحل nested
+            // object + merge:true (Firestore بيدمج الـ maps بعمق فالفروع التانيه
+            // ما بتتمسحش).
+            const tokensByBranchUpdate: Record<string, unknown> = {
+                [normalizedBranchId]: arrayUnion(token),
+            };
+            const tokensByBranchUpdatedAtUpdate: Record<string, unknown> = {
+                [normalizedBranchId]: nowIso,
             };
 
             try {
@@ -102,12 +105,21 @@ export const fcmService = {
                     if (otherBranchId === normalizedBranchId) return;
                     const branchTokens = existingTokensByBranch[otherBranchId];
                     if (Array.isArray(branchTokens) && branchTokens.includes(token)) {
-                        writePayload[`tokensByBranch.${otherBranchId}`] = arrayRemove(token);
+                        tokensByBranchUpdate[otherBranchId] = arrayRemove(token);
                     }
                 });
             } catch {
                 // Non-fatal — الكتابة الأساسية لسه تشتغل
             }
+
+            const writePayload: Record<string, unknown> = {
+                fcmToken: token,
+                fcmTokens: arrayUnion(token),
+                tokensByBranch: tokensByBranchUpdate,
+                tokensByBranchUpdatedAt: tokensByBranchUpdatedAtUpdate,
+                ...(userId ? { userId } : {}),
+                updatedAt: nowIso,
+            };
 
             await setDoc(ref, writePayload, { merge: true });
             void trimFcmTokensIfNeeded(`secretaryFcmTokens/${secret}`);

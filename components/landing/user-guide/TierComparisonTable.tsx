@@ -74,7 +74,7 @@ const FEATURE_GROUPS: FeatureGroup[] = [
       { label: 'تخزين الأدوية المعدّلة', unit: 'دواء',
         freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
         unlimitedForPaid: true },
-      { label: 'عدد الفروع (إعلان الطبيب)', unit: 'فرع',
+      { label: 'عدد الفروع', unit: 'فرع',
         freeKey: 'freeBranchesMaxCount', premiumKey: 'premiumBranchesMaxCount', proMaxKey: 'proMaxBranchesMaxCount' },
       { label: 'شركات التأمين', unit: 'شركة',
         freeKey: 'freeInsuranceCompaniesMaxCount', premiumKey: 'premiumInsuranceCompaniesMaxCount', proMaxKey: 'proMaxInsuranceCompaniesMaxCount' },

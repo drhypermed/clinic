@@ -13,6 +13,9 @@ import {
     setDoc,
     deleteDoc,
     onSnapshot,
+    query,
+    where,
+    type Query,
 } from 'firebase/firestore';
 import { getDocsCacheFirst } from './cacheFirst';
 import { ClinicAppointment } from '../../types';
@@ -26,12 +29,26 @@ const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000; // 3 شهور
 
 export const appointmentsService = {
     /**
-     * الاشتراك في قائمة المواعيد لمستخدم معين
+     * الاشتراك في قائمة المواعيد لمستخدم معين.
      * تشمل منطق ذكي لتحميل البيانات من الكاش أولاً ثم تحديثها من السيرفر.
+     *
+     * تحسين التكلفة (multi-branch):
+     *   - لو الفرع فرعي (≠ main): نستخدم where('branchId') عشان Firestore يقرأ
+     *     مواعيد الفرع فقط بدل ما يقرأ كل المواعيد ويفلتر في الذاكرة.
+     *   - للفرع الرئيسي أو الـ subscription العامة (بدون branchId): نقرأ كل
+     *     المواعيد عشان البيانات القديمة (قبل نظام الفروع) ما عندهاش حقل
+     *     branchId — لو طبقنا where('branchId','==','main') عليها هتختفي.
+     *
      * @param branchId - لو تم تمريره، يتم فلترة المواعيد حسب الفرع المحدد
      */
     subscribeToAppointments: (userId: string, onUpdate: (appointments: ClinicAppointment[]) => void, branchId?: string) => {
         const appointmentsRef = collection(db, 'users', userId, 'appointments');
+
+        // server-side filter للفروع الفرعية فقط (انظر التعليق أعلاه)
+        const isSubBranch = Boolean(branchId) && branchId !== DEFAULT_BRANCH_ID;
+        const subscriptionTarget: Query = isSubBranch
+            ? query(appointmentsRef, where('branchId', '==', branchId))
+            : appointmentsRef;
 
         /** معالجة البيانات القادمة من Firestore (Snapshot Processing) */
         const processAppointments = (snapshot: any) => {
@@ -111,7 +128,7 @@ export const appointmentsService = {
         };
 
         // 1. المحاولة الأولى: تحميل لحظي من الكاش (لتكون التجربة "طائرة")
-        getDocsCacheFirst(appointmentsRef).then(cachedSnapshot => {
+        getDocsCacheFirst(subscriptionTarget).then(cachedSnapshot => {
             if (!cachedSnapshot.empty) {
                 console.log('[Firestore] Instant load of appointments from cache');
                 const appointments = processAppointments(cachedSnapshot);
@@ -122,7 +139,7 @@ export const appointmentsService = {
         });
 
         // 2. المحاولة الثانية: الاشتراك في التحديثات الحية من السيرفر
-        const unsubscribe = onSnapshot(appointmentsRef, (snapshot) => {
+        const unsubscribe = onSnapshot(subscriptionTarget, (snapshot) => {
             const appointments = processAppointments(snapshot);
             onUpdate(appointments);
         }, (error) => {

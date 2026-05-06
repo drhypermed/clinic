@@ -125,9 +125,27 @@ export const updateBookingSettings = async (
     };
 
     let expectedSecretaryHash: string | null = null;
-    // مرجع كلمة سر الفرع الفرعي (non-main) — يستخدم subcollection
+    // مرجع كلمة سر الفرع الفرعي (non-main) — يستخدم subcollection.
+    //
+    // ⚠️ مهم: لازم نستخدم الـmain secret (users/{uid}.bookingSecret) في الـpath
+    // مش الـbranch's own secret. السبب: secretaryLoginWithDoctorEmail بيقرأ من
+    // secretaryAuth/{mainSecret}/branches/{branchId} (مش من branchSecret).
+    // لو حفظنا تحت branchSecret هنا، الـlogin مش هيلاقي الكلمة فالسكرتيرة
+    // مش هتقدر تدخل على الفرع الجديد.
+    let mainSecretForBranchAuth = normalizedSecret;
+    if (isNonMainBranch) {
+        try {
+            const userSnap = await getDoc(userRef);
+            const userBookingSecret = String(userSnap.data()?.bookingSecret || '').trim();
+            if (userBookingSecret) {
+                mainSecretForBranchAuth = userBookingSecret;
+            }
+        } catch {
+            // لو فشلنا قراءة الـuser doc، نكمّل بـnormalizedSecret كـfallback
+        }
+    }
     const branchAuthRef = isNonMainBranch
-        ? doc(db, 'secretaryAuth', normalizedSecret, 'branches', branchId!)
+        ? doc(db, 'secretaryAuth', mainSecretForBranchAuth, 'branches', branchId!)
         : null;
 
     if (secretaryPassword !== undefined) {

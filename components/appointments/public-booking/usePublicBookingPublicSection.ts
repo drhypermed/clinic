@@ -23,6 +23,9 @@ type UsePublicBookingPublicSectionParams = {
   currentDayStr: string;
   branches: Branch[];
   activeBranchId: string;
+  // مرآة publicBookingSecret من bookingConfig — لو متوفّر (الطبيب كاتبها)،
+  // نستخدمه مباشرةً بدل lookup لأن السكرتيرة معندهاش صلاحية على publicBookingConfig.
+  seededPublicSecret?: string | null;
 };
 
 export const usePublicBookingPublicSection = ({
@@ -30,6 +33,7 @@ export const usePublicBookingPublicSection = ({
   currentDayStr,
   branches,
   activeBranchId,
+  seededPublicSecret,
 }: UsePublicBookingPublicSectionParams) => {
   const [publicSectionOpen, setPublicSectionOpen] = useState(false);
   const [publicSecret, setPublicSecret] = useState<string | null>(null);
@@ -71,22 +75,31 @@ export const usePublicBookingPublicSection = ({
     // مسح الـsecret القديم فوراً عند تغيُّر userId — قبل الإصلاح كان بيفضل
     // معلَّق بقيمته القديمه لو الـlookup الجديد فشل أو رجع null.
     secretRequestIdRef.current += 1;
-    setPublicSecret(null);
 
+    // المسار الأساسي: لو الطبيب كاتب المرآه على bookingConfig (seededPublicSecret)،
+    // نستخدمها فوراً — السكرتيرة معندهاش صلاحية على publicBookingConfig list ولا
+    // قراءة users/{uid}، فالـ lookup هيرجع null دايماً.
+    const seeded = String(seededPublicSecret || '').trim();
+    if (seeded) {
+      setPublicSecret(seeded);
+      return;
+    }
+
+    setPublicSecret(null);
     if (!userId) return;
     const myRequestId = secretRequestIdRef.current;
 
+    // fallback: lookup للحالات النادرة (الطبيب نفسه فاتح الصفحة، أو data قديمة
+    // قبل ما المرآه تتكتب). سيفشل بصمت للسكرتيرة بسبب rules.
     firestoreService.getPublicSecretByUserId(userId).then((s) => {
       if (secretRequestIdRef.current !== myRequestId) return;
-      // s ممكن يكون null/undefined لو الدكتور ما عملش publish — نحط القيمه كما هي
-      // (null) عشان نعكس الواقع بدل ما نسيب سر قديم متعلق.
       setPublicSecret(s || null);
     }).catch((err) => {
       if (secretRequestIdRef.current !== myRequestId) return;
-      console.error('[Secretary] Failed to resolve public secret:', err);
+      console.warn('[Secretary] Failed to resolve public secret (expected for secretaries before mirror exists):', err);
       setPublicSecret(null);
     });
-  }, [userId]);
+  }, [userId, seededPublicSecret]);
 
   useEffect(() => {
     if (!publicSectionOpen || !publicSecret) return;

@@ -126,14 +126,16 @@ export const setSecretaryEntryRequest = async (
     breastfeeding: breastfeedingForPayload,
   });
 
-  // نستخدم merge: true مع dot-notation — تحديث فرع واحد فقط بدون مسح باقي الفروع
+  // ⚠️ ممنوع dot-notation في setDoc — Firebase JS SDK ما بيفسرش الـ keys
+  // اللي فيها نقاط في setDoc كـ nested. الحل nested object — مع merge:true
+  // الـ Firestore بيدمج الـ map بعمق فالفروع التانيه ما بتتمسحش.
   await setDoc(
     ref,
     {
       // الحقول القديمة (flat) للتوافق — تحمل آخر طلب من أي فرع
       ...branchPayload,
       // الخريطة الجديدة المعزولة بالفرع
-      [`requestsByBranch.${normalizedBranch}`]: branchPayload,
+      requestsByBranch: { [normalizedBranch]: branchPayload },
     },
     { merge: true }
   );
@@ -348,8 +350,10 @@ export const clearSecretaryEntryRequest = async (
   const flatAppointmentId = typeof snapData.appointmentId === 'string' ? snapData.appointmentId : '';
 
   // نمسح فرع محدد من الخريطة — ولو الحقول القديمة (flat) بتخص نفس الفرع، نصفّرها كمان
+  // ⚠️ ممنوع dot-notation في setDoc — nested object مع deleteField() بيحذف
+  // الـ entry المعين فقط ويسيب باقي الفروع كما هي.
   const payload: Record<string, unknown> = {
-    [`requestsByBranch.${normalizedBranch}`]: deleteField(),
+    requestsByBranch: { [normalizedBranch]: deleteField() },
   };
 
   // نصفّر الـ flat لو:
@@ -418,9 +422,10 @@ export const setDoctorEntryResponse = async (
   };
 
   // الـ payload الأساسي: دائماً نكتب doctorEntryResponse
+  // ⚠️ ممنوع dot-notation في setDoc — كل الحقول per-branch nested objects.
   const configPayload: Record<string, unknown> = {
     doctorEntryResponse: responsePayload,
-    [`doctorEntryResponseByBranch.${normalizedBranch}`]: responsePayload,
+    doctorEntryResponseByBranch: { [normalizedBranch]: responsePayload },
   };
 
   // عند approved: نضم حقول الموافقة للـ payload لكتابتها في write واحد.
@@ -434,11 +439,15 @@ export const setDoctorEntryResponse = async (
     );
     if (approvedPayload) {
       configPayload.approvedEntryAppointmentIds = approvedPayload.legacyIds;
-      configPayload[`approvedEntryAppointmentIdsByBranch.${normalizedBranch}`] =
-        approvedPayload.branchIds;
-      configPayload[`lastExamOpenedAt.${normalizedBranch}`] = approvedPayload.openedAt;
-      configPayload[`lastExamOpenedAppointmentId.${normalizedBranch}`] =
-        approvedPayload.normalizedAppointmentId;
+      configPayload.approvedEntryAppointmentIdsByBranch = {
+        [normalizedBranch]: approvedPayload.branchIds,
+      };
+      configPayload.lastExamOpenedAt = {
+        [normalizedBranch]: approvedPayload.openedAt,
+      };
+      configPayload.lastExamOpenedAppointmentId = {
+        [normalizedBranch]: approvedPayload.normalizedAppointmentId,
+      };
     }
   }
 
@@ -487,11 +496,12 @@ export const clearDoctorEntryResponse = async (
   }
 
   const normalizedBranch = normalizeBranchId(branchId);
+  // nested object — مش dot-notation. مع merge:true بنحدث entry الفرع المحدد فقط.
   await setDoc(
     configRef,
     {
       doctorEntryResponse: null,
-      [`doctorEntryResponseByBranch.${normalizedBranch}`]: null,
+      doctorEntryResponseByBranch: { [normalizedBranch]: null },
     },
     { merge: true }
   );

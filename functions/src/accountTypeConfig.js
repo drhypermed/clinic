@@ -47,6 +47,13 @@ const normalizeSmartRxConfig = (raw) => {
   // ─ الفروع (جديد 2026-04) ─
   const freeBranchesMaxCount = toSafeLimit(raw?.freeBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.freeBranchesMaxCount);
   const premiumBranchesMaxCount = toSafeLimit(raw?.premiumBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.premiumBranchesMaxCount);
+  // ─ 🆕 رسائل سعة الفروع 2026-05 (تشديد أمني — كان مفيش فحص خالص قبل) ─
+  //   لو الأدمن مش معيّنها، نستخدم الـ defaults من smartRxDefaults.js عشان
+  //   مايبقاش "وصلت للحد الأقصى" ظاهرة فاضية للطبيب.
+  const freeBranchesCapacityMessage = normalizeMessageAllowEmpty(raw?.freeBranchesCapacityMessage, DEFAULT_SMART_RX_CONFIG.freeBranchesCapacityMessage);
+  const premiumBranchesCapacityMessage = normalizeMessageAllowEmpty(raw?.premiumBranchesCapacityMessage, DEFAULT_SMART_RX_CONFIG.premiumBranchesCapacityMessage);
+  const freeBranchesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.freeBranchesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freeBranchesCapacityWhatsappMessage);
+  const premiumBranchesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumBranchesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumBranchesCapacityWhatsappMessage);
   // ─ 🆕 سعة شركات التأمين 2026-04 ─
   const freeInsuranceCompaniesMaxCount = toSafeLimit(raw?.freeInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.freeInsuranceCompaniesMaxCount);
   const premiumInsuranceCompaniesMaxCount = toSafeLimit(raw?.premiumInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.premiumInsuranceCompaniesMaxCount);
@@ -339,6 +346,11 @@ const normalizeSmartRxConfig = (raw) => {
     // ─ الفروع ─
     freeBranchesMaxCount,
     premiumBranchesMaxCount,
+    // 🆕 رسائل سعة الفروع 2026-05 (مع defaults لو الأدمن مش معيّنها)
+    freeBranchesCapacityMessage,
+    premiumBranchesCapacityMessage,
+    freeBranchesCapacityWhatsappMessage,
+    premiumBranchesCapacityWhatsappMessage,
     // ─ 🆕 شركات التأمين ─
     freeInsuranceCompaniesMaxCount,
     premiumInsuranceCompaniesMaxCount,
@@ -450,6 +462,9 @@ const normalizeSmartRxConfig = (raw) => {
     // ─ السجلات (سعة كلية) + الترجمة + الفروع — جديد 2026-04 ─
     proMaxRecordsMaxCount: toSafeLimit(raw?.proMaxRecordsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxRecordsMaxCount),
     proMaxBranchesMaxCount: toSafeLimit(raw?.proMaxBranchesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxBranchesMaxCount),
+    // ─ 🆕 برو ماكس: رسائل سعة الفروع 2026-05 (تشديد أمني — كان مفيش فحص خالص قبل) ─
+    proMaxBranchesCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxBranchesCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxBranchesCapacityMessage),
+    proMaxBranchesCapacityWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxBranchesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxBranchesCapacityWhatsappMessage),
     // ─ 🆕 برو ماكس: شركات التأمين ─
     proMaxInsuranceCompaniesMaxCount: toSafeLimit(raw?.proMaxInsuranceCompaniesMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesMaxCount),
     proMaxInsuranceCompaniesCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxInsuranceCompaniesCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesCapacityMessage),

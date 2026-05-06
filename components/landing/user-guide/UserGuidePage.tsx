@@ -24,14 +24,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
 import {
   LuBookOpen,         // شعار الدليل
-  LuArrowRight,       // زر الرجوع (RTL = سهم لليمين)
-  LuArrowLeft,        // فتح القائمه الجانبيه على الموبايل (سهم لليسار بدل الثلاث شرط)
-  LuX,                // إغلاق القائمه الجانبيه
+  LuX,                // زر خروج / إغلاق القائمه
   LuLightbulb,        // نصيحه
   LuTriangleAlert,    // تحذير / خطأ شايع
   LuCircleCheck,      // Step check
   LuClock,            // وقت القراءه
-  LuList,             // فهرس المحتويات
+  LuList,             // فهرس المحتويات / زر المحتويات على الموبايل
+  LuChevronRight,     // السابق (chevron مشير لليمين في RTL = للورا)
+  LuChevronLeft,      // التالي (chevron مشير لليسار في RTL = لقدام)
 } from 'react-icons/lu';
 import { USER_GUIDE_CATEGORIES, USER_GUIDE_ALL_TOPICS } from './userGuideData';
 import type { GuideTopic, GuideSection } from './userGuideData';
@@ -311,34 +311,36 @@ export const UserGuidePage: React.FC = () => {
       {/* ═════════════ Header ═════════════ */}
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {/* زر الرجوع — يرجع للصفحه السابقة لو فيه history، وإلا الصفحه الرئيسيّه */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* زر خروج — واضح بنص + أيقونه. على الموبايل النص بيتخفى ويفضل الأيقونه. */}
             <button
               type="button"
               onClick={handleBack}
-              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
-              title="رجوع للصفحه السابقة"
+              className="inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+              title="خروج من الدليل"
             >
-              <LuArrowRight className="w-4 h-4 text-slate-700" />
+              <LuX className="w-4 h-4 text-slate-700" />
+              <span className="hidden sm:inline text-xs font-black text-slate-700">خروج</span>
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-sm shrink-0">
                 <LuBookOpen className="w-5 h-5" />
               </div>
-              <div>
-                <h1 className="text-base font-black text-slate-900 leading-tight">دليل المستخدم</h1>
-                <p className="text-[10px] text-slate-500 font-semibold">كل اللي محتاجه تعرفه عن Dr Hyper</p>
+              <div className="min-w-0">
+                <h1 className="text-base font-black text-slate-900 leading-tight truncate">دليل المستخدم</h1>
+                <p className="text-[10px] text-slate-500 font-semibold truncate">كل اللي محتاجه تعرفه عن Dr Hyper</p>
               </div>
             </div>
           </div>
-          {/* زر فتح القائمه على الموبايل — سهم لليسار بدل الثلاث شرط */}
+          {/* زر فتح القائمه على الموبايل — واضح بنص "المحتويات" */}
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
-            className="md:hidden w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
-            title="عرض المحتويات"
+            className="md:hidden inline-flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 transition-colors shrink-0"
+            title="عرض قائمه المواضيع"
           >
-            <LuArrowLeft className="w-5 h-5 text-slate-700" />
+            <LuList className="w-4 h-4 text-white" />
+            <span className="text-xs font-black text-white">المحتويات</span>
           </button>
         </div>
       </header>
@@ -402,9 +404,9 @@ export const UserGuidePage: React.FC = () => {
                 />
               ))}
 
-              {/* Next topic navigation */}
+              {/* Navigation: السابق + التالي — زرّان واضحان مع عناوين الموضوعات */}
               <div className="mt-10 pt-6 border-t border-slate-200">
-                <NextTopicButton
+                <TopicNavigation
                   currentTopicId={selectedTopicId}
                   onSelectTopic={handleSelectTopic}
                 />
@@ -420,39 +422,71 @@ export const UserGuidePage: React.FC = () => {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
-// زر "الموضوع اللي بعده" — بيسهّل التنقّل السلس بين المواضيع بالترتيب
+// أزرار التنقل — السابق + التالي بعناوين الموضوعات. RTL:
+//   • "السابق" بـchevron يمين على الشمال (بترجع لورا).
+//   • "التالي" بـchevron شمال على اليمين (بتروح لقدام).
+// لو في الموضوع الأول، زر السابق مخفي. لو في آخر موضوع، زر التالي يتبدّل برسالة
+// "كملت الدليل".
 // ═════════════════════════════════════════════════════════════════════════════
-const NextTopicButton: React.FC<{
+const TopicNavigation: React.FC<{
   currentTopicId: string;
   onSelectTopic: (id: string) => void;
 }> = ({ currentTopicId, onSelectTopic }) => {
   const currentIdx = USER_GUIDE_ALL_TOPICS.findIndex((t) => t.id === currentTopicId);
+  const prev = currentIdx > 0 ? USER_GUIDE_ALL_TOPICS[currentIdx - 1] : null;
   const next = currentIdx >= 0 && currentIdx < USER_GUIDE_ALL_TOPICS.length - 1
     ? USER_GUIDE_ALL_TOPICS[currentIdx + 1]
     : null;
 
-  if (!next) {
-    return (
-      <div className="p-4 rounded-xl bg-success-50 border border-success-200 text-center">
-        <p className="text-sm font-black text-success-900">🎉 كملت الدليل بالكامل!</p>
-        <p className="text-xs text-success-700 mt-1 font-semibold">جاهز تستخدم Dr Hyper باحترافيه.</p>
-      </div>
-    );
+  // كملت الدليل — عرض رسالة تهنئة بدون أزرار تنقل
+  if (!next && !prev) {
+    return null;
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelectTopic(next.id)}
-      className="w-full flex items-center justify-between gap-3 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 transition-all shadow-sm hover:shadow-md text-right"
-    >
-      <div>
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">الموضوع اللي بعده</div>
-        <div className="text-sm font-black text-slate-900">{next.title}</div>
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* زر السابق — لو في الموضوع الأول مفيش زر */}
+        {prev ? (
+          <button
+            type="button"
+            onClick={() => onSelectTopic(prev.id)}
+            className="flex items-center gap-3 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 transition-all shadow-sm hover:shadow-md text-right"
+          >
+            <div className="shrink-0 w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+              <LuChevronRight className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">⬅ السابق</div>
+              <div className="text-sm font-black text-slate-900 truncate">{prev.title}</div>
+            </div>
+          </button>
+        ) : (
+          <div className="hidden sm:block" /> // placeholder للـgrid
+        )}
+
+        {/* زر التالي — لو في آخر موضوع نعرض رسالة "كملت الدليل" */}
+        {next ? (
+          <button
+            type="button"
+            onClick={() => onSelectTopic(next.id)}
+            className="flex items-center gap-3 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 transition-all shadow-sm hover:shadow-md text-right"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">التالي ➡</div>
+              <div className="text-sm font-black text-slate-900 truncate">{next.title}</div>
+            </div>
+            <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center">
+              <LuChevronLeft className="w-5 h-5" />
+            </div>
+          </button>
+        ) : (
+          <div className="p-4 rounded-xl bg-success-50 border border-success-200 text-center">
+            <p className="text-sm font-black text-success-900">🎉 كملت الدليل بالكامل!</p>
+            <p className="text-xs text-success-700 mt-1 font-semibold">جاهز تستخدم Dr Hyper باحترافيه.</p>
+          </div>
+        )}
       </div>
-      <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center">
-        <LuArrowRight className="w-4 h-4 rotate-180" />
-      </div>
-    </button>
+    </div>
   );
 };

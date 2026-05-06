@@ -18,9 +18,7 @@ import { parseIsoTimeMs } from '../../../utils/expiryTime';
 import { SECRETARY_LAST_SECRET_KEY } from './constants';
 import {
   clearSecretaryHandledEntryAlert,
-  markNotificationSeen,
   readSecretaryHandledEntryAlert,
-  wasNotificationSeen,
 } from '../internalToastStorage';
 import {
   secretaryAuthSecretKey, secretaryAuthUserKey,
@@ -203,17 +201,15 @@ export const usePublicBookingRealtimeSync = ({
 
         const sameRequest = sameRequestByCreatedAt || sameRequestByTimestamp || sameRequestByFallback;
 
-        // بالإضافة للـ "handled" marker، نتحقق من الـ "seen" marker:
-        // لو الإشعار ظهر قبل كده في هذا الجهاز (حتى لو السكرتيرة ما ضغطت نعم/لا)،
-        // ما نعرضوش تاني عند إعادة فتح الصفحة.
-        const alreadySeen = wasNotificationSeen(
-          'doctor_entry_alert',
-          secret,
-          entry.appointmentId,
-          entry.createdAt
-        );
-
-        if (sameRequest || alreadySeen) {
+        // ⚠️ تم إزالة `wasNotificationSeen` check + `markNotificationSeen` كانوا
+        // بيخلقوا race condition: المعلم بينحفظ في localStorage وقت العرض، ثم
+        // الـ snapshot التالي (بعد ms قليلة) يقرأه ويرى true ويستدعي
+        // `setEntryAlert(null)` فالإشعار يختفي في أقل من ثانية.
+        //
+        // البديل: الاعتماد على `handledMarker` فقط — يتم تعيينه فقط عند رد
+        // السكرتيرة (approve/reject) عبر `persistSecretaryHandledEntryAlert`.
+        // لو السكرتيرة لم ترد، الـ alert يظهر تاني بعد refresh (مرغوب).
+        if (sameRequest) {
           setEntryAlert(null);
           lastEntryAlertCreatedRef.current = entry.createdAt;
         } else {
@@ -224,7 +220,6 @@ export const usePublicBookingRealtimeSync = ({
             appointmentId: entry.appointmentId,
             branchId: entry.branchId || secretaryBranchKey,
           });
-          markNotificationSeen('doctor_entry_alert', secret, entry.appointmentId, entry.createdAt);
           if (!entryAlertInitializedRef.current) {
             entryAlertInitializedRef.current = true;
             lastEntryAlertCreatedRef.current = entry.createdAt;

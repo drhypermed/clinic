@@ -20,6 +20,7 @@ import {
     FaCalendarCheck, FaChartPie, FaFlask, FaKey,
     FaPaintbrush, FaBullhorn, FaBuilding, FaShieldHalved,
     FaRightFromBracket, FaCircleUser, FaBars, FaXmark,
+    FaLock,
 } from 'react-icons/fa6';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from '../common/BrandLogo';
@@ -29,7 +30,7 @@ import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
 /** أنواع الواجهات المتاحة للتنقل */
-type ViewType = 'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'secretary' | 'financialReports' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement';
+type ViewType = 'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'secretary' | 'financialReports' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement' | 'permissions';
 
 interface SidebarProps {
     currentView: string; // الواجهة المحددة حالياً
@@ -384,6 +385,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
                     />
                 </div>
+
+                {/* الأذونات — قبل زر تسجيل الخروج مباشرة. تعرض حالة الإشعارات
+                    وتسمح بتفعيلها لو كانت متوقفة. الستايل: نفس الـnavItems
+                    الأخرى (active = أزرق متدرج، idle = رمادي + hover أزرق فاتح). */}
+                <button
+                    onClick={() => handleNavClick('permissions')}
+                    className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl relative ${optimisticView === 'permissions'
+                        ? 'bg-gradient-to-l from-blue-600 to-blue-500 text-white shadow-[0_2px_8px_-2px_rgba(37,99,235,0.4)]'
+                        : 'text-slate-700 bg-transparent hover:bg-blue-50 hover:text-blue-800'
+                        }`}
+                >
+                    <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ${optimisticView === 'permissions'
+                        ? 'bg-white/25 text-white'
+                        : 'bg-blue-50 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700'
+                        }`}>
+                        <FaLock className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold whitespace-nowrap">الأذونات</span>
+                </button>
 
                 {/* Logout Button — neutral hover (slate خفيف ميخدش هوية لون لتسجيل الخروج) */}
                 <button

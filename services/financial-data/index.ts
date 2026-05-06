@@ -52,12 +52,20 @@ import {
     subscribeToPrices,
     subscribeToPricesBySecret,
 } from './prices';
+// Monthly snapshots — لقطات إقفال الشهور (>28 يوم بعد نهاية الشهر).
+// بنحفظ أرقام الشهر الثابتة مرة واحدة فيتجمدوا — التقارير المالية بتقرا منها
+// بدل ما تحسب من records آلاف المرات. توفير ضخم في تكلفة Firestore.
+import {
+    ensureSnapshotsForClosedMonths,
+    getMonthlySnapshotsForYear,
+} from './monthlySnapshots';
 
 export type {
     DailyFinancialData,
     MonthlyFinancialData,
     PriceChangeHistoryEntry,
 } from './types';
+export type { MonthlySnapshot } from './monthlySnapshots';
 
 /** الواجهة الموحّدة لخدمة البيانات المالية */
 export const financialDataService = {
@@ -104,4 +112,8 @@ export const financialDataService = {
 
     // Price snapshot migration (للتعويض عن الكشوفات القديمة بدون serviceBasePrice)
     migratePriceSnapshots,
+
+    // Monthly snapshots — إقفال شهري + قراءة لقطات السنة
+    ensureSnapshotsForClosedMonths,
+    getMonthlySnapshotsForYear,
 };

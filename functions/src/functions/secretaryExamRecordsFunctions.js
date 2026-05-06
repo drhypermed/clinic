@@ -64,12 +64,28 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     await assertBranchBelongsToDoctor({ db, userId, branchId, HttpsError });
 
     const recordsRef = db.collection('users').doc(userId).collection('records');
+
+    // ⚠️ تحسين multi-branch (إصلاح فقدان السجلات + خفض التكلفة):
+    //   - للفرع الفرعي (≠ main): نضيف where('branchId') عشان الـ limit(2000) يقطع
+    //     من سجلات فرع السكرتيرة فقط. بدون الـ where، لو الفرع الرئيسي عنده
+    //     2000+ سجل أحدث، الـ limit يأكل المساحة كلها وسجلات الفرع الفرعي ما تظهرش.
+    //   - للفرع الرئيسي (main): نسيب الـ query زي ما هي عشان البيانات القديمة
+    //     قبل نظام الفروع (بدون branchId) ما تختفيش — الـ in-memory filter بعدها
+    //     يلتقطها لأنه يـ default الـ branchId الفاضي إلى 'main'.
+    const isSubBranch = branchId !== DEFAULT_BRANCH_ID;
+    const baseQuery = isSubBranch
+      ? recordsRef.where('branchId', '==', branchId)
+      : recordsRef;
+
     let recordsSnap;
     try {
-      recordsSnap = await recordsRef.orderBy('date', 'desc').limit(2000).get();
+      recordsSnap = await baseQuery.orderBy('date', 'desc').limit(2000).get();
     } catch (error) {
+      // fallback لو composite index (branchId + date desc) ناقص: نستخدم where
+      // لوحده (single-field index تلقائي). الـ where بيفضل مطبق فما نخسرش
+      // فايدة الـ branch filter حتى في حالة الـ fallback.
       console.warn('[secretaryFunctions] Falling back to unordered records read:', error?.message || error);
-      recordsSnap = await recordsRef.get();
+      recordsSnap = await baseQuery.get();
     }
 
     const cutoffMs = Date.now() - (30 * 24 * 60 * 60 * 1000);

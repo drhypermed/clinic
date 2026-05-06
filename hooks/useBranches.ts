@@ -11,8 +11,14 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { branchesService, DEFAULT_BRANCH_ID } from '../services/firestore/branches';
-import { createBookingSecret } from '../services/firestore/booking-secretary/helpers';
-import { ensureBookingConfigUserId } from '../services/firestore/booking-secretary/secretConfig.ensure';
+// ─ تشديد أمني كامل 2026-05: الإنشاء كله على السيرفر (atomic) ─
+//   كان قبل: الواجهة كتبت الفرع + bookingConfig مباشرة → طبيب فاهم تقنياً
+//   كان يقدر يتحايل عبر devtools. دلوقتي:
+//     • firestore.rules ترفض create للفروع من الواجهة تماماً
+//     • createBranchOnServer هي الطريقة الوحيدة لإنشاء فرع — السيرفر بيفحص
+//       الحد + ينشئ bookingConfig + يكتب الفرع في عملية واحدة (Admin SDK).
+//     • مفيش طريقة للتحايل لأن الواجهة مش بيكون عندها صلاحية الكتابة أصلاً.
+import { createBranchOnServer } from '../services/accountTypeControlsService';
 import type { Branch } from '../types';
 
 interface UseBranchesReturn {
@@ -94,22 +100,25 @@ export const useBranches = (userId: string | null): UseBranchesReturn => {
 
     const addBranch = useCallback(async (data: Omit<Branch, 'id' | 'createdAt'>) => {
         if (!userId) return;
-        const id = `branch_${Date.now()}`;
-        // كل فرع جديد يحصل على كود سري مستقل للسكرتيرة
-        const secretarySecret = createBookingSecret();
 
-        // إنشاء bookingConfig document فوراً مع branchId عشان السكرتيرة تعرف الفرع
-        await ensureBookingConfigUserId(secretarySecret, userId, id);
-
-        const branch: Branch = {
-            ...data,
-            id,
-            secretarySecret,
-            createdAt: new Date().toISOString(),
-            order: branches.length,
-        };
-        await branchesService.saveBranch(userId, branch);
-    }, [userId, branches.length]);
+        // ─ تشديد أمني كامل 2026-05: السيرفر هو اللي بينشئ الفرع ─
+        //   firestore.rules بترفض create للفروع من الواجهة. الإنشاء الوحيد
+        //   الممكن = عبر createBranchOnServer (callable يستخدم Admin SDK).
+        //   السيرفر بيعمل atomic:
+        //     1) يفحص حد الباقة (مجاني/برو/برو ماكس)
+        //     2) يولّد bookingConfig للسكرتيرة + secretarySecret
+        //     3) يكتب الفرع في users/{uid}/branches/
+        //   لو وصل للحد، بيرمي resource-exhausted مع تفاصيل الرسالة + واتساب.
+        //   الـonSnapshot موجود في useEffect أعلى → الفرع الجديد يظهر تلقائياً
+        //   بعد ما السيرفر يكتبه (مش محتاجين نـmutate الـstate يدوياً هنا).
+        await createBranchOnServer({
+            name: data.name,
+            address: data.address,
+            phone: data.phone,
+        });
+        // ⚠️ ممنوع نمسك أو نـwrap الـerror هنا — الـcaller (BranchSettingsPage)
+        // محتاج يلتقط resource-exhausted ويفتح المودال برسالة الأدمن.
+    }, [userId]);
 
     const updateBranch = useCallback(async (branch: Branch) => {
         if (!userId) return;

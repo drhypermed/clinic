@@ -44,7 +44,12 @@ type PushSetupReason =
   | 'permission-denied' // المستخدم رفض منح إذن الإشعارات
   | 'token-empty' // تعذر الحصول على رمز Firebase
   | 'save-failed' // فشل حفظ الرمز في قاعدة البيانات
+  | 'timeout' // العملية استغرقت وقتاً طويلاً جداً (>30 ثانية)
   | 'unknown';
+
+// مهلة قصوى لكل عملية تفعيل push — لو زادت عنها نرجع فشل بدلاً من ترك الزر معلقاً للأبد
+// (شائع في أجهزة بشبكة بطيئة أو service worker تالف)
+const PUSH_SETUP_TIMEOUT_MS = 30_000;
 interface PushSetupResult {
   ok: boolean;
   reason?: PushSetupReason;
@@ -274,9 +279,18 @@ async function getAndSaveFcmToken(
       return { ok: false, reason: 'unknown' };
     }
   })();
+  // سباق بين العملية والـ timeout — أيهما أسبق يكسب
+  // الفائدة: لو الجهاز معلّق على getToken أو SW activation للأبد، الـUI ميقعدش يستنى للأبد
+  // ويرجع رسالة واضحة للمستخدم بدل ما الزر يفضل "جاري" بدون نهاية.
+  const timeoutPromise = new Promise<PushSetupResult>((resolve) => {
+    setTimeout(() => {
+      console.warn('[FCM] push setup timed out after', PUSH_SETUP_TIMEOUT_MS, 'ms');
+      resolve({ ok: false, reason: 'timeout' });
+    }, PUSH_SETUP_TIMEOUT_MS);
+  });
   pushSetupInFlight.set(inFlightKey, setupPromise);
   try {
-    return await setupPromise;
+    return await Promise.race([setupPromise, timeoutPromise]);
   } finally {
     pushSetupInFlight.delete(inFlightKey);
   }

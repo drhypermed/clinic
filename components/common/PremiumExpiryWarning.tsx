@@ -45,7 +45,7 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
     : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة بروات.';
 
   return (
-    <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl animate-slideDown`}>
+    <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="relative rounded-2xl border border-white/25 bg-black/10 backdrop-blur-sm px-3 sm:px-4 py-3 sm:py-4">
           {onClose && (
@@ -62,7 +62,7 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
 
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-              <div className="shrink-0 mt-0.5 rounded-full bg-white/20 p-2 sm:p-2.5 animate-pulse">
+              <div className="shrink-0 mt-0.5 rounded-full bg-white/20 p-2 sm:p-2.5">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>

@@ -9,6 +9,10 @@ const makeValidateRecordsCapacity = require('./account-controls/validateRecordsC
 const makeValidateReadyPrescriptionsCapacity = require('./account-controls/validateReadyPrescriptionsCapacity');
 const makeValidateMedicationCustomizationsCapacity = require('./account-controls/validateMedicationCustomizationsCapacity');
 const makeValidateInsuranceCompaniesCapacity = require('./account-controls/validateInsuranceCompaniesCapacity');
+// ─── 🆕 إنشاء فرع على السيرفر (تشديد أمني كامل 2026-05) ───
+//   الواجهة ممنوعة من إنشاء فروع مباشرة — كل إنشاء يمر عبر السيرفر
+//   اللي بيفحص الحد ويكتب الفرع في عملية واحدة atomic. لا توجد طريقة للتحايل.
+const makeCreateBranch = require('./account-controls/createBranch');
 
 module.exports = (context) => {
   return {
@@ -26,5 +30,9 @@ module.exports = (context) => {
     validateMedicationCustomizationsCapacity: makeValidateMedicationCustomizationsCapacity(context),
     // ─── 🆕 فحص سعة شركات التأمين 2026-04 ───
     validateInsuranceCompaniesCapacity: makeValidateInsuranceCompaniesCapacity(context),
+    // ─── 🆕 إنشاء فرع 2026-05 (تشديد أمني كامل — استبدل validateBranchesCapacity) ───
+    //   الـ pattern مختلف عن باقي validate* لأن الفروع لازم تكون atomic:
+    //   فحص الحد + إنشاء bookingConfig + كتابة الفرع كلها في عملية واحدة.
+    createBranch: makeCreateBranch(context),
   };
 };

@@ -10,6 +10,7 @@ import { useHomepageBanner } from '../../hooks/useHomepageBanner';
 import { formatUserDate, formatUserTime, getUserHour } from '../../utils/cairoTime';
 import { computePaymentBreakdownForBasePrice } from '../../utils/paymentDiscount';
 import { financialDataService } from '../../services/financial-data';
+import type { MonthlySnapshot, DailyFinancialData, MonthlyFinancialData } from '../../services/financial-data';
 import {
     FaCalendarCheck, FaPlus, FaClock,
     FaClipboardList, FaArrowLeft,
@@ -43,6 +44,11 @@ interface DashboardProps {
     records?: PatientRecord[];
     userId?: string;
     activeBranchId?: string;
+    /** Pagination flag — لو مفعّل، Dashboard بيطلب سجلات السنة من السيرفر
+     *  عشان الكروت السنوية تطلع صح بدل ما تتحدد بالـ50 سجل المحملة. */
+    recordsPagingEnabled?: boolean;
+    /** جلب سجلات نطاق تاريخ من السيرفر — للسنة الحالية في paginated mode. */
+    onFetchRecordsByDateRange?: (startMs: number, endMs: number) => Promise<number>;
 }
 
 /* ──────────────────────────────────────────────────────── */
@@ -68,6 +74,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     records = [],
     userId = '',
     activeBranchId,
+    recordsPagingEnabled = false,
+    onFetchRecordsByDateRange,
 }) => {
     const [currentTime, setCurrentTime] = React.useState(new Date());
     const [bannerAssetReady, setBannerAssetReady] = React.useState(false);
@@ -75,6 +83,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [consultPrice, setConsultPrice] = React.useState(0);
     const [yearlyDaily, setYearlyDaily] = React.useState<Record<string, { interventions: number; other: number; interventionsIns: number; otherIns: number; expense: number }>>({});
     const [yearlyMonthly, setYearlyMonthly] = React.useState<Record<string, number>>({});
+    // الـraw maps — محفوظة بشكلها الأصلي عشان ensureSnapshots يقدر يستخدمها
+    // بدون double-fetch. yearlyDaily فوق reshaped (للـperiodStats). الـraw هنا
+    // فيها الحقول الأصلية اللازمة لإنشاء snapshots.
+    const yearlyDailyRawRef = React.useRef<Record<string, DailyFinancialData>>({});
+    const yearlyMonthlyRawRef = React.useRef<Record<string, MonthlyFinancialData>>({});
+    // لقطات الشهور المغلقة (>28 يوم بعد نهاية الشهر) — أرقامها مجمدة وتُستخدم بدل
+    // الحساب من records في paginated mode (records محدودة بـ50 سجل). كده كروت
+    // السنوي بتطلع صح حتى لو الطبيب عنده آلاف السجلات.
+    const [yearlySnapshots, setYearlySnapshots] = React.useState<Record<string, MonthlySnapshot>>({});
     const [labels, setLabels] = React.useState<{ interventionsLabel: string; otherRevenueLabel: string }>({
         interventionsLabel: 'التداخلات',
         otherRevenueLabel: 'دخل آخر',
@@ -127,6 +144,99 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return () => { cancelled = true; };
     }, [userId, activeBranchId]);
 
+    // ─── إقفال الشهور المغلقة تلقائياً (auto-close snapshots) ────────
+    // لما السجلات وmaps تتحمّل، نلف على الشهور اللي عدّى عليها 28 يوم بعد
+    // نهايتها ولسه ما عندهاش snapshot، ونحسب أرقامها ونحفظها مرة واحدة في
+    // Firestore. كده الجلسة الجاية ما تحتاجش records للشهور دي خالص — قراءة
+    // snapshot واحدة بدل مئات السجلات.
+    //
+    // ده هو "اقرأ مرة واحدة، اكتب snapshot، وما ترجعش تقرأها تاني" اللي طلبته.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    React.useEffect(() => {
+        if (!userId || !records?.length) return;
+        if (!recordsPagingEnabled) return;
+        const targetBranch = activeBranchId || 'main';
+        const currentYear = currentTime.getFullYear();
+        // Timeout عشان maps تلحق تتحمّل (الـuseEffect السنوي بياخد ثواني).
+        const timer = window.setTimeout(() => {
+            void financialDataService.ensureSnapshotsForClosedMonths({
+                userId,
+                branchId: targetBranch,
+                records,
+                yearlyDailyMap: yearlyDailyRawRef.current,
+                yearlyMonthlyMap: yearlyMonthlyRawRef.current,
+                examPrice,
+                consultPrice,
+                loadedMapYears: [currentYear],
+            }).catch((err) => {
+                console.warn('[Dashboard] auto-close snapshots failed:', err);
+            });
+        }, 4000);
+        return () => window.clearTimeout(timer);
+    }, [
+        userId,
+        activeBranchId,
+        recordsPagingEnabled,
+        // نشغّل لما records أو الأسعار تتغيّر — قصداً نتجاهل yearlyDaily/Monthly
+        // refs (مش deps) عشان ما نشغّلش الإقفال على كل تحديث صغير.
+        records?.length,
+        examPrice,
+        consultPrice,
+    ]);
+
+    // ─── جلب الشهور اللي محتاجة records فقط (paginated mode) ─────────
+    // الفلسفة: ما نقراش سجلات الشهور اللي عندها snapshot جاهز — الـsnapshot
+    // كافي. نقرا records فقط للـ:
+    //   • الشهر الحالي (مفتوح دايماً).
+    //   • الشهر اللي قبله (مفتوح لحد ما يعدي 28 يوم بعد نهايته).
+    //   • أي شهر مغلق ما عندوش snapshot لسه (نقرأه مرة واحدة لإنشاء snapshot،
+    //     وبعدها لا نقراه أبداً تاني).
+    //
+    // أول جلسة لطبيب موجود: ممكن تتقرا كل شهور السنة عشان snapshots تتعمل.
+    // الجلسات اللي بعدها: شهر أو اثنين بس = توفير ضخم.
+    React.useEffect(() => {
+        if (!userId) return;
+        if (!recordsPagingEnabled) return;
+        if (!onFetchRecordsByDateRange) return;
+
+        let cancelled = false;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const SNAPSHOT_GRACE_MS = 28 * 24 * 60 * 60 * 1000;
+
+        // اقرأ snapshots السنة الأول عشان نعرف أي شهور مغلقة بـsnapshot.
+        // التكلفة: ≤12 قراءة (شهر واحد لكل شهر).
+        financialDataService.getMonthlySnapshotsForYear(userId, currentYear, activeBranchId).then((snaps) => {
+            if (cancelled) return;
+            const snapshotMonthKeys = new Set(Object.keys(snaps || {}));
+
+            // حدد أي شهور محتاجة records.
+            const monthsNeedingRecords: number[] = [];
+            for (let m = 0; m < 12; m++) {
+                const monthStart = new Date(currentYear, m, 1).getTime();
+                if (monthStart > now.getTime()) continue; // شهر مستقبلي — تجاهل
+                const monthEnd = new Date(currentYear, m + 1, 0, 23, 59, 59, 999).getTime();
+                const isClosed = (now.getTime() - monthEnd) > SNAPSHOT_GRACE_MS;
+                const monthKey = `${currentYear}-${String(m + 1).padStart(2, '0')}`;
+                // الشهر مغلق + عنده snapshot = نتجاهله (الـsnapshot كافي).
+                if (isClosed && snapshotMonthKeys.has(monthKey)) continue;
+                monthsNeedingRecords.push(m);
+            }
+
+            if (monthsNeedingRecords.length === 0) return;
+
+            // طلب واحد بنطاق يغطي كل الشهور المحتاجة (دمج الـqueries).
+            const earliest = Math.min(...monthsNeedingRecords.map((m) => new Date(currentYear, m, 1).getTime()));
+            const latest = Math.max(...monthsNeedingRecords.map((m) => new Date(currentYear, m + 1, 0, 23, 59, 59, 999).getTime()));
+            void onFetchRecordsByDateRange(earliest, latest);
+        }).catch(() => {
+            // فشل قراءة snapshots — ما نعرفش أي شهور مغطّاة. آمن إن نتجاهل
+            // (الـperiodStats هتطلع ناقصة لكن ما نعملش fetch ضخم بدون سبب).
+        });
+
+        return () => { cancelled = true; };
+    }, [userId, recordsPagingEnabled, onFetchRecordsByDateRange, activeBranchId]);
+
     // جلب البيانات المالية السنوية — نشتق السنة من currentTime (يتحدث كل دقيقة) حتى تُعاد الجلب تلقائياً عند بداية سنة جديدة
     const effectiveYear = currentTime.getFullYear();
     React.useEffect(() => {
@@ -136,6 +246,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         financialDataService.getYearlyDailyEntries(userId, year, activeBranchId).then((entries) => {
             if (cancelled) return;
+            yearlyDailyRawRef.current = entries || {};
             const agg: Record<string, { interventions: number; other: number; interventionsIns: number; otherIns: number; expense: number }> = {};
             Object.entries(entries || {}).forEach(([dateKey, data]) => {
                 const interventions = Number(data?.interventionsRevenue) || 0;
@@ -158,6 +269,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         // Yearly monthly fixed expenses (rent, salaries, tools, electricity, other)
         financialDataService.getYearlyMonthlyEntries(userId, year, activeBranchId).then((entries) => {
             if (cancelled) return;
+            yearlyMonthlyRawRef.current = entries || {};
             const agg: Record<string, number> = {};
             Object.entries(entries || {}).forEach(([monthKey, data]) => {
                 const total =
@@ -179,6 +291,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 otherRevenueLabel: (l?.otherRevenueLabel || '').trim() || 'دخل آخر',
             });
         }).catch(() => {});
+
+        // لقطات الشهور المغلقة للسنة الحالية — مصدر الحقيقة للكروت السنوية.
+        // التكلفة: ≤12 قراءة لكل سنة. كل لقطة فيها counts/income/expenses/etc جاهزة.
+        financialDataService.getMonthlySnapshotsForYear(userId, year, activeBranchId).then((snaps) => {
+            if (cancelled) return;
+            setYearlySnapshots(snaps || {});
+        }).catch(() => {
+            if (!cancelled) setYearlySnapshots({});
+        });
 
         return () => { cancelled = true; };
     }, [userId, activeBranchId, effectiveYear]);
@@ -218,13 +339,46 @@ export const Dashboard: React.FC<DashboardProps> = ({
         // خصومات الأسعار (discountAmount) بتتحسب كمصروف — مطابقة للتقارير المالية
         let todayDiscountExp = 0, monthDiscountExp = 0, yearDiscountExp = 0;
 
+        // مصاريف يومية + ثابتة شهرية + تداخلات/دخل آخر
+        let todayInterventions = 0, monthInterventions = 0, yearInterventions = 0;
+        let todayOther = 0, monthOther = 0, yearOther = 0;
+        let todayDailyExp = 0, monthDailyExp = 0, yearDailyExp = 0;
+        let monthFixedExp = 0, yearFixedExp = 0;
+
+        // قائمة الشهور المغلقة (snapshots) — أرقامها مجمدة. الحلقات اللي بتلف على
+        // records/yearlyDaily/yearlyMonthly بتتخطّى السنوي للشهور دي بحيث ما نزوّدش
+        // الإجمالي السنوي. الشهر الحالي مستحيل يكون مغلق (>28 يوم بعد نهايته)،
+        // فالشيك ده بيأثر على السنوي بس.
+        const closedMonthSet = new Set(Object.keys(yearlySnapshots));
+
+        // الخطوة 1: نضيف لقطات الشهور المغلقة للسنوي (مصدر الحقيقة المجمد).
+        Object.values(yearlySnapshots).forEach((snap) => {
+            yearExams += snap.examsCount || 0;
+            yearConsults += snap.consultationsCount || 0;
+            yearRevenue += (snap.examsIncome || 0) + (snap.consultsIncome || 0);
+            yearCash += snap.collectedCash || 0;
+            yearInsurance += snap.insuranceClaims || 0;
+            yearDiscountExp += snap.discountExpense || 0;
+            yearInterventions += snap.interventionsRevenue || 0;
+            // snapshot ما بيحتفظش بتصنيف insurance extras (interventions vs other)
+            // فبنضمها في other للسنوي.
+            yearOther += (snap.otherRevenue || 0) + (snap.insuranceExtrasTotal || 0);
+            yearDailyExp += snap.dailyExpensesTotal || 0;
+            yearFixedExp += (snap.rentExpense || 0)
+                + (snap.salariesExpense || 0)
+                + (snap.toolsExpense || 0)
+                + (snap.electricityExpense || 0)
+                + (snap.otherExpense || 0);
+        });
+
         const addExam = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number; discountAmount: number }) => {
-            if (yr === currentYear) { yearExams++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
+            // السنوي: نخطّي السجلات اللي شهرها مغلق (snapshot ضافها بالفعل)
+            if (yr === currentYear && !closedMonthSet.has(mKey)) { yearExams++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
             if (mKey === monthKey) { monthExams++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; monthDiscountExp += bd.discountAmount; }
             if (dayKey === todayKey) { todayExams++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; todayDiscountExp += bd.discountAmount; }
         };
         const addConsult = (dayKey: string, mKey: string, yr: number, bd: { billedIncome: number; collectedCash: number; insuranceClaims: number; discountAmount: number }) => {
-            if (yr === currentYear) { yearConsults++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
+            if (yr === currentYear && !closedMonthSet.has(mKey)) { yearConsults++; yearRevenue += bd.billedIncome; yearCash += bd.collectedCash; yearInsurance += bd.insuranceClaims; yearDiscountExp += bd.discountAmount; }
             if (mKey === monthKey) { monthConsults++; monthRevenue += bd.billedIncome; monthCash += bd.collectedCash; monthInsurance += bd.insuranceClaims; monthDiscountExp += bd.discountAmount; }
             if (dayKey === todayKey) { todayConsults++; todayRevenue += bd.billedIncome; todayCash += bd.collectedCash; todayInsurance += bd.insuranceClaims; todayDiscountExp += bd.discountAmount; }
         };
@@ -261,17 +415,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
 
         // Aggregate interventions & other revenue + daily expenses from yearly daily entries
-        let todayInterventions = 0, monthInterventions = 0, yearInterventions = 0;
-        let todayOther = 0, monthOther = 0, yearOther = 0;
-        let todayDailyExp = 0, monthDailyExp = 0, yearDailyExp = 0;
         Object.entries(yearlyDaily).forEach(([dateKey, v]) => {
             const interventionsTotal = (v.interventions || 0) + (v.interventionsIns || 0);
             const otherTotal = (v.other || 0) + (v.otherIns || 0);
             const exp = v.expense || 0;
-            // year already filtered on fetch
-            yearInterventions += interventionsTotal;
-            yearOther += otherTotal;
-            yearDailyExp += exp;
+            const monthOfDay = dateKey.slice(0, 7);
+            // السنوي: نخطّي اليوم لو شهره مغلق (snapshot ضافه)
+            if (!closedMonthSet.has(monthOfDay)) {
+                yearInterventions += interventionsTotal;
+                yearOther += otherTotal;
+                yearDailyExp += exp;
+            }
             if (dateKey.startsWith(monthKey)) {
                 monthInterventions += interventionsTotal;
                 monthOther += otherTotal;
@@ -285,9 +439,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         });
 
         // Fixed monthly expenses (rent, salaries, tools, electricity, other)
-        let monthFixedExp = 0, yearFixedExp = 0;
         Object.entries(yearlyMonthly).forEach(([mKey, total]) => {
-            yearFixedExp += total;
+            // السنوي: نخطّي الشهر لو مغلق (snapshot ضاف مصروفاته الثابتة)
+            if (!closedMonthSet.has(mKey)) yearFixedExp += total;
             if (mKey === monthKey) monthFixedExp += total;
         });
 
@@ -302,7 +456,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             month: { exams: monthExams, consults: monthConsults, revenue: monthRevenue + monthInterventions + monthOther, expenses: monthExpenses, insurance: monthInsurance, interventions: monthInterventions, other: monthOther },
             year:  { exams: yearExams,  consults: yearConsults,  revenue: yearRevenue + yearInterventions + yearOther, expenses: yearExpenses, insurance: yearInsurance, interventions: yearInterventions, other: yearOther },
         };
-    }, [records, examPrice, consultPrice, yearlyDaily, yearlyMonthly, todayKey, monthKey, currentYear]);
+    }, [records, examPrice, consultPrice, yearlyDaily, yearlyMonthly, yearlySnapshots, todayKey, monthKey, currentYear]);
 
     const fmtMoney = (n: number) => n.toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 

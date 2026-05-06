@@ -36,7 +36,7 @@ export const InactivityWarning: React.FC<InactivityWarningProps> = ({
   const bannerGradient = 'from-warning-500 via-warning-500 to-orange-500';
 
   return (
-    <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl animate-slideDown`}>
+    <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="relative rounded-2xl border border-white/25 bg-black/10 backdrop-blur-sm px-3 sm:px-4 py-3 sm:py-4">
           {onClose && (
@@ -53,7 +53,7 @@ export const InactivityWarning: React.FC<InactivityWarningProps> = ({
 
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-              <div className="shrink-0 mt-0.5 rounded-full bg-white/20 p-2 sm:p-2.5 animate-pulse">
+              <div className="shrink-0 mt-0.5 rounded-full bg-white/20 p-2 sm:p-2.5">
                 {/* أيقونة ساعة */}
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
