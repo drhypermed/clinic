@@ -159,10 +159,26 @@ module.exports = (context) => {
 
         // كل tokens المستند (الجذر + كل الفروع) → للاستبعاد من إرسال الطبيب
         getFcmTokensFromDoc(tokenData).forEach((t) => allSecretaryTokensSet.add(t));
-        const tokensByBranchMap =
+        let tokensByBranchMap =
           tokenData.tokensByBranch && typeof tokenData.tokensByBranch === 'object'
-            ? tokenData.tokensByBranch
+            ? { ...tokenData.tokensByBranch }
             : null;
+
+        // 🛠️ Fallback للحقول القديمة من باج setDoc بنقاط (قبل إصلاح
+        // registerPushToken). الحقول مسطحة كـ `tokensByBranch.main`،
+        // فبنفكها يدوياً عشان الإشعار يوصل لحد ما البيانات تتـ migrate.
+        Object.keys(tokenData).forEach((rawKey) => {
+          if (!rawKey.startsWith('tokensByBranch.')) return;
+          const flatBranch = rawKey.substring('tokensByBranch.'.length);
+          if (!flatBranch) return;
+          const flatTokens = tokenData[rawKey];
+          if (!Array.isArray(flatTokens) || flatTokens.length === 0) return;
+          if (!tokensByBranchMap) tokensByBranchMap = {};
+          if (!tokensByBranchMap[flatBranch] || tokensByBranchMap[flatBranch].length === 0) {
+            tokensByBranchMap[flatBranch] = flatTokens.filter((t) => typeof t === 'string' && t);
+          }
+        });
+
         if (tokensByBranchMap) {
           Object.values(tokensByBranchMap).forEach((arr) => {
             if (Array.isArray(arr)) {

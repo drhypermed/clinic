@@ -46,6 +46,22 @@ module.exports = (context) => {
           }
         });
       }
+      // 🛠️ Fallback للحقول القديمة من باج setDoc بنقاط في المفتاح:
+      // قبل ما إصلاح registerPushToken يتنشر، البيانات كانت بتتحفظ كحقول
+      // مسطّحة فيها نقاط: `tokensByBranch.main`, `tokensByBranch.branch_xxx`.
+      // الحقول دي مش map متداخلة، فالقراءة العادية ما بتلاقيها. هنا
+      // بنفك الحقول دي يدوياً ونستعملها لحد ما السكرتيرة تـ refresh
+      // وتتـ migrate الـ data لشكلها الصحيح.
+      Object.keys(tokenData).forEach((rawKey) => {
+        if (!rawKey.startsWith('tokensByBranch.')) return;
+        const branchId = rawKey.substring('tokensByBranch.'.length);
+        if (!branchId) return;
+        if (tokensByBranch[branchId] && tokensByBranch[branchId].length > 0) return; // أعطي الأولوية للـ map الصحيح
+        const branchTokens = tokenData[rawKey];
+        if (Array.isArray(branchTokens) && branchTokens.length > 0) {
+          tokensByBranch[branchId] = branchTokens.filter((t) => typeof t === 'string' && t.length > 0);
+        }
+      });
     }
 
     if (legacyTokenSet.size === 0 && Object.keys(tokensByBranch).length === 0 && userId) {
