@@ -494,7 +494,14 @@ export const usePublicBookingPageLogic = () => {
     // فرع جلسة السكرتيرة — يُمرَّر للنموذج لاختيار override نسبة التأمين للفرع الصحيح.
     sessionBranchId,
     // اسم الفرع الحالي — يُعرض في الملف الشخصي
-    currentBranchName: branchesHook.branches.find((b) => b.id === sessionBranchId)?.name || '',
+    // اسم الفرع الحالي للسكرتيرة. لو الـsessionBranchId مش متطابق مع أي فرع
+    // (مثلاً session على فرع اتمسح، أو localStorage فاضي وافترضنا 'main' مع
+    // إن الطبيب مفيش عنده فرع رئيسي بهذا الـid) — نرجّع لأول فرع كـfallback
+    // عشان السكرتيرة ميشوفش لافتة فاضية.
+    currentBranchName:
+      branchesHook.branches.find((b) => b.id === sessionBranchId)?.name ||
+      branchesHook.branches[0]?.name ||
+      '',
     hasMultipleBranches: branchesHook.branches.length > 1,
   };
 };

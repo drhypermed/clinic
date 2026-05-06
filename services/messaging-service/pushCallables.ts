@@ -58,6 +58,23 @@ const ensureFreshAuthToken = async (): Promise<boolean> => {
     }
 };
 
+// فحص قبل الإرسال: نتأكد إن توكن المصادقة لسه صالح
+// (بدون force refresh — يستخدم الـcache لو صالح، يـrefresh تلقائياً لو منتهي)
+// لو الـrefresh فشل (refresh token مُلغى/الحساب موقوف) → نرجع false ونسكيب
+// الفايدة: نمنع إرسال طلب بتوكن باظ يرجع 401 ويلوّث الـconsole
+// (شائع لما الجهاز فاتح ساعات والتوكن انتهى ومش بيـrefresh تلقائياً)
+const ensureValidAuthToken = async (): Promise<boolean> => {
+    const user = auth.currentUser;
+    if (!user) return false;
+
+    try {
+        await user.getIdToken();
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 /**
  * تسجيل push token عبر Cloud Function مع retry على unauthenticated.
  * - للسكرتيرة: يمكن تمرير `sessionToken` كـ auth fallback (لو Firebase Auth انتهى)
@@ -82,6 +99,18 @@ export const saveTokenViaCallable = async (
     if (!auth.currentUser && !(role === 'secretary' && sessionToken)) {
         console.info('[FCM] registerPushToken skipped: no authenticated user session', { role });
         return false;
+    }
+
+    // فحص صلاحية التوكن قبل الإرسال — لو منتهي ومش قادر يـrefresh، نسكيب
+    // بدلاً من إرسال طلب يرجع 401
+    // استثناء: لو السكرتيرة معاها sessionToken، السيرفر مش هيستخدم request.auth أصلاً
+    // فنسيب الـcall يكمل حتى لو الـauth فاسد
+    if (auth.currentUser && !(role === 'secretary' && sessionToken)) {
+        const tokenValid = await ensureValidAuthToken();
+        if (!tokenValid) {
+            console.info('[FCM] registerPushToken skipped: auth token expired and refresh failed', { role });
+            return false;
+        }
     }
 
     try {
@@ -133,6 +162,14 @@ export const unregisterTokenViaCallable = async (
 
     if (!auth.currentUser) {
         console.info('[FCM] unregisterPushToken skipped: no authenticated user session');
+        return false;
+    }
+
+    // فحص صلاحية التوكن قبل الإرسال — لو منتهي ومش قادر يـrefresh، نسكيب
+    // بدلاً من إرسال طلب يرجع 401 (شائع لما الجهاز فاتح ساعات أو الحساب موقوف)
+    const tokenValid = await ensureValidAuthToken();
+    if (!tokenValid) {
+        console.info('[FCM] unregisterPushToken skipped: auth token expired and refresh failed');
         return false;
     }
 

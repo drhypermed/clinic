@@ -60,40 +60,90 @@ export const branchesService = {
             return branches.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         };
 
-        // تحميل من الكاش أولاً
+        // ـــ retry-on-permission-denied ـــ
+        // Firebase Auth ساعات بياخد جزء من ثانية لتسوية الـ token أول ما الصفحة تتفتح.
+        // في الفترة دي أي onSnapshot على /users/{uid}/branches بيرجع permission-denied،
+        // وFirestore ما بيعملش retry تلقائي → الفروع بتفضل [] للأبد. الحل: لو الخطأ
+        // permission-denied نـresubscribe بعد backoff قصير عشان نديل لـ Auth وقت يتسوّى.
+        let activeUnsub: (() => void) | null = null;
+        let cancelled = false;
+        let retryCount = 0;
+        const MAX_RETRIES = 4;
+        let retryTimer: ReturnType<typeof setTimeout> | null = null;
+        // علامة: هل سبق ووصّلنا data للـUI؟ لو نعم، أي خطأ بعد كده ميمسحش
+        // الفروع — نسيب آخر قيمة عرفناها على الـUI عشان لافتة "اسم الفرع"
+        // متختفيش لحظياً عند token refresh أو انقطاع شبكي مؤقت.
+        let hasDeliveredData = false;
+
+        // تحميل من الكاش أولاً (قبل بدء الـsubscribe — يضمن ظهور سريع للفروع)
         getDocsCacheFirst(branchesRef).then(cachedSnapshot => {
             if (!cachedSnapshot.empty) {
+                hasDeliveredData = true;
                 onUpdate(processBranches(cachedSnapshot.docs));
             }
         }).catch(() => { });
 
-        // اشتراك لحظي
-        const unsubscribe = onSnapshot(branchesRef, async (snapshot) => {
-            const branches = processBranches(snapshot.docs);
+        const startSubscription = () => {
+            if (cancelled) return;
+            activeUnsub = onSnapshot(branchesRef, async (snapshot) => {
+                retryCount = 0; // نجح → reset counter
+                const branches = processBranches(snapshot.docs);
 
-            // إنشاء الفرع الافتراضي تلقائياً لو مفيش فروع.
-            // الـbug القديم: لو saveBranch فشل (rules/شبكه)، الـreturn هنا
-            // كان يخلّي الـUI شاشه بيضا للأبد. دلوقت لو فشل، نرجّع defaultBranch
-            // محلياً للـUI عشان الدكتور يقدر يكمل شغله.
-            if (branches.length === 0) {
-                const defaultBranch = createDefaultBranch();
-                try {
-                    await branchesService.saveBranch(userId, defaultBranch);
-                    // الـonSnapshot هيتفعل تاني بعد الحفظ
-                } catch (saveError) {
-                    console.warn('[Firestore] Default branch save failed (UI fallback applied):', saveError);
-                    onUpdate([defaultBranch]);
+                // إنشاء الفرع الافتراضي تلقائياً لو مفيش فروع.
+                // الـbug القديم: لو saveBranch فشل (rules/شبكه)، الـreturn هنا
+                // كان يخلّي الـUI شاشه بيضا للأبد. دلوقت لو فشل، نرجّع defaultBranch
+                // محلياً للـUI عشان الدكتور يقدر يكمل شغله.
+                if (branches.length === 0) {
+                    const defaultBranch = createDefaultBranch();
+                    try {
+                        await branchesService.saveBranch(userId, defaultBranch);
+                    } catch (saveError) {
+                        console.warn('[Firestore] Default branch save failed (UI fallback applied):', saveError);
+                        hasDeliveredData = true;
+                        onUpdate([defaultBranch]);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            onUpdate(branches);
-        }, (error) => {
-            console.error('[Firestore] Error subscribing to branches:', error);
-            onUpdate([]);
-        });
+                hasDeliveredData = true;
+                onUpdate(branches);
+            }, (error) => {
+                const code = (error as { code?: string })?.code || '';
+                const isPermDenied = code === 'permission-denied';
 
-        return unsubscribe;
+                // permission-denied غالباً race مع Firebase Auth — نعيد المحاولة بـbackoff.
+                if (isPermDenied && retryCount < MAX_RETRIES && !cancelled) {
+                    retryCount += 1;
+                    const delay = Math.min(500 * Math.pow(2, retryCount - 1), 4000);
+                    console.warn(`[Firestore] Branches permission-denied (auth race?). Retry ${retryCount}/${MAX_RETRIES} after ${delay}ms`);
+                    if (activeUnsub) { activeUnsub(); activeUnsub = null; }
+                    retryTimer = setTimeout(() => {
+                        if (!cancelled) startSubscription();
+                    }, delay);
+                    return;
+                }
+
+                // لو سبق ووصّلنا فروع، خلي آخر قيمة على الـUI بدل ما نمسحها.
+                // ده يمنع اختفاء "اسم الفرع" من السايد بار عند أخطاء عابرة بعد ما
+                // البيانات اتحمّلت بنجاح (token refresh، انقطاع لحظي، إلخ).
+                if (hasDeliveredData) {
+                    console.warn('[Firestore] Branches subscription error after data was delivered — keeping last known data:', error);
+                    return;
+                }
+
+                console.error('[Firestore] Error subscribing to branches:', error);
+                onUpdate([]);
+            });
+        };
+
+        startSubscription();
+
+        // unsubscribe الموحّد: يلغي الـsubscription الحالي + يمنع أي retry معلّق
+        return () => {
+            cancelled = true;
+            if (retryTimer) clearTimeout(retryTimer);
+            if (activeUnsub) activeUnsub();
+        };
     },
 
     /** حفظ فرع جديد أو تحديث فرع موجود */

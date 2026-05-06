@@ -303,7 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     الملف الشخصي
                 </button>
 
-                {/* اسم الفرع النشط — يظهر فقط لما الطبيب عنده أكتر من فرع */}
+                {/* اسم الفرع النشط — يظهر دايماً طول ما متوفر اسم فرع للطبيب */}
                 {activeBranchName && (
                     <div className="mb-2 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold truncate">
                         <FaBuilding className="w-3 h-3 shrink-0 text-blue-600" />

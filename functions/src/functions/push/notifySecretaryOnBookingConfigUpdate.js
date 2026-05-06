@@ -264,6 +264,18 @@ module.exports = (context) => {
         continue;
       }
 
+      // ❗ لا نرسل push للسكرتيرة لما الرد "انتظار/رفض" — كان بيظهرلها رسالة مكررة
+      // ("يتم الانتظار قليلاً") جنب الـ in-app toast "تم الإبلاغ". السكرتيرة بتشوف
+      // الرد عبر Firestore subscription في الـ app مباشرةً، فالـ push زيادة عن اللزوم.
+      // نحتفظ فقط بإشعار الموافقة ("تم الموافقة بالدخول") لأنه يفيدها لو طلعت من
+      // الشاشة وعايزة تعرف إن المريض اتقبل.
+      if (resp.status !== 'approved') {
+        console.log('[notifySecretary] doctorResponse status=rejected → skip push (in-app toast suffices)', {
+          branchId,
+        });
+        continue;
+      }
+
       try {
         const isApproved = resp.status === 'approved';
         const tag = `resp_${branchId}_${Date.now()}`;

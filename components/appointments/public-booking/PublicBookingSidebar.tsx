@@ -161,7 +161,7 @@ export const PublicBookingSidebar: React.FC<PublicBookingSidebarProps> = ({
           الملف الشخصي
         </button>
 
-        {/* اسم الفرع النشط للسكرتيرة — يظهر فقط لما الطبيب عنده أكتر من فرع */}
+        {/* اسم الفرع النشط للسكرتيرة — يظهر دايماً طول ما متوفر اسم فرع */}
         {activeBranchName && (
           <div className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-200 text-brand-800 text-xs font-bold truncate">
             <svg className="w-3 h-3 shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

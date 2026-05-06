@@ -315,6 +315,11 @@ export const useAuth = (): UseAuthReturn => {
                         if (userData && resolvedAuthRole) {
                             // نجح تحديد الدور — ألغي حارس الوقت لو كان شغّال من محاوله سابقه
                             clearRoleResolutionTimer();
+                            // امسح أي رسالة فشل قديمة عالقة من جلسات سابقة — الدور
+                            // اتحدد بنجاح فالرسالة مالهاش معنى. لولا ده، لو حصل
+                            // timeout قديم وعلق المفتاح، أول logout تالي بيرجّع
+                            // المستخدم لصفحة الدخول والبانر ظاهر.
+                            try { localStorage.removeItem(ROLE_RESOLUTION_ERROR_KEY); } catch { /* تجاهل: storage مغلق */ }
 
                             const enrichedUser = {
                                 ...authUser,
@@ -486,6 +491,9 @@ export const useAuth = (): UseAuthReturn => {
             }
             // مسح optimistic hint عشان الفتحة الجاية متعرضش صفحة مستخدم خارج.
             localStorage.removeItem(LAST_UID_KEY);
+            // مسح رسالة فشل تحديد الدور — defense in depth بالإضافة للي في clearAllAuth.
+            // الـuser logout عمل قراره — ميصحش يشوف رسالة خطأ قديمة في صفحة الدخول.
+            try { localStorage.removeItem(ROLE_RESOLUTION_ERROR_KEY); } catch { /* تجاهل: storage مغلق */ }
             setUser(null);
         } catch (err: any) {
             const errorMsg = err.message || 'حدث خطأ أثناء الخروج';

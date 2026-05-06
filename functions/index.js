@@ -153,8 +153,14 @@ exports.listRecentExamRecordsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, l
 exports.listAppointmentsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'listAppointmentsForSecretary'));
 
 // --- Push Functions ---
-exports.registerPushToken = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'registerPushToken'));
-exports.unregisterPushToken = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'unregisterPushToken'));
+// ملاحظة: register/unregister بدون enforceAppCheck — السبب:
+// 1) السكرتيرة بتسجّل توكن من صفحة public booking بدون Firebase Auth (بـsessionToken).
+// 2) بعض المتصفحات (Safari/PWA/مع blocked reCAPTCHA) ما بتقدرش تولّد App Check token،
+//    وده كان بيرجع 401 Unauthorized على أجهزة المستخدمين بدون أي سبب حقيقي.
+// 3) الحماية الفعلية موجودة في الكود نفسه (auth.uid للطبيب، sessionToken للسكرتيرة،
+//    secret + bookingConfig validation). App Check طبقة إضافية كنا نخسر بسببها users.
+exports.registerPushToken = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'registerPushToken'));
+exports.unregisterPushToken = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'unregisterPushToken'));
 exports.sendAppUpdateBroadcast = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'sendAppUpdateBroadcast'));
 exports.sendExternalAudienceNotificationBroadcast = onCall(EXTERNAL_BROADCAST_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'sendExternalAudienceNotificationBroadcast'));
 exports.sendInAppAudienceNotificationBroadcast = onCall(EXTERNAL_BROADCAST_CALLABLE_OPTIONS, lazy('./src/functions/pushFunctions', 'sendInAppAudienceNotificationBroadcast'));

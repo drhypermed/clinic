@@ -425,6 +425,15 @@ const main = async () => {
 
   if (users.length === 0) {
     console.error('[real-load-test] No users available for action stage.');
+    // طباعة أسباب فشل التسجيل علشان نعرف Firebase رفض ليه
+    if (errorCounts.size > 0) {
+      const topErrors = Array.from(errorCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([reason, count]) => `${reason} (×${count})`)
+        .join(' | ');
+      console.error(`[real-load-test] Setup errors: ${topErrors}`);
+    }
     process.exit(1);
   }
 

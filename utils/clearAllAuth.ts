@@ -51,6 +51,10 @@ export const clearAllAuth = async () => {
     sessionStorage.removeItem('dh_auth_flow_guard');
     localStorage.removeItem('dh_public_auth_error');
     localStorage.removeItem('public_auth_error'); // مفتاح قديم للأمان
+    // رسالة فشل تحديد الدور — لازم تتمسح عند تسجيل الخروج العادي عشان متظهرش
+    // كـbanner في صفحة الدخول الجاية. لو سيبناها، أي logout بعد فشل قديم بيظهر
+    // الرسالة وكأنها مشكلة جديدة، والمستخدم يحاول reauth بدون داعي.
+    localStorage.removeItem('dh_role_resolution_error');
 
     keysToRemove.forEach(k => localStorage.removeItem(k));
 };

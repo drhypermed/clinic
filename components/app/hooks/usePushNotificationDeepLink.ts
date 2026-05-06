@@ -80,24 +80,17 @@ export const usePushNotificationDeepLink = ({
           return;
         }
 
-        const patientName = (params.get('patientName') || '').trim() || 'مريض';
-        const age = (params.get('age') || '').trim() || undefined;
-        const visitReason = (params.get('visitReason') || '').trim() || undefined;
-        const appointmentType = (params.get('appointmentType') || '').trim() === 'consultation'
-          ? 'consultation' : 'exam';
         const branchIdFromPush = (params.get('branchId') || '').trim() || undefined;
 
+        // بدّل للفرع الصحيح لو الإشعار من فرع تاني، عشان الـ Firestore subscription
+        // اللي شغّال على الفرع ده يـfire ويعرض الإشعار باسم الفرع الكامل.
         requestBranchSwitchIfNeeded(branchIdFromPush);
 
-        setSecretaryEntryRequest({
-          appointmentId,
-          patientName,
-          age,
-          visitReason,
-          appointmentType,
-          createdAt: new Date().toISOString(),
-          branchId: branchIdFromPush,
-        });
+        // ❗ شيلنا الـ setSecretaryEntryRequest المباشر هنا — كان بيخلق إشعار بدون
+        // branchName من بيانات الـpush، وبعدين الـ Firestore subscription بيرجع
+        // ينضم لإشعار تاني بالـbranchName الصحيح → الطبيب يشوف إشعارين.
+        // الحل: نسيب الـ subscription يعرض الإشعار الواحد الصحيح بكل البيانات
+        // بما فيها اسم الفرع. الـ subscription بيـfire خلال ms معدودة.
         navigate(pathname, { replace: true });
         return;
       }
