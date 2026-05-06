@@ -427,16 +427,85 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   }, [allAppointmentsAcrossBranches, dismissedSubscriptionReady, showNewAppointmentToastForMinute]);
 
   // 3. استقبال إشعارات الـ Push في المقدمة (Foreground)
+  //
+  // ⚠️ مهم: التطبيق ما يعتمدش على Firestore subscription بس عشان يعرض الإشعار
+  // الداخلي (in-app toast). بنشغّل ٣ مسارات بالتوازي:
+  //   (أ) showForegroundSystemNotification — إشعار خارجي + صوت (بيشتغل دايماً)
+  //   (ب) trigger in-app toast من بيانات الـ FCM payload مباشرة (الإصلاح الجديد)
+  //   (ج) Firestore subscription على المواعيد/الطلبات (لو شغّال يحدّث ويفلتر)
+  //
+  // المسار (ب) ضروري لأن Firestore subscription ممكن تتأخر أو تتعطل بصمت
+  // على الشبكات البطيئة، فالطبيب كان بيسمع الصوت ويشوف الإشعار الخارجي
+  // بس ما يشوفش الـ toast الداخلي. دلوقت الـ FCM payload نفسه فيه كل البيانات
+  // المطلوبة لبناء الـ toast.
   useEffect(() => {
     if (!userId) return;
-    if (Notification.permission === 'granted') {
-      const cleanup = onForegroundMessage((payload) => {
-        console.log('[App] Foreground push received:', payload);
-        void showForegroundSystemNotification(payload);
-      });
-      return cleanup ? () => { cleanup(); } : undefined;
-    }
-  }, [userId]);
+    if (Notification.permission !== 'granted') return;
+
+    const triggerInAppToastFromPayload = (payload: unknown) => {
+      try {
+        const base = (payload && typeof payload === 'object') ? (payload as Record<string, unknown>) : {};
+        const dataField = (base.data && typeof base.data === 'object') ? (base.data as Record<string, unknown>) : {};
+        const notification = (base.notification && typeof base.notification === 'object') ? (base.notification as Record<string, unknown>) : {};
+        const notificationData = (notification.data && typeof notification.data === 'object') ? (notification.data as Record<string, unknown>) : {};
+        const data: Record<string, unknown> = { ...notificationData, ...dataField };
+
+        const type = String(data.type || '').trim().toLowerCase();
+
+        // (١) موعد جديد من السكرتيرة/الجمهور — اعرض الـ in-app toast فوراً
+        if (type === 'new_appointment') {
+          const source = String(data.source || '').trim();
+          if (source !== 'secretary' && source !== 'public') return;
+          const appointmentId = String(data.appointmentId || '').trim();
+          if (!appointmentId) return;
+          if (dismissedAppointmentIdsRef.current.has(appointmentId)) return;
+          setNewAppointmentToastState({
+            patientName: String(data.patientName || '-'),
+            age: data.age ? String(data.age) : undefined,
+            visitReason: data.visitReason ? String(data.visitReason) : undefined,
+            dateTime: String(data.dateTime || ''),
+            source: source === 'public' ? 'public' : 'secretary',
+            appointmentType: data.appointmentType === 'consultation' ? 'consultation' : 'exam',
+            branchId: String(data.branchId || 'main'),
+            appointmentId,
+            createdAt: String(data.createdAt || new Date().toISOString()),
+          });
+          return;
+        }
+
+        // (٢) طلب دخول من السكرتيرة — هات تفاصيل الطلب من Firestore وعرضه
+        // (الـ FCM payload فيه appointmentId + patientName بس، باقي البيانات
+        // —سن، سبب زيارة، حقول حيوية— محتاجة قراءة من secretaryEntryRequests/{secret})
+        if (type === 'secretary_entry_request') {
+          const secret = String(data.secret || '').trim();
+          if (!secret) return;
+          firestoreService
+            .getSecretaryEntryRequest(secret)
+            .then((req) => {
+              if (!req) return;
+              const enriched = {
+                ...req,
+                sourceSecret: secret,
+                branchId: req.branchId || String(data.branchId || 'main'),
+                // اسم الفرع هيتحدّث من Firestore subscription لاحقاً، لو لسه فاضي خلّيه فاضي.
+                branchName: '',
+              };
+              setSecretaryEntryRequest(enriched);
+            })
+            .catch(() => { /* silent — fallback existing flow */ });
+        }
+      } catch (err) {
+        console.warn('[App] Foreground in-app toast trigger failed:', err);
+      }
+    };
+
+    const cleanup = onForegroundMessage((payload) => {
+      console.log('[App] Foreground push received:', payload);
+      void showForegroundSystemNotification(payload);
+      triggerInAppToastFromPayload(payload);
+    });
+    return cleanup ? () => { cleanup(); } : undefined;
+  }, [userId, setNewAppointmentToastState]);
 
   // 4. مزامنة توكن الإشعارات (Token Sync) مع السيرفر لضمان استقبال الرسائل
   useEffect(() => {
