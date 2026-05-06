@@ -188,6 +188,12 @@ export const usePublicBookingAuthProfile = ({
     navigate('/', { replace: true });
   };
 
+  // الفرع الحالي للسكرتيرة من session — لعزل cache + subscribe + save بالفرع
+  // عشان فرعين بنفس secret ما يدوسوش على بعض في الاسم
+  const currentBranchId = secret
+    ? (localStorage.getItem(secretaryBranchKey(secret)) || 'main')
+    : 'main';
+
   useEffect(() => {
     if (!secret || !isAuthenticated) {
       setSecretaryName('');
@@ -196,7 +202,8 @@ export const usePublicBookingAuthProfile = ({
       return;
     }
 
-    const profileKey = `dh_secretary_profile_name_${secret}`;
+    // مفتاح الكاش يحتوي branchId عشان كل فرع له cache مستقل
+    const profileKey = `dh_secretary_profile_name_${secret}_${currentBranchId}`;
     const cachedName = localStorage.getItem(profileKey) || '';
     if (cachedName) {
       setSecretaryName(cachedName);
@@ -221,13 +228,14 @@ export const usePublicBookingAuthProfile = ({
         }
         console.error('[Secretary] Failed to load profile from cloud:', error);
         setProfileSaveMessage('تعذر تحميل الاسم من السحابة');
-      }
+      },
+      currentBranchId,
     );
-  }, [secret, isAuthenticated]);
+  }, [secret, isAuthenticated, currentBranchId]);
 
   const handleSaveSecretaryName = async () => {
     if (!secret || !isAuthenticated || profileSaving) return;
-    const profileKey = `dh_secretary_profile_name_${secret}`;
+    const profileKey = `dh_secretary_profile_name_${secret}_${currentBranchId}`;
     const trimmed = sanitizeSecretaryName(secretaryNameInput);
     setProfileSaving(true);
     setProfileSaveMessage('');
@@ -240,7 +248,8 @@ export const usePublicBookingAuthProfile = ({
     }
 
     try {
-      await firestoreService.saveSecretaryProfile(secret, { name: trimmed });
+      // تمرير branchId عشان الاسم ينحفظ في فرعها فقط بدون التأثير على فروع تانية
+      await firestoreService.saveSecretaryProfile(secret, { name: trimmed }, currentBranchId);
       setProfileSaveMessage(trimmed ? 'تم حفظ الاسم' : 'تم حذف الاسم المحفوظ');
     } catch (error) {
       if (isAuthPermissionError(error)) {

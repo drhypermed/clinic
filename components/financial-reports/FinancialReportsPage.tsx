@@ -14,6 +14,8 @@ import { useTabSync } from '../../hooks/useTabSync';
 import { useFinancialData } from './hooks/useFinancialData';
 import { useFinancialStats } from './hooks/useFinancialStats';
 import { useFinancialNavigation } from './hooks/useFinancialNavigation';
+import { applyMonthSnapshotToStats, applyYearlySnapshotsToYearlyStats } from './hooks/applySnapshotToStats';
+import type { MonthlySnapshot, DailyFinancialData, MonthlyFinancialData } from '../../services/financial-data';
 
 // المكونات | Components
 
@@ -33,8 +35,19 @@ import { InsuranceClaimsSection } from './components/InsuranceClaimsSection';
 // الخصائص | Props
 
 interface FinancialReportsPageProps {
-    /** سجلات المرضى */
+    /** سجلات المرضى — في paginated mode بيكون 50 سجل بس، نستخدم fetchByDateRange
+     *  لجلب سجلات السنة المعروضة قبل ما نحسب الأرقام. */
     records: PatientRecord[];
+    /** الـflag لـpagination — لو مفعّل، نقرا سجلات السنة من السيرفر صراحة. */
+    recordsPagingEnabled?: boolean;
+    /** هل records تحتوي كل التاريخ؟ في legacy = true دايماً. */
+    recordsFullyLoaded?: boolean;
+    /** تحميل كل السجلات (fallback). */
+    onEnsureFullRecordsLoaded?: () => Promise<void>;
+    /** جلب سجلات نطاق تاريخ من السيرفر — التقارير بتستخدمه لتحميل سجلات سنة
+     *  معروضة فقط بدل ما تجبر تحميل كل التاريخ. لو متاحة، السلوك الجديد بيوفّر
+     *  في تكلفة Firestore. لو غير متاحة، نرجع للـensureFullRecordsLoaded القديم. */
+    onFetchRecordsByDateRange?: (startMs: number, endMs: number) => Promise<number>;
     /** دالة الرجوع */
     onBack: () => void;
     /** معرف المستخدم */
@@ -59,6 +72,10 @@ interface FinancialReportsPageProps {
  */
 export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
     records,
+    recordsPagingEnabled = false,
+    recordsFullyLoaded = true,
+    onEnsureFullRecordsLoaded,
+    onFetchRecordsByDateRange,
     onBack,
     userId,
     branchId,
@@ -83,6 +100,40 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
 
     // السنة المحددة | Selected Year
     const [selectedYear, setSelectedYear] = React.useState<number>(new Date().getFullYear());
+
+    // ─── تحميل سجلات السنة المعروضة (paginated mode فقط) ───────────────
+    // لو الـpagination مفعّل، records محملة 50 سجل فقط — مش كافي لحساب التقارير
+    // المالية. لازم نجيب سجلات السنة المعروضة (سنة الـmonthly tab + سنة الـyearly
+    // tab لو مختلفة) من السيرفر.
+    //
+    // الـfallback: لو fetchRecordsByDateRange غير متاحة، نستخدم ensureFullRecordsLoaded
+    // القديمة (تحميل كل التاريخ). كده لو الـapp في legacy mode، السلوك ما يتأثرش.
+    React.useEffect(() => {
+        if (!userId) return;
+        if (!recordsPagingEnabled) return; // legacy = records كاملة بالفعل
+        if (onFetchRecordsByDateRange) {
+            const yearOfMonth = navigation.selectedDate.getFullYear();
+            const yearsToFetch = new Set<number>([yearOfMonth, selectedYear]);
+            for (const year of yearsToFetch) {
+                const startMs = new Date(year, 0, 1, 0, 0, 0, 0).getTime();
+                const endMs = new Date(year + 1, 0, 1, 0, 0, 0, 0).getTime() - 1;
+                void onFetchRecordsByDateRange(startMs, endMs);
+            }
+            return;
+        }
+        // Fallback لو الـcallback الجديد ما اتمررش — نحمّل كل التاريخ
+        if (!recordsFullyLoaded && onEnsureFullRecordsLoaded) {
+            void onEnsureFullRecordsLoaded();
+        }
+    }, [
+        userId,
+        recordsPagingEnabled,
+        recordsFullyLoaded,
+        navigation.selectedDate,
+        selectedYear,
+        onFetchRecordsByDateRange,
+        onEnsureFullRecordsLoaded,
+    ]);
 
     // البيانات | Data
     const financialData = useFinancialData({
@@ -161,8 +212,53 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         }
     };
 
-    // الإحصائيات | Statistics
-    const stats = useFinancialStats({
+    // ─── تحميل maps السنة الإضافية | Extra-Year Maps ──────────────────
+    // useFinancialData بيحمّل yearlyDailyMap/Map للسنة بتاعة navigation.selectedDate
+    // فقط. لكن tab "السنوي" ممكن يكون عارض سنة مختلفة (selectedYear). محتاجين
+    // الـmaps للسنتين عشان:
+    //   1. yearlyStats للـtab السنوي تطلع صح بدل صفر.
+    //   2. snapshots الشهور المغلقة للسنة الإضافية تتعمل بأرقام صحيحة.
+    const [extraDailyMap, setExtraDailyMap] = React.useState<Record<string, DailyFinancialData>>({});
+    const [extraMonthlyMap, setExtraMonthlyMap] = React.useState<Record<string, MonthlyFinancialData>>({});
+
+    React.useEffect(() => {
+        if (!userId) return;
+        const dateYear = navigation.selectedDate.getFullYear();
+        // لو السنتين متطابقتين، useFinancialData بيغطّي = ما نحتاجش extra fetch.
+        if (selectedYear === dateYear) {
+            setExtraDailyMap({});
+            setExtraMonthlyMap({});
+            return;
+        }
+        let cancelled = false;
+        Promise.all([
+            financialDataService.getYearlyDailyEntries(userId, selectedYear, branchId),
+            financialDataService.getYearlyMonthlyEntries(userId, selectedYear, branchId),
+        ]).then(([daily, monthly]) => {
+            if (cancelled) return;
+            setExtraDailyMap(daily || {});
+            setExtraMonthlyMap(monthly || {});
+        }).catch(() => {
+            if (cancelled) return;
+            setExtraDailyMap({});
+            setExtraMonthlyMap({});
+        });
+        return () => { cancelled = true; };
+    }, [userId, branchId, selectedYear, navigation.selectedDate]);
+
+    // دمج maps السنة الأساسية مع maps السنة الإضافية. الترتيب: extra الأول
+    // عشان maps السنة الحالية (financialData) تكون الأحدث وتطغى لو فيه تداخل.
+    const mergedYearlyDailyMap = React.useMemo(
+        () => ({ ...extraDailyMap, ...financialData.yearlyDailyMap }),
+        [extraDailyMap, financialData.yearlyDailyMap],
+    );
+    const mergedYearlyMonthlyMap = React.useMemo(
+        () => ({ ...extraMonthlyMap, ...financialData.yearlyMonthlyMap }),
+        [extraMonthlyMap, financialData.yearlyMonthlyMap],
+    );
+
+    // الإحصائيات الـlive | Live Statistics (محسوبة من records + maps المدمجة)
+    const liveStats = useFinancialStats({
         records,
         selectedDate: navigation.selectedDate,
         selectedDay: navigation.selectedDay,
@@ -177,9 +273,105 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         userId,
         branchId,
         dailyInsuranceExtras: financialData.dailyInsuranceExtras,
-        yearlyDailyMap: financialData.yearlyDailyMap,
-        yearlyMonthlyMap: financialData.yearlyMonthlyMap,
+        yearlyDailyMap: mergedYearlyDailyMap,
+        yearlyMonthlyMap: mergedYearlyMonthlyMap,
     });
+
+    // ─── snapshots الشهور المغلقة | Closed-Month Snapshots ─────────────
+    // بنقرا snapshots للسنة المعروضة (للـyearlyStats) + snapshot الشهر المعروض
+    // (للـmonthly view). لو الشهر مغلق، الأرقام تيجي من snapshot الثابت بدل
+    // ما تتحسب من records — كده تلقائياً "ينفصل عن السجلات" حسب التصميم.
+    // التكلفة: ≤12 قراءة لكل سنة معروضة (قراءة واحدة لكل شهر مغلق).
+    const [yearlySnapshots, setYearlySnapshots] = React.useState<Record<string, MonthlySnapshot>>({});
+
+    React.useEffect(() => {
+        if (!userId) return;
+        const targetBranch = branchId || 'main';
+        const yearOfMonth = navigation.selectedDate.getFullYear();
+        const yearsToLoad = new Set<number>([yearOfMonth, selectedYear]);
+        let cancelled = false;
+        Promise.all(
+            Array.from(yearsToLoad).map((y) =>
+                financialDataService.getMonthlySnapshotsForYear(userId, y, targetBranch),
+            ),
+        ).then((results) => {
+            if (cancelled) return;
+            const merged: Record<string, MonthlySnapshot> = {};
+            results.forEach((r) => Object.assign(merged, r));
+            setYearlySnapshots(merged);
+        }).catch(() => { if (!cancelled) setYearlySnapshots({}); });
+        return () => { cancelled = true; };
+    }, [userId, branchId, navigation.selectedDate, selectedYear, financialData.lastSyncTime]);
+
+    // ─── إقفال شهري تلقائي | Auto-close ──────────────────────────────
+    // لما السجلات وmaps تتحمّل، بنلف على الشهور اللي عدّى عليها 28 يوم بعد
+    // نهايتها ولسه ما عندهاش snapshot (أو عندها snapshot قديم بـversion
+    // أقل) ونحسب أرقامها ونحفظها. كده الجلسة الجاية ما تحتاجش حساب من records.
+    //
+    // مهم: بنمرّر loadedMapYears = السنتين اللي maps محمّلة لهم. الإقفال
+    // هيتم فقط لشهور هذه السنوات — لمنع كتابة snapshot بأصفار للسنوات اللي
+    // maps ما تغطيهاش (interventions/expenses هتطلع zero).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    React.useEffect(() => {
+        if (!userId || !records?.length) return;
+        const targetBranch = branchId || 'main';
+        const examPrice = parseFloat(fixedPrices.examinationPrice || '0') || 0;
+        const consultPrice = parseFloat(fixedPrices.consultationPrice || '0') || 0;
+        const dateYear = navigation.selectedDate.getFullYear();
+        const loadedMapYears = Array.from(new Set<number>([dateYear, selectedYear]));
+        // ندّي وقت للـmaps يتحمّلوا قبل ما نحسب (3.5s).
+        const timer = window.setTimeout(() => {
+            void financialDataService.ensureSnapshotsForClosedMonths({
+                userId,
+                branchId: targetBranch,
+                records,
+                yearlyDailyMap: mergedYearlyDailyMap,
+                yearlyMonthlyMap: mergedYearlyMonthlyMap,
+                examPrice,
+                consultPrice,
+                loadedMapYears,
+            }).catch((err) => {
+                console.warn('[FinancialReports] auto-close snapshots failed:', err);
+            });
+        }, 3500);
+        return () => window.clearTimeout(timer);
+    }, [
+        userId,
+        branchId,
+        records?.length,
+        // نشغّل لما selectedYear يتغيّر (الطبيب فتح تقارير سنة تانية → maps
+        // الإضافية اتحمّلت → الفرصة لإقفال شهور دي السنة).
+        selectedYear,
+        // قصداً نتجاهل mergedMaps/fixedPrices كـdeps — الـsetTimeout(3500)
+        // بيدّي فرصة كافية لتحميل الـmaps قبل الإقفال.
+    ]);
+
+    // ─── تطبيق snapshots على stats ────────────────────────────────────
+    // لو الشهر المعروض حالياً عنده snapshot، نستبدل أرقام الشهر/اليوم بقيمه.
+    // كمان نطبّق snapshots على yearlyStats (الشهور المغلقة من السنة المعروضة).
+    const currentMonthKey = React.useMemo(() => {
+        const d = navigation.selectedDate;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }, [navigation.selectedDate]);
+    const currentMonthSnapshot = yearlySnapshots[currentMonthKey];
+
+    const stats = React.useMemo(() => {
+        let result = liveStats;
+        if (currentMonthSnapshot) {
+            result = applyMonthSnapshotToStats(result, currentMonthSnapshot, navigation.selectedDayKey);
+        }
+        if (Object.keys(yearlySnapshots).length > 0) {
+            result = {
+                ...result,
+                yearlyStats: applyYearlySnapshotsToYearlyStats(
+                    result.yearlyStats,
+                    selectedYear,
+                    yearlySnapshots,
+                ),
+            };
+        }
+        return result;
+    }, [liveStats, currentMonthSnapshot, yearlySnapshots, navigation.selectedDayKey, selectedYear]);
 
     // العرض | Render
     return (

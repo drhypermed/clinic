@@ -20,12 +20,17 @@ import type {
 export type Config = {
   userId: string;
   doctorDisplayName?: string;
+  /** إيميل الطبيب — يُستخدم كـ fallback لعرض هوية الطبيب لو الاسم فاضي */
+  doctorEmail?: string;
   formTitle?: string;
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
   /** خرائط per-branch للإعدادات الحيوية (المفتاح 'main' للفرع الرئيسي). */
   secretaryVitalsVisibilityByBranch?: Record<string, SecretaryVitalsVisibility>;
   secretaryVitalFieldsByBranch?: Record<string, SecretaryVitalFieldDefinition[]>;
+  // مرآة publicBookingSecret — السكرتيرة بتقرأها من نفس bookingConfig علشان
+  // تعرض رابط الفورم العام بدون ما تحتاج صلاحيات على publicBookingConfig.
+  publicBookingSecret?: string;
 };
 
 // تفاصيل رسالة "تجاوز الحد اليومي للحجز" وطريقة التواصل مع العيادة

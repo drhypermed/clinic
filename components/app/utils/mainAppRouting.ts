@@ -11,6 +11,7 @@ export type AppView =
   | 'settings'          // إعدادات الروشتة والتصميم
   | 'branchSettings'   // إعدادات الفروع
   | 'advertisement'    // إعلانات الطبيب والعيادة
+  | 'permissions'      // إدارة أذونات الجهاز (الإشعارات وغيرها)
   | 'secretary';       // صفحة السكرتارية
 
 export const VIEW_TO_PATH: Record<AppView, string> = {
@@ -25,6 +26,7 @@ export const VIEW_TO_PATH: Record<AppView, string> = {
   settings: '/settings',
   branchSettings: '/branch-settings',
   advertisement: '/advertisement',
+  permissions: '/permissions',
   secretary: '/secretary',
 };
 
@@ -55,6 +57,8 @@ const ARABIC_PATH_MAP: Record<string, AppView> = {
   '/الفروع': 'branchSettings',
   '/الإعلان': 'advertisement',
   '/إعلانات': 'advertisement',
+  '/الأذونات': 'permissions',
+  '/أذونات': 'permissions',
   '/السكرتارية': 'secretary',
   '/سكرتارية': 'secretary',
 };
@@ -106,6 +110,9 @@ export const resolveViewFromPath = (pathname: string): AppView | null => {
     case '/advertisement':
     case '/app/advertisement':
       return 'advertisement';
+    case '/permissions':
+    case '/app/permissions':
+      return 'permissions';
     case '/secretary':
     case '/app/secretary':
       return 'secretary';

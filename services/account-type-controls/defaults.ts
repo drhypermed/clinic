@@ -65,7 +65,7 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   premiumReadyPrescriptionsMaxCount: 100,
   freeMedicationCustomizationsMaxCount: 20,       // تخزين الأدوية المعدّلة
   premiumMedicationCustomizationsMaxCount: 500,
-  freeBranchesMaxCount: 1,                        // إضافة الفروع (إعلان الطبيب) — مجاني=1 · برو=2 · برو ماكس=10
+  freeBranchesMaxCount: 1,                        // إضافة الفروع — مجاني=1 · برو=2 · برو ماكس=10
   premiumBranchesMaxCount: 2,
   // ─── 🆕 سعة شركات التأمين 2026-04 — مجاني=2 · برو=10 · برو ماكس=50 ───
   freeInsuranceCompaniesMaxCount: 2,

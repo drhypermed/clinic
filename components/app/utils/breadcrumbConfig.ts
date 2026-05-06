@@ -27,6 +27,7 @@ const VIEW_LABELS: Record<AppView, string> = {
   settings: 'تصميم الروشتة',
   branchSettings: 'إدارة الفروع',
   advertisement: 'الإعلان',
+  permissions: 'الأذونات',
   secretary: 'السكرتارية',
 };
 

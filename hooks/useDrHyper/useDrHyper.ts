@@ -150,8 +150,16 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
     });
     const {
         records,
+        recordsLoadingMore,
+        recordsHasMore,
+        recordsPagingEnabled,
+        recordsFullyLoaded,
         readyPrescriptions,
         refreshRecords,
+        loadMoreRecords,
+        ensureFullRecordsLoaded,
+        searchRecordsOnServer,
+        fetchRecordsByDateRange,
     } = realtimeData;
 
     const draftPersistence = useDrHyperDraft({
@@ -327,6 +335,14 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
 
     const recordsAndUsageBindings = {
         records,
+        recordsLoadingMore,
+        recordsHasMore,
+        recordsPagingEnabled,
+        recordsFullyLoaded,
+        loadMoreRecords,
+        ensureFullRecordsLoaded,
+        searchRecordsOnServer,
+        fetchRecordsByDateRange,
         totalAgeInMonths,
         usageStats,
         readyPrescriptions,

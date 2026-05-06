@@ -12,7 +12,7 @@
  *   - `records-view/RecordsSearchFilters.tsx`  : صندوق البحث + الفلاتر.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { PatientRecord } from '../../types';
 import { DailyGroup, StatCard } from './recordsViewParts';
 import { getCairoDayKey } from '../../utils/cairoTime';
@@ -48,6 +48,15 @@ import { RecordsSearchFilters } from './records-view/RecordsSearchFilters';
 
 interface RecordsViewProps {
   records: PatientRecord[];
+  /** Pagination state — في legacy mode كلهم defaults معقولة. */
+  recordsLoadingMore?: boolean;
+  recordsHasMore?: boolean;
+  recordsPagingEnabled?: boolean;
+  onLoadMoreRecords?: () => Promise<void>;
+  /** بحث على السيرفر (يستخدم في paginated mode عشان البحث يتعدّى الـ50). */
+  onSearchRecordsOnServer?: (term: string) => Promise<number>;
+  /** جلب سجلات نطاق تاريخ من السيرفر (لفلتر التاريخ في paginated mode). */
+  onFetchRecordsByDateRange?: (startMs: number, endMs: number) => Promise<number>;
   onLoadRecord: (record: PatientRecord) => void;
   onOpenConsultation: (record: PatientRecord) => void;
   onLoadConsultation: (record: PatientRecord) => void;
@@ -69,6 +78,12 @@ interface RecordsViewProps {
 
 export const RecordsView: React.FC<RecordsViewProps> = ({
   records,
+  recordsLoadingMore = false,
+  recordsHasMore = false,
+  recordsPagingEnabled = false,
+  onLoadMoreRecords,
+  onSearchRecordsOnServer,
+  onFetchRecordsByDateRange,
   onLoadRecord,
   onOpenConsultation,
   onLoadConsultation,
@@ -89,7 +104,6 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   // ─── حالات الواجهة الأساسية ──────────────────────────────────────────
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
-  const [visibleDays, setVisibleDays] = useState(10);
   const [deleteFullRecord, setDeleteFullRecord] = useState<DeleteFullRecordState>({
     isOpen: false,
     recordId: null,
@@ -126,6 +140,38 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   // ─── البحث + الاقتراحات (hook) ──────────────────────────────────────
   const { searchTerm, setSearchTerm, filtered, suggestions } = useRecordsSearch(records);
 
+  // ─── بحث سيرفر-سايد في paginated mode ──────────────────────────────
+  // الـsearchTerm لو طول 2+ حرف، نسأل السيرفر (debounced 350ms). النتايج
+  // بتُدمج في records فيقدر الـlocal search يلاقيها. legacy mode = no-op
+  // (records محملة كاملة بالفعل).
+  useEffect(() => {
+    if (!recordsPagingEnabled || !onSearchRecordsOnServer) return;
+    const term = searchTerm.trim();
+    if (term.length < 2) return;
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      void onSearchRecordsOnServer(term);
+    }, 350);
+    return () => { cancelled = true; window.clearTimeout(timeoutId); };
+  }, [recordsPagingEnabled, onSearchRecordsOnServer, searchTerm]);
+
+  // ─── جلب سجلات نطاق التاريخ في paginated mode ───────────────────────
+  // لما المستخدم يفعّل فلتر تاريخ (يوم محدد أو نطاق)، نجيب السجلات اللي
+  // فيها من السيرفر. legacy mode = no-op.
+  const filterStartDate = dateFilterMode === 'singleDay' ? singleDayFilterDate
+    : (dateFilterMode === 'dateRange' ? rangeStartDate : '');
+  const filterEndDate = dateFilterMode === 'singleDay' ? singleDayFilterDate
+    : (dateFilterMode === 'dateRange' ? rangeEndDate : '');
+  useEffect(() => {
+    if (!recordsPagingEnabled || !onFetchRecordsByDateRange) return;
+    if (!filterStartDate || !filterEndDate) return;
+    const startMs = new Date(`${filterStartDate}T00:00:00`).getTime();
+    const endMs = new Date(`${filterEndDate}T23:59:59.999`).getTime();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return;
+    void onFetchRecordsByDateRange(startMs, endMs);
+  }, [recordsPagingEnabled, onFetchRecordsByDateRange, filterStartDate, filterEndDate]);
+
   // ─── الخط الزمني + الإحصائيات + التجميع (hook) ──────────────────────
   const { normalizedRange, stats, grouped } = useRecordsTimeline({
     records,
@@ -149,18 +195,6 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     if (!selectedPatientFileKey) return null;
     return patientFilesByKey.get(selectedPatientFileKey) || null;
   }, [patientFilesByKey, selectedPatientFileKey]);
-
-  // إعادة ضبط عدد الأيام المعروضة عند تغيير البحث/الفلاتر
-  useEffect(() => {
-    setVisibleDays(10);
-  }, [
-    searchTerm,
-    timelineSortOrder,
-    dateFilterMode,
-    singleDayFilterDate,
-    normalizedRange.from,
-    normalizedRange.to,
-  ]);
 
   // إذا اختفى الملف المختار من القائمة، أغلق نافذته
   useEffect(() => {
@@ -245,9 +279,25 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     setRangeEndDate(todayStr);
   };
 
-  // التحكم في عدد الأيام المعروضة
-  const displayedGroups = useMemo(() => grouped.slice(0, visibleDays), [grouped, visibleDays]);
-  const hasMoreDays = useMemo(() => grouped.length > visibleDays, [grouped, visibleDays]);
+  // ─── إدارة زر "تحميل المزيد" ──────────────────────────────────────
+  // ضغطة واحدة = دفعة واحدة من السيرفر (50 سجل ≈ ثانية)، وبعدها نعمل scroll
+  // لأول يوم جديد عشان المستخدم يحس إن في حاجة حصلت. لو عايز أكتر يدوس تاني.
+  const handleLoadMoreClick = useCallback(() => {
+    if (!onLoadMoreRecords) return;
+    if (recordsLoadingMore) return;
+    // نخزن عدد الأيام الحالي عشان بعد الجلب نعرف فين أول يوم جديد ظهر
+    const baseGroupCount = grouped.length;
+    void onLoadMoreRecords().then(() => {
+      // requestAnimationFrame عشان نضمن إن الـDOM اتحدّث قبل ما نعمل scroll
+      window.requestAnimationFrame(() => {
+        // ملاحظة: grouped المغلَّف هنا قديم — بنستخدم getElementById اللي بياخد
+        // أحدث DOM. لو ما اتضافش يوم جديد، الـscroll مش هيحصل (مفيش id جديد)
+        const allDayElements = document.querySelectorAll('[id^="rv-day-"]');
+        const firstNewElement = allDayElements[baseGroupCount];
+        firstNewElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }, [onLoadMoreRecords, recordsLoadingMore, grouped.length]);
 
   return (
     <>
@@ -408,33 +458,38 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
           </div>
         ) : (
           <div className="space-y-3 dh-stagger-4">
-            {displayedGroups.map(([dateKey, dayEntries]) => (
-              <DailyGroup
-                key={dateKey}
-                dateKey={dateKey}
-                entries={dayEntries}
-                term={searchTerm}
-                onLoadRecord={onLoadRecord}
-                onOpenPatientFile={handleOpenPatientFileFromRecord}
-                onOpenConsultation={onOpenConsultation}
-                onLoadConsultation={onLoadConsultation}
-                onNewExam={onNewExam}
-                onDelete={(id) => setDeleteFullRecord({ isOpen: true, recordId: id })}
-                onDeleteExam={(record) => setDeleteExamState({ isOpen: true, record })}
-                onDeleteConsultation={(record) =>
-                  setDeleteConsultationState({ isOpen: true, record })
-                }
-                openByDefault={false}
-              />
+            {grouped.map(([dateKey, dayEntries]) => (
+              // الـid على div خارجي عشان نعمل scrollIntoView بعد تحميل المزيد
+              <div key={dateKey} id={`rv-day-${dateKey}`}>
+                <DailyGroup
+                  dateKey={dateKey}
+                  entries={dayEntries}
+                  term={searchTerm}
+                  onLoadRecord={onLoadRecord}
+                  onOpenPatientFile={handleOpenPatientFileFromRecord}
+                  onOpenConsultation={onOpenConsultation}
+                  onLoadConsultation={onLoadConsultation}
+                  onNewExam={onNewExam}
+                  onDelete={(id) => setDeleteFullRecord({ isOpen: true, recordId: id })}
+                  onDeleteExam={(record) => setDeleteExamState({ isOpen: true, record })}
+                  onDeleteConsultation={(record) =>
+                    setDeleteConsultationState({ isOpen: true, record })
+                  }
+                  openByDefault={false}
+                />
+              </div>
             ))}
 
-            {/* زر بسيط لتوسيع العرض 10 أيام تانيين لما يفضل فيه أيام غير ظاهرة */}
-            {hasMoreDays && (
+            {/* زر واحد بسيط: ضغطة = دفعة واحدة (50 سجل) + scroll تلقائي
+                لأول يوم جديد ظهر. لو عايز أكتر، اضغط تاني. */}
+            {recordsPagingEnabled && recordsHasMore && onLoadMoreRecords && (
               <button
-                onClick={() => setVisibleDays((prev) => prev + 10)}
-                className="w-full py-3.5 bg-success-50 border border-success-200 rounded-2xl font-bold text-success-700 text-sm shadow-sm hover:shadow-md hover:bg-success-100 transition-all active:scale-[0.99]"
+                type="button"
+                onClick={handleLoadMoreClick}
+                disabled={recordsLoadingMore}
+                className="w-full py-3.5 bg-white/80 border border-slate-100 rounded-2xl font-bold text-slate-600 text-sm shadow-sm hover:shadow-md hover:bg-white transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                عرض المزيد (10 أيام)
+                {recordsLoadingMore ? 'جاري التحميل...' : 'تحميل المزيد'}
               </button>
             )}
           </div>

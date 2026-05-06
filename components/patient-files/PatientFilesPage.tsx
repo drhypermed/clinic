@@ -19,6 +19,7 @@ import {
 import { PatientFileDetailsModal } from './PatientFileDetailsModal';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { StatCard } from '../records/recordsViewParts';
+import { useDoctorPatientSummaries } from '../../hooks/useDoctorPatientSummaries';
 
 interface PatientFilesPageProps {
   records: PatientRecord[];
@@ -60,7 +61,41 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   const [additionalInfoByNameKey, setAdditionalInfoByNameKey] = useState<Record<string, string>>({});
   const seniorityIndexRunRef = useRef<{ userId: string; recordCount: number } | null>(null);
 
-  const patientFiles = useMemo(() => buildPatientFiles(records), [records]);
+  // ملخصات المرضى من السيرفر بنظام pagination (50-by-50 + بحث سيرفر-سايد).
+  // لو الـ feature flag مقفول → items=null → نرجع للـpatientFiles المحلية المبنية
+  // من records في الذاكرة (الـ50 المحملة). لو مفعّل → نقرأ 50 ملخص دفعة واحدة من
+  // collection الـpatientSummaries مباشرة، ونحمّل المزيد عند الحاجة. التكلفة:
+  // ~50 قراءة لكل دخول + 50 لكل "تحميل المزيد" + ~90 كحد أقصى لكل بحث.
+  const {
+    items: serverSummaries,
+    fetchingMore: serverSummariesFetchingMore,
+    hasMore: serverSummariesHasMore,
+    isInSearchMode: serverSearchActive,
+    loadMore: loadMoreSummaries,
+    searchOnServer: searchSummariesOnServer,
+    clearSearch: clearSummariesSearch,
+  } = useDoctorPatientSummaries(userId);
+  const useServerSummaries = serverSummaries !== null;
+
+  // الملفات: إما من السيرفر (paginated) أو fallback من records المحلية (قديم).
+  // لما السيرفر متاح، الـvisits بتكون فاضية في الـsummary — الـmodal بيحمّلها
+  // lazy لما الطبيب يفتح ملف معيّن (~50 قراءة لمريض بـ50 زياره).
+  const patientFiles = useMemo<PatientFileData[]>(() => {
+    if (serverSummaries) {
+      return serverSummaries.map((s) => ({
+        key: s.patientFileNameKey,
+        name: s.patientName,
+        fileNumber: s.patientFileNumber,
+        fileId: s.patientFileId,
+        phones: Array.isArray(s.phones) ? s.phones : [],
+        visits: [], // ما بنحفظهاش في الـsummary — modal بيجيبها lazy عند الحاجة
+        examCount: s.totalExams,
+        consultationCount: s.totalConsultations,
+        latestVisitDate: s.lastVisitAtMs ? new Date(s.lastVisitAtMs).toISOString() : undefined,
+      }));
+    }
+    return buildPatientFiles(records);
+  }, [serverSummaries, records]);
 
   useEffect(() => {
     if (!userId || records.length === 0) {
@@ -255,16 +290,59 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
     if (!exists) setSelectedKey(null);
   }, [patientFilesWithPhones, selectedKey]);
 
+  // في وضع server pagination، بنعرض كل الـitems المحملة من السيرفر (50, 100,
+  // 150...). الـ"تحميل المزيد" بيجيب 50 إضافية من السيرفر مباشرة. مفيش local
+  // visibleCount slicing هنا — لأن server بيـpaginate قبل ما الـitems توصل.
   const visiblePatientFiles = useMemo(
-    () => sortedPatientFiles.slice(0, visibleCount),
-    [sortedPatientFiles, visibleCount]
+    () => (useServerSummaries ? sortedPatientFiles : sortedPatientFiles.slice(0, visibleCount)),
+    [sortedPatientFiles, visibleCount, useServerSummaries],
   );
 
-  const canLoadMore = visibleCount < sortedPatientFiles.length;
+  // canLoadMore: server mode بيعتمد على hasMore من Firestore، legacy mode بيعتمد
+  // على visibleCount المحلي. في وضع البحث السيرفر، بنخفي الـ"تحميل المزيد" لأن
+  // الـsearch بيرجع كل النتائج المطابقة دفعة واحدة (~90 نتيجة كحد أقصى).
+  const canLoadMore = useServerSummaries
+    ? (serverSummariesHasMore && !serverSearchActive)
+    : (visibleCount < sortedPatientFiles.length);
 
   const handleLoadMoreClick = () => {
+    if (useServerSummaries) {
+      void loadMoreSummaries();
+      return;
+    }
     setVisibleCount((prev) => prev + PATIENT_FILES_PAGE_SIZE);
   };
+
+  // ─── Server Search Wiring ─────────────────────────────────────────
+  // لما المستخدم يكتب في صندوق البحث، بنشغّل بحث سيرفر-سايد بـdebounce 350ms
+  // (نفس مدة سجلات المرضى). الـlocal filter يفضل شغّال أثناء التيبينج لـinstant
+  // feedback على الـitems المحملة. لما يفضّي البحث، بنعمل clearSearch ونرجع
+  // لقائمة الـbrowse الأصلية (50 ملف الأحدث).
+  useEffect(() => {
+    if (!useServerSummaries) return;
+    const trimmed = searchTerm.trim();
+
+    if (trimmed.length === 0) {
+      // لو إحنا في وضع البحث ومسحنا، نرجع للـbrowse mode
+      if (serverSearchActive) {
+        void clearSummariesSearch();
+      }
+      return;
+    }
+
+    if (trimmed.length < 2) return; // مينفعش نبحث بحرف واحد
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      void searchSummariesOnServer(trimmed);
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [useServerSummaries, searchTerm, serverSearchActive, searchSummariesOnServer, clearSummariesSearch]);
 
   const selectedPatientFile = useMemo(() => {
     if (!selectedKey) return null;
@@ -457,21 +535,26 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
             </div>
           ))}
 
-          {/* زر تحميل المزيد */}
+          {/* زر تحميل المزيد — في server mode بيجيب 50 إضافية من السيرفر */}
           {canLoadMore && (
             <button
               type="button"
               onClick={handleLoadMoreClick}
-              className="w-full py-3.5 bg-white/80 border border-slate-100 rounded-2xl font-bold text-slate-600 text-sm shadow-sm hover:shadow-md hover:bg-white transition-all active:scale-[0.99]"
+              disabled={serverSummariesFetchingMore}
+              className="w-full py-3.5 bg-white/80 border border-slate-100 rounded-2xl font-bold text-slate-600 text-sm shadow-sm hover:shadow-md hover:bg-white transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              تحميل المزيد من الملفات
+              {serverSummariesFetchingMore ? 'جاري التحميل...' : 'تحميل المزيد من الملفات'}
             </button>
           )}
 
-          {/* مؤشر العدد */}
+          {/* مؤشر العدد — في server mode بنعرض إجمالي المحمّل (مش total الكلّي) */}
           {sortedPatientFiles.length > 0 && (
             <p className="text-center text-[11px] font-semibold text-slate-400">
-              المعروض {Math.min(visibleCount, sortedPatientFiles.length)} من {sortedPatientFiles.length} ملف
+              {useServerSummaries
+                ? (serverSearchActive
+                    ? `${sortedPatientFiles.length} نتيجة بحث`
+                    : `محمّل: ${sortedPatientFiles.length} ملف${serverSummariesHasMore ? ' • فيه ملفات أكتر' : ''}`)
+                : `المعروض ${Math.min(visibleCount, sortedPatientFiles.length)} من ${sortedPatientFiles.length} ملف`}
             </p>
           )}
         </div>

@@ -84,11 +84,20 @@ service cloud.firestore {
     }
 
     function isSafeSecretaryProfilePayload() {
-      return request.resource.data.keys().hasOnly(['name', 'updatedAt']) &&
+      // الحقول المسموحة:
+      //   - `name` (legacy/flat) للتوافق مع البيانات القديمة قبل عزل الفروع
+      //   - `nameByBranch` خريطة per-branch — كل فرع له اسم سكرتيرته المستقل
+      //   - `updatedAt` ختم زمني لتتبع آخر تعديل
+      // عزل الفروع ضروري لأن طبيب بفروع متعددة كان أسماء سكرتيراته بتدوس على بعض.
+      return request.resource.data.keys().hasOnly(['name', 'nameByBranch', 'updatedAt']) &&
         (
           !('name' in request.resource.data) ||
           request.resource.data.name is string ||
           request.resource.data.name == null
+        ) &&
+        (
+          !('nameByBranch' in request.resource.data) ||
+          request.resource.data.nameByBranch is map
         ) &&
         (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is string);
     }
@@ -319,8 +328,21 @@ service cloud.firestore {
             get(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])).data.userId == userId
           )
         );
-        // الكتابة: الطبيب فقط
-        allow write: if request.auth != null && request.auth.uid == userId;
+        // ─ تشديد أمني كامل 2026-05 — Cloud Function هي الوحيدة اللي تقدر تنشئ ─
+        //   create: مسموح بس للفرع الافتراضي 'main' (subscribeToBranches بيـ
+        //     self-initialize لو مفيش فروع). أي فرع تاني → ممنوع من الواجهة
+        //     تماماً. الإنشاء الوحيد عبر Cloud Function 'createBranch' اللي
+        //     بتستخدم Admin SDK وبتفحص حد الباقة قبل الكتابة.
+        //   update: الطبيب يقدر يعدّل بيانات أي فرع (اسم/عنوان/تليفون).
+        //   delete: الطبيب يقدر يحذف أي فرع غير 'main' (الرئيسي محمي).
+        //   ▸ ليه الـ split ده؟ لمنع التحايل: قبل التشديد كانت write واحدة
+        //     → طبيب فاهم تقنياً يقدر يكتب فرع جديد عبر devtools ويتجاوز
+        //     فحص الحد. دلوقتي الكتابة الجديدة لازم تمر بالسيرفر = آمنة 100%.
+        allow create: if request.auth != null && request.auth.uid == userId
+          && branchId == 'main';
+        allow update: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId
+          && branchId != 'main';
       }
       match /readyPrescriptions/{presetId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -613,8 +635,26 @@ service cloud.firestore {
       allow read: if true;
       match /items/{reviewId} {
         allow read: if true;
-        allow create, update: if request.auth != null && (
+        // ─ CREATE: الـ doc جديد، نفحص الـ payload الجديد لتحديد المالك ─
+        //   الـ branch الثاني (booking exists) بيسمح للمريض اللي حجز فعلاً
+        //   عند الطبيب يكتب تقييم حتى لو publicUserId مختلف عن uid.
+        allow create: if request.auth != null && (
           request.resource.data.publicUserId == request.auth.uid ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)).data.doctorId == doctorId
+          ) ||
+          isAdmin()
+        );
+        // ─ تشديد أمني 2026-05: UPDATE لازم يفحص المالك الأصلي (resource.data) ─
+        //   كان قبل: نفس rule لـ create + update يستخدم `request.resource.data`
+        //   (الـ payload الجديد). المشكلة: مهاجم مسجّل دخول كان يقدر يحط publicUserId
+        //   خاصته في الـ payload ويعدّل تقييم مريض تاني (overwrite ratings).
+        //   دلوقتي: نفصل update عن create — الـ update يفحص الـ EXISTING owner
+        //   (resource.data.publicUserId) قبل التعديل. الـ branch الثاني (booking
+        //   exists) آمن لأن reviewId مرتبط بـ booking في حساب الـ user الأصلي.
+        allow update: if request.auth != null && (
+          resource.data.publicUserId == request.auth.uid ||
           (
             exists(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)) &&
             get(/databases/$(database)/documents/users/$(request.auth.uid)/publicBookings/$(reviewId)).data.doctorId == doctorId

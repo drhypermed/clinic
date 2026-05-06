@@ -11,6 +11,10 @@
 import React, { useState } from 'react';
 import type { Branch } from '../../types';
 import { DEFAULT_BRANCH_ID } from '../../services/firestore/branches';
+// ─ مودال "بلوغ الحد" المخصص للكوتا — نفس المودال المستخدم لباقي الحدود
+//   (السجلات، الروشتات الجاهزة، شركات التأمين) — توحيد UX للطبيب.
+import { SmartQuotaNoticeModal } from '../app/SmartQuotaNoticeModal';
+import { isQuotaLimitExceededError } from '../../services/account-type-controls/quotaErrors';
 
 interface BranchSettingsPageProps {
     branches: Branch[];
@@ -49,6 +53,14 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
     const [formPhone, setFormPhone] = useState('');
     const [saving, setSaving] = useState(false);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+    // ─ تنبيه بلوغ الحد الأقصى لعدد الفروع (مع رابط واتساب لترقية الباقة) ─
+    //   بيتفعل لما السيرفر يرفض الإضافة بـ resource-exhausted — رسالة الأدمن
+    //   المخصصة بتظهر للطبيب مع زرار التواصل.
+    const [quotaNotice, setQuotaNotice] = useState<{
+        message: string;
+        whatsappNumber?: string;
+        whatsappUrl?: string;
+    } | null>(null);
 
     const resetForm = () => {
         setFormName('');
@@ -97,7 +109,34 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                 });
             }
             resetForm();
-        } catch (error) {
+        } catch (error: unknown) {
+            // ─ بلوغ حد عدد الفروع (تشديد أمني 2026-05): السيرفر بيرفض ─
+            //   نفتح المودال برسالة الأدمن المخصصة + رابط واتساب للترقية
+            if (isQuotaLimitExceededError(error)) {
+                const details = (error as { details?: Record<string, unknown> })?.details;
+                if (details && typeof details === 'object') {
+                    const limit = Number(details.limit || 0);
+                    const used = Number(details.used || 0);
+                    const remaining = Number(details.remaining || 0);
+                    const rawMessage = String(details.limitReachedMessage || '').trim();
+                    // استبدال المتغيرات في النص بالأرقام الفعلية ({limit}/{used}/{remaining})
+                    const message = (rawMessage || 'وصلت للحد الأقصى لعدد الفروع المسموح به في باقتك. لزيادة العدد، يُمكنك ترقية الباقة عبر واتساب.')
+                        .replace(/\{\s*limit\s*\}/gi, String(limit))
+                        .replace(/\{\s*used\s*\}/gi, String(used))
+                        .replace(/\{\s*remaining\s*\}/gi, String(remaining));
+                    setQuotaNotice({
+                        message,
+                        whatsappNumber: String(details.whatsappNumber || ''),
+                        whatsappUrl: String(details.whatsappUrl || ''),
+                    });
+                    return;
+                }
+            }
+            // أي خطأ تاني (شبكة/auth) → نعرض رسالة بسيطة في المودال
+            const fallbackMessage = error instanceof Error && error.message
+                ? error.message
+                : 'تعذّر حفظ الفرع. حاول مرة أخرى.';
+            setQuotaNotice({ message: fallbackMessage });
             console.error('Error saving branch:', error);
         } finally {
             setSaving(false);
@@ -395,6 +434,13 @@ export const BranchSettingsPage: React.FC<BranchSettingsPageProps> = ({
                 )}
 
             </div>
+
+            {/* مودال تنبيه بلوغ الحد الأقصى لعدد الفروع — يفتح لما السيرفر يرفض
+                الإضافة بـ resource-exhausted (رسالة الأدمن المخصصة + زر واتساب) */}
+            <SmartQuotaNoticeModal
+                notice={quotaNotice}
+                onClose={() => setQuotaNotice(null)}
+            />
         </div>
     );
 };

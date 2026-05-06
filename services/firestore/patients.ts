@@ -15,6 +15,8 @@ import {
     onSnapshot,
     query,
     orderBy,
+    where,
+    type Query,
 } from 'firebase/firestore';
 import { getDocsCacheFirst } from './cacheFirst';
 import { PatientRecord } from '../../types';
@@ -24,10 +26,30 @@ export const patientsService = {
     /**
      * الاشتراك في سجلات المرضى لمستخدم معين مع تحديث لحظي.
      * تتضمن الدالة منطق "رجوع آمن" (Fallback) في حال عدم وجود فهرس (Index) في Firestore.
+     *
+     * تحسين التكلفة (multi-branch):
+     *   - لو الفرع فرعي (≠ main): نضيف where('branchId') للـ subscription عشان
+     *     Firestore يقرأ سجلات الفرع فقط بدل ما يقرأ كل السجلات ويفلتر في الذاكرة.
+     *   - للفرع الرئيسي أو بدون branchId: نقرأ كل السجلات عشان البيانات القديمة
+     *     (قبل نظام الفروع) ما عندهاش حقل branchId — لو طبقنا where عليها هتختفي.
+     *
+     *   الـ fallback لما الـ composite index (branchId, date desc) ما يكونش
+     *   موجود: نسقط على query بـ where فقط بدون orderBy — single-field index
+     *   تلقائي، فالـ filter يستمر يعمل ولا نخسر فايدة الـ where.
+     *
      * @param branchId - لو تم تمريره، يتم فلترة السجلات حسب الفرع المحدد
      */
     subscribeToRecords: (userId: string, onUpdate: (records: PatientRecord[]) => void, branchId?: string) => {
         const recordsRef = collection(db, 'users', userId, 'records');
+
+        // server-side filter للفروع الفرعية فقط (انظر التعليق أعلاه)
+        const isSubBranch = Boolean(branchId) && branchId !== DEFAULT_BRANCH_ID;
+        const baseTarget: Query = isSubBranch
+            ? query(recordsRef, where('branchId', '==', branchId))
+            : recordsRef;
+        const orderedTarget: Query = isSubBranch
+            ? query(recordsRef, where('branchId', '==', branchId), orderBy('date', 'desc'))
+            : query(recordsRef, orderBy('date', 'desc'));
 
         // معالج آمن للتاريخ — بيقبل ISO string أو Firestore Timestamp.
         // نفس باترن appointments.ts. لو القيمه مش صالحه بنرجّع 0 عشان الـsort
@@ -52,7 +74,9 @@ export const patientsService = {
                 return getDateMs(b.date) - getDateMs(a.date);
             });
 
-            // فلترة حسب الفرع (البيانات القديمة بدون branchId تُعتبر تابعة للفرع الرئيسي)
+            // فلترة حسب الفرع (البيانات القديمة بدون branchId تُعتبر تابعة للفرع الرئيسي).
+            // لازمة للفرع الرئيسي اللي بيقرأ كل السجلات؛ للفرع الفرعي الـ where
+            // أصلاً فلتر السيرفر، فالـ filter ده لا يضر (مجرد no-op).
             if (branchId) {
                 return sorted.filter(r => (r.branchId || DEFAULT_BRANCH_ID) === branchId);
             }
@@ -60,19 +84,18 @@ export const patientsService = {
             return sorted;
         };
 
-        getDocsCacheFirst(recordsRef).then(cachedSnapshot => {
+        getDocsCacheFirst(baseTarget).then(cachedSnapshot => {
             if (!cachedSnapshot.empty) {
                 onUpdate(processRecords(cachedSnapshot.docs));
             }
         }).catch(() => {});
 
-        const orderedQuery = query(recordsRef, orderBy('date', 'desc'));
         let innerUnsubscribe: (() => void) | null = null;
         // علم بيتفعّل لمّا الـfallback يشتغل — بعد كده نتجاهل أي callback من الـlistener الأصلي
-        // عشان ما يحصلش onUpdate() مرتين (واحد من الـorderedQuery + واحد من الـfallback).
+        // عشان ما يحصلش onUpdate() مرتين (واحد من الـorderedTarget + واحد من الـfallback).
         let fallbackActive = false;
 
-        const unsubscribe = onSnapshot(orderedQuery, (snapshot) => {
+        const unsubscribe = onSnapshot(orderedTarget, (snapshot) => {
             // لو الـfallback اشتغل قبل كده، تجاهل أي success متأخر من الـlistener الأصلي.
             if (fallbackActive) return;
             onUpdate(processRecords(snapshot.docs));
@@ -86,10 +109,11 @@ export const patientsService = {
 
             try {
                 // الكاش أولاً (لتجربه فوريّه)، ثم listener بدون ترتيب لتفادي خطأ الـindex.
-                const fallbackSnapshot = await getDocsCacheFirst(recordsRef);
+                // مهم: نستخدم baseTarget (مع where لو فرع فرعي) عشان نحافظ على فلتر السيرفر.
+                const fallbackSnapshot = await getDocsCacheFirst(baseTarget);
                 onUpdate(processRecords(fallbackSnapshot.docs));
 
-                innerUnsubscribe = onSnapshot(recordsRef, (snapshot) => {
+                innerUnsubscribe = onSnapshot(baseTarget, (snapshot) => {
                     onUpdate(processRecords(snapshot.docs));
                 });
             } catch (fallbackError) {

@@ -104,75 +104,79 @@ export const getOrCreateBookingSecret = async (userId: string): Promise<string> 
   return secret;
 };
 
-/** 
+/**
  * البحث عن الرمز السري الفعال للطبيب باستخدام الـ UserId.
  * يستخدم هذا عند محاولة ربط سكرتارية موجودة من جهاز جديد أو إصلاح الاتصال.
+ *
+ * ⚠️ ترتيب الأولويات (مهم جداً للسكرتيرة الرئيسية):
+ *   1. `users/{uid}.bookingSecret` (الفرع الرئيسي) — موثوق ولا يتغير.
+ *   2. لو فاضي، fallback لـ query أحدث `bookingConfig`.
+ *
+ * **ليه؟** لما الطبيب يعمل فرع جديد، بيتعمله `bookingConfig/{branchSecret}` بـ
+ * `updatedAt` أحدث من mainSecret. لو رتبنا بـ updatedAt أولاً، السكرتيرة الرئيسية
+ * اللي بتدخل عبر slug-only URL هتستخدم secret الفرع الفرعي بدل الرئيسي →
+ * كلمة سرها مش هتطابق (لأن hash الفرع الرئيسي على mainSecret) → "بيانات الدخول
+ * غير صحيحة". الـ root: نضمن mainSecret دايماً للسكرتيرة الرئيسية.
  */
 export const getBookingSecretByUserId = async (userId: string): Promise<string | null> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   if (!normalizedUserId) return null;
 
   try {
+    // 1. الأولوية: users/{uid}.bookingSecret — secret الفرع الرئيسي الموثوق.
+    //    هذا يضمن إن السكرتيرة الرئيسية بتيجي على mainSecret حتى لو الطبيب
+    //    أنشأ فرع جديد بـ bookingConfig/{branchSecret} بـ updatedAt أحدث.
+    const userRef = doc(db, 'users', normalizedUserId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const mainSecret = normalizeBookingSecret(userSnap.data()?.bookingSecret);
+      if (mainSecret) {
+        // نتأكد إن bookingConfig موجود ومربوط بالـ userId — لو ضاع بيتعاد إنشاؤه
+        const configRef = doc(db, 'bookingConfig', mainSecret);
+        const configSnap = await getDoc(configRef).catch(() => null);
+        if (!configSnap?.exists()) {
+          await setDoc(
+            configRef,
+            { userId: normalizedUserId, updatedAt: new Date().toISOString() },
+            { merge: true },
+          ).catch(() => undefined);
+        }
+        return mainSecret;
+      }
+    }
+
+    // 2. fallback: query على bookingConfig (للحالات النادرة اللي users doc مش
+    //    عنده bookingSecret لأي سبب، مثلاً bug قديم أو data corruption).
     const configsRef = collection(db, 'bookingConfig');
-    
-    // محاولة جلب أحدث إعداد مسجل في قاعدة بيانات السكرتارية
     const q = query(configsRef, where('userId', '==', normalizedUserId), orderBy('updatedAt', 'desc'), limit(1));
     const snapshot = await getDocs(q);
-
     if (!snapshot.empty) {
       const candidate = normalizeBookingSecret(snapshot.docs[0].id);
       if (candidate) return candidate;
     }
 
-    // بديل: جلب كافة الإعدادات وترتيبها برمجياً (في حال فشل الـ Query بسبب غياب الـ Index)
+    // 3. fallback ثانوي: query بدون orderBy + ترتيب in-memory (لو الـ index ناقص)
     const fallbackQuery = query(configsRef, where('userId', '==', normalizedUserId), limit(10));
     const fallbackSnapshot = await getDocs(fallbackQuery);
-
     if (!fallbackSnapshot.empty) {
       const docs = fallbackSnapshot.docs
         .map((item) => ({ id: normalizeBookingSecret(item.id), data: item.data() as Record<string, unknown> }))
         .filter((item) => Boolean(item.id))
         .sort((a, b) => toUpdatedAtMs(b.data.updatedAt) - toUpdatedAtMs(a.data.updatedAt));
-
-      if (docs[0]?.id) {
-        console.log(
-          '[Firestore] Fallback secretary secret resolution (in-memory sort). Found:',
-          docs.length,
-          'Best:',
-          docs[0].id
-        );
-        return docs[0].id;
-      }
-    }
-
-    // المحاولة الأخيرة: جلب الرمز مباشرة من حقل 'bookingSecret' في وثيقة الطبيب الرئيسية
-    const userRef = doc(db, 'users', normalizedUserId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const secret = normalizeBookingSecret(userSnap.data()?.bookingSecret);
-      if (secret) {
-        const configRef = doc(db, 'bookingConfig', secret);
-        await setDoc(configRef, { userId: normalizedUserId, updatedAt: new Date().toISOString() }, { merge: true });
-        console.log('[Firestore] Created bookingConfig from user document (fallback)');
-        return secret;
-      }
+      if (docs[0]?.id) return docs[0].id;
     }
 
     return null;
   } catch (error) {
     console.error('[Firestore] Error getting secretary secret by userId:', error);
 
-    // محاولة أخيرة بسيطة جداً بدون ترتيب أو تعقيد
+    // محاولة أخيرة: نقرأ users doc بدون أي queries معقدة
     try {
-      const configsRef = collection(db, 'bookingConfig');
-      const q = query(configsRef, where('userId', '==', normalizedUserId), limit(10));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        const docs = snapshot.docs
-          .map((item) => ({ id: normalizeBookingSecret(item.id), data: item.data() as Record<string, unknown> }))
-          .filter((item) => Boolean(item.id))
-          .sort((a, b) => toUpdatedAtMs(b.data.updatedAt) - toUpdatedAtMs(a.data.updatedAt));
-        if (docs[0]?.id) return docs[0].id;
+      const userRef = doc(db, 'users', normalizedUserId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const mainSecret = normalizeBookingSecret(userSnap.data()?.bookingSecret);
+        if (mainSecret) return mainSecret;
       }
     } catch {
       // تجاهل أي أخطاء إضافية

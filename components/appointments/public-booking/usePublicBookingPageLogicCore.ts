@@ -91,6 +91,9 @@ export const usePublicBookingPageLogic = () => {
     currentDayStr: state.currentDayStr,
     branches: branchesHook.branches,
     activeBranchId: sessionBranchId,
+    // مرآة publicBookingSecret من bookingConfig — يكتبها الطبيب علشان السكرتيرة
+    // تعرض رابط فورم الجمهور بدون ما تحتاج صلاحيات على publicBookingConfig.
+    seededPublicSecret: state.config?.publicBookingSecret,
   });
 
   usePublicBookingTimeAndFormEffects({
@@ -303,7 +306,11 @@ export const usePublicBookingPageLogic = () => {
   });
 
   const fixedTitle = state.subscriptionFormTitle?.trim() || state.config?.formTitle?.trim() || 'حجز موعد — صفحة السكرتارية';
-  const doctorDisplayName = state.config?.doctorDisplayName?.trim() || 'غير محدد';
+  // اسم الطبيب: نفضل الاسم الصريح، ولو فاضي نعرض إيميل الطبيب (أوضح من "غير محدد")
+  const doctorDisplayName =
+    state.config?.doctorDisplayName?.trim()
+    || state.config?.doctorEmail?.trim()
+    || 'غير محدد';
   const secretaryDisplayName = auth.secretaryName.trim() || 'سكرتيرة';
   const secretaryAvatarText = useMemo(() => {
     const words = secretaryDisplayName.split(/\s+/).filter(Boolean);

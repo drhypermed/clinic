@@ -40,6 +40,7 @@ const loadPrescriptionSettings = () => import('../prescription-settings').then(m
 const loadAdvertisement = () => import('../advertisement/AdvertisementAndPublicPage').then(m => ({ default: m.AdvertisementAndPublicPage }));
 const loadFinancialReports = () => import('../financial-reports/FinancialReportsPage').then(m => ({ default: m.FinancialReportsPage }));
 const loadBranchSettings = () => import('../branch-settings').then(m => ({ default: m.BranchSettingsPage }));
+const loadPermissions = () => import('../permissions/PermissionsPage').then(m => ({ default: m.PermissionsPage }));
 
 const Dashboard = React.lazy(loadDashboard);
 const MainAppPrescriptionSection = React.lazy(loadPrescription);
@@ -53,6 +54,7 @@ const PrescriptionSettingsPage = React.lazy(loadPrescriptionSettings);
 const AdvertisementAndPublicPage = React.lazy(loadAdvertisement);
 const FinancialReportsPage = React.lazy(loadFinancialReports);
 const BranchSettingsPage = React.lazy(loadBranchSettings);
+const PermissionsPage = React.lazy(loadPermissions);
 
 /**
  * Preload لصفحات السايد بار الأكثر استخداماً فقط — بيستدعي نفس دوال الـimport
@@ -94,6 +96,16 @@ interface MainAppViewRouterProps {
 
   // ── بيانات مشتركة بين الشاشات ──
   records: PatientRecord[];
+  /** Pagination state للـrecords — متاح للصفحات اللي محتاجة تشتغل بـpaginated mode.
+   *  لو الـflag مقفول، recordsPagingEnabled=false و recordsFullyLoaded=true (السلوك القديم). */
+  recordsLoadingMore: boolean;
+  recordsHasMore: boolean;
+  recordsPagingEnabled: boolean;
+  recordsFullyLoaded: boolean;
+  loadMoreRecords: () => Promise<void>;
+  ensureFullRecordsLoaded: () => Promise<void>;
+  searchRecordsOnServer: (term: string) => Promise<number>;
+  fetchRecordsByDateRange: (startMs: number, endMs: number) => Promise<number>;
   appointments: ClinicAppointment[];
   todayAppointmentsList: ClinicAppointment[];
   /** dashboardStats له أشكال مختلفة بين الـ hooks — any للمرونة */
@@ -256,6 +268,8 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           records={p.records}
           userId={p.userId}
           activeBranchId={p.activeBranchId}
+          recordsPagingEnabled={p.recordsPagingEnabled}
+          onFetchRecordsByDateRange={p.fetchRecordsByDateRange}
         />
       )}
 
@@ -387,6 +401,12 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
       {p.currentView === 'records' && (
         <RecordsView
           records={p.records}
+          recordsLoadingMore={p.recordsLoadingMore}
+          recordsHasMore={p.recordsHasMore}
+          recordsPagingEnabled={p.recordsPagingEnabled}
+          onLoadMoreRecords={p.loadMoreRecords}
+          onSearchRecordsOnServer={p.searchRecordsOnServer}
+          onFetchRecordsByDateRange={p.fetchRecordsByDateRange}
           onLoadRecord={(rec) => { p.setOpenedAppointmentContext(null); p.handleLoadRecord(rec); }}
           onOpenConsultation={(rec) => { p.setOpenedAppointmentContext(null); p.handleOpenConsultation(rec); p.navigateToView('prescription'); }}
           onLoadConsultation={(rec) => { p.setOpenedAppointmentContext(null); p.handleLoadConsultation(rec); p.navigateToView('prescription'); }}
@@ -423,6 +443,10 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
       {p.currentView === 'financialReports' && (
         <FinancialReportsPage
           records={p.records}
+          recordsPagingEnabled={p.recordsPagingEnabled}
+          recordsFullyLoaded={p.recordsFullyLoaded}
+          onEnsureFullRecordsLoaded={p.ensureFullRecordsLoaded}
+          onFetchRecordsByDateRange={p.fetchRecordsByDateRange}
           onBack={() => p.navigateToView('home')}
           userId={p.userId}
           branchId={p.activeBranchId}
@@ -468,6 +492,10 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           doctorSpecialty={p.normalizedDoctorSpecialty}
           profileImage={p.profileImage || undefined}
         />
+      )}
+
+      {p.currentView === 'permissions' && (
+        <PermissionsPage user={p.user} />
       )}
 
       {p.selectedMed && (

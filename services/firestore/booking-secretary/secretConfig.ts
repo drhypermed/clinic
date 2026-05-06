@@ -10,6 +10,7 @@ export {
   ensureBookingConfigUserId,
   setBookingDoctorEmail,
   repairBookingConnection,
+  mirrorPublicSecretToBookingConfig,
 } from './secretConfig.ensure';
 
 export {

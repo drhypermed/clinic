@@ -8,6 +8,14 @@
  */
 export const INTERNAL_TOAST_MIN_VISIBLE_MS = 10 * 1000; // 10 seconds instead of 30
 
+/**
+ * مدة عرض إشعار "موعد جديد" للطبيب — 5 ثواني (أقصر من الباقي عمداً).
+ * السبب: الإشعار ده بيظهر تلقائياً لأي حجز جديد، فلازم يكون قصير عشان ما يلهيش
+ * الطبيب أثناء الكشف. الـ toasts التانية (رد السكرتيرة، إلخ) بتحتاج وقت أطول
+ * لأنها ردود على إجراء قام به الطبيب نفسه.
+ */
+export const DOCTOR_NEW_APPOINTMENT_TOAST_MS = 5 * 1000;
+
 
 type TimedPayload<T> = {
   value: T;

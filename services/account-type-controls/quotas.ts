@@ -454,6 +454,81 @@ export const validateInsuranceCompaniesCapacity = async (
 };
 
 /**
+ * إنشاء فرع جديد على السيرفر — تشديد أمني كامل 2026-05.
+ *
+ * كان قبل: الواجهة تكتب الفرع مباشرة → طبيب فاهم تقنياً يقدر يتجاوز الفحص
+ *           عبر devtools (يكتب في قاعدة البيانات بدون ما يسأل السيرفر).
+ *
+ * دلوقتي: الواجهة ممنوعة من create للفروع (firestore.rules ترفض). الإنشاء
+ *           الوحيد الممكن = هذه الدالة على السيرفر — atomic:
+ *             1) فحص الحد حسب الباقة (مجاني/برو/برو ماكس)
+ *             2) إنشاء bookingConfig للسكرتيرة
+ *             3) كتابة الفرع نفسه
+ *           كله في عملية واحدة. مفيش طريقة للتحايل.
+ *
+ * @returns الفرع المُنشأ + معلومات الكوتا الحالية بعد الإنشاء.
+ * @throws  HttpsError('resource-exhausted', ...) لو وصل للحد — تفاصيل
+ *           الرسالة + رابط واتساب في error.details.
+ */
+export interface CreateBranchInput {
+  name: string;
+  address?: string;
+  phone?: string;
+}
+
+export interface CreateBranchResult {
+  branch: {
+    id: string;
+    name: string;
+    address?: string;
+    phone?: string;
+    secretarySecret: string;
+    createdAt: string;
+    order: number;
+    updatedAt: string;
+  };
+  accountType: TierValue;
+  limit: number;
+  used: number;
+  remaining: number;
+}
+
+export const createBranchOnServer = async (
+  input: CreateBranchInput,
+): Promise<CreateBranchResult> => {
+  await ensureAuthenticatedUser();
+  try {
+    const callable = httpsCallable(functions, 'createBranch');
+    const payload = {
+      name: String(input.name || '').trim(),
+      address: String(input.address || '').trim(),
+      phone: String(input.phone || '').trim(),
+    };
+    const result = await callWithAuthRetry(() => callable(payload));
+    const data = (result.data || {}) as Record<string, unknown>;
+    const branchData = (data.branch || {}) as Record<string, unknown>;
+    return {
+      branch: {
+        id: String(branchData.id || ''),
+        name: String(branchData.name || ''),
+        address: branchData.address ? String(branchData.address) : undefined,
+        phone: branchData.phone ? String(branchData.phone) : undefined,
+        secretarySecret: String(branchData.secretarySecret || ''),
+        createdAt: String(branchData.createdAt || ''),
+        order: toSafeLimit(branchData.order, 0),
+        updatedAt: String(branchData.updatedAt || ''),
+      },
+      accountType: toTier(data.accountType),
+      limit: toSafeLimit(data.limit, 0),
+      used: toSafeLimit(data.used, 0),
+      remaining: toSafeLimit(data.remaining, 0),
+    };
+  } catch (error: unknown) {
+    return mapCallableError(error);
+  }
+};
+
+/**
  * فحص سعة الأدوية المعدّلة على السيرفر — تشديد أمني 2026-04.
  * السيرفر بيقرا الـmap من user doc ويعد المفاتيح ويقارنها بحد الأدمن.
  */

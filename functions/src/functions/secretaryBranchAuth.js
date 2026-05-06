@@ -14,20 +14,58 @@ const timestampToMs = (value) =>
 /**
  * قراءة بيانات المصادقة لفرع فرعي (non-main).
  * يُرجع { ref, exists, passwordHash, sessionToken, sessionTokenUpdatedAtMs } أو null للـ main.
+ *
+ * ⚠️ Backwards compatibility: قبل إصلاح 2026-05، كانت كلمات سر الفروع
+ * بتنحفظ تحت `secretaryAuth/{branchSecret}/branches/{branchId}` (غلط).
+ * الإصلاح الجديد بيحفظها تحت `secretaryAuth/{mainSecret}/branches/{branchId}`.
+ * عشان نلاقي البيانات القديمه، لو القراءة من mainSecret فاضية، نحاول
+ * نقرأ من branchSecret كـfallback. لو لقينا، نرجّع البيانات (الـrunning
+ * code يقدر يعمل migration بعدين).
  */
-const readBranchAuthData = async ({ db, secret, branchId }) => {
+const readBranchAuthData = async ({ db, secret, branchId, userId }) => {
   if (!branchId || branchId === DEFAULT_BRANCH_ID) return null;
   const ref = db.collection('secretaryAuth').doc(secret).collection('branches').doc(branchId);
   const snap = await ref.get();
-  if (!snap.exists) return { ref, exists: false, passwordHash: '', sessionToken: '', sessionTokenUpdatedAtMs: 0 };
-  const data = snap.data() || {};
-  return {
-    ref,
-    exists: true,
-    passwordHash: typeof data.passwordHash === 'string' ? normalizeText(data.passwordHash) : '',
-    sessionToken: typeof data.sessionToken === 'string' ? normalizeText(data.sessionToken) : '',
-    sessionTokenUpdatedAtMs: timestampToMs(data.sessionTokenUpdatedAt),
-  };
+  if (snap.exists) {
+    const data = snap.data() || {};
+    return {
+      ref,
+      exists: true,
+      passwordHash: typeof data.passwordHash === 'string' ? normalizeText(data.passwordHash) : '',
+      sessionToken: typeof data.sessionToken === 'string' ? normalizeText(data.sessionToken) : '',
+      sessionTokenUpdatedAtMs: timestampToMs(data.sessionTokenUpdatedAt),
+    };
+  }
+
+  // Fallback: ابحث في الـpath القديم (تحت branchSecret) لو فيه data قديمه
+  // محفوظه قبل الإصلاح. لازم userId عشان نقرأ Branch.secretarySecret.
+  if (userId) {
+    try {
+      const branchDoc = await db.collection('users').doc(userId).collection('branches').doc(branchId).get();
+      const branchSecret = branchDoc.exists
+        ? normalizeText(branchDoc.data()?.secretarySecret)
+        : '';
+      if (branchSecret && branchSecret !== secret) {
+        const legacyRef = db.collection('secretaryAuth').doc(branchSecret).collection('branches').doc(branchId);
+        const legacySnap = await legacyRef.get();
+        if (legacySnap.exists) {
+          const legacyData = legacySnap.data() || {};
+          return {
+            ref, // الـref الجديد (mainSecret) — أي كتابة تروح هناك
+            legacyRef, // الـref القديم — للـmigration بعدين
+            exists: true,
+            passwordHash: typeof legacyData.passwordHash === 'string' ? normalizeText(legacyData.passwordHash) : '',
+            sessionToken: typeof legacyData.sessionToken === 'string' ? normalizeText(legacyData.sessionToken) : '',
+            sessionTokenUpdatedAtMs: timestampToMs(legacyData.sessionTokenUpdatedAt),
+          };
+        }
+      }
+    } catch {
+      // لو فشل الـfallback، نكمّل بـempty result
+    }
+  }
+
+  return { ref, exists: false, passwordHash: '', sessionToken: '', sessionTokenUpdatedAtMs: 0 };
 };
 
 /**
@@ -105,7 +143,9 @@ const tryMatchSecretaryPasswordAcrossBranches = async ({
   // فروع فرعية
   const branchIds = await readDoctorBranchIds({ db, userId });
   for (const branchId of branchIds) {
-    const branchAuth = await readBranchAuthData({ db, secret, branchId });
+    // ⚠️ نمرر userId عشان الـfallback يقدر يقرأ من path القديم لو الـdata
+    // محفوظه قبل إصلاح 2026-05.
+    const branchAuth = await readBranchAuthData({ db, secret, branchId, userId });
     if (!branchAuth || !branchAuth.passwordHash) continue;
     if (!verifyPassword(secretaryPassword, branchAuth.passwordHash)) continue;
     matches.push({ branchId, kind: 'branch', branchAuth });
@@ -163,6 +203,25 @@ const tryMatchSecretaryPasswordAcrossBranches = async ({
 
   // فرع فرعي
   const selectedBranchAuth = selected.branchAuth;
+
+  // Migration: لو الـauth جاي من path قديم (legacyRef موجود)، ننقل الـpasswordHash
+  // لـpath الجديد ونحذف القديم. كده المرة الجاية الـlogin هيلاقيها مباشرةً.
+  const isLegacyPath = Boolean(selectedBranchAuth.legacyRef);
+  if (isLegacyPath) {
+    try {
+      // نسخ الـpasswordHash للمسار الجديد
+      await selectedBranchAuth.ref.set({
+        passwordHash: selectedBranchAuth.passwordHash,
+        updatedAt: nowTs,
+      }, { merge: true });
+      // مسح الـpath القديم بعد ما اتنقل بنجاح
+      await selectedBranchAuth.legacyRef.delete().catch(() => undefined);
+    } catch (migrationError) {
+      console.warn('[secretaryBranchAuth] Migration from legacy path failed:', migrationError?.message || migrationError);
+      // ما نوقفش الـlogin لو الـmigration فشلت
+    }
+  }
+
   if (selectedBranchAuth.passwordHash.startsWith('dh_')) {
     await selectedBranchAuth.ref.set({ passwordHash: hashPassword(secretaryPassword), updatedAt: nowTs }, { merge: true });
   }
@@ -187,7 +246,8 @@ const hasAnySecretaryPassword = async ({ db, auth, secret, userId }) => {
   if (auth.secretaryPasswordHash) return true;
   const branchIds = await readDoctorBranchIds({ db, userId });
   for (const branchId of branchIds) {
-    const branchAuth = await readBranchAuthData({ db, secret, branchId });
+    // نمرر userId للـfallback (path قديم) — نفس فكرة tryMatchSecretaryPasswordAcrossBranches.
+    const branchAuth = await readBranchAuthData({ db, secret, branchId, userId });
     if (branchAuth && branchAuth.passwordHash) return true;
   }
   return false;

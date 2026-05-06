@@ -366,6 +366,10 @@ export const getBookingConfig = async (
     secretaryVitalFields,
     secretaryVitalsVisibilityByBranch,
     secretaryVitalFieldsByBranch,
+    // مرآة السر العام — يكتبها الطبيب علشان السكرتيرة تعرض رابط فورم الجمهور.
+    publicBookingSecret: typeof data?.publicBookingSecret === 'string' && data.publicBookingSecret.trim()
+      ? data.publicBookingSecret.trim()
+      : undefined,
   };
 };
 

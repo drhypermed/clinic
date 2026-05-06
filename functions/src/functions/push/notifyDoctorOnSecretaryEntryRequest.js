@@ -50,6 +50,40 @@ module.exports = (context) => {
   };
 
   /**
+   * جلب اسم الفرع وعدد الفروع للطبيب — عشان نضيف "فرع: X" في الإشعار
+   * بس لما الطبيب عنده أكتر من فرع. لو فرع واحد، الإضافة دي مالهاش لازمة.
+   *
+   * يرجع: { branchName: string, hasMultipleBranches: boolean }
+   * - branchName فاضي لو متقدرش تجيبه أو userId مش معروف
+   * - hasMultipleBranches = true لو عدد الفروع >= 2
+   */
+  const loadBranchContextForDoctor = async ({ db, userId, branchId }) => {
+    const result = { branchName: '', hasMultipleBranches: false };
+    if (!userId) return result;
+    try {
+      const branchesSnap = await db.collection(`users/${userId}/branches`).get();
+      const docs = branchesSnap.docs || [];
+      result.hasMultipleBranches = docs.length >= 2;
+      // لو الفرع 'main' مش موجود في collection بشكل صريح، عدّه ك+1 لو في فروع تانية
+      // عشان "main" دائماً موجود ضمنياً للحساب الأساسي.
+      if (!docs.some((d) => d.id === 'main') && docs.length >= 1) {
+        result.hasMultipleBranches = true;
+      }
+      const matchDoc = docs.find((d) => d.id === branchId);
+      if (matchDoc) {
+        const data = matchDoc.data() || {};
+        result.branchName = String(data.name || '').trim();
+      } else if (branchId === 'main') {
+        // الفرع الرئيسي — اسمه الافتراضي "الفرع الرئيسي" لو مفيش doc صريح
+        result.branchName = 'الرئيسي';
+      }
+    } catch (err) {
+      console.warn('[notifyDoctorOnSecretaryEntryRequest] Failed to load branch context:', err?.message || err);
+    }
+    return result;
+  };
+
+  /**
    * إرسال إشعار push للطبيب عن طلب دخول من فرع محدد.
    * يُستدعى مرة لكل فرع تغير. فصل الـ logic لتمكين تعدد الإشعارات في نفس event.
    */
@@ -61,10 +95,22 @@ module.exports = (context) => {
   }) => {
     const patientName = requestData.patientName || 'مريض';
     const title = 'السكرتارية تطلب دخول حالة';
-    const body = `السكرتارية تطلب دخول حالة: ${patientName}`;
 
     const db = getDb();
     const userId = String(configData.userId || requestData?.doctorId || '').trim();
+
+    // جلب اسم الفرع وعدد الفروع — عشان نقرر هل نضيف "فرع: X" للجسم ولا لأ
+    const { branchName, hasMultipleBranches } = await loadBranchContextForDoctor({
+      db,
+      userId,
+      branchId,
+    });
+
+    // لو الطبيب عنده أكتر من فرع وعندنا اسم الفرع — أضفه في نهاية الجسم
+    // عشان الطبيب يعرف الإشعار جاي من أنهي فرع. غير كده الجسم زي ما هو.
+    const branchSuffix =
+      hasMultipleBranches && branchName ? ` — فرع: ${branchName}` : '';
+    const body = `السكرتارية تطلب دخول حالة: ${patientName}${branchSuffix}`;
     const doctorEmail = String(configData.doctorEmail || '').trim().toLowerCase();
     const candidateUserIds = await resolveDoctorCandidateUserIds({
       secret,

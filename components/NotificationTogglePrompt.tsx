@@ -20,6 +20,9 @@ export const NotificationTogglePrompt: React.FC = () => {
   const [iosWarningMode, setIosWarningMode] = useState(false);
   const [dismissedInSession, setDismissedInSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // رسالة الخطأ بعد محاولة فاشلة — عشان المستخدم يعرف ليه التفعيل ما اشتغلش
+  // (بدل ما الزر يرجع مفعّل من غير أي توضيح)
+  const [errorHint, setErrorHint] = useState<string | null>(null);
   const lastPermissionRef = useRef<NotificationPermission | null>(null);
   const messagingModuleRef = useRef<MessagingModule | null>(null);
 
@@ -135,6 +138,7 @@ export const NotificationTogglePrompt: React.FC = () => {
   const handleEnableNotifications = async () => {
     if (!user) return;
     setIsLoading(true);
+    setErrorHint(null);
 
     try {
       const userId = user.uid;
@@ -153,13 +157,22 @@ export const NotificationTogglePrompt: React.FC = () => {
         // تم تفعيل الإشعارات بنجاح
         setShowNotificationCard(false);
         setDismissedInSession(false);
+        setErrorHint(null);
         localStorage.setItem(NOTIFICATION_PERMISSION_SNAPSHOT_KEY, Notification.permission);
       } else {
-        // الطلب لم يكتمل بنجاح - قد يكون المستخدم قد رفض الإشعارات
+        // الطلب لم يكتمل — إما المستخدم رفض، أو الجهاز هنّج، أو الشبكة بطيئة
+        // نوضّح للمستخدم ليه عشان ميفضلش يضغط بدون فهم ايه اللي بيحصل
+        const currentPermission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+        if (currentPermission === 'denied') {
+          setErrorHint('الإشعارات مرفوضة من إعدادات المتصفح. افتح إعدادات الموقع وفعّلها يدوياً ثم أعد المحاولة.');
+        } else {
+          setErrorHint('فشل التفعيل. جرّب إعادة تشغيل المتصفح أو افتح صفحة "الأذونات" من القائمة الجانبية للتفاصيل.');
+        }
         void checkNotificationStatus();
       }
     } catch (error) {
       console.error('Failed to enable notifications:', error);
+      setErrorHint('حدث خطأ غير متوقع. أعد المحاولة بعد لحظات.');
       void checkNotificationStatus();
     } finally {
       setIsLoading(false);
@@ -193,10 +206,17 @@ export const NotificationTogglePrompt: React.FC = () => {
               {iosWarningMode ? 'تنبيه لمستخدمي iPhone ⚠️' : 'فعّل الإشعارات'}
             </h3>
             <p className={`text-sm mb-4 ${iosWarningMode ? 'text-gray-800 font-bold leading-relaxed' : 'text-gray-600'}`}>
-              {iosWarningMode 
-                ? 'أبل تمنع الإشعارات هنا. لتفعيلها، يرجى فتح الرابط من متصفح Safari، ثم اضغط على زر المشاركة واختر (Add to Home Screen - إضافة للشاشة الرئيسية). بعد إضافته، ثبته على الشاشة ثم افتح التطبيق لتتمكن من التفعيل المجاني.' 
+              {iosWarningMode
+                ? 'أبل تمنع الإشعارات هنا. لتفعيلها، يرجى فتح الرابط من متصفح Safari، ثم اضغط على زر المشاركة واختر (Add to Home Screen - إضافة للشاشة الرئيسية). بعد إضافته، ثبته على الشاشة ثم افتح التطبيق لتتمكن من التفعيل المجاني.'
                 : 'تلقَّ إشعارات فورية بالحجوزات والتحديثات المهمة والتنبيهات المخصصة.'}
             </p>
+
+            {/* رسالة الخطأ — تظهر بعد محاولة فاشلة فقط، عشان المستخدم يفهم بدل ما يستنى من غير سبب واضح */}
+            {!iosWarningMode && errorHint && (
+              <p className="text-xs text-danger-700 bg-danger-50 border border-danger-200 rounded-lg p-2 mb-3 leading-relaxed font-bold">
+                {errorHint}
+              </p>
+            )}
 
             <div className="flex gap-2 justify-end flex-wrap">
               {!iosWarningMode ? (

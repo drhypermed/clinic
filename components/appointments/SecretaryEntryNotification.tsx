@@ -25,6 +25,8 @@ interface SecretaryEntryRequest {
   pregnant?: boolean;
   /** مرضعة؟ للإناث 18-50 */
   breastfeeding?: boolean;
+  /** اسم الفرع — يظهر فوق الإشعار لو الطبيب عنده أكتر من فرع. */
+  branchName?: string;
 }
 
 interface SecretaryEntryNotificationProps {
@@ -57,6 +59,13 @@ export const SecretaryEntryNotification: React.FC<SecretaryEntryNotificationProp
 
         {/* بيانات طلب الدخول */}
         <div className="min-w-0 text-right">
+          {/* اسم الفرع — يظهر بوضوح فوق كل شيء لو الطبيب عنده أكتر من فرع، عشان يعرف الطلب جاي من فين */}
+          {request.branchName && request.branchName.trim() && (
+            <div className="mb-1 inline-flex items-center gap-1 rounded-lg bg-violet-100 border border-violet-300 px-2 py-0.5 text-[11px] font-black text-violet-800">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              فرع: {request.branchName.trim()}
+            </div>
+          )}
           <p className="font-black text-slate-800 text-sm sm:text-base leading-snug">السكرتارية تطلب دخول حالة:</p>
           <p className="font-bold text-slate-700 text-sm sm:text-base leading-snug mt-0.5">{request.patientName}</p>
 

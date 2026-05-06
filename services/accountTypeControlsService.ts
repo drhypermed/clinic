@@ -12,7 +12,11 @@ export {
   validateReadyPrescriptionsCapacity,
   validateMedicationCustomizationsCapacity,
   validateInsuranceCompaniesCapacity,
+  // ─── 🆕 إنشاء فرع على السيرفر 2026-05 (تشديد أمني كامل — atomic) ───
+  //   استبدل validateBranchesCapacity — الفحص + الإنشاء في عملية واحدة.
+  createBranchOnServer,
 } from './account-type-controls/quotas';
+export type { CreateBranchInput, CreateBranchResult } from './account-type-controls/quotas';
 
 export type {
   AccountTypeControls,

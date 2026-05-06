@@ -28,6 +28,34 @@ export const ensureBookingConfigUserId = async (secret: string, userId: string, 
   // الحذف القديم كان بيمسح configs الفروع التانية.
 };
 
+/**
+ * كتابة مرآة publicBookingSecret على bookingConfig — يستدعيها الطبيب فقط.
+ * السبب: السكرتيرة محرومة من list على publicBookingConfig وقراءة users/{uid}،
+ * فبدون المرآة دي مش هتعرف رابط الفورم العام للطبيب.
+ */
+export const mirrorPublicSecretToBookingConfig = async (
+  bookingSecret: string,
+  userId: string,
+  publicBookingSecret: string,
+): Promise<void> => {
+  const normalizedSecret = normalizeBookingSecret(bookingSecret);
+  const normalizedUserId = sanitizeDocSegment(userId);
+  const publicValue = String(publicBookingSecret || '').trim();
+  if (!normalizedSecret || !normalizedUserId || !publicValue) return;
+
+  const configRef = doc(db, 'bookingConfig', normalizedSecret);
+  // userId مطلوب علشان rules تتأكد إن الكاتب هو صاحب الـ bookingConfig
+  await setDoc(
+    configRef,
+    {
+      userId: normalizedUserId,
+      publicBookingSecret: publicValue,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true },
+  );
+};
+
 /** ربط البريد الإلكتروني للطبيب بإعدادات السكرتارية (يستخدم للتحقق عند الدخول) */
 export const setBookingDoctorEmail = async (
   secret: string,

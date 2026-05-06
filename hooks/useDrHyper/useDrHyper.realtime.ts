@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { collection, deleteDoc, deleteField, doc, getDocs, getDocsFromCache, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, getDocs, getDocsFromCache, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, startAfter, updateDoc, where } from 'firebase/firestore';
 import { PatientRecord, ReadyPrescription } from '../../types';
 import { db } from '../../services/firebaseConfig';
 import { getDocsCacheFirst } from '../../services/firestore/cacheFirst';
@@ -90,6 +90,59 @@ interface MinimalUserArgs {
   uid: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Pagination الـrecords — تقليل تكلفة Firestore عند فتح التطبيق
+// ─────────────────────────────────────────────────────────────────────────────
+// السلوك القديم: نقرا حد أقصى 10,000 سجل دفعة واحدة كل ما الطبيب يفتح التطبيق.
+// السلوك الجديد (paginated mode): نقرا 50 سجل بس مبدئياً، والباقي عند الطلب
+// (loadMoreRecords / ensureFullRecordsLoaded). توفير من 10,000 لـ 50 قراءة
+// = ~99% للمرة الأولى على جهاز/متصفح جديد.
+//
+// الـpagination مفعّل افتراضياً عشان التطبيق يفضل سريع حتى لو الطبيب عنده آلاف السجلات.
+// لو حصل أي مشكلة طارئة في الإنتاج، نقدر نعطّله بسرعة بطريقتين:
+//   1) env var وقت البناء:  VITE_RECORDS_PAGINATION_ENABLED=false
+//   2) localStorage على الجهاز: dh_records_pagination_enabled = "false"
+// أي حاجة تانية (فاضي/true/قيمة عشوائية) = الـpagination شغّال.
+const RECORDS_PAGINATION_STORAGE_KEY = 'dh_records_pagination_enabled';
+const DEFAULT_RECORDS_PAGE_SIZE = 50;
+const LEGACY_RECORDS_LIMIT = 10000;
+
+const isTruthyFlag = (value: unknown): boolean => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+};
+
+const isFalsyFlag = (value: unknown): boolean => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off';
+};
+
+/**
+ * الـpagination مفعّل افتراضياً. لإطفائه:
+ *   1) env var: VITE_RECORDS_PAGINATION_ENABLED=false
+ *   2) localStorage: dh_records_pagination_enabled = "false"
+ *
+ * مهم: حتى لو الـflag مفعّل، الـpaginated mode بيشتغل بس لما dateMs migration
+ * يكون اتعمل (السجلات القديمة عندها dateMs). أول session على جهاز جديد بيحمّل
+ * كامل عشان migration يجري، والـsessions اللي بعدها بـ50 سجل بس.
+ */
+const isRecordsPaginationRequested = (): boolean => {
+  if (isFalsyFlag(import.meta.env.VITE_RECORDS_PAGINATION_ENABLED)) return false;
+  try {
+    if (isFalsyFlag(localStorage.getItem(RECORDS_PAGINATION_STORAGE_KEY))) return false;
+  } catch {
+    // الـlocalStorage مش متاح — نكمل بالافتراضي (مفعّل)
+  }
+  return true;
+};
+
+/** حجم الصفحة — قابل للتجاوز عبر env var (للأمان: بين 20 و200). */
+const getRecordsPageSize = (): number => {
+  const parsed = Number(import.meta.env.VITE_RECORDS_PAGE_SIZE);
+  if (!Number.isFinite(parsed)) return DEFAULT_RECORDS_PAGE_SIZE;
+  return Math.max(20, Math.min(200, Math.floor(parsed)));
+};
+
 interface UseDrHyperRealtimeDataArgs {
   user: MinimalUserArgs | null | undefined;
   showNotification: ShowNotification;
@@ -103,16 +156,42 @@ export const useDrHyperRealtimeData = ({
   activeBranchId,
 }: UseDrHyperRealtimeDataArgs) => {
   const [records, setRecords] = useState<PatientRecord[]>([]); // قائمة سجلات المرضى
+  const [recordsLoadingMore, setRecordsLoadingMore] = useState(false); // أثناء loadMore
+  const [recordsHasMore, setRecordsHasMore] = useState(false); // فيه صفحات قدام؟
+  const [recordsPagingEnabled, setRecordsPagingEnabled] = useState(false); // الـflag مفعّل؟
+  const [recordsFullyLoaded, setRecordsFullyLoaded] = useState(true); // كل السجلات محملة؟
   const [readyPrescriptions, setReadyPrescriptions] = useState<ReadyPrescription[]>([]); // قائمة الروشتات الجاهزة
   const showNotificationRef = useRef(showNotification);
   const recordsMigrationInFlightRef = useRef(false);
   const patientFilesMigrationInFlightRef = useRef(false);
   const patientFilesSeniorityIndexedRef = useRef(false);
+  // refs لـpagination — مستخدمة داخل الـuseEffect بدون retrigger renders.
+  const recordsPageCursorRef = useRef<any | null>(null);
+  const recordsHasMoreRef = useRef(false);
+  const recordsLoadingMoreRef = useRef(false);
+  const recordsFullyLoadedRef = useRef(true);
+  const recordsFullLoadInFlightRef = useRef<Promise<void> | null>(null);
+  const loadMoreRecordsRef = useRef<() => Promise<void>>(async () => {});
+  const ensureFullRecordsLoadedRef = useRef<() => Promise<void>>(async () => {});
   // guards: تضمن تشغيل migration مرة واحدة فقط لمنع feedback loop (كتابة Firestore تولد snapshot جديد)
   const legacyConsultationsMigratedRef = useRef(false);
   const patientFilesBackfillDoneRef = useRef(false);
   // مرجع لدالة التحديث اليدوي — تُستدعى من خارج الـ hook بعد الحفظ/الحذف
   const refreshRecordsFromCacheRef = useRef<() => Promise<void>>(async () => {});
+
+  // Helpers لتزامن state و ref معاً (state للرندر، ref للـclosures داخل useEffect).
+  const markRecordsHasMore = useCallback((value: boolean) => {
+    recordsHasMoreRef.current = value;
+    setRecordsHasMore(value);
+  }, []);
+  const markRecordsLoadingMore = useCallback((value: boolean) => {
+    recordsLoadingMoreRef.current = value;
+    setRecordsLoadingMore(value);
+  }, []);
+  const markRecordsFullyLoaded = useCallback((value: boolean) => {
+    recordsFullyLoadedRef.current = value;
+    setRecordsFullyLoaded(value);
+  }, []);
 
   // تحديث المرجع لضمان استخدام أحدث نسخة من دالة الإشعارات داخل UseEffect
   useEffect(() => {
@@ -314,16 +393,10 @@ export const useDrHyperRealtimeData = ({
       }
     };
 
-    // تحميل كل السجلات — المطلوب عشان:
-    //  1) الإحصائيات (كشوفات الشهر، إجمالي المرضى، إلخ) محتاجة كل السجلات.
-    //  2) ملفات المرضى محتاجة كل تاريخ المريض مش آخر 30 يوم بس.
-    //  3) البحث العميق (الشكوى، التاريخ المرضي، الأدوية) محتاج محتوى كامل.
-    // dateMs الموجود في السجلات الجديدة مفيد لاستعلامات لاحقة (البحث بتاريخ مخصوص
-    // عبر fetchRecordsByDateRange، مثلاً). migration dateMs خفيف (writes بس) ومُستبقى
-    // عشان أي optimization مستقبلي.
-    const q = query(collection(db, 'users', user.uid, 'records'), limit(10000));
-
     // مفتاح localStorage للتحقق من انتهاء migration الخاص بـ dateMs للمستخدم الحالي.
+    // dateMs ضروري للـpaginated mode عشان نعمل orderBy('dateMs'). للـlegacy mode
+    // مش لازم لكن بيتحدّث برضو عشان لو الطبيب فعّل الـpagination flag بعدين، السجلات
+    // القديمة تكون جاهزة بدون ضياع.
     const DATE_MS_MIGRATION_KEY = `dh_dateMs_migrated_${user.uid}`;
     const isDateMsMigrated = (() => {
       try {
@@ -366,7 +439,17 @@ export const useDrHyperRealtimeData = ({
       }
     };
 
-    const handleSnap = (snapshot: any, allowMutations: boolean) => {
+    // handleSnap: يحوّل docs إلى PatientRecord[] ويحدّث الـstate.
+    //   - mode='replace': يستبدل records بالكامل (Initial load أو ensureFull).
+    //   - mode='merge': يدمج مع records الموجودة (loadMore — يضيف 50 على الموجود).
+    //   - allowMutations=true: يشغّل migrations + auto-delete (لازم تكون البيانات كاملة).
+    //     في paginated mode للـinitial page = false (البيانات partial). يبقى true في
+    //     ensureFull و legacy initial server.
+    const handleSnap = (
+      snapshot: any,
+      allowMutations: boolean,
+      mode: 'replace' | 'merge' = 'replace',
+    ) => {
       const loadedRecordsRaw = snapshot.docs.map((docSnapshot: any) => {
         const raw = docSnapshot.data() as Omit<PatientRecord, 'id'>;
         // توحيد صيغة الـ date عشان كل الترتيبات والفلاتر تشتغل بدون فروقات نوع
@@ -382,6 +465,8 @@ export const useDrHyperRealtimeData = ({
 
       // migration تشتغل مرة واحدة فقط على أول snapshot من السيرفر (مش كاش)
       // لمنع feedback loop: كتابة Firestore ← snapshot جديد ← migration تاني ← ...
+      // مهم: في paginated mode، migrations ما تشتغلش على partial data — هتشتغل
+      // فقط لما الـcaller يمرر allowMutations=true (يعني full data set).
       if (allowMutations && !legacyConsultationsMigratedRef.current) {
         legacyConsultationsMigratedRef.current = true;
         void maybeMigrateLegacyConsultations(loadedRecordsRaw);
@@ -390,7 +475,6 @@ export const useDrHyperRealtimeData = ({
         patientFilesBackfillDoneRef.current = true;
         void maybeBackfillPatientFiles(loadedRecordsRaw, true);
       }
-      // dateMs backfill: يشتغل مرة واحدة عشان الاستعلامات السيرفر-سايد لاحقاً.
       if (allowMutations) {
         void maybeBackfillDateMs(loadedRecordsRaw);
       }
@@ -402,10 +486,27 @@ export const useDrHyperRealtimeData = ({
         ? loadedRecords.filter(r => (r.branchId || DEFAULT_BRANCH_ID) === activeBranchId)
         : loadedRecords;
 
-      setRecords(filteredRecords);
+      if (mode === 'merge') {
+        // دمج مع records الموجودة بدون تكرار، مع إعادة فرز/فلترة الفرع.
+        setRecords((prev) => {
+          const byId = new Map<string, PatientRecord>(prev.map((r) => [r.id, r]));
+          filteredRecords.forEach((r) => byId.set(r.id, r));
+          let merged = Array.from(byId.values());
+          merged = attachSeparatedConsultationsToExamRecords(merged);
+          if (activeBranchId) {
+            merged = merged.filter((r) => (r.branchId || DEFAULT_BRANCH_ID) === activeBranchId);
+          }
+          merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+          return merged;
+        });
+      } else {
+        setRecords(filteredRecords);
+      }
 
-      // تنظيف تلقائي: حذف السجلات الأقدم من 7 سنوات
-      // يشتغل فقط من snapshot السيرفر (مش الكاش) لتفادي الحذف المتكرر
+      // تنظيف تلقائي: حذف السجلات الأقدم من 7 سنوات.
+      // يشتغل فقط من snapshot السيرفر مع full data (allowMutations=true) لتفادي
+      // حذف سجل لأنه مش في paginated page (لو شغّلنا على 50 سجل، السجلات القديمة
+      // الباقية في Firestore هتتحذف بالغلط).
       if (allowMutations) {
         const SEVEN_YEARS_MS = 7 * 365 * 24 * 60 * 60 * 1000;
         const now = Date.now();
@@ -422,38 +523,172 @@ export const useDrHyperRealtimeData = ({
 
     let cancelled = false;
 
-    // (1) عرض من الكاش فوراً — 0 قراءات
-    getDocsCacheFirst(q).then((snap) => {
-      if (cancelled || snap.empty) return;
-      handleSnap(snap, false);
-    }).catch(() => { });
+    // ─── تحديد الوضع: paginated أو legacy ────────────────────────────
+    // paginated mode بيشتغل لو الـflag مفعّل + dateMs migrated (عشان نقدر
+    // نـorderBy('dateMs') بدون ضياع السجلات القديمة بدون dateMs).
+    const paginationRequested = isRecordsPaginationRequested();
+    const pagedRecordsEnabled = paginationRequested && isDateMsMigrated;
+    const recordsPageSize = getRecordsPageSize();
+    setRecordsPagingEnabled(pagedRecordsEnabled);
+    markRecordsFullyLoaded(!pagedRecordsEnabled); // legacy = كل حاجة محملة فوراً
 
-    // (2) قراءة واحدة من السيرفر لضمان أحدث نسخة — تشغّل migrations/auto-delete مرة واحدة
-    getDocs(q).then((snap) => {
-      if (cancelled) return;
-      handleSnap(snap, true);
-    }).catch((error) => {
-      if (cancelled) return;
-      console.error('Error loading records:', error);
-      showNotificationRef.current('حدث خطأ في تحميل السجلات', 'error');
-    });
+    // legacy query (full load): الـquery ده هو نفسه refresh-from-cache بعد كل
+    // حفظ. paginated بيستخدم cursors منفصلة فمش محتاجين الـq هنا.
+    const legacyQuery = query(collection(db, 'users', user.uid, 'records'), limit(LEGACY_RECORDS_LIMIT));
 
-    // (3) دالة تحديث من الكاش بعد الحفظ/الحذف — Firestore SDK يحدّث الكاش تلقائياً بعد الكتابة
-    refreshRecordsFromCacheRef.current = async () => {
-      if (cancelled) return;
-      try {
-        const snap = await getDocsFromCache(q);
-        if (!cancelled) handleSnap(snap, false);
-      } catch {
-        // الكاش غير متاح — نتجاهل بصمت
-      }
-    };
+    if (pagedRecordsEnabled) {
+      // ════════════ PAGINATED MODE ════════════
+      // أول page (50 سجل بـorderBy dateMs desc). +1 عشان نعرف لو فيه صفحات بعد.
+      const initialPagedQuery = query(
+        collection(db, 'users', user.uid, 'records'),
+        orderBy('dateMs', 'desc'),
+        limit(recordsPageSize + 1),
+      );
+
+      const handlePagedSnap = (
+        snapshot: any,
+        allowMutations: boolean,
+        mode: 'replace' | 'merge',
+      ) => {
+        const docs = Array.isArray(snapshot.docs) ? snapshot.docs : [];
+        const visibleDocs = docs.length > recordsPageSize ? docs.slice(0, recordsPageSize) : docs;
+        const hasMore = docs.length > recordsPageSize;
+        recordsPageCursorRef.current = visibleDocs.length > 0
+          ? visibleDocs[visibleDocs.length - 1]
+          : null;
+        markRecordsHasMore(hasMore);
+        // mutate=false دايماً للـpaginated initial — البيانات partial، مش وقت migrations.
+        handleSnap({ docs: visibleDocs }, allowMutations, mode);
+      };
+
+      // (1) من الكاش فوراً — 0 قراءات سيرفر
+      getDocsCacheFirst(initialPagedQuery).then((snap) => {
+        if (cancelled || snap.empty) return;
+        handlePagedSnap(snap, false, 'replace');
+      }).catch(() => {});
+
+      // (2) قراءة سيرفر — 51 قراءة بدل 10K (توفير ~99%)
+      getDocs(initialPagedQuery).then((snap) => {
+        if (cancelled) return;
+        handlePagedSnap(snap, false, 'replace');
+      }).catch((error) => {
+        if (cancelled) return;
+        console.error('Error loading paginated records:', error);
+        showNotificationRef.current('حدث خطأ في تحميل السجلات', 'error');
+      });
+
+      // loadMore: يجيب 50 إضافية بـstartAfter cursor.
+      loadMoreRecordsRef.current = async () => {
+        if (cancelled || recordsLoadingMoreRef.current || !recordsHasMoreRef.current) return;
+        const cursor = recordsPageCursorRef.current;
+        if (!cursor) return;
+
+        markRecordsLoadingMore(true);
+        try {
+          const snap = await getDocs(query(
+            collection(db, 'users', user.uid, 'records'),
+            orderBy('dateMs', 'desc'),
+            startAfter(cursor),
+            limit(recordsPageSize + 1),
+          ));
+          if (!cancelled) handlePagedSnap(snap, false, 'merge');
+        } catch (err) {
+          if (!cancelled) {
+            console.error('loadMoreRecords failed:', err);
+            showNotificationRef.current('تعذر تحميل المزيد من السجلات', 'error');
+          }
+        } finally {
+          if (!cancelled) markRecordsLoadingMore(false);
+        }
+      };
+
+      // ensureFullRecordsLoaded: يجيب كل السجلات مرة واحدة (legacy load).
+      // بيتنادى من الصفحات اللي محتاجة كل التاريخ (مثلاً ensureSnapshots).
+      // بعد التحميل الكامل، بنشغّل migrations + auto-delete (allowMutations=true).
+      ensureFullRecordsLoadedRef.current = async () => {
+        if (cancelled || recordsFullyLoadedRef.current) return;
+        if (recordsFullLoadInFlightRef.current) {
+          await recordsFullLoadInFlightRef.current;
+          return;
+        }
+        const run = (async () => {
+          try {
+            const snap = await getDocs(legacyQuery);
+            if (cancelled) return;
+            handleSnap(snap, true, 'replace');
+            recordsPageCursorRef.current = null;
+            markRecordsHasMore(false);
+            markRecordsFullyLoaded(true);
+          } catch (err) {
+            if (!cancelled) {
+              console.error('ensureFullRecordsLoaded failed:', err);
+              showNotificationRef.current('تعذر تحميل كل السجلات الآن', 'error');
+            }
+          } finally {
+            recordsFullLoadInFlightRef.current = null;
+          }
+        })();
+        recordsFullLoadInFlightRef.current = run;
+        await run;
+      };
+
+      refreshRecordsFromCacheRef.current = async () => {
+        if (cancelled) return;
+        // لو السجلات اتحملت كاملة، نقرا من الـlegacyQuery cache.
+        // لو لسه paginated، نقرا من الـinitialPagedQuery cache.
+        const queryToUse = recordsFullyLoadedRef.current ? legacyQuery : initialPagedQuery;
+        try {
+          const snap = await getDocsFromCache(queryToUse);
+          if (cancelled) return;
+          if (recordsFullyLoadedRef.current) {
+            handleSnap(snap, false, 'replace');
+          } else {
+            handlePagedSnap(snap, false, 'replace');
+          }
+        } catch {
+          // الكاش غير متاح — نتجاهل بصمت
+        }
+      };
+    } else {
+      // ════════════ LEGACY MODE (السلوك القديم بالظبط) ════════════
+      // (1) عرض من الكاش فوراً — 0 قراءات
+      getDocsCacheFirst(legacyQuery).then((snap) => {
+        if (cancelled || snap.empty) return;
+        handleSnap(snap, false, 'replace');
+      }).catch(() => { });
+
+      // (2) قراءة سيرفر واحدة بـlimit(10000) — تشغّل migrations + auto-delete
+      getDocs(legacyQuery).then((snap) => {
+        if (cancelled) return;
+        handleSnap(snap, true, 'replace');
+      }).catch((error) => {
+        if (cancelled) return;
+        console.error('Error loading records:', error);
+        showNotificationRef.current('حدث خطأ في تحميل السجلات', 'error');
+      });
+
+      refreshRecordsFromCacheRef.current = async () => {
+        if (cancelled) return;
+        try {
+          const snap = await getDocsFromCache(legacyQuery);
+          if (!cancelled) handleSnap(snap, false, 'replace');
+        } catch {
+          // الكاش غير متاح — نتجاهل بصمت
+        }
+      };
+
+      // legacy mode: مفيش loadMore أو ensureFull — كل حاجة محملة بالفعل.
+      loadMoreRecordsRef.current = async () => {};
+      ensureFullRecordsLoadedRef.current = async () => {};
+    }
 
     return () => {
       cancelled = true;
       refreshRecordsFromCacheRef.current = async () => {};
+      loadMoreRecordsRef.current = async () => {};
+      ensureFullRecordsLoadedRef.current = async () => {};
     };
-  }, [user, activeBranchId]);
+  }, [user, activeBranchId, markRecordsFullyLoaded, markRecordsHasMore, markRecordsLoadingMore]);
 
   // --- 2. مراقبة الروشتات الجاهزة ---
   useEffect(() => {
@@ -523,6 +758,17 @@ export const useDrHyperRealtimeData = ({
   // لتعكس التغييرات في القائمة المحلية دون قراءات سيرفر إضافية.
   const refreshRecords = useCallback(async () => {
     await refreshRecordsFromCacheRef.current();
+  }, []);
+
+  // تحميل المزيد من السجلات (paginated mode فقط — في legacy = no-op).
+  const loadMoreRecords = useCallback(async () => {
+    await loadMoreRecordsRef.current();
+  }, []);
+
+  // تحميل كل السجلات (للصفحات اللي محتاجة التاريخ كامل، مثلاً ensureSnapshots).
+  // في legacy mode = no-op لأن records محمّلة بالفعل.
+  const ensureFullRecordsLoaded = useCallback(async () => {
+    await ensureFullRecordsLoadedRef.current();
   }, []);
 
   // دمج سجلات جاية من السيرفر مع القائمة الحالية (بدون تكرار).
@@ -612,7 +858,11 @@ export const useDrHyperRealtimeData = ({
     [user, mergeServerRecords],
   );
 
-  // جلب سجلات يوم/مدى محدد من السيرفر (لفلتر التاريخ — قبل 30 يوم).
+  // جلب سجلات نطاق تاريخ من السيرفر — مستخدم في:
+  //  • فلتر التاريخ في صفحة السجلات (يوم/شهر).
+  //  • تحميل سجلات السنة في التقارير المالية والرئيسية (paginated mode).
+  // الحدّ مرفوع لـ5000 عشان السنة كاملة تتحمّل في طلب واحد (طبيب نشط ~1500
+  // سجل/سنة، 5000 يدّينا هامش أمان كبير).
   const fetchRecordsByDateRange = useCallback(
     async (startMs: number, endMs: number): Promise<number> => {
       if (!user) return 0;
@@ -626,7 +876,7 @@ export const useDrHyperRealtimeData = ({
             recordsRef,
             where('dateMs', '>=', startMs),
             where('dateMs', '<=', endMs),
-            limit(200),
+            limit(5000),
           ),
         );
         mergeServerRecords(snap.docs);
@@ -641,10 +891,16 @@ export const useDrHyperRealtimeData = ({
 
   return {
     records,
+    recordsLoadingMore,
+    recordsHasMore,
+    recordsPagingEnabled,
+    recordsFullyLoaded,
     readyPrescriptions,
     refreshRecords,
-    // دوال بحث سيرفر-سايد متاحة لاستخدام مستقبلي (توفير قراءات على نطاق كبير).
-    // دلوقتي مش مستعملة لأن records محملة بالكامل والبحث بيشتغل محلياً.
+    loadMoreRecords,
+    ensureFullRecordsLoaded,
+    // دوال بحث سيرفر-سايد. paginated consumers بيستخدموها بدل البحث المحلي
+    // اللي بيشتغل على records محملة جزئياً.
     searchRecordsOnServer,
     fetchRecordsByDateRange,
   };

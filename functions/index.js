@@ -341,6 +341,11 @@ exports.validateReadyPrescriptionsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OP
 exports.validateMedicationCustomizationsCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateMedicationCustomizationsCapacity'));
 // ─── 🆕 فحص سعة شركات التأمين 2026-04 ───
 exports.validateInsuranceCompaniesCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'validateInsuranceCompaniesCapacity'));
+// ─── 🆕 إنشاء فرع على السيرفر 2026-05 (تشديد أمني كامل) ───
+//   كان قبل: الواجهة تكتب الفرع مباشرة → طبيب فاهم تقنياً يقدر يتحايل.
+//   دلوقتي: الواجهة ممنوعة من create (firestore.rules ترفض) — السيرفر بس
+//   يقدر يكتب فرع جديد عبر هذه الدالة (atomic: فحص + إنشاء bookingConfig + كتابة).
+exports.createBranch = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'createBranch'));
 
 // --- Subscription Functions ---
 exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredProSubscriptions'));

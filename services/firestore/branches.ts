@@ -19,11 +19,13 @@ import {
     getDoc,
     setDoc,
     deleteDoc,
+    deleteField,
     onSnapshot,
     getDocs,
     query,
     where,
     writeBatch,
+    updateDoc,
 } from 'firebase/firestore';
 import { getDocsCacheFirst } from './cacheFirst';
 import type { Branch } from '../../types';
@@ -156,7 +158,7 @@ export const branchesService = {
                 });
             }
 
-            // تنظيف الـ slots و secretaryAuth المرتبطين بالفرع المحذوف.
+            // تنظيف الـ slots و كل البيانات المرتبطة بالفرع المحذوف.
             // مهم: الفرع الفرعي بيخزن سرّ السكرتيرة في Branch.secretarySecret (مش في users/{uid}.bookingSecret).
             // بما إن الفرع الرئيسي ممنوع حذفه أصلاً، فالـcleanup هنا دايماً لفرع فرعي → لازم نقرأ الـsecret من document الفرع نفسه.
             try {
@@ -179,12 +181,79 @@ export const branchesService = {
                     }
                 }
 
-                // مسح كلمة سر السكرتيرة المرتبطة بالفرع (يبطل أي session نشطة فوراً)
+                // ⚠️ تنظيف كل بيانات الفرع الفرعي بـ branchSecret.
+                //
+                // الترتيب مهم جداً (Firestore rules):
+                //   - rules لـ `secretaryFcmTokens`/`secretaryProfiles`/إلخ. تستخدم
+                //     `isBookingOwner(secret)` اللي بيشترط `bookingConfig/{secret}` موجود.
+                //   - subcollections في `bookingConfig/{secret}` (insurance/discount/prices)
+                //     تشترط الـ parent موجود.
+                //   - لذلك: نحذف subcollections أولاً، ثم secretary docs، أخيراً bookingConfig.
+                //
+                // كل عملية best-effort — فشل واحدة ما يوقفش الباقي عشان الفرع
+                // الأساسي يتمسح حتى لو cleanup فشل في حاجة.
                 if (branchSecret) {
-                    await deleteDoc(doc(db, 'secretaryAuth', branchSecret, 'branches', branchId)).catch(() => {
-                        // best-effort: المستند قد لا يكون موجوداً أصلاً (لو الفرع ما عيّنش كلمة سر)
-                    });
+                    // (أ) subcollections داخل bookingConfig/{branchSecret}
+                    const insuranceMirrorSnap = await getDocs(
+                        collection(db, 'bookingConfig', branchSecret, 'insuranceCompanies'),
+                    ).catch(() => null);
+                    if (insuranceMirrorSnap && !insuranceMirrorSnap.empty) {
+                        await commitInChunks(insuranceMirrorSnap.docs, (batch, d) => {
+                            batch.delete(d.ref);
+                        });
+                    }
+
+                    const discountMirrorSnap = await getDocs(
+                        collection(db, 'bookingConfig', branchSecret, 'discountReasons'),
+                    ).catch(() => null);
+                    if (discountMirrorSnap && !discountMirrorSnap.empty) {
+                        await commitInChunks(discountMirrorSnap.docs, (batch, d) => {
+                            batch.delete(d.ref);
+                        });
+                    }
+
+                    const pricesMirrorSnap = await getDocs(
+                        collection(db, 'bookingConfig', branchSecret, 'monthlyPrices'),
+                    ).catch(() => null);
+                    if (pricesMirrorSnap && !pricesMirrorSnap.empty) {
+                        await commitInChunks(pricesMirrorSnap.docs, (batch, d) => {
+                            batch.delete(d.ref);
+                        });
+                    }
+
+                    // (ب) docs اللي rules تستخدم isBookingOwner — تتطلب bookingConfig موجود
+                    // ⚠️ كلمة سر الفرع الفرعي بتنحفظ تحت secretaryAuth/{mainSecret}/branches/{branchId}
+                    // مش تحت branchSecret (الـlogin بيقرأ من mainSecret). فلازم نحذفها
+                    // من الـpath الصحيح كمان عشان ما تفضلش متروكه ورا حذف الفرع.
+                    const userRootMain = String((userRootSnap.data() as { bookingSecret?: string } | undefined)?.bookingSecret || '').trim();
+                    await Promise.all([
+                        deleteDoc(doc(db, 'secretaryFcmTokens', branchSecret)).catch(() => undefined),
+                        deleteDoc(doc(db, 'secretaryProfiles', branchSecret)).catch(() => undefined),
+                        deleteDoc(doc(db, 'secretaryEntryRequests', branchSecret)).catch(() => undefined),
+                        deleteDoc(doc(db, 'secretaryEntryAlertResponse', branchSecret)).catch(() => undefined),
+                        deleteDoc(doc(db, 'secretaryApprovedEntryIds', branchSecret)).catch(() => undefined),
+                        // legacy path (لو فيه data قديمة من قبل الإصلاح)
+                        deleteDoc(doc(db, 'secretaryAuth', branchSecret, 'branches', branchId)).catch(() => undefined),
+                        deleteDoc(doc(db, 'secretaryAuth', branchSecret)).catch(() => undefined),
+                        // الـpath الصحيح (تحت mainSecret)
+                        userRootMain
+                            ? deleteDoc(doc(db, 'secretaryAuth', userRootMain, 'branches', branchId)).catch(() => undefined)
+                            : Promise.resolve(),
+                    ]);
+
+                    // (ج) أخيراً: bookingConfig/{branchSecret} نفسه — بعد ما كل
+                    //     اللي يعتمد عليه اتمسح.
+                    await deleteDoc(doc(db, 'bookingConfig', branchSecret)).catch(() => undefined);
                 }
+
+                // (د) تنظيف entries الفرع المحذوف من الخرائط على users/{uid}
+                //     (إعدادات العلامات الحيوية + كلمة سر السكرتيرة المعروضة).
+                //     deleteField على key مش موجود = no-op (آمن).
+                await updateDoc(doc(db, 'users', userId), {
+                    [`secretaryVitalsVisibilityByBranch.${branchId}`]: deleteField(),
+                    [`secretaryVitalFieldsByBranch.${branchId}`]: deleteField(),
+                    [`secretaryPasswordPlainByBranch.${branchId}`]: deleteField(),
+                }).catch(() => undefined);
             } catch (cleanupError) {
                 console.warn('[Firestore] Branch cleanup (slots/auth) failed (non-blocking):', cleanupError);
             }

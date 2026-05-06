@@ -29,6 +29,7 @@ type DrHyperView =
   | 'settings'         // إعدادات الروشتة والحساب
   | 'branchSettings'   // إعدادات الفروع
   | 'advertisement'    // إدارة الإعلانات والبروفايل العام
+  | 'permissions'      // صفحة إدارة أذونات الجهاز (الإشعارات وغيرها)
   | 'secretary';       // صفحة السكرتارية
 
 const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
@@ -43,6 +44,7 @@ const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
   'settings',
   'branchSettings',
   'advertisement',
+  'permissions',
   'secretary',
 ];
 

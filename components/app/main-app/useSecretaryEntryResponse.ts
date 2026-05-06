@@ -19,6 +19,9 @@ interface SecretaryEntryRequest {
     appointmentId: string;
     /** الفرع الذي أرسل منه السكرتير الطلب — حتى يوجَّه الرد لنفس الفرع. */
     branchId?: string;
+    /** الـsecret اللي الطلب اتكتب تحته — لو موجود، نستخدمه بدل bookingSecret
+     *  عشان نمسح الـdoc الصح حتى لو الطبيب على فرع نشط مختلف. */
+    sourceSecret?: string;
 }
 
 interface UseSecretaryEntryResponseArgs {
@@ -40,13 +43,18 @@ export const useSecretaryEntryResponse = ({
             message: string,
             type: 'success' | 'info',
         ) => {
-            if (!bookingSecret || !secretaryEntryRequest) return;
+            if (!secretaryEntryRequest) return;
             const currentRequest = secretaryEntryRequest;
+            // ⚠️ نستخدم sourceSecret (الـsecret اللي الطلب اتكتب تحته) بدل
+            // bookingSecret (الفرع النشط حالياً). لو الطبيب على فرع تاني،
+            // الـsourceSecret هو اللي يضمن إن المسح والرد يحصلوا على نفس الـdoc.
+            const responseSecret = currentRequest.sourceSecret || bookingSecret;
+            if (!responseSecret) return;
             setSecretaryEntryRequest(null);
             try {
                 // تمرير branchId حتى يُمسح طلب الفرع الصحيح ويُسجَّل الرد عليه
                 await firestoreService.respondToSecretaryEntryRequest(
-                    bookingSecret,
+                    responseSecret,
                     currentRequest.appointmentId,
                     status,
                     currentRequest.branchId
@@ -55,7 +63,7 @@ export const useSecretaryEntryResponse = ({
                 void closePushNotificationsByContext({
                     type: 'secretary_entry_request',
                     appointmentId: currentRequest.appointmentId,
-                    secret: bookingSecret,
+                    secret: responseSecret,
                 });
             } catch (err) {
                 console.error('Error responding to secretary entry:', err);
