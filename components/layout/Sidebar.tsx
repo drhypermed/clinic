@@ -43,6 +43,8 @@ interface SidebarProps {
     profileImage?: string; // رابط الصورة الشخصية
     breadcrumbs?: BreadcrumbSegment[]; // شرائح مسار التنقل
     onNavigateView?: (view: AppView) => void; // دالة التنقل عبر مسار التنقل
+    // اسم الفرع النشط — يظهر تحت زر الملف الشخصي فقط لما الطبيب عنده أكتر من فرع.
+    activeBranchName?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -56,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     profileImage,
     breadcrumbs,
     onNavigateView,
+    activeBranchName,
 }) => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -299,6 +302,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <FaCircleUser className="w-4 h-4" />
                     الملف الشخصي
                 </button>
+
+                {/* اسم الفرع النشط — يظهر فقط لما الطبيب عنده أكتر من فرع */}
+                {activeBranchName && (
+                    <div className="mb-2 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold truncate">
+                        <FaBuilding className="w-3 h-3 shrink-0 text-blue-600" />
+                        <span className="truncate">الفرع: {activeBranchName}</span>
+                    </div>
+                )}
 
             </div>
 
