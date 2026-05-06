@@ -194,30 +194,58 @@ module.exports = (context) => {
       //   قبل إضافته للفرع الحالي. بدون هذا، لو سكرتيرة سجلت دخول على فرع A
       //   ثم دخلت فرع B على نفس المتصفح، نفس الـ token يبقى في كل من A و B،
       //   والإشعار المخصص لـ A يصل للجهاز الذي يعرض B → تسريب إشعارات.
+      //
+      // ⚠️ مهم جداً (إصلاح bug ٢٠٢٦-٠٥-٠٦):
+      //   Admin SDK في `set({...}, {merge: true})` بيتعامل مع الـ keys اللي فيها
+      //   نقاط كأسماء حقول حرفية (NOT nested paths). يعني `tokensByBranch.main`
+      //   كان بيتحفظ كـ field اسمه `tokensByBranch.main` بدل field متداخل.
+      //   النتيجة: دوال الإشعار بتدور على `tokenData.tokensByBranch[branchId]`
+      //   فمش لاقية شي، فالسكرتيرة ما بتاخدش إشعار. الحل: nested object صحيح.
       const tokenDocRef = db.doc(`secretaryFcmTokens/${secret}`);
       const tokenDocSnap = await tokenDocRef.get().catch(() => null);
+      const tokenDocData = tokenDocSnap?.exists ? (tokenDocSnap.data() || {}) : {};
       const existingTokensByBranch =
-        tokenDocSnap?.exists &&
-        tokenDocSnap.data()?.tokensByBranch &&
-        typeof tokenDocSnap.data().tokensByBranch === 'object'
-          ? tokenDocSnap.data().tokensByBranch
+        tokenDocData.tokensByBranch && typeof tokenDocData.tokensByBranch === 'object'
+          ? tokenDocData.tokensByBranch
           : {};
 
-      // بناء payload يزيل الـ token من فروع سابقة (غير الفرع الحالي)
-      const writePayload = {
-        ...basePayload,
-        [`tokensByBranch.${branchId}`]: admin.firestore.FieldValue.arrayUnion(token),
-        [`tokensByBranchUpdatedAt.${branchId}`]: updatedAtIso,
-        ...(userId ? { userId } : {}),
+      // بناء nested map للفرع الحالي (arrayUnion على الفرع المحدد فقط).
+      // `merge: true` على object متداخل يدمج بعمق فالفروع التانيه ما تتمسحش.
+      const tokensByBranchUpdate = {
+        [branchId]: admin.firestore.FieldValue.arrayUnion(token),
+      };
+      const tokensByBranchUpdatedAtUpdate = {
+        [branchId]: updatedAtIso,
       };
 
+      // إزالة الـ token من فروع سابقة على نفس المتصفح (لو نفس الـ token اتسجل
+      // قبل كده على فرع تاني). نضيف arrayRemove لكل فرع آخر يحوي الـ token.
       Object.keys(existingTokensByBranch).forEach((otherBranchId) => {
         if (otherBranchId === branchId) return;
         const branchTokens = existingTokensByBranch[otherBranchId];
         if (Array.isArray(branchTokens) && branchTokens.includes(token)) {
-          writePayload[`tokensByBranch.${otherBranchId}`] = admin.firestore.FieldValue.arrayRemove(token);
+          tokensByBranchUpdate[otherBranchId] = admin.firestore.FieldValue.arrayRemove(token);
         }
       });
+
+      // 🛠️ Migration: لو الوثيقة فيها بقايا من الباج القديم (حقول flat زي
+      // `tokensByBranch.main` كأسماء حرفية فيها نقاط)، نحذفها هنا. الـ data
+      // الحقيقية ضايعة بسبب الباج (الدوال بتدور على nested map)، فالحذف آمن
+      // وبيمسح "خردة" متراكمة.
+      const legacyFieldDeletes = {};
+      Object.keys(tokenDocData).forEach((rawKey) => {
+        if (rawKey.startsWith('tokensByBranch.') || rawKey.startsWith('tokensByBranchUpdatedAt.')) {
+          legacyFieldDeletes[rawKey] = admin.firestore.FieldValue.delete();
+        }
+      });
+
+      const writePayload = {
+        ...basePayload,
+        tokensByBranch: tokensByBranchUpdate,
+        tokensByBranchUpdatedAt: tokensByBranchUpdatedAtUpdate,
+        ...legacyFieldDeletes,
+        ...(userId ? { userId } : {}),
+      };
 
       await tokenDocRef.set(writePayload, { merge: true });
 
