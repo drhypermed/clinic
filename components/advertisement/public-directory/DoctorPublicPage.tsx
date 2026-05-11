@@ -183,8 +183,12 @@ export const DoctorPublicPage: React.FC = () => {
   const physicianSchema = buildDoctorPhysicianSchema(doctor);
 
   const handleBookClick = () => {
-    // ننقل المستخدم لصفحه الدليل وبنفتح modal الطبيب ده
-    navigate(`/public?doctor=${encodeURIComponent(doctor.publicSlug || '')}`);
+    // ندخل المريض مباشره على فورم الحجز /p/{userId} بدل ما نوديه للديركتوري الأول.
+    // الـ Bootstrap يحلّ الـ userId ويعرض شاشة اختيار الفرع تلقائياً لو فيه فروع متعدده،
+    // أو يدخل الفورم مباشره لو فرع واحد. اشتراط جوجل بيتحكّم فيه إعداد الطبيب نفسه.
+    const branchId = activeBranch?.id || '';
+    const branchParam = branchId ? `?branch=${encodeURIComponent(branchId)}` : '';
+    navigate(`/p/${encodeURIComponent(doctor.doctorId)}${branchParam}`);
   };
 
   return (

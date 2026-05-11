@@ -51,6 +51,7 @@ export interface BookingConfigSubscribePayload {
   passwordHash?: string;
   formTitle?: string;
   doctorDisplayName?: string;
+  doctorSpecialty?: string;
   secretaryAuthRequired?: boolean;
   doctorEmail?: string;
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;

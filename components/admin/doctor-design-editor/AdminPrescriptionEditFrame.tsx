@@ -24,6 +24,7 @@ interface AdminPrescriptionEditFrameProps {
   // الطبيب المستهدف (UID + اسم للعرض في الترويسه)
   targetUserId: string;
   targetDoctorName: string;
+  targetDoctorSpecialty: string;
   targetDoctorEmail: string;
   // قائمة فروع الطبيب — الأدمن بيختار فرع لتعديل تصميم روشتته
   branches: DoctorBranchOption[];
@@ -41,6 +42,7 @@ const toServiceBranchId = (branchId: string): string | undefined => {
 export const AdminPrescriptionEditFrame: React.FC<AdminPrescriptionEditFrameProps> = ({
   targetUserId,
   targetDoctorName,
+  targetDoctorSpecialty,
   targetDoctorEmail,
   branches,
   onBack,
@@ -158,6 +160,7 @@ export const AdminPrescriptionEditFrame: React.FC<AdminPrescriptionEditFrameProp
         key={selectedBranchId}
         settings={settings}
         onSave={handleSave}
+        doctorSpecialty={targetDoctorSpecialty}
         isAdminImpersonation
       />
     </div>

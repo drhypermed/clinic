@@ -47,16 +47,12 @@ interface ClinicalDetailsProps {
 }
 
 export const ClinicalDetails: React.FC<ClinicalDetailsProps> = ({
-  complaint,
   complaintEn,
   setComplaintEn,
-  medicalHistory,
   historyEn,
   setHistoryEn,
-  examination,
   examEn,
   setExamEn,
-  investigations,
   investigationsEn,
   setInvestigationsEn,
   diagnosisEn,

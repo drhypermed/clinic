@@ -21,8 +21,10 @@ const resolveUniqueSlug = async (
 ): Promise<string> => {
   const usersRef = collection(db, 'users');
 
+  // طول الـslug: 8 حروف عشوائية بعد البادئة (b/d). 36^8 = 2.8 تريليون احتمال،
+  // فالـcollision نادر جداً حتى على مليون طبيب. كان 6 حروف قبل التوسعه (36^6 = 2 مليار).
   for (let i = 0; i < maxAttempts; i += 1) {
-    const candidate = createRandomSlug(prefix, 6);
+    const candidate = createRandomSlug(prefix, 8);
     const q = query(usersRef, where(field, '==', candidate), limit(1));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return candidate;
@@ -107,13 +109,7 @@ export const getOrCreatePublicUrlSlug = async (userId: string): Promise<string> 
   return slug;
 };
 
-export const generateBookingUrlSlug = async (userId: string): Promise<string> =>
-  getOrCreateBookingUrlSlug(userId);
-
-export const generatePublicUrlSlug = async (userId: string): Promise<string> =>
-  getOrCreatePublicUrlSlug(userId);
-
-/** 
+/**
  * تحويل رابط السكرتارية القصير إلى معرّف الطبيب (UserId).
  * يحاول أولاً من الفهرس العام (سريع ولا يحتاج صلاحيات)، ثم من مجموعة المستخدمين كخطة بديلة.
  */

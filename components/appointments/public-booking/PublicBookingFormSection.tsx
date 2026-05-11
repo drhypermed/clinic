@@ -55,6 +55,7 @@ type PublicBookingFormSectionProps = {
   secretaryVitals: SecretaryVitalsInput;
   secretaryVitalFields: SecretaryVitalFieldDefinition[];
   secretaryVitalsVisibility: SecretaryVitalsVisibility;
+  doctorSpecialty?: string | null;
   onSecretaryVitalsChange: (value: SecretaryVitalsInput) => void;
   todayStr: string;
   timeMin: string | undefined;
@@ -134,6 +135,7 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   secretaryVitals,
   secretaryVitalFields,
   secretaryVitalsVisibility,
+  doctorSpecialty,
   onSecretaryVitalsChange,
   todayStr,
   timeMin,
@@ -223,6 +225,7 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               secretaryVitals={secretaryVitals}
               secretaryVitalFields={secretaryVitalFields}
               secretaryVitalsVisibility={secretaryVitalsVisibility}
+              doctorSpecialty={doctorSpecialty}
               onSecretaryVitalsChange={onSecretaryVitalsChange}
               todayStr={todayStr}
               timeMin={timeMin}

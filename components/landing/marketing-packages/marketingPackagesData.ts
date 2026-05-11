@@ -28,7 +28,7 @@ export type PackageTopic = {
   sections: PackageSection[];
 };
 
-export type PackageCategory = {
+type PackageCategory = {
   id: string;
   title: string;
   description: string;

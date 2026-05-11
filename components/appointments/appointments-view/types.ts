@@ -33,6 +33,10 @@ export interface AppointmentsViewProps {
   onClose: () => void;
   /** الفرع النشط — يُستخدم لمزامنة دليل المرضى per-branch */
   activeBranchId?: string;
+  /** اسم الطبيب على الروشتات — يُمرَّر للحفظ على bookingConfig علشان
+   *  السكرتيرة تشوفه ثابتاً، بدل displayName اللي بيكون فاضي. */
+  doctorName?: string;
+  doctorSpecialty?: string;
 }
 
 /** تمثيل لمجموعة مواعيد في يوم واحد */

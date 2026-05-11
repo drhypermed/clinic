@@ -115,9 +115,10 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
       window.location.replace(`https://clinic.drhypermed.com${preservedPath}`);
     } else if (hostMode === 'clinic' && userRole === 'public') {
       // مريض على دومين العياده = حوّله لدومين المرضى.
-      // مسارات المريض محدوده (/public، /book-public/...) — نحفظها لو طابقت.
+      // مسارات المريض: /public، /p/ (الموحّد الجديد)، /book-public/ (legacy) — نحفظها لو طابقت.
       const preservedPath = (
         pathname === '/public' ||
+        pathname.startsWith('/p/') ||
         pathname.startsWith('/book-public/')
       ) ? pathname : '/public';
       // بنحوّل للدومين الرسمي (www) لأن الدومين بدون www لسه DNS مش مظبوط
@@ -145,6 +146,7 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
   const isPublicOnlyPath = (
     pathname === '/login/public' ||
     pathname === '/public' ||
+    pathname.startsWith('/p/') ||
     pathname.startsWith('/book-public/')
   );
 

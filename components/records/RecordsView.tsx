@@ -23,6 +23,7 @@ import {
   type PatientFileData,
 } from '../patient-files/patientFilesShared';
 import { useAuth } from '../../hooks/useAuth';
+import { useDoctorStatsSummary } from '../../hooks/useDoctorStatsSummary';
 import { patientFilesService } from '../../services/patient-files';
 import type {
   ClinicalReportLanguage,
@@ -74,6 +75,8 @@ interface RecordsViewProps {
   onAddPastConsultation: (date: string) => void;
   onClose: () => void;
   branchId?: string;
+  /** تخصص الطبيب — يحدد لو شاره متابعه التخصص (نسا/أطفال) تظهر جنب اسم المريض */
+  doctorSpecialty?: string;
 }
 
 export const RecordsView: React.FC<RecordsViewProps> = ({
@@ -96,6 +99,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   onAddPastConsultation,
   onClose: _onClose,
   branchId,
+  doctorSpecialty,
 }) => {
   void _onClose;
   const { user } = useAuth();
@@ -172,8 +176,15 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     void onFetchRecordsByDateRange(startMs, endMs);
   }, [recordsPagingEnabled, onFetchRecordsByDateRange, filterStartDate, filterEndDate]);
 
+  // ─── ملخص إحصائيات الطبيب من السيرفر (المرحلة 1 من خطة التوسع) ────
+  // لو الـ feature flag مفعّل (dh_doctor_stats_counter_enabled)، الـhook
+  // بيقرا users/{uid}/stats/summary ويرجع أرقام جاهزة.
+  // لو مش مفعّل أو الـdoc مش موجود → بيرجع null والـtimeline يحسب محلياً.
+  // مهم لما الـpagination مفعّل: الحساب المحلي على 50 سجل بس → غلط.
+  const { summary: doctorStatsSummary } = useDoctorStatsSummary(userId || null);
+
   // ─── الخط الزمني + الإحصائيات + التجميع (hook) ──────────────────────
-  const { normalizedRange, stats, grouped } = useRecordsTimeline({
+  const { stats, grouped } = useRecordsTimeline({
     records,
     filtered,
     timelineSortOrder,
@@ -183,6 +194,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     rangeEndDate,
     todayStr,
     firstDayOfMonthStr,
+    doctorStatsSummary,
   });
 
   // ─── ملفات المرضى (للنافذة المنبثقة) ────────────────────────────────
@@ -476,6 +488,8 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                     setDeleteConsultationState({ isOpen: true, record })
                   }
                   openByDefault={false}
+                  doctorUserId={userId}
+                  doctorSpecialty={doctorSpecialty}
                 />
               </div>
             ))}

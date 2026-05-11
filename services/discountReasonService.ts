@@ -79,9 +79,9 @@ export const discountReasonService = {
     try {
       const q = query(getReasonsRef(userId), orderBy('name', 'asc'));
       const snapshot = await getDocsCacheFirst(q);
-      const reasons = mapReasonsSnapshot(snapshot);
-      void Promise.all(reasons.map((reason) => syncReasonToBookingConfig(userId, reason)));
-      return reasons;
+      // المزامنة مع المرآة بتحصل في saveReason/deleteReason فقط.
+      // إزالة الـ auto-sync من القراءة وفّرت كتابات Firestore المهدورة.
+      return mapReasonsSnapshot(snapshot);
     } catch (error) {
       console.error('[DiscountReasonService] Error getting reasons:', error);
       return [];
@@ -115,9 +115,8 @@ export const discountReasonService = {
 
     getDocsCacheFirst(q).then((snapshot) => {
       if (cancelled) return;
-      const reasons = mapReasonsSnapshot(snapshot);
-      void Promise.all(reasons.map((reason) => syncReasonToBookingConfig(userId, reason)));
-      callback(reasons);
+      // المزامنة مع المرآة بتحصل في saveReason/deleteReason فقط.
+      callback(mapReasonsSnapshot(snapshot));
     }).catch(() => {
       if (!cancelled) callback([]);
     });
@@ -168,7 +167,8 @@ export const discountReasonService = {
     };
 
     await setDoc(reasonRef, data);
-    void syncReasonToBookingConfig(userId, data);
+    // ننتظر مزامنة المرآة عشان نضمن إن السكرتارية والحجز العام يشوفوا التحديث.
+    await syncReasonToBookingConfig(userId, data);
     return reasonId;
   },
 
@@ -176,6 +176,7 @@ export const discountReasonService = {
     if (!userId || !reasonId) throw new Error('User ID and Reason ID are required');
     const reasonRef = doc(getReasonsRef(userId), reasonId);
     await deleteDoc(reasonRef);
-    void deleteReasonFromBookingConfig(userId, reasonId);
+    // ننتظر حذف المرآة عشان ما تبقاش أسباب محذوفة ظاهرة للسكرتارية.
+    await deleteReasonFromBookingConfig(userId, reasonId);
   },
 };

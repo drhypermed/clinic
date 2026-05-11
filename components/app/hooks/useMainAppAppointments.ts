@@ -7,6 +7,7 @@ import {
   showForegroundSystemNotification,
 } from '../../../services/messagingService';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import {
   DOCTOR_NEW_APPOINTMENT_TOAST_MS,
@@ -530,10 +531,40 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
       return;
     }
 
+    // 🔒 إصلاح 2026-05-11: عند تبديل الفرع، نمسح أي طلب قديم من فرع آخر
+    // عشان الطبيب ما يفضلش شايف toast من فرع كان فاتحه قبل كده.
+    // الـsubscribers الجديدة هتعيد ملء الـstate من الفرع الحالي لو فيه طلب.
+    setSecretaryEntryRequest(null);
+
     const unsubs: Array<() => void> = [];
     subs.forEach((meta, secret) => {
-      const unsub = firestoreService.subscribeToSecretaryEntryRequest(secret, (data) => {
+      // استخدام الواجهة الموحدة `entryConversations.subscribe` بدل firestoreService مباشرة.
+      // role='doctor' لأن الطبيب هو اللي بيستمع لطلبات السكرتيرة (S2D).
+      const unsub = entryConversations.subscribe({
+        secret,
+        role: 'doctor',
+        onChange: (data) => {
         if (!data) return; // فرع تاني خلص — لا نمسح الـstate (ممكن طلب فرع تاني نشط)
+
+        // 🔒 إصلاح 2026-05-11: نعرض بس طلبات الفرع اللي الطبيب فاتحه دلوقتي.
+        // قبل: السكرتيرة فرع B تطلب → الطبيب فاتح فرع A → الإشعار يظهر له
+        // وكأنه طلب من فرعه. ده مربك لأن الطبيب يفتح الكشف ويلاقي الموعد
+        // مش في الفرع الحالي. دلوقتي: لو branchId الطلب مش = activeBranchId،
+        // نتجاهل بصمت (الطبيب لو غيّر الفرع لـB هيشوف الطلب لأن الـeffect
+        // يـrerun بسبب dependency).
+        const requestBranchId = (data.branchId || meta.branchId || 'main').trim() || 'main';
+        const currentDoctorBranchId = (activeBranchId || 'main').trim() || 'main';
+        if (requestBranchId !== currentDoctorBranchId) return;
+
+        // 🔒 إصلاح 2026-05-11: نقرأ اسم الفرع بناءً على branchId الفعلي من الطلب
+        // مش بناءً على الـsecret اللي اشتركنا به. السبب: في حالة race بين
+        // sessions قديمة وجديدة، السكرتيرة فرع A ممكن تكتب طلب على secret
+        // مرتبط بفرع B (لو الـmigration لسه ما تمّتش 100%). meta.branchName
+        // بيرجع للـsecret = "فرع B" خطأً، لكن data.branchId الحقيقي = "A".
+        // الـlookup من branchSubscriptions بـdata.branchId يضمن الاسم الصحيح.
+        const matchingSub = (branchSubscriptions || []).find((b) => b.branchId === requestBranchId);
+        const resolvedBranchName = matchingSub?.branchName || meta.branchName;
+
         // ⚠️ تم إزالة `wasNotificationSeen` + `markNotificationSeen` كانوا
         // بيخلقوا race condition: المعلم بينحفظ في localStorage وقت العرض، ثم
         // الـ snapshot التالي (بعد ms) يقرأه ويرى true ويستدعي return، فالـ
@@ -546,8 +577,8 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
         const enrichedRequest = {
           ...data,
           sourceSecret: secret,
-          branchId: data.branchId || meta.branchId,
-          branchName: meta.branchName,
+          branchId: requestBranchId,
+          branchName: resolvedBranchName,
         };
         setSecretaryEntryRequest(enrichedRequest);
         if (data.createdAt !== lastSecretaryRequestCreatedRef.current) {
@@ -555,12 +586,15 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
           const ageSeconds = (Date.now() - new Date(data.createdAt).getTime()) / 1000;
           if (ageSeconds < 60) void playNotificationCue('entry_request');
         }
+        },
       });
       unsubs.push(unsub);
     });
     return () => unsubs.forEach((u) => u());
+    // الـactiveBranchId في dependencies عشان لو الطبيب غيّر الفرع، الـeffect
+    // يـrerun ويصفّي طلبات الفرع الجديد فقط.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingSecret, branchSubscriptionsKey]);
+  }, [bookingSecret, branchSubscriptionsKey, activeBranchId]);
 
   // 7. معالجة الروابط التفاعلية من الإشعارات (Deep Linking Actions) — hook مستخرج
   usePushNotificationDeepLink({

@@ -23,6 +23,9 @@ export interface VitalSigns {
   rbs: string;    // سكر عشوائي Random Blood Sugar
   spo2: string;   // نسبة الأكسجين في الدم
   rr: string;     // معدل التنفس Respiratory Rate
+  // 🆕 محيط الرأس (سنتيمتر) — يظهر فقط لتخصص طب الأطفال
+  // بيتنقل تلقائياً لجدول النمو في ملف الطفل عند حفظ الكشف
+  headCirc?: string;
 }
 
 /** مفاتيح العلامات الحيوية المسموح بها داخل إعدادات السكرتارية */
@@ -35,7 +38,8 @@ export type SecretaryVitalKey =
   | 'temp'
   | 'rbs'
   | 'spo2'
-  | 'rr';
+  | 'rr'
+  | 'headCirc';  // 🆕 محيط الرأس — لتخصص الأطفال فقط
 
 /** نوع حقل السكرتارية: علامة حيوية قياسية أو مربع مخصص يضيفه الطبيب */
 type SecretaryVitalFieldKind = 'vital' | 'customBox';
@@ -71,6 +75,33 @@ export type PaymentType = 'cash' | 'insurance' | 'discount';
  */
 export type PatientGender = 'male' | 'female';
 
+/** Snapshot مختصر لزيارة حمل محفوظة داخل سجل الكشف/الاستشارة. */
+export interface PregnancyVisitSnapshot {
+  dateKey: string;
+  gestationalWeek?: number;
+  fetalWeight?: string;
+  fetalHeartRate?: string;
+  fetalMovement?: 'normal' | 'decreased' | 'absent' | '';
+  maternalWeight?: string;
+  ultrasoundNotes?: string;
+  notes?: string;
+}
+
+/** Snapshot متابعة الحمل وقت حفظ الكشف حتى يظهر داخل سجلات المرضى التاريخية. */
+export interface PregnancyTrackingSnapshot {
+  active: boolean;
+  visitDateKey: string;
+  lastMenstrualPeriod?: string;
+  estimatedDueDate?: string;
+  gestationalAgeWeeks?: number;
+  gestationalAgeDays?: number;
+  gestationalAgeText?: string;
+  currentVisit?: PregnancyVisitSnapshot;
+  latestVisit?: PregnancyVisitSnapshot;
+  closedAt?: string;
+  closureType?: 'delivery' | 'miscarriage' | 'other';
+}
+
 /**
  * سجل كشف كامل لمريض — ده أهم entity في النظام.
  * بيحتوي على كل تفاصيل الزيارة: بيانات المريض، الشكوى، الفحص، الوصفة، الدفع.
@@ -99,6 +130,8 @@ export interface PatientRecord {
    * يُسجَّل لكل زيارة على حدة (متغير) ويُمرَّر للذكاء الاصطناعي عند تحليل الحالة.
    */
   gestationalAgeWeeks?: number;
+  /** Snapshot متابعة الحمل وقت هذه الزيارة — يظهر داخل سجلات المرضى ولا يتغير تاريخياً. */
+  pregnancyTracking?: PregnancyTrackingSnapshot;
   /**
    * مرضعة أم لا — يُسأل كل زيارة للإناث من 18 إلى 50 سنة.
    * لا يُنقل من سجل سابق (متغير طبيعي يتغير من زيارة لأخرى).
@@ -203,6 +236,10 @@ export interface ConsultationData {
   ageAtVisit?: { years: string; months: string; days: string };
   /** حالة الحمل وقت هذه الاستشارة (snapshot) */
   pregnant?: boolean;
+  /** عمر الحمل وقت هذه الاستشارة (snapshot) */
+  gestationalAgeWeeks?: number;
+  /** Snapshot متابعة الحمل وقت هذه الاستشارة */
+  pregnancyTracking?: PregnancyTrackingSnapshot;
   /** حالة الرضاعة وقت هذه الاستشارة (snapshot) */
   breastfeeding?: boolean;
 }

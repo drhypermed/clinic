@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { LoadingStateScreen } from '../../app/LoadingStateScreen';
-import { LoadingText } from '../../ui/LoadingText';
 import { AuthPromptModal } from './AuthPromptModal';
 import { AccountPanelModal } from './AccountPanelModal';
 import { PublicActionsBar } from './PublicActionsBar';

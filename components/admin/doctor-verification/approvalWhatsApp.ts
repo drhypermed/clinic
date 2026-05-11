@@ -26,7 +26,7 @@ const CLINIC_LOGIN_URL = 'https://clinic.drhypermed.com/login/doctor';
  *    (01092805293) لكن WhatsApp wa.me بيحتاج الصيغة الدولية (201092805293).
  *    قبل الإصلاح ده، wa.me كان بيفتح بدون فتح المحادثة الفعلية.
  */
-export const cleanWhatsAppNumberForWaMe = (raw: string | null | undefined): string => {
+const cleanWhatsAppNumberForWaMe = (raw: string | null | undefined): string => {
   if (!raw) return '';
   let digits = String(raw).replace(/\D/g, '');
 

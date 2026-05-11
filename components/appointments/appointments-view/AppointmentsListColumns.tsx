@@ -12,6 +12,8 @@ interface AppointmentsListColumnsProps {
   todayDateMeta: { dayName: string; fullDate: string };
   now: number;
   todayStr: string;
+  /** معرف الطبيب — لازم لـ PatientFileLinkSuggestion في كروت الحجز العام */
+  doctorId?: string;
   approvedEntryAppointmentIds: string[];
   sentEntryForIds: Set<string>;
   secretaryApprovedEntryIds: string[];
@@ -27,6 +29,7 @@ interface AppointmentsListColumnsProps {
 
 export const AppointmentsListColumns: React.FC<AppointmentsListColumnsProps> = ({
   todayPending, futurePendingGroups, completedGroups, todayDateMeta: _todayDateMeta, now, todayStr,
+  doctorId,
   approvedEntryAppointmentIds, sentEntryForIds, secretaryApprovedEntryIds,
   secretaryEntryAlertResponse, entrySendingId, onSendEntryRequest, onOpenExam,
   onOpenConsultation, onEditAppointment, onRemoveAppointment, resolvePatientFileNumberForAppointment,
@@ -35,6 +38,7 @@ export const AppointmentsListColumns: React.FC<AppointmentsListColumnsProps> = (
       key={apt.id}
       apt={apt}
       patientFileNumber={resolvePatientFileNumberForAppointment(apt)}
+      doctorId={doctorId}
       now={now}
       todayStr={todayStr}
       queueOrder={queueOrder}

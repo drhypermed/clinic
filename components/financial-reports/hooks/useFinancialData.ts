@@ -16,9 +16,6 @@ interface DailyRevenue {
     interventions: string;    // التداخلات
     other: string;           // دخل آخر
 }
-interface DailyExpense {
-    amount: string;          // مبلغ المصروفات
-}
 interface RevenueLabels {
     interventionsLabel: string;  // اسم فئة التداخلات
     otherRevenueLabel: string;   // اسم فئة الدخل الآخر
@@ -67,10 +64,6 @@ const setMonthValue = (key: string, monthKey: string, value: string, branchId?: 
 };
 const getDailyValue = (key: string, dateKey: string, branchId?: string): string =>
     localStorage.getItem(`${branchLocalKey(key, branchId)}_${dateKey}`) || '';
-const getDailyUpdatedAt = (key: string, dateKey: string, branchId?: string): number => {
-    const val = localStorage.getItem(`${branchLocalKey(key, branchId)}_${dateKey}_timestamp`);
-    return val ? parseInt(val) : 0;
-};
 const setDailyValue = (key: string, dateKey: string, value: string, branchId?: string): void => {
     const fullKey = `${branchLocalKey(key, branchId)}_${dateKey}`;
     localStorage.setItem(fullKey, value);

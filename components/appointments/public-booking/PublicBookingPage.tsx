@@ -237,10 +237,10 @@ export const PublicBookingPage: React.FC = () => {
         upcomingAppointmentsCount={upcomingAppointments.length}
         onLogout={handleSecretaryLogout}
         onOpenProfile={() => setShowProfile(true)}
-        // اسم الفرع النشط — يتعرض تحت زر الملف الشخصي. شيلنا شرط hasMultipleBranches
-        // لأنه كان بيخفي اللافتة لما الطبيب عنده فرع واحد، وكمان كان عرضة لـedge case
-        // لو branches لسه بـloading. دلوقتي بيظهر اسم الفرع طول ما متوفر.
+        // اسم الفرع — يظهر تحت زر الملف الشخصي فقط لو الطبيب عنده أكتر من فرع.
+        // طبيب الفرع الواحد مش محتاج اللافتة دي.
         activeBranchName={currentBranchName || undefined}
+        hasMultipleBranches={hasMultipleBranches}
       />
 
       {/* المحتوى الرئيسي */}
@@ -396,6 +396,7 @@ export const PublicBookingPage: React.FC = () => {
                 secretaryVitals={secretaryVitals}
                 secretaryVitalFields={secretaryVitalFields}
                 secretaryVitalsVisibility={secretaryVitalsVisibility}
+                doctorSpecialty={config?.doctorSpecialty}
                 onSecretaryVitalsChange={setSecretaryVitals}
                 todayStr={todayStr}
                 timeMin={dateStr === todayStr ? currentTimeMin() : undefined}

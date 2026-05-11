@@ -72,6 +72,7 @@ const pickPerBranchVitalsSettings = (
   if (!source || typeof source !== 'object') return result;
 
   const branchKey = resolveBranchMapKey(branchId);
+  const doctorSpecialty = toOptionalText(source.doctorSpecialty);
   const visibilityMap = source.secretaryVitalsVisibilityByBranch as
     | Record<string, unknown>
     | undefined;
@@ -90,21 +91,29 @@ const pickPerBranchVitalsSettings = (
 
   if (mapVisibility && typeof mapVisibility === 'object') {
     result.visibility = normalizeSecretaryVitalsVisibility(
-      mapVisibility as SecretaryVitalsVisibility
+      mapVisibility as SecretaryVitalsVisibility,
+      undefined,
+      { doctorSpecialty }
     );
   } else if (source.secretaryVitalsVisibility && typeof source.secretaryVitalsVisibility === 'object') {
     result.visibility = normalizeSecretaryVitalsVisibility(
-      source.secretaryVitalsVisibility as SecretaryVitalsVisibility
+      source.secretaryVitalsVisibility as SecretaryVitalsVisibility,
+      undefined,
+      { doctorSpecialty }
     );
   }
 
   if (Array.isArray(mapFields)) {
     result.fields = normalizeSecretaryVitalFieldDefinitions(
-      mapFields as SecretaryVitalFieldDefinition[]
+      mapFields as SecretaryVitalFieldDefinition[],
+      undefined,
+      { doctorSpecialty }
     );
   } else if (Array.isArray(source.secretaryVitalFields)) {
     result.fields = normalizeSecretaryVitalFieldDefinitions(
-      source.secretaryVitalFields as SecretaryVitalFieldDefinition[]
+      source.secretaryVitalFields as SecretaryVitalFieldDefinition[],
+      undefined,
+      { doctorSpecialty }
     );
   }
 
@@ -151,6 +160,7 @@ export const getBookingConfigByUserId = async (
   secretaryPasswordPlain?: string;
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
+  doctorSpecialty?: string;
 } | null> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   if (!normalizedUserId) return null;
@@ -160,6 +170,7 @@ export const getBookingConfigByUserId = async (
   const userData = userSnap.data();
 
   const formTitle = toOptionalText(userData?.bookingFormTitle);
+  const doctorSpecialty = toOptionalText(userData?.doctorSpecialty);
   const perBranch = pickPerBranchVitalsSettings(userData, branchId);
   const secretaryVitalsVisibility = perBranch.visibility;
   const secretaryVitalFields = perBranch.fields;
@@ -223,7 +234,7 @@ export const getBookingConfigByUserId = async (
   // اللي كان بيشتغل على كل قراءه. كان bug تكلفه: 2 writes زائده على كل getBookingConfigByUserId.
   // الـsync دلوقت مسؤولية save functions (saveBookingCredentials / updateBookingSettings) فقط.
 
-  return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryVitalsVisibility, secretaryVitalFields };
+  return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryVitalsVisibility, secretaryVitalFields, doctorSpecialty };
 };
 
 export const saveBookingCredentials = async (
@@ -241,12 +252,14 @@ export const saveBookingCredentials = async (
   const userRef = doc(db, 'users', normalizedUserId);
   const userSnap = await getDoc(userRef);
   const existingUserData = userSnap.data();
+  const existingDoctorSpecialty = toOptionalText(existingUserData?.doctorSpecialty);
+  const existingSpecialtyOptions = { doctorSpecialty: existingDoctorSpecialty };
   const existingSecretaryVitalsVisibility =
     existingUserData?.secretaryVitalsVisibility && typeof existingUserData.secretaryVitalsVisibility === 'object'
-      ? normalizeSecretaryVitalsVisibility(existingUserData.secretaryVitalsVisibility)
+      ? normalizeSecretaryVitalsVisibility(existingUserData.secretaryVitalsVisibility, undefined, existingSpecialtyOptions)
       : undefined;
   const existingSecretaryVitalFields = Array.isArray(existingUserData?.secretaryVitalFields)
-    ? normalizeSecretaryVitalFieldDefinitions(existingUserData.secretaryVitalFields)
+    ? normalizeSecretaryVitalFieldDefinitions(existingUserData.secretaryVitalFields, undefined, existingSpecialtyOptions)
     : undefined;
   const formTitleVal = toOptionalText(formTitle) || '';
   const doctorDisplayNameVal = toOptionalText(doctorDisplayName) || '';
@@ -284,6 +297,7 @@ export const saveBookingCredentials = async (
     {
       userId: normalizedUserId,
       doctorDisplayName: doctorDisplayNameVal,
+      doctorSpecialty: existingDoctorSpecialty || deleteField(),
       formTitle: formTitleVal,
       doctorEmail: doctorEmailValue || deleteField(),
       username: null,
@@ -359,6 +373,7 @@ export const getBookingConfig = async (
     username: typeof data?.username === 'string' ? data.username : undefined,
     passwordHash: typeof data?.passwordHash === 'string' ? data.passwordHash : undefined,
     doctorDisplayName: toOptionalText(data?.doctorDisplayName),
+    doctorSpecialty: toOptionalText(data?.doctorSpecialty),
     formTitle: toOptionalText(data?.formTitle),
     doctorEmail: typeof data?.doctorEmail === 'string' ? normalizeEmail(data.doctorEmail) : undefined,
     secretaryAuthRequired: Boolean(data?.secretaryAuthRequired),
@@ -369,6 +384,10 @@ export const getBookingConfig = async (
     // مرآة السر العام — يكتبها الطبيب علشان السكرتيرة تعرض رابط فورم الجمهور.
     publicBookingSecret: typeof data?.publicBookingSecret === 'string' && data.publicBookingSecret.trim()
       ? data.publicBookingSecret.trim()
+      : undefined,
+    // مرآة الـ slug القصير — للسكرتيرة عشان تبني رابط /p/{slug} الـcanonical.
+    publicUrlSlug: typeof data?.publicUrlSlug === 'string' && data.publicUrlSlug.trim()
+      ? data.publicUrlSlug.trim()
       : undefined,
   };
 };
@@ -391,6 +410,7 @@ export const updateBookingSettings = async (
   doctorEmail?: string,
   secretaryVitalsVisibility?: SecretaryVitalsVisibility,
   secretaryVitalFields?: SecretaryVitalFieldDefinition[],
+  doctorSpecialty?: string,
   branchId?: string,
 ): Promise<void> => {
   return _updateBookingSettings(
@@ -402,6 +422,7 @@ export const updateBookingSettings = async (
     doctorEmail,
     secretaryVitalsVisibility,
     secretaryVitalFields,
+    doctorSpecialty,
     upsertSecretaryLoginIndex,
     branchId,
   );
@@ -413,14 +434,20 @@ export const setBookingSecretaryVitalsVisibility = async (
   secretaryVitalsVisibility: SecretaryVitalsVisibility,
   secretaryVitalFields?: SecretaryVitalFieldDefinition[],
   branchId?: string,
+  doctorSpecialty?: string,
 ): Promise<void> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   const normalizedSecret = normalizeBookingSecret(secret);
   if (!normalizedUserId || !normalizedSecret) return;
 
-  const normalizedVisibility = normalizeSecretaryVitalsVisibility(secretaryVitalsVisibility);
+  const specialtyOptions = { doctorSpecialty };
+  const normalizedVisibility = normalizeSecretaryVitalsVisibility(
+    secretaryVitalsVisibility,
+    undefined,
+    specialtyOptions
+  );
   const normalizedFields = Array.isArray(secretaryVitalFields)
-    ? normalizeSecretaryVitalFieldDefinitions(secretaryVitalFields)
+    ? normalizeSecretaryVitalFieldDefinitions(secretaryVitalFields, undefined, specialtyOptions)
     : undefined;
   const nowIso = new Date().toISOString();
 

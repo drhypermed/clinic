@@ -14,7 +14,6 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
 import { LoadingStateScreen } from '../../app/LoadingStateScreen';
 import { useTrustedNow } from '../../../hooks/useTrustedNow';
-import { LoadingText } from '../../ui/LoadingText';
 import { BannerControls } from './BannerControls';
 import {
   BANNER_WIDTH, createDefaultItem, DEFAULT_BANNER_HEIGHT, DEFAULT_ROTATION_SECONDS, getDefaultFormData, getDefaultExpiryDateTimeLocal, MAX_IMAGE_SIZE,

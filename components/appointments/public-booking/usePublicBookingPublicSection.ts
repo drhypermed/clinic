@@ -26,6 +26,9 @@ type UsePublicBookingPublicSectionParams = {
   // مرآة publicBookingSecret من bookingConfig — لو متوفّر (الطبيب كاتبها)،
   // نستخدمه مباشرةً بدل lookup لأن السكرتيرة معندهاش صلاحية على publicBookingConfig.
   seededPublicSecret?: string | null;
+  // الـ slug القصير من bookingConfig mirror — لو موجود نبني الرابط الـcanonical /p/{slug}.
+  // لو غايب (data قديمه قبل التحديث)، نقع على الـsecret-based legacy URL.
+  seededPublicSlug?: string | null;
 };
 
 export const usePublicBookingPublicSection = ({
@@ -34,6 +37,7 @@ export const usePublicBookingPublicSection = ({
   branches,
   activeBranchId,
   seededPublicSecret,
+  seededPublicSlug,
 }: UsePublicBookingPublicSectionParams) => {
   const [publicSectionOpen, setPublicSectionOpen] = useState(false);
   const [publicSecret, setPublicSecret] = useState<string | null>(null);
@@ -61,8 +65,11 @@ export const usePublicBookingPublicSection = ({
   const publicBookingLink = useMemo(() => {
     if (!publicSecret) return null;
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    // الـ canonical الجديد: /p/{slug} لو الـslug متاح. fallback للـ legacy لو لأ.
+    const slug = String(seededPublicSlug || '').trim();
+    if (slug) return `${origin}/p/${slug}`;
     return `${origin}/book-public/s/${publicSecret}`;
-  }, [publicSecret]);
+  }, [publicSecret, seededPublicSlug]);
 
   const publicSlotTodayStr = currentDayStr;
   const publicTimeMin = publicSlotDateStr === publicSlotTodayStr ? currentTimeMin() : undefined;

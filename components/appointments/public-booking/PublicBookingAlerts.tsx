@@ -9,14 +9,15 @@
  */
 import React from 'react';
 import { formatUserTime } from '../../../utils/cairoTime';
-import type { EntryAlert } from './types';
+import type { EntryAlert, SecretaryActionToastState } from './types';
 
 /**
  * الخصائص (Props) الخاصة بالمكون المسؤول عن عرض التنبيهات والاشعارات
  * تشمل تنبيهات رد فعل الطبيب (موافقة/انتظار) وتنبيهات طلبات الدخول
  */
 type PublicBookingAlertsProps = {
-  secretaryActionToast: 'approved' | 'rejected' | null; // حالة تأكيد السكرتارية لوجود المريض
+  // التوست بياخد status + source — كل مصدر بيغير نص الرسالة (راجع types.ts)
+  secretaryActionToast: SecretaryActionToastState;
   onCloseSecretaryToast: () => void;
   entryAlert: EntryAlert | null; // تفاصيل تنبيه طلب الدخول القادم من الطبيب
   entryResponding: boolean;
@@ -38,8 +39,8 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
 }) => {
   return (
     <>
-      {/* تأكيد من السكرتارية للطبيب أن الحالة قد دخلت العيادة بالفعل */}
-      {secretaryActionToast === 'approved' && (
+      {/* توست الموافقة: نفس النص للحالتين — موافقة من أي طرف معناها الحالة جاهزة للدخول. */}
+      {secretaryActionToast?.status === 'approved' && (
         <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-success-600 text-white shadow-xl border border-success-700 animate-fadeIn">
           <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,8 +48,8 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
             </svg>
           </span>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm">تم إرسال الموافقة بالدخول</p>
-            <p className="text-white/90 text-xs mt-0.5">الطبيب سيظهر له أن الحالة دخلت</p>
+            <p className="font-bold text-sm">تم الموافقة بالدخول ✅</p>
+            <p className="text-white/90 text-xs mt-0.5">يمكن إدخال الحالة الآن</p>
           </div>
           <button type="button" onClick={onCloseSecretaryToast} className="p-1.5 rounded-lg hover:bg-white/20 shrink-0" title="إغلاق">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,17 +59,28 @@ export const PublicBookingAlerts: React.FC<PublicBookingAlertsProps> = ({
         </div>
       )}
 
-      {/* إبلاغ الطبيب أن الحالة المطلوبة غير موجودة في الانتظار حالياً */}
-      {secretaryActionToast === 'rejected' && (
-        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-danger-600 text-white shadow-xl border border-danger-700 animate-fadeIn">
+      {/* توست الرفض: النص يختلف حسب المصدر —
+          * secretary-action: السكرتيرة ضغطت "لا" على طلب الطبيب → نقولها تم إبلاغ الطبيب.
+          * doctor-response: الطبيب رفض طلب السكرتيرة → نقولها استني، الطبيب مش جاهز. */}
+      {secretaryActionToast?.status === 'rejected' && (
+        <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto flex items-center gap-3 p-4 rounded-xl bg-warning-600 text-white shadow-xl border border-warning-700 animate-fadeIn">
           <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </span>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm">تم الإبلاغ - غير موجود</p>
-            <p className="text-white/90 text-xs mt-0.5">الطبيب سيظهر له ينتظر</p>
+            {secretaryActionToast.source === 'secretary-action' ? (
+              <>
+                <p className="font-bold text-sm">تم إبلاغ الطبيب ⛔</p>
+                <p className="text-white/90 text-xs mt-0.5">بأن الحالة غير موجودة</p>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-sm">في الانتظار قليلاً ⏳</p>
+                <p className="text-white/90 text-xs mt-0.5">الطبيب لم يطلب الدخول حالياً</p>
+              </>
+            )}
           </div>
           <button type="button" onClick={onCloseSecretaryToast} className="p-1.5 rounded-lg hover:bg-white/20 shrink-0" title="إغلاق">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -62,8 +62,10 @@ type PublicBookingFormCardProps = {
   alertRef: React.RefObject<HTMLDivElement | null>;
   submitting: boolean;
   // ─── دعم تسجيل الدخول بعد ملء الفورم ───
-  // لو المريض غير مسجل → زر "سجّل دخول بـ Google وأكمل الحجز" بدلاً من submit مباشر
+  // لو المريض غير مسجل والطبيب طالب جوجل → زر "سجّل دخول بـ Google وأكمل الحجز".
+  // غير كده (المريض مسجل، أو الطبيب مش طالب جوجل) → زر submit عادي.
   isLoggedIn?: boolean;
+  requireGoogleSignIn?: boolean;
   onLoginToBook?: (selectedSlotId: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 };
@@ -111,9 +113,12 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   alertRef,
   submitting,
   isLoggedIn = true,
+  requireGoogleSignIn = false,
   onLoginToBook,
   onSubmit,
 }) => {
+  // الـ Google button يظهر فقط لو الطبيب طالب جوجل والمريض غير مسجّل دخول
+  const showGoogleButton = requireGoogleSignIn && !isLoggedIn;
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-warning-500 to-warning-600 px-4 py-3 text-center">
@@ -201,17 +206,8 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
         <PublicBookingAlerts formError={formError} bookingQuotaNotice={bookingQuotaNotice} alertRef={alertRef} />
 
         {slots.length > 0 && !slotsLoading && (
-          isLoggedIn ? (
-            // مسجّل دخوله → submit عادي
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-warning-500 to-warning-600 text-white font-black shadow-md hover:from-warning-600 hover:to-warning-700 transition-all disabled:opacity-60"
-            >
-              {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
-            </button>
-          ) : (
-            // غير مسجّل → زر Google login ثم يكمل الحجز تلقائياً
+          showGoogleButton ? (
+            // الطبيب طالب جوجل والمريض غير مسجّل → زر Google login ثم يكمل الحجز
             <button
               type="button"
               disabled={submitting}
@@ -232,6 +228,15 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
                   <span>سجّل دخول بـ Google وأكمل الحجز</span>
                 </>
               )}
+            </button>
+          ) : (
+            // غير ذلك (مسجّل، أو الطبيب مش طالب جوجل) → submit عادي
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-warning-500 to-warning-600 text-white font-black shadow-md hover:from-warning-600 hover:to-warning-700 transition-all disabled:opacity-60"
+            >
+              {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
             </button>
           )
         )}

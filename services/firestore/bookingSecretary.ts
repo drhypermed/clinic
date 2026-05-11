@@ -22,13 +22,12 @@ import {
   setBookingSecretaryVitalsVisibility,
   setBookingDoctorEmail,
   setSecretarySessionToken,
+  syncDoctorDisplayNameToAllBookingConfigs,
   updateBookingSettings,
 } from './booking-secretary/secretConfig';
 import {
   getOrCreateBookingUrlSlug,
   getOrCreatePublicUrlSlug,
-  generateBookingUrlSlug,
-  generatePublicUrlSlug,
   getUserIdByBookingSlug,
   getUserIdByPublicSlug,
 } from './booking-secretary/slugs';
@@ -81,6 +80,7 @@ export const bookingSecretaryService = {
   ensureBookingConfigUserId,
   mirrorPublicSecretToBookingConfig,
   setBookingDoctorEmail,
+  syncDoctorDisplayNameToAllBookingConfigs,
   repairBookingConnection,
   setEntryAlert,
   setSecretaryEntryAlertResponse,
@@ -105,8 +105,6 @@ export const bookingSecretaryService = {
   createAppointmentFromSecret,
   getOrCreateBookingUrlSlug,
   getOrCreatePublicUrlSlug,
-  generateBookingUrlSlug,
-  generatePublicUrlSlug,
   getUserIdByBookingSlug,
   getUserIdByPublicSlug,
   setSecretarySessionToken,

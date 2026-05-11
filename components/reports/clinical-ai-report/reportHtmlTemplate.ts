@@ -5,6 +5,10 @@ import type {
   ClinicalVisitSnapshot,
   OpenClinicalAiReportWindowInput,
 } from './types';
+import {
+  buildSpecialtyPackAppendix,
+  SPECIALTY_PACK_APPENDIX_CSS,
+} from './specialtyPackAppendix';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -321,7 +325,7 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${escapeHtml(L.reportTitle)} \u2014 ${escapeHtml(snapshot.patientName)}</title>
-<style>${css}</style>
+<style>${css}${SPECIALTY_PACK_APPENDIX_CSS}</style>
 </head>
 <body>
 <div class="toolbar">
@@ -370,6 +374,7 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
       <div class="sigbox"><div class="sigbox-lbl">${escapeHtml(L.clinicStamp)}</div><div class="sigbox-name" contenteditable="true" spellcheck="false"> </div><div class="sig-line"></div></div>
     </div>
   </div>
+  ${buildSpecialtyPackAppendix(snapshot, language)}
   <div class="rpt-footer">
     <div class="rpt-footer-brand">
       <span>${escapeHtml(L.sourceNote)}</span>

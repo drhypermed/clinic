@@ -19,25 +19,6 @@ import { UsePatientManagementActionsParams } from '../../../types';
 
 const MAX_REASON_LENGTH = 500;
 
-const buildWritePayload = (
-  now: string,
-  payload: Record<string, unknown>
-): Record<string, unknown> => ({
-  authRole: 'public',
-  userRole: 'public',
-  updatedAt: now,
-  ...payload,
-});
-
-const writePatientRecordToAllCollections = async (
-  patientId: string,
-  payload: Record<string, unknown>,
-  now: string
-) => {
-  const mergedPayload = buildWritePayload(now, payload);
-  await setDoc(doc(db, 'users', patientId), mergedPayload, { merge: true });
-};
-
 const resolvePublicUserIdentity = async (patientId: string) => {
   const snap = await getDocCacheFirst(doc(db, 'users', patientId) as any);
 
@@ -54,12 +35,9 @@ const resolvePublicUserIdentity = async (patientId: string) => {
 
 export const usePatientManagementActions = ({
   isAdminUser,
-  adminEmail,
   setPatients,
   setSelectedPatientReviews,
 }: UsePatientManagementActionsParams) => {
-  const normalizedAdminEmail = String(adminEmail || '').trim().toLowerCase() || 'admin';
-
   /** التحقق من صلاحيات الأدمن قبل تنفيذ أي إجراء حساس */
   const ensureAdminAccess = () => {
     if (isAdminUser) return true;

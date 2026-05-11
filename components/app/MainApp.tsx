@@ -58,6 +58,7 @@ import { useSecretaryEntryResponse } from './main-app/useSecretaryEntryResponse'
 import { useMainAppSecretaryVitals } from './main-app/useMainAppSecretaryVitals';
 import { useMainAppReadyPrescriptions } from './main-app/useMainAppReadyPrescriptions';
 import { useMainAppBookingSecret } from './main-app/useMainAppBookingSecret';
+import { useBranchSecretsMap } from './main-app/useBranchSecretsMap';
 import { useMainAppAppointmentOpener } from './main-app/useMainAppAppointmentOpener';
 import { useMainAppPrescriptionExport } from './main-app/useMainAppPrescriptionExport';
 import { useMainAppResetControls } from './main-app/useMainAppResetControls';
@@ -198,6 +199,12 @@ export const MainApp: React.FC = () => {
 
   const basicPatientSuggestions = useMemo(() => buildBasicPatientSuggestions(records), [records]);
 
+  // 🔒 أسرار الفروع — بعد تشديد 2026-05-10، الـ secret اتنقل لـ users/{uid}.bookingSecretByBranch.
+  // محتاجين الـ map ده قبل useMainAppAppointments عشان branchSubscriptions تستخدمه (مش الموقع القديم
+  // اللي اتمسح بعد migration وكان السبب إن in-app toast مش بييجي للفروع المُهاجَرة).
+  const branchesSignature = branches.map((b) => b.id).sort().join(',');
+  const { secretsMap: branchSecretsMap } = useBranchSecretsMap(userId, branchesSignature);
+
   const {
     appointments,
     newAppointmentToast,
@@ -228,13 +235,14 @@ export const MainApp: React.FC = () => {
     branchIds: branches.map((b) => b.id),
     // كل secrets الفروع — نشترك في كل secret عشان طلبات السكرتارية تظهر
     // داخل التطبيق حتى لو السكرتيرة على فرع مختلف عن اللي الطبيب فاتحه دلوقتي.
+    // الأولوية للموقع الجديد (branchSecretsMap)، fallback للقديم لو migration لسه ما تمشي.
     branchSubscriptions: branches
-      .filter((b) => Boolean(b.secretarySecret))
       .map((b) => ({
-        secret: b.secretarySecret as string,
+        secret: (branchSecretsMap[b.id] || b.secretarySecret || '') as string,
         branchId: b.id,
         branchName: b.name || '',
-      })),
+      }))
+      .filter((b) => Boolean(b.secret)),
   });
 
   // فلترة مواعيد اليوم للصفحة الرئيسية — نستخدم todayStr المُشترك من الـ hook حتى يتحدّث تلقائياً عند منتصف الليل
@@ -292,6 +300,7 @@ export const MainApp: React.FC = () => {
     setBookingSecret,
     prescriptionSettings,
     openedAppointmentContext,
+    doctorSpecialty: normalizedDoctorSpecialty,
   });
 
   // تحميل وقت إخفاء تنبيه الـ push من localStorage عند أول render
@@ -308,6 +317,8 @@ export const MainApp: React.FC = () => {
     userId,
     activeBranchId,
     branches,
+    branchSecretsMap,
+    doctorSpecialty: normalizedDoctorSpecialty,
     setBookingSecret,
     updateBranch,
   });
@@ -366,6 +377,7 @@ export const MainApp: React.FC = () => {
     discountReasonLabel,
     appointmentSecretaryCustomValues,
     prescriptionSecretaryFieldDefinitions,
+    doctorSpecialty: normalizedDoctorSpecialty,
     handleSaveRecord,
     showNotification,
   });
@@ -438,6 +450,7 @@ export const MainApp: React.FC = () => {
   const { openExam, openConsultation: openConsultationForAppointment } = useMainAppAppointmentOpener({
     appointments, records,
     prescriptionSecretaryFieldDefinitions,
+    doctorSpecialty: normalizedDoctorSpecialty,
     mapAppointmentSecretaryCustomValues,
     setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext,
@@ -487,7 +500,8 @@ export const MainApp: React.FC = () => {
       <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
 
       <div className="flex min-h-screen overflow-hidden">
-        <Sidebar key={`sidebar-${profileKey}`} currentView={currentView} setCurrentView={navigateToView} todayAppointmentsCount={todayAppointmentsCount} user={user} onShowProfile={() => setShowProfileModal(true)} onLogout={() => signOut()} doctorName={normalizedDoctorName || undefined} profileImage={profileImage || undefined} breadcrumbs={breadcrumbs} onNavigateView={navigateToView} activeBranchName={branches.find((b) => b.id === activeBranchId)?.name || branches[0]?.name} />
+        {/* hasMultipleBranches = أكتر من فرع — لو فرع واحد بس، اللافتة هتختفي من الـSidebar كله. */}
+        <Sidebar key={`sidebar-${profileKey}`} currentView={currentView} setCurrentView={navigateToView} todayAppointmentsCount={todayAppointmentsCount} user={user} onShowProfile={() => setShowProfileModal(true)} onLogout={() => signOut()} doctorName={normalizedDoctorName || undefined} profileImage={profileImage || undefined} breadcrumbs={breadcrumbs} onNavigateView={navigateToView} activeBranchName={branches.find((b) => b.id === activeBranchId)?.name || branches[0]?.name} hasMultipleBranches={branches.length > 1} />
 
         <main ref={mainContentRef} className={`flex-1 min-w-0 overflow-x-hidden ${currentView === 'prescription' ? 'prescription-main md:mr-60 p-0 pt-20 pb-6 sm:p-0 sm:pt-20 sm:pb-6 md:p-0 md:pt-4 md:pb-6' : currentView === 'home' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' || currentView === 'financialReports' || currentView === 'drugtools' || currentView === 'medicationEdit' || currentView === 'settings' || currentView === 'branchSettings' || currentView === 'advertisement' ? 'md:mr-60 p-0 pt-16 pb-24 sm:p-0 sm:pt-16 sm:pb-8 md:p-0 md:pt-4 md:pb-6' : 'md:mr-60 p-2 pb-24 pt-16 sm:p-4 sm:pb-8 md:p-6 md:pb-8 md:pt-6 space-y-4 sm:space-y-6'}`}>
           {/* Desktop Breadcrumbs */}
@@ -676,6 +690,7 @@ export const MainApp: React.FC = () => {
         showSaveReadyPrescriptionModal={showSaveReadyPrescriptionModal} isClosingReadyPrescriptionModal={isClosingReadyPrescriptionModal} isSavingReadyPrescription={isSavingReadyPrescription} readyPrescriptionName={readyPrescriptionName} setReadyPrescriptionName={setReadyPrescriptionName} setShowSaveReadyPrescriptionModal={setShowSaveReadyPrescriptionModal} handleConfirmSaveReadyPrescription={handleConfirmSaveReadyPrescription}
         settingsError={settingsError} secretaryEntryRequest={secretaryEntryRequest} bookingSecret={bookingSecret} onApproveSecretaryEntry={handleApproveSecretaryEntry} onRejectSecretaryEntry={handleRejectSecretaryEntry}
         newAppointmentToast={newAppointmentToast} setNewAppointmentToast={setNewAppointmentToast} smartQuotaModalOpen={smartQuotaModalOpen} smartQuotaNotice={smartQuotaNotice} dismissSmartQuotaNotice={dismissSmartQuotaNotice}
+        hasMultipleBranches={branches.length > 1}
       />
     </div>
   );

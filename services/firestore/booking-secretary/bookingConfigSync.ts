@@ -260,6 +260,10 @@ export const subscribeToBookingConfig = (
       result.doctorDisplayName = toOptionalText(data.doctorDisplayName) || '';
     }
 
+    if (typeof data?.doctorSpecialty === 'string') {
+      result.doctorSpecialty = toOptionalText(data.doctorSpecialty) || '';
+    }
+
     if (typeof data?.secretaryAuthRequired === 'boolean') {
       result.secretaryAuthRequired = data.secretaryAuthRequired;
     }
@@ -268,15 +272,21 @@ export const subscribeToBookingConfig = (
       result.doctorEmail = normalizeEmail(data.doctorEmail);
     }
 
+    const specialtyOptions = { doctorSpecialty: result.doctorSpecialty };
+
     if (data?.secretaryVitalsVisibility && typeof data.secretaryVitalsVisibility === 'object') {
       result.secretaryVitalsVisibility = normalizeSecretaryVitalsVisibility(
         data.secretaryVitalsVisibility as SecretaryVitalsVisibility,
+        undefined,
+        specialtyOptions,
       );
     }
 
     if (Array.isArray(data?.secretaryVitalFields)) {
       result.secretaryVitalFields = normalizeSecretaryVitalFieldDefinitions(
         data.secretaryVitalFields as SecretaryVitalFieldDefinition[],
+        undefined,
+        specialtyOptions,
       );
     }
 
@@ -291,6 +301,8 @@ export const subscribeToBookingConfig = (
         if (value && typeof value === 'object') {
           visibilityByBranch[key] = normalizeSecretaryVitalsVisibility(
             value as SecretaryVitalsVisibility,
+            undefined,
+            specialtyOptions,
           );
         }
       });
@@ -309,6 +321,8 @@ export const subscribeToBookingConfig = (
         if (Array.isArray(value)) {
           fieldsByBranch[key] = normalizeSecretaryVitalFieldDefinitions(
             value as SecretaryVitalFieldDefinition[],
+            undefined,
+            specialtyOptions,
           );
         }
       });

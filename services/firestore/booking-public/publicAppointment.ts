@@ -142,6 +142,34 @@ export const createAppointmentFromPublic = async (
 
   // الـ Slot يبقى متاحاً لباقي الجمهور بعد الحجز — الإخفاء لمن حجز يتم client-side
   // عبر فلترة مواعيد المستخدم. الـ Transaction قبل خصم الكوتة حتى لا نخسرها لو الـ Slot غير موجود.
+  //
+  // ─── حماية server-side ضد الحجز المكرر (نفس الـslot لنفس المريض) ───
+  // قبل ده، الـguard كان client-side فقط (myBookedDateTimes filter). لو مريض شطر فتح
+  // متصفحين أو مسح localStorage، كان يقدر يحجز نفس الـslot مرتين. دلوقتي بنحفظ
+  // claim doc بـid ثابت بناءً على الـsecret+slot+المعرّف (Google UID أو الهاتف).
+  // لو الـclaim موجود = duplicate → نرفض الحجز قبل خصم الكوتة.
+  //
+  // الـclaim doc محفوظ في collection publicBookingClaims/{claimKey} وفيه:
+  // - userId (الطبيب)
+  // - slotId
+  // - publicUserId أو phoneDigits
+  // - createdAt
+  // الـrules بتسمح للجميع بكتابة claim جديد بس مش بتعديل/حذف القديم.
+  const phoneDigits = String(data.phone || '').replace(/\D/g, '');
+  const claimIdentifier = meta?.publicUserId || phoneDigits || 'anonymous';
+  const claimKey = `${normalizedPublicSecret}_${normalizedSlotId}_${claimIdentifier}`;
+  const claimRef = doc(db, 'publicBookingClaims', claimKey);
+
+  // ─── rate limit: نفس الهاتف عند نفس الطبيب — حد أقصى 5 حجوزات في 24 ساعه ───
+  // doc بـid ثابت لكل phone+doctor، فيه bucketStart + count.
+  // bucket = أول لحظة في الـ24 ساعه الجارية (UTC). لو الـbucket انتهى، reset.
+  // الـlimit الحالي: 5 — مرن لأطباء عيلات (الأب يحجز لأولاده مثلاً).
+  const RATE_LIMIT_PER_24H = 5;
+  const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+  const rateLimitKey = `${normalizedUserId}_${phoneDigits || 'anonymous'}`;
+  const rateLimitRef = doc(db, 'publicBookingRateLimits', rateLimitKey);
+  const nowMs = Date.now();
+
   await runTransaction(db, async (transaction) => {
     const slotSnap = await transaction.get(slotRef);
     if (!slotSnap.exists()) {
@@ -152,6 +180,52 @@ export const createAppointmentFromPublic = async (
     const storedDateTime = typeof slotData.dateTime === 'string' ? slotData.dateTime : '';
     if (storedDateTime && storedDateTime !== slotDateTime) {
       throw new Error('public-slot-mismatch');
+    }
+
+    // فحص الـclaim — لو موجود يبقى المريض ده حجز نفس الـslot قبل كده
+    const claimSnap = await transaction.get(claimRef);
+    if (claimSnap.exists()) {
+      throw new Error('slot-already-booked-by-user');
+    }
+
+    // فحص rate limit — لو الـbucket لسه نشط وعدد الحجوزات تجاوز الحد، رفض
+    let bucketCount = 0;
+    let bucketStart = nowMs;
+    if (phoneDigits) {
+      const rateLimitSnap = await transaction.get(rateLimitRef);
+      if (rateLimitSnap.exists()) {
+        const rateLimitData = rateLimitSnap.data() as Record<string, unknown>;
+        const storedBucketStart = Number(rateLimitData.bucketStart) || 0;
+        const storedCount = Number(rateLimitData.count) || 0;
+        if (nowMs - storedBucketStart < RATE_LIMIT_WINDOW_MS) {
+          if (storedCount >= RATE_LIMIT_PER_24H) {
+            throw new Error('rate-limit-exceeded');
+          }
+          bucketStart = storedBucketStart;
+          bucketCount = storedCount;
+        }
+      }
+    }
+
+    // claim الـslot للمريض ده — مفتاح ثابت يمنع أي محاوله تانيه لنفس التوليفه
+    transaction.set(claimRef, {
+      userId: normalizedUserId,
+      slotId: normalizedSlotId,
+      publicUserId: meta?.publicUserId || null,
+      phone: phoneDigits || null,
+      appointmentId: appointmentDocRef.id,
+      createdAt,
+    });
+
+    // تحديث rate limit — increment أو reset البكت
+    if (phoneDigits) {
+      transaction.set(rateLimitRef, {
+        userId: normalizedUserId,
+        phone: phoneDigits,
+        bucketStart,
+        count: bucketCount + 1,
+        lastBookingAt: createdAt,
+      });
     }
 
     transaction.set(

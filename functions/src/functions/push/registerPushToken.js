@@ -183,21 +183,34 @@ module.exports = (context) => {
           ? tokenDocSnap.data().tokensByBranch
           : {};
 
-      // بناء payload يزيل الـ token من فروع سابقة (غير الفرع الحالي)
-      const writePayload = {
-        ...basePayload,
-        [`tokensByBranch.${branchId}`]: admin.firestore.FieldValue.arrayUnion(token),
-        [`tokensByBranchUpdatedAt.${branchId}`]: updatedAtIso,
-        ...(userId ? { userId } : {}),
+      // ⚠️ ممنوع dot-notation في set+merge — @google-cloud/firestore v7
+      // (المستخدم في firebase-admin v12) ما بيفسرش keys فيها نقاط كـ
+      // nested paths في set+merge، بينشئ literal field اسمه "tokensByBranch.X"
+      // بدل ما يحدث الخريطة الفعلية → الخريطة تفضل فاضية والإشعار يـfallback
+      // للقايمة القديمة fcmTokens (اللي فيها أجهزة كل الفروع) → تسريب.
+      // الحل: nested object — Firestore بيدمج الـ maps بعمق مع merge:true.
+      const tokensByBranchUpdate = {
+        [branchId]: admin.firestore.FieldValue.arrayUnion(token),
+      };
+      const tokensByBranchUpdatedAtUpdate = {
+        [branchId]: updatedAtIso,
       };
 
+      // إزالة الـ token من فروع سابقة (لو نفس الجهاز كان مسجل قبل كده)
       Object.keys(existingTokensByBranch).forEach((otherBranchId) => {
         if (otherBranchId === branchId) return;
         const branchTokens = existingTokensByBranch[otherBranchId];
         if (Array.isArray(branchTokens) && branchTokens.includes(token)) {
-          writePayload[`tokensByBranch.${otherBranchId}`] = admin.firestore.FieldValue.arrayRemove(token);
+          tokensByBranchUpdate[otherBranchId] = admin.firestore.FieldValue.arrayRemove(token);
         }
       });
+
+      const writePayload = {
+        ...basePayload,
+        tokensByBranch: tokensByBranchUpdate,
+        tokensByBranchUpdatedAt: tokensByBranchUpdatedAtUpdate,
+        ...(userId ? { userId } : {}),
+      };
 
       await tokenDocRef.set(writePayload, { merge: true });
 

@@ -1,5 +1,6 @@
 import type { ClinicAppointment, PatientRecord } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import {
   resolveLatestRecordIdByName,
@@ -84,7 +85,7 @@ export const useAppointmentExecutionActions = ({
 
     // إشعار السكرتارية بقبول دخول المريض
     if (bookingSecret) {
-      firestoreService.addSecretaryApprovedEntryId(bookingSecret, apt.id, apt.branchId).catch(() => { });
+      entryConversations.markExamOpened({ secret: bookingSecret, appointmentId: apt.id, branchId: apt.branchId }).catch(() => { });
     }
     // تمرير كامل بيانات الموعد (بما فيها بيانات التأمين) لفتح شاشة الكشف
     onOpenExam(apt);
@@ -109,7 +110,7 @@ export const useAppointmentExecutionActions = ({
     if (!opened) return;
     
     if (bookingSecret) {
-      firestoreService.addSecretaryApprovedEntryId(bookingSecret, apt.id, apt.branchId).catch(() => { });
+      entryConversations.markExamOpened({ secret: bookingSecret, appointmentId: apt.id, branchId: apt.branchId }).catch(() => { });
     }
   };
 

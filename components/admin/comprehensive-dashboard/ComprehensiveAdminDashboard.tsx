@@ -27,7 +27,9 @@ import { FinancialPanel } from '../financial-panel/FinancialPanel';
 import { HomepageBannerManagementPanel } from '../homepage-banner-management/HomepageBannerManagementPanel';
 import { PrescriptionFooterLineManagementPanel } from '../prescription-footer-line-management/PrescriptionFooterLineManagementPanel';
 import { AdminDoctorDesignEditorPage } from '../doctor-design-editor/AdminDoctorDesignEditorPage';
+import { ScaleToolsPanel } from '../scale-tools/ScaleToolsPanel';
 import { AccountTypeControlsPanel } from '../account-type-controls/AccountTypeControlsPanel';
+import { SpecialtyPacksPanel } from '../specialty-packs/SpecialtyPacksPanel';
 import { UpdateBroadcastManagementPanel } from '../update-broadcast/UpdateBroadcastManagementPanel';
 import { ExternalNotificationBroadcastPanel } from '../external-notification-broadcast/ExternalNotificationBroadcastPanel';
 import { InternalNotificationBroadcastPanel } from '../internal-notification-broadcast/InternalNotificationBroadcastPanel';
@@ -61,6 +63,8 @@ const VIEW_META: Record<AdminView, { title: string }> = {
   homeBanner: { title: 'بانرات الصفحة الرئيسية' },
   prescriptionFooterLine: { title: 'سطر أسفل الروشتة' },
   doctorDesignEditor: { title: 'مساعدة في تصميم الطبيب' },
+  scaleTools: { title: 'أدوات التوسع' },
+  specialtyPacks: { title: 'حزم التخصصات' },
   settings: { title: 'إعدادات النظام' },
 };
 
@@ -281,6 +285,22 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
         return (
           <AdminViewShell view="doctorDesignEditor">
             <AdminDoctorDesignEditorPage />
+          </AdminViewShell>
+        );
+      // أدوات التوسع: زرار إعادة حساب الإحصائيات/ملخصات المرضى + مفاتيح
+      // تشغيل المراحل الـ3. ScaleToolsPanel نفسها مفيهاش حماية أدمن داخلية،
+      // الحماية بتيجي من قائمة التنقل (الـview ظاهر للأدمن بس).
+      case 'scaleTools':
+        return (
+          <AdminViewShell view="scaleTools">
+            <ScaleToolsPanel />
+          </AdminViewShell>
+        );
+      // حزم التخصصات — لوحه تشغيل/إيقاف مركزيه لكل باكدج تخصص (نسا، رمد، ...)
+      case 'specialtyPacks':
+        return (
+          <AdminViewShell view="specialtyPacks">
+            <SpecialtyPacksPanel />
           </AdminViewShell>
         );
       case 'settings':

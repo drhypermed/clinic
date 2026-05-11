@@ -31,6 +31,7 @@ interface PrescriptionSettingsPageProps {
     // اختياري: لمّا الأدمن بيستعمل الشاشة لمساعده طبيب — بنخفي زر إذن الأدمن
     // (الأدمن مش لازم يقفل وصول نفسه). الافتراضي false = الطبيب بيشوف الزر.
     isAdminImpersonation?: boolean;
+    doctorSpecialty?: string | null;
 }
 
 /** عنوان التبويب لزر إعادة الضبط */
@@ -42,7 +43,7 @@ const TAB_RESET_LABEL: Record<SettingsTabId, string> = {
     print: 'إعدادات الطباعة',
 };
 
-export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> = ({ settings, onSave, isAdminImpersonation }) => {
+export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> = ({ settings, onSave, isAdminImpersonation, doctorSpecialty }) => {
     // التبويب النشط (متزامن مع URL ?tab=...)
     const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState<SettingsTabId>(
@@ -61,7 +62,7 @@ export const PrescriptionSettingsPage: React.FC<PrescriptionSettingsPageProps> =
     const previewRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const form = usePrescriptionSettingsForm({ settings, onSave });
+    const form = usePrescriptionSettingsForm({ settings, onSave, doctorSpecialty });
 
     // إعادة حساب مقياس المعاينة عند تغيير حجم النافذة أو مقاس الورقة
     useEffect(() => {

@@ -38,6 +38,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
   onOpenConsultation,
   showNotification,
   activeBranchId,
+  doctorSpecialty,
 }) => {
   const toPositiveFileNumber = (value: unknown): number | undefined => {
     const parsed = Number(value);
@@ -97,12 +98,15 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     publicFormContactInfo, setPublicFormContactInfo,
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr, publicTimeMin,
+    branches: doctorBranches, // الفروع — لتوليد رابط منفصل لكل فرع في قسم الجمهور
+    publicFormRequireGoogle, setPublicFormRequireGoogle, // إعداد حماية جوجل للحجز
   } = useBookingSectionControls({
     userId, bookingSecret: bookingSecretProp, onBookingSecretReady,
     prescriptionVitalsConfig,
     prescriptionCustomBoxes,
     onSyncSecretaryVitalsVisibility,
     userDisplayName: user?.displayName, userEmail: user?.email, currentDayStr,
+    doctorSpecialty,
   });
 
   // معالجة البيانات للعرض (فرز المواعيد حسب التاريخ، حساب الإحصائيات)
@@ -122,7 +126,9 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     sentEntryForIds, entrySendingId, sendEntryRequest, secretaryEntryAlertResponse,
     approvedEntryAppointmentIds, secretaryApprovedEntryIds, secretaryResponseToast,
     handleCloseApprovedToast, handleCloseRejectedToast,
-  } = useSecretaryEntryAlerts({ bookingSecret, appointments, showNotification });
+  // تمرير activeBranchId — بدونه الـ alert يروح لـ entryAlertByBranch.main
+  // والسكرتيرة في الفرع الفعلي ما تشوفهوش (مواعيد الفرع الرئيسي مفيهاش branchId).
+  } = useSecretaryEntryAlerts({ bookingSecret, appointments, showNotification, activeBranchId });
 
   const patientFileNumberLookup = useMemo(() => {
     const byNameAndPhone = new Map<string, number>();
@@ -235,6 +241,9 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             onAddPublicSlot={addPublicSlot}
             publicSlots={publicSlots}
             onRemovePublicSlot={removePublicSlot}
+            branches={doctorBranches}
+            requireGoogleSignIn={publicFormRequireGoogle}
+            onRequireGoogleSignInChange={setPublicFormRequireGoogle}
           /></div>
         )}
 
@@ -256,6 +265,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
           patientSuggestions={patientSuggestions} onSelectPatientSuggestion={handleSelectPatientSuggestion}
           submitLabel={editingAppointmentId ? 'حفظ التعديل' : 'إضافة موعد كشف'}
           onSubmit={addAppointment} isOpen={addAppointmentFormOpen} onToggleOpen={toggleAddAppointmentFormOpen}
+          doctorSpecialty={doctorSpecialty}
           userId={userId}
           activeBranchId={activeBranchId}
           paymentType={paymentType} onPaymentTypeChange={setPaymentType}
@@ -283,6 +293,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         <div className="dh-stagger-3"><AppointmentsListColumns
           todayPending={todayPending} futurePendingGroups={futurePendingGroups} completedGroups={completedGroups}
           todayDateMeta={todayDateMeta} now={now} todayStr={todayStr}
+          doctorId={userId}
           approvedEntryAppointmentIds={approvedEntryAppointmentIds} sentEntryForIds={sentEntryForIds}
           secretaryApprovedEntryIds={secretaryApprovedEntryIds} secretaryEntryAlertResponse={secretaryEntryAlertResponse}
           entrySendingId={entrySendingId} onSendEntryRequest={sendEntryRequest} onOpenExam={openExam}

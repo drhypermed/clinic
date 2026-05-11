@@ -41,7 +41,7 @@ interface DrugToolsViewProps {
 type DrugToolKey = 'renal';
 type ViewTool = DrugToolKey | null;
 
-export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onClose, onOpenMedicationEdit }) => {
+export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEdit }) => {
   // الأداة النشطة (متزامنة مع URL ?tool=...)
   const [searchParams] = useSearchParams();
   const [activeTool, setActiveTool] = useState<ViewTool>(

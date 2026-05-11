@@ -33,7 +33,6 @@ interface BioItem { label: string; value: string; accent: string; }
 
 export const DoctorDetailsModal: React.FC<DoctorDetailsModalProps> = ({
   selectedDoctor,
-  selectedDoctorFilledSchedule,
   selectedDoctorRatingStats,
   onClose,
   onPreviewAvatar,

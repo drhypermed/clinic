@@ -16,6 +16,8 @@ import {
   buildDoctorUserProfilePayload,
   getUserProfileDocRef,
 } from '../../../services/firestore/profileRoles';
+// مزامنة اسم الطبيب على bookingConfig كل الفروع — السكرتيرة بتقرأ منهم.
+import { firestoreService } from '../../../services/firestore';
 
 interface SaveArgs {
   userId: string;
@@ -93,6 +95,16 @@ export async function saveDoctorProfile({
   } catch (adErr) {
     // آمن لتجاهله: ربما الطبيب لم ينشر إعلانًا أو الصلاحيات لم تُفعَّل
     console.info('No doctor ad document found to sync, or permission deferred.', adErr);
+  }
+
+  // (3.1) مزامنة اسم الطبيب على bookingConfig كل الفروع — كده السكرتيرة بتشوف
+  // الاسم الصحيح والثابت في كل فرع تدخل عليه. آمن لتجاهل الفشل (best-effort):
+  // الفروع اللي وصلتها التحديث هتعرض الاسم الجديد، والباقي هيتحدّث في أقرب
+  // مرة الطبيب يحفظ "إعدادات السكرتارية" منها.
+  try {
+    await firestoreService.syncDoctorDisplayNameToAllBookingConfigs(userId, name.trim());
+  } catch (syncErr) {
+    console.warn('[Profile] Failed to sync doctor name to booking configs:', syncErr);
   }
 
   // (4) تحديث الواجهة عبر callbacks

@@ -7,6 +7,8 @@ import type {
   ClinicalReportLanguage,
   ClinicalReportPageSize,
   OpenClinicalAiReportWindowInput,
+  ReportPediatricTracking,
+  ReportPregnancyTracking,
 } from './types';
 
 interface CreateAndOpenClinicalAiPatientReportParams {
@@ -16,6 +18,9 @@ interface CreateAndOpenClinicalAiPatientReportParams {
   fontSize: number;
   doctorName: string;
   systemRequestSettings?: OpenClinicalAiReportWindowInput['systemRequestSettings'];
+  // ─ بيانات حزم التخصصات (اختياريه) — تظهر كملحق في نهايه التقرير لو موجوده
+  pregnancyTracking?: ReportPregnancyTracking;
+  pediatricTracking?: ReportPediatricTracking;
 }
 
 const clampFontSize = (value: number): number => {
@@ -33,16 +38,20 @@ export const createAndOpenClinicalAiPatientReport = async (
     fontSize,
     doctorName,
     systemRequestSettings,
+    pregnancyTracking,
+    pediatricTracking,
   } = params;
 
-  const snapshot = buildPatientClinicalTimelineSnapshot(patientFile, language);
-  if (!snapshot) {
+  const baseSnapshot = buildPatientClinicalTimelineSnapshot(patientFile, language);
+  if (!baseSnapshot) {
     throw new Error(
       language === 'ar'
         ? 'لا توجد زيارات كافية لتوليد التقرير الطبي.'
         : 'No sufficient visits were found to generate the medical report.'
     );
   }
+  // نضيف بيانات حزم التخصصات للـsnapshot قبل ما نولّد الـnarrative + التقرير
+  const snapshot = { ...baseSnapshot, pregnancyTracking, pediatricTracking };
 
   const { narrative, generatedByAi } = await generateClinicalTimelineNarrative({
     snapshot,

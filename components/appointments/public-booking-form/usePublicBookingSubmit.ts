@@ -28,7 +28,8 @@ type DoctorSummary = { doctorName: string; doctorSpecialty: string };
 type UsePublicBookingSubmitParams = {
   userId: string | null;
   secret: string;
-  isFromPublicSite: boolean;
+  // إعداد الطبيب لاشتراط جوجل — بديل isFromPublicSite القديم اللي كان مربوط بمصدر الرابط
+  requireGoogleSignIn: boolean;
   slots: PublicBookingSlot[];
   appointmentType: AppointmentType;
   selectedConsultationCandidateId: string;
@@ -50,7 +51,7 @@ type UsePublicBookingSubmitParams = {
 export const usePublicBookingSubmit = ({
   userId,
   secret,
-  isFromPublicSite,
+  requireGoogleSignIn,
   slots,
   appointmentType,
   selectedConsultationCandidateId,
@@ -131,13 +132,15 @@ export const usePublicBookingSubmit = ({
     setSubmitting(true);
     try {
       const currentUser = auth.currentUser;
-      if (isFromPublicSite && !currentUser) {
-        setFormError('يجب تسجيل الدخول أولًا قبل الحجز من صفحة الجمهور.');
+      // لو الطبيب فعّل اشتراط جوجل: نتطلّب تسجيل دخول قبل الحجز.
+      // غير كده الحجز يكمل عادي ولو المريض مسجّل بنحفظ uid مع الحجز (للمتابعه)
+      if (requireGoogleSignIn && !currentUser) {
+        setFormError('الطبيب طالب تسجيل دخول بـ Google قبل الحجز. اضغط زر "سجّل دخول بـ Google".');
         return;
       }
-      const publicUserId = isFromPublicSite
-        ? (currentUser?.uid || undefined)
-        : (currentUser && !currentUser.isAnonymous && currentUser.email ? currentUser.uid : undefined);
+      const publicUserId = currentUser && !currentUser.isAnonymous && currentUser.email
+        ? currentUser.uid
+        : undefined;
 
       const selectedConsultationCandidate = consultationCandidatesPool.find((candidate) => candidate.id === selectedConsultationCandidateId);
       const resolvedAppointmentType: AppointmentType = appointmentType;
@@ -183,12 +186,25 @@ export const usePublicBookingSubmit = ({
     } catch (error) {
       const rawCode = typeof (error as { code?: string })?.code === 'string' ? (error as { code: string }).code : '';
       const code = rawCode.replace(/^functions\//, '');
+      const message = String((error as { message?: string })?.message || '');
       console.error('[PublicForm] createAppointmentFromPublic failed:', error);
 
       const quotaNotice = extractBookingQuotaNotice(error);
       if (quotaNotice) {
         setBookingQuotaNotice(quotaNotice);
         setFormError(quotaNotice.message);
+        return;
+      }
+
+      // الحماية الجديدة ضد الحجز المكرر — لو المريض حاول يحجز نفس الـ slot مرتين
+      if (message.includes('slot-already-booked-by-user')) {
+        setFormError('أنت حجزت هذا الموعد بالفعل. لو محتاج تغييره، اتواصل مع العيادة.');
+        return;
+      }
+
+      // rate limit: نفس الهاتف عدّى الحد المسموح في 24 ساعه
+      if (message.includes('rate-limit-exceeded')) {
+        setFormError('وصلت للحد الأقصى من الحجوزات اليوميه برقم التليفون ده (5 حجوزات). جرّب بكره أو اتواصل مع العيادة مباشرة.');
         return;
       }
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ClinicAppointment } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { SecretaryEntryAlertResponse } from '../../../types';
 import {
@@ -35,12 +36,16 @@ interface UseSecretaryEntryAlertsArgs {
   bookingSecret: string | null;
   appointments: ClinicAppointment[];
   showNotification?: (message: string, type: 'success' | 'error' | 'info') => void;
+  // الفرع اللي الطبيب فاتحه دلوقتي — fallback لو الموعد القديم مش متخزن فيه branchId.
+  // بدونه، الـalert يروح لـentryAlertByBranch.main والسكرتيرة في فرع تاني ما تشوفهوش.
+  activeBranchId?: string | null;
 }
 
 export const useSecretaryEntryAlerts = ({
   bookingSecret,
   appointments,
   showNotification,
+  activeBranchId,
 }: UseSecretaryEntryAlertsArgs) => {
   // معرفات المواعيد التي تم إرسال طلب دخول لها
   const [sentEntryForIds, setSentEntryForIds] = useState<Set<string>>(new Set());
@@ -81,13 +86,28 @@ export const useSecretaryEntryAlerts = ({
     }, INTERNAL_TOAST_MIN_VISIBLE_MS);
   };
 
-  /** إرسال طلب السكرتارية لدخول مريض محدد — branchId بيتاخد من الموعد نفسه للعزل بين الفروع */
+  /** إرسال طلب السكرتارية لدخول مريض محدد — branchId بيتاخد من الموعد نفسه للعزل بين الفروع.
+   *  لو الموعد قديم/مفيهوش branchId، نستخدم الفرع المختار حالياً للطبيب (activeBranchId) —
+   *  السكرتيرة في الفرع ده هي اللي محتاجة الإشعار. */
   const sendEntryRequest = async (apt: ClinicAppointment) => {
     if (!bookingSecret) return;
     const name = apt.patientName?.trim() || 'مريض';
     setEntrySendingId(apt.id);
     try {
-      await firestoreService.setEntryAlert(bookingSecret, name, apt.id, apt.branchId);
+      const effectiveBranchId =
+        (apt.branchId && apt.branchId.trim()) ||
+        (activeBranchId && activeBranchId.trim()) ||
+        undefined;
+      // 🔍 رسالة تشخيص مؤقتة — تطبع المعلومات اللي الطبيب بيكتب بيها
+      console.warn('[DOCTOR-SEND] secret=', bookingSecret?.slice(0, 16), 'branchId=', effectiveBranchId, 'apt.branchId=', apt.branchId, 'activeBranchId=', activeBranchId, 'appointmentId=', apt.id);
+      // استخدام الواجهة الموحدة — نفس النتيجة لكن API أنظف
+      await entryConversations.request({
+        secret: bookingSecret,
+        direction: 'D2S', // الطبيب → السكرتيرة
+        appointmentId: apt.id,
+        patientName: name,
+        branchId: effectiveBranchId,
+      });
       setSentEntryForIds((prev) => new Set(prev).add(apt.id));
       // 🔔 صوت تأكيد قصير — الطلب اتبعت للسكرتيرة
       void playNotificationCue('action_confirmed');
@@ -111,7 +131,10 @@ export const useSecretaryEntryAlerts = ({
   // الاشتراك في قائمة المواعيد التي وافقت عليها السكرتارية حديثاً
   useEffect(() => {
     if (!bookingSecret) return;
-    return firestoreService.subscribeToSecretaryApprovedEntryIds(bookingSecret, setSecretaryApprovedEntryIds);
+    return entryConversations.subscribeToApprovedAppointments({
+      secret: bookingSecret,
+      onChange: setSecretaryApprovedEntryIds,
+    });
   }, [bookingSecret]);
 
   // مزامنة حالة اكتمال المواعيد العامة (Public) مع حسابات المرضى عند الموافقة على الدخول
@@ -133,7 +156,10 @@ export const useSecretaryEntryAlerts = ({
   // الاستماع المباشر لرد السكرتارية على الطلب الحالي
   useEffect(() => {
     if (!bookingSecret) return;
-    return firestoreService.subscribeToSecretaryEntryAlertResponse(bookingSecret, setSecretaryEntryAlertResponse);
+    return entryConversations.subscribeToSecretaryResponses({
+      secret: bookingSecret,
+      onChange: setSecretaryEntryAlertResponse,
+    });
   }, [bookingSecret]);
 
   useEffect(() => {
@@ -166,7 +192,7 @@ export const useSecretaryEntryAlerts = ({
     const ageSeconds = (Date.now() - respondedAtMs) / 1000;
 
     // تجاهل الردود القديمة جداً (أكثر من 5 دقائق) لتجنب التنبيهات المزعجة عند فتح الصفحة، مع مراعاة فرق التوقيت المحتمل
-    if (Math.abs(ageSeconds) > 300) { firestoreService.clearSecretaryEntryAlertResponse(bookingSecret).catch(() => {}); return; }
+    if (Math.abs(ageSeconds) > 300) { entryConversations.clearSecretaryResponse(bookingSecret).catch(() => {}); return; }
 
     // تشغيل صوت الإشعار إذا كان الرد حديثاً جداً
     if (ageSeconds < 15) {
@@ -184,7 +210,7 @@ export const useSecretaryEntryAlerts = ({
     });
 
     // تصفير الرد في قاعدة البيانات لضمان عدم تكرار التنبيه بالخطأ
-    setTimeout(() => firestoreService.clearSecretaryEntryAlertResponse(bookingSecret).catch(() => {}), 1500);
+    setTimeout(() => entryConversations.clearSecretaryResponse(bookingSecret).catch(() => {}), 1500);
 
     // إذا تم الرفض، نعيد إتاحة زر "إرسال طلب" مرة أخرى للمحاولة مع مريض آخر أو إعادة الطلب
     if (secretaryEntryAlertResponse.status === 'rejected') {

@@ -55,7 +55,16 @@ export const setBookingConfigTodayAppointmentsByBranch = async (
   );
 };
 
-/** تحديث قائمة المواعيد القادمة (بعد اليوم) مقسّمة بالفرع. */
+/**
+ * تحديث قائمة المواعيد القادمة (بعد اليوم) مقسّمة بالفرع.
+ *
+ * ⚠️ سقف ٢٠٠ لكل فرع كـdefense-in-depth ضد تجاوز حد ١ميجا للوثيقة.
+ * طبيب نشيط (٣٠ موعد/يوم × ٥ فروع × ٣٠ يوم قدّام = ٤٥٠٠ عنصر) كان ممكن يضرب الحد.
+ * بـ٢٠٠ × ٥ فروع × ٣٠٠ بايت = ٣٠٠ KB مساحة آمنة. الـclient بيـsort تصاعدياً
+ * فالـ ٢٠٠ المحفوظين هم الأقرب زمنياً (الأهم للسكرتيرة).
+ */
+const UPCOMING_APPOINTMENTS_PER_BRANCH_CAP = 200;
+
 export const setBookingConfigUpcomingAppointmentsByBranch = async (
   secret: string,
   listByBranch: Record<string, BookingConfigTodayAppointment[]>,
@@ -71,7 +80,7 @@ export const setBookingConfigUpcomingAppointmentsByBranch = async (
 
   branchKeys.forEach((branchId) => {
     const normalizedBranch = branchId || DEFAULT_BRANCH_ID;
-    const list = listByBranch[branchId] || [];
+    const list = (listByBranch[branchId] || []).slice(0, UPCOMING_APPOINTMENTS_PER_BRANCH_CAP);
     branchMap[normalizedBranch] = list.map((item) =>
       sanitizeTodayAppointment({ ...item, branchId: item.branchId || normalizedBranch }),
     );
@@ -129,7 +138,14 @@ export const setBookingConfigCompletedAppointmentsByBranch = async (
   );
 };
 
-/** تحديث قائمة "تم الكشف عليهم مؤخراً" مقسّمة بالفرع. */
+/**
+ * تحديث قائمة "تم الكشف عليهم مؤخراً" مقسّمة بالفرع.
+ *
+ * ⚠️ سقف ٥٠ لكل فرع. السكرتيرة بتستخدم القائمة دي للاقتراحات في الفورم بس،
+ * فمش محتاجة كل ٩٠٠ مريض الـ٣٠ يوم اللي فاتوا. ٥٠ × ٥ فروع × ٢٥٠ بايت = ٦٢ KB.
+ */
+const RECENT_EXAM_PATIENTS_PER_BRANCH_CAP = 50;
+
 export const setBookingConfigRecentExamPatientsByBranch = async (
   secret: string,
   listByBranch: Record<string, RecentExamPatient[]>,
@@ -145,7 +161,7 @@ export const setBookingConfigRecentExamPatientsByBranch = async (
 
   branchKeys.forEach((branchId) => {
     const normalizedBranch = (branchId || DEFAULT_BRANCH_ID).trim() || DEFAULT_BRANCH_ID;
-    const list = listByBranch[branchId] || [];
+    const list = (listByBranch[branchId] || []).slice(0, RECENT_EXAM_PATIENTS_PER_BRANCH_CAP);
     branchMap[normalizedBranch] = list.map(sanitizeRecentExamPatient);
   });
 

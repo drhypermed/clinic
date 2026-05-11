@@ -20,6 +20,7 @@ import { buildCairoDateTime, formatUserDate } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { CasePanel } from './records-view-parts/CasePanel';
 import { highlight } from './records-view-parts/highlight';
+import { RecordPackBadge } from '../specialty-packs/RecordPackBadge';
 import {
   buildCase,
   formatDateTimeSep,
@@ -56,7 +57,9 @@ export const DailyGroup: React.FC<{
   onDeleteConsultation: (record: PatientRecord) => void;
   onDeleteExam: (record: PatientRecord) => void;
   openByDefault?: boolean;                  // هل تفتح المجموعة تلقائياً (عادةً ليوم اليوم)
-}> = ({ dateKey, entries, term, onLoadRecord, onOpenPatientFile, onOpenConsultation, onLoadConsultation, onNewExam, onDelete, onDeleteConsultation, onDeleteExam, openByDefault }) => {
+  doctorUserId?: string;                    // معرّف الطبيب — لجلب شاره ملف الحمل/الأطفال
+  doctorSpecialty?: string;                 // تخصص الطبيب — يحدد لو الشاره تظهر
+}> = ({ dateKey, entries, term, onLoadRecord, onOpenPatientFile, onOpenConsultation, onLoadConsultation, onNewExam, onDeleteConsultation, onDeleteExam, openByDefault, doctorUserId, doctorSpecialty }) => {
   const [open, setOpen] = useState(!!openByDefault);
   const [expandedRecordIds, setExpandedRecordIds] = useState<Set<string>>(new Set());
   const totalCasesCount = entries.length;
@@ -170,13 +173,19 @@ export const DailyGroup: React.FC<{
                       >
                         {highlight(rec.patientName || 'مريض بدون اسم', term)}
                       </button>
-                      {/* رقم الملف + زر ملف المريض */}
+                      {/* رقم الملف + شاره متابعه التخصص + زر ملف المريض */}
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         {typeof rec.patientFileNumber === 'number' && Number.isFinite(rec.patientFileNumber) && rec.patientFileNumber > 0 && (
                           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-bold text-slate-500">
                             #{rec.patientFileNumber}
                           </span>
                         )}
+                        {/* شاره الحمل/الأطفال — تظهر بس لو الطبيب من تخصص الباكدج والمريض عنده ملف */}
+                        <RecordPackBadge
+                          userId={doctorUserId}
+                          patientName={rec.patientName}
+                          doctorSpecialty={doctorSpecialty}
+                        />
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onOpenPatientFile(rec); }}

@@ -62,7 +62,6 @@ const TABS: { key: ReportTab; label: string; icon: string }[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
-    onBack,
     activeTab,
     onTabChange,
     selectedYear,

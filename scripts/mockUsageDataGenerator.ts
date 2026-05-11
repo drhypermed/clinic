@@ -192,13 +192,8 @@ export const deleteAllUsageEvents = async (): Promise<void> => {
     // لحذف كمية كبيرة، استخدم Cloud Functions
     console.warn('⚠️ ملاحظة: حذف الكثير من المستندات قد يكون بطيئاً');
     
-    let deleted = 0;
-    for (const eventDoc of eventsSnap.docs) {
-      // await deleteDoc(doc(db, 'usageEvents', eventDoc.id));
-      deleted++;
-    }
-
-    console.log(`✅ تم حذف ${deleted} حدث`);
+    // ملاحظة: الحذف الفعلي معطل في السكربت — يحتاج تفعيل deleteDoc يدوياً.
+    console.log(`✅ تم رصد ${eventsSnap.size} حدث (الحذف معطل)`);
   } catch (error) {
     console.error('❌ خطأ في حذف الأحداث:', error);
   }

@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { BasicPatientSuggestion } from '../consultation/PatientInfoSection';
 import { PatientInfoSection } from '../consultation/PatientInfoSection';
 import { ClinicalInsightSection } from '../consultation/ClinicalInsightSection';
 import { VitalSignsSection } from '../consultation/VitalSignsSection';
+import { useEnabledSpecialtyPack } from '../../hooks/useSpecialtyPack';
+import { SpecialtyPackDiagnostic } from '../specialty-packs/SpecialtyPackDiagnostic';
+
+// تحميل كسول لودجت متابعه الحمل — أطباء التخصصات التانيه ما يحمّلوهاش
+const PregnancyConsultationWidget = React.lazy(
+  () => import('../specialty-packs/gynecology/PregnancyConsultationWidget')
+    .then((m) => ({ default: m.PregnancyConsultationWidget })),
+);
+// تحميل كسول لودجت متابعه الطفل — نفس النمط
+const PediatricConsultationWidget = React.lazy(
+  () => import('../specialty-packs/pediatrics/PediatricConsultationWidget')
+    .then((m) => ({ default: m.PediatricConsultationWidget })),
+);
 import { QuickSearchSection } from '../consultation/QuickSearchSection';
 import { PrescriptionPreview } from '../prescription/PrescriptionPreview';
 import { CaseAnalysisModal } from './CaseAnalysisModal';
@@ -225,6 +238,10 @@ interface MainAppPrescriptionSectionProps {
   setDiscountReasonLabel: (v: string) => void;
   // تنبيه الطبيب عند الوصول للحد الأقصى 15 عنصر في قوائم الروشتة
   showNotification: (message: string, type?: unknown, options?: unknown) => void;
+  // تخصص الطبيب — يستخدم لإظهار ودجت متابعه الحمل لأطباء النسا فقط
+  doctorSpecialty?: string;
+  // معرّف الطبيب الحالي — للقراءه/كتابه ملفات الحمل
+  doctorUserId?: string | null;
 }
 
 
@@ -246,12 +263,26 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   onSaveRecord, onOpenSaveReadyPrescriptionModal, onUndo, onRedo, historyLength, futureLength,
   userId, activeBranchId, paymentType, setPaymentType, insuranceCompanyId, setInsuranceCompanyId, insuranceCompanyName, setInsuranceCompanyName, insuranceApprovalCode, setInsuranceApprovalCode, insuranceMembershipId, setInsuranceMembershipId, patientSharePercent, setPatientSharePercent, discountAmount, setDiscountAmount, discountPercent, setDiscountPercent, discountReasonId, setDiscountReasonId, discountReasonLabel, setDiscountReasonLabel,
   showNotification,
+  doctorSpecialty, doctorUserId,
 }) => {
   const [isSavingRecord, setIsSavingRecord] = React.useState(false);
   const [showInlineCancelHint, setShowInlineCancelHint] = React.useState(false);
   // تتبّع أي زر اتضغط عشان الـ spinner يظهر عليه هو بس مش على الزر التاني
   // (quick = إضافة للروشتة، deep = تحليل الحالة)
   const [activeAnalyzeMode, setActiveAnalyzeMode] = React.useState<'quick' | 'deep' | null>(null);
+  // يحدد الباكدج المفعّل للطبيب (نسا، ...) — null لو مفيش
+  const enabledSpecialtyPack = useEnabledSpecialtyPack(doctorSpecialty);
+
+  // ─ 🆕 افتراضي للجنس لطبيبه النسا ─
+  // معظم مرضى طبيبه النسا إناث. لما تفتح كشف جديد فاضي (مفيش اسم ومفيش جنس)
+  // والتخصص نسا، نخلي الجنس "أنثى" تلقائياً عشان حقول "حامل" و"مرضعه"
+  // تظهر بدون ما تختار الجنس يدوي. الدكتور يقدر يغيّره لمذكر لو الحاله نادره.
+  React.useEffect(() => {
+    if (enabledSpecialtyPack !== 'gynecology') return;
+    if (gender) return; // لو فيه جنس مسجل بالفعل، ما نلمسش
+    if (patientName.trim()) return; // فيه اسم = الكشف بدأ، ما نتدخلش
+    setGender('female');
+  }, [enabledSpecialtyPack, gender, patientName, setGender]);
 
   // ─── حالة مودال فحص التداخلات الدوائية ──────────────────────────────────
   // الحالة محلية في المكون لأنها featured zone مستقلة — لا تحتاج رفعها للـ parent.
@@ -835,8 +866,49 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   customBoxes={customBoxes}
                   customBoxValues={customBoxValues}
                   setCustomBoxValue={onCustomBoxValueChange}
+                  doctorSpecialty={doctorSpecialty}
                 />
               </div>
+
+              {/* بانر تشخيصي — بيظهر بس لو التخصص يلمس باكدج معين لكن مش متفعل بالضبط */}
+              <SpecialtyPackDiagnostic doctorSpecialty={doctorSpecialty} />
+
+              {/* ─── ودجت متابعه الحمل — يظهر فقط لأطباء النسا لو الباكدج مفعّل ─── */}
+              {enabledSpecialtyPack === 'gynecology' && (
+                <div className="editor-block dh-stagger-2">
+                  <Suspense fallback={null}>
+                    <PregnancyConsultationWidget
+                      userId={doctorUserId}
+                      patientName={patientName}
+                      visitDate={visitDate}
+                      // مزامنه LMP → حقول الكشف (الحامل + الأسبوع)
+                      onSyncPregnancyFromLMP={(p, week) => {
+                        setPregnant(p);
+                        setGestationalAgeWeeks(week);
+                      }}
+                    />
+                  </Suspense>
+                </div>
+              )}
+
+              {/* ─── ودجت متابعه الطفل — يظهر فقط لأطباء الأطفال لو الباكدج مفعّل ─── */}
+              {enabledSpecialtyPack === 'pediatrics' && (
+                <div className="editor-block dh-stagger-2">
+                  <Suspense fallback={null}>
+                    <PediatricConsultationWidget
+                      userId={doctorUserId}
+                      patientName={patientName}
+                      // مزامنه السن من تاريخ الميلاد → حقول الكشف
+                      // لو الدكتور سجل تاريخ ميلاد، السن في الكشف يتعدّل تلقائياً
+                      onSyncAgeFromDOB={(y, m, d) => {
+                        setAgeYears(y);
+                        setAgeMonths(m);
+                        setAgeDays(d);
+                      }}
+                    />
+                  </Suspense>
+                </div>
+              )}
 
               <div className="editor-block editor-block--clinical dh-stagger-3">
                 <ClinicalInsightSection
@@ -845,6 +917,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   exam={examination} setExam={setExamination}
                   investigations={investigations} setInvestigations={setInvestigations}
                   errorMsg={smartQuotaNotice || isQuotaLimitError ? null : errorMsg}
+                  doctorSpecialty={doctorSpecialty}
                 />
               </div>
 
@@ -948,6 +1021,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
             onRemoveItem={onRemoveItem} onUpdateItemName={onUpdateItemName} onUpdateItemInstruction={onUpdateItemInstruction} onUpdateItemFontSize={onUpdateItemFontSize} onSwapItem={onSwapItem} onSelectMedication={onSelectMedication} onMedicationClick={onMedicationClick}
             onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice} onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab}
             isPrintMode={isPrintMode} isDataOnlyMode={isDataOnlyMode} ref={prescriptionRef} usageStats={usageStats} prescriptionSettings={prescriptionSettings ?? undefined}
+            doctorSpecialty={doctorSpecialty}
             // forceShowDx يُجبر ظهور صف Dx فاضي بعد التحليل لتنبيه الطبيب بالكتابة اليدوية
             forceShowDx={needsManualDxHint && !diagnosisEn.trim()}
             actionsBar={actionsBarNode}

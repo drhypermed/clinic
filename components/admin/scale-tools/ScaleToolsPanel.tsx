@@ -22,12 +22,15 @@ const FLAG_KEYS = [
   { key: 'dh_patient_summaries_enabled', label: 'ملخصات المرضى (المرحلة 2)' },
 ] as const;
 
+// بعد إطلاق الـ3 مراحل (2026-05-10): الافتراضي ON لكل المستخدمين.
+// المفاتيح هنا أصبحت kill-switch — قيمة 'false' في الـlocalStorage تطفيها على الجهاز.
+// أي قيمة تانية أو غياب الـflag = شغّالة.
 const isFlagOn = (key: string): boolean => {
   try {
     const value = String(localStorage.getItem(key) || '').trim().toLowerCase();
-    return value === 'true' || value === '1' || value === 'on';
+    return !(value === 'false' || value === '0' || value === 'off' || value === 'no');
   } catch {
-    return false;
+    return true;
   }
 };
 
@@ -35,6 +38,7 @@ type LogLine = { type: 'info' | 'success' | 'error'; text: string };
 
 export const ScaleToolsPanel: React.FC = () => {
   const [running, setRunning] = useState(false);
+  const [runningMigration, setRunningMigration] = useState(false);
   const [log, setLog] = useState<LogLine[]>([]);
   const [flagStates, setFlagStates] = useState<Record<string, boolean>>({});
 
@@ -49,14 +53,17 @@ export const ScaleToolsPanel: React.FC = () => {
 
   const append = (line: LogLine) => setLog((prev) => [...prev, line]);
 
-  // تشغيل أو إيقاف مفتاح معيّن في localStorage
+  // تشغيل/إيقاف المفتاح: الافتراضي ON بعد إطلاق المراحل.
+  // التوقف = نخزّن 'false' في الـlocalStorage. التشغيل = نشيل القيمة (يرجع للافتراضي).
   const toggleFlag = (key: string) => {
     try {
       const current = isFlagOn(key);
       if (current) {
-        localStorage.removeItem(key);
+        // الميزة شغّالة دلوقتي → نوقفها على الجهاز ده فقط
+        localStorage.setItem(key, 'false');
       } else {
-        localStorage.setItem(key, 'true');
+        // متوقفة بـ'false' → نشيل القيمة فترجع للافتراضي (شغّالة)
+        localStorage.removeItem(key);
       }
       setFlagStates((prev) => ({ ...prev, [key]: !current }));
       append({
@@ -96,22 +103,46 @@ export const ScaleToolsPanel: React.FC = () => {
     }
   };
 
-  // تشغيل كل المفاتيح دفعة واحدة (للتجربة الكاملة)
+  // نقل بيانات السكرتيرات من المسار القديم للجديد — تشغّل مرة واحدة بس.
+  // البيانات بتتنقل تلقائياً عند الـlogin الجاي لكل سكرتيرة، لكن لو السكرتيرة
+  // عمرها ما دخلت تاني، البيانات قاعدة في المسار القديم للأبد — الزر ده ينظفها.
+  const runLegacyMigration = async () => {
+    setRunningMigration(true);
+    try {
+      append({ type: 'info', text: '⏳ بدء ترحيل بيانات السكرتيرات القديمة...' });
+      const migrate = httpsCallable(functions, 'migrateLegacySecretaryPaths');
+      const result = await migrate({});
+      const report = result.data as Record<string, unknown>;
+      append({
+        type: 'success',
+        text: `✓ تم: نُقل ${report.migrated || 0} | منقول مسبقاً ${report.alreadyMigrated || 0} | تعارضات ${report.conflicts || 0} | أخطاء ${report.errors || 0}`,
+      });
+      if (Number(report.errors || 0) > 0 || Number(report.conflicts || 0) > 0) {
+        append({ type: 'info', text: `تفاصيل: ${JSON.stringify(report.details || [])}` });
+      }
+    } catch (e) {
+      append({ type: 'error', text: `✗ خطأ في الترحيل: ${(e as Error).message}` });
+    } finally {
+      setRunningMigration(false);
+    }
+  };
+
+  // تشغيل كل المفاتيح = نشيل أي 'false' متخزّنة فترجع للافتراضي (شغّالة)
   const enableAllFlags = () => {
     FLAG_KEYS.forEach((f) => {
       try {
-        localStorage.setItem(f.key, 'true');
+        localStorage.removeItem(f.key);
       } catch { /* no-op */ }
     });
     setFlagStates(Object.fromEntries(FLAG_KEYS.map((f) => [f.key, true])));
     append({ type: 'success', text: '✓ كل المفاتيح اتشغّلت — ارفرش الصفحة عشان تشتغل' });
   };
 
-  // إيقاف كل المفاتيح (للرجوع للسلوك القديم)
+  // إيقاف كل المفاتيح (kill-switch على الجهاز ده) — نخزّن 'false' لكل واحد
   const disableAllFlags = () => {
     FLAG_KEYS.forEach((f) => {
       try {
-        localStorage.removeItem(f.key);
+        localStorage.setItem(f.key, 'false');
       } catch { /* no-op */ }
     });
     setFlagStates(Object.fromEntries(FLAG_KEYS.map((f) => [f.key, false])));
@@ -190,6 +221,24 @@ export const ScaleToolsPanel: React.FC = () => {
             إيقاف الكل
           </button>
         </div>
+      </section>
+
+      {/* ترحيل بيانات السكرتيرات القديمة (one-shot) */}
+      <section className="border border-slate-100 rounded-xl p-4 space-y-3 bg-slate-50/30">
+        <div>
+          <h3 className="font-bold text-slate-700 text-sm">ترحيل بيانات السكرتيرات القديمة</h3>
+          <p className="text-xs text-slate-500 mt-1">
+            ينقل بيانات السكرتيرات اللي محفوظة في المسار القديم (من قبل إصلاح 2026-05) للمسار الجديد.
+            تشغّله مرة واحدة فقط. آمن: لو حصل خطأ، البيانات القديمة تفضل في مكانها.
+          </p>
+        </div>
+        <button
+          onClick={runLegacyMigration}
+          disabled={runningMigration}
+          className="w-full py-2.5 px-4 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          {runningMigration ? '⏳ جاري الترحيل...' : 'تشغيل الترحيل لمرة واحدة'}
+        </button>
       </section>
 
       {/* السجل */}

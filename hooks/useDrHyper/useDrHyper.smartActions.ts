@@ -20,6 +20,11 @@ import { SMART_QUOTA_NOTICE_STORAGE_KEY } from './useDrHyper.helpers';
 // خدمة التحليل الغني (DDx + Must-Not-Miss + Investigations + ...)
 // منفصلة عن runSmartRx عشان كل فلو ياخد نداء AI مستقل ومناسب
 import { analyzeCaseDeeply, type CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
+import {
+  buildPediatricContext,
+  buildPregnancyContext,
+} from '../../services/specialty-packs';
+import { normalizePatientNameForFile } from '../../services/patient-files';
 // كاش سحابي للتحليل — يحفظ النتيجة شهر ويرجعها فوراً لنفس الكشف
 // (توفير ضخم في الكوتا والتكلفة لو الطبيب فتح نفس الكشف مرة تانية)
 import {
@@ -53,6 +58,9 @@ interface CreateSmartRxActionsParams {
   totalAgeInMonths: number;
   vitals: VitalSigns;
   userId?: string;
+  // اسم المريض — يستخدم لبناء nameKey وقراءه ملفات حزم التخصصات
+  // (ملف الحمل / ملف الطفل) لإضافه السياق للـAI لو الباكدج مفعّل.
+  patientName?: string;
   // 🆕 (2026-05) — `mode` يحدد العداد: 'analyze' للزر العميق، 'quickAdd' للزر السريع.
   // الزرين كان عندهم نفس العداد، فاستهلاك واحد بيقفل التاني — اتفصلوا على عدّادين.
   consumeSmartPrescriptionQuota: (mode?: 'analyze' | 'quickAdd') => Promise<unknown>;
@@ -142,6 +150,7 @@ export const createSmartRxActions = ({
   totalAgeInMonths,
   vitals,
   userId,
+  patientName,
   consumeSmartPrescriptionQuota,
   extractSmartQuotaErrorDetails,
   openQuotaNoticeModal,
@@ -476,7 +485,25 @@ export const createSmartRxActions = ({
         })()
       : '';
 
-    // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة + التخصص (مطلب المستخدم الأساسي)
+    // ─ سياق حزم التخصصات (اختياري) — يتجمع لو الطبيب مفعّل عنده باكدج وفيه ملف.
+    //   التكلفه: قراءه Firestore واحده لكل باكدج مفعّل. لو الكاش فيه الملف → فوري.
+    const packNameKey = patientName ? normalizePatientNameForFile(patientName) : '';
+    let pregnancyContext: string | undefined;
+    let pediatricContext: string | undefined;
+    if (userId && packNameKey) {
+      try {
+        const [preg, ped] = await Promise.all([
+          buildPregnancyContext(userId, packNameKey),
+          buildPediatricContext(userId, packNameKey),
+        ]);
+        pregnancyContext = preg;
+        pediatricContext = ped;
+      } catch {
+        // أي فشل في القراءه — نكمل بدون سياق إضافي، مفيش حاجه تتكسر
+      }
+    }
+
+    // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة + التخصص + سياق الباكدج
     const weightNum = parseFloat(weight);
     const heightNum = parseFloat(height);
     const deepInput = {
@@ -496,6 +523,9 @@ export const createSmartRxActions = ({
       breastfeeding,
       vitals,
       doctorSpecialty,
+      // 🆕 سياق حزم التخصصات — يدخل في prompt الـAI لو موجود
+      pregnancyContext,
+      pediatricContext,
     };
 
     setAnalyzing(true);

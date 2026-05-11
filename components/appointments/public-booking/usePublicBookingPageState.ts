@@ -10,7 +10,7 @@
  */
 import { BookingQuotaNotice } from '../public-booking-form/types';
 
-import { Config, DoctorEntryResponse, EntryAlert } from './types';
+import { Config, DoctorEntryResponse, EntryAlert, SecretaryActionToastState } from './types';
 import { PatientSuggestionOption, RecentExamPatientOption } from '../add-appointment-form/types';
 import { TodayAppointment } from './types';
 import { useMemo, useRef, useState } from 'react';
@@ -89,7 +89,7 @@ export const usePublicBookingPageState = () => {
   const [approvedEntryAppointmentIds, setApprovedEntryAppointmentIds] = useState<string[]>([]);
   const [secretaryApprovedEntryIds, setSecretaryApprovedEntryIds] = useState<string[]>([]);
   const [pendingEntryAppointmentId, setPendingEntryAppointmentId] = useState<string | null>(null);
-  const [secretaryActionToast, setSecretaryActionToast] = useState<'approved' | 'rejected' | null>(null);
+  const [secretaryActionToast, setSecretaryActionToast] = useState<SecretaryActionToastState>(null);
   const [subscriptionFormTitle, setSubscriptionFormTitle] = useState<string>('');
   const [bookingFormOpen, setBookingFormOpen] = useState(true);
   const [todaySectionOpen, setTodaySectionOpen] = useState(true);

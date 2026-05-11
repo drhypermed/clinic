@@ -10,6 +10,7 @@
 
 import React from 'react';
 import { VitalSignConfig, CustomBox, VitalsSectionSettings } from '../../types';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 // تصنيف مؤشر كتلة الجسم — نفس الحدود المستخدمة في الشريط الجانبي للروشتة
 // عشان الطبيب يلاقي نفس الكلام في الاتنين بدون ازدواج.
@@ -36,7 +37,7 @@ interface VitalSignsSectionProps {
   weight: string; setWeight: (v: string) => void;        // الوزن كجم
   height?: string; setHeight?: (v: string) => void;      // الطول سم
   bmi?: string;                                         // مؤشر كتلة الجسم المحسوب
-  vitals: { bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string }; // العلامات الحيوية الأخرى
+  vitals: { bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string; headCirc?: string }; // العلامات الحيوية الأخرى
   setVitals: (field: string, v: string) => void;         // دالة تحديث العلامات الحيوية
   vitalsConfig?: VitalSignConfig[];                      // قائمة إعدادات العلامات الحيوية (ظهورها وترتيبها)
   vitalsSection?: VitalsSectionSettings;                 // إعدادات القسم العام (العنوان)
@@ -44,6 +45,8 @@ interface VitalSignsSectionProps {
   customBoxValues?: Record<string, string>;              // قيم الحقول المخصصة
   setCustomBoxValue?: (boxId: string, value: string) => void; // دالة تحديث الحقول المخصصة
   alwaysShowWeight?: boolean;
+  // 🆕 تخصص الطبيب — يحدد ظهور حقل محيط الرأس (لتخصص الأطفال فقط)
+  doctorSpecialty?: string;
 }
 
 // الإعدادات الافتراضية للعلامات الحيوية في حال عدم توفر إعدادات مخصصة
@@ -57,21 +60,51 @@ const DEFAULT_VITAL_CONFIG: VitalSignConfig[] = [
   { key: 'temp', label: 'Temp', labelAr: 'الحرارة', unit: '°C', enabled: true, order: 7 },
   { key: 'spo2', label: 'SpO2', labelAr: 'تشبع الأكسجين', unit: '%', enabled: true, order: 8 },
   { key: 'rr', label: 'RR', labelAr: 'التنفس', unit: '/min', enabled: true, order: 9 },
+  // 🆕 محيط الرأس — مفعّل افتراضياً لتخصص الأطفال فقط (الـsection بيفلتر حسب التخصص)
+  { key: 'headCirc', label: 'Head Circ.', labelAr: 'محيط الرأس', unit: 'cm', enabled: true, order: 10 },
 ];
+
+const DEFAULT_HEAD_CIRC_CONFIG: VitalSignConfig = {
+  key: 'headCirc',
+  label: 'Head Circ.',
+  labelAr: 'محيط الرأس',
+  unit: 'cm',
+  enabled: true,
+  order: 10,
+};
 
 export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
   weight, setWeight, height, setHeight, bmi, vitals, setVitals, vitalsConfig = DEFAULT_VITAL_CONFIG,
   vitalsSection, customBoxes = [], customBoxValues = {}, setCustomBoxValue,
-  alwaysShowWeight = true,
+  alwaysShowWeight = true, doctorSpecialty,
 }) => {
+  // محيط الرأس بيظهر بس لتخصص الأطفال (هو حقل خاص بالنمو، مش عام لكل التخصصات)
+  const isPediatricSpecialty = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
+  const effectiveVitalsConfig = React.useMemo(() => {
+    const source = Array.isArray(vitalsConfig) && vitalsConfig.length > 0
+      ? vitalsConfig
+      : DEFAULT_VITAL_CONFIG;
+    const filtered = source.filter((v) => v.key !== 'headCirc' || isPediatricSpecialty);
+    if (isPediatricSpecialty && !filtered.some((v) => v.key === 'headCirc')) {
+      return [...filtered, DEFAULT_HEAD_CIRC_CONFIG];
+    }
+    return filtered;
+  }, [isPediatricSpecialty, vitalsConfig]);
   const fieldTitleClass = 'text-[12px] font-black text-slate-700 mb-1.5 px-1 tracking-[0.01em]';
   
   // عنوان القسم (يمكن تغييره من الإعدادات)
   const sectionTitle = vitalsSection?.title || 'القياسات والعلامات الحيوية';
 
   // تصفية وترتيب العلامات الحيوية المفعلة (باستثناء الوزن والطول المعروضين في الصف الأول)
-  const enabledVitals = vitalsConfig
-    .filter(v => v.enabled && v.key !== 'weight' && v.key !== 'height' && v.key !== 'bmi' && v.key !== 'rbs')
+  // محيط الرأس بيتفلتر أيضاً لو التخصص مش أطفال — حتى لو الـconfig قال enabled
+  const enabledVitals = effectiveVitalsConfig
+    .filter(v => {
+      if (!v.enabled) return false;
+      if (v.key === 'weight' || v.key === 'height' || v.key === 'bmi' || v.key === 'rbs') return false;
+      // محيط الرأس: لتخصص الأطفال فقط
+      if (v.key === 'headCirc' && !isPediatricSpecialty) return false;
+      return true;
+    })
     .sort((a, b) => a.order - b.order);
 
   // تصفية وترتيب الحقول المخصصة المفعلة
@@ -80,10 +113,10 @@ export const VitalSignsSection: React.FC<VitalSignsSectionProps> = ({
     .sort((a, b) => a.order - b.order);
 
   // منطق العرض لمدخلات الصف الأول
-  const weightConfig = vitalsConfig.find(v => v.key === 'weight');
-  const heightConfig = vitalsConfig.find(v => v.key === 'height');
-  const bmiConfig = vitalsConfig.find(v => v.key === 'bmi');
-  const rbsConfig = vitalsConfig.find(v => v.key === 'rbs');
+  const weightConfig = effectiveVitalsConfig.find(v => v.key === 'weight');
+  const heightConfig = effectiveVitalsConfig.find(v => v.key === 'height');
+  const bmiConfig = effectiveVitalsConfig.find(v => v.key === 'bmi');
+  const rbsConfig = effectiveVitalsConfig.find(v => v.key === 'rbs');
   const isWeightShown = alwaysShowWeight || (weightConfig?.enabled ?? true);
   const isHeightEnabled = heightConfig?.enabled ?? true;
   const isBmiEnabled = bmiConfig?.enabled ?? true;

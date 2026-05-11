@@ -46,6 +46,44 @@ export interface ClinicalVisitSnapshot {
   paymentType?: PaymentType;
 }
 
+// ─ ملخصات حزم التخصصات في التقرير (اختياريه — تظهر فقط لو الباكدج مفعّل)
+export interface ReportPregnancyTracking {
+    lmp?: string;
+    edd?: string;
+    currentWeek?: number;
+    closedAt?: string;
+    closureType?: 'delivery' | 'miscarriage' | 'other';
+    visits: Array<{
+        dateKey: string;
+        gestationalWeek?: number;
+        fetalWeight?: string;
+        fetalHeartRate?: string;
+        fetalMovement?: string;
+        maternalWeight?: string;
+        ultrasoundNotes?: string;
+        notes?: string;
+    }>;
+}
+
+export interface ReportPediatricTracking {
+    dateOfBirth?: string;
+    sex?: 'male' | 'female' | '';
+    growthEntries: Array<{
+        dateKey: string;
+        weightKg?: string;
+        heightCm?: string;
+        headCircCm?: string;
+        notes?: string;
+    }>;
+    vaccinations: Array<{
+        shortName: string;
+        vaccine: string;
+        ageLabel: string;
+        status: 'given' | 'skipped' | 'pending';
+        givenDate?: string;
+    }>;
+}
+
 export interface PatientClinicalTimelineSnapshot {
   patientName: string;
   patientFileNumber?: number;
@@ -57,6 +95,9 @@ export interface PatientClinicalTimelineSnapshot {
   examCount: number;
   consultationCount: number;
   visits: ClinicalVisitSnapshot[];
+  // ─ بيانات حزم التخصصات (اختياريه) — تظهر كملحق في نهايه التقرير
+  pregnancyTracking?: ReportPregnancyTracking;
+  pediatricTracking?: ReportPediatricTracking;
 }
 
 export interface ClinicalTimelinePoint {

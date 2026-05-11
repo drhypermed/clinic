@@ -55,10 +55,3 @@ export const parseAdminDateTime = (date: string, time: string): Date | null => {
   return parsed;
 };
 
-/** هل المستخدم يمثل شخصاً من الجمهور العام؟ */
-const isPublicUser = (data: Record<string, any>) =>
-  data?.authRole === 'public' ||
-  data?.userRole === 'public' ||
-  data?.role === 'public' ||
-  data?.accountType === 'public';
-

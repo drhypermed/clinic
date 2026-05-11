@@ -120,67 +120,6 @@ const compressImage = async (input: Blob, options: CompressOptions = {}): Promis
   });
 };
 
-/**
- * رفع صورة الملف الشخصي من كائن File
- */
-const uploadProfilePhoto = async (userId: string, file: File): Promise<string> => {
-    try {
-        // نمسح الصور القديمة الأول عشان ما تتراكمش وتكلف فلوس تخزين
-        await cleanupOldFilesInFolder(`users/${userId}/profile`);
-        const compressed = await compressImage(file);
-        const fileName = `profile_${Date.now()}.jpg`;
-        const storageRef = ref(storage, `users/${userId}/profile/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, compressed);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error: any) {
-        console.error('[Storage] Error uploading photo:', error);
-        throw new Error(error.message || 'حدث خطأ أثناء رفع الصورة');
-    }
-};
-
-/**
- * رفع صورة من بيانات Base64 (مفيد عند استخدام كاميرا الويب أو تعديل الصور في المتصفح)
- */
-const uploadBase64Photo = async (userId: string, base64Data: string): Promise<string> => {
-    try {
-        await cleanupOldFilesInFolder(`users/${userId}/profile`);
-        const response = await fetch(base64Data);
-        const blob = await response.blob();
-        const compressed = await compressImage(blob);
-        const fileName = `profile_${Date.now()}.jpg`;
-        const storageRef = ref(storage, `users/${userId}/profile/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, compressed);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error: any) {
-        console.error('[Storage] Error uploading photo:', error);
-        throw new Error(error.message || 'حدث خطأ أثناء رفع الصورة');
-    }
-};
-
-/**
- * رفع مستندات التحقق (مثل كارنيه النقابة) لغرض توثيق حساب الطبيب
- */
-const uploadVerificationDoc = async (userId: string, file: File): Promise<string> => {
-    try {
-        const fileName = `verification_${Date.now()}.${file.type.split('/')[1] || 'jpg'}`;
-        const storageRef = ref(storage, `verification_docs/${userId}/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error: any) {
-        console.error('[Storage] Error uploading verification doc:', error);
-        throw new Error(error.message || 'حدث خطأ أثناء رفع ملف التحقق');
-    }
-};
-
-/** وظيفة مساعدة لاستخراج الامتداد من نوع MIME */
-const getExtensionFromMime = (mimeType: string) => {
-    const subtype = (mimeType || '').split('/')[1] || 'jpg';
-    return subtype.split(';')[0].trim() || 'jpg';
-};
-
 /** التحقق مما إذا كان الخطأ بسبب عدم وجود الملف */
 const isNotFoundStorageError = (error: any) => {
     const code = typeof error?.code === 'string' ? error.code : '';
@@ -193,25 +132,6 @@ const isInvalidStorageUrlError = (error: any) => {
     return code === 'storage/invalid-url' || code === 'storage/invalid-argument';
 };
 
-/**
- * حذف الصور القديمة من مجلد قبل رفع صورة جديدة.
- * بيمنع تراكم الصور القديمة اللي محدش بيستعملها وبتكلف فلوس تخزين.
- */
-const cleanupOldFilesInFolder = async (folderPath: string): Promise<void> => {
-    try {
-        const { listAll } = await import('firebase/storage');
-        const folderRef = ref(storage, folderPath);
-        const result = await listAll(folderRef);
-        // امسح كل الملفات القديمة — الملف الجديد هيترفع بعدها
-        await Promise.all(
-            result.items.map(async (itemRef) => {
-                try { await deleteObject(itemRef); } catch { /* تجاهل لو الملف مش موجود */ }
-            })
-        );
-    } catch {
-        // لو المجلد مش موجود أصلاً أو حصل خطأ — مش مشكلة، الصورة الجديدة هتترفع عادي
-    }
-};
 
 /** حذف ملف من التخزين بشكل آمن (تجاهل الأخطاء إذا كان الملف أصلاً محذوفاً) */
 const safeDeleteStorageRef = async (target: string): Promise<void> => {

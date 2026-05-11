@@ -226,6 +226,11 @@ interface CaseAnalysisInput {
   //   على نطاق التخصص بدل ما يجاوب كطبيب أسرة دائماً.
   //   لو غير موجود (signup قديم) → ينحاز للنمط العام (طب أسرة).
   doctorSpecialty?: string;
+  // ─ سياق إضافي من حزم التخصصات (اختياري) — بيتضاف للـprompt كقسم منفصل.
+  //   pregnancyContext: من ملف الحمل (الأسبوع/EDD/آخر زياره) — لأطباء النسا.
+  //   pediatricContext: من ملف الطفل (DOB/اتجاه النمو/تطعيمات متأخره) — لأطباء الأطفال.
+  pregnancyContext?: string;
+  pediatricContext?: string;
 }
 
 // ─── الدالة الرئيسية ─────────────────────────────────────────────────────
@@ -271,6 +276,17 @@ export const analyzeCaseDeeply = async (
 - Suggested investigations should reflect tests a ${specialty} clinic would order, not generic primary-care panels.`
     : '';
 
+  // ─ سياق إضافي من حزم التخصصات — يتحقن في الـprompt لو موجود ─
+  // الـAI يستخدمه كبيانات داعمه (مش بديل عن الفحص السريري) — مثلاً
+  // اتجاه وزن الطفل بيساعد في تقييم Failure to Thrive، أو حركه الجنين القليله
+  // بتعتبر red flag لطبيب النسا.
+  const specialtyPackContext: string[] = [];
+  if (input.pregnancyContext) specialtyPackContext.push(`PREGNANCY TRACKING: ${input.pregnancyContext}`);
+  if (input.pediatricContext) specialtyPackContext.push(`PEDIATRIC TRACKING: ${input.pediatricContext}`);
+  const specialtyPackBlock = specialtyPackContext.length
+    ? `\n\n═══ SPECIALTY-TRACKING CONTEXT (longitudinal data from this patient's specialty file) ═══\n${specialtyPackContext.join('\n')}`
+    : '';
+
   // Prompt محسّن (تقليص ~40%): شلنا الفواصل الزخرفية والشرح المكرر — حافظنا على
   // كل القواعد الأمنية الحرجة (حمل/رضاعة/أطفال/علامات حيوية/ممنوع أدوية) والـ schema.
   const prompt = `${consultantRole}. Produce a structured case workup based ONLY on the patient data below. Zero tolerance for hallucination.${specialtyGuidance}
@@ -283,7 +299,7 @@ Vitals: ${vitalsSummary}
 Complaint: ${toTrimmed(input.complaint) || 'NOT PROVIDED'}
 History: ${toTrimmed(input.medicalHistory) || 'NOT PROVIDED'}
 Exam: ${toTrimmed(input.examination) || 'NOT PROVIDED'}
-Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}
+Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}${specialtyPackBlock}
 
 ═══ ABSOLUTE ANTI-HALLUCINATION RULES ═══
 1. Use ONLY the data provided above. NEVER invent symptoms, findings, history, or vital signs not stated.

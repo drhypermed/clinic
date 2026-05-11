@@ -23,7 +23,7 @@ import { parseAgeToYearsMonthsDays } from '../utils';
 import { AppUpdateBroadcastBanner } from '../../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../../common/InAppAudienceNotificationPopup';
 import { PublicBookingTopBar } from './PublicBookingTopBar';
-import { PublicBookingInvalidLinkView, PublicBookingLoadingView, PublicBookingLoginRequiredView } from './PublicBookingStatusViews';
+import { PublicBookingInvalidLinkView, PublicBookingLoadingView } from './PublicBookingStatusViews';
 import { useAuth } from '../../../hooks/useAuth';
 import { BranchSelectorScreen } from './BranchSelectorScreen';
 import { PublicBookingFormCard } from './PublicBookingFormCard';
@@ -56,8 +56,7 @@ export const PublicBookingFormPage: React.FC = () => {
   const location = useLocation();
   const { slug: slugParam = '', secret: secretParam = '', userId: userIdRouteParam = '' } = useParams<{ slug: string; secret: string; userId: string }>();
   const { user, loading: authLoading, signInGoogle } = useAuth();
-  const isFromPublicSite = new URLSearchParams(location.search).get('entry') === 'public-site';
-  // الفرع المرسل من الديركتوري — لو المريض اختار فرع من مودال اختيار الفرع،
+  // الفرع المرسل من الديركتوري أو من رابط فرع مخصّص — لو المريض اختار فرع،
   // بنحدّده هنا مسبّقاً عشان مايشوفش شاشه اختيار تانيه جوّه الفورم.
   const preselectedBranchId = new URLSearchParams(location.search).get('branch') || '';
 
@@ -146,18 +145,23 @@ export const PublicBookingFormPage: React.FC = () => {
     return () => unsub();
   }, [user?.uid, userId]);
 
-  // فلترة slots: عزل صارم بين الفروع — كل سكرتيرة بتشوف مواعيدها بس في فرعها.
-  //  • طبيب بدون فروع أو بفرع واحد: نعرض كل المواعيد (مفيش ازدواج).
-  //  • طبيب بفروع متعددة: لازم branchId يطابق الفرع المختار بالضبط.
-  // المواعيد القديمة بدون branchId مش هتظهر في حالة الفروع المتعددة — وده مقصود
-  // علشان السكرتيرات الجديدة ميشوفوش مواعيد فروع تانية.
+  // فلترة slots: عزل صارم بين الفروع — كل فرع يعرض مواعيده فقط للمريض.
+  //  • طبيب بدون فروع (legacy نادر): نعرض كل المواعيد للحفاظ على التوافق العكسي.
+  //  • طبيب بفرع/فروع: لازم selectedBranchId محدّد + branchId مطابق بالضبط.
+  // الفائدة الأمنية: لو سكرتيرة فرع B أنشأت سلوت بختم فرع غلط (أو بدون ختم)،
+  // المريض اللي اختار فرع A مش هيشوفه — مفيش تسرب بين الفروع.
+  // ملاحظة: لو الطبيب عنده فرع واحد فقط، useEffect أعلاه يثبّت selectedBranchId
+  // تلقائياً للفرع ده، فالفلتر يكمل اشتغاله الصارم بدون شاشة اختيار للمريض.
   const filteredSlots = React.useMemo(() => {
     let baseSlots: typeof slots;
-    if (branches.length <= 1) {
+    if (branches.length === 0) {
+      // طبيب لسه ما عرّفش أي فروع (حالة قديمة جداً) — نسمح بكل المواعيد
       baseSlots = slots;
     } else if (!selectedBranchId) {
+      // فيه فروع لكن المريض لسه ما اختارش (أو الفرع الواحد لسه ما اتثبّتش) — نخفي الكل
       baseSlots = [];
     } else {
+      // فلترة صارمة دايماً — branchId لازم يطابق الفرع المختار بالضبط
       baseSlots = slots.filter((slot) => slot.branchId === selectedBranchId);
     }
     if (myBookedDateTimes.size === 0) return baseSlots;
@@ -224,7 +228,8 @@ export const PublicBookingFormPage: React.FC = () => {
   } = usePublicBookingSubmit({
     userId,
     secret,
-    isFromPublicSite,
+    // اشتراط جوجل يجي من إعداد الطبيب نفسه في publicBookingConfig
+    requireGoogleSignIn: Boolean(config?.requireGoogleSignIn),
     slots: filteredSlots,
     appointmentType,
     selectedConsultationCandidateId,
@@ -342,10 +347,12 @@ export const PublicBookingFormPage: React.FC = () => {
   //    المريض بيملأ الفورم أولاً، وعند الضغط "حجز" يظهر طلب Google login
 
   // شاشة اختيار الفرع: تظهر لو عنده أكثر من فرع نشط ولم يتم الاختيار بعد
+  // بنبعت slots كلها (قبل الفلترة) عشان الشاشة تعرض عدد المواعيد المتاحة لكل فرع
   if (branches.length > 1 && !selectedBranchId && !success) {
     return (
       <BranchSelectorScreen
         branches={branches}
+        slots={slots}
         doctorName={doctorSummary.doctorName}
         clinicTitle={config?.title}
         onSelect={setSelectedBranchId}
@@ -355,9 +362,12 @@ export const PublicBookingFormPage: React.FC = () => {
 
   if (success) {
     const bookedSlot = slots.find((s) => s.id === selectedSlotId);
-    // رابط دليل الأطباء: لو من الموقع العام نروح للرئيسية، غير كده نفتح الموقع في تبويب جديد
+    // رابط دليل الأطباء: لو إحنا على الموقع العام (drhypermed) نروح للرئيسية،
+    // غير كده (المريض فاتح من رابط حجز مشترك) نفتح الموقع العام في tab جديد.
     const handleGotoDirectory = () => {
-      if (isFromPublicSite) {
+      const isOnPublicSite =
+        typeof window !== 'undefined' && /drhypermed\.com$/i.test(window.location.hostname);
+      if (isOnPublicSite) {
         navigate('/');
       } else {
         window.open('https://www.drhypermed.com', '_blank', 'noopener,noreferrer');
@@ -403,7 +413,6 @@ export const PublicBookingFormPage: React.FC = () => {
         />
         <InAppAudienceNotificationPopup audience="public" scopeIds={[user?.uid || '', userId || '']} />
         <PublicBookingTopBar
-          isFromPublicSite={isFromPublicSite}
           showShareMenu={showShareMenu}
           linkCopied={linkCopied}
           doctorName={doctorSummary.doctorName || config?.title || 'حجز موعد'}
@@ -467,6 +476,7 @@ export const PublicBookingFormPage: React.FC = () => {
           alertRef={alertRef}
           submitting={submitting}
           isLoggedIn={Boolean(user)}
+          requireGoogleSignIn={Boolean(config?.requireGoogleSignIn)}
           onLoginToBook={async (slotId) => {
             // احفظ الـ slotId وارفع علم الانتظار قبل فتح Google login
             pendingSlotIdRef.current = slotId;

@@ -10,9 +10,11 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { closePushNotificationsByContext } from '../../../services/messagingService';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { EntryAlert } from '../../../types';
+import type { SecretaryActionToastState } from './types';
 import {
   INTERNAL_TOAST_MIN_VISIBLE_MS,
   buildSecretaryActionToastKey,
@@ -27,7 +29,7 @@ type UsePublicBookingEntryAlertActionsParams = {
   entryResponding: boolean;
   setEntryResponding: Dispatch<SetStateAction<boolean>>;
   setEntryAlert: Dispatch<SetStateAction<EntryAlert | null>>;
-  setSecretaryActionToast: Dispatch<SetStateAction<'approved' | 'rejected' | null>>;
+  setSecretaryActionToast: Dispatch<SetStateAction<SecretaryActionToastState>>;
 };
 
 export const usePublicBookingEntryAlertActions = ({
@@ -41,10 +43,13 @@ export const usePublicBookingEntryAlertActions = ({
   const secretaryActionToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showSecretaryActionToastForMinute = (status: 'approved' | 'rejected') => {
-    setSecretaryActionToast(status);
+    // المصدر هنا "secretary-action" — السكرتيرة هي اللي ضغطت، فالرسالة لازم
+    // تقولها "تم إبلاغ الطبيب" مش "الطبيب لم يطلب الدخول".
+    const toastValue: SecretaryActionToastState = { status, source: 'secretary-action' };
+    setSecretaryActionToast(toastValue);
     if (!secret) return;
     const storageKey = buildSecretaryActionToastKey(secret);
-    persistTimedPayload(storageKey, status, INTERNAL_TOAST_MIN_VISIBLE_MS);
+    persistTimedPayload(storageKey, toastValue, INTERNAL_TOAST_MIN_VISIBLE_MS);
     if (secretaryActionToastTimerRef.current) {
       clearTimeout(secretaryActionToastTimerRef.current);
     }
@@ -89,12 +94,14 @@ export const usePublicBookingEntryAlertActions = ({
     const currentAlert = entryAlert;
     setEntryResponding(true);
     try {
-      await firestoreService.respondToDoctorEntryAlert(
+      // الواجهة الموحدة — direction='D2S' لأن الطبيب هو اللي بعت الـalert والسكرتيرة بترد
+      await entryConversations.respond({
         secret,
-        currentAlert.appointmentId,
-        'approved',
-        currentAlert.branchId
-      );
+        direction: 'D2S',
+        appointmentId: currentAlert.appointmentId,
+        status: 'approved',
+        branchId: currentAlert.branchId,
+      });
       finalizeEntryAlertResponse(currentAlert, 'approved');
     } catch (err) {
       void playNotificationCue('error');
@@ -112,12 +119,13 @@ export const usePublicBookingEntryAlertActions = ({
     const currentAlert = entryAlert;
     setEntryResponding(true);
     try {
-      await firestoreService.respondToDoctorEntryAlert(
+      await entryConversations.respond({
         secret,
-        currentAlert.appointmentId,
-        'rejected',
-        currentAlert.branchId
-      );
+        direction: 'D2S',
+        appointmentId: currentAlert.appointmentId,
+        status: 'rejected',
+        branchId: currentAlert.branchId,
+      });
       finalizeEntryAlertResponse(currentAlert, 'rejected');
     } catch (err) {
       void playNotificationCue('error');

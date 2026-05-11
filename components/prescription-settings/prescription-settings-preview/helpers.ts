@@ -110,6 +110,7 @@ export const buildVitalConfigForPreview = (
     const valueMap: Record<string, string> = {
         weight: '75', height: '175', bmi: '24.5', bp: '120/80',
         pulse: '72', temp: '36.5', rbs: '95', spo2: '98', rr: '16',
+        headCirc: '45',
     };
     const vitalItems = enabledVitals.map(v => ({
         key: v.key,

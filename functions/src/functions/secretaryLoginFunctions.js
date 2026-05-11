@@ -90,6 +90,21 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const findSecretByUserId = async (uid) => {
       const normalizedUserId = normalizeText(uid);
       if (!normalizedUserId) return '';
+      // 🔒 إصلاح 2026-05-11: نقرأ الـmain secret من users/{uid}.bookingSecret أولاً.
+      // كان الكود بيبحث في bookingConfig بـuserId ويرجع أول match — ده بيرجع
+      // **أي** فرع للطبيب عشوائياً (لو عنده فروع متعددة، كل واحد له bookingConfig).
+      // النتيجة: السكرتيرة بتدخل بـsecret لفرع غير اللي الطبيب بيكتب عليه،
+      // فالـentryAlert ما يوصلش (الـ"تم الإرسال" بيظهر بس مفيش قراءة).
+      try {
+        const userSnap = await db.collection('users').doc(normalizedUserId).get();
+        if (userSnap.exists) {
+          const mainSecret = normalizeSecret(userSnap.data()?.bookingSecret);
+          if (mainSecret) return mainSecret;
+        }
+      } catch {
+        // لو فشل، نكمّل بالـfallback القديم
+      }
+      // Fallback: لو user doc مش موجود/مفيهوش bookingSecret، نلجأ للبحث القديم.
       const cfgByUser = await db.collection('bookingConfig').where('userId', '==', normalizedUserId).limit(1).get();
       if (cfgByUser.empty) return '';
       return normalizeSecret(cfgByUser.docs[0].id);
@@ -212,6 +227,32 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (!matchedBranchId) {
       await failWithRateLimit('permission-denied', 'INVALID_SECRETARY_PASSWORD');
     }
+
+    // 🔧 إصلاح اختيار الـsecret حسب الفرع المطابق:
+    // لو السكرتيرة تابعة لفرع فرعي، الـbookingConfig المستخدم لازم يكون
+    // bookingConfig بتاع الفرع ده تحديداً (users/{uid}.bookingSecretByBranch[branchId])
+    // بدل bookingConfig الرئيسي. بدون ده، الطبيب بيكتب في صندوق الفرع، السكرتيرة
+    // بتقرا من الصندوق الرئيسي → الإشعار ضايع.
+    if (matchedBranchId && matchedBranchId !== DEFAULT_BRANCH_ID) {
+      try {
+        const userSnap = await db.collection('users').doc(userId).get();
+        if (userSnap.exists) {
+          const userData = userSnap.data() || {};
+          const map = userData.bookingSecretByBranch || {};
+          const branchSecretValue = normalizeSecret(map?.[matchedBranchId]);
+          if (branchSecretValue) {
+            secret = branchSecretValue;
+          }
+        }
+      } catch (branchSecretErr) {
+        console.warn('[secretaryLogin] Failed to resolve branch secret, falling back to main:', branchSecretErr?.message || branchSecretErr);
+      }
+    }
+
+    configData = await mirrorConfigDoctorSpecialtyIfMissing(db, admin, secret, {
+      ...configData,
+      userId,
+    });
 
     await rateLimitRef.set(
       {
@@ -345,7 +386,9 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     return null;
   };
 
-  const SECRETARY_VITAL_KEYS = ['weight', 'height', 'bmi', 'rbs', 'bp', 'pulse', 'temp', 'spo2', 'rr'];
+  const PEDIATRIC_SPECIALTY_LABEL = 'طب الأطفال وحديثي الولادة';
+  const HEAD_CIRC_VITAL_KEY = 'headCirc';
+  const SECRETARY_VITAL_KEYS = ['weight', 'height', 'bmi', 'rbs', 'bp', 'pulse', 'temp', 'spo2', 'rr', HEAD_CIRC_VITAL_KEY];
   const SECRETARY_VITAL_KEY_SET = new Set(SECRETARY_VITAL_KEYS);
   const SECRETARY_VITAL_DYNAMIC_KEY_PATTERN = /^[a-zA-Z0-9:_-]{1,96}$/;
 
@@ -356,12 +399,19 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     return normalized;
   };
 
-  const normalizeSecretaryVitals = (value) => {
+  const isPediatricSpecialty = (value) => normalizeOptionalText(value) === PEDIATRIC_SPECIALTY_LABEL;
+
+  const getSecretaryVitalKeysForDoctor = (configData) =>
+    isPediatricSpecialty(configData?.doctorSpecialty)
+      ? SECRETARY_VITAL_KEYS
+      : SECRETARY_VITAL_KEYS.filter((key) => key !== HEAD_CIRC_VITAL_KEY);
+
+  const normalizeSecretaryVitals = (value, configData) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
     const source = value;
     const normalized = {};
 
-    SECRETARY_VITAL_KEYS.forEach((key) => {
+    getSecretaryVitalKeysForDoctor(configData || {}).forEach((key) => {
       const nextValue = normalizeOptionalText(source[key]);
       if (!nextValue) return;
       normalized[key] = nextValue.slice(0, 24);
@@ -379,6 +429,48 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     });
 
     return Object.keys(normalized).length > 0 ? normalized : null;
+  };
+
+  const resolveConfigWithDoctorSpecialty = async (db, configData) => {
+    const source = configData || {};
+    if (normalizeOptionalText(source.doctorSpecialty)) return source;
+
+    const userId = normalizeText(source.userId);
+    if (!userId) return source;
+
+    try {
+      const userSnap = await db.collection('users').doc(userId).get();
+      const doctorSpecialty = userSnap.exists
+        ? normalizeOptionalText(userSnap.data()?.doctorSpecialty)
+        : '';
+      return doctorSpecialty ? { ...source, doctorSpecialty } : source;
+    } catch (error) {
+      console.warn('[secretaryFunctions] Failed to resolve doctor specialty for secretary vitals:', error?.message || error);
+      return source;
+    }
+  };
+
+  const mirrorConfigDoctorSpecialtyIfMissing = async (db, admin, secret, configData) => {
+    const resolved = await resolveConfigWithDoctorSpecialty(db, configData);
+    const doctorSpecialty = normalizeOptionalText(resolved.doctorSpecialty);
+    if (!secret || !doctorSpecialty || normalizeOptionalText(configData?.doctorSpecialty)) {
+      return resolved;
+    }
+
+    try {
+      await db.collection('bookingConfig').doc(secret).set(
+        {
+          userId: normalizeText(resolved.userId) || admin.firestore.FieldValue.delete(),
+          doctorSpecialty,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.warn('[secretaryFunctions] Failed to mirror doctor specialty to bookingConfig:', error?.message || error);
+    }
+
+    return resolved;
   };
 
   const updateAppointmentBySecretary = async (request) => {
@@ -434,7 +526,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const phone = normalizeText(appointmentInput.phone);
     const dateTime = normalizeText(appointmentInput.dateTime);
     const visitReason = normalizeOptionalText(appointmentInput.visitReason);
-    const secretaryVitals = normalizeSecretaryVitals(appointmentInput.secretaryVitals);
+    const specialtyConfigData = await resolveConfigWithDoctorSpecialty(db, configData);
+    const secretaryVitals = normalizeSecretaryVitals(appointmentInput.secretaryVitals, specialtyConfigData);
     const appointmentType = normalizeAppointmentType(appointmentInput.appointmentType);
     const paymentType = normalizePaymentType(appointmentInput.paymentType);
 
@@ -584,7 +677,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
 
     const age = normalizeOptionalText(appointmentInput.age);
     const visitReason = normalizeOptionalText(appointmentInput.visitReason);
-    const secretaryVitals = normalizeSecretaryVitals(appointmentInput.secretaryVitals);
+    const specialtyConfigData = await resolveConfigWithDoctorSpecialty(db, configData);
+    const secretaryVitals = normalizeSecretaryVitals(appointmentInput.secretaryVitals, specialtyConfigData);
     const appointmentType = normalizeAppointmentType(appointmentInput.appointmentType);
     const paymentType = normalizePaymentType(appointmentInput.paymentType);
     const patientSharePercentRaw = Number(appointmentInput.patientSharePercent);
@@ -820,11 +914,141 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     };
   };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // refreshSecretaryCustomToken
+  // ─────────────────────────────────────────────────────────────────────────────
+  // الـ Firebase Custom Token عمره ساعة واحدة. بعدها auth.currentUser = null
+  // والكتابات على Firestore بترفض. الـclient بيستخدم الدالة دي كل ~٥٠ دقيقة
+  // عشان يجدّد الـ token بدون ما يطلب الباسورد من السكرتيرة من جديد.
+  //
+  // الأمان: نعتمد على الـ sessionToken (٣٠ يوم) — لو متطابق مع المخزّن في
+  // secretaryAuth، نصدر custom token جديد بنفس الـ UID والـ claims.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const refreshSecretaryCustomToken = async (request) => {
+    const secret = normalizeSecret(request?.data?.secret);
+    const sessionToken = normalizeText(request?.data?.sessionToken);
+    const branchId = normalizeText(request?.data?.branchId) || DEFAULT_BRANCH_ID;
+
+    if (!secret || !SECRET_PATTERN.test(secret)) {
+      throw new HttpsError('invalid-argument', 'INVALID_SECRET');
+    }
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'MISSING_SESSION_TOKEN');
+    }
+
+    const db = getDb();
+
+    // نقرأ bookingConfig عشان نعرف userId المرتبط بالـ secret
+    const configSnap = await db.collection('bookingConfig').doc(secret).get();
+    if (!configSnap.exists) {
+      throw new HttpsError('permission-denied', 'INVALID_SECRET');
+    }
+    const userId = normalizeText(configSnap.data()?.userId);
+    if (!userId) {
+      throw new HttpsError('permission-denied', 'INVALID_SECRET');
+    }
+
+    // نتحقق إن السكرتيرة لسه عندها حساب صالح
+    await assertDoctorAccountIsActiveForSecretaryLogin({
+      db,
+      userId,
+      doctorEmail: normalizeEmail(configSnap.data()?.doctorEmail),
+      HttpsError,
+    });
+
+    // نتحقق إن الـ sessionToken مطابق + الفرع تابع للطبيب
+    if (branchId !== DEFAULT_BRANCH_ID) {
+      await assertBranchBelongsToDoctor({ db, userId, branchId, HttpsError });
+    }
+    // الفرع الرئيسي: نقرا auth data من user doc + secretaryAuth (للتحقق من sessionToken)
+    // الفروع الفرعية: assertSecretarySessionForBranch بيقرا من secretaryAuth/{secret}/branches
+    const mainAuth = branchId === DEFAULT_BRANCH_ID
+      ? await readSecretaryAuthData({
+          db,
+          admin,
+          secret,
+          userId,
+          doctorEmail: normalizeEmail(configSnap.data()?.doctorEmail),
+          configData: configSnap.data() || {},
+        })
+      : null;
+    // assertSecretarySessionForBranch يـvalidate الـ sessionToken — لو مش صالح يرمي خطأ
+    await assertSecretarySessionForBranch({
+      db,
+      secret,
+      mainAuth,
+      branchId,
+      sessionToken,
+      HttpsError,
+    });
+
+    // نصدر custom token جديد بنفس الـ UID والـ claims
+    let customAuthToken = '';
+    try {
+      const customAuthUid = `secretary:${secret}:${branchId}`;
+      customAuthToken = await admin.auth().createCustomToken(customAuthUid, {
+        role: 'secretary',
+        secret,
+        branchId,
+        doctorUserId: userId,
+      });
+    } catch (tokenError) {
+      console.warn('[refreshSecretaryCustomToken] Failed to mint:', tokenError?.message || tokenError);
+      throw new HttpsError('internal', 'TOKEN_MINT_FAILED');
+    }
+
+    return {
+      customAuthToken,
+      secret,
+      branchId,
+      userId,
+    };
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // getBookingConfigPublicMetadata
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ترجع metadata آمنة من bookingConfig للـlogin screen (قبل signInWithCustomToken).
+  //
+  // 🔒 سياق أمني 2026-05-10:
+  // الـ rule القديمة كانت بتسمح لأي حد عارف الـsecret يقرا bookingConfig
+  // كاملة (بما فيها بيانات مرضى اليوم). دلوقتي الـrule بتطلب auth، فالـlogin
+  // screen ما يقدرش يقرا direct. الـCF دي بتقرا بـAdmin SDK وترجع الحقول
+  // الآمنة فقط (اسم الطبيب، اسم الفورم، إلخ — مفيش بيانات مرضى).
+  //
+  // أمان: مفيش auth required (للـlogin screen). الـ secret هو الحاجز —
+  // من يعرفه يقدر يشوف اسم الطبيب فقط، وده كان ظاهر أصلاً.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const getBookingConfigPublicMetadata = async (request) => {
+    const secret = normalizeSecret(request?.data?.secret);
+    if (!secret || !SECRET_PATTERN.test(secret)) {
+      throw new HttpsError('invalid-argument', 'INVALID_SECRET');
+    }
+    const db = getDb();
+    const snap = await db.collection('bookingConfig').doc(secret).get();
+    if (!snap.exists) {
+      return { exists: false };
+    }
+    const data = snap.data() || {};
+    // نرجع الحقول الآمنة فقط — أي حقل فيه بيانات مرضى ممنوع يطلع
+    return {
+      exists: true,
+      userId: typeof data.userId === 'string' ? data.userId : undefined,
+      doctorEmail: typeof data.doctorEmail === 'string' ? data.doctorEmail : undefined,
+      doctorDisplayName: typeof data.doctorDisplayName === 'string' ? data.doctorDisplayName : undefined,
+      formTitle: typeof data.formTitle === 'string' ? data.formTitle : undefined,
+      secretaryAuthRequired: Boolean(data.secretaryAuthRequired),
+      publicBookingSecret: typeof data.publicBookingSecret === 'string' ? data.publicBookingSecret : undefined,
+    };
+  };
+
   return {
     secretaryLoginWithDoctorEmail,
     deleteAppointmentBySecretary,
     updateAppointmentBySecretary,
     createAppointmentBySecretary,
     listAppointmentsForSecretary,
+    refreshSecretaryCustomToken,
+    getBookingConfigPublicMetadata,
   };
 };

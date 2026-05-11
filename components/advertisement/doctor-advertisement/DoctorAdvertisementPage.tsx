@@ -25,7 +25,7 @@ import { auth } from '../../../services/firebaseConfig';
 export const DoctorAdvertisementPage: React.FC<DoctorAdvertisementPageProps> = (props) => {
   const {
     loading, saving, message, error, showPreview, setShowPreview, profileImage,
-    adDoctorName, setAdDoctorName, doctorSpecialty, academicDegree, setAcademicDegree,
+    adDoctorName, setAdDoctorName, academicDegree, setAcademicDegree,
     yearsExperience, setYearsExperience, subSpecialties, setSubSpecialties,
     featuredServicesSummary, setFeaturedServicesSummary, workplace, setWorkplace,
     extraInfo, setExtraInfo, socialLinks, setSocialLinks,

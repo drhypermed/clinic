@@ -14,16 +14,14 @@
 // عشان نتأكد إن الأرقام مطابقة قبل الاعتماد عليها.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { collection, doc, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocsCacheFirst } from '../firestore/cacheFirst';
 import { branchDocKey } from './normalizers';
 import type { DailyFinancialData, MonthlyFinancialData } from './types';
 import type { PatientRecord } from '../../app/drug-catalog/types/patient';
-import { computePaymentBreakdownForBasePrice } from '../../utils/paymentDiscount';
 import { collectConsultationVisits } from '../../components/financial-reports/hooks/useFinancialStats/collectConsultationVisits';
 import { buildVisitFinancialByDate } from '../../components/financial-reports/hooks/useFinancialStats/buildVisitFinancialByDate';
-import { formatDateKey } from '../../components/financial-reports/utils/formatters';
 
 /** الفترة السماحية بعد نهاية الشهر قبل ما يصبح eligible للإقفال (28 يوم). */
 const SNAPSHOT_GRACE_DAYS = 28;
@@ -150,7 +148,7 @@ const formatMonthKey = (date: Date): string => {
 };
 
 /** المعطيات اللازمة لحساب snapshot. كلها مُمرَّرة من الـcaller (مش بنقرأ Firestore هنا). */
-export interface ComputeMonthlySnapshotInput {
+interface ComputeMonthlySnapshotInput {
     monthKey: string;
     branchId: string;
     /** كل سجلات الطبيب — ستُفلتر داخلياً للشهر والفرع المطلوبين */
@@ -169,7 +167,7 @@ export interface ComputeMonthlySnapshotInput {
  * يحسب snapshot من البيانات الخام بنفس logic الـuseFinancialStats.
  * **pure function** — مش بيقرأ ولا يكتب. النتيجة جاهزة للحفظ.
  */
-export const computeMonthlySnapshot = ({
+const computeMonthlySnapshot = ({
     monthKey,
     branchId,
     records,
@@ -368,7 +366,7 @@ const saveMonthlySnapshot = async (
  * هتتعاد كتابتها لما الـauto-close يشتغل. ده يضمن إن أي تحسين في logic الـsnapshot
  * (مثلاً إضافة dailyBreakdown في v2) يطبَّق تلقائياً على الـsnapshots القديمة.
  */
-export const getExistingSnapshotMonthKeys = async (
+const getExistingSnapshotMonthKeys = async (
     userId: string,
     branchId?: string,
 ): Promise<Set<string>> => {
@@ -435,7 +433,7 @@ export const getMonthlySnapshotsForYear = async (
 };
 
 /** المعطيات لـ`ensureSnapshotsForClosedMonths`. */
-export interface EnsureSnapshotsInput {
+interface EnsureSnapshotsInput {
     userId: string;
     branchId: string;
     records: PatientRecord[];

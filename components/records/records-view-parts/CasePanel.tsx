@@ -96,6 +96,61 @@ const ListBlock: React.FC<{ title: string; items: string[]; term: string; empty:
     </div>
 );
 
+const formatDateKey = (value?: string): string => {
+    if (!value) return '';
+    const [y, m, d] = value.split('-');
+    if (!y || !m || !d) return value;
+    return `${d}/${m}/${y}`;
+};
+
+const FETAL_MOVEMENT_LABEL: Record<string, string> = {
+    normal: 'طبيعية',
+    decreased: 'قليلة',
+    absent: 'غائبة',
+};
+
+const PregnancyTrackingBlock: React.FC<{
+    tracking: NonNullable<CaseData['pregnancyTracking']>;
+    titleTone: string;
+}> = ({ tracking, titleTone }) => {
+    const visit = tracking.currentVisit || tracking.latestVisit;
+    const rows = [
+        tracking.lastMenstrualPeriod ? `LMP: ${formatDateKey(tracking.lastMenstrualPeriod)}` : '',
+        tracking.estimatedDueDate ? `EDD: ${formatDateKey(tracking.estimatedDueDate)}` : '',
+        tracking.gestationalAgeText || (tracking.gestationalAgeWeeks ? `الأسبوع ${tracking.gestationalAgeWeeks}` : ''),
+        visit?.dateKey ? `زيارة الحمل: ${formatDateKey(visit.dateKey)}` : '',
+        visit?.maternalWeight ? `وزن الأم: ${visit.maternalWeight} كجم` : '',
+        visit?.fetalWeight ? `وزن الجنين: ${visit.fetalWeight} جم` : '',
+        visit?.fetalHeartRate ? `نبض الجنين: ${visit.fetalHeartRate} BPM` : '',
+        visit?.fetalMovement ? `حركة الجنين: ${FETAL_MOVEMENT_LABEL[visit.fetalMovement] || visit.fetalMovement}` : '',
+    ].filter(Boolean);
+
+    const notes = [visit?.ultrasoundNotes, visit?.notes].filter(Boolean) as string[];
+    if (rows.length === 0 && notes.length === 0) return null;
+
+    return (
+        <div className="md:col-span-2 rounded-xl bg-white border border-pink-100 p-2.5">
+            <div className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black mb-2 ${titleTone}`}>
+                متابعة الحمل
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+                {rows.map((row, index) => (
+                    <span key={`${row}-${index}`} className="inline-flex rounded-lg border border-pink-100 bg-pink-50 px-2 py-0.5 text-[11px] font-bold text-pink-700">
+                        {row}
+                    </span>
+                ))}
+            </div>
+            {notes.length > 0 && (
+                <div className="mt-2 space-y-1 text-xs font-medium text-slate-700 whitespace-pre-wrap">
+                    {notes.map((note, index) => (
+                        <p key={`${note}-${index}`}>{note}</p>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 /**
  * لوحة عرض الحالة (Case Panel):
  * مكون يعرض تفاصيل زيارة واحدة (شكوى، تاريخ، فحص، تشخيص، أدوية).
@@ -134,6 +189,9 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
                         <div className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black mb-1.5 ${titleTone}`}>القياسات والعلامات الحيوية</div>
                         <SecretaryVitalsPills vitals={vitals} compact separator=" | " title="" />
                     </div>
+                )}
+                {data.pregnancyTracking && (
+                    <PregnancyTrackingBlock tracking={data.pregnancyTracking} titleTone={titleTone} />
                 )}
                 {/* نمرّر النسخة العربية كـ fallback للعرض — لما يحفظ بدون "تحليل الحالة" نعرض اللي كتبه بايده */}
                 <DualField title="الشكوى" aiValue={data.complaintEn} arValue={data.complaintAr} term={term} titleTone={titleTone} />

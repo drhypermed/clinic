@@ -44,7 +44,6 @@ export const InternalBroadcastRecordCard: React.FC<InternalBroadcastRecordCardPr
   const status = getStatusDisplay(record.status);
   const isResendingThis = resendingRecordId === record.id;
   const isDeletingThis = deletingRecordId === record.id;
-  const isAnyActionInProgress = sending || Boolean(resendingRecordId) || Boolean(deletingRecordId);
 
   return (
     <div className="rounded-xl border border-slate-500 bg-slate-800/70 p-4">

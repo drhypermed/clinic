@@ -117,6 +117,26 @@ service cloud.firestore {
         : 'main';
     }
 
+    // 🔒 تشديد أمني 2026-05-10: السكرتيرة فرع A ما تقدرش تكتب/تقرأ مواعيد فرع B.
+    //
+    // قبل الإصلاح: الـ rule كانت بتفحص bookingSecret بس → سكرتيرة فرع A تقدر
+    // تـdevtools-spoof تنشئ موعد بـ`branchId: 'branchB'` → بيظهر في طابور فرع B.
+    //
+    // بعد الإصلاح: لو الكاتب سكرتيرة (UID = `secretary:.+:.+`)، نفحص إن
+    // `data.branchId == getSecretaryBranchIdFromUid()` (الفرع المسجل دخوله).
+    //
+    // الـ check مش بيطبق على:
+    //   - الطبيب (auth.uid == userId) — يقدر يعدل أي فرع
+    //   - الحجز العام (UID مختلف الشكل) — البراندو على الفرع اللي اختاره المريض
+    //   - الـAdmin SDK (Cloud Functions) — بتـbypass rules
+    function appointmentBranchAllowedForSecretary(data) {
+      return !request.auth.uid.matches('^secretary:.+:.+$') ||
+        (
+          ((!('branchId' in data) || !(data.branchId is string) || data.branchId == '')
+            ? 'main' : data.branchId) == getSecretaryBranchIdFromUid()
+        );
+    }
+
     /**
      * يتحقق أن السكرتيرة (لو غيّرت حقل map معين ByBranch) غيّرت فقط مفتاح فرعها.
      *
@@ -251,25 +271,30 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
       match /appointments/{aptId} {
+        // read/delete: السكرتيرة لازم تكون من نفس الفرع (تشديد 2026-05-10)
         allow read, delete: if
           (request.auth != null && request.auth.uid == userId) ||
           (
             resource.data.bookingSecret is string &&
             exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
-            get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId
+            get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId &&
+            appointmentBranchAllowedForSecretary(resource.data)
           ) ||
           (
             resource.data.publicBookingSecret is string &&
             exists(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)) &&
             get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
           );
+        // update: لازم الـ branchId الموجود + الجديد كلاهما يطابق فرع السكرتيرة
         allow update: if
           isValidBranchForUser(userId, request.resource.data) && (
             (request.auth != null && request.auth.uid == userId) ||
             (
               resource.data.bookingSecret is string &&
               exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
-              get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId
+              get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId &&
+              appointmentBranchAllowedForSecretary(resource.data) &&
+              appointmentBranchAllowedForSecretary(request.resource.data)
             ) ||
             (
               resource.data.publicBookingSecret is string &&
@@ -277,13 +302,16 @@ service cloud.firestore {
               get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
             )
           );
+        // create: لازم الـ branchId في الـpayload يطابق فرع السكرتيرة
+        // (يمنع spoofing — سكرتيرة فرع A تنشئ موعد بـ branchId=B)
         allow create: if
           isValidBranchForUser(userId, request.resource.data) && (
             (request.auth != null && request.auth.uid == userId) ||
             (
               request.resource.data.bookingSecret is string &&
               exists(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)) &&
-              get(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)).data.userId == userId
+              get(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)).data.userId == userId &&
+              appointmentBranchAllowedForSecretary(request.resource.data)
             ) ||
             (
               request.resource.data.publicBookingSecret is string &&
@@ -314,16 +342,29 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
       match /branches/{branchId} {
-        // القراءة: الطبيب نفسه + السكرتيرة المرتبطة بـ secret تابع لنفس الطبيب
-        //   + الأدمن (محتاج يقرا عشان يفتح اختيار الفرع لمّا يساعد طبيب في
-        //   تصميم روشتته). الأدمن مش بيقدر يكتب في الفروع — بس يقرا.
-        // السكرتيرة UID = `secretary:{secret}:{branchId}` — نتحقق أن الـ secret
-        // في الـ UID مرتبط بنفس userId في bookingConfig.
-        allow read: if request.auth != null && (
+        // القراءة: الطبيب نفسه + الأدمن.
+        // 🔒 تشديد أمني 2026-05-10:
+        //   - get: السكرتيرة تقدر تقرأ فرعها فقط (Defense in depth — الوثيقة
+        //     مفيش فيها أسرار بعد نقل secretarySecret لـ users/{uid}، بس
+        //     نشدّد عشان نمنع توسع لو حقول حساسة اتضافت لاحقاً بدون انتباه).
+        //   - list: مسموح لأي سكرتيرة تابعة للطبيب (محتاجة الـpicker)، الوثيقة
+        //     فيها name/address/phone فقط — مش حساس.
+        allow get: if request.auth != null && (
           request.auth.uid == userId ||
           isAdmin() ||
           (
-            request.auth.uid.matches('secretary:.+:.+') &&
+            // السكرتيرة UID = `secretary:{secret}:{branchId}` — لازم الـ branchId
+            // في الـ UID = الـ branchId في الـ path (يعني فرعها فقط)
+            request.auth.uid.matches('^secretary:.+:' + branchId + '$') &&
+            exists(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])) &&
+            get(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])).data.userId == userId
+          )
+        );
+        allow list: if request.auth != null && (
+          request.auth.uid == userId ||
+          isAdmin() ||
+          (
+            request.auth.uid.matches('^secretary:.+:.+$') &&
             exists(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])) &&
             get(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])).data.userId == userId
           )
@@ -377,6 +418,22 @@ service cloud.firestore {
       match /caseAnalysisCache/{cacheKey} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+      // ملخص إحصائيات الطبيب (المرحلة 1 من خطة التوسع — scale-optimization-plan.md):
+      // doc واحد users/{uid}/stats/summary بيتحدّث بـ Cloud Function syncDoctorStatsSummary
+      // على كل save/delete سجل. الواجهة بتقراه بدل ما تعدّ السجلات في الذاكرة.
+      // القراءة: الطبيب يشوف ملخصه فقط. الكتابة: Cloud Functions بس (Admin SDK).
+      match /stats/{statId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
+      // ملخصات المرضى (المرحلة 2 من خطة التوسع):
+      // doc لكل مريض users/{uid}/patientSummaries/{fileNameKey} بيتحدّث بـ
+      // Cloud Function syncPatientSummary. صفحة ملفات المرضى بتعرضهم بـpagination.
+      // القراءة: الطبيب فقط. الكتابة: Cloud Functions بس.
+      match /patientSummaries/{summaryId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
     }
     // Booking config — قراءة للطبيب المالك، السكرتيرة المسجلة، أو أي شخص يعرف
     // الـ secret (الأخير ضروري لعرض شاشة تسجيل دخول السكرتيرة على أجهزة جديدة
@@ -390,10 +447,12 @@ service cloud.firestore {
     //    منعت كتابتها في bookingConfig (انتقلت لـ `secretaryAuth/{secret}` الذي يحمل
     //    rule صارمة `isBookingOwner || isAdmin`).
     match /bookingConfig/{secret} {
+      // ⚠️ ROLLBACK 2026-05-10: رجّعنا fallback bookingConfigExists لأن العملاء
+      // الجدد بياخدوا وقت ينزّلوا الكود الجديد، والقديم بيقرا direct بدون CF fallback.
+      // الـ CF `getBookingConfigPublicMetadata` موجودة جاهزة، والـ client الجديد
+      // بيستخدمها. لما كل العملاء ينزّلوا التحديث، نقدر نشدّد تاني.
       allow get: if
-        // 1) أي شخص يعرف الـ secret — لعرض شاشة login و بيانات عامة
         bookingConfigExists(secret) ||
-        // 2) المسارات القديمة (مُبقاة للتوافق)
         (request.auth != null && (
           resource.data.userId == request.auth.uid ||
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.bookingSecret == secret ||
@@ -432,6 +491,8 @@ service cloud.firestore {
           //   - الحقول المسموحة محددة بـ hasOnly (15 حقل فقط)
           //   - الحقول الحساسة (passwordHash, sessionToken) ممنوعة عبر hasNoLegacySecretaryAuthFields
           //   - الـ secret سر (32+ حرف عشوائي) — من يعرفه هو الطبيب أو سكرتيرته
+          // ⚠️ ROLLBACK 2026-05-10: رجّعنا fallback bookingConfigExists لأن العملاء
+          //   اللي عندهم كاش قديم بدون auto-refresh كانوا بيفقدوا قدرة الكتابة.
           (
             // (أ) Firebase Auth: السكرتيرة بـ custom token
             (request.auth != null && request.auth.uid.matches('secretary:' + secret + ':.*')) ||
@@ -478,6 +539,13 @@ service cloud.firestore {
               secretaryChangedOnlyOwnBranchKey('approvedEntryAppointmentIdsByBranch') &&
               secretaryChangedOnlyOwnBranchKey('recentExamPatientsByBranch') &&
               secretaryChangedOnlyOwnBranchKey('patientDirectoryByBranch') &&
+              // ─── إضافة 2026-05-11: حماية per-branch للمواعيد القادمة والمنفذة ───
+              // قبل: الـ hasOnly كانت تسمح للسكرتيرة بكتابة هذه الحقول، لكن مفيش
+              // فحص أن المفاتيح المعدّلة تخص فرعها فقط — يعني سكرتيرة فرع A
+              // تقدر devtools-spoof تكتب فرع B. فعلياً مفيش code path يكتب من
+              // السكرتيرة (الطبيب هو اللي يـsync)، لكن defense-in-depth.
+              secretaryChangedOnlyOwnBranchKey('upcomingAppointmentsByBranch') &&
+              secretaryChangedOnlyOwnBranchKey('completedAppointmentsByBranch') &&
               secretaryChangedOnlyOwnBranchKey('lastExamOpenedAt') &&
               secretaryChangedOnlyOwnBranchKey('lastExamOpenedAppointmentId')
             )
@@ -568,6 +636,15 @@ service cloud.firestore {
         isAdmin()
       );
     }
+    // ⚠️ ROLLBACK 2026-05-10: شيلت تشديد `isAuthenticatedSecretaryForSecret` لإن
+    // العملاء في الإنتاج فيهم اللي عندهم كاش قديم بدون auto-refresh، فالكتابات
+    // كانت بتفشل وما يقدروش يبعتوا تنبيهات للطبيب.
+    // الـ fallback `bookingConfigExists` رجع كما كان (متفق مع التصميم الأصلي:
+    // الـsecret هو الحاجز، ولوحده لا يقدر المهاجم يستغله بعد ما تم نقل أسرار
+    // الفروع لمكان آمن في تشديد #١).
+    // الـ CFs الجديدة (`refreshSecretaryCustomToken`, `getBookingConfigPublicMetadata`)
+    // والـ hook (`useSecretaryTokenRefresh`) موجودين جاهزين لو قررنا التشديد لاحقاً
+    // بعد ما كل العملاء ينزّلوا الكود الجديد.
     match /secretaryEntryRequests/{secret} {
       allow get: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
       allow create, update: if isBookingOwner(secret) || isAdmin() || bookingConfigExists(secret);
@@ -581,7 +658,12 @@ service cloud.firestore {
       allow list: if false;
     }
     match /secretaryFcmTokens/{secret} {
-      allow get, create, update, delete: if isBookingOwner(secret) || isAdmin();
+      // الطبيب صاحب الـ booking + الـadmin مسموح لهم
+      // كمان السكرتيرة نفسها (auth.uid = "secretary:{secret}:...") مسموح لها تكتب tokens فرعها
+      // ده client-side fallback لما الـregister callable يبطئ/يفشل
+      allow get, create, update, delete: if isBookingOwner(secret)
+        || isAdmin()
+        || (request.auth != null && request.auth.uid.matches('^secretary:' + secret + ':.*'));
       allow list: if false;
     }
     match /secretaryEntryAlertResponse/{secret} {
@@ -610,6 +692,38 @@ service cloud.firestore {
           request.resource.data.dateTime is string;
         allow delete: if isPublicBookingOwner(secret);
       }
+    }
+
+    // ─── publicBookingClaims: حماية server-side ضد الحجز المكرر لنفس الـ slot ───
+    // كل حجز عام بيكتب وثيقة هنا بـid فريد: secret_slotId_(uid|phone). الـtransaction
+    // في createAppointmentFromPublic بيفحص هل الـclaim موجود — لو موجود يرفض الحجز.
+    // الـrules: السماح بـcreate للجميع (المريض ضيف)، منع تعديل/حذف بعد كده.
+    // الـget مفتوح للجميع — مفيش بيانات حسّاسه فيها (بس slot ID + identifier).
+    match /publicBookingClaims/{claimKey} {
+      allow get: if true;
+      allow list: if false;
+      // create-only: لازم doc جديد، مفيش update يستبدل claim موجود
+      allow create: if
+        request.resource.data.userId is string &&
+        request.resource.data.slotId is string &&
+        request.resource.data.appointmentId is string;
+      allow update, delete: if false; // claims immutable
+    }
+
+    // ─── publicBookingRateLimits: حد أقصى 5 حجوزات في 24 ساعه لنفس الهاتف ───
+    // doc بـid ثابت: doctorId_phoneDigits. فيه bucketStart + count.
+    // الـtransaction بيقرا الـcounter قبل ما يحجز، ولو تخطى 5 يرفض. ده يحمي من
+    // spam على عيادة واحده (مريض مزيّف يفضل يحجز).
+    match /publicBookingRateLimits/{rateLimitKey} {
+      allow get: if true;
+      allow list: if false;
+      // create + update: السماح بأي count عشان الـtransaction يكون يقدر يزوّد
+      allow create, update: if
+        request.resource.data.userId is string &&
+        request.resource.data.bucketStart is number &&
+        request.resource.data.count is number &&
+        request.resource.data.count <= 100; // upper hard cap (safety)
+      allow delete: if false;
     }
 
     match /doctorAds/{doctorId} {

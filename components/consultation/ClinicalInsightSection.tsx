@@ -1,4 +1,5 @@
 import React from 'react';
+import { getClinicalPlaceholders } from './clinicalPlaceholders';
 
 /**
  * مكون المعلومات السريرية (Clinical Insight Section)
@@ -16,11 +17,17 @@ interface ClinicalInsightSectionProps {
   exam: string; setExam: (v: string) => void;                   // الفحص السريري ودالة تحديثه
   investigations: string; setInvestigations: (v: string) => void; // نتائج الفحوصات ودالة تحديثها
   errorMsg: string | null;                                     // رسالة الخطأ في حال فشل الاتصال أو التحليل
+  // 🆕 تخصص الطبيب — لتخصيص الأمثله في الـplaceholders حسب التخصص
+  doctorSpecialty?: string;
 }
 
 export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
-  complaint, setComplaint, history, setHistory, exam, setExam, investigations, setInvestigations, errorMsg
+  complaint, setComplaint, history, setHistory, exam, setExam, investigations, setInvestigations, errorMsg,
+  doctorSpecialty,
 }) => {
+  // ─ Placeholders ذكيه: تجيب أمثله مناسبه لتخصص الطبيب ─
+  // بدل ما يفضل "احتقان" ظاهر لطبيب قلب — كل تخصص يلاقي مثال متعلق بشغله.
+  const placeholders = getClinicalPlaceholders(doctorSpecialty);
   const complaintRef = React.useRef<HTMLTextAreaElement | null>(null);
   const historyRef = React.useRef<HTMLTextAreaElement | null>(null);
   const examRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -84,7 +91,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onInput={autoResize}
             rows={1}
             className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
-            placeholder="مثال: اسهال وترجيع"
+            placeholder={placeholders.complaint}
           />
         </div>
 
@@ -98,7 +105,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onInput={autoResize}
             rows={1}
             className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
-            placeholder="مثال: ضغط وسكر"
+            placeholder={placeholders.history}
           />
         </div>
 
@@ -112,7 +119,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onInput={autoResize}
             rows={1}
             className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
-            placeholder="مثال: احتقان في الحلق وتزييق في الصدر"
+            placeholder={placeholders.exam}
           />
         </div>
 
@@ -126,7 +133,7 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             onInput={autoResize}
             rows={1}
             className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
-            placeholder="مثال: الهيموجلوبين 9.5 والكرياتنين 1.5"
+            placeholder={placeholders.investigations}
           />
         </div>
       </div>

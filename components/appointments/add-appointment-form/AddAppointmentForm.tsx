@@ -43,7 +43,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   gestationalAgeWeeks = null, onGestationalAgeWeeksChange,
   breastfeeding = null, onBreastfeedingChange,
   dateStr, onDateStrChange, timeStr, onTimeStrChange, visitReason, onVisitReasonChange,
-  secretaryVitals = {}, secretaryVitalFields = [], secretaryVitalsVisibility, onSecretaryVitalsChange,
+  secretaryVitals = {}, secretaryVitalFields = [], secretaryVitalsVisibility, doctorSpecialty, onSecretaryVitalsChange,
   todayStr, timeMin, saving, formError, bookingQuotaNotice, onSubmit,
   appointmentType = 'exam', onAppointmentTypeChange, consultationCandidates = [],
   selectedConsultationCandidateId, onSelectConsultationCandidate,
@@ -133,13 +133,18 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     () => toSecretaryVitalSignConfigs(undefined, {
       visibility: secretaryVitalsVisibility,
       fieldDefinitions: secretaryVitalFields,
+      doctorSpecialty,
     }),
-    [secretaryVitalFields, secretaryVitalsVisibility]
+    [doctorSpecialty, secretaryVitalFields, secretaryVitalsVisibility]
   );
 
   const normalizedSecretaryFieldDefinitions = useMemo(
-    () => normalizeSecretaryVitalFieldDefinitions(secretaryVitalFields),
-    [secretaryVitalFields]
+    () => normalizeSecretaryVitalFieldDefinitions(
+      secretaryVitalFields,
+      undefined,
+      { doctorSpecialty }
+    ),
+    [doctorSpecialty, secretaryVitalFields]
   );
 
   const enabledSecretaryFields = useMemo(

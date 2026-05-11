@@ -5,18 +5,15 @@
  * 1. تسجيل الخروج (Sign Out).
  * 2. مراقبة تغير حالة المصادقة (Auth State Change).
  * 3. تحديث بيانات الملف الشخصي (Profile Update) مثل الاسم والصورة.
- * 4. إعادة إرسال بريد توثيق الحساب (Email Verification).
  */
 
 import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
-  sendEmailVerification,
   signOut as firebaseSignOut,
   updateProfile,
   type User,
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-import { doctorAuthActionCodeSettings } from './constants';
 import { clearStoredAuthState } from './storage';
 
 /**

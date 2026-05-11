@@ -45,6 +45,7 @@ export const updateBookingSettings = async (
     doctorEmail: string | undefined,
     secretaryVitalsVisibility: SecretaryVitalsVisibility | undefined,
     secretaryVitalFields: SecretaryVitalFieldDefinition[] | undefined,
+    doctorSpecialty: string | undefined,
     upsertSecretaryLoginIndex: UpdateSecretaryLoginIndexFn,
     /** الفرع النشط — لمنع الكتابة على الـ global secret لما يكون فرع غير الرئيسي */
     branchId?: string,
@@ -55,14 +56,15 @@ export const updateBookingSettings = async (
 
     const formTitleValue = toOptionalText(formTitle) || '';
     const doctorDisplayNameValue = toOptionalText(doctorDisplayName) || '';
+    const doctorSpecialtyValue = toOptionalText(doctorSpecialty) || '';
     const doctorEmailValue = normalizeEmail(doctorEmail);
     const hasSecretaryVitalsVisibilityInput = secretaryVitalsVisibility !== undefined;
     const normalizedSecretaryVitalsVisibility = hasSecretaryVitalsVisibilityInput
-        ? normalizeSecretaryVitalsVisibility(secretaryVitalsVisibility)
+        ? normalizeSecretaryVitalsVisibility(secretaryVitalsVisibility, undefined, { doctorSpecialty: doctorSpecialtyValue })
         : undefined;
     const hasSecretaryVitalFieldsInput = Array.isArray(secretaryVitalFields);
     const normalizedSecretaryVitalFields = hasSecretaryVitalFieldsInput
-        ? normalizeSecretaryVitalFieldDefinitions(secretaryVitalFields)
+        ? normalizeSecretaryVitalFieldDefinitions(secretaryVitalFields, undefined, { doctorSpecialty: doctorSpecialtyValue })
         : undefined;
 
     const userRef = doc(db, 'users', normalizedUserId);
@@ -82,6 +84,7 @@ export const updateBookingSettings = async (
         userId: normalizedUserId,
         formTitle: formTitleValue,
         doctorDisplayName: doctorDisplayNameValue,
+        doctorSpecialty: doctorSpecialtyValue || deleteField(),
         doctorEmail: doctorEmailValue || deleteField(),
         secretaryPasswordHash: deleteField(),
         secretarySessionToken: deleteField(),

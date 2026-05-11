@@ -100,7 +100,13 @@ export interface Branch {
   address?: string;
   /** تليفون الفرع */
   phone?: string;
-  /** كود السكرتارية الخاص بالفرع */
+  /**
+   * كود السكرتارية الخاص بالفرع.
+   * @deprecated منذ 2026-05-10 — اتنقل لـ `users/{uid}.bookingSecretByBranch.{branchId}`
+   * عشان السكرتيرة لا تقدر تقراه (تسرب خصوصية بين الفروع).
+   * استخدم `getBranchSecretSafe(userId, branchId)` أو `getAllBranchSecretsMap(userId)`.
+   * الحقل يفضل اختيارياً للقراءة fallback من الوثائق القديمة قبل migration.
+   */
   secretarySecret?: string;
   /** ترتيب العرض */
   order?: number;

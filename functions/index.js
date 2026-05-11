@@ -151,6 +151,14 @@ exports.updateAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('
 exports.createAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'createAppointmentBySecretary'));
 exports.listRecentExamRecordsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryExamRecordsFunctions', 'listRecentExamRecordsForSecretary'));
 exports.listAppointmentsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'listAppointmentsForSecretary'));
+// 🔒 2026-05-10: تجديد الـ Firebase Custom Token للسكرتيرة كل ~٥٠ دقيقة
+// عشان الكتابات على Firestore تفضل تشتغل بعد ساعة (الـ token عمره ساعة).
+// بدون كده، تشديد الـ rules (إزالة fallback bookingConfigExists) كان هيخلي
+// السكرتيرة تفقد قدرة الإرسال للطبيب بعد أول ساعة.
+exports.refreshSecretaryCustomToken = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'refreshSecretaryCustomToken'));
+// 🔒 2026-05-10: قراءة metadata آمنة من bookingConfig للـlogin screen قبل الـauth.
+// ضرورية بعد تشديد rule `bookingConfig.get` ليطلب auth — الـCF دي تستخدم Admin SDK.
+exports.getBookingConfigPublicMetadata = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'getBookingConfigPublicMetadata'));
 
 // --- Push Functions ---
 // ملاحظة: register/unregister بدون enforceAppCheck — السبب:
@@ -297,6 +305,45 @@ exports.syncAdminDashboardUserCounter = onDocumentWritten(
   { document: 'users/{userId}', region: REGION },
   lazy('./src/functions/dashboardCounterFunctions', 'syncAdminDashboardUserCounter')
 );
+
+// ─────────────────────────────────────────────────────────────────────
+// عدّاد إحصائيات الطبيب (المرحلة 1 من خطة التوسع — scale-optimization-plan.md)
+// ─────────────────────────────────────────────────────────────────────
+// الهدف: إحصائيات صفحة السجلات (كشوفات اليوم/الشهر، مرضى فريدين) محسوبة سلفاً
+// في users/{uid}/stats/summary بدل ما الواجهة تعدّها كل فتحة من كل السجلات.
+//
+// path-scoped (مش wildcard) — آمن من ناحية التكلفة عند الـ1000 طبيب.
+// قابل للتقييد على UIDs محددة عبر env STATS_COUNTER_DOCTOR_UID_ALLOWLIST.
+exports.syncDoctorStatsSummary = onDocumentWritten(
+  { document: 'users/{userId}/records/{recordId}', region: REGION },
+  lazy('./src/functions/perDoctorStatsCounter', 'syncDoctorStatsSummary')
+);
+
+// إعادة حساب إحصائيات الطبيب من الصفر (callable) — للتأهيل الأولي أو
+// تصحيح أي drift في الأرقام. لوحة الأدمن في ScaleToolsPanel بتستدعيها بزرار.
+exports.recomputeDoctorStats = onCall(
+  BASE_CALLABLE_OPTIONS,
+  lazy('./src/functions/perDoctorStatsReconcile', 'recomputeDoctorStats')
+);
+
+// ─────────────────────────────────────────────────────────────────────
+// عدّاد ملخصات المرضى (المرحلة 2 من خطة التوسع)
+// ─────────────────────────────────────────────────────────────────────
+// الهدف: ملخص لكل مريض في users/{uid}/patientSummaries/{fileNameKey}
+// بدل ما الواجهة تجمع آلاف السجلات لتكوين قائمة المرضى.
+//
+// path-scoped (نفس الـtrigger على records/{recordId} — مسموح وجود triggers
+// متعددة على نفس الـpath، Firebase تشغّلهم بشكل مستقل).
+exports.syncPatientSummary = onDocumentWritten(
+  { document: 'users/{userId}/records/{recordId}', region: REGION },
+  lazy('./src/functions/perPatientSummariesCounter', 'syncPatientSummary')
+);
+
+// إعادة حساب ملخصات المرضى من الصفر (callable) — للتأهيل الأولي أو تصحيح drift.
+exports.recomputePatientSummaries = onCall(
+  BASE_CALLABLE_OPTIONS,
+  lazy('./src/functions/perPatientSummariesReconcile', 'recomputePatientSummaries')
+);
 // مباعدة عن refreshAdminDashboardAggregates بـ5 دقائق لتفادي الكتابة المتزامنة
 // على settings/adminDashboardStats. الاثنان الآن مرة واحدة يومياً الساعة 12:05 ص.
 exports.materializeAdminDashboardSummary = onSchedule(
@@ -316,6 +363,9 @@ exports.initializeAdminDashboardCounterBaseline = onCall(
 // --- Admin Functions ---
 exports.deleteDoctorAccount = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/adminFunctions', 'deleteDoctorAccount'));
 exports.setDoctorAccountDisabled = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/adminFunctions', 'setDoctorAccountDisabled'));
+// One-shot migration للسكرتيرات اللي عندها بيانات في المسار القديم.
+// الأدمن يستدعيها مرة من ScaleToolsPanel، النتيجة: تقرير {migrated, errors, ...}.
+exports.migrateLegacySecretaryPaths = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/migrateLegacySecretaryPaths', 'migrateLegacySecretaryPaths'));
 exports.setPublicAccountDisabled = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/publicAccountFunctions', 'setPublicAccountDisabled'));
 exports.deletePublicAccount = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/publicAccountFunctions', 'deletePublicAccount'));
 // ⚠️ TEMPORARY: One-time cleanup of legacy plain-text booking password field.

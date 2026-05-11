@@ -13,6 +13,7 @@ import { PatientSuggestionOption } from '../add-appointment-form/types';
 import { TodayAppointment } from './types';
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import { parseIsoTimeMs } from '../../../utils/expiryTime';
 import { SECRETARY_LAST_SECRET_KEY } from './constants';
@@ -28,7 +29,11 @@ import type {
   SecretaryVitalFieldDefinition,
   SecretaryVitalsVisibility,
 } from '../../../types';
-import { buildSecretaryVisibilityByFieldDefinitions } from '../../../utils/secretaryVitals';
+import {
+  buildSecretaryVisibilityByFieldDefinitions,
+  normalizeSecretaryVitalFieldDefinitions,
+  normalizeSecretaryVitalsVisibility,
+} from '../../../utils/secretaryVitals';
 import { mergePatientDirectoryLists } from './realtimeSync.helpers';
 
 /**
@@ -164,14 +169,30 @@ export const usePublicBookingRealtimeSync = ({
       // اختيار مفتاح الفرع الحالي (عزل بيانات الفروع عن بعضها)
       const secretaryBranchKey = (sessionBranchId || 'main').trim() || 'main';
 
+      // 🔍 رسالة تشخيص مؤقتة — تطبع المعلومات اللي السكرتيرة بتقرأ منها
+      console.warn('[SECRETARY-READ] secret=', secret?.slice(0, 16), 'sessionBranchId=', sessionBranchId, 'secretaryBranchKey=', secretaryBranchKey, 'entryAlertByBranch=', JSON.stringify(data.entryAlertByBranch || null), 'entryAlert=', JSON.stringify(data.entryAlert || null));
+
       // 2. مراقبة "تنبيهات طلب الدخول" (Entry Alerts)
       // تفضيل القراءة من الخريطة المعزولة بالفرع، ثم fallback للحقل القديم (مع فحص branchId إن وُجد)
       const branchEntryAlert = data.entryAlertByBranch?.[secretaryBranchKey];
       const legacyEntryAlert = data.entryAlert;
+      // ⚠️ Fail-safe: ما نقبلش الـ legacy إلا لو branchId بيطابق فرع السكرتيرة فعلياً.
+      // قبل كده الكود كان بيقبل الـ legacy لو الـ branchId غير موجود — وده كان
+      // بيسرّب alerts بين الفروع لما يحصل race condition. دلوقتي branchId
+      // مطلوب صراحة وما نقبل ولا قيمة فاضية ولا undefined.
       const legacyMatchesBranch =
         legacyEntryAlert &&
-        (!legacyEntryAlert.branchId || legacyEntryAlert.branchId === secretaryBranchKey);
-      const entry = branchEntryAlert || (legacyMatchesBranch ? legacyEntryAlert : undefined);
+        legacyEntryAlert.branchId &&
+        legacyEntryAlert.branchId === secretaryBranchKey;
+      const rawEntry = branchEntryAlert || (legacyMatchesBranch ? legacyEntryAlert : undefined);
+      // ⚠️ فلتر زمني — أي alert أقدم من ساعتين يعتبر zombie ويُتجاهل.
+      // ده يحمي ضد الـ alerts القديمة المتراكمة في entryAlertByBranch
+      // (من فترة قبل ما نضيف الـ cleanup عند setEntryAlert).
+      const ENTRY_ALERT_TTL_MS = 2 * 60 * 60 * 1000; // ساعتين
+      const entryCreatedMs = rawEntry?.createdAt ? Date.parse(rawEntry.createdAt) : NaN;
+      const entryIsFresh =
+        Number.isFinite(entryCreatedMs) && (Date.now() - entryCreatedMs) <= ENTRY_ALERT_TTL_MS;
+      const entry = rawEntry && entryIsFresh ? rawEntry : undefined;
 
       if (entry?.caseName && entry?.createdAt && entry?.appointmentId) {
         const handledMarker = readSecretaryHandledEntryAlert(secret);
@@ -314,18 +335,28 @@ export const usePublicBookingRealtimeSync = ({
           : data.secretaryVitalFields;
       const effectiveVisibility = branchVisibility || data.secretaryVitalsVisibility;
       const hasSecretaryFields = Array.isArray(effectiveFields) && effectiveFields.length > 0;
+      const specialtyOptions = {
+        doctorSpecialty: typeof data.doctorSpecialty === 'string' ? data.doctorSpecialty : undefined,
+      };
 
       if (hasSecretaryFields) {
-        const nextFields = effectiveFields as SecretaryVitalFieldDefinition[];
+        const nextFields = normalizeSecretaryVitalFieldDefinitions(
+          effectiveFields as SecretaryVitalFieldDefinition[],
+          undefined,
+          specialtyOptions
+        );
         setSecretaryVitalFields(nextFields);
         setSecretaryVitalsVisibility((current) =>
           buildSecretaryVisibilityByFieldDefinitions(
             nextFields,
-            effectiveVisibility || current
+            effectiveVisibility || current,
+            specialtyOptions
           )
         );
       } else if (effectiveVisibility) {
-        setSecretaryVitalsVisibility(effectiveVisibility);
+        setSecretaryVitalsVisibility(
+          normalizeSecretaryVitalsVisibility(effectiveVisibility, undefined, specialtyOptions)
+        );
       }
     });
 
@@ -359,11 +390,11 @@ export const usePublicBookingRealtimeSync = ({
   // التأثير الثاني: الاشتراك في الحالات التي وافقت عليها السكرتارية — مقسم بالفرع
   useEffect(() => {
     if (!secret) return;
-    const unsub = firestoreService.subscribeToSecretaryApprovedEntryIds(
+    const unsub = entryConversations.subscribeToApprovedAppointments({
       secret,
-      setSecretaryApprovedEntryIds,
-      sessionBranchId
-    );
+      branchId: sessionBranchId,
+      onChange: setSecretaryApprovedEntryIds,
+    });
     return () => unsub();
   }, [secret, sessionBranchId, setSecretaryApprovedEntryIds]);
 

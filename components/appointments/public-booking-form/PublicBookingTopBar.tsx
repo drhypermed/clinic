@@ -11,7 +11,6 @@ import React from 'react';
 import type { SharePlatform } from './types';
 
 type PublicBookingTopBarProps = {
-  isFromPublicSite: boolean;
   showShareMenu: boolean;
   linkCopied: boolean;
   doctorName: string;
@@ -21,7 +20,6 @@ type PublicBookingTopBarProps = {
 };
 
 export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
-  isFromPublicSite,
   showShareMenu,
   linkCopied,
   doctorName,
@@ -29,7 +27,11 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
   onToggleShareMenu,
   onShare,
 }) => {
-  if (!isFromPublicSite) return null;
+  // الشريط ده (رجوع + breadcrumbs) ميهمّش غير لو المريض على الموقع العام
+  // (drhypermed.com) — على رابط حجز مشترك خارجي مفيش لزوم له.
+  const isOnPublicSite =
+    typeof window !== 'undefined' && /drhypermed\.com$/i.test(window.location.hostname);
+  if (!isOnPublicSite) return null;
 
   return (
     <>

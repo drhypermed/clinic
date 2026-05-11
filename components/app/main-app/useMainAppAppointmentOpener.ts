@@ -37,6 +37,7 @@ interface UseMainAppAppointmentOpenerParams {
   appointments: ClinicAppointment[];
   records: PatientRecord[];
   prescriptionSecretaryFieldDefinitions: SecretaryVitalFieldDefinition[];
+  doctorSpecialty?: string | null;
   mapAppointmentSecretaryCustomValues: (
     secretaryVitals: ClinicAppointment['secretaryVitals'] | undefined
   ) => Record<string, string>;
@@ -126,6 +127,7 @@ const applySecretaryVitalsFromAppointment = (
     rbs: secretaryVitals.rbs || prev.rbs,
     spo2: secretaryVitals.spo2 || prev.spo2,
     rr: secretaryVitals.rr || prev.rr,
+    headCirc: secretaryVitals.headCirc || prev.headCirc,
   }));
 };
 
@@ -133,6 +135,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
   const {
     appointments, records,
     prescriptionSecretaryFieldDefinitions,
+    doctorSpecialty,
     mapAppointmentSecretaryCustomValues,
     setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext,
@@ -170,7 +173,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // تطهير العلامات الحيوية اللي أدخلتها السكرتارية
     const appointmentSecretaryVitals = sanitizeSecretaryVitalsInput(
       appointmentMeta.secretaryVitals,
-      { fieldDefinitions: prescriptionSecretaryFieldDefinitions },
+      { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
     );
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
@@ -238,7 +241,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // سواء فوراً (لو مفيش بيانات غير محفوظة) أو بعد ما المستخدم يأكد المودال.
     handleResetAndClearOpenedAppointment(applyAppointmentData, actionLabel);
   }, [
-    appointments, records, prescriptionSecretaryFieldDefinitions,
+    appointments, records, prescriptionSecretaryFieldDefinitions, doctorSpecialty,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleResetAndClearOpenedAppointment,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
@@ -274,7 +277,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // العلامات الحيوية من السكرتارية
     const appointmentSecretaryVitals = sanitizeSecretaryVitalsInput(
       (apt as { secretaryVitals?: unknown }).secretaryVitals,
-      { fieldDefinitions: prescriptionSecretaryFieldDefinitions },
+      { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
     );
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
@@ -286,6 +289,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
   }, [
     appointments, records,
     prescriptionSecretaryFieldDefinitions,
+    doctorSpecialty,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleOpenConsultation,
     setVisitDate,

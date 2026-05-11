@@ -9,6 +9,7 @@ import { ClinicalDetails } from './ClinicalDetails';
 import { RxList } from './RxList';
 import { AdditionalNotes } from './AdditionalNotes';
 import { getPaperDimensions, getPaperMargins, applyPaperSizeCssVars, injectPrintPageStyle, registerBeforePrintHandler } from '../prescription-settings/utils';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 /**
  * الملف: PrescriptionPreview.tsx
@@ -29,7 +30,7 @@ interface PrescriptionPreviewProps {
   height?: string;
   setHeight?: (value: string) => void;
   bmi?: string;
-  vitals: { bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string };
+  vitals: { bp: string; pulse: string; temp: string; rbs: string; spo2: string; rr: string; headCirc?: string };
   complaint: string;
   complaintEn: string;
   setComplaintEn: (val: string) => void;
@@ -66,6 +67,7 @@ interface PrescriptionPreviewProps {
   prescriptionSettings?: PrescriptionSettings; // إعدادات الطبيب المخصصة من قاعدة البيانات
   /** إجبار عرض صف Dx فاضي لتنبيه الطبيب بعد تحليل الحالة (بدون اختيار DDx) */
   forceShowDx?: boolean;
+  doctorSpecialty?: string | null;
 }
 
 const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
@@ -78,6 +80,7 @@ const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
   { key: 'temp', label: 'Temp', labelAr: 'الحرارة', unit: '°C', enabled: true, order: 7 },
   { key: 'spo2', label: 'SpO2', labelAr: 'تشبع الأكسجين', unit: '%', enabled: true, order: 8 },
   { key: 'rr', label: 'RR', labelAr: 'التنفس', unit: '/min', enabled: true, order: 9 },
+  { key: 'headCirc', label: 'Head Circ.', labelAr: 'محيط الرأس', unit: 'cm', enabled: true, order: 10 },
 ];
 
 // ─── PrescriptionPreview ملفوف بـ React.memo ────────────────────────────
@@ -90,7 +93,7 @@ const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
 export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, PrescriptionPreviewProps>(({
   patientName, setPatientName,
   ageYears, ageMonths, ageDays,
-  weight, setWeight, height, setHeight, bmi,
+  weight, height, bmi,
   vitals,
   complaint, complaintEn, setComplaintEn,
   medicalHistory, historyEn, setHistoryEn,
@@ -99,7 +102,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   diagnosisEn, setDiagnosisEn,
   rxItems, generalAdvice = [], labInvestigations = [],
   usageStats,
-  onRemoveItem, onUpdateItemName, onUpdateItemInstruction, onUpdateItemFontSize,
+  onRemoveItem, onUpdateItemName, onUpdateItemInstruction,
   onUpdateAdvice, onRemoveAdvice, onUpdateLab, onRemoveLab,
   onMedicationClick, onSwapItem, onSelectMedication,
   isDataOnlyMode = false,
@@ -107,6 +110,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   actionsBar,
   consultationDate,
   prescriptionSettings,
+  doctorSpecialty,
   forceShowDx = false,
 }, ref) => {
 
@@ -283,25 +287,36 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
 
   /** إعداد تهيئة القياسات الحيوية بناءً على خيارات الطبيب في لوحة الإعدادات */
   const vitalConfig = useMemo(() => {
+    const isPediatricSpecialty = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
     const vitalsSettings = prescriptionSettings?.vitals;
-    const baseSettings = Array.isArray(vitalsSettings) && vitalsSettings.length > 0
+    const sourceSettings = Array.isArray(vitalsSettings) && vitalsSettings.length > 0
       ? vitalsSettings
       : DEFAULT_PREVIEW_VITALS;
+    const baseSettings =
+      isPediatricSpecialty && !sourceSettings.some((v) => v.key === 'headCirc')
+        ? [
+            ...sourceSettings,
+            { key: 'headCirc', label: 'Head Circ.', labelAr: 'محيط الرأس', unit: 'cm', enabled: true, order: 10 } as VitalSignConfig,
+          ]
+        : sourceSettings;
     const enabledVitals = baseSettings.filter(v => v.enabled !== false).sort((a, b) => a.order - b.order);
 
     const valueMap: Record<string, string> = {
       'weight': weight, 'height': height || '', 'bmi': bmi || '',
       'bp': vitals.bp, 'pulse': vitals.pulse, 'temp': vitals.temp,
       'rbs': vitals.rbs, 'spo2': vitals.spo2, 'rr': vitals.rr,
+      'headCirc': vitals.headCirc || '',
     };
 
-    return enabledVitals.map(v => ({
+    return enabledVitals
+      .filter((v) => v.key !== 'headCirc' || isPediatricSpecialty)
+      .map(v => ({
       key: v.key,
       label: v.labelAr || v.label,
       unit: v.unit,
       value: valueMap[v.key] || ''
     }));
-  }, [prescriptionSettings?.vitals, weight, height, bmi, vitals]);
+  }, [doctorSpecialty, prescriptionSettings?.vitals, weight, height, bmi, vitals]);
 
   const showClinicalSection = useMemo(() => {
     // forceShowDx يفعّل ظهور القسم حتى لو Dx فاضي (لتنبيه الطبيب بعد التحليل)

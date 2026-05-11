@@ -56,6 +56,8 @@ interface MainAppOverlaysProps {
   smartQuotaModalOpen: boolean;
   smartQuotaNotice: { message: string; whatsappNumber?: string; whatsappUrl?: string } | null;
   dismissSmartQuotaNotice: () => void;
+  // هل الطبيب عنده أكتر من فرع — يتمرّر لإشعار طلب الدخول علشان يخفي/يظهر اسم الفرع.
+  hasMultipleBranches?: boolean;
 }
 
 export const MainAppOverlays: React.FC<MainAppOverlaysProps> = ({
@@ -63,6 +65,7 @@ export const MainAppOverlays: React.FC<MainAppOverlaysProps> = ({
   showReadyPrescriptionsModal, setShowReadyPrescriptionsModal, readyPrescriptions, handleApplyReadyPrescription, handleUpdateReadyPrescription, handleCreateReadyPrescription, handleDeleteReadyPrescription, rxItems, generalAdvice, labInvestigations,
   showSaveReadyPrescriptionModal, isClosingReadyPrescriptionModal, isSavingReadyPrescription, readyPrescriptionName, setReadyPrescriptionName, setShowSaveReadyPrescriptionModal, handleConfirmSaveReadyPrescription,
   settingsError, secretaryEntryRequest, bookingSecret, onApproveSecretaryEntry, onRejectSecretaryEntry, newAppointmentToast, setNewAppointmentToast, smartQuotaModalOpen, smartQuotaNotice, dismissSmartQuotaNotice,
+  hasMultipleBranches = false,
 }) => {
   return (
     <>
@@ -110,9 +113,10 @@ export const MainAppOverlays: React.FC<MainAppOverlaysProps> = ({
         </div>
       )}
 
-      {/* 5. تنبيهات السكرتارية (Portals) - تظهر عند طلب السكرتارية الدخول للنظام */}
+      {/* 5. تنبيهات السكرتارية (Portals) - تظهر عند طلب السكرتارية الدخول للنظام.
+            hasMultipleBranches: لافتة "فرع: X" تتخفى للأطباء بفرع واحد. */}
       {secretaryEntryRequest && bookingSecret && createPortal(
-        <SecretaryEntryNotification request={secretaryEntryRequest} onApprove={onApproveSecretaryEntry} onReject={onRejectSecretaryEntry} />,
+        <SecretaryEntryNotification request={secretaryEntryRequest} onApprove={onApproveSecretaryEntry} onReject={onRejectSecretaryEntry} hasMultipleBranches={hasMultipleBranches} />,
         document.body
       )}
 

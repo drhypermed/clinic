@@ -16,7 +16,13 @@
 
 // Constants + types
 export {
+    getSecretaryVitalKeysForSpecialty,
+    isPediatricSpecialtyForSecretaryVitals,
+    isSecretaryVitalKeyAllowedForSpecialty,
     toSecretaryCustomFieldId,
+} from './constants';
+export type {
+    SecretaryVitalsSpecialtyOptions,
 } from './constants';
 
 // Helpers (public APIs only)

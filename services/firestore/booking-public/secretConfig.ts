@@ -57,6 +57,11 @@ interface PublicBookingConfigData {
   userId: string;
   title?: string;
   contactInfo?: string;
+  // لو true: الفورم يطلب تسجيل دخول بحساب Google قبل تأكيد الحجز.
+  // الفائدة: حماية ضد الحجوزات الوهمية لما الطبيب ينشر الرابط على منصات عامة.
+  // الإعداد ده موحّد بدلاً من نظام "entry=public-site" القديم اللي كان يتحكّم فيه
+  // مصدر الرابط (الديركتوري vs الرابط المباشر) — دلوقتي الطبيب نفسه يقرر.
+  requireGoogleSignIn?: boolean;
 }
 
 /** 
@@ -185,6 +190,8 @@ export const getPublicBookingConfig = async (
     userId: data.userId,
     title: toOptionalText(data?.title),
     contactInfo: toOptionalText(data?.contactInfo),
+    // قراءة الـ flag من الـ doc — false default لو مش مسجّل (طبيب قديم/جديد ما عدلش الإعداد)
+    requireGoogleSignIn: data?.requireGoogleSignIn === true,
   };
 };
 
@@ -255,12 +262,13 @@ export const getPublicSecretByUserId = async (userId: string): Promise<string | 
   }
 };
 
-/** حفظ إعدادات شكل نموذج الحجز (العنوان ومعلومات العيادة) */
+/** حفظ إعدادات شكل نموذج الحجز (العنوان، معلومات العيادة، وحماية جوجل) */
 export const savePublicFormSettings = async (
   userId: string,
   secret: string,
   title: string,
-  contactInfo: string
+  contactInfo: string,
+  requireGoogleSignIn: boolean
 ): Promise<void> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   const normalizedSecret = normalizePublicSecret(secret);
@@ -273,6 +281,8 @@ export const savePublicFormSettings = async (
       userId: normalizedUserId,
       title: toOptionalText(title) || '',
       contactInfo: toOptionalText(contactInfo) || '',
+      // حماية الحجز بجوجل — flag بسيط يتحكّم فيه الطبيب من لوحته
+      requireGoogleSignIn: Boolean(requireGoogleSignIn),
       updatedAt: new Date().toISOString(),
     },
     { merge: true }
@@ -282,7 +292,7 @@ export const savePublicFormSettings = async (
 /** الاشتراك اللحظي في إعدادات الحجز لمراقبة أي تغييرات من الطبيب */
 export const subscribeToPublicConfig = (
   secret: string,
-  onUpdate: (config: { userId?: string; title?: string; contactInfo?: string }) => void
+  onUpdate: (config: { userId?: string; title?: string; contactInfo?: string; requireGoogleSignIn?: boolean }) => void
 ) => {
   const normalizedSecret = normalizePublicSecret(secret);
   if (!normalizedSecret) {
@@ -304,6 +314,7 @@ export const subscribeToPublicConfig = (
       userId: typeof data.userId === 'string' ? data.userId : undefined,
       title: toOptionalText(data.title),
       contactInfo: toOptionalText(data.contactInfo),
+      requireGoogleSignIn: data?.requireGoogleSignIn === true,
     });
   };
 

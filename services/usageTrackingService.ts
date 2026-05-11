@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc, increment, writeBatch } from 'firebase/firestore';
+import { collection, serverTimestamp, query, where, getDocs, doc, setDoc, increment, writeBatch } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import { getDocCacheFirst } from './firestore/cacheFirst';
 import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime';

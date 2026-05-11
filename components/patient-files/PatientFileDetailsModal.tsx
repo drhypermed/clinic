@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PatientRecord } from '../../types';
 import {
@@ -13,9 +13,16 @@ import { PatientFileCostsSection } from './PatientFileCostsSection';
 import { PatientFileInvoiceSection } from './PatientFileInvoiceSection';
 import { PatientFileVisitsList } from './PatientFileVisitsList';
 import { patientFilesService } from '../../services/patient-files';
+import { useEnabledSpecialtyPack } from '../../hooks/useSpecialtyPack';
 
-const getTodayDateKey = (): string =>
-  new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
+// ─ تحميل كسول لباكدج النساء — أطباء التخصصات التانيه ما يحمّلوش الكود ده أبداً ─
+const PregnancySection = React.lazy(
+  () => import('../specialty-packs/gynecology/PregnancySection'),
+);
+// ─ تحميل كسول لباكدج الأطفال — نفس النمط، التحميل بس لأطباء الأطفال ─
+const PediatricSection = React.lazy(
+  () => import('../specialty-packs/pediatrics/PediatricSection'),
+);
 
 interface PatientFileDetailsModalProps {
   patientFile: PatientFileData | null;
@@ -56,6 +63,8 @@ interface PatientFileDetailsModalProps {
   } | null>;
   /** الفرع النشط — يمرر لـ PatientFileCostsSection لفصل التكاليف بين الفروع */
   branchId?: string;
+  /** تخصص الطبيب — لو تخصص يطابق باكدج مفعّل، يظهر قسم متابعه التخصص (مثلاً متابعه الحمل) */
+  doctorSpecialty?: string;
 }
 
 export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = ({
@@ -67,8 +76,11 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
   onUpdatePatientIdentity,
   onSaveAdditionalInfo,
   branchId,
+  doctorSpecialty,
 }) => {
   const { user } = useAuth();
+  // ─ يحدد الباكدج المفعّل للطبيب (نسا، ...) — null لو مفيش ─
+  const enabledPack = useEnabledSpecialtyPack(doctorSpecialty);
   const [isIdentityEditorOpen, setIsIdentityEditorOpen] = useState(false);
   const [editPatientName, setEditPatientName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -740,6 +752,56 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
             </div>
 
             {/* ─── فاصل: التكاليف المالية ─────────────────────────────── */}
+            {/* ─── حزمه النساء والتوليد — تظهر فقط لو الأدمن فعّلها + التخصص مطابق ─── */}
+            {enabledPack === 'gynecology' && patientFile && (
+              <>
+                <div className="flex items-center gap-3 px-1 pt-1">
+                  <span className="flex items-center gap-1.5 bg-pink-50 border border-pink-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                    <span aria-hidden className="text-base">🤰</span>
+                    <span className="text-[11px] font-black text-pink-700 whitespace-nowrap">متابعه الحمل</span>
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-l from-pink-100 to-slate-100" />
+                </div>
+                <Suspense
+                  fallback={
+                    <div className="rounded-xl border border-pink-200 bg-pink-50/30 p-3 text-center text-xs font-bold text-pink-700">
+                      جاري تحميل متابعه الحمل...
+                    </div>
+                  }
+                >
+                  <PregnancySection
+                    userId={user?.uid}
+                    patientFileNameKey={patientFile.key}
+                  />
+                </Suspense>
+              </>
+            )}
+
+            {/* ─── حزمه الأطفال — نمو + تطعيمات ─── */}
+            {enabledPack === 'pediatrics' && patientFile && (
+              <>
+                <div className="flex items-center gap-3 px-1 pt-1">
+                  <span className="flex items-center gap-1.5 bg-sky-50 border border-sky-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
+                    <span aria-hidden className="text-base">👶</span>
+                    <span className="text-[11px] font-black text-sky-700 whitespace-nowrap">متابعه الطفل</span>
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-l from-sky-100 to-slate-100" />
+                </div>
+                <Suspense
+                  fallback={
+                    <div className="rounded-xl border border-sky-200 bg-sky-50/30 p-3 text-center text-xs font-bold text-sky-700">
+                      جاري تحميل متابعه الطفل...
+                    </div>
+                  }
+                >
+                  <PediatricSection
+                    userId={user?.uid}
+                    patientFileNameKey={patientFile.key}
+                  />
+                </Suspense>
+              </>
+            )}
+
             <div className="flex items-center gap-3 px-1 pt-1">
               <span className="flex items-center gap-1.5 bg-success-50 border border-success-200 rounded-full px-3 py-1 shrink-0 shadow-sm">
                 <svg className="w-4 h-4 text-success-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

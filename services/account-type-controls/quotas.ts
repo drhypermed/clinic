@@ -130,7 +130,7 @@ const pickByTier = <T>(tier: TierValue, freeVal: T, premiumVal: T, proMaxVal: T 
  *
  * كان الزرّين بيشاركوا نفس العداد فاستهلاك زر بيقفل التاني (bug). دلوقتي عداد لكل واحد.
  */
-export type SmartPrescriptionQuotaMode = 'analyze' | 'quickAdd';
+type SmartPrescriptionQuotaMode = 'analyze' | 'quickAdd';
 
 export const consumeSmartPrescriptionQuota = async (
   mode: SmartPrescriptionQuotaMode = 'analyze',

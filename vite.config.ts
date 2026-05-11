@@ -165,7 +165,7 @@ export default defineConfig({
     // إيقاف حساب gzip size لعرضه فقط في الـoutput — بيوفر 10-15 ثانية في كل build.
     reportCompressedSize: false,
     modulePreload: {
-      resolveDependencies: (filename, deps, context) => {
+      resolveDependencies: (_filename, deps, _context) => {
         return deps.filter((dep) => {
           const normalized = dep.replace(/\\/g, '/');
           // استثناء الموديولز اللي لا تحتاج التحميل الأولي:

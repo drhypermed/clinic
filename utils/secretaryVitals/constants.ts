@@ -20,6 +20,26 @@ export type SecretaryVitalFieldMeta = {
     isReadOnly?: boolean;
 };
 
+export type SecretaryVitalsSpecialtyOptions = {
+    doctorSpecialty?: string | null;
+};
+
+export const PEDIATRIC_SPECIALTY_LABEL = 'طب الأطفال وحديثي الولادة';
+export const HEAD_CIRC_VITAL_KEY: SecretaryVitalKey = 'headCirc';
+
+export const isPediatricSpecialtyForSecretaryVitals = (doctorSpecialty?: string | null): boolean =>
+    String(doctorSpecialty || '').trim() === PEDIATRIC_SPECIALTY_LABEL;
+
+export const isSecretaryVitalKeyAllowedForSpecialty = (
+    key: SecretaryVitalKey,
+    doctorSpecialty?: string | null
+): boolean => key !== HEAD_CIRC_VITAL_KEY || isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
+
+export const getSecretaryVitalKeysForSpecialty = (
+    doctorSpecialty?: string | null
+): SecretaryVitalKey[] =>
+    SECRETARY_VITAL_KEYS.filter((key) => isSecretaryVitalKeyAllowedForSpecialty(key, doctorSpecialty));
+
 /** كل مفاتيح العلامات الحيوية المدعومة — يحدد الترتيب الافتراضي */
 export const SECRETARY_VITAL_KEYS: SecretaryVitalKey[] = [
     'weight',
@@ -31,6 +51,7 @@ export const SECRETARY_VITAL_KEYS: SecretaryVitalKey[] = [
     'temp',
     'spo2',
     'rr',
+    'headCirc', // 🆕 محيط الرأس — للأطفال (الطبيب بيفعّله للسكرتاريه لو محتاج)
 ];
 
 /** Set من المفاتيح للبحث السريع O(1) */
@@ -147,6 +168,18 @@ export const SECRETARY_VITAL_FIELDS: SecretaryVitalFieldMeta[] = [
         shortLabel: 'RR',
         unit: '/min',
         placeholder: '18',
+        inputType: 'number',
+        inputMode: 'decimal',
+    },
+    {
+        // 🆕 محيط الرأس — للأطفال. الطبيب بيفعّله من إعدادات الـvitals
+        //   وممكن يخليه ظاهر للسكرتاريه عشان تسجله مع باقي القياسات.
+        id: toSecretaryVitalFieldId('headCirc'),
+        key: 'headCirc',
+        label: 'محيط الرأس',
+        shortLabel: 'HC',
+        unit: 'cm',
+        placeholder: '45',
         inputType: 'number',
         inputMode: 'decimal',
     },

@@ -12,7 +12,15 @@ import type {
     SecretaryVitalsInput,
     SecretaryVitalsVisibility,
 } from '../../types';
-import { SECRETARY_VITAL_FIELDS, SECRETARY_VITAL_KEYS, toSecretaryCustomFieldId, toSecretaryVitalFieldId } from './constants';
+import {
+    SECRETARY_VITAL_FIELDS,
+    SECRETARY_VITAL_KEYS,
+    getSecretaryVitalKeysForSpecialty,
+    isSecretaryVitalKeyAllowedForSpecialty,
+    toSecretaryCustomFieldId,
+    toSecretaryVitalFieldId,
+    type SecretaryVitalsSpecialtyOptions,
+} from './constants';
 import { normalizeSecretaryVitalFieldDefinitions } from './fieldDefinitions';
 import {
     computeSecretaryBmiValue,
@@ -55,7 +63,7 @@ export const sanitizeSecretaryVitalsInput = (
     options: {
         visibility?: SecretaryVitalsVisibility;
         fieldDefinitions?: SecretaryVitalFieldDefinition[];
-    } = {}
+    } & SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalsInput | undefined => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return undefined;
@@ -64,8 +72,12 @@ export const sanitizeSecretaryVitalsInput = (
     const source = value as Record<string, unknown>;
     const sanitized: SecretaryVitalsInput = {};
     const visibility = options.visibility;
+    const hasSpecialtyFilter =
+        options.doctorSpecialty !== undefined ||
+        Boolean(options.visibility) ||
+        (Array.isArray(options.fieldDefinitions) && options.fieldDefinitions.length > 0);
     const normalizedFields = Array.isArray(options.fieldDefinitions) && options.fieldDefinitions.length > 0
-        ? normalizeSecretaryVitalFieldDefinitions(options.fieldDefinitions)
+        ? normalizeSecretaryVitalFieldDefinitions(options.fieldDefinitions, undefined, options)
         : null;
 
     if (normalizedFields) {
@@ -82,7 +94,10 @@ export const sanitizeSecretaryVitalsInput = (
             }
         });
     } else {
-        SECRETARY_VITAL_KEYS.forEach((key) => {
+        const vitalKeys = hasSpecialtyFilter
+            ? getSecretaryVitalKeysForSpecialty(options.doctorSpecialty)
+            : SECRETARY_VITAL_KEYS;
+        vitalKeys.forEach((key) => {
             const fieldId = toSecretaryVitalFieldId(key);
             if (!resolveVisibilityByField(visibility, fieldId, key)) return;
 
@@ -124,14 +139,18 @@ export const toSecretaryVitalsEntries = (
         visibility?: SecretaryVitalsVisibility;
         includeEmpty?: boolean;
         fieldDefinitions?: SecretaryVitalFieldDefinition[];
-    } = {}
+    } & SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalEntry[] => {
     if (!value) return [];
 
     const source = value as Record<string, unknown>;
     const visibility = options.visibility;
+    const hasSpecialtyFilter =
+        options.doctorSpecialty !== undefined ||
+        Boolean(options.visibility) ||
+        (Array.isArray(options.fieldDefinitions) && options.fieldDefinitions.length > 0);
     const normalizedFields = Array.isArray(options.fieldDefinitions) && options.fieldDefinitions.length > 0
-        ? normalizeSecretaryVitalFieldDefinitions(options.fieldDefinitions)
+        ? normalizeSecretaryVitalFieldDefinitions(options.fieldDefinitions, undefined, options)
         : null;
 
     if (normalizedFields) {
@@ -155,6 +174,7 @@ export const toSecretaryVitalsEntries = (
     }
 
     return SECRETARY_VITAL_FIELDS
+        .filter((field) => !hasSpecialtyFilter || isSecretaryVitalKeyAllowedForSpecialty(field.key, options.doctorSpecialty))
         .filter((field) => resolveVisibilityByField(visibility, field.id, field.key))
         .map((field) => ({
             key: field.key,

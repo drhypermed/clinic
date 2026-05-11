@@ -25,7 +25,7 @@ const MAX_DATA_URL_BYTES = 4_500_000;     // ~4.5MB — هامش أمان تحت
  * البيانات اللي بنحفظها قبل الـredirect.
  * الصوره مخزّنه كـdata URL (base64) عشان sessionStorage بياخد strings فقط.
  */
-export type SignupFormSnapshot = {
+type SignupFormSnapshot = {
   doctorName: string;
   specialty: string;
   whatsapp: string;
@@ -34,7 +34,7 @@ export type SignupFormSnapshot = {
   savedAt: number;
 };
 
-export type SaveResult =
+type SaveResult =
   | { ok: true }
   | { ok: false; reason: 'too-large' | 'storage-error' };
 

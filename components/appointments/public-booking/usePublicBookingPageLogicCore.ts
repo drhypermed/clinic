@@ -7,7 +7,7 @@
  * - استخلاص الحالة الموحدة (Unified State) وتمريرها للمكونات المرئية. 
  * - إدارة التنقل (Navigation) والربط بين المعاملات في الرابط (Slug/Secret).
  */
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 // استيراد الـ Hooks الفرعية التي تقسم المنطق البرمجي المعقد إلى أجزاء صغيرة سهلة الإدارة
 import { usePublicBookingPublicSection } from './usePublicBookingPublicSection'; // منطق فتح فتحات الحجز للجمهور
@@ -25,8 +25,16 @@ import { usePublicBookingPageState } from './usePublicBookingPageState'; // إد
 import { useSecretaryDataLoading } from './useSecretaryDataLoading'; // تحميل مواعيد + كشوفات حديثة عبر Cloud Functions
 import { useSecretaryVitalsNormalizer } from './useSecretaryVitalsNormalizer'; // تطبيع إعدادات العلامات الحيوية للفرع
 import { useBranches } from '../../../hooks/useBranches'; // قائمة الفروع للطبيب
+import { useSecretaryTokenRefresh } from './useSecretaryTokenRefresh'; // تجديد Firebase Custom Token كل ٥٠ دقيقة
+import { secretaryAuthSecretKey } from './helpers';
 import { insuranceService } from '../../../services/insuranceService'; // خدمة شركات التأمين
 import { discountReasonService } from '../../../services/discountReasonService';
+import {
+  INTERNAL_TOAST_MIN_VISIBLE_MS,
+  buildSecretaryActionToastKey,
+  clearTimedPayload,
+  persistTimedPayload,
+} from '../internalToastStorage'; // نفس آلية إخفاء التوست المستخدمة في توست أكشن السكرتيرة
 
 
 
@@ -54,6 +62,18 @@ export const usePublicBookingPageLogic = () => {
     secret: linkResolution.secret,
     userId,
     navigate,
+  });
+
+  // 🔒 2026-05-10: تجديد Firebase Custom Token كل ٥٠ دقيقة عشان الكتابات على
+  //    Firestore تفضل تشتغل بعد ساعة (الـ token عمره ساعة بالظبط).
+  //    ضروري لتشديد rules الـ collections بدون كسر تجربة السكرتيرة.
+  useSecretaryTokenRefresh({
+    secret: linkResolution.secret,
+    sessionToken: typeof window !== 'undefined'
+      ? (localStorage.getItem(secretaryAuthSecretKey(linkResolution.secret)) || '')
+      : '',
+    branchId: auth.sessionBranchId || 'main',
+    enabled: auth.isAuthenticated,
   });
 
   // تفعيل نظام الإشعارات اللحظية للسكرتارية (Web Push Notifications).
@@ -91,9 +111,10 @@ export const usePublicBookingPageLogic = () => {
     currentDayStr: state.currentDayStr,
     branches: branchesHook.branches,
     activeBranchId: sessionBranchId,
-    // مرآة publicBookingSecret من bookingConfig — يكتبها الطبيب علشان السكرتيرة
-    // تعرض رابط فورم الجمهور بدون ما تحتاج صلاحيات على publicBookingConfig.
+    // مرآة publicBookingSecret + publicUrlSlug من bookingConfig — يكتبها الطبيب
+    // علشان السكرتيرة تبني رابط /p/{slug} بدون صلاحيات على users/{uid}.
     seededPublicSecret: state.config?.publicBookingSecret,
+    seededPublicSlug: state.config?.publicUrlSlug,
   });
 
   usePublicBookingTimeAndFormEffects({
@@ -223,6 +244,64 @@ export const usePublicBookingPageLogic = () => {
     setPendingEntryAppointmentId: state.setPendingEntryAppointmentId,
   });
 
+  // عرض توست داخلي للسكرتيرة لما الطبيب يرد بنفسه على طلبها (دخول/انتظار).
+  // قبل التعديل، الـbookingConfig كان بيتحدّث بس مفيش UI feedback ظاهر —
+  // السكرتيرة كانت بتفضل مستنية من غير ما تعرف رد الطبيب.
+  // الفلترة:
+  //   - source !== 'secretary': لما السكرتيرة هي اللي ردت، عندها توست خاص بيها
+  //   - respondedAt حديث (آخر ٣٠ ثانية): نتجنب توست لأي رد قديم محفوظ في الـdoc
+  const lastShownDoctorResponseRef = useMemo(() => ({ key: '' as string }), []);
+  // مؤقت إخفاء توست "رد الطبيب" — نفس مدة توست أكشن السكرتيرة (10 ثوانٍ)
+  // عشان السكرتيرة تشوف الرد لفترة كافية ثم يختفي تلقائياً زي باقي التوستات.
+  const doctorResponseToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const resp = state.doctorEntryResponse as { respondedAt?: string; status?: 'approved' | 'rejected'; appointmentId?: string; source?: string } | null;
+    if (!resp || !resp.respondedAt || !resp.status) return;
+    if (resp.source === 'secretary') return;
+    // 🔒 إصلاح flash 2026-05-11: لو السكرتيرة عندها entryAlert نشط (الطبيب طالب
+    // دخول لحالة لسه ما ردتش عليه)، نتجاهل أي toast قديم من رد الطبيب على
+    // طلب S→D سابق. السبب: السكرتيرة بتـawait الـrespond، وفي خلال الـawait
+    // ممكن يجي snapshot stale يـtrigger toast بـsource='doctor-response'
+    // ("في الانتظار قليلاً") قبل ما "تم إبلاغ الطبيب" يظهر = flash.
+    if (state.entryAlert) return;
+    const ageMs = Date.now() - new Date(resp.respondedAt).getTime();
+    if (!Number.isFinite(ageMs) || ageMs > 30000) return;
+    const respKey = `${resp.appointmentId}:${resp.respondedAt}`;
+    if (lastShownDoctorResponseRef.key === respKey) return;
+    lastShownDoctorResponseRef.key = respKey;
+    // المصدر "doctor-response" — الطبيب رد على طلب السكرتيرة، فالتوست بيقول قرار الطبيب.
+    const toastValue = { status: resp.status, source: 'doctor-response' as const };
+    state.setSecretaryActionToast(toastValue);
+    // persistence بنفس المفتاح اللي يستخدمه rehydrator في usePublicBookingPushNotifications
+    // (buildSecretaryActionToastKey) — كده لو الصفحة عُملت refresh التوست يكمل ويختفي طبيعي.
+    const secret = linkResolution.secret;
+    if (secret) {
+      const storageKey = buildSecretaryActionToastKey(secret);
+      persistTimedPayload(storageKey, toastValue, INTERNAL_TOAST_MIN_VISIBLE_MS);
+      if (doctorResponseToastTimerRef.current) {
+        clearTimeout(doctorResponseToastTimerRef.current);
+      }
+      doctorResponseToastTimerRef.current = setTimeout(() => {
+        state.setSecretaryActionToast(null);
+        clearTimedPayload(storageKey);
+        doctorResponseToastTimerRef.current = null;
+      }, INTERNAL_TOAST_MIN_VISIBLE_MS);
+    }
+    // الـentryAlert في dependencies — لما السكرتيرة ترد ويتم setEntryAlert(null)،
+    // الـeffect يـrerun. لو في الفترة دي doctorEntryResponse تحدث، يـskip بسبب
+    // الفلتر؛ لو لسه ما اتحدثش، يفضل آمن (الـtoast الجديد من secretary-action سبق).
+  }, [state.doctorEntryResponse, state.setSecretaryActionToast, lastShownDoctorResponseRef, linkResolution.secret, state.entryAlert]);
+
+  // تنظيف المؤقت عند الـunmount عشان منعملش setState على component مفكوك.
+  useEffect(() => {
+    return () => {
+      if (doctorResponseToastTimerRef.current) {
+        clearTimeout(doctorResponseToastTimerRef.current);
+        doctorResponseToastTimerRef.current = null;
+      }
+    };
+  }, []);
+
 
   const { retryLoadConfig } = usePublicBookingConfigLoader({
     secret: linkResolution.secret,
@@ -258,6 +337,7 @@ export const usePublicBookingPageLogic = () => {
     secretaryVitals: state.secretaryVitals,
     secretaryVitalFields: state.secretaryVitalFields,
     secretaryVitalsVisibility: state.secretaryVitalsVisibility,
+    doctorSpecialty: state.config?.doctorSpecialty,
     appointmentType: state.appointmentType,
     selectedConsultationCandidateId: state.selectedConsultationCandidateId,
     editingAppointmentId: state.editingAppointmentId,

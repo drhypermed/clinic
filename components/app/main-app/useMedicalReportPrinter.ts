@@ -18,9 +18,21 @@ import {
     createAndOpenClinicalAiPatientReport,
     type ClinicalReportLanguage,
     type ClinicalReportPageSize,
+    type ReportPediatricTracking,
+    type ReportPregnancyTracking,
 } from '../../reports/clinical-ai-report';
 import type { PatientFileData } from '../../patient-files/patientFilesShared';
 import { consumeStorageQuota } from '../../../services/accountTypeControlsService';
+import { getCachedSpecialtyPacks } from '../../../services/specialty-packs';
+import {
+    calculateGestationalWeek,
+    getTodayDateKey as gynToday,
+    loadPregnancyFile,
+} from '../../../services/specialty-packs/gynecology';
+import {
+    EGYPTIAN_VACCINATION_SCHEDULE,
+    loadPediatricFile,
+} from '../../../services/specialty-packs/pediatrics';
 import {
     getQuotaVerificationFailureMessage,
     isQuotaLimitExceededError,
@@ -84,6 +96,71 @@ export const useMedicalReportPrinter = ({
             }
 
             const doctorSignature = (doctorName || user?.displayName || '').trim() || 'الطبيب المعالج';
+
+            // ─ جلب بيانات حزم التخصصات لو الباكدج مفعّل — تضاف كملحق في التقرير
+            //   صفر تكلفه على الأطباء اللي مش متفعّل عندهم الباكدج (الـif بيكسر مبكراً).
+            const packs = getCachedSpecialtyPacks();
+            let pregnancyTracking: ReportPregnancyTracking | undefined;
+            let pediatricTracking: ReportPediatricTracking | undefined;
+            if (userId && payload.patientFile.key) {
+                try {
+                    if (packs?.packs.gynecology?.enabled) {
+                        const file = await loadPregnancyFile(userId, payload.patientFile.key);
+                        if (file.lastMenstrualPeriod || file.visits.length > 0) {
+                            const week = calculateGestationalWeek(file.lastMenstrualPeriod, gynToday());
+                            pregnancyTracking = {
+                                lmp: file.lastMenstrualPeriod,
+                                edd: file.estimatedDueDate,
+                                currentWeek: week ?? undefined,
+                                closedAt: file.closedAt,
+                                closureType: file.closureType,
+                                visits: file.visits.map((v) => ({
+                                    dateKey: v.dateKey,
+                                    gestationalWeek: v.gestationalWeek,
+                                    fetalWeight: v.fetalWeight,
+                                    fetalHeartRate: v.fetalHeartRate,
+                                    fetalMovement: v.fetalMovement || undefined,
+                                    maternalWeight: v.maternalWeight,
+                                    ultrasoundNotes: v.ultrasoundNotes,
+                                    notes: v.notes,
+                                })),
+                            };
+                        }
+                    }
+                    if (packs?.packs.pediatrics?.enabled) {
+                        const file = await loadPediatricFile(userId, payload.patientFile.key);
+                        const hasData = Boolean(file.dateOfBirth)
+                            || file.growthEntries.length > 0
+                            || Object.keys(file.vaccinations).length > 0;
+                        if (hasData) {
+                            pediatricTracking = {
+                                dateOfBirth: file.dateOfBirth,
+                                sex: file.sex,
+                                growthEntries: file.growthEntries.map((g) => ({
+                                    dateKey: g.dateKey,
+                                    weightKg: g.weightKg,
+                                    heightCm: g.heightCm,
+                                    headCircCm: g.headCircCm,
+                                    notes: g.notes,
+                                })),
+                                vaccinations: EGYPTIAN_VACCINATION_SCHEDULE.map((s) => {
+                                    const rec = file.vaccinations[s.id];
+                                    return {
+                                        shortName: s.shortName,
+                                        vaccine: s.vaccine,
+                                        ageLabel: s.ageLabel,
+                                        status: rec?.status || 'pending',
+                                        givenDate: rec?.givenDate,
+                                    };
+                                }),
+                            };
+                        }
+                    }
+                } catch {
+                    // أي فشل في القراءه — التقرير يكمل بدون الملحق
+                }
+            }
+
             const result = await createAndOpenClinicalAiPatientReport({
                 patientFile: payload.patientFile,
                 language: payload.language,
@@ -91,6 +168,8 @@ export const useMedicalReportPrinter = ({
                 fontSize: payload.fontSize,
                 doctorName: doctorSignature,
                 systemRequestSettings: systemRequestLineSettings as any,
+                pregnancyTracking,
+                pediatricTracking,
             });
 
             if (userId) {

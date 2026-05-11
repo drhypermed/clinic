@@ -13,6 +13,7 @@
 
 import React from 'react';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { closePushNotificationsByContext } from '../../../services/messagingService';
 
 interface SecretaryEntryRequest {
@@ -53,12 +54,14 @@ export const useSecretaryEntryResponse = ({
             setSecretaryEntryRequest(null);
             try {
                 // تمرير branchId حتى يُمسح طلب الفرع الصحيح ويُسجَّل الرد عليه
-                await firestoreService.respondToSecretaryEntryRequest(
-                    responseSecret,
-                    currentRequest.appointmentId,
+                // الواجهة الموحدة — direction='S2D' لأن السكرتيرة طلبت والطبيب بيرد
+                await entryConversations.respond({
+                    secret: responseSecret,
+                    direction: 'S2D',
+                    appointmentId: currentRequest.appointmentId,
                     status,
-                    currentRequest.branchId
-                );
+                    branchId: currentRequest.branchId,
+                });
                 showNotification(message, type);
                 void closePushNotificationsByContext({
                     type: 'secretary_entry_request',

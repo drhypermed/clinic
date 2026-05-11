@@ -9,9 +9,39 @@
  *      المتاحة (backup لما تتعدد service workers في الصفحة).
  */
 
-import { getToken, type Messaging } from 'firebase/messaging';
+import { getToken, type Messaging, type GetTokenOptions } from 'firebase/messaging';
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+// timeout لكل محاولة getToken فردية. الـFCM SDK ما عندوش timeout داخلي،
+// فلو الشبكة معلّقة على DNS/TLS، الـcall ممكن يأخد دقايق. نحطّ سقف 6 ثواني
+// عشان الفشل يحصل بسرعة ونجرّب fallback أو نخرج.
+const PER_GET_TOKEN_TIMEOUT_MS = 6_000;
+
+const getTokenWithTimeout = (msg: Messaging, options?: GetTokenOptions): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('messaging/get-token-timeout'));
+        }, PER_GET_TOKEN_TIMEOUT_MS);
+        getToken(msg, options).then(
+            (token) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                resolve(token);
+            },
+            (err) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                reject(err);
+            },
+        );
+    });
+};
 
 interface FcmTokenResult {
     token: string | null;
@@ -44,7 +74,7 @@ const getFcmTokenWithFallback = async (
 
     if (vapidKey) {
         try {
-            const token = await getToken(msg, { serviceWorkerRegistration, vapidKey });
+            const token = await getTokenWithTimeout(msg, { serviceWorkerRegistration, vapidKey });
             if (token) return { token };
         } catch (error) {
             const parsed = parseError(error);
@@ -55,12 +85,12 @@ const getFcmTokenWithFallback = async (
     }
 
     try {
-        const token = await getToken(msg, { serviceWorkerRegistration });
+        const token = await getTokenWithTimeout(msg, { serviceWorkerRegistration });
         if (token) return { token };
 
         if (vapidKey) {
             try {
-                const tokenWithoutExplicitRegistration = await getToken(msg, { vapidKey });
+                const tokenWithoutExplicitRegistration = await getTokenWithTimeout(msg, { vapidKey });
                 if (tokenWithoutExplicitRegistration) return { token: tokenWithoutExplicitRegistration };
             } catch (error) {
                 const parsed = parseError(error);
@@ -69,7 +99,7 @@ const getFcmTokenWithFallback = async (
             }
         } else {
             try {
-                const tokenWithoutExplicitRegistration = await getToken(msg);
+                const tokenWithoutExplicitRegistration = await getTokenWithTimeout(msg);
                 if (tokenWithoutExplicitRegistration) return { token: tokenWithoutExplicitRegistration };
             } catch (error) {
                 const parsed = parseError(error);

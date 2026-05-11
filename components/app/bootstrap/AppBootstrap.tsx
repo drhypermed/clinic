@@ -224,17 +224,17 @@ const RootApp: React.FC = () => {
       )}
       <React.Suspense fallback={<LoadingStateScreen />}>
         <Routes>
-          {/* Short public booking URL - uses slug instead of userId */}
+          {/* المسار الموحّد للحجز العام — يقبل slug أو userId كقيمه (Bootstrap يحلّ الاتنين) */}
           <Route path="/p/:slug" element={<PublicBookingFormPage />} />
-          {/* Secretary booking URL - uses slug instead of userId */}
+          {/* مسارات السكرتارية للحجز اليدوي — slug، secret، أو userId+secret */}
           <Route path="/book/:slug" element={<PublicBookingPage />} />
           <Route path="/book/s/:secret" element={<PublicBookingPage />} />
-          {/* Legacy routes for backward compatibility */}
           <Route path="/book/:userId/:secret" element={<PublicBookingPage />} />
+          {/* legacy روابط جمهور قديمه — لسه شغّاله للروابط المنشوره فعلاً.
+              المسار /book-public/:userId (بدون secret) اتشال — الديركتوري بقى يستخدم /p/:slug. */}
           <Route path="/book-public/s/:secret" element={<PublicBookingFormPage />} />
           <Route path="/book-public/:userId/:secret" element={<PublicBookingFormPage />} />
-          <Route path="/book-public/:userId" element={<PublicBookingFormPage />} />
-          {/* صفحه الطبيب المستقلّه — URL صديق لمحركات البحث (/dr/slug) */}
+          {/* صفحه الطبيب المستقلّه — URL صديق لمحركات البحث */}
           <Route path="/dr/:slug" element={<DoctorPublicPage />} />
           <Route path="*" element={<App />} />
         </Routes>

@@ -1,23 +1,13 @@
 module.exports = (context) => {
   const {
-    HttpsError,
     admin,
     getDb,
     toAbsoluteWebUrl,
     WEB_PUSH_ICON,
     WEB_PUSH_BADGE,
-    getFcmTokensFromDoc,
-    loadDoctorFcmTokens,
-    resolveDoctorCandidateUserIds,
-    loadDoctorFcmTokensForCandidates,
-    resolveDoctorCandidatesForAppointment,
     logMulticastResult,
     getInvalidFcmTokensFromResponse,
-    removeTokenFromCollection,
-    cleanupInvalidDoctorTokens,
     cleanupInvalidSecretaryTokens,
-    buildRelativeLink,
-    stringifyNotificationData,
     HIGH_URGENCY_HEADERS,
   } = context;
 
@@ -25,19 +15,32 @@ module.exports = (context) => {
     const before = event.data?.before?.exists ? event.data.before.data() : {};
     const after = event.data?.after?.exists ? event.data.after.data() : {};
     const secret = event.params.secret;
-    const userId = String(after?.userId || before?.userId || '').trim();
 
     const db = getDb();
-    const relatedSecrets = new Set([String(secret || '').trim()].filter(Boolean));
 
-    // نحمّل بيانات الـ tokens المُقسَّمة بالفرع + القديمة (للتوافق)
-    let tokensByBranch = {}; // { branchId: [token1, token2, ...] }
-    const legacyTokenSet = new Set();
+    // ─── Telemetry — متابعة الإشعارات بدون كلفة فايربيز ───
+    // كل tracker بيتسجّل في Cloud Logging (مجاني). الـcorrelationId بيربط
+    // الأحداث المتعلقة بنفس trigger event مع بعض للفلترة في الـlogs.
+    const correlationId = `${secret.slice(0, 6)}_${Date.now()}`;
+    const stats = {
+      entryAlertSent: 0,
+      entryAlertSkipped: 0,
+      doctorResponseSent: 0,
+      doctorResponseSkipped: 0,
+      examOpenedSent: 0,
+      examOpenedSkipped: 0,
+      totalTokensTargeted: 0,
+      totalTokensSucceeded: 0,
+      totalTokensFailed: 0,
+      invalidTokensCleaned: 0,
+    };
 
+    // قراءة tokens المُقسَّمة بالفرع فقط — الـ legacy fcmTokens مش بنعتمد عليها
+    // (بتجمع أجهزة كل الفروع مع بعض → fallback لها = تسريب مضمون).
+    const tokensByBranch = {}; // { branchId: [token1, token2, ...] }
     const tokenSnap = await db.doc(`secretaryFcmTokens/${secret}`).get().catch(() => null);
     if (tokenSnap?.exists) {
       const tokenData = tokenSnap.data() || {};
-      getFcmTokensFromDoc(tokenData).forEach((token) => legacyTokenSet.add(token));
       if (tokenData.tokensByBranch && typeof tokenData.tokensByBranch === 'object') {
         Object.keys(tokenData.tokensByBranch).forEach((branchId) => {
           const branchTokens = tokenData.tokensByBranch[branchId];
@@ -48,61 +51,37 @@ module.exports = (context) => {
       }
     }
 
-    if (legacyTokenSet.size === 0 && Object.keys(tokensByBranch).length === 0 && userId) {
-      try {
-        const relatedSecretaryTokenDocs = await db.collection('secretaryFcmTokens').where('userId', '==', userId).limit(20).get();
-        relatedSecretaryTokenDocs.forEach((docSnap) => {
-          relatedSecrets.add(String(docSnap.id || '').trim());
-          getFcmTokensFromDoc(docSnap.data()).forEach((token) => legacyTokenSet.add(token));
-        });
-      } catch (error) {
-        console.warn('[notifySecretaryOnBookingConfigUpdate] fallback secretary tokens lookup failed:', { userId, error });
-      }
-    }
-
-    // Debug logging لتشخيص المشاكل إذا ظهرت في الإنتاج
-    console.log('[notifySecretaryOnBookingConfigUpdate] invoked', {
+    console.log('[notifySecretary] invoked', {
+      correlationId,
       secret,
-      userId,
       tokenBranches: Object.keys(tokensByBranch),
-      legacyTokensCount: legacyTokenSet.size,
+      tokenCountsByBranch: Object.fromEntries(
+        Object.entries(tokensByBranch).map(([k, v]) => [k, v.length])
+      ),
     });
 
     /**
      * اختيار الـ tokens المناسبة لفرع محدد.
      *
-     * ⚠️ منع تسريب الإشعارات بين الفروع:
+     * ⚠️ Fail-safe ضد تسريب الإشعارات بين الفروع:
      *   - لو `tokensByBranch[branchId]` فيه tokens → نستخدمها حصرياً
-     *   - لو فاضي/غير موجود **ولا يوجد أي فرع آخر فيه tokens** (يعني النظام
-     *     كله على الـ legacy القديم) → fallback للـ legacyTokenSet (migration path)
-     *   - لو فاضي **لكن هناك فروع أخرى لها tokens** → لا نرسل (الـ legacy قد يحوي
-     *     أجهزة فروع أخرى — إرسالها هنا يسرب الإشعار). الفرع المستهدف ليس عنده
-     *     سكرتيرة مسجلة فعلاً → السلوك الصحيح هو عدم الإرسال.
+     *   - أي حالة تانية (فاضية، غير موجودة، فروع أخرى فيها tokens) → لا نرسل.
      */
     const pickTokensForBranch = (branchId) => {
       const normalizedBranch = (branchId || 'main').trim() || 'main';
       if (tokensByBranch[normalizedBranch] && tokensByBranch[normalizedBranch].length > 0) {
         return tokensByBranch[normalizedBranch].slice(0, 500);
       }
-      // fallback للـ legacy مسموح فقط لو الـ tokensByBranch فاضية كلياً
-      // (النظام لسه على الـ schema القديم — لم يُحدَّث بعد).
-      const anyBranchHasTokens = Object.values(tokensByBranch).some(
-        (arr) => Array.isArray(arr) && arr.length > 0
-      );
-      if (!anyBranchHasTokens) {
-        return Array.from(legacyTokenSet).slice(0, 500);
-      }
-      // فرع محدد بدون tokens + فروع أخرى لها → لا نسرب للـ legacy
-      console.warn('[pickTokensForBranch] no tokens for branch & other branches have tokens; skipping send', {
+      console.warn('[pickTokensForBranch] no tokens for branch — skip send', {
         branchId: normalizedBranch,
         availableBranches: Object.keys(tokensByBranch),
       });
       return [];
     };
 
-    // تحقق مبكر — لو السكرتيرة ما مسجَّلتش أي token، نخرج مبكراً
-    if (legacyTokenSet.size === 0 && Object.keys(tokensByBranch).length === 0) {
-      console.warn('[notifySecretaryOnBookingConfigUpdate] No secretary tokens registered for this secret — exiting', { secret });
+    // تحقق مبكر — لو مفيش أي tokensByBranch، نخرج بدون إرسال
+    if (Object.keys(tokensByBranch).length === 0) {
+      console.warn('[notifySecretaryOnBookingConfigUpdate] No tokensByBranch — exiting', { secret });
       return;
     }
 
@@ -194,7 +173,8 @@ module.exports = (context) => {
 
         const finalTokens = pickTokensForBranch(branchId);
         if (finalTokens.length === 0) {
-          console.warn('[notifySecretary] entryAlert: no tokens for branch', { secret, branchId });
+          stats.entryAlertSkipped += 1;
+          console.warn('[notifySecretary] entryAlert: no tokens for branch', { correlationId, secret, branchId });
           continue;
         }
 
@@ -226,11 +206,16 @@ module.exports = (context) => {
             },
           },
         });
-        logMulticastResult(`notifySecretary.entryAlert[${branchId}]`, response, finalTokens);
+        stats.entryAlertSent += 1;
+        stats.totalTokensTargeted += finalTokens.length;
+        stats.totalTokensSucceeded += Number(response?.successCount || 0);
+        stats.totalTokensFailed += Number(response?.failureCount || 0);
+        logMulticastResult(`notifySecretary.entryAlert[${correlationId}/${branchId}]`, response, finalTokens);
         const invalidTokens = getInvalidFcmTokensFromResponse(response, finalTokens);
         if (invalidTokens.length > 0) {
+          stats.invalidTokensCleaned += invalidTokens.length;
           await Promise.all(
-            Array.from(relatedSecrets).map((rs) => cleanupInvalidSecretaryTokens(rs, invalidTokens))
+            cleanupInvalidSecretaryTokens(secret, invalidTokens)
           );
         }
       } catch (err) {
@@ -258,23 +243,15 @@ module.exports = (context) => {
       // إذا المصدر هو السكرتيرة (ردت على entryAlert) → لا نرسل push لنفسها
       const responseSource = String(resp.source || 'doctor').trim();
       if (responseSource === 'secretary') {
+        stats.doctorResponseSkipped += 1;
         console.log('[notifySecretary] doctorResponse source=secretary → skip (doctor in-screen)', {
-          branchId,
+          correlationId, branchId,
         });
         continue;
       }
 
-      // ❗ لا نرسل push للسكرتيرة لما الرد "انتظار/رفض" — كان بيظهرلها رسالة مكررة
-      // ("يتم الانتظار قليلاً") جنب الـ in-app toast "تم الإبلاغ". السكرتيرة بتشوف
-      // الرد عبر Firestore subscription في الـ app مباشرةً، فالـ push زيادة عن اللزوم.
-      // نحتفظ فقط بإشعار الموافقة ("تم الموافقة بالدخول") لأنه يفيدها لو طلعت من
-      // الشاشة وعايزة تعرف إن المريض اتقبل.
-      if (resp.status !== 'approved') {
-        console.log('[notifySecretary] doctorResponse status=rejected → skip push (in-app toast suffices)', {
-          branchId,
-        });
-        continue;
-      }
+      // ✅ 2026-05-10: نرسل push لكل ردود الطبيب (موافقة ورفض) — ده طلب الطبيب
+      // عشان السكرتيرة تعرف فوراً حتى لو التطبيق مغلق أو مش في الـ foreground.
 
       try {
         const isApproved = resp.status === 'approved';
@@ -286,7 +263,8 @@ module.exports = (context) => {
 
         const finalTokens = pickTokensForBranch(branchId);
         if (finalTokens.length === 0) {
-          console.warn('[notifySecretary] doctorResponse: no tokens for branch', { secret, branchId });
+          stats.doctorResponseSkipped += 1;
+          console.warn('[notifySecretary] doctorResponse: no tokens for branch', { correlationId, secret, branchId });
           continue;
         }
 
@@ -317,15 +295,20 @@ module.exports = (context) => {
             },
           },
         });
-        logMulticastResult(`notifySecretary.doctorResponse[${branchId}]`, response, finalTokens);
+        stats.doctorResponseSent += 1;
+        stats.totalTokensTargeted += finalTokens.length;
+        stats.totalTokensSucceeded += Number(response?.successCount || 0);
+        stats.totalTokensFailed += Number(response?.failureCount || 0);
+        logMulticastResult(`notifySecretary.doctorResponse[${correlationId}/${branchId}]`, response, finalTokens);
         const invalidTokens = getInvalidFcmTokensFromResponse(response, finalTokens);
         if (invalidTokens.length > 0) {
+          stats.invalidTokensCleaned += invalidTokens.length;
           await Promise.all(
-            Array.from(relatedSecrets).map((rs) => cleanupInvalidSecretaryTokens(rs, invalidTokens))
+            cleanupInvalidSecretaryTokens(secret, invalidTokens)
           );
         }
       } catch (err) {
-        console.error('[notifySecretary] doctorResponse FCM failed:', err);
+        console.error('[notifySecretary] doctorResponse FCM failed:', { correlationId, err });
       }
     }
 
@@ -342,7 +325,8 @@ module.exports = (context) => {
 
     for (const { branchId, openedAt, appointmentId } of changedExamOpens) {
       if (branchesAlreadyNotifiedViaDoctorResp.has(branchId)) {
-        console.log('[notifySecretary] examOpened: skip (already notified via doctorResponse)', { branchId });
+        stats.examOpenedSkipped += 1;
+        console.log('[notifySecretary] examOpened: skip (already notified via doctorResponse)', { correlationId, branchId });
         continue;
       }
 
@@ -352,7 +336,8 @@ module.exports = (context) => {
       // بدون هذا الفحص، السكرتيرة هتستقبل push "الطبيب بدأ الكشف" رغم إنها هي اللي وافقت.
       const afterDoctorRespForBranch = (after.doctorEntryResponseByBranch || {})[branchId];
       if (afterDoctorRespForBranch && String(afterDoctorRespForBranch.source || '').trim() === 'secretary') {
-        console.log('[notifySecretary] examOpened: skip (source=secretary, not doctor)', { branchId });
+        stats.examOpenedSkipped += 1;
+        console.log('[notifySecretary] examOpened: skip (source=secretary, not doctor)', { correlationId, branchId });
         continue;
       }
 
@@ -365,7 +350,8 @@ module.exports = (context) => {
 
         const finalTokens = pickTokensForBranch(branchId);
         if (finalTokens.length === 0) {
-          console.warn('[notifySecretary] examOpened: no tokens for branch', { secret, branchId });
+          stats.examOpenedSkipped += 1;
+          console.warn('[notifySecretary] examOpened: no tokens for branch', { correlationId, secret, branchId });
           continue;
         }
 
@@ -394,20 +380,40 @@ module.exports = (context) => {
             },
           },
         });
-        logMulticastResult(`notifySecretary.examOpened[${branchId}]`, response, finalTokens);
+        stats.examOpenedSent += 1;
+        stats.totalTokensTargeted += finalTokens.length;
+        stats.totalTokensSucceeded += Number(response?.successCount || 0);
+        stats.totalTokensFailed += Number(response?.failureCount || 0);
+        logMulticastResult(`notifySecretary.examOpened[${correlationId}/${branchId}]`, response, finalTokens);
         const invalidTokens = getInvalidFcmTokensFromResponse(response, finalTokens);
         if (invalidTokens.length > 0) {
+          stats.invalidTokensCleaned += invalidTokens.length;
           await Promise.all(
-            Array.from(relatedSecrets).map((rs) => cleanupInvalidSecretaryTokens(rs, invalidTokens))
+            cleanupInvalidSecretaryTokens(secret, invalidTokens)
           );
         }
       } catch (err) {
-        console.error('[notifySecretary] examOpened FCM failed:', err);
+        console.error('[notifySecretary] examOpened FCM failed:', { correlationId, err });
       }
+    }
+
+    // ─── ملخص telemetry نهائي ───
+    // كل الإحصاءات في سطر واحد عشان سهولة الفلترة في Cloud Logging.
+    // مفيش أي كتابة على Firestore — كله free console output.
+    const totalSent = stats.entryAlertSent + stats.doctorResponseSent + stats.examOpenedSent;
+    const totalSkipped = stats.entryAlertSkipped + stats.doctorResponseSkipped + stats.examOpenedSkipped;
+    if (totalSent > 0 || totalSkipped > 0 || stats.invalidTokensCleaned > 0) {
+      console.log('[notifySecretary] summary', {
+        correlationId,
+        secret,
+        ...stats,
+        totalSent,
+        totalSkipped,
+      });
     }
   };
 
-  
+
 
   return notifySecretaryOnBookingConfigUpdate;
 };

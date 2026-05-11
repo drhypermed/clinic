@@ -37,7 +37,10 @@ import { toUpdatedAtMs } from './secretConfig.shared';
  * ج. في حال عدم وجود كاش، المحاولة من التخزين المحلي للمتصفح (LocalStorage).
  * د. إذا لم يوجد أي رمز، يتم إنشاء رمز جديد وحفظه في كل مكان.
  */
-export const getOrCreateBookingSecret = async (userId: string): Promise<string> => {
+export const getOrCreateBookingSecret = async (
+  userId: string,
+  doctorSpecialty?: string | null,
+): Promise<string> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   if (!normalizedUserId) throw new Error('invalid-user-id');
 
@@ -50,7 +53,7 @@ export const getOrCreateBookingSecret = async (userId: string): Promise<string> 
     if (!normalizedSecret) return null;
 
     writeLocalStorageSafe(localKey, normalizedSecret);
-    await ensureBookingConfigUserId(normalizedSecret, normalizedUserId);
+    await ensureBookingConfigUserId(normalizedSecret, normalizedUserId, undefined, doctorSpecialty);
     return normalizedSecret;
   };
 
@@ -84,7 +87,7 @@ export const getOrCreateBookingSecret = async (userId: string): Promise<string> 
     await setDoc(userRef, { bookingSecret: cached }, { merge: true }).catch((error) =>
       console.error('[Firestore] Failed to sync local secret to server:', error)
     );
-    await ensureBookingConfigUserId(cached, normalizedUserId);
+    await ensureBookingConfigUserId(cached, normalizedUserId, undefined, doctorSpecialty);
     return cached;
   }
 
@@ -100,7 +103,7 @@ export const getOrCreateBookingSecret = async (userId: string): Promise<string> 
   }
 
   writeLocalStorageSafe(localKey, secret);
-  await ensureBookingConfigUserId(secret, normalizedUserId);
+  await ensureBookingConfigUserId(secret, normalizedUserId, undefined, doctorSpecialty);
   return secret;
 };
 

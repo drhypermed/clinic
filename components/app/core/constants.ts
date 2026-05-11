@@ -52,6 +52,7 @@ export const isPublicGuestPathname = (pathname: string): boolean => {
     pathname === '/marketing-packages' || // باقات الدعاية على دومين العيادة
     pathname === '/public' ||        // دليل الأطباء العام
     pathname.startsWith('/public/') ||
-    pathname.startsWith('/book-public/')  // صفحات حجز العيادات للمرضى
+    pathname.startsWith('/p/') ||         // الموحّد الجديد لحجز العيادات (للمرضى بدون تسجيل)
+    pathname.startsWith('/book-public/')  // legacy حجز العيادات (لسه شغّال للروابط المنشوره)
   );
 };

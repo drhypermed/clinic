@@ -8,7 +8,7 @@
  * - AccountManagementState: الحالة العامة للوحة التحكم.
  */
 
-export type SubscriptionChangeType = 'new' | 'extension' | 'manual_edit' | 'plan_switch';
+type SubscriptionChangeType = 'new' | 'extension' | 'manual_edit' | 'plan_switch';
 
 /** فئات الباقة المسعّرة (لا تشمل free لأن free مفيش له سعر). */
 export type SubscriptionTier = 'premium' | 'pro_max';

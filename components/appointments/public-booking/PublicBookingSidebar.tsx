@@ -12,6 +12,8 @@ interface PublicBookingSidebarProps {
   onOpenProfile: () => void;
   // اسم الفرع النشط للسكرتيرة — يظهر تحت زر "الملف الشخصي" لو الطبيب عنده فروع متعددة.
   activeBranchName?: string;
+  // هل الطبيب عنده أكتر من فرع — لو لأ، اللافتة تتخفى نهائياً من الـsidebar.
+  hasMultipleBranches?: boolean;
 }
 
 const navItems: {
@@ -98,6 +100,7 @@ export const PublicBookingSidebar: React.FC<PublicBookingSidebarProps> = ({
   onLogout,
   onOpenProfile,
   activeBranchName,
+  hasMultipleBranches = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
@@ -161,8 +164,9 @@ export const PublicBookingSidebar: React.FC<PublicBookingSidebarProps> = ({
           الملف الشخصي
         </button>
 
-        {/* اسم الفرع النشط للسكرتيرة — يظهر دايماً طول ما متوفر اسم فرع */}
-        {activeBranchName && (
+        {/* اسم الفرع النشط للسكرتيرة — يظهر فقط لو الطبيب عنده أكتر من فرع.
+            السكرتيرة في عيادة فرع واحد مش محتاجة تعرف اسم الفرع — مفيش فرع تاني تخلط بينه. */}
+        {hasMultipleBranches && activeBranchName && (
           <div className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-200 text-brand-800 text-xs font-bold truncate">
             <svg className="w-3 h-3 shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0v-3m-4 3v-6a1 1 0 00-1-1h-2a1 1 0 00-1 1v6m-4 0h2m-2 0v-3m0 0h.01M9 13h.01M9 9h.01M15 9h.01M15 13h.01" />

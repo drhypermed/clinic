@@ -20,7 +20,6 @@
  */
 
 import { useMemo, useState, useEffect } from 'react';
-import type { PatientRecord } from '../../../types';
 import { formatDateKey } from '../utils/formatters';
 import {
     financialDataService,

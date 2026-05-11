@@ -66,7 +66,7 @@ const toSafePrice = (value: unknown): number => {
  * يرجّع 0 لو الأسعار مش متاحة لهذا الشهر — الـ caller يقدر يقرر إيه يعمل
  * (مثلاً ما يحفظش pricePaid في حالة 0).
  */
-export const fetchSubscriptionPrice = async (params: {
+const fetchSubscriptionPrice = async (params: {
   /** تاريخ بداية فترة الاشتراك (يحدد شهر الأسعار). */
   startDate: Date;
   /** فئة الباقة. */

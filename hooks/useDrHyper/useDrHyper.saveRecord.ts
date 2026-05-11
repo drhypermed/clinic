@@ -25,6 +25,9 @@ import {
 import { buildCairoDateWithCurrentTime, buildCairoDateTime, getCairoDayKey } from '../../utils/cairoTime';
 import type { PatientRecord } from '../../types';
 import { buildPatientFileNameKey } from '../../services/patient-files';
+import { syncVitalsToGrowthIfPediatric } from '../../services/specialty-packs/pediatrics';
+import { buildPregnancyRecordSnapshot, syncVitalsToPregnancyIfGyn } from '../../services/specialty-packs/gynecology';
+import { flushAllSpecialtyPackSaves } from '../../services/specialty-packs';
 import type { CreateSaveRecordActionParams, SaveRecordResult } from './useDrHyper.saveRecord.types';
 import {
   resolvePatientFileReference,
@@ -159,6 +162,15 @@ export const createSaveRecordAction = ({
       return { ok: false, reason: 'auth' };
     }
 
+    // ─── 🆕 قبل أي حاجه: نقفل الـauto-save للودجتس الباكدج (flush) ─
+    //   ده بيضمن إن الـauto-sync اللي يجي بعد كده يقرا أحدث بيانات،
+    //   ومفيش race بين debounce 800ms والحفظ.
+    try {
+      await flushAllSpecialtyPackSaves();
+    } catch {
+      // muted — الفشل هنا نادر ومش بيمنع الحفظ
+    }
+
     // ─── بناء تاريخ الزيارة (ISO) مع حماية السجل المحمّل ───────────────
     const buildVisitIso = () => {
       const preservedVisitIso = String(activeVisitDateTime || '').trim();
@@ -230,15 +242,39 @@ export const createSaveRecordAction = ({
 
     // تطبيع حقول الهوية الجديدة قبل الحفظ (undefined لو فاضي)
     const genderForSave = gender === 'male' || gender === 'female' ? gender : undefined;
-    const pregnantForSave = typeof pregnant === 'boolean' ? pregnant : undefined;
+    const initialPregnantForSave = typeof pregnant === 'boolean' ? pregnant : undefined;
+    const pregnancyTrackingForSave = await buildPregnancyRecordSnapshot({
+      userId: user.uid,
+      patientFileNameKey: buildPatientFileNameKey(patientName),
+      visitDateKey: visitDate,
+      maternalWeightKg: weight,
+    }).catch(() => undefined);
+    const pregnantForSave =
+      typeof initialPregnantForSave === 'boolean'
+        ? initialPregnantForSave
+        : (typeof pregnancyTrackingForSave?.active === 'boolean'
+            ? pregnancyTrackingForSave.active
+            : undefined);
     // عمر الحمل يُحفظ بس لو الـpregnant=true ورقم صالح (1-42 أسبوع)
     const gestationalAgeWeeksForSave =
       pregnantForSave === true
-        && typeof gestationalAgeWeeks === 'number'
-        && Number.isFinite(gestationalAgeWeeks)
-        && gestationalAgeWeeks >= 1
-        && gestationalAgeWeeks <= 42
-        ? gestationalAgeWeeks
+        ? (() => {
+            const stateWeek =
+              typeof gestationalAgeWeeks === 'number'
+                && Number.isFinite(gestationalAgeWeeks)
+                && gestationalAgeWeeks >= 1
+                && gestationalAgeWeeks <= 42
+                ? gestationalAgeWeeks
+                : undefined;
+            const snapshotWeek =
+              typeof pregnancyTrackingForSave?.gestationalAgeWeeks === 'number'
+                && Number.isFinite(pregnancyTrackingForSave.gestationalAgeWeeks)
+                && pregnancyTrackingForSave.gestationalAgeWeeks >= 1
+                && pregnancyTrackingForSave.gestationalAgeWeeks <= 42
+                ? pregnancyTrackingForSave.gestationalAgeWeeks
+                : undefined;
+            return stateWeek ?? snapshotWeek;
+          })()
         : undefined;
     const breastfeedingForSave = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
 
@@ -249,6 +285,7 @@ export const createSaveRecordAction = ({
       gender: genderForSave,
       pregnant: pregnantForSave,
       gestationalAgeWeeks: gestationalAgeWeeksForSave,
+      pregnancyTracking: pregnancyTrackingForSave,
       breastfeeding: breastfeedingForSave,
       weight,
       height: height || undefined,
@@ -413,6 +450,8 @@ export const createSaveRecordAction = ({
           age: { years: ageYears, months: ageMonths, days: ageDays },
           gender: genderForSave,
           pregnant: pregnantForSave,
+          gestationalAgeWeeks: gestationalAgeWeeksForSave,
+          pregnancyTracking: pregnancyTrackingForSave,
           breastfeeding: breastfeedingForSave,
           weight,
           height: height || undefined,
@@ -497,6 +536,8 @@ export const createSaveRecordAction = ({
           age: { years: ageYears, months: ageMonths, days: ageDays },
           gender: genderForSave,
           pregnant: pregnantForSave,
+          gestationalAgeWeeks: gestationalAgeWeeksForSave,
+          pregnancyTracking: pregnancyTrackingForSave,
           breastfeeding: breastfeedingForSave,
           weight,
           height: height || undefined,
@@ -582,6 +623,48 @@ export const createSaveRecordAction = ({
         setActivePatientFileNumber(syncResult.patientFileNumber);
         setActivePatientFileNameKey(syncResult.patientFileNameKey);
       }
+
+      // ─ 🆕 المزامنه التلقائيه لحزم التخصصات: تشتغل في الخلفيه بعد الحفظ.
+      //   كل sync بيتأكد لوحده من تفعيل الباكدج + تطابق التخصص قبل ما يكتب حاجه.
+      //   فشل المزامنه ما بيعطّلش الحفظ — مجرد log.
+      void (async () => {
+        try {
+          const resolvedNameKey = syncResult?.patientFileNameKey
+            || activePatientFileNameKey
+            || buildPatientFileNameKey(patientName);
+          if (!user?.uid || !resolvedNameKey) return;
+          const doctorSpecialty = (() => {
+            try {
+              return localStorage.getItem(`doctor_specialty_${user.uid}`) || '';
+            } catch {
+              return '';
+            }
+          })();
+          // الاتنين بيشتغلوا بالتوازي — كل واحد بيتأكد من تخصصه ومش بيعمل حاجه لو مش مطابق
+          await Promise.all([
+            syncVitalsToGrowthIfPediatric({
+              userId: user.uid,
+              patientFileNameKey: resolvedNameKey,
+              doctorSpecialty,
+              visitDateKey: visitDate,
+              weightKg: weight,
+              heightCm: height,
+              // 🆕 محيط الرأس من الفايتالز — بينتقل لجدول النمو تلقائي
+              headCircCm: vitals?.headCirc,
+            }),
+            syncVitalsToPregnancyIfGyn({
+              userId: user.uid,
+              patientFileNameKey: resolvedNameKey,
+              doctorSpecialty,
+              visitDateKey: visitDate,
+              weightKg: weight,
+            }),
+          ]);
+        } catch (err) {
+          // mute: ده شغل خلفي مش بيظهر للدكتور
+          console.warn('Specialty pack auto-sync failed:', err);
+        }
+      })();
 
       setActiveVisitDateTime(visitIso);
       setLastSavedHash(currentHash);

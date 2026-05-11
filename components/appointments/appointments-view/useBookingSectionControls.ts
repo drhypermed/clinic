@@ -43,6 +43,7 @@ interface UseBookingSectionControlsArgs {
   userDisplayName?: string | null;
   userEmail?: string | null;
   currentDayStr: string;
+  doctorSpecialty?: string | null;
 }
 
 export const useBookingSectionControls = ({
@@ -55,6 +56,7 @@ export const useBookingSectionControls = ({
   userDisplayName,
   userEmail,
   currentDayStr,
+  doctorSpecialty,
 }: UseBookingSectionControlsArgs) => {
   // قائمة الفروع — لإظهار اسم الفرع النشط في UI كلمة سر السكرتارية
   const branchesHook = useBranches(userId || null);
@@ -63,6 +65,10 @@ export const useBookingSectionControls = ({
     return match?.name || '';
   }, [branchesHook.branches, branchesHook.activeBranchId]);
   const hasMultipleBranches = branchesHook.branches.length > 1;
+  const secretaryVitalSpecialtyOptions = useMemo(
+    () => ({ doctorSpecialty }),
+    [doctorSpecialty]
+  );
 
   // حالة روابط حجز السكرتارية
   const [bookingLink, setBookingLink] = useState<string | null>(null);
@@ -76,14 +82,26 @@ export const useBookingSectionControls = ({
   const [secretaryPasswordTouched, setSecretaryPasswordTouched] = useState(false);
   const [secretarySettingsHydrated, setSecretarySettingsHydrated] = useState(false);
   const prescriptionSecretaryFields = useMemo(
-    () => buildSecretaryVitalFieldDefinitions(prescriptionVitalsConfig, prescriptionCustomBoxes),
-    [prescriptionVitalsConfig, prescriptionCustomBoxes]
+    () => buildSecretaryVitalFieldDefinitions(
+      prescriptionVitalsConfig,
+      prescriptionCustomBoxes,
+      secretaryVitalSpecialtyOptions
+    ),
+    [prescriptionVitalsConfig, prescriptionCustomBoxes, secretaryVitalSpecialtyOptions]
   );
   const [secretaryVitalFields, setSecretaryVitalFields] = useState<SecretaryVitalFieldDefinition[]>(
-    () => normalizeSecretaryVitalFieldDefinitions(prescriptionSecretaryFields)
+    () => normalizeSecretaryVitalFieldDefinitions(
+      prescriptionSecretaryFields,
+      undefined,
+      secretaryVitalSpecialtyOptions
+    )
   );
   const [secretaryVitalsVisibility, setSecretaryVitalsVisibility] = useState<SecretaryVitalsVisibility>(
-    () => buildSecretaryVisibilityByFieldDefinitions(prescriptionSecretaryFields, createDefaultSecretaryVitalsVisibility())
+    () => buildSecretaryVisibilityByFieldDefinitions(
+      prescriptionSecretaryFields,
+      createDefaultSecretaryVitalsVisibility(secretaryVitalSpecialtyOptions),
+      secretaryVitalSpecialtyOptions
+    )
   );
   const [secretarySettingsDirty, setSecretarySettingsDirty] = useState(false);
 
@@ -100,6 +118,8 @@ export const useBookingSectionControls = ({
   const [publicFormContactInfo, setPublicFormContactInfo] = useState('');
   const [publicFormSaving, setPublicFormSaving] = useState(false);
   const [isPublicSettingsSaved, setIsPublicSettingsSaved] = useState(false);
+  // إعداد حماية الحجز بـ Google — لو true يطلب تسجيل دخول جوجل قبل تأكيد الحجز
+  const [publicFormRequireGoogle, setPublicFormRequireGoogle] = useState(false);
 
   // 1. جلب أو توليد المعرف السري لروابط حجز السكرتارية
   useEffect(() => {
@@ -113,25 +133,52 @@ export const useBookingSectionControls = ({
     setBookingLink(`${window.location.origin}/book/s/${bookingSecret}`);
   }, [userId, bookingSecret]);
 
-  // 3. جلب أو توليد المعرف السري لروابط الجمهور (Public)
+  // 3. جلب أو توليد المعرف السري + الـ slug القصير لرابط الجمهور
+  // الرابط الـcanonical الجديد: /p/{slug} (8 حروف عشوائيه) بدل /book-public/s/{secret}
+  // الـ slug أنظف للطبيب لما ينسخه على واتساب وأسهل للمريض يحفظه.
   useEffect(() => {
     if (!userId) return;
-    firestoreService.getOrCreatePublicBookingSecret(userId).then((secret) => {
-      setPublicBookingSecret(secret);
-      setPublicBookingLink(`${window.location.origin}/book-public/s/${secret}`);
-    });
+    let cancelled = false;
+    (async () => {
+      try {
+        const secret = await firestoreService.getOrCreatePublicBookingSecret(userId);
+        if (cancelled) return;
+        setPublicBookingSecret(secret);
+        // الـ slug القصير — لو موجود نستخدمه، لو لأ نولّد جديد
+        const slug = await firestoreService.getOrCreatePublicUrlSlug(userId);
+        if (cancelled) return;
+        setPublicBookingLink(`${window.location.origin}/p/${slug}`);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn('[Booking] Failed to build public booking link:', err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [userId]);
 
-  // 3.1 مرآة publicBookingSecret على bookingConfig — السكرتيرة محرومة من قراءة
-  // users/{uid} ومن list على publicBookingConfig، فبدون المرآة دي مش هتعرف رابط
-  // الفورم العام وهيظهرلها "جاري تجهيز فورم الجمهور" للأبد.
+  // 3.1 مرآة publicBookingSecret + publicUrlSlug على bookingConfig — السكرتيرة
+  // محرومة من قراءة users/{uid} ومن list على publicBookingConfig، فبدون المرآة دي
+  // مش هتعرف رابط الفورم العام. الـ slug جديد بقى ضمن المرآة (2026-05) عشان
+  // الرابط الـcanonical /p/{slug} يبقى متاح للسكرتيرة كمان.
   useEffect(() => {
     if (!userId || !bookingSecret || !publicBookingSecret) return;
-    firestoreService
-      .mirrorPublicSecretToBookingConfig(bookingSecret, userId, publicBookingSecret)
-      .catch((err) =>
-        console.warn('[Booking] Failed to mirror public secret to bookingConfig:', err),
-      );
+    let cancelled = false;
+    (async () => {
+      try {
+        const slug = await firestoreService.getOrCreatePublicUrlSlug(userId);
+        if (cancelled) return;
+        await firestoreService.mirrorPublicSecretToBookingConfig(
+          bookingSecret,
+          userId,
+          publicBookingSecret,
+          slug,
+        );
+      } catch (err) {
+        if (cancelled) return;
+        console.warn('[Booking] Failed to mirror public secret/slug to bookingConfig:', err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [userId, bookingSecret, publicBookingSecret]);
 
   // 4. مزامنة فترات الحجز المتاحة (Slots) للجمهور
@@ -155,6 +202,7 @@ export const useBookingSectionControls = ({
     // تتحفظ بالغلط على السياق الحالي.
     setPublicFormTitle('');
     setPublicFormContactInfo('');
+    setPublicFormRequireGoogle(false);
 
     firestoreService.getPublicBookingConfig(publicBookingSecret)
       .then((config) => {
@@ -164,6 +212,7 @@ export const useBookingSectionControls = ({
         if (config) {
           setPublicFormTitle(config.title ?? '');
           setPublicFormContactInfo(config.contactInfo ?? '');
+          setPublicFormRequireGoogle(Boolean(config.requireGoogleSignIn));
         }
       })
       .catch((err) => {
@@ -199,10 +248,18 @@ export const useBookingSectionControls = ({
       setBookingFormTitle('');
       setSecretaryPassword('');
       setSecretaryPasswordTouched(false);
-      const fallbackFields = normalizeSecretaryVitalFieldDefinitions(prescriptionSecretaryFields);
+      const fallbackFields = normalizeSecretaryVitalFieldDefinitions(
+        prescriptionSecretaryFields,
+        undefined,
+        secretaryVitalSpecialtyOptions
+      );
       setSecretaryVitalFields(fallbackFields);
       setSecretaryVitalsVisibility(
-        buildSecretaryVisibilityByFieldDefinitions(fallbackFields, createDefaultSecretaryVitalsVisibility())
+        buildSecretaryVisibilityByFieldDefinitions(
+          fallbackFields,
+          createDefaultSecretaryVitalsVisibility(secretaryVitalSpecialtyOptions),
+          secretaryVitalSpecialtyOptions
+        )
       );
       setSecretarySettingsHydrated(true);
     };
@@ -219,13 +276,17 @@ export const useBookingSectionControls = ({
           const rawVisibility = config?.secretaryVitalsVisibility;
           const nextFields = normalizeSecretaryVitalFieldDefinitions(
             config?.secretaryVitalFields,
-            prescriptionSecretaryFields
+            prescriptionSecretaryFields,
+            secretaryVitalSpecialtyOptions
           );
           setSecretaryVitalFields(nextFields);
           setSecretaryVitalsVisibility(
             buildSecretaryVisibilityByFieldDefinitions(
               nextFields,
-              rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
+              rawVisibility
+                ? normalizeSecretaryVitalsVisibility(rawVisibility, undefined, secretaryVitalSpecialtyOptions)
+                : undefined,
+              secretaryVitalSpecialtyOptions
             )
           );
           setSecretarySettingsHydrated(true);
@@ -238,12 +299,16 @@ export const useBookingSectionControls = ({
             setSecretaryPassword((legacyConfig?.secretaryPasswordPlain ?? '').trim());
             const nextFields = normalizeSecretaryVitalFieldDefinitions(
               config?.secretaryVitalFields || legacyConfig?.secretaryVitalFields,
-              prescriptionSecretaryFields
+              prescriptionSecretaryFields,
+              secretaryVitalSpecialtyOptions
             );
             const rawVisibility = config?.secretaryVitalsVisibility || legacyConfig?.secretaryVitalsVisibility;
             const nextVisibility = buildSecretaryVisibilityByFieldDefinitions(
               nextFields,
-              rawVisibility ? normalizeSecretaryVitalsVisibility(rawVisibility) : undefined
+              rawVisibility
+                ? normalizeSecretaryVitalsVisibility(rawVisibility, undefined, secretaryVitalSpecialtyOptions)
+                : undefined,
+              secretaryVitalSpecialtyOptions
             );
 
             setSecretaryVitalFields(nextFields);
@@ -254,18 +319,26 @@ export const useBookingSectionControls = ({
           .catch(handleLoadFailure);
       })
       .catch(handleLoadFailure);
-  }, [bookingSecret, prescriptionSecretaryFields, userId, branchesHook.activeBranchId]);
+  }, [bookingSecret, prescriptionSecretaryFields, secretaryVitalSpecialtyOptions, userId, branchesHook.activeBranchId]);
 
   useEffect(() => {
     if (!secretarySettingsHydrated || secretarySettingsDirty) return;
 
-    const nextFields = normalizeSecretaryVitalFieldDefinitions(prescriptionSecretaryFields);
-    const nextVisibility = buildSecretaryVisibilityByFieldDefinitions(nextFields, secretaryVitalsVisibility);
+    const nextFields = normalizeSecretaryVitalFieldDefinitions(
+      prescriptionSecretaryFields,
+      undefined,
+      secretaryVitalSpecialtyOptions
+    );
+    const nextVisibility = buildSecretaryVisibilityByFieldDefinitions(
+      nextFields,
+      secretaryVitalsVisibility,
+      secretaryVitalSpecialtyOptions
+    );
 
     const fieldsChanged = JSON.stringify(secretaryVitalFields) !== JSON.stringify(nextFields);
     const visibilityChanged =
-      JSON.stringify(normalizeSecretaryVitalsVisibility(secretaryVitalsVisibility)) !==
-      JSON.stringify(normalizeSecretaryVitalsVisibility(nextVisibility));
+      JSON.stringify(normalizeSecretaryVitalsVisibility(secretaryVitalsVisibility, undefined, secretaryVitalSpecialtyOptions)) !==
+      JSON.stringify(normalizeSecretaryVitalsVisibility(nextVisibility, undefined, secretaryVitalSpecialtyOptions));
 
     if (fieldsChanged) {
       setSecretaryVitalFields(nextFields);
@@ -279,6 +352,7 @@ export const useBookingSectionControls = ({
     secretarySettingsDirty,
     secretaryVitalFields,
     secretaryVitalsVisibility,
+    secretaryVitalSpecialtyOptions,
   ]);
 
   /**
@@ -325,6 +399,7 @@ export const useBookingSectionControls = ({
         userEmail ?? undefined,
         secretaryVitalsVisibility,
         secretaryVitalFields,
+        doctorSpecialty ?? undefined,
         currentBranchId
       );
 
@@ -363,6 +438,7 @@ export const useBookingSectionControls = ({
     userEmail,
     secretaryVitalsVisibility,
     secretaryVitalFields,
+    doctorSpecialty,
     branchesHook.activeBranchId,
     onSyncSecretaryVitalsVisibility,
   ]);
@@ -388,7 +464,13 @@ export const useBookingSectionControls = ({
     if (!publicBookingSecret || !userId) return;
     setPublicFormSaving(true);
     try {
-      await firestoreService.savePublicFormSettings(userId, publicBookingSecret, publicFormTitle, publicFormContactInfo);
+      await firestoreService.savePublicFormSettings(
+        userId,
+        publicBookingSecret,
+        publicFormTitle,
+        publicFormContactInfo,
+        publicFormRequireGoogle,
+      );
       setIsPublicSettingsSaved(true);
       setTimeout(() => setIsPublicSettingsSaved(false), 3000);
     } finally { setPublicFormSaving(false); }
@@ -436,7 +518,7 @@ export const useBookingSectionControls = ({
         buildSecretaryVisibilityByFieldDefinitions(secretaryVitalFields, {
           ...prev,
           [normalizedFieldId]: enabled,
-        })
+        }, secretaryVitalSpecialtyOptions)
       );
       setSecretarySettingsDirty(true);
       setCredentialsError(null);
@@ -447,9 +529,12 @@ export const useBookingSectionControls = ({
     publicSlots, publicSlotDateStr, setPublicSlotDateStr, publicSlotTimeStr, setPublicSlotTimeStr,
     publicLinkCopied, copyPublicLink, publicSlotAdding, addPublicSlot, removePublicSlot,
     publicFormTitle, setPublicFormTitle, publicFormContactInfo, setPublicFormContactInfo,
-    publicFormSaving, savePublicFormSettings, isPublicSettingsSaved, 
+    publicFormRequireGoogle, setPublicFormRequireGoogle,
+    publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr: toLocalDateStr(new Date()), publicTimeMin: publicSlotDateStr === toLocalDateStr(new Date()) ? currentTimeMin() : undefined,
     currentBranchLabel,
     hasMultipleBranches,
+    // قائمة الفروع الكاملة — مستخدمة في BookingSectionPublic لتوليد رابط منفصل لكل فرع
+    branches: branchesHook.branches,
   };
 };

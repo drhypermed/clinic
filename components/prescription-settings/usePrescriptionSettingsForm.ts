@@ -19,20 +19,53 @@ import {
     CustomBox
 } from '../../types';
 import { getDefaultSettings } from '../../services/prescriptionSettingsService';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 interface UsePrescriptionSettingsFormOptions {
     settings: PrescriptionSettings;
     onSave: (settings: PrescriptionSettings) => Promise<void>;
+    doctorSpecialty?: string | null;
 }
 
-const normalizeSettingsForForm = (value: PrescriptionSettings): PrescriptionSettings => ({
+const HEAD_CIRC_DEFAULT_VITAL: VitalSignConfig = {
+    key: 'headCirc',
+    label: 'Head Circ.',
+    labelAr: 'محيط الرأس',
+    unit: 'cm',
+    enabled: true,
+    order: 10,
+};
+
+const normalizeVitalsForSpecialty = (
+    vitals: VitalSignConfig[] | undefined,
+    doctorSpecialty?: string | null
+): VitalSignConfig[] => {
+    const isPediatric = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
+    const normalized = (Array.isArray(vitals) ? vitals : [])
+        .filter((vital) => String(vital?.key || '').trim() !== 'headCirc' || isPediatric)
+        .map((vital) => ({ ...vital }));
+
+    if (isPediatric && !normalized.some((vital) => String(vital?.key || '').trim() === 'headCirc')) {
+        normalized.push({ ...HEAD_CIRC_DEFAULT_VITAL });
+    }
+
+    return normalized;
+};
+
+const normalizeSettingsForForm = (
+    value: PrescriptionSettings,
+    doctorSpecialty?: string | null
+): PrescriptionSettings => ({
     ...value,
+    vitals: normalizeVitalsForSpecialty(value.vitals, doctorSpecialty),
     customBoxes: Array.isArray(value.customBoxes) ? value.customBoxes : []
 });
 
-export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptionSettingsFormOptions) {
+export function usePrescriptionSettingsForm({ settings, onSave, doctorSpecialty }: UsePrescriptionSettingsFormOptions) {
     // --- الحالة المحلية (Local State) ---
-    const [localSettings, setLocalSettings] = useState<PrescriptionSettings>(normalizeSettingsForForm(settings)); // الإعدادات الجاري تعديلها حالياً
+    const [localSettings, setLocalSettings] = useState<PrescriptionSettings>(
+        normalizeSettingsForForm(settings, doctorSpecialty)
+    ); // الإعدادات الجاري تعديلها حالياً
     const [saving, setSaving] = useState(false); // حالة الحفظ (تحميل)
     const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null); // التنبيهات (تم الحفظ، خطأ، إلخ)
     const [openSection, setOpenSection] = useState<string>(''); // القسم المفتوح حالياً في الأكورديون (Accordion)
@@ -45,12 +78,14 @@ export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptio
     const [middleBgToCrop, setMiddleBgToCrop] = useState<string | null>(null);
 
     const editorRefs = useRef<Record<string, HTMLDivElement | null>>({}); // مراجع لمحررات النصوص الغنية
-    const defaultSettings = getDefaultSettings(); // الإعدادات الافتراضية للنظام
+    const defaultSettings = normalizeSettingsForForm(getDefaultSettings(), doctorSpecialty); // الإعدادات الافتراضية للنظام
 
     // حماية التعديلات غير المحفوظة:
     // نحفظ snapshot للإعدادات اللي اتمت مزامنتها آخر مرة (سواء من السيرفر أو بعد حفظ ناجح).
     // بنقارنها بالـ localSettings الحالية لنحدد لو المستخدم عنده تعديلات غير محفوظة.
-    const lastSyncedSettingsRef = useRef<PrescriptionSettings>(normalizeSettingsForForm(settings));
+    const lastSyncedSettingsRef = useRef<PrescriptionSettings>(
+        normalizeSettingsForForm(settings, doctorSpecialty)
+    );
 
     // تحديث الحالة المحلية عند تغيير الإعدادات الخارجية (مثلاً عند تبديل الفرع).
     // لو المستخدم عنده تعديلات غير محفوظة، بنسأله أولاً قبل ما نمسحها.
@@ -71,10 +106,10 @@ export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptio
         }
 
         // طبّق الإعدادات الجديدة
-        const normalized = normalizeSettingsForForm(settings);
+        const normalized = normalizeSettingsForForm(settings, doctorSpecialty);
         setLocalSettings(normalized);
         lastSyncedSettingsRef.current = normalized;
-    }, [settings]);
+    }, [settings, doctorSpecialty]);
 
     // تحذير المتصفح عند إغلاق الصفحة أو عمل refresh مع وجود تعديلات غير محفوظة
     useEffect(() => {
@@ -100,10 +135,12 @@ export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptio
     const handleSave = async () => {
         setSaving(true);
         try {
-            await onSave(localSettings);
+            const settingsToSave = normalizeSettingsForForm(localSettings, doctorSpecialty);
+            await onSave(settingsToSave);
+            setLocalSettings(settingsToSave);
             // بعد الحفظ الناجح، علّم الـ localSettings كـ "آخر نسخة متزامنة"
             // عشان الـ dirty check يرجع false ومفيش تحذير كاذب بعد كده
-            lastSyncedSettingsRef.current = localSettings;
+            lastSyncedSettingsRef.current = settingsToSave;
             showNotification('success', 'تم حفظ الإعدادات بنجاح ✓');
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'حدث خطأ غير معروف أثناء الحفظ';
@@ -118,7 +155,7 @@ export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptio
      * تسمح هذه الدالة بالرجوع للحالة الأصلية للنظام، إما لتبويب محدد أو للروشتة كاملة
      */
     const handleReset = async (tabId?: 'header' | 'footer' | 'vitals' | 'middle' | 'print') => {
-        const defaults = getDefaultSettings();
+        const defaults = normalizeSettingsForForm(getDefaultSettings(), doctorSpecialty);
         
         if (tabId) {
             // إعادة القسم المحدد فقط إلى حالته الأصلية
@@ -167,7 +204,7 @@ export function usePrescriptionSettingsForm({ settings, onSave }: UsePrescriptio
             }
         } else {
             // إعادة كل الإعدادات وحفظها فوراً
-            const normalizedDefaults = normalizeSettingsForForm(defaults);
+            const normalizedDefaults = normalizeSettingsForForm(defaults, doctorSpecialty);
             setLocalSettings(normalizedDefaults);
             try {
                 setSaving(true);

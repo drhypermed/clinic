@@ -8,13 +8,18 @@
 
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import { normalizeBookingSecret, normalizeEmail, sanitizeDocSegment } from './helpers';
+import { normalizeBookingSecret, normalizeEmail, sanitizeDocSegment, toOptionalText } from './helpers';
 
 /** 
  * التأكد من أن الرمز السري يشير إلى الـ UserId الصحيح في Firestore.
  * يقوم أيضاً بحذف أي إعدادات قديمة مرتبطة بنفس الطبيب لضمان وجود قناة اتصال واحدة فعالة.
  */
-export const ensureBookingConfigUserId = async (secret: string, userId: string, branchId?: string): Promise<void> => {
+export const ensureBookingConfigUserId = async (
+  secret: string,
+  userId: string,
+  branchId?: string | null,
+  doctorSpecialty?: string | null,
+): Promise<void> => {
   const normalizedSecret = normalizeBookingSecret(secret);
   const normalizedUserId = sanitizeDocSegment(userId);
   if (!normalizedSecret || !normalizedUserId) return;
@@ -22,6 +27,8 @@ export const ensureBookingConfigUserId = async (secret: string, userId: string, 
   const configRef = doc(db, 'bookingConfig', normalizedSecret);
   const payload: Record<string, unknown> = { userId: normalizedUserId, updatedAt: new Date().toISOString() };
   if (branchId) payload.branchId = branchId;
+  const specialtyValue = toOptionalText(doctorSpecialty);
+  if (specialtyValue) payload.doctorSpecialty = specialtyValue;
   await setDoc(configRef, payload, { merge: true });
 
   // ملاحظة: تم إيقاف حذف الـ configs القديمة لأن كل فرع ليه config مستقل.
@@ -37,23 +44,24 @@ export const mirrorPublicSecretToBookingConfig = async (
   bookingSecret: string,
   userId: string,
   publicBookingSecret: string,
+  publicUrlSlug?: string,
 ): Promise<void> => {
   const normalizedSecret = normalizeBookingSecret(bookingSecret);
   const normalizedUserId = sanitizeDocSegment(userId);
   const publicValue = String(publicBookingSecret || '').trim();
+  const slugValue = String(publicUrlSlug || '').trim();
   if (!normalizedSecret || !normalizedUserId || !publicValue) return;
 
   const configRef = doc(db, 'bookingConfig', normalizedSecret);
   // userId مطلوب علشان rules تتأكد إن الكاتب هو صاحب الـ bookingConfig
-  await setDoc(
-    configRef,
-    {
-      userId: normalizedUserId,
-      publicBookingSecret: publicValue,
-      updatedAt: new Date().toISOString(),
-    },
-    { merge: true },
-  );
+  // publicUrlSlug مطلوب للسكرتيرة عشان تبني الرابط الـ canonical /p/{slug}
+  const payload: Record<string, unknown> = {
+    userId: normalizedUserId,
+    publicBookingSecret: publicValue,
+    updatedAt: new Date().toISOString(),
+  };
+  if (slugValue) payload.publicUrlSlug = slugValue;
+  await setDoc(configRef, payload, { merge: true });
 };
 
 /** ربط البريد الإلكتروني للطبيب بإعدادات السكرتارية (يستخدم للتحقق عند الدخول) */

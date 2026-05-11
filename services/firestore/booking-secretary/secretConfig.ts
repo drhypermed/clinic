@@ -28,3 +28,7 @@ export {
   updateBookingSettings,
   setSecretarySessionToken,
 } from './secretConfig.settings';
+
+// مزامنة اسم الطبيب على كل فروعه عند تعديل البروفايل (يضمن ظهور الاسم
+// عند السكرتيرة في كل الفروع بشكل ثابت بدل ما يكون فاضي أو مختلف بين الفروع).
+export { syncDoctorDisplayNameToAllBookingConfigs } from './syncDoctorDisplayName';

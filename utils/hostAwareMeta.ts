@@ -93,12 +93,6 @@ const normalizePathname = (pathname: string): string => {
   return pathname.replace(/\/+$/, '') || '/';
 };
 
-// فاصل لصفحات clinic العامّه (indexable) عن الخاصّه (noindex)
-const isClinicPublicPath = (pathname: string): boolean => {
-  const p = normalizePathname(pathname);
-  return p === '/' || p === '/user-guide';
-};
-
 /**
  * بيختار الـmeta الصح حسب الـmode والـpathname.
  */

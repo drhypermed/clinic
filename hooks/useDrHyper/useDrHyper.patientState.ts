@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Medication, PatientGender, PaymentType, PrescriptionItem } from '../../types';
+import type { Medication, PatientGender, PaymentType, PrescriptionItem, VitalSigns } from '../../types';
 import type { AppStateSnapshot } from './useDrHyper.types';
 import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
 import { getCairoDayKey } from '../../utils/cairoTime';
@@ -22,7 +22,7 @@ export const useDrHyperPatientState = () => {
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   
-  const [vitals, setVitals] = useState({ bp: '', pulse: '', temp: '', rbs: '', spo2: '', rr: '' });
+  const [vitals, setVitals] = useState<VitalSigns>({ bp: '', pulse: '', temp: '', rbs: '', spo2: '', rr: '', headCirc: '' });
   
   const [consultationDate, setConsultationDate] = useState<string | null>(null);
   const [visitDate, setVisitDate] = useState<string>(() => getCairoDayKey());

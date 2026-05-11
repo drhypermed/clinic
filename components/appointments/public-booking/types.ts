@@ -20,6 +20,7 @@ import type {
 export type Config = {
   userId: string;
   doctorDisplayName?: string;
+  doctorSpecialty?: string;
   /** إيميل الطبيب — يُستخدم كـ fallback لعرض هوية الطبيب لو الاسم فاضي */
   doctorEmail?: string;
   formTitle?: string;
@@ -31,6 +32,8 @@ export type Config = {
   // مرآة publicBookingSecret — السكرتيرة بتقرأها من نفس bookingConfig علشان
   // تعرض رابط الفورم العام بدون ما تحتاج صلاحيات على publicBookingConfig.
   publicBookingSecret?: string;
+  // مرآة publicUrlSlug — للسكرتيرة لبناء رابط /p/{slug} الـ canonical.
+  publicUrlSlug?: string;
 };
 
 // تفاصيل رسالة "تجاوز الحد اليومي للحجز" وطريقة التواصل مع العيادة
@@ -100,6 +103,19 @@ export type DoctorEntryResponse = {
   status: 'approved' | 'rejected'; // موافقة أو انتظار (المصطلح البرمجي هنا مرفوض يعني انتظر)
   appointmentId: string;
   respondedAt: string;
+} | null;
+
+/**
+ * توست رد السكرتيرة (Secretary Action Toast) — بيظهر في حالتين بمصدرين مختلفين:
+ *   - 'secretary-action' : السكرتيرة هي اللي ضغطت نعم/لا على طلب الطبيب.
+ *     → التوست بيقولها "تم إبلاغ الطبيب" بنتيجة ضغطتها.
+ *   - 'doctor-response'  : الطبيب رد على طلب دخول طلبتُه السكرتيرة.
+ *     → التوست بيقولها قرار الطبيب (موافق/انتظار).
+ * المصدر بيحدد نص التوست عشان كل حالة ترجع رسالة منطقية لها.
+ */
+export type SecretaryActionToastState = {
+  status: 'approved' | 'rejected';
+  source: 'secretary-action' | 'doctor-response';
 } | null;
 
 // إعادة تصدير الأنواع المشتركة

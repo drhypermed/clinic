@@ -7,6 +7,20 @@ type SecretaryLoginPayload = {
   doctorEmail?: string;
   secret?: string;
   secretaryPassword: string;
+  /**
+   * الفرع المُفضّل (يُمرَّر بس لما السكرتارية تكون اختارت من قائمة بعد ambiguous error).
+   * في الـlogin الأول العادي بيكون undefined — السيرفر يجيب الفرع تلقائياً.
+   */
+  preferredBranchId?: string;
+};
+
+/**
+ * عنصر فرع في تفاصيل ambiguous-password error.
+ * بيستخدمه الـUI ليعرض قائمة الفروع المطابقة للسكرتارية تختار.
+ */
+export type AmbiguousBranchOption = {
+  branchId: string;
+  branchName: string;
 };
 
 type SecretaryLoginResult = {
@@ -102,11 +116,11 @@ export const getSecretaryLoginErrorMessage = (error: unknown): string => {
     return 'لم يتم اختيار كلمة سر من قبل الطبيب';
   }
 
-  // كلمة السر متطابقة في أكثر من فرع للطبيب نفسه — السكرتيرة لازم تفهم
-  // إن المشكلة من إعداد الطبيب مش من كتابتها للكلمة. الطبيب يحتاج يغير
-  // كلمة سر فرع عشان النظام يميز.
+  // كلمة السر متطابقة في أكثر من فرع للطبيب نفسه — الـUI بيلتقطها قبل ما توصل هنا
+  // عبر `getAmbiguousBranchesFromError`، ويعرض اختيار فرع. الرسالة دي fallback
+  // لو الـUI ما عرفش يعرض الاختيار (مثلاً قائمة فروع فاضية).
   if (normalizedMessage.includes('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES')) {
-    return 'كلمة السر متكررة في أكثر من فرع لنفس الطبيب.\n\nيرجى التواصل مع الطبيب لتغيير كلمة سر أحد الفروع حتى يميز النظام بينها.';
+    return 'كلمة السر متكررة في أكثر من فرع. حاول مرة أخرى ثم اختر الفرع.';
   }
 
   if (
@@ -130,6 +144,42 @@ export const getSecretaryLoginErrorMessage = (error: unknown): string => {
   }
 
   return 'تعذر تسجيل دخول السكرتارية الآن. حاول مرة أخرى';
+};
+
+/**
+ * يفحص هل الـerror هو ambiguous-password-across-branches.
+ * لو نعم، يُرجع قائمة الفروع المطابقة. لو لا، يُرجع null.
+ *
+ * الـUI يستخدم النتيجة دي ليعرض modal/قائمة اختيار فرع للسكرتارية، بدل ما
+ * يعرض رسالة خطأ مسدودة "اطلبي من الطبيب يغيّر كلمة السر".
+ */
+export const getAmbiguousBranchesFromError = (
+  error: unknown
+): AmbiguousBranchOption[] | null => {
+  const message = String((error as { message?: unknown })?.message || '').toUpperCase();
+  const details = getCallableErrorDetails(error);
+  const detailsStatus = String(details.status || '').trim().toUpperCase();
+
+  const isAmbiguous =
+    message.includes('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES') ||
+    detailsStatus === 'AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES';
+
+  if (!isAmbiguous) return null;
+
+  const rawBranches = details.branches;
+  if (!Array.isArray(rawBranches) || rawBranches.length === 0) return null;
+
+  const branches: AmbiguousBranchOption[] = [];
+  for (const item of rawBranches) {
+    if (!item || typeof item !== 'object') continue;
+    const obj = item as Record<string, unknown>;
+    const branchId = typeof obj.branchId === 'string' ? obj.branchId.trim() : '';
+    const branchName = typeof obj.branchName === 'string' ? obj.branchName.trim() : '';
+    if (!branchId) continue;
+    branches.push({ branchId, branchName: branchName || `فرع ${branchId}` });
+  }
+
+  return branches.length > 0 ? branches : null;
 };
 
 export const secretaryLogin = async (

@@ -15,12 +15,12 @@
 //   4) Rate limiting: actionInProgress[id] state يمنع الضغط المتكرر على نفس الطبيب.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { ApprovedDoctor, EditMode, SubscriptionChangeType, SubscriptionPeriod, SubscriptionTier, SubscriptionUnit } from './types';
+import { ApprovedDoctor, EditMode, SubscriptionPeriod, SubscriptionTier, SubscriptionUnit } from './types';
 import { computePeriodPricing } from './subscriptionPricing';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { setDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { auth, db, functions } from '../../../services/firebaseConfig';
+import { auth, functions } from '../../../services/firebaseConfig';
 import { isPositiveSafeInteger, parseAdminDateTime } from './securityUtils';
 import { normalizeEmail } from '../../../services/auth-service/validation';
 import { AccountType } from '../../../types';

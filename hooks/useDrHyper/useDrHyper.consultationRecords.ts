@@ -64,6 +64,10 @@ const normalizeConsultationData = (consultation: ConsultationData): Consultation
   historyAr: consultation.historyAr || '',
   examAr: consultation.examAr || '',
   investigationsAr: consultation.investigationsAr || '',
+  pregnant: typeof consultation.pregnant === 'boolean' ? consultation.pregnant : undefined,
+  gestationalAgeWeeks: consultation.gestationalAgeWeeks,
+  pregnancyTracking: consultation.pregnancyTracking,
+  breastfeeding: typeof consultation.breastfeeding === 'boolean' ? consultation.breastfeeding : undefined,
 });
 
 export const buildConsultationDataFromRecord = (record: PatientRecord): ConsultationData => {
@@ -85,6 +89,10 @@ export const buildConsultationDataFromRecord = (record: PatientRecord): Consulta
     historyAr: record.historyAr || '',
     examAr: record.examAr || '',
     investigationsAr: record.investigationsAr || '',
+    pregnant: typeof record.pregnant === 'boolean' ? record.pregnant : undefined,
+    gestationalAgeWeeks: record.gestationalAgeWeeks,
+    pregnancyTracking: record.pregnancyTracking,
+    breastfeeding: typeof record.breastfeeding === 'boolean' ? record.breastfeeding : undefined,
   });
 };
 
@@ -105,6 +113,11 @@ export const buildSeparatedConsultationRecordPayload = ({
     patientName: baseRecord.patientName,
     phone: baseRecord.phone || undefined,
     age: baseRecord.age,
+    gender: baseRecord.gender,
+    pregnant: baseRecord.pregnant,
+    gestationalAgeWeeks: baseRecord.gestationalAgeWeeks,
+    pregnancyTracking: normalizedConsultation.pregnancyTracking || baseRecord.pregnancyTracking,
+    breastfeeding: baseRecord.breastfeeding,
     weight: baseRecord.weight,
     height: baseRecord.height || undefined,
     bmi: baseRecord.bmi || undefined,

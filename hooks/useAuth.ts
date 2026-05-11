@@ -179,6 +179,14 @@ export const useAuth = (): UseAuthReturn => {
     const startRoleResolutionTimer = React.useCallback((uid: string) => {
         clearRoleResolutionTimer();
         roleResolutionTimerRef.current = setTimeout(async () => {
+            // لو المستخدم عمل signout بنفسه قبل ما الحارس يخلص (مثلاً ضغط
+            // تسجيل خروج خلال أول 6 ثواني)، auth.currentUser يبقى null أو
+            // مستخدم تاني. ده قرار يدوي، مش فشل تحديد دور — اطلع بدون
+            // كتابة رسالة خطأ عشان متظهرش "بدون سبب" في صفحة الدخول.
+            const activeUid = auth.currentUser?.uid || '';
+            if (!activeUid || activeUid !== uid) {
+                return;
+            }
             try {
                 // محاوله أخيره: ممكن Firestore يكون رد متأخّر، أو الأدمن أكمل البروفايل
                 const { data: retryData } = await loadResolvedProfile(uid);
@@ -258,6 +266,18 @@ export const useAuth = (): UseAuthReturn => {
                 }
 
                 if (authUser) {
+                    // حارس السكرتيرة: الـcustom token UID شكله "secretary:{secret}:{branchId}".
+                    // مش طبيب، مش أدمن، ومش هنلاقيله record في users/{uid}. لو سيبنا الـflow
+                    // يكمل، loadResolvedProfile هيفشل → role resolution timeout → forced signout
+                    // → useSecretaryTokenRefresh يعيد signInWithCustomToken → loop لا نهائي.
+                    // العلاج: نتجاهل الـauth state ده في useAuth بالكامل (السكرتيرة عندها
+                    // hook خاص بيها — useSecretaryTokenRefresh — مش محتاجة useAuth أصلاً).
+                    if (/^secretary:.+:.+$/.test(authUser.uid)) {
+                        clearRoleResolutionTimer();
+                        setUser(null);
+                        setLoading(false);
+                        return;
+                    }
                     setError(null);
                     try {
                         // لو عندنا user من optimistic cache لنفس الـ UID، منعرضش loading
@@ -462,6 +482,10 @@ export const useAuth = (): UseAuthReturn => {
         try {
             setError(null);
             setLoading(true);
+            // ألغي حارس تحديد الدور فوراً — لو كان شغّال (مثلاً المستخدم
+            // عمل خروج خلال أول 6 ثواني من الدخول)، الحارس ميكملش ويكتب
+            // رسالة فشل زائفة في localStorage بتظهر بعدها في صفحة الدخول.
+            clearRoleResolutionTimer();
             const currentUid = auth.currentUser?.uid;
 
             if (currentUid) {

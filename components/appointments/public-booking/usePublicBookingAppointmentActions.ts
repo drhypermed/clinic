@@ -13,6 +13,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { resolveAppointmentType } from '../../../utils/appointmentType';
 import { functions } from '../../../services/firebaseConfig';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
@@ -51,6 +52,7 @@ export const usePublicBookingAppointmentActions = ({
   secretaryVitals,
   secretaryVitalFields,
   secretaryVitalsVisibility,
+  doctorSpecialty,
   appointmentType,
   selectedConsultationCandidateId,
   editingAppointmentId,
@@ -123,26 +125,28 @@ export const usePublicBookingAppointmentActions = ({
       const aptPregnant = typeof fullAppt?.pregnant === 'boolean' ? fullAppt.pregnant : undefined;
       const aptBreastfeeding = typeof fullAppt?.breastfeeding === 'boolean' ? fullAppt.breastfeeding : undefined;
 
-      await firestoreService.setSecretaryEntryRequest(
+      // الواجهة الموحدة — direction='S2D' (السكرتيرة بتطلب من الطبيب)
+      await entryConversations.request({
         secret,
-        {
-          appointmentId: apt.id,
-          patientName: apt.patientName,
+        direction: 'S2D',
+        appointmentId: apt.id,
+        patientName: apt.patientName,
+        branchId: sessionBranchId,
+        appointmentType: resolvedType,
+        patientInfo: {
           age: apt.age,
           visitReason: apt.visitReason,
-          appointmentType: resolvedType,
-          consultationSourceAppointmentId: apt.consultationSourceAppointmentId,
-          consultationSourceCompletedAt: apt.consultationSourceCompletedAt,
-          consultationSourceRecordId: apt.consultationSourceRecordId,
-          // تمرير الفرع الحالي للسكرتيرة — للعزل بين الفروع عند إرسال الطلب للطبيب
-          branchId: sessionBranchId,
-          // الهوية الثابتة + الحالة المؤقتة — تظهر في إشعار الطبيب
           gender: aptGender,
           pregnant: aptPregnant,
           breastfeeding: aptBreastfeeding,
         },
-        userId
-      );
+        consultationSource: {
+          appointmentId: apt.consultationSourceAppointmentId,
+          completedAt: apt.consultationSourceCompletedAt,
+          recordId: apt.consultationSourceRecordId,
+        },
+        doctorId: userId,
+      });
       // 🔔 صوت تأكيد قصير — طلب الإدخال اتبعت للطبيب
       void playNotificationCue('action_confirmed');
     } catch (error) {
@@ -219,6 +223,7 @@ export const usePublicBookingAppointmentActions = ({
       sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
         visibility: secretaryVitalsVisibility,
         fieldDefinitions: secretaryVitalFields,
+        doctorSpecialty,
       }) || {}
     );
     setDateStr(toLocalDateStr(dt));
@@ -280,6 +285,7 @@ export const usePublicBookingAppointmentActions = ({
     const sanitizedSecretaryVitals = sanitizeSecretaryVitalsInput(secretaryVitals, {
       visibility: secretaryVitalsVisibility,
       fieldDefinitions: secretaryVitalFields,
+      doctorSpecialty,
     });
     const editingAppointment = editingAppointmentId
       ? todayAppointments.find((item) => item.id === editingAppointmentId) || null

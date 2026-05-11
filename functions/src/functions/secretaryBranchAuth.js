@@ -38,13 +38,26 @@ const readBranchAuthData = async ({ db, secret, branchId, userId }) => {
   }
 
   // Fallback: ابحث في الـpath القديم (تحت branchSecret) لو فيه data قديمه
-  // محفوظه قبل الإصلاح. لازم userId عشان نقرأ Branch.secretarySecret.
+  // محفوظه قبل الإصلاح. لازم userId عشان نقرأ branch secret.
+  // 🔒 2026-05-10: نقرا الـ secret من المكان الآمن أولاً (وثيقة المستخدم)،
+  //    fallback لوثيقة الفرع للتوافق مع البيانات القديمة.
   if (userId) {
     try {
-      const branchDoc = await db.collection('users').doc(userId).collection('branches').doc(branchId).get();
-      const branchSecret = branchDoc.exists
-        ? normalizeText(branchDoc.data()?.secretarySecret)
-        : '';
+      let branchSecret = '';
+      // المكان الآمن الجديد
+      const userSnap = await db.collection('users').doc(userId).get();
+      if (userSnap.exists) {
+        const userData = userSnap.data() || {};
+        const map = userData.bookingSecretByBranch || {};
+        branchSecret = normalizeText(map?.[branchId]) || '';
+      }
+      // Fallback للقديم — وثيقة الفرع
+      if (!branchSecret) {
+        const branchDoc = await db.collection('users').doc(userId).collection('branches').doc(branchId).get();
+        branchSecret = branchDoc.exists
+          ? normalizeText(branchDoc.data()?.secretarySecret)
+          : '';
+      }
       if (branchSecret && branchSecret !== secret) {
         const legacyRef = db.collection('secretaryAuth').doc(branchSecret).collection('branches').doc(branchId);
         const legacySnap = await legacyRef.get();
@@ -156,7 +169,8 @@ const tryMatchSecretaryPasswordAcrossBranches = async ({
   // اختيار الفرع المطابق:
   //   - لو واحد فقط → نستخدمه
   //   - لو أكثر + preferredBranchId مُمرَّر → نستخدم المفضّل لو موجود، وإلا نرفض
-  //   - لو أكثر بدون preferredBranchId → نرفض لمنع اختيار خاطئ صامت
+  //   - لو أكثر بدون preferredBranchId → نرفض مع تفاصيل الفروع المطابقة عشان
+  //     الـ UI يقدر يعرض اختيار للسكرتارية بدل ما توقف مسدودة (2026-05-11).
   let selected = null;
   if (matches.length === 1) {
     selected = matches[0];
@@ -166,12 +180,40 @@ const tryMatchSecretaryPasswordAcrossBranches = async ({
       selected = matches.find((m) => m.branchId === normalizedPreferred) || null;
     }
     if (!selected) {
-      // رفض صريح — المسؤولية على الطبيب ليغير كلمات السر المتطابقة،
-      // أو على الـ UI يمرر preferredBranchId واضح.
+      // قراءة أسماء الفروع المطابقة عشان الـ UI يعرضها للسكرتارية تختار.
+      // آمن أمنياً لأن السكرتارية بالفعل قدمت كلمة سر صحيحة (مطابقة لأكثر من فرع)،
+      // فمعرفة أسماء فروع الطبيب نفسه = معلومة عن إعداد، مش معلومة سرية.
+      const matchedBranches = await Promise.all(
+        matches.map(async (m) => {
+          let branchName = '';
+          if (m.branchId === DEFAULT_BRANCH_ID) {
+            branchName = 'الفرع الرئيسي';
+          } else {
+            try {
+              const branchDoc = await db.collection('users').doc(userId).collection('branches').doc(m.branchId).get();
+              if (branchDoc.exists) {
+                branchName = normalizeText(branchDoc.data()?.name) || `فرع ${m.branchId}`;
+              } else {
+                branchName = `فرع ${m.branchId}`;
+              }
+            } catch {
+              branchName = `فرع ${m.branchId}`;
+            }
+          }
+          return { branchId: m.branchId, branchName };
+        })
+      );
+
       if (HttpsError) {
-        throw new HttpsError('failed-precondition', 'AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES');
+        throw new HttpsError(
+          'failed-precondition',
+          'AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES',
+          { status: 'AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES', branches: matchedBranches }
+        );
       }
-      throw new Error('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES');
+      const err = new Error('AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES');
+      err.details = { status: 'AMBIGUOUS_PASSWORD_MATCHES_MULTIPLE_BRANCHES', branches: matchedBranches };
+      throw err;
     }
   }
 

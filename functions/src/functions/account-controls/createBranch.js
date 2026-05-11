@@ -130,13 +130,15 @@ module.exports = (context) => {
       updatedAt: nowIso,
     }, { merge: true });
 
-    // 8) كتابة الفرع نفسه في users/{userId}/branches/{branchId}
-    //    نبني الـ payload يدوياً (مش spread) عشان نتجنب أي حقول إضافية
-    //    من الـ client ممكن تكون غير متوقعة (security hardening).
+    // 8) كتابة الفرع في users/{userId}/branches/{branchId} (بدون الـ secret).
+    //    ─ تشديد أمني 2026-05-10: الـ secret اتنقل لـ users/{uid}.bookingSecretByBranch
+    //      عشان السكرتيرة لا تقدر تقراه من وثيقة الفرع. الـ rules بتمنع السكرتيرة
+    //      من قراءة وثيقة المستخدم الجذرية، فالـ secret بقى محجوب عنها بالكامل.
+    //    ─ secretarySecret لسه ينطلع للـclient في الـ response عشان الـUI يعرضه فوراً
+    //      بدون انتظار onSnapshot جديد على وثيقة المستخدم.
     const branchPayload = {
       id: branchId,
       name,
-      secretarySecret,
       createdAt: nowIso,
       order: used,
       updatedAt: nowIso,
@@ -144,11 +146,22 @@ module.exports = (context) => {
     if (address) branchPayload.address = address;
     if (phone) branchPayload.phone = phone;
 
-    await branchesRef.doc(branchId).set(branchPayload);
+    // كتابة atomic عبر batch — ضمان إن وثيقة الفرع + سرّ الفرع يتكتبوا
+    // مع بعض أو الاتنين يفشلوا. parallel كان ممكن يخلّق branch بدون secret.
+    const batch = db.batch();
+    batch.set(branchesRef.doc(branchId), branchPayload);
+    batch.set(
+      db.collection('users').doc(userId),
+      { bookingSecretByBranch: { [branchId]: secretarySecret } },
+      { merge: true },
+    );
+    await batch.commit();
 
-    // 9) نرجع للـ client بيانات الفرع المُنشأ + معلومات الكوتا الحالية
+    // 9) نرجع للـ client بيانات الفرع المُنشأ + الـ secret (للاستخدام الفوري في الـUI)
+    //    + معلومات الكوتا الحالية. الـ secret في الـ response مش محفوظ على وثيقة الفرع
+    //    عشان السكرتيرة لا تشوفه — اتخزن في users/{uid}.bookingSecretByBranch.
     return {
-      branch: branchPayload,
+      branch: { ...branchPayload, secretarySecret },
       accountType,
       limit,
       used: used + 1,

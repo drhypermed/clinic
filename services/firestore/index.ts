@@ -15,6 +15,7 @@ import { userProfileService } from './userProfile';
 import { doctorAdsService } from './doctorAds';
 import { branchesService } from './branches';
 import { dismissedAppointmentNotificationsService } from './dismissedAppointmentNotifications';
+import { findPatientSummariesByPhone, linkAppointmentToPatientFile } from './patient-matching';
 
 export const firestoreService = {
     ...patientsService,
@@ -27,4 +28,7 @@ export const firestoreService = {
     ...doctorAdsService,
     ...branchesService,
     ...dismissedAppointmentNotificationsService,
+    // ربط الحجز العام بملف المريض القديم بنفس الهاتف
+    findPatientSummariesByPhone,
+    linkAppointmentToPatientFile,
 };

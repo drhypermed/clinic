@@ -16,7 +16,12 @@ import type {
     SecretaryVitalsVisibility,
     VitalSignConfig,
 } from '../../types';
-import { SECRETARY_VITAL_KEYS, SECRETARY_VITAL_NOTIFICATION_PREFIX } from './constants';
+import {
+    SECRETARY_VITAL_KEYS,
+    SECRETARY_VITAL_NOTIFICATION_PREFIX,
+    isSecretaryVitalKeyAllowedForSpecialty,
+    type SecretaryVitalsSpecialtyOptions,
+} from './constants';
 import { buildSecretaryVitalFieldDefinitions, normalizeSecretaryVitalFieldDefinitions } from './fieldDefinitions';
 import {
     getDefaultSecretaryFieldByKey,
@@ -35,23 +40,25 @@ export const toSecretaryVitalSignConfigs = (
     options: {
         visibility?: SecretaryVitalsVisibility;
         fieldDefinitions?: SecretaryVitalFieldDefinition[];
-    } = {}
+    } & SecretaryVitalsSpecialtyOptions = {}
 ): VitalSignConfig[] => {
     const sourceByKey = new Map<string, VitalSignConfig>();
     if (Array.isArray(vitalsConfig)) {
         vitalsConfig.forEach((item) => {
             const key = String(item?.key || '').trim();
             if (!isSecretaryVitalKey(key)) return;
+            if (!isSecretaryVitalKeyAllowedForSpecialty(key, options.doctorSpecialty)) return;
             sourceByKey.set(key, item);
         });
     }
 
     const normalizedFields = normalizeSecretaryVitalFieldDefinitions(
         options.fieldDefinitions,
-        buildSecretaryVitalFieldDefinitions(vitalsConfig, [])
+        buildSecretaryVitalFieldDefinitions(vitalsConfig, [], options),
+        options
     );
 
-    const visibility = normalizeSecretaryVitalsVisibility(options.visibility);
+    const visibility = normalizeSecretaryVitalsVisibility(options.visibility, undefined, options);
 
     return normalizedFields
         .filter((field): field is SecretaryVitalFieldDefinition & { key: SecretaryVitalKey } =>

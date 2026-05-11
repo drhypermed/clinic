@@ -368,6 +368,8 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           discountReasonId={p.discountReasonId} setDiscountReasonId={p.setDiscountReasonId}
           discountReasonLabel={p.discountReasonLabel} setDiscountReasonLabel={p.setDiscountReasonLabel}
           showNotification={p.showNotification}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
+          doctorUserId={p.userId}
         />
       )}
 
@@ -385,6 +387,8 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onOpenConsultation={p.openConsultationForAppointment}
           showNotification={p.showNotification}
           onClose={() => p.navigateToView('prescription')}
+          doctorName={p.normalizedDoctorName || undefined}
+          doctorSpecialty={p.normalizedDoctorSpecialty || undefined}
         />
       )}
 
@@ -395,6 +399,8 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           prescriptionVitalsConfig={p.prescriptionSettings?.vitals || []}
           prescriptionCustomBoxes={p.prescriptionSettings?.customBoxes || []}
           onSyncSecretaryVitalsVisibility={p.handleSyncSecretaryVitalsVisibility}
+          doctorName={p.normalizedDoctorName || undefined}
+          doctorSpecialty={p.normalizedDoctorSpecialty || undefined}
         />
       )}
 
@@ -419,12 +425,14 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onAddPastConsultation={p.handleAddPastConsultation}
           onClose={() => p.navigateToView('prescription')}
           branchId={p.activeBranchId}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
         />
       )}
 
       {p.currentView === 'patientFiles' && (
         <PatientFilesPage
           records={p.records}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
           onLoadRecord={(rec) => {
             p.setOpenedAppointmentContext(null);
             p.handleLoadRecord(rec);
@@ -469,6 +477,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
         <PrescriptionSettingsPage
           settings={p.prescriptionSettings}
           onSave={p.savePrescriptionSettings}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
         />
       )}
 

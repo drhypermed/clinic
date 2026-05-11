@@ -92,24 +92,31 @@ module.exports = (context) => {
     branchId,
     requestData,
     configData,
+    correlationId,
+    stats,
   }) => {
     const patientName = requestData.patientName || 'مريض';
-    const title = 'السكرتارية تطلب دخول حالة';
 
     const db = getDb();
     const userId = String(configData.userId || requestData?.doctorId || '').trim();
 
-    // جلب اسم الفرع وعدد الفروع — عشان نقرر هل نضيف "فرع: X" للجسم ولا لأ
+    // جلب اسم الفرع وعدد الفروع — عشان نقرر هل نضيف اسم الفرع للعنوان والجسم ولا لأ
     const { branchName, hasMultipleBranches } = await loadBranchContextForDoctor({
       db,
       userId,
       branchId,
     });
 
-    // لو الطبيب عنده أكتر من فرع وعندنا اسم الفرع — أضفه في نهاية الجسم
-    // عشان الطبيب يعرف الإشعار جاي من أنهي فرع. غير كده الجسم زي ما هو.
-    const branchSuffix =
-      hasMultipleBranches && branchName ? ` — فرع: ${branchName}` : '';
+    // اسم الفرع بيظهر في:
+    //   1) العنوان كبادئة بارزة "[فرع X]" — أول حاجة عين الطبيب بتقع عليها
+    //      في إشعار الـOS، فبيعرف من أنهي فرع فوراً قبل ما يفتح التنبيه.
+    //   2) نهاية الجسم (احتياطي) — للأجهزة اللي بتقص العنوان لو طويل.
+    // الشرطان معاً: hasMultipleBranches (فرع واحد بس مالوش لازمة) + branchName
+    // (لو متعرفناش اسمه ما نكتبش "فرع:" فاضي).
+    const showBranchInfo = hasMultipleBranches && Boolean(branchName);
+    const titlePrefix = showBranchInfo ? `[فرع ${branchName}] ` : '';
+    const title = `${titlePrefix}السكرتارية تطلب دخول حالة`;
+    const branchSuffix = showBranchInfo ? ` — فرع: ${branchName}` : '';
     const body = `السكرتارية تطلب دخول حالة: ${patientName}${branchSuffix}`;
     const doctorEmail = String(configData.doctorEmail || '').trim().toLowerCase();
     const candidateUserIds = await resolveDoctorCandidateUserIds({
@@ -187,9 +194,15 @@ module.exports = (context) => {
           },
         }
       });
-      logMulticastResult('notifyDoctorOnSecretaryEntryRequest', response, tokens);
+      logMulticastResult(`notifyDoctorOnSecretaryEntryRequest[${correlationId}/${branchId}]`, response, tokens);
+      if (stats) {
+        stats.tokensTargeted += tokens.length;
+        stats.tokensSucceeded += Number(response?.successCount || 0);
+        stats.tokensFailed += Number(response?.failureCount || 0);
+      }
       const invalidTokens = getInvalidFcmTokensFromResponse(response, tokens);
       if (invalidTokens.length > 0) {
+        if (stats) stats.invalidTokensCleaned += invalidTokens.length;
         await Promise.all(
           candidateUserIds.map((candidateUserId) =>
             cleanupInvalidDoctorTokens(candidateUserId, invalidTokens)
@@ -197,7 +210,7 @@ module.exports = (context) => {
         );
       }
     } catch (err) {
-      console.error('[notifyDoctorOnSecretaryEntryRequest] FCM send failed:', err);
+      console.error('[notifyDoctorOnSecretaryEntryRequest] FCM send failed:', { correlationId, err });
     }
   };
 
@@ -234,6 +247,10 @@ module.exports = (context) => {
 
     if (branchesToNotify.length === 0) return;
 
+    // Telemetry: correlationId يربط كل الـlogs للحدث ده + stats للتتبع.
+    const correlationId = `${secret.slice(0, 6)}_${Date.now()}`;
+    const stats = { tokensTargeted: 0, tokensSucceeded: 0, tokensFailed: 0, invalidTokensCleaned: 0 };
+
     // 3) جلب config مرة واحدة لكل الإشعارات (نفس secret)
     const db = getDb();
     const configSnap = await db.doc(`bookingConfig/${secret}`).get();
@@ -250,9 +267,18 @@ module.exports = (context) => {
           branchId: normalizedBranchId,
           requestData: value,
           configData,
+          correlationId,
+          stats,
         });
       })
     );
+
+    // ملخّص telemetry — كل الإحصاءات في سطر واحد للفلترة في Cloud Logs.
+    if (stats.tokensTargeted > 0 || stats.tokensFailed > 0 || stats.invalidTokensCleaned > 0) {
+      console.log('[notifyDoctorOnSecretaryEntryRequest] summary', {
+        correlationId, secret, branchCount: branchesToNotify.length, ...stats,
+      });
+    }
   };
 
   

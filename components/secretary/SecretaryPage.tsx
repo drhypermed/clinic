@@ -20,6 +20,9 @@ interface SecretaryPageProps {
     fields: SecretaryVitalFieldDefinition[],
     resolvedSecret?: string
   ) => Promise<void> | void;
+  /** اسم الطبيب — يُمرَّر للحفظ على bookingConfig وعرضه للسكرتيرة. */
+  doctorName?: string;
+  doctorSpecialty?: string;
 }
 
 export const SecretaryPage: React.FC<SecretaryPageProps> = ({
@@ -28,6 +31,8 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
   prescriptionVitalsConfig,
   prescriptionCustomBoxes,
   onSyncSecretaryVitalsVisibility,
+  doctorName,
+  doctorSpecialty,
 }) => {
   const { user } = useAuth();
   const userId = user?.uid ?? '';
@@ -57,6 +62,7 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
     userDisplayName: user?.displayName,
     userEmail: user?.email,
     currentDayStr,
+    doctorSpecialty,
   });
 
   return (
@@ -65,7 +71,8 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
         isOpen={true}
         onToggleOpen={() => {}}
         alwaysExpanded={true}
-        doctorEmail={user?.email ?? ''}
+        // اسم الطبيب يُمرَّر للعرض في حقل "اسم الطبيب" داخل قسم إعدادات السكرتارية
+        doctorName={doctorName ?? ''}
         currentBranchLabel={currentBranchLabel}
         hasMultipleBranches={hasMultipleBranches}
         bookingFormTitle={bookingFormTitle}

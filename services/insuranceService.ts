@@ -23,7 +23,6 @@ import {
 } from 'firebase/firestore';
 import { getDocCacheFirst, getDocsCacheFirst } from './firestore/cacheFirst';
 import { getBookingSecretByUserId } from './firestore/booking-secretary/secretConfig.secret';
-import type { PaymentType } from '../types';
 // ─ تشديد أمني 2026-04: فحص حد شركات التأمين على السيرفر قبل أي إنشاء جديد ─
 import { validateInsuranceCompaniesCapacity } from './accountTypeControlsService';
 import { isQuotaLimitExceededError } from './account-type-controls/quotaErrors';
@@ -78,42 +77,6 @@ export const resolvePatientSharePercentForBranch = (
     }
   }
   return clampPercent(company.patientSharePercent || 0);
-};
-
-/** بيانات التأمين المرتبطة بكشف مريض */
-interface InsuranceRecordData {
-  /** الدفع */
-  paymentType: PaymentType;
-  /** معرف شركة التأمين */
-  insuranceCompanyId?: string;
-  /** اسم شركة التأمين (للعرض السريع بدون استعلام إضافي) */
-  insuranceCompanyName?: string;
-  /** كود الموافقة من شركة التأمين */
-  insuranceApprovalCode?: string;
-  /** رقم كارنيه التأمين الخاص بالمريض */
-  insuranceMembershipId?: string;
-  /** نسبة تحمل المريض وقت الكشف (تُحفظ لحفظ السجل التاريخي حتى لو تغيرت النسبة لاحقاً) */
-  patientSharePercent?: number;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// دوال حسابية | Financial Calculations
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * حساب تقسيم التكلفة بين المريض وشركة التأمين
- * @param totalPrice - إجمالي سعر الكشف/الاستشارة
- * @param patientSharePercent - نسبة تحمل المريض (0-100)
- * @returns حصة المريض وحصة الشركة
- */
-const calculateInsuranceShares = (
-  totalPrice: number,
-  patientSharePercent: number
-): { patientShare: number; companyShare: number } => {
-  const clampedPercent = Math.max(0, Math.min(100, patientSharePercent));
-  const patientShare = Math.round((totalPrice * clampedPercent) / 100);
-  const companyShare = totalPrice - patientShare;
-  return { patientShare, companyShare };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -197,49 +160,6 @@ const deleteCompanyFromBookingConfig = async (
   }
 };
 
-/**
- * تنظيف الشركات اليتيمة في مرآة السكرتارية:
- * يحذف أي شركة موجودة في `bookingConfig/{secret}/insuranceCompanies` لكنها
- * **غير موجودة** في مصدر الطبيب `users/{userId}/insuranceCompanies`.
- *
- * السبب: المزامنة عند الحذف كانت "fire-and-forget"؛ أي فشل مؤقت (أوفلاين/
- * صلاحية/شبكة) كان يترك سجلات يتيمة ظاهرة فقط للسكرتارية.
- * هذه الدالة تعيد التوفيق بين المصدرين وتُشغّل تلقائياً عند جلب قائمة الطبيب.
- */
-const reconcileBookingConfigMirror = async (
-  userId: string,
-  sourceCompanies: InsuranceCompany[]
-): Promise<void> => {
-  try {
-    const bookingSecret = await getUserBookingSecret(userId);
-    if (!bookingSecret) return;
-
-    const mirrorSnapshot = await getDocsCacheFirst(
-      query(getBookingConfigCompaniesRef(bookingSecret), orderBy('name', 'asc'))
-    );
-    const sourceIds = new Set(sourceCompanies.map((c) => c.id));
-    const orphanIds: string[] = [];
-    mirrorSnapshot.docs.forEach((d: any) => {
-      if (!sourceIds.has(d.id)) orphanIds.push(d.id);
-    });
-
-    if (orphanIds.length === 0) return;
-
-    await Promise.all(
-      orphanIds.map((id) =>
-        deleteDoc(doc(getBookingConfigCompaniesRef(bookingSecret), id)).catch(() => {
-          /* best-effort */
-        })
-      )
-    );
-    console.info(
-      `[InsuranceService] Cleaned up ${orphanIds.length} orphan insurance company mirror(s).`
-    );
-  } catch (error) {
-    console.warn('[InsuranceService] Failed reconciling insurance mirror:', error);
-  }
-};
-
 export const insuranceService = {
   /**
    * جلب جميع شركات التأمين المتعاقدة (مع دعم الكاش)
@@ -250,12 +170,9 @@ export const insuranceService = {
     try {
       const q = query(getCompaniesRef(userId), orderBy('name', 'asc'));
       const snapshot = await getDocsCacheFirst(q);
-      const companies = mapCompaniesSnapshot(snapshot);
-      // مزامنة غير معيقة للخلفية حتى ترى السكرتارية نفس الشركات عبر secret.
-      void Promise.all(companies.map((company) => syncCompanyToBookingConfig(userId, company)));
-      // تنظيف أي شركات يتيمة في مرآة السكرتارية (حذف الطبيب قد يكون فشل سابقاً بصمت)
-      void reconcileBookingConfigMirror(userId, companies);
-      return companies;
+      // المزامنة مع المرآة في bookingConfig بتحصل في saveCompany/deleteCompany فقط.
+      // ما نعملش re-sync على كل قراءة — كان بيكلف ١٠٠ ألف+ كتابة يومياً مهدورة.
+      return mapCompaniesSnapshot(snapshot);
     } catch (error) {
       console.error('[InsuranceService] Error getting companies:', error);
       return [];
@@ -295,12 +212,9 @@ export const insuranceService = {
 
     getDocsCacheFirst(q).then((snapshot) => {
       if (cancelled) return;
-      const companies = mapCompaniesSnapshot(snapshot);
-      // مزامنة غير معيقة للخلفية حتى ترى السكرتارية نفس الشركات عبر secret.
-      void Promise.all(companies.map((company) => syncCompanyToBookingConfig(userId, company)));
-      // تنظيف أي شركات يتيمة في مرآة السكرتارية (حذف الطبيب قد يكون فشل سابقاً بصمت)
-      void reconcileBookingConfigMirror(userId, companies);
-      callback(companies);
+      // المزامنة مع المرآة في bookingConfig بتحصل في saveCompany/deleteCompany فقط.
+      // إزالة الـ auto-sync من هنا وفّرت ٩٠٪+ من كتابات Firestore المهدورة.
+      callback(mapCompaniesSnapshot(snapshot));
     }).catch(() => {
       if (!cancelled) callback([]);
     });
@@ -401,8 +315,10 @@ export const insuranceService = {
     // الحفاظ على الحقول الأخرى (السجل التاريخي) عبر merge: true.
     // نعتمد على deleteField لمسح الـ overrides لو فاضية.
     await setDoc(docRef, writePayload, { merge: true });
-    // تمرير نفس الـ payload للمرآة في bookingConfig حتى تُحذف overrides منها أيضاً.
-    void syncCompanyToBookingConfig(userId, companyId, writePayload);
+    // ننتظر مزامنة المرآة عشان نضمن إن السكرتارية والحجز العام يشوفوا التحديث —
+    // لو الكتابة فشلت بصمت، كانت بتحصل أيتام في المرآة.
+    // الدالة نفسها بتـcatch الأخطاء داخلياً، فمش هتـthrow على الـUI.
+    await syncCompanyToBookingConfig(userId, companyId, writePayload);
     return companyId;
   },
 
@@ -414,6 +330,8 @@ export const insuranceService = {
     if (!userId || !companyId) throw new Error('User ID and Company ID are required');
     const docRef = doc(getCompaniesRef(userId), companyId);
     await deleteDoc(docRef);
-    void deleteCompanyFromBookingConfig(userId, companyId);
+    // ننتظر حذف المرآة عشان ما تبقاش شركة محذوفة ظاهرة للسكرتارية أو الحجز العام.
+    // الدالة بتـcatch الأخطاء داخلياً.
+    await deleteCompanyFromBookingConfig(userId, companyId);
   },
 };

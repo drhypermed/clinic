@@ -53,6 +53,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     secretaryVitals: SecretaryVitalsInput;
     secretaryVitalFields: SecretaryVitalFieldDefinition[];
     secretaryVitalsVisibility: SecretaryVitalsVisibility;
+    doctorSpecialty?: string | null;
     appointmentType: AppointmentType;
     selectedConsultationCandidateId: string;
     editingAppointmentId: string | null;

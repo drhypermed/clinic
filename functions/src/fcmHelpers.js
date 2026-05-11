@@ -227,14 +227,35 @@ const createFcmHelpers = ({ admin, getDb }) => {
       const nowIso = new Date().toISOString();
       await Promise.all(
         Array.from(docsMap.values()).map((docSnap) => {
+          const docData = docSnap.data() || {};
           const payload = {
             fcmTokens: admin.firestore.FieldValue.arrayRemove(normalizedToken),
             updatedAt: nowIso,
           };
-          const currentSingleToken = String(docSnap.data()?.fcmToken || '').trim();
+          const currentSingleToken = String(docData.fcmToken || '').trim();
           if (currentSingleToken && currentSingleToken === normalizedToken) {
             payload.fcmToken = admin.firestore.FieldValue.delete();
           }
+
+          // مسح الـ token من tokensByBranch كمان (لو موجودة — حالة secretaryFcmTokens).
+          // بدون ده، الـ token الزومبي يفضل في خريطة الفرع وبيوصله إشعارات
+          // بعد الـ logout أو بعد ما FCM يرفضه كـ invalid.
+          // ⚠️ استخدام nested object — dot-notation في set+merge مش بتشتغل
+          // كـ nested path في @google-cloud/firestore v7 (firebase-admin v12).
+          const tokensByBranch = docData.tokensByBranch;
+          if (tokensByBranch && typeof tokensByBranch === 'object') {
+            const branchUpdate = {};
+            Object.keys(tokensByBranch).forEach((branchId) => {
+              const branchTokens = tokensByBranch[branchId];
+              if (Array.isArray(branchTokens) && branchTokens.includes(normalizedToken)) {
+                branchUpdate[branchId] = admin.firestore.FieldValue.arrayRemove(normalizedToken);
+              }
+            });
+            if (Object.keys(branchUpdate).length > 0) {
+              payload.tokensByBranch = branchUpdate;
+            }
+          }
+
           return docSnap.ref.set(payload, { merge: true });
         })
       );
@@ -284,13 +305,34 @@ const createFcmHelpers = ({ admin, getDb }) => {
       const tokenSnap = await tokenRef.get();
       if (!tokenSnap.exists) return;
 
+      const tokenData = tokenSnap.data() || {};
       const payload = {
         fcmTokens: admin.firestore.FieldValue.arrayRemove(...invalidTokens),
       };
-      const currentSingleToken = String(tokenSnap.data()?.fcmToken || '').trim();
+      const currentSingleToken = String(tokenData.fcmToken || '').trim();
       if (currentSingleToken && invalidTokens.includes(currentSingleToken)) {
         payload.fcmToken = admin.firestore.FieldValue.delete();
       }
+
+      // مسح الـ tokens غير الصالحة من tokensByBranch كمان عشان ما تفضلش
+      // أجهزة زومبي في خريطة الفرع تستقبل إشعارات بعد ما FCM رفضها.
+      // ⚠️ nested object — dot-notation مش بتشتغل في set+merge بالـ Admin SDK v12.
+      const tokensByBranch = tokenData.tokensByBranch;
+      if (tokensByBranch && typeof tokensByBranch === 'object') {
+        const branchUpdate = {};
+        Object.keys(tokensByBranch).forEach((branchId) => {
+          const branchTokens = tokensByBranch[branchId];
+          if (!Array.isArray(branchTokens)) return;
+          const toRemove = invalidTokens.filter((t) => branchTokens.includes(t));
+          if (toRemove.length > 0) {
+            branchUpdate[branchId] = admin.firestore.FieldValue.arrayRemove(...toRemove);
+          }
+        });
+        if (Object.keys(branchUpdate).length > 0) {
+          payload.tokensByBranch = branchUpdate;
+        }
+      }
+
       await tokenRef.set(payload, { merge: true });
       console.log('[FCM] cleaned invalid secretary tokens', {
         secret,

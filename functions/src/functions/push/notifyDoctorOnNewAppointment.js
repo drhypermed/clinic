@@ -31,6 +31,7 @@ module.exports = (context) => {
     { key: 'temp', label: 'الحرارة' },
     { key: 'spo2', label: 'تشبع الاكسجين' },
     { key: 'rr', label: 'معدل التنفس' },
+    { key: 'headCirc', label: 'محيط الرأس' },
   ];
 
   const normalizeSecretaryVitals = (value) => {
@@ -70,6 +71,34 @@ module.exports = (context) => {
     return data;
   };
 
+  // جلب اسم الفرع وعدد الفروع للطبيب — اسم الفرع يُضاف في الإشعار فقط لما الطبيب
+  // عنده أكتر من فرع. طبيب الفرع الواحد مش محتاج "الفرع: X" — مفيش غيره.
+  // يرجع: { branchName: string, hasMultipleBranches: boolean }
+  const loadBranchContextForDoctor = async ({ db, userId, branchId }) => {
+    const result = { branchName: '', hasMultipleBranches: false };
+    if (!userId) return result;
+    try {
+      // عدّ الفروع — لو 'main' مش doc صريح، يُحتسب ضمنياً كـ+1.
+      const branchesSnap = await db.collection(`users/${userId}/branches`).get();
+      const docs = branchesSnap.docs || [];
+      result.hasMultipleBranches = docs.length >= 2;
+      if (!docs.some((d) => d.id === 'main') && docs.length >= 1) {
+        result.hasMultipleBranches = (docs.length + 1) >= 2;
+      }
+      // اسم الفرع المستهدف
+      const matchDoc = docs.find((d) => d.id === branchId);
+      if (matchDoc) {
+        const data = matchDoc.data() || {};
+        result.branchName = String(data.name || '').trim();
+      } else if (branchId === 'main') {
+        result.branchName = 'الرئيسي';
+      }
+    } catch (err) {
+      console.warn('[notifyDoctorOnNewAppointment] Failed to load branch context:', err?.message || err);
+    }
+    return result;
+  };
+
   const notifyDoctorOnNewAppointment = async (event) => {
     const snap = event.data;
     if (!snap?.exists) return;
@@ -80,6 +109,9 @@ module.exports = (context) => {
     if (sourceKey !== 'secretary' && sourceKey !== 'public') {
       return;
     }
+    // Telemetry: correlationId لربط كل الـlogs للحدث ده + stats للتتبع.
+    const correlationId = `${userId.slice(0, 6)}_${Date.now()}`;
+    const stats = { tokensTargeted: 0, tokensSucceeded: 0, tokensFailed: 0, invalidTokensCleaned: 0 };
     const patientName = data.patientName || 'مريض';
     const dateTime = data.dateTime ? new Date(data.dateTime).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Cairo' }) : '';
     const sourceLabel = sourceKey === 'public' ? 'حجز من الفورم العام' : 'حجز من السكرتارية';
@@ -90,6 +122,16 @@ module.exports = (context) => {
     const secretaryVitalsSummary = buildSecretaryVitalsSummary(secretaryVitals);
     const rawType = String(data?.appointmentType || 'exam').trim().toLowerCase();
     const typeLabel = rawType === 'consultation' ? 'استشارة' : 'كشف';
+
+    // فرع الموعد — نحدِّده مبكراً لأن الإشعار يخص فرع واحد فقط، وكمان لأن
+    // اسم الفرع لازم يدخل في body الإشعار قبل تكوينه.
+    const branchId = String(data?.branchId || '').trim() || 'main';
+
+    // جلب اسم الفرع وعدد الفروع — اسم الفرع يدخل في body الإشعار فقط لو الطبيب
+    // عنده أكتر من فرع. طبيب الفرع الواحد بيشوف إشعار نظيف بدون "الفرع: X" زائد.
+    const db = getDb();
+    const { branchName, hasMultipleBranches } = await loadBranchContextForDoctor({ db, userId, branchId });
+
     const bodyParts = [
       `مصدر الحجز: ${sourceLabel}`,
       `نوع الحجز: ${typeLabel}`,
@@ -101,6 +143,8 @@ module.exports = (context) => {
     else if (isFirstVisit === false) bodyParts.push('زار العيادة من قبل');
     if (secretaryVitalsSummary) bodyParts.push(`القياسات والعلامات الحيوية: ${secretaryVitalsSummary}`);
     if (dateTime) bodyParts.push(`الموعد: ${dateTime}`);
+    // اسم الفرع يُضاف فقط لما الطبيب عنده أكتر من فرع — مفيش لازمة لطبيب فرع واحد.
+    if (hasMultipleBranches && branchName) bodyParts.push(`الفرع: ${branchName}`);
     const body = bodyParts.join(' · ');
 
     const candidateUserIds = await resolveDoctorCandidatesForAppointment({
@@ -117,9 +161,6 @@ module.exports = (context) => {
       });
       // نكمّل لحجز الجمهور لأن إشعار السكرتارية لا يزال مطلوباً حتى لو الطبيب مش مسجّل tokens.
     }
-
-    // فرع الموعد — لازم يتحدد قبل قراءة الـ tokens لأن الإشعار يخص فرع واحد فقط
-    const branchId = String(data?.branchId || '').trim() || 'main';
 
     // تجميع tokens السكرتارية:
     //   - allSecretaryTokensSet = كل الـ tokens (لكل الفروع) → للاستبعاد من إرسال الطبيب
@@ -142,18 +183,16 @@ module.exports = (context) => {
       if (normalizedPublicSecret) secretsToCheck.add(normalizedPublicSecret);
       // Also look up secrets linked to the doctor userId
       if (secretsToCheck.size === 0) {
-        const db = getDb();
         // Try to find secretaryFcmTokens by userId
         const relatedDocs = await db.collection('secretaryFcmTokens').where('userId', '==', userId).limit(20).get().catch(() => null);
         if (relatedDocs) {
           relatedDocs.forEach((docSnap) => secretsToCheck.add(String(docSnap.id || '').trim()));
         }
       }
-      const db2 = getDb();
       for (const sec of secretsToCheck) {
         if (!sec) continue;
         relatedSecretsSet.add(sec);
-        const secTokenSnap = await db2.doc(`secretaryFcmTokens/${sec}`).get().catch(() => null);
+        const secTokenSnap = await db.doc(`secretaryFcmTokens/${sec}`).get().catch(() => null);
         if (!secTokenSnap?.exists) continue;
         const tokenData = secTokenSnap.data() || {};
 
@@ -243,11 +282,17 @@ module.exports = (context) => {
             },
           },
         });
-        logMulticastResult(logLabel, response, targetTokens);
+        logMulticastResult(`${logLabel}[${correlationId}]`, response, targetTokens);
+        stats.tokensTargeted += targetTokens.length;
+        stats.tokensSucceeded += Number(response?.successCount || 0);
+        stats.tokensFailed += Number(response?.failureCount || 0);
         const invalid = getInvalidFcmTokensFromResponse(response, targetTokens);
-        if (invalid.length > 0 && cleanupInvalid) await cleanupInvalid(invalid);
+        if (invalid.length > 0 && cleanupInvalid) {
+          stats.invalidTokensCleaned += invalid.length;
+          await cleanupInvalid(invalid);
+        }
       } catch (err) {
-        console.error(`[${logLabel}] FCM send failed:`, err);
+        console.error(`[${logLabel}] FCM send failed:`, { correlationId, err });
       }
     };
 
@@ -286,6 +331,10 @@ module.exports = (context) => {
       : Promise.resolve();
 
     await Promise.allSettled([doctorPush, secretaryPush]);
+    // ملخّص telemetry نهائي — كل الإحصاءات في سطر واحد للفلترة في Cloud Logs.
+    if (stats.tokensTargeted > 0 || stats.tokensFailed > 0 || stats.invalidTokensCleaned > 0) {
+      console.log('[notifyDoctorOnNewAppointment] summary', { correlationId, userId, branchId, ...stats });
+    }
   };
 
 

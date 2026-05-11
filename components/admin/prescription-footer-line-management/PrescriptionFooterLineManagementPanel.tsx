@@ -232,7 +232,7 @@ export const PrescriptionFooterLineManagementPanel: React.FC<
                 }}
               >
                 <span>{form.message || DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS.message}</span>
-                {activeContacts.map((item, idx) => {
+                {activeContacts.map((item) => {
                   // sanitize URL في المعاينة برضو (مش بس عند الحفظ)
                   const safeUrl = safePreviewUrl(item.url);
                   return (

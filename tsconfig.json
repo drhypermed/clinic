@@ -41,8 +41,6 @@
     "node_modules",
     "dist",
     "build",
-    "drugs/git/temp_fix.ts",
-    "drugs_backup/**",
     "tests/**",
     "vitest.config.ts"
   ]

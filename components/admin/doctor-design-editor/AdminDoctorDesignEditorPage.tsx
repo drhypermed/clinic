@@ -46,6 +46,7 @@ export const AdminDoctorDesignEditorPage: React.FC = () => {
       <AdminPrescriptionEditFrame
         targetUserId={doctor.uid}
         targetDoctorName={doctor.doctorName}
+        targetDoctorSpecialty={doctor.doctorSpecialty}
         targetDoctorEmail={doctor.doctorEmail}
         branches={doctor.branches}
         onBack={() => setMode('select')}

@@ -33,12 +33,15 @@ interface SecretaryEntryNotificationProps {
   request: SecretaryEntryRequest;
   onApprove: () => void;
   onReject: () => void;
+  // هل الطبيب عنده أكتر من فرع — لو لأ، لافتة "فرع: X" تتخفى نهائياً.
+  hasMultipleBranches?: boolean;
 }
 
 export const SecretaryEntryNotification: React.FC<SecretaryEntryNotificationProps> = ({
   request,
   onApprove,
   onReject,
+  hasMultipleBranches = false,
 }) => {
   const isConsultation = isConsultationAppointment(request);
 
@@ -59,8 +62,9 @@ export const SecretaryEntryNotification: React.FC<SecretaryEntryNotificationProp
 
         {/* بيانات طلب الدخول */}
         <div className="min-w-0 text-right">
-          {/* اسم الفرع — يظهر بوضوح فوق كل شيء لو الطبيب عنده أكتر من فرع، عشان يعرف الطلب جاي من فين */}
-          {request.branchName && request.branchName.trim() && (
+          {/* اسم الفرع — يظهر بوضوح فوق كل شيء لو الطبيب عنده أكتر من فرع، عشان يعرف الطلب جاي من فين.
+              طبيب الفرع الواحد مش محتاج يعرف اسم الفرع لأن الطلب مفيش غيره. */}
+          {hasMultipleBranches && request.branchName && request.branchName.trim() && (
             <div className="mb-1 inline-flex items-center gap-1 rounded-lg bg-violet-100 border border-violet-300 px-2 py-0.5 text-[11px] font-black text-violet-800">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
               فرع: {request.branchName.trim()}

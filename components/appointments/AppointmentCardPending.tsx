@@ -6,10 +6,13 @@ import { formatUserTime } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from './FirstVisitBadge';
+import { PatientFileLinkSuggestion } from './PatientFileLinkSuggestion';
 
 interface AppointmentCardPendingProps {
   apt: ClinicAppointment;
   patientFileNumber?: number;
+  /** معرف الطبيب — مطلوب لـ PatientFileLinkSuggestion عشان يبحث في patientSummaries */
+  doctorId?: string;
   now: number;
   todayStr: string;
   queueOrder?: number;
@@ -40,7 +43,7 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 // ─ React.memo: قائمة المواعيد طويلة (10-50 موعد) في صفحة المواعيد، وكل re-render
 //   كان يعيد render كل البطاقات. الـmemo يخفّض ده لـbatches خفيفة.
 const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = ({
-  apt, patientFileNumber, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
+  apt, patientFileNumber, doctorId, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
   secretaryApprovedEntryIds, secretaryEntryAlertResponse, entrySendingId,
   onSendEntryRequest, onOpenExam, onOpenConsultation, onEditAppointment, onRemoveAppointment,
 }) => {
@@ -132,11 +135,21 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
           </p>
         )}
 
-        {/* Row 4: phone + contact icons */}
+        {/* Row 4: phone + contact icons + ربط بملف موجود (للحجوزات العامة فقط) */}
         {apt.phone && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-bold text-slate-600" dir="ltr">{apt.phone}</span>
             <PatientContactActions phone={apt.phone} compact />
+            {/* اقتراح ربط بملف موجود — يظهر فقط للحجوزات العامة اللي مش متربطه بملف */}
+            {apt.source === 'public' && doctorId && (
+              <PatientFileLinkSuggestion
+                doctorId={doctorId}
+                appointmentId={apt.id}
+                phone={apt.phone}
+                patientName={apt.patientName}
+                hasPatientFile={Boolean(apt.patientFileId || apt.patientFileNumber)}
+              />
+            )}
           </div>
         )}
 

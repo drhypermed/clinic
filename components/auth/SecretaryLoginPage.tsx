@@ -10,7 +10,9 @@ import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
 import {
   getSecretaryLoginErrorMessage,
+  getAmbiguousBranchesFromError,
   secretaryLogin,
+  type AmbiguousBranchOption,
 } from '../../services/secretaryLoginService';
 
 const SECRETARY_LAST_SECRET_KEY = 'dh_secretary_last_secret';
@@ -27,6 +29,43 @@ export const SecretaryLoginPage: React.FC = () => {
   const [secretaryPassword, setSecretaryPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // قائمة الفروع المطابقة لما كلمة السر متكررة بين فرعين أو أكثر.
+  // null = حالة عادية. array غير فاضي = نعرض اختيار فرع بدل الفورم.
+  const [ambiguousBranches, setAmbiguousBranches] = useState<AmbiguousBranchOption[] | null>(null);
+
+  // دالة موحّدة للـlogin — تُستدعى من submit العادي ومن اختيار الفرع.
+  // preferredBranchId يُمرَّر بس لما السكرتارية تختار من قائمة الـambiguous.
+  const performLogin = async (preferredBranchId?: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await secretaryLogin({
+        doctorEmail: doctorEmail.trim().toLowerCase(),
+        secretaryPassword,
+        preferredBranchId,
+      });
+
+      localStorage.setItem(`sec_auth_${data.secret}`, data.sessionToken);
+      if (data.userId) {
+        localStorage.setItem(`sec_auth_uid_${data.userId}`, data.sessionToken);
+      }
+      localStorage.setItem(`sec_branch_${data.secret}`, data.branchId);
+      localStorage.setItem(SECRETARY_LAST_SECRET_KEY, data.secret);
+      navigate(`/book/s/${data.secret}`, { replace: true });
+    } catch (err: unknown) {
+      // فحص أولاً: هل ده ambiguous-password (كلمة سر متكررة بين فروع)؟
+      const branches = getAmbiguousBranchesFromError(err);
+      if (branches && branches.length > 0) {
+        setAmbiguousBranches(branches);
+        setError('');
+      } else {
+        setAmbiguousBranches(null);
+        setError(getSecretaryLoginErrorMessage(err));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSecretaryLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,26 +82,19 @@ export const SecretaryLoginPage: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    try {
-      const data = await secretaryLogin({
-        doctorEmail: normalizedEmail,
-        secretaryPassword,
-      });
+    await performLogin();
+  };
 
-      localStorage.setItem(`sec_auth_${data.secret}`, data.sessionToken);
-      if (data.userId) {
-        localStorage.setItem(`sec_auth_uid_${data.userId}`, data.sessionToken);
-      }
-      // حفظ الفرع المربوط بـ session السكرتارية
-      localStorage.setItem(`sec_branch_${data.secret}`, data.branchId);
-      localStorage.setItem(SECRETARY_LAST_SECRET_KEY, data.secret);
-      navigate(`/book/s/${data.secret}`, { replace: true });
-    } catch (err: unknown) {
-      setError(getSecretaryLoginErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
+  // لما السكرتارية تختار فرع من قائمة الـambiguous → نعيد الـlogin بالفرع المحدد.
+  const handleBranchPick = async (branchId: string) => {
+    setAmbiguousBranches(null);
+    await performLogin(branchId);
+  };
+
+  // لو السكرتارية ضغطت "رجوع" من شاشة اختيار الفرع.
+  const handleBackFromBranchPicker = () => {
+    setAmbiguousBranches(null);
+    setError('');
   };
 
   return (
@@ -75,10 +107,42 @@ export const SecretaryLoginPage: React.FC = () => {
         <div className="relative bg-white rounded-2xl shadow-card ring-1 ring-slate-200/60 overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-700 to-brand-500" />
           <div className="px-6 pt-6 pb-4 border-b border-slate-200">
-            <h2 className="text-2xl font-black text-slate-900 leading-tight">دخول السكرتارية</h2>
-            <p className="text-sm text-slate-600 font-semibold mt-1">سجّل بإيميل الطبيب والرقم السرّي.</p>
+            <h2 className="text-2xl font-black text-slate-900 leading-tight">
+              {ambiguousBranches ? 'اختيار الفرع' : 'دخول السكرتارية'}
+            </h2>
+            <p className="text-sm text-slate-600 font-semibold mt-1">
+              {ambiguousBranches
+                ? 'كلمة السر متطابقة لأكتر من فرع. اضغط على الفرع الصحيح.'
+                : 'سجّل بإيميل الطبيب والرقم السرّي.'}
+            </p>
           </div>
 
+          {ambiguousBranches ? (
+            <div className="px-6 py-5 space-y-3">
+              {ambiguousBranches.map((branch) => (
+                <button
+                  key={branch.branchId}
+                  type="button"
+                  onClick={() => handleBranchPick(branch.branchId)}
+                  disabled={loading}
+                  className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:border-brand-600 hover:bg-brand-50 text-slate-900 font-bold text-base rounded-lg shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed text-right active:scale-[0.99]"
+                >
+                  {branch.branchName}
+                </button>
+              ))}
+
+              <div className="pt-3 border-t border-slate-200 text-center">
+                <button
+                  type="button"
+                  onClick={handleBackFromBranchPicker}
+                  disabled={loading}
+                  className="text-xs text-slate-600 hover:text-slate-900 font-semibold"
+                >
+                  ← رجوع لتسجيل الدخول
+                </button>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSecretaryLogin} className="px-6 py-5 space-y-4">
             {error && (
               <div className="p-3 bg-danger-50 border border-danger-300 rounded-md">
@@ -155,6 +219,7 @@ export const SecretaryLoginPage: React.FC = () => {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
     </AuthLayout>

@@ -399,6 +399,7 @@ export const useDrHyperActions = ({
     totalAgeInMonths,
     vitals,
     userId: user?.uid,
+    patientName,
     consumeSmartPrescriptionQuota,
     extractSmartQuotaErrorDetails,
     openQuotaNoticeModal,

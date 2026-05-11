@@ -43,6 +43,141 @@ const createDefaultBranch = (): Branch => ({
     createdAt: new Date().toISOString(),
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// أسرار الفروع (Branch Secrets) — معزولة عن السكرتيرة بالـ rules
+// ─────────────────────────────────────────────────────────────────────────────
+// قبل 2026-05-10: الـ secret كان محفوظ في `users/{uid}/branches/{id}.secretarySecret`.
+// المشكلة: الـ rules بتسمح لأي سكرتيرة (أي فرع) تقرا كل وثائق الفروع → سكرتيرة فرع A
+// كانت تطلع secret فرع B وتقرا بياناته من `bookingConfig/{secretB}` (تسرب خصوصية).
+// بعد الإصلاح: الـ secret محفوظ في `users/{uid}.bookingSecretByBranch.{branchId}`،
+// والوثيقة دي السكرتيرة ممنوعة من قراءتها أصلاً (rules: auth.uid == userId only).
+//
+// الـ helpers اللي تحت بتدعم القراءة من المكان الجديد + fallback للقديم +
+// migration كسول لما نقرا من القديم لأول مرة.
+
+/**
+ * يقرا secret فرع معين من المكان الآمن (وثيقة المستخدم)، مع fallback للقديم.
+ * لو لقاه في القديم بس → بيعمل migration كسول للجديد ويمسح من القديم.
+ *
+ * ⚠️ الـ migration ترتيبها مهم: لازم نكتب الجديد الأول (يضمن الـ secret آمن
+ * في المكان الجديد)، وبعدين نمسح القديم. لو عكسناه، فشل write بعد delete
+ * يضيع الـ secret خالص.
+ */
+export const getBranchSecretSafe = async (
+    userId: string,
+    branchId: string,
+): Promise<string> => {
+    if (!userId || !branchId) return '';
+    // 1) المكان الآمن — خريطة على وثيقة المستخدم
+    try {
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        const map = (userSnap.data() as { bookingSecretByBranch?: Record<string, unknown> } | undefined)
+            ?.bookingSecretByBranch;
+        const newSecret = String((map && map[branchId]) || '').trim();
+        if (newSecret) return newSecret;
+    } catch {
+        // فشل قراءة الوثيقة — نكمل للـ fallback
+    }
+    // 2) Fallback للقديم — من وثيقة الفرع
+    try {
+        const branchSnap = await getDoc(doc(db, 'users', userId, 'branches', branchId));
+        const oldSecret = String(
+            (branchSnap.data() as { secretarySecret?: string } | undefined)?.secretarySecret || ''
+        ).trim();
+        if (!oldSecret) return '';
+        // migration كسول مرتّب: write → delete (بدل parallel) عشان لا تحصل data loss
+        void (async () => {
+            try {
+                await setDoc(
+                    doc(db, 'users', userId),
+                    { bookingSecretByBranch: { [branchId]: oldSecret } },
+                    { merge: true },
+                );
+                // الـ delete بيتعمل بس بعد ما نتأكد إن الجديد وصل سيرفر بنجاح
+                await updateDoc(doc(db, 'users', userId, 'branches', branchId), {
+                    secretarySecret: deleteField(),
+                });
+            } catch {
+                // فشل migration — الـ secret لسه موجود في الاتنين، هنحاول تاني المرة الجاية
+            }
+        })();
+        return oldSecret;
+    } catch {
+        return '';
+    }
+};
+
+/**
+ * يقرا كل أسرار الفروع للطبيب (key = branchId, value = secret).
+ * بيدمج المكان الجديد + fallback للقديم. مفيد للأكواد اللي عايزة قائمة شاملة
+ * (مثلاً الاشتراكات على الـsecrets المتعددة في MainApp).
+ */
+export const getAllBranchSecretsMap = async (
+    userId: string,
+): Promise<Record<string, string>> => {
+    if (!userId) return {};
+    const result: Record<string, string> = {};
+    // 1) من وثيقة المستخدم (الجديد)
+    try {
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        const map = (userSnap.data() as { bookingSecretByBranch?: Record<string, unknown> } | undefined)
+            ?.bookingSecretByBranch;
+        if (map && typeof map === 'object') {
+            Object.keys(map).forEach((branchId) => {
+                const value = String(map[branchId] || '').trim();
+                if (value) result[branchId] = value;
+            });
+        }
+    } catch {
+        // نكمل للـ fallback
+    }
+    // 2) Fallback للقديم — أي branch لسه فيه secretarySecret على وثيقته
+    try {
+        const branchesSnap = await getDocs(collection(db, 'users', userId, 'branches'));
+        const legacyEntries: Array<{ branchId: string; secret: string }> = [];
+        branchesSnap.forEach((branchDoc) => {
+            const branchId = branchDoc.id;
+            if (result[branchId]) return; // الجديد متوفر بالفعل
+            const oldSecret = String(
+                (branchDoc.data() as { secretarySecret?: string } | undefined)?.secretarySecret || ''
+            ).trim();
+            if (!oldSecret) return;
+            result[branchId] = oldSecret;
+            legacyEntries.push({ branchId, secret: oldSecret });
+        });
+        if (legacyEntries.length > 0) {
+            // migration مرتّب: write الكل في وثيقة المستخدم الأول، بعدين delete من الفروع.
+            // ده يضمن إن لو فشل delete، الـ secrets آمنة في المكان الجديد فعلاً.
+            void (async () => {
+                try {
+                    const writePayload: Record<string, string> = {};
+                    legacyEntries.forEach(({ branchId, secret }) => {
+                        writePayload[branchId] = secret;
+                    });
+                    await setDoc(
+                        doc(db, 'users', userId),
+                        { bookingSecretByBranch: writePayload },
+                        { merge: true },
+                    );
+                    // الـ deletes بعد التأكد إن الجديد كله كُتب
+                    await Promise.all(
+                        legacyEntries.map(({ branchId }) =>
+                            updateDoc(doc(db, 'users', userId, 'branches', branchId), {
+                                secretarySecret: deleteField(),
+                            }).catch(() => { /* فشل delete واحد ما يوقفش الباقي */ }),
+                        ),
+                    );
+                } catch {
+                    // فشل الـ write — هنحاول تاني المرة الجاية
+                }
+            })();
+        }
+    } catch {
+        // ما عملناش fallback — نرجع اللي معانا
+    }
+    return result;
+};
+
 export const branchesService = {
     /**
      * الاشتراك في قائمة الفروع لمستخدم معين مع تحديث لحظي.
@@ -209,12 +344,12 @@ export const branchesService = {
             }
 
             // تنظيف الـ slots و كل البيانات المرتبطة بالفرع المحذوف.
-            // مهم: الفرع الفرعي بيخزن سرّ السكرتيرة في Branch.secretarySecret (مش في users/{uid}.bookingSecret).
-            // بما إن الفرع الرئيسي ممنوع حذفه أصلاً، فالـcleanup هنا دايماً لفرع فرعي → لازم نقرأ الـsecret من document الفرع نفسه.
+            // 🔒 تشديد أمني 2026-05-10: secretarySecret اتنقل لـ users/{uid}.bookingSecretByBranch
+            //    → نقراه من المكان الآمن (مع fallback للقديم عبر getBranchSecretSafe).
+            // بما إن الفرع الرئيسي ممنوع حذفه أصلاً، فالـcleanup هنا دايماً لفرع فرعي.
             try {
-                // قراءة document الفرع للحصول على الـ secretarySecret الخاص به
-                const branchSnap = await getDoc(doc(db, 'users', userId, 'branches', branchId));
-                const branchSecret = String((branchSnap.data() as Partial<Branch> | undefined)?.secretarySecret || '').trim();
+                // قراءة الـ secretarySecret من المكان الآمن (مع fallback للقديم + migration كسول)
+                const branchSecret = await getBranchSecretSafe(userId, branchId);
 
                 // الـ publicBookingSecret موحّد لكل العيادة (مش لكل فرع) → قراءته من user root
                 const userRootSnap = await getDoc(doc(db, 'users', userId));
@@ -297,12 +432,14 @@ export const branchesService = {
                 }
 
                 // (د) تنظيف entries الفرع المحذوف من الخرائط على users/{uid}
-                //     (إعدادات العلامات الحيوية + كلمة سر السكرتيرة المعروضة).
+                //     (إعدادات العلامات الحيوية + كلمة سر السكرتيرة المعروضة + سرّ الفرع).
                 //     deleteField على key مش موجود = no-op (آمن).
+                // 🔒 2026-05-10: bookingSecretByBranch.{branchId} هو المكان الآمن لسرّ الفرع.
                 await updateDoc(doc(db, 'users', userId), {
                     [`secretaryVitalsVisibilityByBranch.${branchId}`]: deleteField(),
                     [`secretaryVitalFieldsByBranch.${branchId}`]: deleteField(),
                     [`secretaryPasswordPlainByBranch.${branchId}`]: deleteField(),
+                    [`bookingSecretByBranch.${branchId}`]: deleteField(),
                 }).catch(() => undefined);
             } catch (cleanupError) {
                 console.warn('[Firestore] Branch cleanup (slots/auth) failed (non-blocking):', cleanupError);

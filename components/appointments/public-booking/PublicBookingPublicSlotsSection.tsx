@@ -99,14 +99,30 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
             </div>
           </div>
 
-          {/* لافتة توضح الفرع الحالي — تظهر لو عنده أكتر من فرع */}
-          {hasMultipleBranches && currentBranchName && (
-            <div className="rounded-xl border border-warning-300 bg-warning-100/60 p-3 text-warning-900 text-sm font-black">
-              🏥 أنت تدير مواعيد فرع: <span className="underline">{currentBranchName}</span>
-              <span className="block text-xs font-bold text-warning-700 mt-1">
-                المواعيد اللي هتضيفها هتتحفظ على هذا الفرع فقط. لتغيير الفرع بدّله من قائمة الفروع في التطبيق.
-              </span>
-            </div>
+          {/* لافتة الفرع الحالي — تظهر دايماً لتجنّب أي لخبطة بين فروع */}
+          {/* لو فرع واحد: لافتة معلوماتية بسيطة. لو أكتر من فرع: لافتة تحذيرية لافتة. */}
+          {currentBranchName && (
+            hasMultipleBranches ? (
+              // أكتر من فرع — تحذير قوي بلون أزرق غامق وأيقونة كبيرة لمنع الخلط
+              <div className="rounded-xl border-2 border-sky-400 bg-sky-50 p-4 flex items-start gap-3 shadow-sm">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center text-xl font-black">
+                  🏥
+                </div>
+                <div className="flex-1">
+                  <p className="text-sky-900 text-base font-black">
+                    أنت دلوقتي بتدير مواعيد فرع: <span className="bg-sky-200 px-2 py-0.5 rounded">{currentBranchName}</span>
+                  </p>
+                  <p className="text-sky-700 text-xs font-bold mt-1.5">
+                    أي موعد هتضيفه دلوقتي هيتحفظ على هذا الفرع فقط. لتغيير الفرع، استخدم قائمة الفروع في أعلى التطبيق.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              // فرع واحد — مجرد لافتة معلوماتية لتأكيد إن السلوت بيتسجل بختم فرع
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-700 text-xs font-bold">
+                🏥 المواعيد بتتحفظ على فرع <span className="font-black text-slate-900">{currentBranchName}</span>
+              </div>
+            )
           )}
 
           {/* قسم عناوين الفروع — يظهر فقط لما عنده أكثر من فرع */}
@@ -160,7 +176,11 @@ export const PublicBookingPublicSlotsSection: React.FC<PublicBookingPublicSlotsS
                 disabled={!publicSecret || publicSlotAdding}
                 className="px-4 py-2 rounded-xl bg-warning-500 hover:bg-warning-600 text-white font-bold text-sm disabled:opacity-60"
               >
-                {publicSlotAdding ? 'جاري الإضافة' : 'إضافة ميعاد للجمهور'}
+                {publicSlotAdding
+                  ? 'جاري الإضافة'
+                  : hasMultipleBranches && currentBranchName
+                  ? `إضافة موعد لفرع ${currentBranchName}`
+                  : 'إضافة ميعاد للجمهور'}
               </button>
               {publicSlotError && <span className="text-danger-600 text-sm font-bold">{publicSlotError}</span>}
             </div>

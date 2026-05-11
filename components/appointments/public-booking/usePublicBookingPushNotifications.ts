@@ -18,14 +18,12 @@ import {
   showForegroundSystemNotification,
 } from '../../../services/messagingService';
 import { firestoreService } from '../../../services/firestore';
+import { entryConversations } from '../../../services/firestore/entryConversations';
 import { resolveNotificationActionStatus } from '../../../utils/notificationAction';
-import {
-  SECRETARY_PUSH_PROMPT_HIDE_MS,
-  SECRETARY_PUSH_PROMPT_HIDE_UNTIL_KEY,
-  SECRETARY_TOAST_AUTO_HIDE_MS,
-} from './constants';
+import { SECRETARY_TOAST_AUTO_HIDE_MS } from './constants';
 import { isSafePushActionAppointmentId } from './securityUtils';
 import type { EntryAlert } from '../../../types';
+import type { SecretaryActionToastState } from './types';
 import {
   buildSecretaryActionToastKey,
   clearTimedPayload,
@@ -34,8 +32,27 @@ import {
   readTimedPayload,
 } from '../internalToastStorage';
 
-const isSecretaryActionToastValue = (value: unknown): value is 'approved' | 'rejected' =>
-  value === 'approved' || value === 'rejected';
+// نقبل القيم الجديدة (object بمصدر) + القيم القديمة (string) للتوافق مع localStorage
+// المحفوظ من إصدارات سابقة. أي قيمة قديمة بنعتبرها 'secretary-action' لأن كان ده
+// السلوك الافتراضي قبل ما نضيف مصدر للتوست.
+const isSecretaryActionToastValue = (value: unknown): value is SecretaryActionToastState => {
+  if (value === null) return true;
+  if (value === 'approved' || value === 'rejected') return true; // legacy string
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as { status?: unknown; source?: unknown };
+  const validStatus = obj.status === 'approved' || obj.status === 'rejected';
+  const validSource = obj.source === 'secretary-action' || obj.source === 'doctor-response';
+  return validStatus && validSource;
+};
+
+// تطبيع القيمة المحفوظة لو كانت بالشكل القديم (string)
+const normalizeRestoredToast = (value: unknown): SecretaryActionToastState => {
+  if (value === 'approved' || value === 'rejected') {
+    return { status: value, source: 'secretary-action' };
+  }
+  if (value && typeof value === 'object') return value as SecretaryActionToastState;
+  return null;
+};
 
 /**
  * المعاملات الخاصة بـ Hook إشعارات السكرتارية
@@ -49,7 +66,7 @@ type UsePublicBookingPushNotificationsParams = {
   locationSearch: string;
   navigate: NavigateFunction;
   setEntryResponding: (value: boolean) => void;
-  setSecretaryActionToast: (value: 'approved' | 'rejected' | null) => void;
+  setSecretaryActionToast: (value: SecretaryActionToastState) => void;
   setEntryAlert: (value: EntryAlert | null) => void;
   setFormError: (value: string | null) => void;
 };
@@ -74,17 +91,20 @@ export const usePublicBookingPushNotifications = ({
   const secretaryFcmRequestedRef = useRef(false);
   const handledPushSecretaryActionRef = useRef<string | null>(null);
   const handledPushOpenRef = useRef<string | null>(null);
-  
+  // ⚠️ منع تكرار ظهور تنبيه التفعيل: لو تم set مرة في الـsession،
+  // الـeffects التانية ما تحاولش تـset(true) تاني (يمنع flicker/duplicate).
+  const promptShownInSessionRef = useRef(false);
+
   // حالة التحكم في ظهور رسالة طلب تفعيل الإشعارات
   const [showSecretaryPushPrompt, setShowSecretaryPushPrompt] = useState(false);
-  const [hideSecretaryPushPromptUntil, setHideSecretaryPushPromptUntil] = useState(0);
   const [pushEnableSuccessMessage, setPushEnableSuccessMessage] = useState<string | null>(null);
   const pushEnableSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const secretaryActionToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // هل يمكن عرض التنبيه الآن بناءً على وقت التأجيل المخزن؟
-  // بعد الأسبوع ترجع تلقائياً للتذكير لحد ما السكرتيرة تفعّل الإشعارات.
-  const canShowSecretaryPushPrompt = showSecretaryPushPrompt && Date.now() >= hideSecretaryPushPromptUntil;
+  // الـprompt يظهر دايماً لو معطل — السكرتيرة تشوف زر التفعيل مع كل refresh.
+  // (شيلنا feature الـ"later" اللي كان بيخفيه لأسبوع — كان بيخلي السكرتيرة
+  // تنسى تفعّل الإشعارات. الإعدادات بقت في الـsidebar للتحكم اليدوي).
+  const canShowSecretaryPushPrompt = showSecretaryPushPrompt;
 
   /**
    * إظهار رسالة نجاح تفعيل الإشعارات لفترة قصيرة
@@ -120,31 +140,40 @@ export const usePublicBookingPushNotifications = ({
   };
 
   const showSecretaryActionToastForMinute = (status: 'approved' | 'rejected') => {
-    setSecretaryActionToast(status);
+    // مصدر التوست هنا "secretary-action" — السكرتيرة ردت بنفسها عبر الإشعار.
+    const toastValue: SecretaryActionToastState = { status, source: 'secretary-action' };
+    setSecretaryActionToast(toastValue);
     if (!secret) return;
     const storageKey = buildSecretaryActionToastKey(secret);
-    persistTimedPayload(storageKey, status, SECRETARY_TOAST_AUTO_HIDE_MS);
+    persistTimedPayload(storageKey, toastValue, SECRETARY_TOAST_AUTO_HIDE_MS);
     scheduleSecretaryActionToastClear(SECRETARY_TOAST_AUTO_HIDE_MS);
   };
 
   /**
-   * التأثير الأول: التحقق الابتدائي من دعم الإشعارات حالة الإذن
+   * التأثير الأول: التحقق الابتدائي من دعم الإشعارات حالة الإذن.
+   * - لو granted → register تلقائي (default behavior)
+   * - لو غير granted → نظهر تنبيه التفعيل (مرة واحدة فقط في الـsession)
    */
   useEffect(() => {
     if (!secret || !isAuthenticated) {
       setShowSecretaryPushPrompt(false);
+      promptShownInSessionRef.current = false;
       return;
     }
     const support = getPushSupportInfo();
     if (!support.supported || typeof window === 'undefined' || !('Notification' in window)) {
       // إبقاء الرسالة ظاهرة على iOS في حال لم يتم تثبيت التطبيق على الشاشة الرئيسية بعد
-      setShowSecretaryPushPrompt(support.reason === 'ios-install-required');
+      if (support.reason === 'ios-install-required' && !promptShownInSessionRef.current) {
+        promptShownInSessionRef.current = true;
+        setShowSecretaryPushPrompt(true);
+      }
       return;
     }
 
-    // إذا كان الإذن ممنوحاً بالفعل، نقوم بتحديث التوكن في الخلفية
+    // إذا كان الإذن ممنوحاً بالفعل، نقوم بتحديث التوكن في الخلفية (الافتراضي)
     if (Notification.permission === 'granted') {
       setShowSecretaryPushPrompt(false);
+      promptShownInSessionRef.current = false;
       if (secretaryFcmRequestedRef.current) return;
       secretaryFcmRequestedRef.current = true;
       requestPermissionAndSaveTokenForSecretaryWithDetails(secret, sessionBranchId)
@@ -157,27 +186,20 @@ export const usePublicBookingPushNotifications = ({
       return;
     }
 
-    // إذا لم يمنح الإذن بعد، نظهر رسالة تفعيل الإشعارات
-    setShowSecretaryPushPrompt(true);
-  }, [secret, isAuthenticated, sessionBranchId]);
-
-  /**
-   * استرجاع وقت "التأجيل" (Hide Later) من التخزين المحلي
-   */
-  useEffect(() => {
-    const raw = localStorage.getItem(SECRETARY_PUSH_PROMPT_HIDE_UNTIL_KEY);
-    const until = Number(raw || 0);
-    if (Number.isFinite(until) && until > 0) {
-      setHideSecretaryPushPromptUntil(until);
+    // غير granted → نظهر التنبيه مرة واحدة (الـref يمنع التكرار من re-render)
+    if (!promptShownInSessionRef.current) {
+      promptShownInSessionRef.current = true;
+      setShowSecretaryPushPrompt(true);
     }
-  }, []);
+  }, [secret, isAuthenticated, sessionBranchId]);
 
   useEffect(() => {
     if (!secret || !isAuthenticated) return;
     const storageKey = buildSecretaryActionToastKey(secret);
     const restored = readTimedPayload(storageKey, isSecretaryActionToastValue);
     if (!restored) return;
-    setSecretaryActionToast(restored.value);
+    // تطبيع القيم القديمة (string) للشكل الجديد (object) — توافق رجوعي.
+    setSecretaryActionToast(normalizeRestoredToast(restored.value));
     const remainingMs = Math.max(0, restored.expiresAt - Date.now());
     scheduleSecretaryActionToastClear(remainingMs);
   }, [secret, isAuthenticated, setSecretaryActionToast]);
@@ -227,12 +249,14 @@ export const usePublicBookingPushNotifications = ({
   }, [secret, isAuthenticated]);
 
   /**
-   * بدء عملية تفعيل الإشعارات يدوياً عند النقر على الزر
+   * بدء عملية تفعيل الإشعارات يدوياً عند النقر على الزر.
+   * ترجع true لو نجح فعلياً (token مسجل) — false لو فشل لأي سبب.
+   * الـcomponents تستخدم الـreturn value لتحديث الـUI بدقة.
    */
-  const handleEnableSecretaryPushNotifications = async () => {
-    if (!secret) return;
+  const handleEnableSecretaryPushNotifications = async (): Promise<boolean> => {
+    if (!secret) return false;
     const support = getPushSupportInfo();
-    
+
     // التعامل مع قيود iOS (يجب التثبيت على الشاشة الرئيسية أولاً)
     if (!support.supported) {
       if (support.reason === 'ios-install-required') {
@@ -240,7 +264,7 @@ export const usePublicBookingPushNotifications = ({
       } else {
         alert(`هذا الجهاز/المتصفح لا يدعم الإشعارات حالياً (${support.reason || 'غير مدعوم'}).`);
       }
-      return;
+      return false;
     }
 
     const result = await requestPermissionAndSaveTokenForSecretaryWithDetails(secret, sessionBranchId);
@@ -248,19 +272,19 @@ export const usePublicBookingPushNotifications = ({
       secretaryFcmRequestedRef.current = true;
       setShowSecretaryPushPrompt(false);
       showPushEnabledToast('تم تفعيل الإشعارات بنجاح.');
-      return;
-    }
-    if (result.permission === 'granted') {
-      secretaryFcmRequestedRef.current = true;
-      setShowSecretaryPushPrompt(false);
-      showPushEnabledToast('تم منح إذن الإشعارات، وجارٍ تجهيز التنبيهات.');
-      return;
+      return true;
     }
 
-    // التعامل مع الأخطاء الشائعة أثناء التفعيل
+    // ⚠️ ما نعرضش رسالة نجاح لو الـsave فشل — كان فيه bug سابق بيعرض
+    // "تم منح الإذن" حتى لو الـtoken مش مسجَّل، فالسكرتيرة تفتكر إنه شغّال
+    // وفعلياً مش هتستلم إشعارات.
     if (result.reason === 'save-failed') {
-      alert('تم السماح بالإشعارات لكن تعذر حفظ توكن الجهاز. تحقق من الاتصال ثم أعد المحاولة.');
-      return;
+      alert('تعذر حفظ تسجيل الإشعارات. الجلسة قد تكون انتهت — سجّل خروج ودخول مرة أخرى ثم جرّب.');
+      return false;
+    }
+    if (result.reason === 'timeout') {
+      alert('استغرق تفعيل الإشعارات وقتاً طويلاً. تحقق من الإنترنت وأعد المحاولة. لو استمرت المشكلة، أغلق المتصفح وافتحه من جديد.');
+      return false;
     }
     if (result.reason === 'token-empty') {
       const debugCode = String(result.debugCode || '').toLowerCase();
@@ -271,23 +295,21 @@ export const usePublicBookingPushNotifications = ({
       } else {
         alert('تعذر استخراج توكن الإشعارات للجهاز. أعد فتح الصفحة ثم حاول مرة أخرى.');
       }
-      return;
+      return false;
     }
     if (typeof window !== 'undefined' && Notification.permission === 'denied') {
       alert('الإشعارات محظورة من المتصفح. فعّلها يدويًا من إعدادات الموقع.');
-      return;
+      return false;
     }
     alert('لم يتم تفعيل إشعارات السكرتارية. حاول مرة أخرى.');
+    return false;
   };
 
   /**
-   * تأجيل ظهور رسالة تفعيل الإشعارات — البطاقة تختفي أسبوع كامل ثم ترجع
-   * تلقائياً للتذكير لحد ما السكرتيرة تفعّل الإشعارات فعلاً.
+   * إخفاء تنبيه التفعيل للجلسة الحالية فقط (يظهر تاني مع refresh أو login).
    */
   const handleSecretaryPushPromptLater = () => {
-    const until = Date.now() + SECRETARY_PUSH_PROMPT_HIDE_MS;
-    setHideSecretaryPushPromptUntil(until);
-    localStorage.setItem(SECRETARY_PUSH_PROMPT_HIDE_UNTIL_KEY, String(until));
+    setShowSecretaryPushPrompt(false);
   };
 
   /**
@@ -356,7 +378,13 @@ export const usePublicBookingPushNotifications = ({
         // إرسال الإجراء إلى Firestore ليراه الطبيب (مقسّم بالفرع).
         // الدالة الآن تعتبر الرد ناجحاً إذا وصل الطبيب عبر secretaryEntryAlertResponse
         // حتى لو فشلت عملية تنظيف bookingConfig — نتعامل مع النجاح هنا كنجاح حقيقي.
-        await firestoreService.respondToDoctorEntryAlert(secret, appointmentId, status, sessionBranchId);
+        await entryConversations.respond({
+          secret,
+          direction: 'D2S',
+          appointmentId,
+          status,
+          branchId: sessionBranchId,
+        });
         if (status === 'approved') showSecretaryActionToastForMinute('approved');
         else showSecretaryActionToastForMinute('rejected');
         persistSecretaryHandledEntryAlert(secret, {

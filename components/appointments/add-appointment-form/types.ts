@@ -84,6 +84,7 @@ export interface AddAppointmentFormProps {
   secretaryVitals?: SecretaryVitalsInput;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
+  doctorSpecialty?: string | null;
   onSecretaryVitalsChange?: (value: SecretaryVitalsInput) => void;
   todayStr: string;
   timeMin: string | undefined;

@@ -50,7 +50,7 @@ const buildPublicBlacklistMessage = (data: Record<string, any> | null) => {
 };
 
 /** التأكد من أن بريد المستخدم ليس في القائمة السوداء للجمهور */
-export const assertPublicEmailNotBlacklisted = async (email: string): Promise<void> => {
+const assertPublicEmailNotBlacklisted = async (email: string): Promise<void> => {
   const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail) return;
 

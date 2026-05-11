@@ -23,6 +23,7 @@ import type {
 
 /** الحد الأدنى من config الذي نحتاجه — بدون الاعتماد على الشكل الكامل. */
 interface MinimalConfig {
+  doctorSpecialty?: string;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
   secretaryVitalFieldsByBranch?: Record<string, SecretaryVitalFieldDefinition[] | undefined>;
@@ -53,22 +54,32 @@ export const useSecretaryVitalsNormalizer = ({
         ? branchFields
         : config?.secretaryVitalFields;
     const sourceVisibility = branchVisibility || config?.secretaryVitalsVisibility;
+    const specialtyOptions = { doctorSpecialty: config?.doctorSpecialty };
 
-    const normalizedFields = normalizeSecretaryVitalFieldDefinitions(sourceFields);
+    const normalizedFields = normalizeSecretaryVitalFieldDefinitions(
+      sourceFields,
+      undefined,
+      specialtyOptions
+    );
     setSecretaryVitalFields(normalizedFields);
 
     if (!sourceVisibility) {
       setSecretaryVitalsVisibility(
-        buildSecretaryVisibilityByFieldDefinitions(normalizedFields)
+        buildSecretaryVisibilityByFieldDefinitions(normalizedFields, undefined, specialtyOptions)
       );
       return;
     }
 
-    const normalizedVisibility = normalizeSecretaryVitalsVisibility(sourceVisibility);
+    const normalizedVisibility = normalizeSecretaryVitalsVisibility(
+      sourceVisibility,
+      undefined,
+      specialtyOptions
+    );
     setSecretaryVitalsVisibility(
-      buildSecretaryVisibilityByFieldDefinitions(normalizedFields, normalizedVisibility)
+      buildSecretaryVisibilityByFieldDefinitions(normalizedFields, normalizedVisibility, specialtyOptions)
     );
   }, [
+    config?.doctorSpecialty,
     sessionBranchId,
     config?.secretaryVitalFields,
     config?.secretaryVitalsVisibility,

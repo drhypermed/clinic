@@ -33,6 +33,8 @@ interface PatientFilesPageProps {
   }) => Promise<void>;
   /** الفرع النشط — يمرر لـ PatientFileDetailsModal */
   branchId?: string;
+  /** تخصص الطبيب — يستخدم لتحديد إظهار حزم التخصصات (نسا، ...) */
+  doctorSpecialty?: string;
 }
 
 type PatientFilesSortOption =
@@ -49,6 +51,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   onLoadConsultation,
   onGeneratePatientMedicalReport,
   branchId,
+  doctorSpecialty,
 }) => {
   const { user } = useAuth();
   const userId = user?.uid || '';
@@ -575,6 +578,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         onUpdatePatientIdentity={handleUpdatePatientIdentity}
         onSaveAdditionalInfo={handleSaveAdditionalInfo}
         branchId={branchId}
+        doctorSpecialty={doctorSpecialty}
       />
     </div>
   );

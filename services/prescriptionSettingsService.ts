@@ -41,6 +41,7 @@ const DEFAULT_VITALS: VitalSignConfig[] = [
     { key: 'temp', label: 'Temp', labelAr: 'الحرارة', unit: '°C', enabled: true, order: 7 },
     { key: 'spo2', label: 'SpO2', labelAr: 'تشبع الأكسجين', unit: '%', enabled: true, order: 8 },
     { key: 'rr', label: 'RR', labelAr: 'التنفس', unit: '/min', enabled: true, order: 9 },
+    { key: 'headCirc', label: 'Head Circ.', labelAr: 'محيط الرأس', unit: 'cm', enabled: true, order: 10 },
 ];
 
 /** الإعداد الافتراضي لمقاس ورقة الروشتة */

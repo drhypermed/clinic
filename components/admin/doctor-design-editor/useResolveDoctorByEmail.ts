@@ -24,7 +24,7 @@ export interface DoctorBranchOption {
 }
 
 // نتيجة البحث: بيانات الطبيب اللي محتاجينها لفتح صفحات التصميم
-export interface ResolvedDoctorTarget {
+interface ResolvedDoctorTarget {
   uid: string;
   doctorName: string;
   doctorSpecialty: string;

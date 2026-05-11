@@ -39,6 +39,7 @@ export interface CaseData {
     investigationsAr: string;
     investigationsEn: string;
     diagnosisEn: string;
+    pregnancyTracking?: PatientRecord['pregnancyTracking'];
     rxItems: PatientRecord['rxItems'];
     generalAdvice: string[];
     labInvestigations: string[];
@@ -132,6 +133,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
             investigationsAr: rec.investigationsAr || '',
             investigationsEn: rec.investigationsEn || '',
             diagnosisEn: rec.diagnosisEn || '',
+            pregnancyTracking: rec.pregnancyTracking,
             rxItems: rec.rxItems || [],
             generalAdvice: rec.generalAdvice || [],
             labInvestigations: rec.labInvestigations || [],
@@ -152,6 +154,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
             investigationsAr: rec.investigationsAr || '',
             investigationsEn: rec.investigationsEn || '',
             diagnosisEn: rec.diagnosisEn || '',
+            pregnancyTracking: rec.pregnancyTracking,
             rxItems: rec.rxItems || [],
             generalAdvice: rec.generalAdvice || [],
             labInvestigations: rec.labInvestigations || [],
@@ -173,6 +176,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
         investigationsAr: rec.consultation.investigationsAr || '',
         investigationsEn: rec.consultation.investigationsEn || '',
         diagnosisEn: rec.consultation.diagnosisEn || '',
+        pregnancyTracking: rec.consultation.pregnancyTracking || rec.pregnancyTracking,
         rxItems: rec.consultation.rxItems || [],
         generalAdvice: rec.consultation.generalAdvice || [],
         labInvestigations: rec.consultation.labInvestigations || [],

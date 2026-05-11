@@ -8,6 +8,7 @@
  */
 import { useMemo } from 'react';
 import type { PatientRecord } from '../../../types';
+import type { DoctorStatsSummary } from '../../../hooks/useDoctorStatsSummary';
 import { toDateOnly, type RecordTimelineEntry } from '../recordsViewParts';
 import {
   applyConsultationSequence,
@@ -28,6 +29,10 @@ interface HookArgs {
   rangeEndDate: string;
   todayStr: string;
   firstDayOfMonthStr: string;
+  // ملخص الإحصائيات الجاهز من السيرفر — لو موجود نستخدمه بدل الحساب المحلي.
+  // ضروري لما الـpagination مفعّل: الـrecords في الذاكرة 50 سجل بس،
+  // فالحساب المحلي هيطلع غلط. الـsummary بيحسب من كل السجلات على السيرفر.
+  doctorStatsSummary?: DoctorStatsSummary | null;
 }
 
 /** تحويل السجلات إلى زيارات منفصلة (كشف/استشارة) مع تاريخ كل زيارة الحقيقي */
@@ -94,6 +99,7 @@ export function useRecordsTimeline({
   rangeEndDate,
   todayStr,
   firstDayOfMonthStr,
+  doctorStatsSummary,
 }: HookArgs) {
   // تطبيع حدود النطاق (نضمن from ≤ to)
   const normalizedRange = useMemo(
@@ -174,8 +180,28 @@ export function useRecordsTimeline({
     [timelineEntriesDateFilteredBase, consultationSequenceByEntryId],
   );
 
-  // إحصائيات اليوم والشهر (كشوفات/استشارات)
+  // إحصائيات اليوم والشهر (كشوفات/استشارات).
+  // الأولوية: الـsummary من السيرفر لو موجود ومتوافق مع اليوم/الشهر الحاليين.
+  // التحقق من todayKey/monthKey مهم لأن الـsummary لو ما اتحدّثش النهاردة
+  // (مثلاً الطبيب ما حفظش أي سجل اليوم) يبقى عداد "اليوم" بتاعه فاضل من إمبارح.
+  // في الحالة دي نرجع للحساب المحلي عشان نضمن دقة عداد اليوم.
+  const todayMonthStr = todayStr.slice(0, 7);
   const stats = useMemo(() => {
+    if (
+      doctorStatsSummary
+      && doctorStatsSummary.todayKey === todayStr
+      && doctorStatsSummary.monthKey === todayMonthStr
+    ) {
+      return {
+        examsToday: doctorStatsSummary.examsToday,
+        consultationsToday: doctorStatsSummary.consultationsToday,
+        examsThisMonth: doctorStatsSummary.examsThisMonth,
+        consultationsThisMonth: doctorStatsSummary.consultationsThisMonth,
+        totalThisMonth: doctorStatsSummary.examsThisMonth + doctorStatsSummary.consultationsThisMonth,
+      };
+    }
+
+    // fallback: حساب محلي من الـrecords في الذاكرة (السلوك الأصلي).
     let examsToday = 0;
     let consultationsToday = 0;
     let examsThisMonth = 0;
@@ -203,7 +229,7 @@ export function useRecordsTimeline({
       consultationsThisMonth,
       totalThisMonth: examsThisMonth + consultationsThisMonth,
     };
-  }, [allTimelineEntries, todayStr, firstDayOfMonthStr]);
+  }, [allTimelineEntries, todayStr, firstDayOfMonthStr, doctorStatsSummary, todayMonthStr]);
 
   // تجميع الزيارات حسب اليوم — كل يوم له list مفرزة حسب الترتيب المختار
   const grouped = useMemo(() => {

@@ -15,17 +15,24 @@ import type {
     SecretaryVitalKey,
     SecretaryVitalsVisibility,
 } from '../../types';
-import { SECRETARY_VITAL_KEYS, toSecretaryVitalFieldId } from './constants';
+import {
+    SECRETARY_VITAL_KEYS,
+    getSecretaryVitalKeysForSpecialty,
+    isSecretaryVitalKeyAllowedForSpecialty,
+    toSecretaryVitalFieldId,
+    type SecretaryVitalsSpecialtyOptions,
+} from './constants';
 import { createDefaultSecretaryVitalsVisibility, normalizeSecretaryVitalFieldDefinitions } from './fieldDefinitions';
 import { normalizeSecretaryFieldKey, parseBoolean } from './helpers';
 
 /** توحيد خريطة رؤية قادمة من أي مصدر */
 export const normalizeSecretaryVitalsVisibility = (
     value: unknown,
-    fallback?: SecretaryVitalsVisibility
+    fallback?: SecretaryVitalsVisibility,
+    options: SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalsVisibility => {
     const base: SecretaryVitalsVisibility = {
-        ...createDefaultSecretaryVitalsVisibility(),
+        ...createDefaultSecretaryVitalsVisibility(options),
         ...(fallback || {}),
     };
 
@@ -41,13 +48,19 @@ export const normalizeSecretaryVitalsVisibility = (
     }
 
     // ضمان التوافق الثنائي بين fieldId و legacy key (vital:weight == weight)
-    SECRETARY_VITAL_KEYS.forEach((key) => {
+    getSecretaryVitalKeysForSpecialty(options.doctorSpecialty).forEach((key) => {
         const vitalId = toSecretaryVitalFieldId(key);
         const hasId = Object.prototype.hasOwnProperty.call(base, vitalId);
         const hasKey = Object.prototype.hasOwnProperty.call(base, key);
         const resolved = hasId ? Boolean(base[vitalId]) : hasKey ? Boolean(base[key]) : false;
         base[vitalId] = resolved;
         base[key] = resolved;
+    });
+
+    SECRETARY_VITAL_KEYS.forEach((key) => {
+        if (isSecretaryVitalKeyAllowedForSpecialty(key, options.doctorSpecialty)) return;
+        delete base[key];
+        delete base[toSecretaryVitalFieldId(key)];
     });
 
     return base;
@@ -75,7 +88,8 @@ export const resolveVisibilityByField = (
 /** بناء خريطة رؤية من قائمة تعريفات + رؤية موجودة (مع fallback للتعريفات) */
 export const buildSecretaryVisibilityByFieldDefinitions = (
     fieldDefinitions: SecretaryVitalFieldDefinition[] | undefined,
-    visibility?: SecretaryVitalsVisibility
+    visibility?: SecretaryVitalsVisibility,
+    options: SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalsVisibility => {
     const hasVisibilityInput = Boolean(
         visibility && typeof visibility === 'object' && !Array.isArray(visibility)
@@ -91,7 +105,7 @@ export const buildSecretaryVisibilityByFieldDefinitions = (
             normalizedVisibility[normalizedKey] = parsed;
         });
     }
-    const normalizedFields = normalizeSecretaryVitalFieldDefinitions(fieldDefinitions);
+    const normalizedFields = normalizeSecretaryVitalFieldDefinitions(fieldDefinitions, undefined, options);
     const result: SecretaryVitalsVisibility = { ...normalizedVisibility };
 
     normalizedFields.forEach((field) => {
@@ -113,7 +127,7 @@ export const buildSecretaryVisibilityByFieldDefinitions = (
         }
     });
 
-    return normalizeSecretaryVitalsVisibility(result);
+    return normalizeSecretaryVitalsVisibility(result, undefined, options);
 };
 
 /** فحص حقل سكرتارية (fieldId + legacy key fallback) */

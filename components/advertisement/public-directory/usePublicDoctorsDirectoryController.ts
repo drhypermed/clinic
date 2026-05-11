@@ -116,15 +116,16 @@ export const usePublicDoctorsDirectoryController = ({
     // يدوس على زر فعلي (submitReview/deleteReview) واللي محتاج تسجيل دخول أصلاً.
   } = usePublicBookingReviews(user?.uid || '');
 
-  // بناء رابط الفورم العام من معرّف الطبيب (مع تمرير الفرع لو الطبيب عنده أكتر من واحد).
-  // كنّا قبل كده بنجيب الـsecret هنا وبنرجع رسالة "تعذر إنشاء رابط الحجز" لو مفقود،
-  // وده كان بيمنع المريض من الحجز. دلوقتي بنستخدم مسار /book-public/:userId مباشرة،
-  // والـbootstrap في فورم الحجز هو اللي بيعمل lookup للـsecret داخلياً ويعرض شاشه واضحه
-  // لو الرابط فعلاً غير صالح.
+  // بناء رابط الفورم العام من معرّف الطبيب — مسار موحّد /p/:value يقبل سواء slug أو userId.
+  // الـbootstrap في الفورم بيعمل lookup للـslug، ولو مش لقاه بيعتبر القيمة userId مباشرة.
+  // ده وحّد كل مسارات الحجز العام تحت /p/* بدل /book-public/* legacy.
+  // اشتراط جوجل بقى إعداد خاص بكل طبيب (publicBookingConfig.requireGoogleSignIn) بدل
+  // ?entry=public-site القديم — مفيش لزوم لـquery params تتحكّم في السلوك دلوقتي.
   const buildSiteBookingUrl = (doctorId: string, branchId = ''): string => {
-    const params = new URLSearchParams({ entry: 'public-site' });
+    const params = new URLSearchParams();
     if (branchId) params.set('branch', branchId);
-    return `/book-public/${encodeURIComponent(doctorId)}?${params.toString()}`;
+    const qs = params.toString();
+    return `/p/${encodeURIComponent(doctorId)}${qs ? `?${qs}` : ''}`;
   };
 
   // مزامنة الـmodal مع query string في اتجاهين:

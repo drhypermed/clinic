@@ -45,6 +45,8 @@ interface SidebarProps {
     onNavigateView?: (view: AppView) => void; // دالة التنقل عبر مسار التنقل
     // اسم الفرع النشط — يظهر تحت زر الملف الشخصي فقط لما الطبيب عنده أكتر من فرع.
     activeBranchName?: string;
+    // هل الطبيب عنده أكتر من فرع — لو لأ، اسم الفرع يتخفى نهائياً من الواجهة.
+    hasMultipleBranches?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -59,6 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     breadcrumbs,
     onNavigateView,
     activeBranchName,
+    hasMultipleBranches = false,
 }) => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -303,8 +306,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     الملف الشخصي
                 </button>
 
-                {/* اسم الفرع النشط — يظهر دايماً طول ما متوفر اسم فرع للطبيب */}
-                {activeBranchName && (
+                {/* اسم الفرع النشط — يظهر فقط لو الطبيب عنده أكتر من فرع.
+                    الطبيب صاحب الفرع الواحد مش محتاج يشوف لافتة "الفرع: X" — مفيش فايدة منها وبتزحم الواجهة. */}
+                {hasMultipleBranches && activeBranchName && (
                     <div className="mb-2 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold truncate">
                         <FaBuilding className="w-3 h-3 shrink-0 text-blue-600" />
                         <span className="truncate">الفرع: {activeBranchName}</span>

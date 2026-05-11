@@ -44,6 +44,7 @@ interface UseMainAppSecretaryVitalsParams {
   prescriptionSettings: PrescriptionSettings | null | undefined;
   /** الموعد المفتوح حالياً — نستخدمه لريست القيم لما يتبدل */
   openedAppointmentContext: ClinicAppointment | null;
+  doctorSpecialty?: string | null;
 }
 
 export const useMainAppSecretaryVitals = ({
@@ -53,6 +54,7 @@ export const useMainAppSecretaryVitals = ({
   setBookingSecret,
   prescriptionSettings,
   openedAppointmentContext,
+  doctorSpecialty,
 }: UseMainAppSecretaryVitalsParams) => {
   // القيم المخصصة للموعد الحالي (مفاتيح = customBoxId، قيم = النص المدخل)
   const [appointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues] = useState<Record<string, string>>({});
@@ -62,8 +64,9 @@ export const useMainAppSecretaryVitals = ({
     () => buildSecretaryVitalFieldDefinitions(
       prescriptionSettings?.vitals,
       prescriptionSettings?.customBoxes,
+      { doctorSpecialty },
     ),
-    [prescriptionSettings?.customBoxes, prescriptionSettings?.vitals]
+    [doctorSpecialty, prescriptionSettings?.customBoxes, prescriptionSettings?.vitals]
   );
 
   /** تحديث قيمة مربع مخصص — لو القيمة فاضية نحذف المفتاح بدل ما نخزن فاضي. */
@@ -135,11 +138,13 @@ export const useMainAppSecretaryVitals = ({
 
       const normalizedFields = normalizeSecretaryVitalFieldDefinitions(
         fields,
-        prescriptionSecretaryFieldDefinitions
+        prescriptionSecretaryFieldDefinitions,
+        { doctorSpecialty }
       );
       const normalizedVisibility = buildSecretaryVisibilityByFieldDefinitions(
         normalizedFields,
-        normalizeSecretaryVitalsVisibility(visibility)
+        normalizeSecretaryVitalsVisibility(visibility, undefined, { doctorSpecialty }),
+        { doctorSpecialty }
       );
 
       // لو مفيش secret، نولد واحد جديد ونخزنه
@@ -155,11 +160,13 @@ export const useMainAppSecretaryVitals = ({
         normalizedVisibility,
         normalizedFields,
         activeBranchId,
+        doctorSpecialty ?? undefined,
       );
     },
     [
       activeBranchId,
       bookingSecret,
+      doctorSpecialty,
       prescriptionSecretaryFieldDefinitions,
       setBookingSecret,
       userId,

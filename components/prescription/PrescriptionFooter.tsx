@@ -31,7 +31,6 @@ const DEFAULT_FOOTER: PrescriptionFooterSettings = {
 };
 export const PrescriptionFooter: React.FC<PrescriptionFooterProps> = ({
     isDataOnlyMode,
-    footerSize,
     footerPx,
     footerColor,
     footerFontFamily,
@@ -401,7 +400,7 @@ export const PrescriptionFooter: React.FC<PrescriptionFooterProps> = ({
                         }}
                     >
                         <span>{systemRequestSettings.message || DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS.message}</span>
-                        {activeContacts.map((contact, index) => (
+                        {activeContacts.map((contact) => (
                             <React.Fragment key={contact.id}>
                                 {contact.url ? (
                                     <a

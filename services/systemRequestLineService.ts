@@ -1,6 +1,3 @@
-import { db } from './firebaseConfig';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { getDocCacheFirst } from './firestore/cacheFirst';
 import { SystemRequestContact, SystemRequestContactIcon, SystemRequestLineSettings, SystemRequestLineStyle } from '../types';
 
 /**
@@ -190,61 +187,3 @@ export const createEmptySystemRequestContact = (): SystemRequestContact =>
     showIcon: true,
   });
 
-const systemRequestLineService = {
-  /** الاشتراك اللحظي في إعدادات سطر الطلب من Firestore مع (Smart Cache) */
-  subscribeToSettings: (onUpdate: (settings: SystemRequestLineSettings) => void) => {
-    const docRef = doc(db, ...SYSTEM_REQUEST_LINE_DOC_PATH);
-
-    /** معالجة البيانات وتحويلها للنموذج الموحد */
-    const handleSnap = (snapshot: any) => {
-      if (snapshot.exists()) {
-        try {
-          const rawData = snapshot.data();
-          onUpdate(normalizeSystemRequestLineSettings(rawData));
-        } catch (error) {
-          console.error('[SystemRequestLine] Normalize error:', error);
-          onUpdate(DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS);
-        }
-      } else {
-        onUpdate(DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS);
-      }
-    };
-
-    // 1. المحاولة الأولى: جلب الإعدادات من الكاش للتحميل اللحظي
-    getDocCacheFirst(docRef).then(snap => {
-      if (snap.exists()) handleSnap(snap);
-    }).catch(() => {});
-
-    // 2. المحاولة الثانية: الاشتراك في التحديثات الحية من السيرفر
-    return onSnapshot(docRef, handleSnap, (error) => {
-      console.error('[SystemRequestLine] Subscription error:', error);
-      onUpdate(DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS);
-    });
-  },
-
-  /** جلب الإعدادات مرة واحدة فقط */
-  getSettings: async (): Promise<SystemRequestLineSettings> => {
-    try {
-      const docRef = doc(db, ...SYSTEM_REQUEST_LINE_DOC_PATH);
-      const snapshot = await getDocCacheFirst(docRef);
-      if (snapshot.exists()) {
-        return normalizeSystemRequestLineSettings(snapshot.data());
-      }
-      return DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS;
-    } catch (error) {
-      console.error('[SystemRequestLine] Fetch error:', error);
-      return DEFAULT_SYSTEM_REQUEST_LINE_SETTINGS;
-    }
-  },
-
-  /** حفظ الإعدادات مع ميزة الدمج (Merge) لتجنب مسح الحقول غير المرسلة */
-  saveSettings: async (settings: Partial<SystemRequestLineSettings>): Promise<void> => {
-    try {
-      const docRef = doc(db, ...SYSTEM_REQUEST_LINE_DOC_PATH);
-      await setDoc(docRef, settings, { merge: true });
-    } catch (error) {
-      console.error('[SystemRequestLine] Save error:', error);
-      throw error;
-    }
-  }
-};

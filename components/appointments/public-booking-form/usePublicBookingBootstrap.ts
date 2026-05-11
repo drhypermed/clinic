@@ -20,7 +20,13 @@ import type { PublicBookingSlot, PublicBranchInfo } from '../../../types';
 
 type DoctorSummary = { doctorName: string; doctorSpecialty: string };
 
-type PublicConfig = { userId: string; title?: string; contactInfo?: string };
+type PublicConfig = {
+  userId: string;
+  title?: string;
+  contactInfo?: string;
+  // الإعداد الموحّد لاشتراط جوجل — بديل نظام entry=public-site القديم
+  requireGoogleSignIn?: boolean;
+};
 
 export const usePublicBookingBootstrap = (
   slugParam: string,
@@ -69,27 +75,28 @@ export const usePublicBookingBootstrap = (
     setSlotsLoading(true);
   }, [slugParam, userIdRouteParam, secretParam]);
 
-  // ─── Slug → User ID lookup ───
+  // ─── Slug → User ID lookup (مع fallback للديركتوري) ───
+  // الـ /p/:slug بيقبل دلوقتي قيمتين ممكنين:
+  //   1. slug فعلي محفوظ في slugLookup (الرابط القصير اللي الطبيب يشاركه)
+  //   2. userId مباشر (الرابط اللي بيتولّد من ديركتوري Dr Hyper)
+  // ده وحّد المسارات لـ /p/:value واحد بدل /book-public/* legacy.
   useEffect(() => {
     if (!slugParam) return;
     const myRequestId = contextRequestIdRef.current;
 
     (async () => {
       const resolvedUserId = await firestoreService.getUserIdByPublicSlug(slugParam);
-      // الرد ده لطلب قديم؟ اخرج بدون setState
       if (contextRequestIdRef.current !== myRequestId) return;
 
       if (resolvedUserId) {
+        // الـslug معروف في الـlookup — استخدم الـuserId المُحلَّل
         setUserIdParam(resolvedUserId);
-        setResolvingSecret(true);
       } else {
-        // الـslug مش معروف — لو مفيش userIdRouteParam من الـURL، نمسح الـuserId
-        // عشان الـsecondary effects ما تـtrigger بـuserId قديم.
-        if (!userIdRouteParam) {
-          setUserIdParam('');
-        }
-        setResolvingSecret(false);
+        // مش في الـlookup — fallback: نستخدم القيمة كـuserId مباشر.
+        // لو فعلاً غلط، الـbootstrap هيفشل في getPublicSecretByUserId ويعرض شاشة "رابط غير صالح".
+        setUserIdParam(slugParam);
       }
+      setResolvingSecret(true);
     })();
   }, [slugParam, userIdRouteParam]);
 

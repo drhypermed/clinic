@@ -63,7 +63,6 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
   setPaymentType,
   insuranceCompanyId,
   setInsuranceCompanyId,
-  insuranceCompanyName,
   setInsuranceCompanyName,
   insuranceApprovalCode,
   setInsuranceApprovalCode,

@@ -65,7 +65,6 @@ const toMonthKey = (d: Date) =>
 
 export const Dashboard: React.FC<DashboardProps> = ({
     user,
-    stats,
     onNavigate,
     onStartNewExam,
     onStartExamForAppointment,

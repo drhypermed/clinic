@@ -25,6 +25,8 @@ export type AdminView =
   | 'homeBanner'
   | 'prescriptionFooterLine'
   | 'doctorDesignEditor'   // ─ مساعدة طبيب في تصميم روشتته/إعلانه (وصول مقيّد على المستندين دول فقط)
+  | 'scaleTools'           // ─ أدوات التوسع (المراحل 1-3): إعادة حساب الإحصائيات/ملخصات المرضى + مفاتيح التشغيل
+  | 'specialtyPacks'       // ─ حزم التخصصات: مفتاح مركزي لتفعيل/تعطيل ميزات خاصه لكل تخصص (نسا، رمد، ...)
   | 'settings';
 
 export interface DashboardStats {

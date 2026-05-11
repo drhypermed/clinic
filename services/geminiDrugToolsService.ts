@@ -136,7 +136,7 @@ RESPONSE (JSON ONLY):
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};
-    return sanitizeRenalDoseResult(parsed, crcl);
+    return sanitizeRenalDoseResult(parsed);
   } catch (error: any) {
     console.error('Renal Dose API Error:', error);
     // ─ في حالة فشل الـAPI، نرجع insufficient_data بدل ما نخترع جرعة.
@@ -160,7 +160,7 @@ RESPONSE (JSON ONLY):
  *   3. لو status="adjust" بدون أرقام جرعة فعلية → insufficient_data.
  *   4. لو CrCl > 90 و status != "normal" → علم تحذيري (الموديل ممكن غلط).
  */
-const sanitizeRenalDoseResult = (raw: any, crcl: number): RenalDoseResult => {
+const sanitizeRenalDoseResult = (raw: any): RenalDoseResult => {
   const rawStatus = String(raw?.status || '').trim().toLowerCase();
   const recommendation = String(raw?.recommendation || '').trim();
   const reasoning = String(raw?.reasoning || '').trim();

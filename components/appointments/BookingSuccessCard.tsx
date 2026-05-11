@@ -184,8 +184,8 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
         </div>
       </div>
 
-      {/* زر الحفظ كصورة */}
-      <div className="mt-8 w-full max-w-md">
+      {/* أزرار الحفظ + إضافة للتقويم */}
+      <div className="mt-8 w-full max-w-md space-y-2">
         <button
           onClick={handleSaveImage}
           disabled={saving}
@@ -198,7 +198,100 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
             </>
           )}
         </button>
+
+        {/* زرار إضافة الموعد للتقويم — يولّد ملف .ics قابل للفتح في جوجل/آيفون كاليندر */}
+        <CalendarDownloadButton
+          clinicName={clinicName || 'موعد عند الطبيب'}
+          patientName={patientName}
+          dateTime={dateTime}
+          clinicContact={clinicContact}
+          appointmentType={appointmentType}
+        />
       </div>
     </div>
+  );
+};
+
+// زرار تحميل ملف .ics لإضافة الموعد للتقويم — تنسيق iCalendar معتمد عالمياً
+// بيشتغل مع: Google Calendar، Apple Calendar، Outlook، أي تقويم بيدعم RFC 5545.
+const CalendarDownloadButton: React.FC<{
+  clinicName: string;
+  patientName: string;
+  dateTime: Date;
+  clinicContact?: string;
+  appointmentType?: 'exam' | 'consultation';
+}> = ({ clinicName, patientName, dateTime, clinicContact, appointmentType }) => {
+  const handleDownload = () => {
+    // تنسيق التاريخ لـ iCalendar: YYYYMMDDTHHMMSSZ (UTC)
+    const formatIcsDate = (d: Date): string => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return (
+        d.getUTCFullYear() +
+        pad(d.getUTCMonth() + 1) +
+        pad(d.getUTCDate()) +
+        'T' +
+        pad(d.getUTCHours()) +
+        pad(d.getUTCMinutes()) +
+        pad(d.getUTCSeconds()) +
+        'Z'
+      );
+    };
+    const start = formatIcsDate(dateTime);
+    // مدة الموعد الافتراضية: 30 دقيقة
+    const end = formatIcsDate(new Date(dateTime.getTime() + 30 * 60 * 1000));
+    const typeLabel = appointmentType === 'consultation' ? 'استشارة' : 'كشف';
+    const summary = `${typeLabel} - ${clinicName}`;
+    const description = `${typeLabel} للمريض ${patientName}${clinicContact ? `\\n${clinicContact}` : ''}`;
+    // الـ UID لازم يكون فريد لكل event — Date.now() كافي لحالة الحجز المنفرد
+    const uid = `booking-${Date.now()}@drhypermed.com`;
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Dr Hyper Med//Booking//AR',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${formatIcsDate(new Date())}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:${description}`,
+      clinicContact ? `LOCATION:${clinicContact.replace(/\n/g, ', ')}` : '',
+      'STATUS:CONFIRMED',
+      // تذكير قبل الموعد بـ60 دقيقة — يظهر إشعار في التقويم
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:تذكير بالموعد بعد ساعة',
+      'TRIGGER:-PT60M',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ]
+      .filter(Boolean)
+      .join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `appointment-${dateTime.getTime()}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      className="w-full py-3 rounded-xl font-bold text-brand-800 border-2 border-brand-300 bg-brand-50 hover:bg-brand-100 transition-all flex items-center justify-center gap-2 active:scale-95"
+    >
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <span>أضف الموعد للتقويم</span>
+    </button>
   );
 };

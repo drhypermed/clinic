@@ -28,7 +28,6 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
   // نعرف لو الخطة "برو" أو "برو ماكس" (الاتنين مدفوعين)
   // ملاحظة: `name` بقى 'برو' أو 'برو ماكس' بعد التحويل من 'مميز'
   const isPro = plan.name === 'برو' || plan.name === 'برو ماكس';
-  const isProMax = plan.name === 'برو ماكس';
   const messageValue = form[plan.messageKey] as string;
   const whatsappMessageValue = form[plan.whatsappMessageKey] as string;
 

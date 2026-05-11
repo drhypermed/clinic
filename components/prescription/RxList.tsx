@@ -59,7 +59,7 @@ const RxListComponent: React.FC<RxListProps> = ({
   medNameColor, medInstColor, noteColor,
   medNameFontFamily, medInstFontFamily, noteFontFamily,
   drugRowPaddingPx, drugBorderWidthPx, drugBorderColor,
-  leading, itemPad, listGap, isDataOnlyMode, isPrintMode, usageStats = {},
+  itemPad, listGap, isDataOnlyMode, isPrintMode, usageStats = {},
   onUpdateItemName, onUpdateItemInstruction, onMedicationClick, onRemoveItem, onSetAltModal, onSelectMedication,
   englishStyle, arabicStyle
 }) => {

@@ -62,6 +62,7 @@ interface UseAppointmentSyncOnSaveArgs {
     // Secretary custom boxes
     appointmentSecretaryCustomValues: Record<string, string>;
     prescriptionSecretaryFieldDefinitions: SecretaryVitalFieldDefinition[];
+    doctorSpecialty?: string | null;
     // Save handler
     handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean } | undefined | void> | any;
     showNotification: (msg: string, type?: 'success' | 'error' | 'info', opts?: any) => void;
@@ -95,6 +96,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
         discountReasonLabel,
         appointmentSecretaryCustomValues,
         prescriptionSecretaryFieldDefinitions,
+        doctorSpecialty,
         handleSaveRecord,
         showNotification,
     } = args;
@@ -120,6 +122,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
             rbs: String(vitals.rbs || '').trim() || undefined,
             spo2: String(vitals.spo2 || '').trim() || undefined,
             rr: String(vitals.rr || '').trim() || undefined,
+            headCirc: String(vitals.headCirc || '').trim() || undefined,
         };
 
         Object.entries(appointmentSecretaryCustomValues).forEach(([boxId, rawValue]) => {
@@ -133,6 +136,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
 
         const sanitizedVitals = sanitizeSecretaryVitalsInput(secretaryVitalsPayload, {
             fieldDefinitions: prescriptionSecretaryFieldDefinitions,
+            doctorSpecialty,
         });
 
         const normalizedDiscountAmount = Number.isFinite(discountAmount) ? Math.max(0, discountAmount) : 0;

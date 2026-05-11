@@ -11,7 +11,7 @@
  *   - هذا الملف: دوال الكتابة (setEntryAlert / respond / addApprovedEntryId).
  */
 
-import { doc, setDoc } from 'firebase/firestore';
+import { deleteField, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { normalizeBookingSecret, sanitizeDocSegment, toOptionalText } from './helpers';
 import {
@@ -51,6 +51,36 @@ export const setEntryAlert = async (
     branchId: normalizedBranch,
   };
 
+  // ⚠️ منع تسريب الـ entry alert بين الفروع:
+  //   merge:true في Firestore بيدمج الـ maps بعمق — ده معناه إن
+  //   `entryAlertByBranch.B` (alert قديم لم يُمسح) يفضل لما نكتب alert
+  //   جديد لـ`entryAlertByBranch.A`. النتيجة: السكرتيرة في فرع B تستمر
+  //   تشوف الـ alert القديم (zombie) كأنه إشعار جديد بسبب الـ subscription
+  //   re-firing لما المستند يتغير.
+  //   الحل: نقرأ الفروع الموجودة ونكتب null لكل فرع غير الفرع المستهدف،
+  //   فالـ map بقت تحتوي بس على الفرع الحالي بـ alert نشط.
+  const entryAlertByBranchUpdate: Record<string, unknown> = {
+    [normalizedBranch]: alertPayload,
+  };
+  try {
+    const snap = await getDoc(configRef);
+    if (snap.exists()) {
+      const existing = snap.data()?.entryAlertByBranch;
+      if (existing && typeof existing === 'object') {
+        Object.keys(existing).forEach((otherBranchId) => {
+          if (otherBranchId !== normalizedBranch && existing[otherBranchId]) {
+            // مسح أي alert قديم في فروع تانية حتى ما يظهرش زومبي.
+            // deleteField بيشيل الـ key بالكامل بدل ما يخليه null —
+            // أنظف للمستند ويمنع تراكم "شواهد قبور" مع الوقت.
+            entryAlertByBranchUpdate[otherBranchId] = deleteField();
+          }
+        });
+      }
+    }
+  } catch {
+    // قراءة فاشلة — نكمل بدون مسح (الكتابة الأساسية لسه تنجح)
+  }
+
   // ⚠️ ممنوع dot-notation في setDoc — Firebase JS SDK ما بيفسرش الـ keys
   // اللي فيها نقاط في setDoc كـ nested paths. الحل nested object + merge:true.
   await setDoc(
@@ -59,8 +89,8 @@ export const setEntryAlert = async (
       // الحقل القديم (للتوافق) — يحمل آخر طلب من أي فرع
       entryAlert: alertPayload,
       entryAlertResponse: null,
-      // الحقل الجديد المُقسَّم بالفرع — السكرتيرة تقرأ فرعها فقط
-      entryAlertByBranch: { [normalizedBranch]: alertPayload },
+      // الحقل الجديد المُقسَّم بالفرع — مع مسح فروع تانية لمنع zombie alerts
+      entryAlertByBranch: entryAlertByBranchUpdate,
     },
     { merge: true },
   );

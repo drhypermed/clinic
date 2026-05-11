@@ -20,6 +20,7 @@ export interface BookingConfigView {
   username?: string;
   passwordHash?: string;
   doctorDisplayName?: string;
+  doctorSpecialty?: string;
   formTitle?: string;
   secretaryPasswordHash?: string;
   secretaryAuthRequired?: boolean;
@@ -32,6 +33,8 @@ export interface BookingConfigView {
   // مرآة publicBookingSecret تتكتب من جانب الطبيب — السكرتيرة محرومة من list على
   // publicBookingConfig و من قراءة users/{uid}، فبدون المرآة دي مش هتلاقي رابط الفورم العام.
   publicBookingSecret?: string;
+  // مرآة الـ slug القصير للحجز العام — السكرتيرة بتستخدمه لبناء رابط /p/{slug} الـcanonical.
+  publicUrlSlug?: string;
 }
 
 export interface SecretaryProfile {

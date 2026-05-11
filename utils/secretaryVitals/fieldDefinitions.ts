@@ -19,10 +19,14 @@ import type {
     VitalSignConfig,
 } from '../../types';
 import {
+    HEAD_CIRC_VITAL_KEY,
     SECRETARY_CUSTOM_ORDER_OFFSET,
-    SECRETARY_VITAL_KEYS,
+    getSecretaryVitalKeysForSpecialty,
+    isPediatricSpecialtyForSecretaryVitals,
+    isSecretaryVitalKeyAllowedForSpecialty,
     toSecretaryCustomFieldId,
     toSecretaryVitalFieldId,
+    type SecretaryVitalsSpecialtyOptions,
 } from './constants';
 import {
     getDefaultSecretaryFieldByKey,
@@ -39,6 +43,14 @@ import {
 /** توحيد ترتيب تعريف حقل (alias لـ normalizeSecretaryVitalOrder للوضوح) */
 const normalizeSecretaryFieldDefinitionOrder = (value: unknown, fallback: number): number =>
     normalizeSecretaryVitalOrder(value, fallback);
+
+const isSecretaryFieldDefinitionAllowedForSpecialty = (
+    field: SecretaryVitalFieldDefinition,
+    options: SecretaryVitalsSpecialtyOptions = {}
+): boolean =>
+    field.kind !== 'vital' ||
+    !field.key ||
+    isSecretaryVitalKeyAllowedForSpecialty(field.key, options.doctorSpecialty);
 
 /** تحليل نوع الحقل (vital أو customBox) */
 const normalizeSecretaryFieldDefinitionKind = (
@@ -122,18 +134,21 @@ const sanitizeSecretaryFieldDefinition = (
 /** بناء تعريفات الحقول من vitalsConfig + customBoxes (مستخدم في MainApp) */
 export const buildSecretaryVitalFieldDefinitions = (
     vitalsConfig: VitalSignConfig[] | undefined,
-    customBoxes: CustomBox[] | undefined = []
+    customBoxes: CustomBox[] | undefined = [],
+    options: SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalFieldDefinition[] => {
+    const allowedVitalKeys = getSecretaryVitalKeysForSpecialty(options.doctorSpecialty);
     const sourceByKey = new Map<SecretaryVitalKey, VitalSignConfig>();
     if (Array.isArray(vitalsConfig)) {
         vitalsConfig.forEach((item) => {
             const key = String(item?.key || '').trim();
             if (!isSecretaryVitalKey(key)) return;
+            if (!isSecretaryVitalKeyAllowedForSpecialty(key, options.doctorSpecialty)) return;
             sourceByKey.set(key, item);
         });
     }
 
-    const vitalDefinitions = SECRETARY_VITAL_KEYS.map((key, index) => {
+    const vitalDefinitions = allowedVitalKeys.map((key, index) => {
         const fallbackField = getDefaultSecretaryFieldByKey(key);
         const source = sourceByKey.get(key);
 
@@ -145,7 +160,9 @@ export const buildSecretaryVitalFieldDefinitions = (
             labelAr: normalizeSecretaryVitalLabel(source?.labelAr, fallbackField.label),
             unit: normalizeSecretaryVitalUnit(source?.unit, fallbackField.unit),
             order: normalizeSecretaryVitalOrder(source?.order, index + 1),
-            enabled: Boolean(source?.enabled),
+            enabled: source
+                ? Boolean(source.enabled)
+                : key === HEAD_CIRC_VITAL_KEY && isPediatricSpecialtyForSecretaryVitals(options.doctorSpecialty),
         };
     });
 
@@ -180,16 +197,21 @@ export const buildSecretaryVitalFieldDefinitions = (
 /** توحيد قائمة تعريفات حقول قادمة من أي مصدر (مع fallback افتراضي) */
 export const normalizeSecretaryVitalFieldDefinitions = (
     value: unknown,
-    fallback: SecretaryVitalFieldDefinition[] = getSecretaryDefaultDefinitions()
+    fallback?: SecretaryVitalFieldDefinition[],
+    options: SecretaryVitalsSpecialtyOptions = {}
 ): SecretaryVitalFieldDefinition[] => {
     const normalizedById = new Map<string, SecretaryVitalFieldDefinition>();
+    const fallbackDefinitions = Array.isArray(fallback)
+        ? fallback
+        : getSecretaryDefaultDefinitions();
 
-    fallback.forEach((item, index) => {
+    fallbackDefinitions.forEach((item, index) => {
         const normalized = sanitizeSecretaryFieldDefinition(item, {
             ...item,
             order: normalizeSecretaryFieldDefinitionOrder(item.order, index + 1),
         });
         if (!normalized) return;
+        if (!isSecretaryFieldDefinitionAllowedForSpecialty(normalized, options)) return;
         normalizedById.set(normalized.id, normalized);
     });
 
@@ -201,6 +223,7 @@ export const normalizeSecretaryVitalFieldDefinitions = (
                 : undefined;
             const normalized = sanitizeSecretaryFieldDefinition(item, fallbackById || undefined);
             if (!normalized) return;
+            if (!isSecretaryFieldDefinitionAllowedForSpecialty(normalized, options)) return;
 
             if (!Number.isFinite(normalized.order) || normalized.order <= 0) {
                 normalized.order = normalizeSecretaryFieldDefinitionOrder(normalized.order, index + 1);
@@ -210,7 +233,7 @@ export const normalizeSecretaryVitalFieldDefinitions = (
         });
     }
 
-    SECRETARY_VITAL_KEYS.forEach((key, index) => {
+    getSecretaryVitalKeysForSpecialty(options.doctorSpecialty).forEach((key, index) => {
         const vitalId = toSecretaryVitalFieldId(key);
         if (normalizedById.has(vitalId)) return;
         const fallbackField = getDefaultSecretaryFieldByKey(key);
@@ -222,17 +245,21 @@ export const normalizeSecretaryVitalFieldDefinitions = (
             labelAr: fallbackField.label,
             unit: fallbackField.unit,
             order: index + 1,
-            enabled: false,
+            enabled: key === HEAD_CIRC_VITAL_KEY && isPediatricSpecialtyForSecretaryVitals(options.doctorSpecialty),
         });
     });
 
-    return Array.from(normalizedById.values()).sort((left, right) => left.order - right.order);
+    return Array.from(normalizedById.values())
+        .filter((field) => isSecretaryFieldDefinitionAllowedForSpecialty(field, options))
+        .sort((left, right) => left.order - right.order);
 };
 
 /** بناء خريطة رؤية افتراضية (كل الحقول مخفية) */
-export const createDefaultSecretaryVitalsVisibility = (): SecretaryVitalsVisibility => {
+export const createDefaultSecretaryVitalsVisibility = (
+    options: SecretaryVitalsSpecialtyOptions = {}
+): SecretaryVitalsVisibility => {
     const visibility: SecretaryVitalsVisibility = {};
-    SECRETARY_VITAL_KEYS.forEach((key) => {
+    getSecretaryVitalKeysForSpecialty(options.doctorSpecialty).forEach((key) => {
         visibility[key] = false;
         visibility[toSecretaryVitalFieldId(key)] = false;
     });
@@ -253,13 +280,22 @@ const COMMON_ENABLED_VITAL_KEYS: ReadonlySet<SecretaryVitalKey> = new Set<Secret
     'temp',
 ]);
 
+const isCommonEnabledVitalKey = (
+    key: SecretaryVitalKey,
+    options: SecretaryVitalsSpecialtyOptions = {}
+): boolean =>
+    COMMON_ENABLED_VITAL_KEYS.has(key) ||
+    (key === HEAD_CIRC_VITAL_KEY && isPediatricSpecialtyForSecretaryVitals(options.doctorSpecialty));
+
 /**
  * بناء تعريفات حقول العلامات الحيوية مع تمكين الحقول الشائعة افتراضياً.
  * تُستخدم في الحالة التي لم يُهيّئ فيها الطبيب إعدادات السكرتيرة بعد —
  * بدونها كل الحقول ترجع enabled=false ولا تظهر أي واجهة إدخال للسكرتيرة.
  */
-export const buildSecretaryVitalFieldDefinitionsWithDefaults = (): SecretaryVitalFieldDefinition[] =>
-    SECRETARY_VITAL_KEYS.map((key, index) => {
+export const buildSecretaryVitalFieldDefinitionsWithDefaults = (
+    options: SecretaryVitalsSpecialtyOptions = {}
+): SecretaryVitalFieldDefinition[] =>
+    getSecretaryVitalKeysForSpecialty(options.doctorSpecialty).map((key, index) => {
         const fallbackField = getDefaultSecretaryFieldByKey(key);
         return {
             id: toSecretaryVitalFieldId(key),
@@ -269,7 +305,7 @@ export const buildSecretaryVitalFieldDefinitionsWithDefaults = (): SecretaryVita
             labelAr: fallbackField.label,
             unit: fallbackField.unit,
             order: index + 1,
-            enabled: COMMON_ENABLED_VITAL_KEYS.has(key),
+            enabled: isCommonEnabledVitalKey(key, options),
         };
     });
 
@@ -277,10 +313,12 @@ export const buildSecretaryVitalFieldDefinitionsWithDefaults = (): SecretaryVita
  * بناء خريطة رؤية افتراضية مع تمكين العلامات الحيوية الشائعة.
  * تُستخدم كـ initial state للسكرتيرة حتى تشوف الحقول فوراً.
  */
-export const createDefaultSecretaryVitalsVisibilityWithCommonEnabled = (): SecretaryVitalsVisibility => {
+export const createDefaultSecretaryVitalsVisibilityWithCommonEnabled = (
+    options: SecretaryVitalsSpecialtyOptions = {}
+): SecretaryVitalsVisibility => {
     const visibility: SecretaryVitalsVisibility = {};
-    SECRETARY_VITAL_KEYS.forEach((key) => {
-        const enabled = COMMON_ENABLED_VITAL_KEYS.has(key);
+    getSecretaryVitalKeysForSpecialty(options.doctorSpecialty).forEach((key) => {
+        const enabled = isCommonEnabledVitalKey(key, options);
         visibility[key] = enabled;
         visibility[toSecretaryVitalFieldId(key)] = enabled;
     });

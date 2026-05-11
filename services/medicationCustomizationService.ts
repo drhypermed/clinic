@@ -4,11 +4,8 @@ import {
 } from 'firebase/firestore';
 import { getDocCacheFirst } from './firestore/cacheFirst';
 import { MedicationCustomization } from '../types';
-import { getAccountTypeControls, validateMedicationCustomizationsCapacity } from './accountTypeControlsService';
+import { validateMedicationCustomizationsCapacity } from './accountTypeControlsService';
 import { readCachedAccountType } from './account-type-controls/quotas';
-import { resolveEffectiveAccountTypeFromData } from '../utils/accountStatusTime';
-import { getTrustedNowMs, syncTrustedTime } from '../utils/trustedTime';
-import { getUserProfileDocRef } from './firestore/profileRoles';
 import { isQuotaLimitExceededError } from './account-type-controls/quotaErrors';
 
 // Cache ذاكرة لتخصيصات الأدوية — يمنع قراءات متكررة من Firestore عند التنقل بين الشاشات.
@@ -32,28 +29,6 @@ const writeCustomizationsToCache = (userId: string, value: Record<string, Medica
 
 const invalidateCustomizationsCache = (userId: string): void => {
     customizationsCache.delete(userId);
-};
-
-const resolveEffectiveAccountType = async (userId: string): Promise<'free' | 'premium' | 'pro_max'> => {
-    // قراءه واحده من users/{uid} — كانت قبل كده 2 reads بسبب alias قديم لنفس الـdoc.
-    const snap = await getDocCacheFirst(getUserProfileDocRef(userId));
-    const data = snap.exists() ? (snap.data() as Record<string, unknown>) : {};
-
-    await syncTrustedTime();
-    return resolveEffectiveAccountTypeFromData(data, getTrustedNowMs());
-};
-
-const applyLimitPlaceholder = (template: string, limit: number, fallback: string): string => {
-    const raw = String(template || '').trim();
-    if (!raw) return fallback;
-    return raw.replace(/\{\s*limit\s*\}/gi, String(limit));
-};
-
-const buildWhatsAppUrlFromNumber = (number: string, message: string): string => {
-    const digits = String(number || '').replace(/\D/g, '');
-    if (!digits) return '';
-    const text = encodeURIComponent(String(message || '').trim());
-    return `https://wa.me/${digits}${text ? `?text=${text}` : ''}`;
 };
 
 /**
