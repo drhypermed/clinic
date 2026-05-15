@@ -166,14 +166,14 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
   };
 
   return (
-    <section className="bg-danger-900/10 rounded-2xl border-2 border-danger-300 p-5 sm:p-6 dh-stagger-1">
+    <section className="bg-white rounded-2xl border-2 border-danger-300 p-5 sm:p-6 shadow-sm dh-stagger-1">
       <div className="flex items-start gap-3 mb-4">
-        <FaTrashCan className="w-5 h-5 text-danger-300 shrink-0 mt-1" />
+        <FaTrashCan className="w-5 h-5 text-danger-600 shrink-0 mt-1" />
         <div className="flex-1 min-w-0">
-          <h3 className="text-white text-lg sm:text-xl font-black mb-1">
+          <h3 className="text-danger-900 text-lg sm:text-xl font-black mb-1">
             تصفير البيانات المالية
           </h3>
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+          <p className="text-danger-800 text-xs sm:text-sm leading-relaxed">
             تستخدم هذه العملية للبدء من جديد — تمسح الإيرادات والمصروفات نهائياً ولا يمكن التراجع.
           </p>
         </div>
@@ -181,7 +181,7 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
 
       {/* الخيارات — checkboxes */}
       <div className="space-y-2 mb-4">
-        <label className="flex items-start gap-2 rounded-xl bg-slate-800/60 border border-slate-600 p-3 cursor-pointer hover:bg-slate-800/80 transition">
+        <label className="flex items-start gap-2 rounded-xl bg-danger-50 border border-danger-200 p-3 cursor-pointer hover:bg-danger-100 transition">
           <input
             type="checkbox"
             checked={options.clearSubscriptionHistory}
@@ -190,15 +190,15 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
             className="mt-1"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-black">مسح سجل الاشتراكات للأطباء</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              يحذف <code className="bg-slate-700 px-1 rounded text-[10px]">subscriptionHistory</code> من كل حسابات الأطباء.
+            <p className="text-slate-950 text-sm font-black">مسح سجل الاشتراكات للأطباء</p>
+            <p className="text-slate-700 text-xs leading-relaxed">
+              يحذف <code className="bg-white border border-danger-200 px-1 rounded text-[10px] text-slate-900">subscriptionHistory</code> من كل حسابات الأطباء.
               <br />⚠️ كل الترقيات السابقة لن تُحسب في الإيراد بعد التصفير.
             </p>
           </div>
         </label>
 
-        <label className="flex items-start gap-2 rounded-xl bg-slate-800/60 border border-slate-600 p-3 cursor-pointer hover:bg-slate-800/80 transition">
+        <label className="flex items-start gap-2 rounded-xl bg-danger-50 border border-danger-200 p-3 cursor-pointer hover:bg-danger-100 transition">
           <input
             type="checkbox"
             checked={options.clearExpenses}
@@ -207,14 +207,14 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
             className="mt-1"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-black">مسح كل المصروفات الشهرية</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              يحذف كل وثائق <code className="bg-slate-700 px-1 rounded text-[10px]">expenses/*</code>.
+            <p className="text-slate-950 text-sm font-black">مسح كل المصروفات الشهرية</p>
+            <p className="text-slate-700 text-xs leading-relaxed">
+              يحذف كل وثائق <code className="bg-white border border-danger-200 px-1 rounded text-[10px] text-slate-900">expenses/*</code>.
             </p>
           </div>
         </label>
 
-        <label className="flex items-start gap-2 rounded-xl bg-slate-800/60 border border-slate-600 p-3 cursor-pointer hover:bg-slate-800/80 transition">
+        <label className="flex items-start gap-2 rounded-xl bg-danger-50 border border-danger-200 p-3 cursor-pointer hover:bg-danger-100 transition">
           <input
             type="checkbox"
             checked={options.clearSubscriptionPrices}
@@ -223,15 +223,15 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
             className="mt-1"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-black">مسح جدول الأسعار التاريخية</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              يحذف كل وثائق <code className="bg-slate-700 px-1 rounded text-[10px]">subscriptionPrices/*</code>.
+            <p className="text-slate-950 text-sm font-black">مسح جدول الأسعار التاريخية</p>
+            <p className="text-slate-700 text-xs leading-relaxed">
+              يحذف كل وثائق <code className="bg-white border border-danger-200 px-1 rounded text-[10px] text-slate-900">subscriptionPrices/*</code>.
               <br />⚠️ ينصح ب<strong>عدم</strong> اختياره — الأسعار التاريخية مفيدة للتقارير. اتركها وهتقدر تعدّلها بعدين.
             </p>
           </div>
         </label>
 
-        <label className="flex items-start gap-2 rounded-xl bg-slate-800/60 border border-slate-600 p-3 cursor-pointer hover:bg-slate-800/80 transition">
+        <label className="flex items-start gap-2 rounded-xl bg-danger-50 border border-danger-200 p-3 cursor-pointer hover:bg-danger-100 transition">
           <input
             type="checkbox"
             checked={options.resetDashboardStats}
@@ -240,21 +240,21 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
             className="mt-1"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-black">تصفير ملخص لوحة الأدمن</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              يضع كل الإيرادات والعدّادات في <code className="bg-slate-700 px-1 rounded text-[10px]">settings/adminDashboardStats</code> على صفر.
+            <p className="text-slate-950 text-sm font-black">تصفير ملخص لوحة الأدمن</p>
+            <p className="text-slate-700 text-xs leading-relaxed">
+              يضع كل الإيرادات والعدّادات في <code className="bg-white border border-danger-200 px-1 rounded text-[10px] text-slate-900">settings/adminDashboardStats</code> على صفر.
             </p>
           </div>
         </label>
       </div>
 
       {/* خانة تأكيد بكتابة "تصفير" */}
-      <div className="rounded-xl bg-warning-900/30 border border-warning-500 p-3 mb-4">
+      <div className="rounded-xl bg-warning-50 border border-warning-300 p-3 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <FaTriangleExclamation className="w-3.5 h-3.5 text-warning-300 shrink-0" />
-          <p className="text-warning-200 text-xs font-black">تأكيد العملية</p>
+          <FaTriangleExclamation className="w-3.5 h-3.5 text-warning-700 shrink-0" />
+          <p className="text-warning-800 text-xs font-black">تأكيد العملية</p>
         </div>
-        <p className="text-warning-100 text-xs mb-2 leading-relaxed">
+        <p className="text-warning-800 text-xs mb-2 leading-relaxed">
           اكتب الكلمة <strong className="font-black">«{CONFIRMATION_TEXT}»</strong> في الخانة لتأكيد العملية:
         </p>
         <input
@@ -263,13 +263,13 @@ export const ResetFinancialDataSection: React.FC<{ onResetComplete?: () => void 
           onChange={(e) => setConfirmText(e.target.value)}
           disabled={running}
           placeholder={CONFIRMATION_TEXT}
-          className="w-full rounded-lg border-2 border-warning-400 bg-slate-900 text-white px-3 py-2 text-sm font-bold focus:outline-none focus:border-warning-300"
+          className="w-full rounded-lg border-2 border-warning-300 bg-white text-slate-900 px-3 py-2 text-sm font-bold focus:outline-none focus:border-warning-500"
         />
       </div>
 
       {/* progress أثناء التشغيل */}
       {progress && running && (
-        <div className="rounded-xl bg-slate-800/60 border border-slate-600 p-3 mb-4 text-xs text-slate-300 space-y-1">
+        <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-4 text-xs text-slate-800 space-y-1">
           {options.clearSubscriptionHistory && (
             <p>📋 الأطباء: {progress.doctorsUpdated} / {progress.totalDoctors}</p>
           )}

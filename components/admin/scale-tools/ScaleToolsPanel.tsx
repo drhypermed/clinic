@@ -243,18 +243,18 @@ export const ScaleToolsPanel: React.FC = () => {
 
       {/* السجل */}
       {log.length > 0 && (
-        <section className="border border-slate-100 rounded-xl p-3 bg-slate-900 text-slate-100">
-          <div className="text-xs font-bold mb-2 text-slate-400">سجل العمليات</div>
-          <div className="space-y-1 font-mono text-[11px] leading-relaxed max-h-48 overflow-y-auto">
+        <section className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+          <div className="text-xs font-bold mb-2 text-slate-700">سجل العمليات</div>
+          <div className="space-y-2 text-xs leading-relaxed max-h-48 overflow-y-auto">
             {log.map((line, idx) => (
               <div
                 key={idx}
                 className={
                   line.type === 'success'
-                    ? 'text-emerald-400'
+                    ? 'rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-success-800 break-words'
                     : line.type === 'error'
-                      ? 'text-rose-400'
-                      : 'text-slate-300'
+                      ? 'rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-danger-800 break-words'
+                      : 'rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800 break-words'
                 }
               >
                 {line.text}

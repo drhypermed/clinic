@@ -48,18 +48,18 @@ export interface NotificationBroadcastRecord {
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     active: {
         label: 'نشط',
-        className: 'bg-success-700/30 border-success-500 text-success-200',
+        className: 'bg-success-50 border-success-300 text-success-800',
     },
     failed: {
         label: 'فشل',
-        className: 'bg-danger-700/30 border-danger-500 text-danger-200',
+        className: 'bg-danger-50 border-danger-300 text-danger-800',
     },
 };
 
 export const getStatusDisplay = (status: string) =>
     STATUS_LABELS[status] || {
         label: status || 'غير معروف',
-        className: 'bg-slate-600/60 border-slate-400 text-slate-200',
+        className: 'bg-slate-100 border-slate-300 text-slate-800',
     };
 
 export const formatInternalBroadcastDateTime = (value: string): string => {

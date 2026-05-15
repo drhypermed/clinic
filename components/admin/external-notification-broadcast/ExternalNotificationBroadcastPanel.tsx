@@ -181,7 +181,7 @@ export const ExternalNotificationBroadcastPanel: React.FC<ExternalNotificationBr
 
           {/* نتيجة تقدير الجمهور */}
           {estimateInfo && (
-            <div className="mt-3 p-3 rounded-lg bg-slate-800/60 border border-slate-600 text-slate-200 text-xs sm:text-sm whitespace-pre-line font-semibold">
+            <div className="mt-3 p-3 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs sm:text-sm whitespace-pre-line font-semibold">
               {estimateInfo}
             </div>
           )}
@@ -191,10 +191,10 @@ export const ExternalNotificationBroadcastPanel: React.FC<ExternalNotificationBr
             <div
               className={`rounded-xl border px-3 py-2 text-sm font-bold whitespace-pre-wrap ${
                 feedbackType === 'success'
-                  ? 'bg-success-900/30 border-success-500 text-success-200'
+                  ? 'bg-success-50 border-success-300 text-success-800'
                   : feedbackType === 'error'
-                    ? 'bg-danger-900/30 border-danger-500 text-danger-200'
-                    : 'bg-slate-800/70 border-slate-500 text-slate-200'
+                    ? 'bg-danger-50 border-danger-300 text-danger-800'
+                    : 'bg-white border-slate-300 text-slate-900'
               }`}
             >
               {feedback}
@@ -204,14 +204,14 @@ export const ExternalNotificationBroadcastPanel: React.FC<ExternalNotificationBr
       </div>
 
       {/* ═════════ قسم: سجل الإشعارات السابقة ═════════ */}
-      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-brand-400 dh-stagger-2">
-        <h4 className="text-white text-lg sm:text-xl font-black mb-2">سجل الإشعارات (آخر 30 يوم)</h4>
-        <p className="text-slate-300 text-sm mb-4">يتم حذف السجل القديم تلقائيا عبر مهام الصيانة اليومية.</p>
+      <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-6 border border-slate-200 border-t-4 border-brand-500 dh-stagger-2">
+        <h4 className="text-slate-950 text-lg sm:text-xl font-black mb-2">سجل الإشعارات (آخر 30 يوم)</h4>
+        <p className="text-slate-600 text-sm mb-4">يتم حذف السجل القديم تلقائيا عبر مهام الصيانة اليومية.</p>
 
         {loadingRecords ? (
-          <div className="text-slate-300 text-sm"><LoadingText>جارٍ تحميل السجل</LoadingText></div>
+          <div className="text-slate-700 text-sm"><LoadingText>جارٍ تحميل السجل</LoadingText></div>
         ) : records.length === 0 ? (
-          <div className="text-slate-300 text-sm">لا توجد إشعارات مسجلة حاليا.</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 text-sm font-bold">لا توجد إشعارات مسجلة حاليا.</div>
         ) : (
           <div className="space-y-3">
             {displayedRecords.map((record) => (
@@ -231,7 +231,7 @@ export const ExternalNotificationBroadcastPanel: React.FC<ExternalNotificationBr
               <div className="pt-1">
                 <button
                   onClick={() => setVisibleCount((prev) => prev + 5)}
-                  className="px-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-sm font-black"
+                  className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-black"
                 >
                   عرض المزيد (+5) • متبقي {remainingRecordsCount}
                 </button>

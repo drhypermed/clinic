@@ -63,19 +63,19 @@ export const CUSTOM_EMAIL_ROLE_MODE_OPTIONS: Array<{ value: CustomEmailRoleMode;
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     sending: {
         label: 'جارٍ الإرسال',
-        className: 'bg-warning-700/30 border-warning-500 text-warning-200',
+        className: 'bg-warning-50 border-warning-300 text-warning-800',
     },
     sent: {
         label: 'تم الإرسال',
-        className: 'bg-success-700/30 border-success-500 text-success-200',
+        className: 'bg-success-50 border-success-300 text-success-800',
     },
     partial: {
         label: 'إرسال جزئي',
-        className: 'bg-brand-700/30 border-brand-500 text-brand-200',
+        className: 'bg-brand-50 border-brand-300 text-brand-800',
     },
     failed: {
         label: 'فشل الإرسال',
-        className: 'bg-danger-700/30 border-danger-500 text-danger-200',
+        className: 'bg-danger-50 border-danger-300 text-danger-800',
     },
 };
 
@@ -107,7 +107,7 @@ export const getAudienceLabel = (audience: ExternalNotificationAudience): string
 export const getStatusDisplay = (status: string) =>
     STATUS_LABELS[status] || {
         label: status || 'غير معروف',
-        className: 'bg-slate-600/60 border-slate-400 text-slate-200',
+        className: 'bg-slate-100 border-slate-300 text-slate-800',
     };
 
 export const getCustomEmailRoleModeLabel = (mode: CustomEmailRoleMode): string =>

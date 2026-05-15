@@ -46,28 +46,28 @@ export const InternalBroadcastRecordCard: React.FC<InternalBroadcastRecordCardPr
   const isDeletingThis = deletingRecordId === record.id;
 
   return (
-    <div className="rounded-xl border border-slate-500 bg-slate-800/70 p-4">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
       {/* شريط الشارات العلوي: الحالة + الفئة + البريد + الوضع + التاريخ */}
       <div className="flex flex-wrap gap-2 text-xs mb-2">
-        <span className={`px-2 py-1 rounded-lg border ${status.className}`}>{status.label}</span>
-        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+        <span className={`px-2 py-1 rounded-lg border font-bold ${status.className}`}>{status.label}</span>
+        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
           {getAudienceLabel(record.targetAudience)}
         </span>
         {record.targetEmailMasked ? (
-          <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+          <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold break-all">
             {record.targetEmailMasked}
           </span>
         ) : record.targetEmail ? (
-          <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+          <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold break-all">
             {record.targetEmail}
           </span>
         ) : null}
         {record.targetAudience === 'custom' ? (
-          <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+          <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
             {getCustomEmailRoleModeLabel(record.customEmailRoleMode)}
           </span>
         ) : null}
-        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
           {formatDateTime(record.createdAt)}
         </span>
       </div>
@@ -91,22 +91,22 @@ export const InternalBroadcastRecordCard: React.FC<InternalBroadcastRecordCardPr
       </div>
 
       {/* محتوى الإشعار */}
-      <h5 className="text-white font-black text-sm sm:text-base">{record.title}</h5>
-      <p className="text-slate-200 text-sm mt-1 whitespace-pre-wrap">{record.body}</p>
+      <h5 className="text-slate-950 font-black text-sm sm:text-base">{record.title}</h5>
+      <p className="text-slate-700 text-sm mt-1 whitespace-pre-wrap">{record.body}</p>
 
       {/* إحصائيات تقديرية — البث الداخلي ما يرسل push، فلا توجد أرقام توصيل حقيقية.
           الأرقام تحت تعبّر عن حجم الجمهور المستهدف وقت النشر فقط. */}
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-        <div className="rounded-lg bg-slate-700/70 border border-slate-500 px-3 py-2 text-slate-100">
+        <div className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-slate-800">
           أجهزة متوقعة: <span className="font-black">{record.tokenCount}</span>
         </div>
-        <div className="rounded-lg bg-brand-900/25 border border-brand-500 px-3 py-2 text-brand-200">
+        <div className="rounded-lg bg-brand-50 border border-brand-200 px-3 py-2 text-brand-800">
           مستخدمون مطابقون: <span className="font-black">{record.matchedUserIdsCount}</span>
         </div>
       </div>
 
       {/* بيانات إضافية: المُنشئ ونتيجة الخادم */}
-      <div className="mt-3 text-xs text-slate-400 space-y-1">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 space-y-1">
         <p>بواسطة: {record.createdBy || '-'}</p>
         {record.resultText ? <p>النتيجة: {record.resultText}</p> : null}
       </div>

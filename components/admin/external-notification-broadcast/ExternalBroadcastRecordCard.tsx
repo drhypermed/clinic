@@ -44,24 +44,24 @@ export const ExternalBroadcastRecordCard: React.FC<ExternalBroadcastRecordCardPr
   const isDeletingThis = deletingRecordId === record.id;
 
   return (
-    <div className="rounded-xl border border-slate-500 bg-slate-800/70 p-4">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
       {/* شريط الشارات العلوي */}
       <div className="flex flex-wrap gap-2 text-xs mb-2">
-        <span className={`px-2 py-1 rounded-lg border ${status.className}`}>{status.label}</span>
-        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+        <span className={`px-2 py-1 rounded-lg border font-bold ${status.className}`}>{status.label}</span>
+        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
           {getAudienceLabel(record.targetAudience)}
         </span>
         {record.targetEmail ? (
-          <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+          <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold break-all">
             {record.targetEmail}
           </span>
         ) : null}
         {record.targetAudience === 'custom' ? (
-          <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+          <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
             {getCustomEmailRoleModeLabel(record.customEmailRoleMode)}
           </span>
         ) : null}
-        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500">
+        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 font-bold">
           {formatDateTime(record.createdAt)}
         </span>
       </div>
@@ -85,30 +85,30 @@ export const ExternalBroadcastRecordCard: React.FC<ExternalBroadcastRecordCardPr
       </div>
 
       {/* محتوى الإشعار */}
-      <h5 className="text-white font-black text-sm sm:text-base">{record.title}</h5>
-      <p className="text-slate-200 text-sm mt-1 whitespace-pre-wrap">{record.body}</p>
+      <h5 className="text-slate-950 font-black text-sm sm:text-base">{record.title}</h5>
+      <p className="text-slate-700 text-sm mt-1 whitespace-pre-wrap">{record.body}</p>
 
       {/* إحصائيات التوصيل */}
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs sm:text-sm">
-        <div className="rounded-lg bg-slate-700/70 border border-slate-500 px-3 py-2 text-slate-100">
+        <div className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-slate-800">
           الأجهزة المستهدفة: <span className="font-black">{record.tokenCount}</span>
         </div>
-        <div className="rounded-lg bg-success-900/25 border border-success-500 px-3 py-2 text-success-200">
+        <div className="rounded-lg bg-success-50 border border-success-200 px-3 py-2 text-success-800">
           نجح: <span className="font-black">{record.successCount}</span>
         </div>
-        <div className="rounded-lg bg-danger-900/25 border border-danger-500 px-3 py-2 text-danger-200">
+        <div className="rounded-lg bg-danger-50 border border-danger-200 px-3 py-2 text-danger-800">
           فشل: <span className="font-black">{record.failureCount}</span>
         </div>
-        <div className="rounded-lg bg-warning-900/25 border border-warning-500 px-3 py-2 text-warning-200">
+        <div className="rounded-lg bg-warning-50 border border-warning-200 px-3 py-2 text-warning-800">
           دفعات فاشلة: <span className="font-black">{record.failedBatchesCount}</span>
         </div>
-        <div className="rounded-lg bg-slate-900/25 border border-slate-500 px-3 py-2 text-slate-200 sm:col-span-2 lg:col-span-4">
+        <div className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-slate-800 sm:col-span-2 lg:col-span-4">
           تم استبعاد بسبب تداخل فئات: <span className="font-black">{record.excludedDueToOverlapCount}</span>
         </div>
       </div>
 
       {/* معلومات تفصيلية: المُنشئ، وقت الإرسال، retry policy، أسباب الفشل */}
-      <div className="mt-3 text-xs text-slate-400 space-y-1">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 space-y-1">
         <p>بواسطة: {record.createdBy || '-'}</p>
         <p>وقت الإرسال: {formatDateTime(record.sentAt)}</p>
         <p>إعادة الإرسال التلقائي: {record.retryAttempted ? 'تمت' : 'غير مفعلة'} ({record.retryPolicy})</p>

@@ -59,15 +59,15 @@ const deriveDateMs = (isoDate: string, fallbackMs: number): number => {
 
 const getStatusLabel = (status: string): { text: string; className: string } => {
   if (status === 'sent') {
-    return { text: 'تم التنفيذ', className: 'bg-success-700/30 border-success-500 text-success-200' };
+    return { text: 'تم التنفيذ', className: 'bg-success-50 border-success-300 text-success-800' };
   }
   if (status === 'sending') {
-    return { text: 'جارٍ التنفيذ', className: 'bg-warning-700/30 border-warning-500 text-warning-200' };
+    return { text: 'جارٍ التنفيذ', className: 'bg-warning-50 border-warning-300 text-warning-800' };
   }
   if (status === 'failed') {
-    return { text: 'فشل التنفيذ', className: 'bg-danger-700/30 border-danger-500 text-danger-200' };
+    return { text: 'فشل التنفيذ', className: 'bg-danger-50 border-danger-300 text-danger-800' };
   }
-  return { text: status || 'غير معروف', className: 'bg-slate-600/60 border-slate-400 text-slate-200' };
+  return { text: status || 'غير معروف', className: 'bg-slate-100 border-slate-300 text-slate-800' };
 };
 
 export const UpdateBroadcastManagementPanel: React.FC = () => {
@@ -302,22 +302,22 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
         <div
           className={`mb-5 rounded-xl border p-4 ${
             hasPendingDeploymentForRollout || adminHasWaitingUpdate
-              ? 'border-success-400 bg-success-900/20'
-              : 'border-warning-400 bg-warning-900/20'
+              ? 'border-success-300 bg-success-50'
+              : 'border-warning-300 bg-warning-50'
           }`}
         >
-          <p className="text-white font-black text-sm sm:text-base">حالة التحديث على الموقع</p>
-          <p className="text-slate-100 text-sm mt-1 break-words">{effectiveUpdateStatusText}</p>
+          <p className="text-slate-950 font-black text-sm sm:text-base">حالة التحديث على الموقع</p>
+          <p className="text-slate-800 text-sm mt-1 break-words">{effectiveUpdateStatusText}</p>
           {/* الكروت داخل الـ grid: نستخدم min-w-0 + break-words لمنع النص من
               الخروج عن إطار الكارت على الموبايل (التواريخ والنصوص الطويلة كانت تطفح). */}
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs sm:text-sm">
-            <div className="rounded-lg border border-slate-500/60 bg-slate-800/60 px-3 py-2 text-slate-100 min-w-0 break-words">
+            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 min-w-0 break-words">
               <span className="font-black block sm:inline">وقت رفع التحديث:</span>{' '}
               <span className="break-words">
                 {firebaseDeployAtIso ? formatDateTime(firebaseDeployAtIso) : 'غير متاح'}
               </span>
             </div>
-            <div className="rounded-lg border border-slate-500/60 bg-slate-800/60 px-3 py-2 text-slate-100 min-w-0 break-words">
+            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 min-w-0 break-words">
               <span className="font-black block sm:inline">آخر تنفيذ ناجح:</span>{' '}
               <span className="break-words">
                 {latestSentRecord ? formatDateTime(latestSentRecord.sentAt || latestSentRecord.createdAt) : 'لا يوجد'}
@@ -332,8 +332,8 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
           <div
             className={`mt-2 rounded-lg border px-3 py-2 text-xs sm:text-sm font-bold break-words ${
               adminHasWaitingUpdate
-                ? 'border-brand-300/70 bg-brand-900/20 text-brand-100'
-                : 'border-slate-500/60 bg-slate-800/60 text-slate-200'
+                ? 'border-brand-300 bg-brand-50 text-brand-800'
+                : 'border-slate-200 bg-white text-slate-800'
             }`}
           >
             حالة جهاز الأدمن:{' '}
@@ -345,7 +345,7 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
           {firebaseDeployEtag && (
             // ETag قد يكون هاش طويل — break-all يكسر الكلمة الواحدة على الموبايل
             // عشان ما تطفحش خارج الكارت.
-            <p className="text-slate-300 text-[11px] mt-2 font-semibold break-all">ETag: {firebaseDeployEtag}</p>
+            <p className="text-slate-600 text-[11px] mt-2 font-semibold break-all">ETag: {firebaseDeployEtag}</p>
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3">
@@ -355,12 +355,12 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
                 void runUpdateCheck();
               }}
               disabled={checkingUpdate}
-              className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-500 text-white text-sm font-black hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-800 text-sm font-black hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {checkingUpdate ? 'جارٍ الفحص' : 'فحص التحديث الجديد'}
             </button>
             {lastCheckedAt && (
-              <span className="text-slate-300 text-xs font-semibold break-words">آخر فحص: {lastCheckedAt}</span>
+              <span className="text-slate-600 text-xs font-semibold break-words">آخر فحص: {lastCheckedAt}</span>
             )}
           </div>
         </div>
@@ -389,19 +389,21 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
             {sending ? 'جارٍ التنفيذ' : 'تنفيذ التحديث الآن'}
           </button>
           {feedback && (
-            <div className="text-sm font-bold text-slate-100 bg-slate-800/70 border border-slate-500 rounded-lg px-3 py-2">
+            <div className="text-sm font-bold text-slate-900 bg-white border border-slate-300 rounded-lg px-3 py-2">
               {feedback}
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-slate-700 rounded-2xl shadow-xl p-5 sm:p-6 border-t-4 border-brand-400 dh-stagger-2" dir="rtl">
-        <h4 className="text-white text-lg sm:text-xl font-black mb-4">سجل تنفيذ التحديثات</h4>
+      <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-6 border border-slate-200 border-t-4 border-brand-500 dh-stagger-2" dir="rtl">
+        <h4 className="text-slate-950 text-lg sm:text-xl font-black mb-4">سجل تنفيذ التحديثات</h4>
         {loadingRecords ? (
-          <div className="text-slate-300 text-sm"><LoadingText>جارٍ تحميل السجل</LoadingText></div>
+          <div className="text-slate-700 text-sm"><LoadingText>جارٍ تحميل السجل</LoadingText></div>
         ) : records.length === 0 ? (
-          <div className="text-slate-300 text-sm">لا توجد عمليات تنفيذ حتى الآن.</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 text-sm font-bold">
+            لا توجد عمليات تنفيذ حتى الآن.
+          </div>
         ) : (
           <div className="space-y-3">
             {records.map((record) => {
@@ -413,28 +415,26 @@ export const UpdateBroadcastManagementPanel: React.FC = () => {
               return (
                 <div
                   key={record.id}
-                  className="rounded-xl border border-slate-500 bg-slate-800/70 p-4"
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500 break-words">
+                        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 break-words font-bold">
                           الفئة: {getAudienceLabel(record.targetAudience)}
                         </span>
-                        <span className={`px-2 py-1 rounded-lg border break-words ${status.className}`}>
+                        <span className={`px-2 py-1 rounded-lg border break-words font-bold ${status.className}`}>
                           {status.text}
                         </span>
-                        <span className="px-2 py-1 rounded-lg bg-slate-700 text-slate-100 border border-slate-500 break-words">
+                        <span className="px-2 py-1 rounded-lg bg-white text-slate-900 border border-slate-300 break-words font-bold">
                           {formatDateTime(record.createdAt)}
                         </span>
                       </div>
-                      {/* ألوان النصوص هنا تم تفتيحها من slate-400/success-200
-                          إلى slate-200/success-100 لتحسين الوضوح على خلفية slate-800/70. */}
-                      <p className="text-xs text-slate-200 break-all">
-                        <span className="text-slate-400">تم بواسطة:</span> {record.createdBy}
+                      <p className="text-xs text-slate-800 break-all">
+                        <span className="text-slate-600 font-bold">تم بواسطة:</span> {record.createdBy}
                       </p>
-                      <p className="text-xs text-success-100 font-semibold break-words">
-                        <span className="text-slate-400 font-normal">النتيجة:</span> {record.resultText}
+                      <p className="text-xs text-slate-900 font-semibold break-words">
+                        <span className="text-slate-600 font-bold">النتيجة:</span> {record.resultText}
                       </p>
                     </div>
 
