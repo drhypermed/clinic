@@ -73,7 +73,15 @@ export const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
     return (
       <div
         className={className}
-        style={{ ...style, whiteSpace: 'pre-wrap', minHeight: 'auto', display: 'block' }}
+        style={{
+          ...style,
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+          minHeight: 'auto',
+          maxWidth: '100%',
+          display: 'block',
+        }}
         dir={dir}
       >
         {value}
@@ -94,9 +102,18 @@ export const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
       rows={1}
       maxLength={maxLength}
       className={className}
-      style={{ ...style, fieldSizing: 'content' } as React.CSSProperties}
+      style={{
+        ...style,
+        width: '100%',
+        maxWidth: '100%',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+        boxSizing: 'border-box',
+      }}
       dir={dir}
       placeholder={placeholder}
+      wrap="soft"
       data-auto-resize="true"
     />
   );
