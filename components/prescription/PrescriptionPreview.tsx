@@ -56,8 +56,10 @@ interface PrescriptionPreviewProps {
   onUpdateItemFontSize?: (index: number, size: string) => void;
   onUpdateAdvice?: (index: number, val: string) => void;
   onRemoveAdvice?: (index: number) => void;
+  onAddAdvice?: () => void;
   onUpdateLab?: (index: number, val: string) => void;
   onRemoveLab?: (index: number) => void;
+  onAddLab?: () => void;
   onMedicationClick: (med: Medication) => void;
   onSwapItem: (index: number, newMed: AlternativeMed) => void;
   onSelectMedication?: (idx: number, med: Medication) => void;
@@ -104,7 +106,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   rxItems, generalAdvice = [], labInvestigations = [], readyPrescriptions = [],
   usageStats,
   onRemoveItem, onUpdateItemName, onUpdateItemInstruction,
-  onUpdateAdvice, onRemoveAdvice, onUpdateLab, onRemoveLab,
+  onUpdateAdvice, onRemoveAdvice, onAddAdvice, onUpdateLab, onRemoveLab, onAddLab,
   onMedicationClick, onSwapItem, onSelectMedication,
   isDataOnlyMode = false,
   isPrintMode = false,
@@ -465,8 +467,8 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
                       sectionTitleFontFamily={typo?.sectionTitleFontFamily}
                       isDataOnlyMode={isDataOnlyMode} isPrintMode={isPrintMode}
                       middleBackgroundColor={middleBackgroundColor}
-                      onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab}
-                      onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice}
+                      onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab} onAddLab={onAddLab}
+                      onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice} onAddAdvice={onAddAdvice}
                       readyPrescriptions={readyPrescriptions}
                     />
                   </div>

@@ -1016,7 +1016,8 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
             investigations={investigations} investigationsEn={investigationsEn} setInvestigationsEn={setInvestigationsEn}
             diagnosisEn={diagnosisEn} setDiagnosisEn={setDiagnosisEn}
             onRemoveItem={onRemoveItem} onUpdateItemName={onUpdateItemName} onUpdateItemInstruction={onUpdateItemInstruction} onUpdateItemFontSize={onUpdateItemFontSize} onSwapItem={onSwapItem} onSelectMedication={onSelectMedication} onMedicationClick={onMedicationClick}
-            onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice} onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab}
+            onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice} onAddAdvice={onAddManualAdvice}
+            onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab} onAddLab={onAddManualLab}
             isPrintMode={isPrintMode} isDataOnlyMode={isDataOnlyMode} ref={prescriptionRef} usageStats={usageStats} prescriptionSettings={prescriptionSettings ?? undefined}
             doctorSpecialty={doctorSpecialty}
             // forceShowDx يُجبر ظهور صف Dx فاضي بعد التحليل لتنبيه الطبيب بالكتابة اليدوية

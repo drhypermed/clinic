@@ -37,8 +37,10 @@ interface AdditionalNotesProps {
   middleBackgroundColor?: string;
   onUpdateLab?: (idx: number, val: string) => void;
   onRemoveLab?: (idx: number) => void;
+  onAddLab?: () => void;
   onUpdateAdvice?: (idx: number, val: string) => void;
   onRemoveAdvice?: (idx: number) => void;
+  onAddAdvice?: () => void;
   readyPrescriptions?: ReadyPrescription[];
 }
 
@@ -55,6 +57,7 @@ interface SuggestionTextareaProps {
   placeholder?: string;
   readOnlyMode: boolean;
   autoFocus?: boolean;
+  onEnterAdd?: () => void;
 }
 
 const ReadyPrescriptionSuggestionTextarea: React.FC<SuggestionTextareaProps> = ({
@@ -68,6 +71,7 @@ const ReadyPrescriptionSuggestionTextarea: React.FC<SuggestionTextareaProps> = (
   placeholder,
   readOnlyMode,
   autoFocus,
+  onEnterAdd,
 }) => {
   const [open, setOpen] = React.useState(false);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
@@ -99,6 +103,18 @@ const ReadyPrescriptionSuggestionTextarea: React.FC<SuggestionTextareaProps> = (
         onClick={() => setOpen(true)}
         onKeyDown={(e) => {
           if (e.key === 'Escape') setOpen(false);
+          if (
+            e.key === 'Enter' &&
+            !e.shiftKey &&
+            !e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.nativeEvent.isComposing
+          ) {
+            e.preventDefault();
+            setOpen(false);
+            if (value.trim()) onEnterAdd?.();
+          }
         }}
         className={className}
         style={style}
@@ -154,8 +170,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   middleBackgroundColor,
   onUpdateLab,
   onRemoveLab,
+  onAddLab,
   onUpdateAdvice,
   onRemoveAdvice,
+  onAddAdvice,
   readyPrescriptions = [],
 }) => {
   const effectiveRowMinHeight = `${rowMinHeightPx ?? 18}px`;
@@ -242,6 +260,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                     field="labInvestigations"
                     readyPrescriptions={readyPrescriptions}
                     onChange={(value) => onUpdateLab && onUpdateLab(i, value)}
+                    onEnterAdd={onAddLab}
                     className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-left block`}
                     style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
                     dir="ltr"
@@ -281,6 +300,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                     field="generalAdvice"
                     readyPrescriptions={readyPrescriptions}
                     onChange={(value) => onUpdateAdvice && onUpdateAdvice(i, value)}
+                    onEnterAdd={onAddAdvice}
                     className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-right block`}
                     style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
                     placeholder="..."
