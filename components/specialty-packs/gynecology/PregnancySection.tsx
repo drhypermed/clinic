@@ -5,7 +5,7 @@
  * بيلمّ ٣ أجزاء:
  *   1. حاسبه الحمل (LMP → الأسبوع + EDD).
  *   2. شريط حاله الإغلاق (لو الحمل مغلق).
- *   3. قائمه الزيارات + فورم الإضافه/التعديل.
+ *   3. قائمه الزيارات للعرض فقط؛ إضافه زياره جديده تتم من كشف جديد.
  *
  * الحفظ التلقائي بيتعمل من usePregnancyFile (debounce 800ms).
  */
@@ -33,7 +33,7 @@ export const PregnancySection: React.FC<PregnancySectionProps> = ({
 }) => {
     const {
         file, loading, error, isSaving,
-        setLMP, addVisit, updateVisit, deleteVisit,
+        setLMP,
         closePregnancy, reopenPregnancy,
     } = usePregnancyFile({ userId, patientFileNameKey });
 
@@ -107,10 +107,7 @@ export const PregnancySection: React.FC<PregnancySectionProps> = ({
                 <PregnancyVisitsList
                     lmp={file.lastMenstrualPeriod}
                     visits={file.visits}
-                    disabled={isClosed}
-                    onAdd={addVisit}
-                    onUpdate={updateVisit}
-                    onDelete={deleteVisit}
+                    disabled
                 />
             </div>
 

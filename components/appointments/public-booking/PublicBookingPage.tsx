@@ -34,6 +34,7 @@ import {
   clearTimedPayload,
 } from '../internalToastStorage';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../../utils/secretaryVitals';
 
 /**
  * مكون صفحة "إدارة المواعيد" (PublicBookingPage) - وهي الواجهة المخصصة للسكرتارية
@@ -104,6 +105,8 @@ export const PublicBookingPage: React.FC = () => {
     setPatientName,
     age,
     setAge,
+    dateOfBirth,
+    setDateOfBirth,
     phone,
     setPhone,
     gender,
@@ -219,6 +222,7 @@ export const PublicBookingPage: React.FC = () => {
 
   // عدد مواعيد اليوم (sortedTodayAppointments مفلترة بالفعل لليوم الحالي)
   const todayPendingCount = sortedTodayAppointments.length;
+  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(config?.doctorSpecialty);
 
   // عند تعديل موعد نحول الواجهة لنموذج الحجز تلقائياً
   const handleEditAndSwitchView = (apt: Parameters<typeof handleEditAppointment>[0]) => {
@@ -338,6 +342,7 @@ export const PublicBookingPage: React.FC = () => {
                 secretaryApprovedEntryIds={secretaryApprovedEntryIds}
                 pendingEntryAppointmentId={pendingEntryAppointmentId}
                 entryRequestSendingId={entryRequestSendingId}
+                canShowSecretaryVitals={canShowSecretaryVitals}
                 onRequestEntryNow={requestEntryNow}
                 onEditAppointment={handleEditAndSwitchView}
                 onRemoveTodayAppointment={removeTodayAppointment}
@@ -361,6 +366,7 @@ export const PublicBookingPage: React.FC = () => {
             <div className="px-3 py-3 sm:px-5 sm:py-4">
               <PublicBookingCompletedSection
                 completedAppointments={completedAppointments}
+                canShowSecretaryVitals={canShowSecretaryVitals}
                 onRemoveAppointment={removeTodayAppointment}
               />
             </div>
@@ -379,6 +385,8 @@ export const PublicBookingPage: React.FC = () => {
                 onPatientNameChange={setPatientName}
                 age={age}
                 onAgeChange={setAge}
+                dateOfBirth={dateOfBirth}
+                onDateOfBirthChange={setDateOfBirth}
                 phone={phone}
                 onPhoneChange={setPhone}
                 gender={gender}

@@ -1,4 +1,4 @@
-import { PrescriptionItem } from '../types';
+import { PrescriptionItem, ReadyPrescription } from '../types';
 
 export const sanitizeReadyPrescriptionText = (value: unknown): string =>
   String(value || '').replace(/\r\n/g, '\n').trim();
@@ -76,4 +76,46 @@ export const sanitizeReadyPrescriptionRxItems = (
 
 export const normalizeReadyPrescriptionTextList = (values?: string[]): string[] => {
   return (values || []).map(v => sanitizeReadyPrescriptionText(v)).filter(Boolean);
+};
+
+type ReadyPrescriptionTextField = 'generalAdvice' | 'labInvestigations';
+
+const normalizeReadyPrescriptionSuggestionKey = (value: string): string =>
+  sanitizeReadyPrescriptionText(value)
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+
+const sortReadyPrescriptionsByRecentUse = (presets: ReadyPrescription[]): ReadyPrescription[] => {
+  return [...presets].sort((a, b) => {
+    const aa = (a.updatedAt || a.createdAt || '').toString();
+    const bb = (b.updatedAt || b.createdAt || '').toString();
+    return bb.localeCompare(aa);
+  });
+};
+
+export const buildReadyPrescriptionTextSuggestions = (
+  presets: ReadyPrescription[],
+  field: ReadyPrescriptionTextField,
+  query: string,
+  limit = 5,
+): string[] => {
+  const normalizedQuery = normalizeReadyPrescriptionSuggestionKey(query);
+  const sortedPresets = sortReadyPrescriptionsByRecentUse(presets || []);
+  const allValues: string[] = [];
+  const seen = new Set<string>();
+
+  for (const preset of sortedPresets) {
+    for (const value of normalizeReadyPrescriptionTextList(preset[field])) {
+      const key = normalizeReadyPrescriptionSuggestionKey(value);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      allValues.push(value);
+    }
+  }
+
+  if (!normalizedQuery) return allValues.slice(0, limit);
+
+  return allValues
+    .filter((value) => normalizeReadyPrescriptionSuggestionKey(value).includes(normalizedQuery))
+    .slice(0, Math.max(limit, 8));
 };

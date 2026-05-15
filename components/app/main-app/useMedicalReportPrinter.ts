@@ -31,6 +31,7 @@ import {
 } from '../../../services/specialty-packs/gynecology';
 import {
     EGYPTIAN_VACCINATION_SCHEDULE,
+    buildPediatricFileStorageKey,
     loadPediatricFile,
 } from '../../../services/specialty-packs/pediatrics';
 import {
@@ -128,7 +129,12 @@ export const useMedicalReportPrinter = ({
                         }
                     }
                     if (packs?.packs.pediatrics?.enabled) {
-                        const file = await loadPediatricFile(userId, payload.patientFile.key);
+                        const pediatricFileKey = buildPediatricFileStorageKey({
+                            patientFileId: payload.patientFile.fileId,
+                            patientFileNumber: payload.patientFile.fileNumber,
+                            patientFileNameKey: payload.patientFile.key,
+                        }) || payload.patientFile.key;
+                        const file = await loadPediatricFile(userId, pediatricFileKey, payload.patientFile.key);
                         const hasData = Boolean(file.dateOfBirth)
                             || file.growthEntries.length > 0
                             || Object.keys(file.vaccinations).length > 0;

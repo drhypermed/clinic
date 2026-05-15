@@ -185,6 +185,9 @@ export const DailyGroup: React.FC<{
                           userId={doctorUserId}
                           patientName={rec.patientName}
                           doctorSpecialty={doctorSpecialty}
+                          patientFileId={rec.patientFileId}
+                          patientFileNumber={rec.patientFileNumber}
+                          patientFileNameKey={rec.patientFileNameKey}
                         />
                         <button
                           type="button"

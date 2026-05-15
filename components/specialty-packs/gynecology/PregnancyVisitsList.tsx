@@ -18,9 +18,9 @@ interface PregnancyVisitsListProps {
     visits: PregnancyVisit[];
     disabled?: boolean;
     hideVitalsOverlap?: boolean;
-    onAdd: (visit: Omit<PregnancyVisit, 'id' | 'updatedAt'>) => void;
-    onUpdate: (id: string, patch: Partial<PregnancyVisit>) => void;
-    onDelete: (id: string) => void;
+    onAdd?: (visit: Omit<PregnancyVisit, 'id' | 'updatedAt'>) => void;
+    onUpdate?: (id: string, patch: Partial<PregnancyVisit>) => void;
+    onDelete?: (id: string) => void;
 }
 
 const formatDate = (iso?: string): string => {
@@ -55,7 +55,7 @@ export const PregnancyVisitsList: React.FC<PregnancyVisitsListProps> = ({
                 <h4 className="text-sm font-black text-slate-800">
                     زيارات الحمل ({visits.length})
                 </h4>
-                {!adding && !editingVisit && !disabled && (
+                {!adding && !editingVisit && !disabled && onAdd && (
                     <button
                         type="button"
                         onClick={() => setAdding(true)}
@@ -73,7 +73,7 @@ export const PregnancyVisitsList: React.FC<PregnancyVisitsListProps> = ({
                     defaultDateKey={defaultDateKey}
                     hideVitalsOverlap={hideVitalsOverlap}
                     onSubmit={(visit) => {
-                        onAdd(visit);
+                        onAdd?.(visit);
                         setAdding(false);
                     }}
                     onCancel={() => setAdding(false)}
@@ -82,7 +82,7 @@ export const PregnancyVisitsList: React.FC<PregnancyVisitsListProps> = ({
             )}
 
             {/* ─ فورم التعديل ─ */}
-            {editingVisit && (
+            {editingVisit && onUpdate && (
                 <PregnancyVisitForm
                     lmp={lmp}
                     initialVisit={editingVisit}
@@ -99,7 +99,11 @@ export const PregnancyVisitsList: React.FC<PregnancyVisitsListProps> = ({
             {/* ─ قائمه الزيارات ─ */}
             {visits.length === 0 && !adding && (
                 <div className="rounded-xl border-2 border-dashed border-pink-200 bg-pink-50/30 p-4 text-center text-xs font-bold text-slate-500">
-                    مفيش زيارات حمل لسه — اضغط "إضافه زياره" لتسجيل أول زياره.
+                    {disabled
+                        ? 'مفيش زيارات حمل مسجله لسه. الزيارات الجديده تتسجل من كشف جديد.'
+                        : onAdd
+                            ? 'مفيش زيارات حمل لسه — اضغط "إضافه زياره" لتسجيل أول زياره.'
+                            : 'مفيش زيارات حمل مسجله لسه.'}
                 </div>
             )}
 
@@ -130,27 +134,31 @@ export const PregnancyVisitsList: React.FC<PregnancyVisitsListProps> = ({
                                             </span>
                                         )}
                                     </div>
-                                    {!disabled && (
+                                    {!disabled && (onUpdate || onDelete) && (
                                         <div className="flex items-center gap-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => setEditingId(v.id)}
-                                                className="text-[11px] font-bold text-brand-600 hover:text-brand-800 px-2 py-0.5 rounded"
-                                            >
-                                                تعديل
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const ok = window.confirm(
-                                                        'هل تريد حذف هذه الزياره؟ لا يمكن التراجع.',
-                                                    );
-                                                    if (ok) onDelete(v.id);
-                                                }}
-                                                className="text-[11px] font-bold text-danger-600 hover:text-danger-800 px-2 py-0.5 rounded"
-                                            >
-                                                حذف
-                                            </button>
+                                            {onUpdate && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingId(v.id)}
+                                                    className="text-[11px] font-bold text-brand-600 hover:text-brand-800 px-2 py-0.5 rounded"
+                                                >
+                                                    تعديل
+                                                </button>
+                                            )}
+                                            {onDelete && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const ok = window.confirm(
+                                                            'هل تريد حذف هذه الزياره؟ لا يمكن التراجع.',
+                                                        );
+                                                        if (ok) onDelete(v.id);
+                                                    }}
+                                                    className="text-[11px] font-bold text-danger-600 hover:text-danger-800 px-2 py-0.5 rounded"
+                                                >
+                                                    حذف
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

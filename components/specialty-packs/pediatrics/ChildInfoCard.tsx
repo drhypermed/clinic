@@ -54,10 +54,11 @@ export const ChildInfoCard: React.FC<ChildInfoCardProps> = ({
                         max={getTodayDateKey()}
                         onChange={(e) => onChangeDateOfBirth(e.target.value)}
                         className="w-full h-10 rounded-xl border-2 border-sky-200 bg-white px-3 text-sm font-bold text-slate-800 focus:border-sky-400 hover:border-sky-300 focus:outline-none transition-colors"
+                        aria-label="تاريخ الميلاد"
                     />
                     {/* ملاحظه: تنبيه للدكتور إن السن في الكشف هيتحدث تلقائي من التاريخ ده */}
                     <p className="mt-1 text-[10px] text-sky-700 font-bold">
-                        💡 السن (سنوات/شهور/أيام) في الكشف هيتحدث تلقائياً من التاريخ ده.
+                        ملاحظة: السن (سنوات/شهور/أيام) في الكشف هيتحدث تلقائياً من التاريخ ده.
                     </p>
                 </div>
 

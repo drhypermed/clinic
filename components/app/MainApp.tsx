@@ -107,7 +107,7 @@ export const MainApp: React.FC = () => {
     currentView, setCurrentView,
     notifications,
     showNotification,
-    patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+    patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     weight, setWeight, height, setHeight, bmi, vitals, setVitals, updateVital,
     complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations,
@@ -457,7 +457,7 @@ export const MainApp: React.FC = () => {
     handleResetAndClearOpenedAppointment,
     handleOpenConsultation,
     navigateToView,
-    setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays,
+    setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
     setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
@@ -547,10 +547,14 @@ export const MainApp: React.FC = () => {
               ageYears={ageYears} setAgeYears={setAgeYears}
               ageMonths={ageMonths} setAgeMonths={setAgeMonths}
               ageDays={ageDays} setAgeDays={setAgeDays}
+              dateOfBirth={dateOfBirth} setDateOfBirth={setDateOfBirth}
               gender={gender} setGender={setGender}
               pregnant={pregnant} setPregnant={setPregnant}
               gestationalAgeWeeks={gestationalAgeWeeks} setGestationalAgeWeeks={setGestationalAgeWeeks}
               breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
+              activePatientFileId={activePatientFileId}
+              activePatientFileNumber={activePatientFileNumber}
+              activePatientFileNameKey={activePatientFileNameKey}
               setActivePatientFileId={setActivePatientFileId}
               setActivePatientFileNumber={setActivePatientFileNumber}
               setActivePatientFileNameKey={setActivePatientFileNameKey}
@@ -595,6 +599,7 @@ export const MainApp: React.FC = () => {
               setShowReadyPrescriptionsModal={setShowReadyPrescriptionsModal}
               consultationDate={consultationDate}
               rxItems={rxItems} generalAdvice={generalAdvice} labInvestigations={labInvestigations}
+              readyPrescriptions={readyPrescriptions}
               complaintEn={complaintEn} setComplaintEn={setComplaintEn}
               historyEn={historyEn} setHistoryEn={setHistoryEn}
               examEn={examEn} setExamEn={setExamEn}

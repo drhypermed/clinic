@@ -24,6 +24,12 @@ import {
     type VaccinationStatus,
 } from './types';
 
+interface PediatricFileIdentity {
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
+    patientFileNameKey?: string | null;
+}
+
 const buildDocId = (nameKey: string): string =>
     `${PEDIATRIC_FILE_DOC_PREFIX}${encodeURIComponent(nameKey)}`;
 
@@ -33,6 +39,22 @@ const getDocRef = (userId: string, nameKey: string) =>
 // ─ helpers تنظيف ─
 
 const trimStr = (v: unknown): string => String(v || '').trim();
+
+export const buildPediatricFileStorageKey = ({
+    patientFileId,
+    patientFileNumber,
+    patientFileNameKey,
+}: PediatricFileIdentity): string => {
+    const parsedFileNumber = Number(patientFileNumber);
+    if (Number.isFinite(parsedFileNumber) && parsedFileNumber > 0) {
+        return `fileNumber_${Math.floor(parsedFileNumber)}`;
+    }
+
+    const cleanFileId = trimStr(patientFileId);
+    if (cleanFileId) return `fileId_${cleanFileId}`;
+
+    return trimStr(patientFileNameKey);
+};
 
 const toSex = (v: unknown): ChildSex => {
     const s = trimStr(v);
@@ -117,11 +139,19 @@ export const normalizePediatricFile = (
 export const loadPediatricFile = async (
     userId: string,
     nameKey: string,
+    legacyNameKey?: string | null,
 ): Promise<PediatricFile> => {
     if (!userId || !nameKey) return createEmptyPediatricFile(nameKey);
     try {
         const snap = await getDocCacheFirst(getDocRef(userId, nameKey));
-        if (!snap.exists()) return createEmptyPediatricFile(nameKey);
+        if (!snap.exists()) {
+            const fallbackKey = trimStr(legacyNameKey);
+            if (fallbackKey && fallbackKey !== nameKey) {
+                const legacySnap = await getDocCacheFirst(getDocRef(userId, fallbackKey));
+                if (legacySnap.exists()) return normalizePediatricFile(nameKey, legacySnap.data() || {});
+            }
+            return createEmptyPediatricFile(nameKey);
+        }
         return normalizePediatricFile(nameKey, snap.data() || {});
     } catch {
         return createEmptyPediatricFile(nameKey);
@@ -142,6 +172,6 @@ export const savePediatricFile = async (
     };
     // Firestore بيرفض undefined — نشيل أي حقول فاضيه قبل ما نكتب
     const cleanPayload = stripUndefinedDeep(payload);
-    await setDoc(getDocRef(userId, file.patientFileNameKey), cleanPayload, { merge: true });
+    await setDoc(getDocRef(userId, file.patientFileNameKey), cleanPayload);
     return payload;
 };

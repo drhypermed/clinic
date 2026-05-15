@@ -17,6 +17,7 @@ type PublicBookingTodaySectionProps = {
   secretaryApprovedEntryIds: string[];
   pendingEntryAppointmentId: string | null;
   entryRequestSendingId: string | null;
+  canShowSecretaryVitals?: boolean;
   onRequestEntryNow: (apt: TodayAppointment) => void;
   onEditAppointment: (apt: TodayAppointment) => void;
   onRemoveTodayAppointment: (appointmentId: string) => void;
@@ -29,6 +30,7 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
   secretaryApprovedEntryIds,
   pendingEntryAppointmentId,
   entryRequestSendingId,
+  canShowSecretaryVitals = false,
   onRequestEntryNow,
   onEditAppointment,
   onRemoveTodayAppointment,
@@ -90,7 +92,9 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
                     {apt.visitReason && <p>سبب الزيارة: {apt.visitReason}</p>}
                   </div>
 
-                  <SecretaryVitalsPills vitals={apt.secretaryVitals} compact className="mt-1" />
+                  {canShowSecretaryVitals && (
+                    <SecretaryVitalsPills vitals={apt.secretaryVitals} compact className="mt-1" />
+                  )}
                   {apt.phone && <div className="mt-1"><PatientContactActions phone={apt.phone} compact /></div>}
 
                   {/* الأكشنز */}

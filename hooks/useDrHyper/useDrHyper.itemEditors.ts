@@ -112,13 +112,14 @@ export const createItemEditors = ({
         const hasValidDoseInputs = isWeightValid && isAgeValid;
 
         // حساب الجرعة المقترحة بناءً على وزن وعمر المريض
+        const defaultDose = ((med as any).dosageText || '').toString().trim();
         const doseRaw = hasValidDoseInputs
             ? (typeof med.calculationRule === 'function' ? med.calculationRule(w, totalAgeInMonths) : 'الجرعة غير متاحة')
-            : '';
+            : defaultDose;
         const dose = sanitizeDosageText(doseRaw);
         
         // بناء جملة التعليمات الكاملة
-        const fullInstructions = hasValidDoseInputs ? buildRxInstructions(dose, med.instructions) : '';
+        const fullInstructions = (hasValidDoseInputs || defaultDose) ? buildRxInstructions(dose, med.instructions) : '';
         
         // جلب البدائل التي تطابق نفس المادة الفعالة
         const alternatives = buildAlternativesSameScientific(med, w, totalAgeInMonths, medications);

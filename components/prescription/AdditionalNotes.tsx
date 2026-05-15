@@ -1,6 +1,8 @@
 import React from 'react';
 import { AutoResizeTextarea } from '../common/AutoResizeTextarea';
+import type { ReadyPrescription } from '../../types';
 import { FOLLOWUP_WITHIN_WEEK_NOTE_AR_VARIANTS } from '../../utils/prescriptionText';
+import { buildReadyPrescriptionTextSuggestions } from '../../utils/readyPrescriptionUtils';
 
 /**
  * الملف: AdditionalNotes.tsx
@@ -37,7 +39,105 @@ interface AdditionalNotesProps {
   onRemoveLab?: (idx: number) => void;
   onUpdateAdvice?: (idx: number, val: string) => void;
   onRemoveAdvice?: (idx: number) => void;
+  readyPrescriptions?: ReadyPrescription[];
 }
+
+type SuggestionField = 'generalAdvice' | 'labInvestigations';
+
+interface SuggestionTextareaProps {
+  value: string;
+  field: SuggestionField;
+  readyPrescriptions: ReadyPrescription[];
+  onChange: (value: string) => void;
+  className: string;
+  style: React.CSSProperties;
+  dir?: string;
+  placeholder?: string;
+  readOnlyMode: boolean;
+  autoFocus?: boolean;
+}
+
+const ReadyPrescriptionSuggestionTextarea: React.FC<SuggestionTextareaProps> = ({
+  value,
+  field,
+  readyPrescriptions,
+  onChange,
+  className,
+  style,
+  dir,
+  placeholder,
+  readOnlyMode,
+  autoFocus,
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const handleMouseDown = (event: MouseEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [open]);
+
+  const suggestions = React.useMemo(() => {
+    if (readOnlyMode || !open) return [];
+    return buildReadyPrescriptionTextSuggestions(readyPrescriptions, field, value);
+  }, [field, open, readyPrescriptions, readOnlyMode, value]);
+
+  const suggestionTitle = value.trim()
+    ? 'اقتراحات من الروشتات الجاهزة'
+    : 'آخر 5 من الروشتات الجاهزة';
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <AutoResizeTextarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setOpen(false);
+        }}
+        className={className}
+        style={style}
+        dir={dir}
+        placeholder={placeholder}
+        readOnlyMode={readOnlyMode}
+        autoFocus={autoFocus}
+      />
+
+      {!readOnlyMode && open && suggestions.length > 0 && (
+        <div
+          className="no-print absolute right-0 bottom-full mb-1 w-full min-w-[180px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 z-[99999]"
+          dir="rtl"
+        >
+          <div className="px-2.5 py-1.5 text-[10px] font-black text-slate-500 bg-slate-50 border-b border-slate-100">
+            {suggestionTitle}
+          </div>
+          <div className="max-h-44 overflow-y-auto">
+            {suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(suggestion);
+                  setOpen(false);
+                }}
+                className="block w-full px-2.5 py-2 text-right text-[11px] font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 border-b border-slate-50 last:border-b-0"
+                dir="auto"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   labInvestigations,
@@ -56,6 +156,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   onRemoveLab,
   onUpdateAdvice,
   onRemoveAdvice,
+  readyPrescriptions = [],
 }) => {
   const effectiveRowMinHeight = `${rowMinHeightPx ?? 18}px`;
   const fontSizeOverride = notesFontSizePx ? { fontSize: `${notesFontSizePx}px` } : {};
@@ -129,7 +230,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                     في التحرير يرسم AutoResizeTextarea كـ textarea (قابل للكتابة).
                     في الطباعة يرسمه كـ div (نفس styling) — بنفس الارتفاع والمسافات. */}
                 <div className="flex-1 min-w-0" dir="ltr">
-                  <AutoResizeTextarea
+                  <ReadyPrescriptionSuggestionTextarea
                     value={isPrintMode
                       ? (() => {
                           const p = parseLab(lab);
@@ -138,7 +239,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                           return reason ? `${test} - ${reason}` : test;
                         })()
                       : lab}
-                    onChange={(e) => onUpdateLab && onUpdateLab(i, e.target.value)}
+                    field="labInvestigations"
+                    readyPrescriptions={readyPrescriptions}
+                    onChange={(value) => onUpdateLab && onUpdateLab(i, value)}
                     className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-left block`}
                     style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
                     dir="ltr"
@@ -173,9 +276,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <div key={i} className="flex items-start gap-2 group overflow-visible" style={{ minHeight: effectiveRowMinHeight }}>
                 <span className={`text-success-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
                 <div className="flex-1 min-w-0">
-                  <AutoResizeTextarea
+                  <ReadyPrescriptionSuggestionTextarea
                     value={advice}
-                    onChange={(e) => onUpdateAdvice && onUpdateAdvice(i, e.target.value)}
+                    field="generalAdvice"
+                    readyPrescriptions={readyPrescriptions}
+                    onChange={(value) => onUpdateAdvice && onUpdateAdvice(i, value)}
                     className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-right block`}
                     style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
                     placeholder="..."

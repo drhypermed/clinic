@@ -3,6 +3,10 @@ import type { PatientGender, PaymentType } from '../../types';
 import { buildCairoDateWithCurrentTime, formatUserDate, formatUserTime } from '../../utils/cairoTime';
 // قرار سؤال الحمل/الرضاعة
 import { shouldAskFertilityQuestions } from '../../utils/patientIdentity';
+import {
+  calculateAgePartsFromDateOfBirth,
+  estimateDateOfBirthFromAgeParts,
+} from '../appointments/utils';
 
 /**
  * واجهة بيانات المريض المقترحة (Basic Patient Suggestion)
@@ -12,15 +16,14 @@ export interface BasicPatientSuggestion {
   id: string;               // المعرف الفريد للمريض في Firestore
   patientName: string;      // اسم المريض
   phone?: string;           // رقم الهاتف
-  ageYears?: string;        // العمر بالسنوات
-  ageMonths?: string;       // العمر بالشهور
-  ageDays?: string;         // العمر بالأيام
   ageText?: string;         // نص العمر المنسق (مثلاً: 5 سنوات و شهر)
   lastExamDate?: string;    // تاريخ آخر كشف طبي
   lastConsultationDate?: string; // تاريخ آخر استشارة
   patientFileNumber?: number; // رقم ملف المريض الثابت
   // ─── قياسات آخر زيارة — تُستخدم لجلبها تلقائياً في الاستشارة ───
   // الوزن والطول نسبياً ثابتان بين الزيارات المتقاربة، فنعرضهم مبدئياً والطبيب يعدّل لو احتاج
+  patientFileId?: string;
+  patientFileNameKey?: string;
   lastWeight?: string;
   lastHeight?: string;
   /** جنس المريض (ثابت مدى الحياة) — يُعرض في dropdown الاقتراحات */
@@ -46,6 +49,9 @@ interface PatientInfoSectionProps {
   ageYears: string; setAgeYears: (v: string) => void;               // السن (سنوات) ودالة التحديث
   ageMonths: string; setAgeMonths: (v: string) => void;             // السن (شهور) ودالة التحديث
   ageDays: string; setAgeDays: (v: string) => void;                 // السن (أيام) ودالة التحديث
+  dateOfBirth?: string;
+  setDateOfBirth?: (v: string) => void;
+  showDateOfBirth?: boolean;
   /** جنس المريض — ثابت لكل زياراته */
   gender?: PatientGender | '';
   setGender?: (v: PatientGender | '') => void;
@@ -70,6 +76,7 @@ interface PatientInfoSectionProps {
 
 export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
   patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+  dateOfBirth = '', setDateOfBirth, showDateOfBirth = false,
   gender = '', setGender,
   pregnant = null, setPregnant,
   gestationalAgeWeeks = null, setGestationalAgeWeeks,
@@ -151,11 +158,49 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
   const ageFieldWrapperClass = 'clinic-field relative h-[44px] rounded-xl !bg-white !border-2 !border-slate-200 focus-within:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow';
   const ageFieldInputClass = 'w-full h-full bg-transparent border-none outline-none text-center font-black text-sm tabular-nums px-7';
   const ageFieldUnitClass = 'clinic-unit absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold pointer-events-none';
-  const ageFieldConfigs: Array<{ key: string; value: string; setValue: (v: string) => void; unit: string }> = [
-    { key: 'years', value: ageYears, setValue: setAgeYears, unit: 'سنة' },
-    { key: 'months', value: ageMonths, setValue: setAgeMonths, unit: 'شهر' },
-    { key: 'days', value: ageDays, setValue: setAgeDays, unit: 'يوم' },
+  type AgeFieldKey = 'years' | 'months' | 'days';
+  const shouldShowDateOfBirth = showDateOfBirth && Boolean(setDateOfBirth);
+  const firstRowColumnsClass = shouldShowDateOfBirth
+    ? (setGender ? 'md:grid-cols-4' : 'md:grid-cols-3')
+    : (setGender ? 'md:grid-cols-3' : 'md:grid-cols-2');
+  const ageFieldConfigs: Array<{ key: AgeFieldKey; value: string; unit: string }> = [
+    { key: 'years', value: ageYears, unit: 'سنة' },
+    { key: 'months', value: ageMonths, unit: 'شهر' },
+    { key: 'days', value: ageDays, unit: 'يوم' },
   ];
+
+  const syncAgeFromDateOfBirth = (nextDateOfBirth: string, referenceDate = visitDate) => {
+    const parts = calculateAgePartsFromDateOfBirth(nextDateOfBirth, referenceDate);
+    if (!parts) return;
+    setAgeYears(parts.years);
+    setAgeMonths(parts.months);
+    setAgeDays(parts.days);
+  };
+
+  const handleDateOfBirthChange = (value: string) => {
+    setDateOfBirth?.(value);
+    syncAgeFromDateOfBirth(value);
+  };
+
+  const handleAgeFieldChange = (key: AgeFieldKey, value: string) => {
+    const nextValue = normalizeAgeInput(value);
+    const nextParts = {
+      years: key === 'years' ? nextValue : ageYears,
+      months: key === 'months' ? nextValue : ageMonths,
+      days: key === 'days' ? nextValue : ageDays,
+    };
+    if (key === 'years') setAgeYears(nextValue);
+    if (key === 'months') setAgeMonths(nextValue);
+    if (key === 'days') setAgeDays(nextValue);
+    if (shouldShowDateOfBirth) {
+      setDateOfBirth?.(estimateDateOfBirthFromAgeParts(nextParts, visitDate));
+    }
+  };
+
+  useEffect(() => {
+    if (!shouldShowDateOfBirth || !dateOfBirth) return;
+    syncAgeFromDateOfBirth(dateOfBirth, visitDate);
+  }, [shouldShowDateOfBirth, dateOfBirth, visitDate]);
 
   /** إغلاق قائمة المقترحات مع مهلة بسيطة للسماح بحدث النقر (Click) بالمرور */
   const closeSuggestions = () => {
@@ -201,7 +246,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
         {/* ═══ الصف الأول: الاسم | العمر | الجنس ═══
             الهوية الأساسية للمريض (ثابتة مدى الحياة) في الصف الأول — 3 أعمدة
             على الديسكتوب، وعلى الموبايل كل حاجة فوق بعض. */}
-        <div className={`grid grid-cols-1 ${setGender ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-3 items-stretch`}>
+        <div className={`grid grid-cols-1 ${firstRowColumnsClass} gap-3 items-stretch`}>
           {/* حقل إدخال اسم المريض مع خاصية الإكمال التلقائي */}
           <div className={`relative flex flex-col ${activeSuggestionField === 'name' ? 'z-[140]' : 'z-10'}`}>
             <p className={fieldTitleClass}>الاسم</p>
@@ -216,7 +261,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                 placeholder="يفضل كتابة الاسم ثلاثي"
               />
               {activeSuggestionField === 'name' && visibleSuggestions.length > 0 && (
-                <div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[220] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden max-h-56 overflow-y-auto">
+                <div className="patient-suggestions-popover absolute top-[calc(100%+6px)] left-0 right-0 z-[220] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden max-h-56 overflow-y-auto">
                   {visibleSuggestions.map((item) => (
                     <button
                       key={item.id}
@@ -253,6 +298,21 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
             )}
           </div>
 
+          {shouldShowDateOfBirth && (
+            <div>
+              <p className={fieldTitleClass}>تاريخ الميلاد</p>
+              <input
+                type="date"
+                value={dateOfBirth}
+                max={visitDate}
+                onChange={(e) => handleDateOfBirthChange(e.target.value)}
+                className="clinic-field w-full h-[44px] px-4 rounded-2xl font-black text-slate-900 text-sm !bg-white !border-2 !border-slate-200 focus:!border-brand-400 hover:!border-brand-300 transition-colors dropdown-shadow"
+                dir="ltr"
+                aria-label="تاريخ الميلاد"
+              />
+            </div>
+          )}
+
           {/* شبكة مدخلات العمر (3 حقول فرعية: سنة/شهر/يوم) — جنب الاسم مباشرةً */}
           <div>
             <p className={fieldTitleClass}>العمر</p>
@@ -265,7 +325,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                     pattern="[0-9]*"
                     maxLength={3}
                     value={field.value}
-                    onChange={(e) => field.setValue(normalizeAgeInput(e.target.value))}
+                    onChange={(e) => handleAgeFieldChange(field.key, e.target.value)}
                     className={ageFieldInputClass}
                     placeholder=""
                     aria-label={`العمر ${field.unit}`}
@@ -445,7 +505,7 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                 dir="ltr"
               />
               {activeSuggestionField === 'phone' && visibleSuggestions.length > 0 && (
-                <div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[220] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden max-h-56 overflow-y-auto">
+                <div className="patient-suggestions-popover absolute top-[calc(100%+6px)] left-0 right-0 z-[220] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden max-h-56 overflow-y-auto">
                   {visibleSuggestions.map((item) => (
                     <button
                       key={item.id}

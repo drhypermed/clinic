@@ -4,7 +4,6 @@ import { PatientInfoSection } from '../consultation/PatientInfoSection';
 import { ClinicalInsightSection } from '../consultation/ClinicalInsightSection';
 import { VitalSignsSection } from '../consultation/VitalSignsSection';
 import { useEnabledSpecialtyPack } from '../../hooks/useSpecialtyPack';
-import { SpecialtyPackDiagnostic } from '../specialty-packs/SpecialtyPackDiagnostic';
 
 // تحميل كسول لودجت متابعه الحمل — أطباء التخصصات التانيه ما يحمّلوهاش
 const PregnancyConsultationWidget = React.lazy(
@@ -45,13 +44,13 @@ import type {
   PatientGender,
   PaymentType,
   PrescriptionItem,
+  ReadyPrescription,
   PrescriptionSettings,
   VitalSigns,
 } from '../../types';
 import { InsurancePaymentSelector } from '../prescription/InsurancePaymentSelector';
-// دوال هوية المريض: تطبيع الجنس + حساب السن الجديد من آخر زيارة
+// دوال هوية المريض: تطبيع الجنس القادم من السجلات القديمة
 import {
-  advanceAgeByElapsedTime,
   normalizeGender,
 } from '../../utils/patientIdentity';
 // سقف قوائم الروشتة المتفق عليه: 15 عنصر لكل قائمة (أدوية/فحوصات/تعليمات)
@@ -87,6 +86,8 @@ interface MainAppPrescriptionSectionProps {
   setAgeMonths: (value: string) => void;
   ageDays: string;
   setAgeDays: (value: string) => void;
+  dateOfBirth: string;
+  setDateOfBirth: (value: string) => void;
   // حقول الهوية الجديدة: الجنس ثابت للمريض، والحمل والرضاعة snapshot للزيارة
   gender: PatientGender | '';
   setGender: (value: PatientGender | '') => void;
@@ -97,6 +98,9 @@ interface MainAppPrescriptionSectionProps {
   setGestationalAgeWeeks: (value: number | null) => void;
   breastfeeding: boolean | null;
   setBreastfeeding: (value: boolean | null) => void;
+  activePatientFileId: string | null;
+  activePatientFileNumber: number | null;
+  activePatientFileNameKey: string | null;
   setActivePatientFileId: (value: string | null) => void;
   setActivePatientFileNumber: (value: number | null) => void;
   setActivePatientFileNameKey: (value: string | null) => void;
@@ -165,6 +169,7 @@ interface MainAppPrescriptionSectionProps {
   rxItems: PrescriptionItem[];
   generalAdvice: string[];
   labInvestigations: string[];
+  readyPrescriptions?: ReadyPrescription[];
   
   // حقول الترجمة الإنجليزية (للطباعة)
   complaintEn: string;
@@ -246,8 +251,9 @@ interface MainAppPrescriptionSectionProps {
 
 
 export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProps> = ({
-  analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+  analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
   gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
+  activePatientFileId, activePatientFileNumber, activePatientFileNameKey,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
   complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
   caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
@@ -256,7 +262,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   addedInstructionsFromModal, setAddedInstructionsFromModal,
   needsManualDxHint, setGeneralAdvice, setLabInvestigations,
   weight, setWeight, height, setHeight, bmi, vitals, updateVital, customBoxes = [], customBoxValues = {}, onCustomBoxValueChange, prescriptionSettings, totalAgeInMonths, parsedWeight, onAddManualMedication, onAddEmptyMedication, onAddCustomItem, onAddManualLab, onAddManualAdvice, onOpenReadyPrescriptions,
-  consultationDate, rxItems, generalAdvice, labInvestigations, complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
+  consultationDate, rxItems, generalAdvice, labInvestigations, readyPrescriptions = [], complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
   onRemoveItem, onUpdateItemName, onUpdateItemInstruction, onUpdateItemFontSize, onSwapItem, onSelectMedication, onMedicationClick, onUpdateAdvice, onRemoveAdvice, onUpdateLab, onRemoveLab,
   isPrintMode, isDataOnlyMode, setIsDataOnlyMode, prescriptionRef, usageStats, onPrint, isPrinting,
   onDownloadPdf, isDownloadingPdf, onShareWhatsApp, isSharingViaWhatsApp,
@@ -769,6 +775,8 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   ageYears={ageYears} setAgeYears={setAgeYears}
                   ageMonths={ageMonths} setAgeMonths={setAgeMonths}
                   ageDays={ageDays} setAgeDays={setAgeDays}
+                  dateOfBirth={dateOfBirth} setDateOfBirth={setDateOfBirth}
+                  showDateOfBirth={enabledSpecialtyPack === 'pediatrics'}
                   gender={gender} setGender={setGender}
                   pregnant={pregnant} setPregnant={setPregnant}
                   gestationalAgeWeeks={gestationalAgeWeeks} setGestationalAgeWeeks={setGestationalAgeWeeks}
@@ -778,36 +786,20 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     const parsedFileNumber = Number(item.patientFileNumber);
                     setPatientName(item.patientName || '');
                     setPhone(item.phone || '');
-                    // نقل الجنس (ثابت) + حساب السن الحالي تلقائياً من السن القديم + فرق الوقت
+                    // السن وتاريخ الميلاد لا ينتقلوا من الاقتراحات: الطبيب يدخلهم يدويًا لكل كشف.
+                    setDateOfBirth('');
+                    setAgeYears('');
+                    setAgeMonths('');
+                    setAgeDays('');
+                    // نقل الجنس فقط كهوية ثابتة.
                     setGender(normalizeGender(item.gender) ?? '');
-                    const lastVisit = item.lastExamDate || item.lastConsultationDate;
-                    if (lastVisit) {
-                      const advanced = advanceAgeByElapsedTime(
-                        { years: item.ageYears, months: item.ageMonths, days: item.ageDays },
-                        lastVisit,
-                      );
-                      // لو حسبنا قيم أكبر من صفر نستخدمها، وإلا نرجع للسن القديم كما هو
-                      if (advanced.years || advanced.months || advanced.days) {
-                        setAgeYears(advanced.years);
-                        setAgeMonths(advanced.months);
-                        setAgeDays(advanced.days);
-                      } else {
-                        setAgeYears(item.ageYears || '');
-                        setAgeMonths(item.ageMonths || '');
-                        setAgeDays(item.ageDays || '');
-                      }
-                    } else {
-                      setAgeYears(item.ageYears || '');
-                      setAgeMonths(item.ageMonths || '');
-                      setAgeDays(item.ageDays || '');
-                    }
                     // الحمل/عمر الحمل/الرضاعة لا يُنقلوا — بنسأل كل زيارة من الصفر
                     setPregnant(null);
                     setGestationalAgeWeeks(null);
                     setBreastfeeding(null);
-                    setActivePatientFileId(null);
+                    setActivePatientFileId(String(item.patientFileId || '').trim() || null);
                     setActivePatientFileNumber(Number.isFinite(parsedFileNumber) && parsedFileNumber > 0 ? Math.floor(parsedFileNumber) : null);
-                    setActivePatientFileNameKey((item.patientName || '').trim() || null);
+                    setActivePatientFileNameKey(String(item.patientFileNameKey || '').trim() || null);
                     // في الاستشارة بس: نجلب آخر وزن/طول تلقائياً من سجلات المريض
                     // الكشف بيقاس من جديد في كل زيارة، والاستشارة بتبني على قياسات الكشف السابق
                     if (visitType === 'consultation') {
@@ -870,9 +862,6 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                 />
               </div>
 
-              {/* بانر تشخيصي — بيظهر بس لو التخصص يلمس باكدج معين لكن مش متفعل بالضبط */}
-              <SpecialtyPackDiagnostic doctorSpecialty={doctorSpecialty} />
-
               {/* ─── ودجت متابعه الحمل — يظهر فقط لأطباء النسا لو الباكدج مفعّل ─── */}
               {enabledSpecialtyPack === 'gynecology' && (
                 <div className="editor-block dh-stagger-2">
@@ -880,6 +869,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     <PregnancyConsultationWidget
                       userId={doctorUserId}
                       patientName={patientName}
+                      patientFileNameKey={activePatientFileNameKey}
                       visitDate={visitDate}
                       // مزامنه LMP → حقول الكشف (الحامل + الأسبوع)
                       onSyncPregnancyFromLMP={(p, week) => {
@@ -898,6 +888,12 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     <PediatricConsultationWidget
                       userId={doctorUserId}
                       patientName={patientName}
+                      patientFileId={activePatientFileId}
+                      patientFileNumber={activePatientFileNumber}
+                      patientFileNameKey={activePatientFileNameKey}
+                      dateOfBirth={dateOfBirth}
+                      visitDate={visitDate}
+                      onDateOfBirthChange={setDateOfBirth}
                       // مزامنه السن من تاريخ الميلاد → حقول الكشف
                       // لو الدكتور سجل تاريخ ميلاد، السن في الكشف يتعدّل تلقائياً
                       onSyncAgeFromDOB={(y, m, d) => {
@@ -1011,6 +1007,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
         <div className="prescription-preview-panel dh-stagger-3">
           <PrescriptionPreview
             consultationDate={consultationDate} rxItems={rxItems} generalAdvice={generalAdvice} labInvestigations={labInvestigations}
+            readyPrescriptions={readyPrescriptions}
             patientName={patientName} setPatientName={setPatientName} ageYears={ageYears} ageMonths={ageMonths} ageDays={ageDays}
             weight={weight} setWeight={setWeight} height={height} setHeight={setHeight} bmi={bmi} vitals={vitals}
             complaint={complaint} complaintEn={complaintEn} setComplaintEn={setComplaintEn}

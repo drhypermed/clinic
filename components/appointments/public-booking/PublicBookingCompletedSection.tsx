@@ -13,11 +13,13 @@ type DayGroup = { dateStr: string; fullDate: string; appointments: TodayAppointm
 
 type Props = {
   completedAppointments: TodayAppointment[];
+  canShowSecretaryVitals?: boolean;
   onRemoveAppointment: (id: string) => void;
 };
 
 export const PublicBookingCompletedSection: React.FC<Props> = ({
   completedAppointments,
+  canShowSecretaryVitals = false,
   onRemoveAppointment,
 }) => {
   const dayGroups = useMemo((): DayGroup[] => {
@@ -60,7 +62,12 @@ export const PublicBookingCompletedSection: React.FC<Props> = ({
         </div>
       ) : (
         visibleGroups.map((group) => (
-          <CompletedDayGroupCard key={group.dateStr} group={group} onRemove={onRemoveAppointment} />
+          <CompletedDayGroupCard
+            key={group.dateStr}
+            group={group}
+            canShowSecretaryVitals={canShowSecretaryVitals}
+            onRemove={onRemoveAppointment}
+          />
         ))
       )}
 
@@ -75,7 +82,11 @@ export const PublicBookingCompletedSection: React.FC<Props> = ({
 };
 
 // ==================== DayGroup أخضر ====================
-const CompletedDayGroupCard: React.FC<{ group: DayGroup; onRemove: (id: string) => void }> = ({ group, onRemove }) => {
+const CompletedDayGroupCard: React.FC<{
+  group: DayGroup;
+  canShowSecretaryVitals: boolean;
+  onRemove: (id: string) => void;
+}> = ({ group, canShowSecretaryVitals, onRemove }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -96,7 +107,12 @@ const CompletedDayGroupCard: React.FC<{ group: DayGroup; onRemove: (id: string) 
       {isOpen && (
         <div className="bg-slate-50/50 p-4 sm:p-5 space-y-2">
           {group.appointments.map((apt) => (
-            <CompletedCard key={apt.id} apt={apt} onRemove={onRemove} />
+            <CompletedCard
+              key={apt.id}
+              apt={apt}
+              canShowSecretaryVitals={canShowSecretaryVitals}
+              onRemove={onRemove}
+            />
           ))}
         </div>
       )}
@@ -105,7 +121,11 @@ const CompletedDayGroupCard: React.FC<{ group: DayGroup; onRemove: (id: string) 
 };
 
 // ==================== كارت منفذ ====================
-const CompletedCard: React.FC<{ apt: TodayAppointment; onRemove: (id: string) => void }> = ({ apt, onRemove }) => {
+const CompletedCard: React.FC<{
+  apt: TodayAppointment;
+  canShowSecretaryVitals: boolean;
+  onRemove: (id: string) => void;
+}> = ({ apt, canShowSecretaryVitals, onRemove }) => {
   const isConsultation = isConsultationAppointment(apt);
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -161,7 +181,7 @@ const CompletedCard: React.FC<{ apt: TodayAppointment; onRemove: (id: string) =>
           </div>
         )}
 
-        <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
+        {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
 
         <div className="flex justify-start pt-0.5">
           <button type="button" onClick={() => onRemove(apt.id)} className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200 transition-all">

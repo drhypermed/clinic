@@ -11,7 +11,13 @@ import type {
   PatientSuggestionOption,
   RecentExamPatientOption,
 } from '../AddAppointmentForm';
-import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
+import {
+  buildLocalDateTime,
+  currentTimeMin,
+  formatAgeForStorage,
+  formatAgeFromDateOfBirth,
+  toLocalDateStr,
+} from '../utils';
 import {
   buildPatientSuggestions,
   buildRecentExamCandidates,
@@ -23,7 +29,6 @@ import {
   advanceAgeByElapsedTime,
   normalizeGender,
 } from '../../../utils/patientIdentity';
-import { formatAgeForStorage } from '../utils';
 
 /**
  * الملف: useAppointmentFormState.ts (Hook)
@@ -46,6 +51,7 @@ export const useAppointmentFormState = ({
   // حالات النموذج الأساسية
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [phone, setPhone] = useState('');
   // حقول الهوية الجديدة: الجنس ثابت، الحمل/الرضاعة متغيرين لكل زيارة
   const [gender, setGender] = useState<PatientGender | ''>('');
@@ -173,7 +179,8 @@ export const useAppointmentFormState = ({
     setPhone(candidate.phone ?? '');
     // نقل الجنس (ثابت) + حساب السن الحالي من فرق الوقت
     setGender(normalizeGender(candidate.gender) ?? '');
-    setAge(resolveAdvancedAgeText({ age: candidate.age, lastExamDate: candidate.examCompletedAt }));
+    setDateOfBirth(candidate.dateOfBirth ?? '');
+    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth, dateStr) || resolveAdvancedAgeText({ age: candidate.age, lastExamDate: candidate.examCompletedAt }));
     // الحمل/الرضاعة + عمر الحمل يُسألوا من الصفر (متغيرين لكل زيارة)
     setPregnant(null);
     setGestationalAgeWeeks(null);
@@ -185,7 +192,8 @@ export const useAppointmentFormState = ({
     setPatientName(candidate.patientName ?? '');
     setPhone(candidate.phone ?? '');
     setGender(normalizeGender(candidate.gender) ?? '');
-    setAge(resolveAdvancedAgeText(candidate));
+    setDateOfBirth(candidate.dateOfBirth ?? '');
+    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth, dateStr) || resolveAdvancedAgeText(candidate));
     setPregnant(null);
     setGestationalAgeWeeks(null);
     setBreastfeeding(null);
@@ -202,7 +210,8 @@ export const useAppointmentFormState = ({
     formBranchIdRef.current = (apt.branchId && String(apt.branchId).trim())
       || (userId ? branchesService.getActiveBranchId(userId) : null);
     setPatientName(apt.patientName ?? '');
-    setAge(apt.age ?? '');
+    setDateOfBirth(apt.dateOfBirth ?? '');
+    setAge(formatAgeFromDateOfBirth(apt.dateOfBirth, toLocalDateStr(dt)) || (apt.age ?? ''));
     setPhone(apt.phone ?? '');
     setVisitReason(apt.visitReason ?? '');
     setDateStr(toLocalDateStr(dt));
@@ -302,12 +311,14 @@ export const useAppointmentFormState = ({
         ? gestationalAgeWeeks
         : undefined;
     const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+    const dateOfBirthForPayload = dateOfBirth.trim() || undefined;
 
     // بناء كائن الموعد (Payload)
     const basePayload: ClinicAppointment = editingAppointment ? {
       ...editingAppointment,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
       age: ageVal, visitReason: reasonVal, appointmentType: resolvedType,
+      dateOfBirth: dateOfBirthForPayload,
       gender: genderForPayload,
       pregnant: pregnantForPayload,
       gestationalAgeWeeks: gestationalAgeWeeksForPayload,
@@ -316,6 +327,7 @@ export const useAppointmentFormState = ({
       id: `apt-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
       createdAt: new Date().toISOString(), age: ageVal, visitReason: reasonVal,
+      dateOfBirth: dateOfBirthForPayload,
       source: 'clinic', appointmentType: resolvedType,
       gender: genderForPayload,
       pregnant: pregnantForPayload,
@@ -383,7 +395,7 @@ export const useAppointmentFormState = ({
       await firestoreService.saveAppointment(userId, payloadWithInsurance);
       
       // 4. تصفير النموذج
-      setPatientName(''); setAge(''); setPhone(''); setVisitReason('');
+      setPatientName(''); setAge(''); setDateOfBirth(''); setPhone(''); setVisitReason('');
       setGender(''); setPregnant(null); setGestationalAgeWeeks(null); setBreastfeeding(null);
       setAppointmentType('exam'); setSelectedConsultationCandidateId('');
       setEditingAppointmentId(null); setAddSuccessToast(true);
@@ -424,7 +436,7 @@ export const useAppointmentFormState = ({
   });
 
   return {
-    patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
+    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone, currentDayStr,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,

@@ -75,6 +75,7 @@ export const createSaveRecordAction = ({
   ageYears,
   ageMonths,
   ageDays,
+  dateOfBirth,
   gender,
   pregnant,
   gestationalAgeWeeks,
@@ -282,6 +283,7 @@ export const createSaveRecordAction = ({
       patientName,
       phone: phone || undefined,
       age: { years: ageYears, months: ageMonths, days: ageDays },
+      dateOfBirth: dateOfBirth.trim() || undefined,
       gender: genderForSave,
       pregnant: pregnantForSave,
       gestationalAgeWeeks: gestationalAgeWeeksForSave,
@@ -448,6 +450,7 @@ export const createSaveRecordAction = ({
           patientName,
           phone: phone || undefined,
           age: { years: ageYears, months: ageMonths, days: ageDays },
+          dateOfBirth: dateOfBirth.trim() || undefined,
           gender: genderForSave,
           pregnant: pregnantForSave,
           gestationalAgeWeeks: gestationalAgeWeeksForSave,
@@ -534,6 +537,7 @@ export const createSaveRecordAction = ({
           patientName,
           phone: phone || undefined,
           age: { years: ageYears, months: ageMonths, days: ageDays },
+          dateOfBirth: dateOfBirth.trim() || undefined,
           gender: genderForSave,
           pregnant: pregnantForSave,
           gestationalAgeWeeks: gestationalAgeWeeksForSave,
@@ -644,9 +648,15 @@ export const createSaveRecordAction = ({
           await Promise.all([
             syncVitalsToGrowthIfPediatric({
               userId: user.uid,
+              patientFileId: syncResult?.patientFileId || normalizedActivePatientFileId || undefined,
+              patientFileNumber: syncResult?.patientFileNumber
+                || (Number.isFinite(parsedActivePatientFileNumber) && parsedActivePatientFileNumber > 0
+                  ? Math.floor(parsedActivePatientFileNumber)
+                  : undefined),
               patientFileNameKey: resolvedNameKey,
               doctorSpecialty,
               visitDateKey: visitDate,
+              dateOfBirth,
               weightKg: weight,
               heightCm: height,
               // 🆕 محيط الرأس من الفايتالز — بينتقل لجدول النمو تلقائي

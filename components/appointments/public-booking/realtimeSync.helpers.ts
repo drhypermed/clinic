@@ -78,6 +78,8 @@ const mergePatientDirectoryItem = (
   const currentName = String(current.patientName || '').trim();
   const incomingAge = String(incoming.age || '').trim();
   const currentAge = String(current.age || '').trim();
+  const incomingDateOfBirth = String(incoming.dateOfBirth || '').trim();
+  const currentDateOfBirth = String(current.dateOfBirth || '').trim();
   const incomingPhone = String(incoming.phone || '').trim();
   const currentPhone = String(current.phone || '').trim();
 
@@ -85,10 +87,12 @@ const mergePatientDirectoryItem = (
     id: String(incoming.id || current.id || '').trim(),
     patientName: incomingName || currentName || 'بدون اسم',
     age: incomingAge || currentAge || undefined,
+    dateOfBirth: incomingDateOfBirth || currentDateOfBirth || undefined,
     phone: incomingPhone || currentPhone || undefined,
     lastExamDate: pickLatestDate(current.lastExamDate, incoming.lastExamDate),
     lastConsultationDate: pickLatestDate(current.lastConsultationDate, incoming.lastConsultationDate),
     patientFileNumber: incomingFileNumber ?? currentFileNumber,
+    gender: incoming.gender || current.gender,
   };
 };
 

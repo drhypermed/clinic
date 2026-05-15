@@ -8,7 +8,12 @@ import { getVisiblePatientSuggestions, normalizePhoneDigits, toPositiveFileNumbe
 import { sanitizeExternalHttpUrl } from './securityUtils';
 import type { AddAppointmentFormProps } from './types';
 import type { CustomBox } from '../../../types';
-import { parseAgeToYearsMonthsDays } from '../utils';
+import {
+  estimateDateOfBirthFromAgeString,
+  formatAgeFromDateOfBirth,
+  parseAgeToYearsMonthsDays,
+} from '../utils';
+import { useEnabledSpecialtyPack } from '../../../hooks/useSpecialtyPack';
 // دوال هوية المريض: قرار سؤال الحمل/الرضاعة
 import {
   bestGuessAgeYears,
@@ -39,6 +44,7 @@ import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSel
 export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   patientName, onPatientNameChange, age, onAgeChange, phone, onPhoneChange,
   gender = '', onGenderChange,
+  dateOfBirth = '', onDateOfBirthChange,
   pregnant = null, onPregnantChange,
   gestationalAgeWeeks = null, onGestationalAgeWeeksChange,
   breastfeeding = null, onBreastfeedingChange,
@@ -69,6 +75,8 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   const alertRef = useRef<HTMLDivElement | null>(null);
   const [activeSuggestionField, setActiveSuggestionField] = useState<'name' | 'phone' | null>(null);
   const isConsultationMode = appointmentType === 'consultation';
+  const enabledSpecialtyPack = useEnabledSpecialtyPack(doctorSpecialty);
+  const showDateOfBirth = enabledSpecialtyPack === 'pediatrics' && typeof onDateOfBirthChange === 'function';
 
   // قرار ظهور سؤال الحمل/الرضاعة: أنثى + سن 18-50 (من السن المدخل)
   const effectiveAgeYears = useMemo(() => {
@@ -212,9 +220,12 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   }, [enabledSecretaryFields, secretaryVitals]);
 
   const shouldShowSecretaryVitalsFields =
-    enabledSecretaryFields.length > 0 && typeof onSecretaryVitalsChange === 'function';
+    enabledSpecialtyPack === 'pediatrics' &&
+    enabledSecretaryFields.length > 0 &&
+    typeof onSecretaryVitalsChange === 'function';
 
   useEffect(() => {
+    if (enabledSpecialtyPack !== 'pediatrics') return;
     if (!onSecretaryVitalsChange) return;
     if (!isSecretaryVitalEnabled(secretaryVitalsVisibility, 'bmi')) return;
 
@@ -236,6 +247,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     secretaryVitals?.height,
     secretaryVitals?.weight,
     secretaryVitalsVisibility,
+    enabledSpecialtyPack,
   ]);
 
   const resolveSecretaryVitalStorageKey = (fieldId: string): string => {
@@ -288,6 +300,26 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     ? 'w-full px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50/40 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 font-bold transition-all'
     : 'w-full px-4 py-2.5 rounded-xl border border-blue-100 bg-blue-50/30 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-bold transition-all';
 
+  const handleDateOfBirthChange = (value: string) => {
+    const nextDateOfBirth = value.trim();
+    onDateOfBirthChange?.(nextDateOfBirth);
+    const nextAge = formatAgeFromDateOfBirth(nextDateOfBirth, dateStr || todayStr);
+    if (nextAge) onAgeChange(nextAge);
+  };
+
+  const handleAgeChange = (value: string) => {
+    onAgeChange(value);
+    if (!showDateOfBirth) return;
+    onDateOfBirthChange?.(estimateDateOfBirthFromAgeString(value, dateStr || todayStr));
+  };
+
+  const handleDateStrChange = (value: string) => {
+    onDateStrChange(value);
+    if (!showDateOfBirth || !dateOfBirth) return;
+    const nextAge = formatAgeFromDateOfBirth(dateOfBirth, value || todayStr);
+    if (nextAge) onAgeChange(nextAge);
+  };
+
   return (
     <section className="bg-white rounded-2xl shadow-lg border border-blue-200 overflow-visible">
       {!hideTopHeader && (
@@ -339,11 +371,25 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             {activeSuggestionField === 'name' && <PatientSuggestionsDropdown suggestions={visiblePatientSuggestions} onApplySuggestion={applyPatientSuggestion} />}
           </div>
 
+          {showDateOfBirth && (
+            <div className="sm:col-span-1 lg:col-span-1 relative">
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">تاريخ الميلاد</label>
+              <input
+                type="date"
+                value={dateOfBirth}
+                max={todayStr}
+                onChange={(e) => handleDateOfBirthChange(e.target.value)}
+                className={fieldClass}
+                dir="ltr"
+              />
+            </div>
+          )}
+
           <div className="sm:col-span-1 lg:col-span-1 relative">
             <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
             <AgeUnitInput
               ageString={age}
-              onAgeChange={onAgeChange}
+              onAgeChange={handleAgeChange}
               placeholder="مثال: 30"
               inputClassName="focus:ring-teal-500"
               selectClassName="focus:ring-teal-500"
@@ -496,7 +542,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                  type="date"
                  value={dateStr}
                  min={todayStr}
-                 onChange={(e) => onDateStrChange(e.target.value)}
+                 onChange={(e) => handleDateStrChange(e.target.value)}
                  className={`${fieldClass} py-2 sm:w-auto sm:flex-1 min-w-0`}
                />
                {/* ملاحظة: لا نضيف min على حقل الوقت — لو مرّت دقائق بين فتح الفورم والضغط

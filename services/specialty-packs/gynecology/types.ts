@@ -30,7 +30,7 @@ export interface PregnancyVisit {
     ultrasoundNotes?: string;
     /** حركه الجنين: 'normal' = طبيعيه، 'decreased' = قليله، 'absent' = غايبه، '' = مش مذكوره */
     fetalMovement?: 'normal' | 'decreased' | 'absent' | '';
-    /** وزن الأم بالكيلوجرام — مهم لمتابعه زياده الوزن خلال الحمل (الزياده الطبيعيه 10-12 كجم) */
+    /** وزن الأم بالكيلوجرام: من الفايتالز في الكشف، أو يدويًا في ملف الحمل التاريخي */
     maternalWeight?: string;
     /** ملاحظات حره من الدكتوره */
     notes?: string;

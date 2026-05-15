@@ -523,6 +523,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
 
     const patientName = normalizeText(appointmentInput.patientName);
     const age = normalizeOptionalText(appointmentInput.age);
+    const dateOfBirth = normalizeOptionalText(appointmentInput.dateOfBirth);
     const phone = normalizeText(appointmentInput.phone);
     const dateTime = normalizeText(appointmentInput.dateTime);
     const visitReason = normalizeOptionalText(appointmentInput.visitReason);
@@ -568,6 +569,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const updateData = {
       patientName,
       age: age || admin.firestore.FieldValue.delete(),
+      dateOfBirth: dateOfBirth || admin.firestore.FieldValue.delete(),
       // التليفون اختياري — نحذف الحقل لو فاضي بدل تخزين سلسلة فارغة
       phone: phone || admin.firestore.FieldValue.delete(),
       dateTime,
@@ -676,6 +678,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     }
 
     const age = normalizeOptionalText(appointmentInput.age);
+    const dateOfBirth = normalizeOptionalText(appointmentInput.dateOfBirth);
     const visitReason = normalizeOptionalText(appointmentInput.visitReason);
     const specialtyConfigData = await resolveConfigWithDoctorSpecialty(db, configData);
     const secretaryVitals = normalizeSecretaryVitals(appointmentInput.secretaryVitals, specialtyConfigData);
@@ -712,6 +715,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
 
     if (phone) appointmentData.phone = phone;
     if (age) appointmentData.age = age;
+    if (dateOfBirth) appointmentData.dateOfBirth = dateOfBirth;
     if (visitReason) appointmentData.visitReason = visitReason;
     if (secretaryVitals) appointmentData.secretaryVitals = secretaryVitals;
 
@@ -794,6 +798,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       branchId: normalizeText(data.branchId) || DEFAULT_BRANCH_ID,
     };
     if (data.age) out.age = String(data.age).slice(0, 32);
+    if (data.dateOfBirth) out.dateOfBirth = String(data.dateOfBirth).slice(0, 10);
     if (data.phone) out.phone = String(data.phone).slice(0, 20);
     if (data.visitReason) out.visitReason = String(data.visitReason).slice(0, 400);
     if (typeof data.isFirstVisit === 'boolean') out.isFirstVisit = data.isFirstVisit;

@@ -3,7 +3,7 @@
  *
  * نسخه مدمجه من PregnancySection بتشتغل أثناء الكشف:
  *   - بتعرض الأسبوع الحالي + ميعاد الولاده (لو LMP مسجل)
- *   - زرّ "أضف زياره النهارده" يفتح فورم سريع
+ *   - زرّ "أضف زياره" يفتح فورم سريع بدون تكرار حقول الفايتالز
  *   - لو مفيش LMP، زرّ "ابدأ متابعه الحمل" يفتح كرت الإدخال
  *
  * البيانات متشاركه مع PregnancySection (نفس وثيقه pregnancyFile__).
@@ -23,8 +23,10 @@ import { usePregnancyFile } from './usePregnancyFile';
 
 interface PregnancyConsultationWidgetProps {
     userId?: string | null;
-    /** اسم المريضه — بنبني منه nameKey بنفس normalizer ملفات المرضى */
+    /** اسم المريضه — fallback لو مفيش مفتاح ملف نشط */
     patientName?: string | null;
+    /** مفتاح ملف المريضه النشط، وهو الأفضل للربط مع ملف المريض */
+    patientFileNameKey?: string | null;
     /** تاريخ الكشف/الاستشارة المفتوح حالياً — عليه تتحسب أسابيع الحمل. */
     visitDate?: string | null;
     /**
@@ -44,11 +46,11 @@ const formatDateArabic = (iso?: string | null): string => {
 };
 
 export const PregnancyConsultationWidget: React.FC<PregnancyConsultationWidgetProps> = ({
-    userId, patientName, visitDate, onSyncPregnancyFromLMP,
+    userId, patientName, patientFileNameKey, visitDate, onSyncPregnancyFromLMP,
 }) => {
     const nameKey = useMemo(
-        () => normalizePatientNameForFile(patientName || ''),
-        [patientName],
+        () => String(patientFileNameKey || '').trim() || normalizePatientNameForFile(patientName || ''),
+        [patientFileNameKey, patientName],
     );
     const {
         file, loading, error, isSaving,
@@ -185,6 +187,7 @@ export const PregnancyConsultationWidget: React.FC<PregnancyConsultationWidgetPr
                                 defaultDateKey={effectiveVisitDate}
                                 visits={file.visits}
                                 disabled={isClosed}
+                                hideVitalsOverlap
                                 onAdd={addVisit}
                                 onUpdate={updateVisit}
                                 onDelete={deleteVisit}

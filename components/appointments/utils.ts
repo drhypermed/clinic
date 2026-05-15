@@ -71,3 +71,107 @@ export function parseAgeToYearsMonthsDays(age: string): { years: string; months:
 export function getAgeUnitLabel(unit: AgeUnit): string {
   return AGE_UNIT_LABELS[unit];
 }
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export type AgeParts = { years: string; months: string; days: string };
+
+export function isValidDateKey(value?: string | null): boolean {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return false;
+  const [year, month, day] = String(value).split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+const parseDateKeyUtc = (value?: string | null): Date | null => {
+  if (!isValidDateKey(value)) return null;
+  const [year, month, day] = String(value).split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+};
+
+const formatDateKeyUtc = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const daysInMonthUtc = (year: number, monthIndex: number): number =>
+  new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+
+const addMonthsClampedUtc = (date: Date, monthDelta: number): Date => {
+  const sourceYear = date.getUTCFullYear();
+  const sourceMonth = date.getUTCMonth();
+  const target = sourceYear * 12 + sourceMonth + monthDelta;
+  const targetYear = Math.floor(target / 12);
+  const targetMonth = ((target % 12) + 12) % 12;
+  const maxDay = daysInMonthUtc(targetYear, targetMonth);
+  return new Date(Date.UTC(targetYear, targetMonth, Math.min(date.getUTCDate(), maxDay)));
+};
+
+export function calculateAgePartsFromDateOfBirth(
+  dateOfBirth?: string | null,
+  atDateKey?: string | null,
+): AgeParts | null {
+  const dob = parseDateKeyUtc(dateOfBirth);
+  const at = parseDateKeyUtc(atDateKey) || parseDateKeyUtc(toLocalDateStr(new Date()));
+  if (!dob || !at || dob.getTime() > at.getTime()) return null;
+
+  let years = at.getUTCFullYear() - dob.getUTCFullYear();
+  const birthdayThisYear = addMonthsClampedUtc(dob, years * 12);
+  if (birthdayThisYear.getTime() > at.getTime()) years -= 1;
+
+  const afterYears = addMonthsClampedUtc(dob, years * 12);
+  let months = (at.getUTCFullYear() - afterYears.getUTCFullYear()) * 12 +
+    (at.getUTCMonth() - afterYears.getUTCMonth());
+  const afterMonths = addMonthsClampedUtc(afterYears, months);
+  if (afterMonths.getTime() > at.getTime()) months -= 1;
+
+  const anchor = addMonthsClampedUtc(afterYears, months);
+  const days = Math.max(0, Math.floor((at.getTime() - anchor.getTime()) / MS_PER_DAY));
+
+  return { years: String(years), months: String(Math.max(0, months)), days: String(days) };
+}
+
+export function formatAgeFromDateOfBirth(
+  dateOfBirth?: string | null,
+  atDateKey?: string | null,
+): string {
+  const parts = calculateAgePartsFromDateOfBirth(dateOfBirth, atDateKey);
+  if (!parts) return '';
+  const years = parseInt(parts.years || '0', 10) || 0;
+  const months = parseInt(parts.months || '0', 10) || 0;
+  const days = parseInt(parts.days || '0', 10) || 0;
+  if (years > 0) return formatAgeForStorage(String(years), 'year');
+  if (months > 0) return formatAgeForStorage(String(months), 'month');
+  return formatAgeForStorage(String(days), 'day');
+}
+
+export function estimateDateOfBirthFromAgeParts(
+  ageParts: Partial<AgeParts>,
+  atDateKey?: string | null,
+): string {
+  const at = parseDateKeyUtc(atDateKey) || parseDateKeyUtc(toLocalDateStr(new Date()));
+  if (!at) return '';
+  const years = Math.max(0, parseInt(ageParts.years || '0', 10) || 0);
+  const months = Math.max(0, parseInt(ageParts.months || '0', 10) || 0);
+  const days = Math.max(0, parseInt(ageParts.days || '0', 10) || 0);
+  if (years === 0 && months === 0 && days === 0) return '';
+
+  const afterYearsMonths = addMonthsClampedUtc(at, -(years * 12 + months));
+  const estimated = new Date(afterYearsMonths.getTime() - days * MS_PER_DAY);
+  const today = parseDateKeyUtc(toLocalDateStr(new Date()));
+  if (today && estimated.getTime() > today.getTime()) return formatDateKeyUtc(today);
+  return formatDateKeyUtc(estimated);
+}
+
+export function estimateDateOfBirthFromAgeString(
+  age: string,
+  atDateKey?: string | null,
+): string {
+  return estimateDateOfBirthFromAgeParts(parseAgeToYearsMonthsDays(age), atDateKey);
+}

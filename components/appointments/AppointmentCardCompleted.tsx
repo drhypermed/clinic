@@ -4,10 +4,12 @@ import { isConsultationAppointment } from '../../utils/appointmentType';
 import { formatUserDate, formatUserTime } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 interface AppointmentCardCompletedProps {
   apt: ClinicAppointment;
   patientFileNumber?: number;
+  doctorSpecialty?: string;
   onRemoveAppointment: (id: string) => void;
 }
 
@@ -26,9 +28,11 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> = ({
   apt,
   patientFileNumber,
+  doctorSpecialty,
   onRemoveAppointment,
 }) => {
   const isConsultation = isConsultationAppointment(apt);
+  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const typeLabel = isConsultation ? 'استشارة' : 'كشف';
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -86,10 +90,10 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
             <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-800">أنثى</span>
           )}
           {apt.pregnant === true && (
-            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤰 حامل</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">حامل</span>
           )}
           {apt.breastfeeding === true && (
-            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤱 مرضعة</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">مرضعة</span>
           )}
         </div>
 
@@ -115,7 +119,7 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
           </div>
         )}
 
-        <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
+        {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
 
         {/* Delete button */}
         <div className="flex justify-start pt-0.5">

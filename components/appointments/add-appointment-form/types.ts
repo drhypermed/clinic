@@ -18,6 +18,7 @@ export interface RecentExamPatientOption {
   id: string;
   patientName: string;
   age?: string;
+  dateOfBirth?: string;
   phone?: string;
   examCompletedAt: string;         // تاريخ اكتمال الكشف الأساسي
   consultationCompletedAt?: string; // تاريخ ووقت تنفيذ الاستشارة (إن وجدت)

@@ -123,9 +123,9 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
           />
         </div>
 
-        {/* حقل إدخال نتائج التحاليل والأشعة (Investigations) */}
+        {/* حقل إدخال نتائج التحاليل والأشعة التي أحضرها المريض بالفعل */}
         <div className="flex flex-col">
-          <p className={fieldTitleClass}>نتائج الفحوصات</p>
+          <p className={fieldTitleClass}>نتائج فحوصات موجودة</p>
           <textarea
             ref={investigationsRef}
             value={investigations}

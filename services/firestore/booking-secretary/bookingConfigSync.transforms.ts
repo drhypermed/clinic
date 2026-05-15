@@ -46,6 +46,7 @@ export const sanitizeTodayAppointment = (item: BookingConfigTodayAppointment) =>
     id: item.id,
     patientName: toOptionalText(item.patientName) || '',
     age: item.age ? toOptionalText(item.age) : undefined,
+    dateOfBirth: item.dateOfBirth ? toOptionalText(item.dateOfBirth) : undefined,
     phone: item.phone ? toOptionalText(item.phone) : undefined,
     visitReason: item.visitReason ? toOptionalText(item.visitReason) : undefined,
     secretaryVitals: sanitizeSecretaryVitalsInput(item.secretaryVitals),
@@ -91,6 +92,7 @@ export const sanitizeRecentExamPatient = (item: RecentExamPatient) =>
     id: item.id,
     patientName: toOptionalText(item.patientName) || '',
     age: item.age ? toOptionalText(item.age) : undefined,
+    dateOfBirth: item.dateOfBirth ? toOptionalText(item.dateOfBirth) : undefined,
     phone: item.phone ? toOptionalText(item.phone) : undefined,
     examCompletedAt: item.examCompletedAt,
     consultationCompletedAt: item.consultationCompletedAt,
@@ -208,6 +210,7 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
         id: string;
         patientName?: string;
         age?: string;
+        dateOfBirth?: string;
         phone?: string;
         examCompletedAt: string;
         consultationCompletedAt?: string;
@@ -218,6 +221,7 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
         id: item.id,
         patientName: toOptionalText(item.patientName) || 'بدون اسم',
         age: toOptionalText(item.age),
+        dateOfBirth: toOptionalText(item.dateOfBirth),
         phone: toOptionalText(item.phone),
         examCompletedAt: item.examCompletedAt,
         consultationCompletedAt:
@@ -253,6 +257,7 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         id: string;
         patientName: string;
         age?: string;
+        dateOfBirth?: string;
         phone?: string;
         lastExamDate?: string;
         lastConsultationDate?: string;
@@ -262,6 +267,7 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         id: item.id,
         patientName: toOptionalText(item.patientName) || '',
         age: toOptionalText(item.age),
+        dateOfBirth: toOptionalText(item.dateOfBirth),
         phone: toOptionalText(item.phone),
         lastExamDate: typeof item.lastExamDate === 'string' ? item.lastExamDate : undefined,
         lastConsultationDate:

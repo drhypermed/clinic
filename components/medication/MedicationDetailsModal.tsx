@@ -157,10 +157,14 @@ export const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
         {/* محتوى النافذة (Body) */}
         <div className="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar bg-slate-50">
           {/* قسم بطاقات المعلومات السريعة (السعر، العمر الآمن، الوزن) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-center">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">السعر</div>
               <div className="text-base sm:text-lg font-bold text-success-600">{medication.price} <span className="text-[10px] font-semibold text-slate-500">EGP</span></div>
+            </div>
+            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-center">
+              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">التركيز</div>
+              <div className="text-sm font-bold text-slate-800 break-words">{medication.concentration || 'غير محدد'}</div>
             </div>
             <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-center">
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">العمر الآمن</div>

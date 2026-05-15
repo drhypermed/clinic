@@ -18,7 +18,7 @@
 
 import { getCachedSpecialtyPacks, PACK_SPECIALTIES } from '../index';
 import { invalidatePackBadgeCache } from '../badgeCache';
-import { loadPediatricFile, savePediatricFile } from './service';
+import { buildPediatricFileStorageKey, loadPediatricFile, savePediatricFile } from './service';
 import type { GrowthEntry } from './types';
 
 /** ولّد معرّف فريد لقياس جديد */
@@ -51,9 +51,12 @@ const cleanNumeric = (value: unknown): string | undefined => {
 
 interface SyncVitalsToGrowthArgs {
     userId: string;
-    patientFileNameKey: string;
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
+    patientFileNameKey?: string | null;
     doctorSpecialty: string;
     visitDateKey: string;
+    dateOfBirth?: string;
     weightKg?: string;
     heightCm?: string;
     /** 🆕 محيط الرأس من الفايتالز — بيتنقل لجدول النمو تلقائياً */
@@ -65,9 +68,10 @@ interface SyncVitalsToGrowthArgs {
  * بترفع exception فقط لو فشل قراءه/كتابه Firestore — الـcaller يعالج.
  */
 export const syncVitalsToGrowthIfPediatric = async ({
-    userId, patientFileNameKey, doctorSpecialty, visitDateKey, weightKg, heightCm, headCircCm,
+    userId, patientFileId, patientFileNumber, patientFileNameKey, doctorSpecialty, visitDateKey, dateOfBirth, weightKg, heightCm, headCircCm,
 }: SyncVitalsToGrowthArgs): Promise<'created' | 'updated' | 'skipped'> => {
-    if (!userId || !patientFileNameKey) return 'skipped';
+    const storageKey = buildPediatricFileStorageKey({ patientFileId, patientFileNumber, patientFileNameKey });
+    if (!userId || !storageKey) return 'skipped';
 
     // 1) الباكدج لازم يكون مفعّل من الأدمن
     const packs = getCachedSpecialtyPacks();
@@ -81,14 +85,24 @@ export const syncVitalsToGrowthIfPediatric = async ({
     const cleanWeight = cleanNumeric(weightKg);
     const cleanHeight = cleanNumeric(heightCm);
     const cleanHeadCirc = cleanNumeric(headCircCm);
-    if (!cleanWeight && !cleanHeight && !cleanHeadCirc) return 'skipped';
+    const cleanDateOfBirth = toDateKey(dateOfBirth);
+    const hasMeasurement = Boolean(cleanWeight || cleanHeight || cleanHeadCirc);
+    if (!hasMeasurement && !cleanDateOfBirth) return 'skipped';
 
     // 4) التاريخ
     const dateKey = toDateKey(visitDateKey);
     if (!dateKey) return 'skipped';
 
     // 5) قراءه الملف
-    const file = await loadPediatricFile(userId, patientFileNameKey);
+    const file = await loadPediatricFile(userId, storageKey, patientFileNameKey);
+    if (!hasMeasurement) {
+        if (cleanDateOfBirth && cleanDateOfBirth !== file.dateOfBirth) {
+            await savePediatricFile(userId, { ...file, dateOfBirth: cleanDateOfBirth });
+            invalidatePackBadgeCache(userId, storageKey, 'pediatric');
+            return 'updated';
+        }
+        return 'skipped';
+    }
 
     // 6) ندوّر على قياس بنفس التاريخ
     const existingIdx = file.growthEntries.findIndex((g) => g.dateKey === dateKey);
@@ -126,10 +140,14 @@ export const syncVitalsToGrowthIfPediatric = async ({
     }
 
     // 7) حفظ الملف
-    await savePediatricFile(userId, { ...file, growthEntries: updatedEntries });
+    await savePediatricFile(userId, {
+        ...file,
+        dateOfBirth: cleanDateOfBirth || file.dateOfBirth,
+        growthEntries: updatedEntries,
+    });
 
     // 8) إبطال كاش الشاره عشان صفحه السجلات تعرض الأحدث
-    invalidatePackBadgeCache(userId, patientFileNameKey, 'pediatric');
+    invalidatePackBadgeCache(userId, storageKey, 'pediatric');
 
     return action;
 };

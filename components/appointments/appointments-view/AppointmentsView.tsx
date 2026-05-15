@@ -59,7 +59,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
    * التحقق من صحة البيانات، ومعالجة حالات التعديل (Editing).
    */
   const {
-    patientName, setPatientName, age, setAge, phone, setPhone, currentDayStr,
+    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone, currentDayStr,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
@@ -251,6 +251,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         <div className="dh-stagger-2"><AddAppointmentForm
           bookingSecret={bookingSecret}
           patientName={patientName} onPatientNameChange={setPatientName} age={age} onAgeChange={setAge}
+          dateOfBirth={dateOfBirth} onDateOfBirthChange={setDateOfBirth}
           phone={phone} onPhoneChange={setPhone}
           gender={gender} onGenderChange={setGender}
           pregnant={pregnant} onPregnantChange={setPregnant}
@@ -294,6 +295,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
           todayPending={todayPending} futurePendingGroups={futurePendingGroups} completedGroups={completedGroups}
           todayDateMeta={todayDateMeta} now={now} todayStr={todayStr}
           doctorId={userId}
+          doctorSpecialty={doctorSpecialty}
           approvedEntryAppointmentIds={approvedEntryAppointmentIds} sentEntryForIds={sentEntryForIds}
           secretaryApprovedEntryIds={secretaryApprovedEntryIds} secretaryEntryAlertResponse={secretaryEntryAlertResponse}
           entrySendingId={entrySendingId} onSendEntryRequest={sendEntryRequest} onOpenExam={openExam}

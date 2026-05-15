@@ -176,6 +176,7 @@ export const applyPatientDemographicsFromRecord = (
   setAgeYears(record.age?.years || '');
   setAgeMonths(record.age?.months || '');
   setAgeDays(record.age?.days || '');
+  if (setDateOfBirth) setDateOfBirth(record.dateOfBirth || '');
   // الجنس ثابت — ينتقل لو السجل القديم محفوظ بيه (السجلات الأقدم قد لا تحتوي)
   if (setGender) setGender(record.gender ?? '');
   // ملاحظة: الحمل/الرضاعة + عمر الحمل يُعاد سؤالهم كل زيارة — بنمسحهم عند تحميل السجل القديم

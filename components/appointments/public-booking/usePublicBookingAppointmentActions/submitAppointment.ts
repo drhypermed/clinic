@@ -70,6 +70,7 @@ interface SubmitAppointmentInput {
     editingAppointment: TodayAppointment | null;
     name: string;
     ageVal: string;
+    dateOfBirthVal?: string;
     ph: string;
     reasonVal: string;
     dateTime: Date;
@@ -97,6 +98,7 @@ interface SubmitAppointmentInput {
 type AppointmentPayload = {
     patientName: string;
     age: string;
+    dateOfBirth?: string;
     phone: string;
     dateTime: string;
     visitReason: string;
@@ -125,6 +127,7 @@ export const submitAppointment = async (input: SubmitAppointmentInput): Promise<
     const appointmentPayload: AppointmentPayload = {
         patientName: input.name,
         age: input.ageVal,
+        dateOfBirth: input.dateOfBirthVal,
         phone: input.ph,
         dateTime: input.dateTime.toISOString(),
         visitReason: input.reasonVal,
@@ -203,6 +206,7 @@ interface BuildMergedAppointmentInput {
     branchId?: string;
     name: string;
     ageVal: string;
+    dateOfBirthVal?: string;
     ph: string;
     reasonVal: string;
     sanitizedSecretaryVitals: SecretaryVitalsInput | undefined;
@@ -234,6 +238,7 @@ export const buildMergedTodayAppointment = (
     id: input.savedAppointmentId,
     patientName: input.name,
     age: input.ageVal || undefined,
+    dateOfBirth: input.dateOfBirthVal || undefined,
     phone: input.ph || undefined,
     visitReason: input.reasonVal || undefined,
     secretaryVitals: input.sanitizedSecretaryVitals,

@@ -3,7 +3,7 @@
  *
  * بيلمّ ٣ أجزاء:
  *   1. بيانات الطفل (تاريخ الميلاد + الجنس)
- *   2. قياسات النمو
+ *   2. قياسات النمو للعرض فقط
  *   3. التطعيمات
  *
  * الحفظ التلقائي بـdebounce 800ms.
@@ -18,20 +18,27 @@ import { usePediatricFile } from './usePediatricFile';
 
 interface PediatricSectionProps {
     userId?: string | null;
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
     patientFileNameKey?: string | null;
 }
 
 export const PediatricSection: React.FC<PediatricSectionProps> = ({
-    userId, patientFileNameKey,
+    userId, patientFileId, patientFileNumber, patientFileNameKey,
 }) => {
     const {
         file, loading, error, isSaving,
         setDateOfBirth, setSex,
-        addGrowthEntry, updateGrowthEntry, deleteGrowthEntry,
         updateVaccination, setVaccinationStatus,
-    } = usePediatricFile({ userId, patientFileNameKey });
+    } = usePediatricFile({
+        userId,
+        patientFileId,
+        patientFileNumber,
+        patientFileNameKey,
+        legacyPatientFileNameKey: patientFileNameKey,
+    });
 
-    if (!userId || !patientFileNameKey) {
+    if (!userId || !file.patientFileNameKey) {
         return (
             <div className="rounded-xl border border-warning-200 bg-warning-50 p-3 text-xs font-bold text-warning-700">
                 مفيش ملف طفل نشط — افتح ملف طفل عشان تشوف متابعه النمو والتطعيمات.
@@ -75,9 +82,6 @@ export const PediatricSection: React.FC<PediatricSectionProps> = ({
                 <GrowthEntriesList
                     dateOfBirth={file.dateOfBirth}
                     entries={file.growthEntries}
-                    onAdd={addGrowthEntry}
-                    onUpdate={updateGrowthEntry}
-                    onDelete={deleteGrowthEntry}
                 />
             </div>
 

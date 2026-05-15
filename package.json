@@ -8,6 +8,7 @@
     "dev:public": "cross-env VITE_DEV_HOST_MODE=patient vite --port 5173 --strictPort",
     "dev:clinic": "cross-env VITE_DEV_HOST_MODE=clinic vite --port 5174 --strictPort",
     "dev:split": "concurrently -n \"PUBLIC,CLINIC\" -c \"cyan.bold,blue.bold\" \"npm:dev:public\" \"npm:dev:clinic\"",
+    "prebuild": "node scripts/clean-dist.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

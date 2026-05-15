@@ -20,6 +20,7 @@ import {
 import {
     calculateAgeInMonths, calculateVaccinationTiming,
     EGYPTIAN_VACCINATION_SCHEDULE, getTodayDateKey as pedToday,
+    buildPediatricFileStorageKey,
     loadPediatricFile,
 } from './pediatrics';
 import { getCachedSpecialtyPacks } from './service';
@@ -89,13 +90,23 @@ export const buildPregnancyContext = async (
 export const buildPediatricContext = async (
     userId: string,
     nameKey: string,
+    identity?: {
+        patientFileId?: string | null;
+        patientFileNumber?: number | null;
+        patientFileNameKey?: string | null;
+    },
 ): Promise<string | undefined> => {
     if (!userId || !nameKey) return undefined;
     const packs = getCachedSpecialtyPacks();
     if (!packs?.packs.pediatrics?.enabled) return undefined;
 
     try {
-        const file = await loadPediatricFile(userId, nameKey);
+        const storageKey = buildPediatricFileStorageKey({
+            patientFileId: identity?.patientFileId,
+            patientFileNumber: identity?.patientFileNumber,
+            patientFileNameKey: identity?.patientFileNameKey || nameKey,
+        }) || nameKey;
+        const file = await loadPediatricFile(userId, storageKey, nameKey);
         if (!file.dateOfBirth) return undefined;
 
         const lines: string[] = [];

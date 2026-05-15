@@ -2,7 +2,7 @@ import { db } from './firebaseConfig';
 import {
     FieldPath, doc, setDoc, updateDoc, deleteField
 } from 'firebase/firestore';
-import { getDocCacheFirst } from './firestore/cacheFirst';
+import { getDocCacheFirst, subscribeDocCacheFirst } from './firestore/cacheFirst';
 import { MedicationCustomization } from '../types';
 import { validateMedicationCustomizationsCapacity } from './accountTypeControlsService';
 import { readCachedAccountType } from './account-type-controls/quotas';
@@ -70,25 +70,24 @@ export const medicationCustomizationService = {
         userId: string,
         onUpdate: (customizations: Record<string, MedicationCustomization>) => void
     ) => {
-        let cancelled = false;
-
         const cached = readCustomizationsFromCache(userId);
         if (cached) {
             onUpdate(cached);
-            return () => { cancelled = true; };
         }
 
         const userRef = doc(db, 'users', userId);
-        getDocCacheFirst(userRef).then((snap) => {
-            if (cancelled) return;
-            const customizations = snap.exists()
-                ? ((snap.data()?.medicationCustomizations || {}) as Record<string, MedicationCustomization>)
-                : {};
-            writeCustomizationsToCache(userId, customizations);
-            onUpdate(customizations);
-        }).catch(() => {});
-
-        return () => { cancelled = true; };
+        return subscribeDocCacheFirst(userRef, {
+            next: (snap) => {
+                const customizations = snap.exists()
+                    ? ((snap.data()?.medicationCustomizations || {}) as Record<string, MedicationCustomization>)
+                    : {};
+                writeCustomizationsToCache(userId, customizations);
+                onUpdate(customizations);
+            },
+            error: (error) => {
+                console.error('[MedicationCustomization] Error subscribing to customizations:', error);
+            },
+        });
     },
 
     /**

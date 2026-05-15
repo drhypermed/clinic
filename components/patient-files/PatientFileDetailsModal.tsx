@@ -796,6 +796,8 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                 >
                   <PediatricSection
                     userId={user?.uid}
+                    patientFileId={patientFile.fileId}
+                    patientFileNumber={patientFile.fileNumber}
                     patientFileNameKey={patientFile.key}
                   />
                 </Suspense>

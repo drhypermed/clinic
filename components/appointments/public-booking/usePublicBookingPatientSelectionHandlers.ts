@@ -17,7 +17,7 @@ import {
   advanceAgeByElapsedTime,
   normalizeGender,
 } from '../../../utils/patientIdentity';
-import { formatAgeForStorage } from '../utils';
+import { formatAgeForStorage, formatAgeFromDateOfBirth } from '../utils';
 
 type UsePublicBookingPatientSelectionHandlersParams = {
   appointmentType: AppointmentType;
@@ -26,6 +26,7 @@ type UsePublicBookingPatientSelectionHandlersParams = {
   setConsultationCandidatesVisibleCount: Dispatch<SetStateAction<number>>;
   setPatientName: Dispatch<SetStateAction<string>>;
   setAge: Dispatch<SetStateAction<string>>;
+  setDateOfBirth: Dispatch<SetStateAction<string>>;
   setPhone: Dispatch<SetStateAction<string>>;
   setGender: Dispatch<SetStateAction<PatientGender | ''>>;
   setPregnant: Dispatch<SetStateAction<boolean | null>>;
@@ -40,6 +41,7 @@ export const usePublicBookingPatientSelectionHandlers = ({
   setConsultationCandidatesVisibleCount,
   setPatientName,
   setAge,
+  setDateOfBirth,
   setPhone,
   setGender,
   setPregnant,
@@ -79,9 +81,10 @@ export const usePublicBookingPatientSelectionHandlers = ({
   };
 
   // عند اختيار مريض قديم: ننقل الجنس (ثابت) + نحسب السن الحالي تلقائياً
-  const applyPatientIdentity = (candidate: { gender?: PatientGender; age?: string; lastExamDate?: string; lastConsultationDate?: string; examCompletedAt?: string }) => {
+  const applyPatientIdentity = (candidate: { gender?: PatientGender; age?: string; dateOfBirth?: string; lastExamDate?: string; lastConsultationDate?: string; examCompletedAt?: string }) => {
     setGender(normalizeGender(candidate.gender) ?? '');
-    setAge(resolveAdvancedAgeText(candidate));
+    setDateOfBirth(candidate.dateOfBirth || '');
+    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth) || resolveAdvancedAgeText(candidate));
     // الحمل/الرضاعة لا يُنقلا — بنسأل كل زيارة من الصفر
     setPregnant(null);
     setBreastfeeding(null);

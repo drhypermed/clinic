@@ -167,6 +167,9 @@ export const RenalDoseAdjustment: React.FC = () => {
 
                         <div className="bg-gradient-to-br from-brand-600 to-brand-600 rounded-2xl p-3 shadow-md">
                             <p className="text-[10px] font-black text-white/70 mb-1">التفاصيل العلمية</p>
+                            {result.resolvedDrugName && result.resolvedDrugName !== drugName && (
+                                <p className="text-[10px] text-white/70 mb-1 font-bold">تم التعرف على الدواء كـ: {result.resolvedDrugName}</p>
+                            )}
                             <p className="text-[11px] font-bold text-white leading-relaxed">{result.reasoning}</p>
                             {result.reference && (
                                 <p className="text-[10px] text-white/60 mt-2 pt-2 border-t border-white/20 font-bold">المصدر: {result.reference}</p>

@@ -53,6 +53,7 @@ export interface BookingConfigTodayAppointment {
   id: string;
   patientName: string;
   age?: string;
+  dateOfBirth?: string;
   phone?: string;
   visitReason?: string;
   secretaryVitals?: SecretaryVitalsInput;
@@ -89,6 +90,7 @@ export interface RecentExamPatient {
   id: string;
   patientName: string;
   age?: string;
+  dateOfBirth?: string;
   phone?: string;
   examCompletedAt: string;
   consultationCompletedAt?: string;

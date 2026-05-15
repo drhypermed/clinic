@@ -975,6 +975,18 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.prescription-editor-grid .editor-block--patient:has(.patient-suggestions-popover) {
+  z-index: 50;
+}
+
+.prescription-editor-grid .editor-block--patient:has(.patient-suggestions-popover) .clinic-section {
+  overflow: visible !important;
+}
+
+.prescription-editor-grid .patient-suggestions-popover {
+  z-index: 9999;
+}
+
 .prescription-editor-grid .editor-block.reveal-on-scroll,
 .prescription-preview-panel.reveal-on-scroll {
   opacity: 0;

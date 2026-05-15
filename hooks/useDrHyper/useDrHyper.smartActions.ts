@@ -61,6 +61,9 @@ interface CreateSmartRxActionsParams {
   // اسم المريض — يستخدم لبناء nameKey وقراءه ملفات حزم التخصصات
   // (ملف الحمل / ملف الطفل) لإضافه السياق للـAI لو الباكدج مفعّل.
   patientName?: string;
+  patientFileId?: string | null;
+  patientFileNumber?: number | null;
+  patientFileNameKey?: string | null;
   // 🆕 (2026-05) — `mode` يحدد العداد: 'analyze' للزر العميق، 'quickAdd' للزر السريع.
   // الزرين كان عندهم نفس العداد، فاستهلاك واحد بيقفل التاني — اتفصلوا على عدّادين.
   consumeSmartPrescriptionQuota: (mode?: 'analyze' | 'quickAdd') => Promise<unknown>;
@@ -151,6 +154,9 @@ export const createSmartRxActions = ({
   vitals,
   userId,
   patientName,
+  patientFileId,
+  patientFileNumber,
+  patientFileNameKey,
   consumeSmartPrescriptionQuota,
   extractSmartQuotaErrorDetails,
   openQuotaNoticeModal,
@@ -494,7 +500,11 @@ export const createSmartRxActions = ({
       try {
         const [preg, ped] = await Promise.all([
           buildPregnancyContext(userId, packNameKey),
-          buildPediatricContext(userId, packNameKey),
+          buildPediatricContext(userId, packNameKey, {
+            patientFileId,
+            patientFileNumber,
+            patientFileNameKey,
+          }),
         ]);
         pregnancyContext = preg;
         pediatricContext = ped;

@@ -118,6 +118,7 @@ export interface PatientRecord {
    * بنضيف الفرق بين date اللي تحت وتاريخ اليوم على السن ده.
    */
   age: { years: string; months: string; days: string };
+  dateOfBirth?: string;
   /** جنس المريض — ثابت لكل سجلات/مواعيد نفس المريض الموحد */
   gender?: PatientGender;
   /**

@@ -112,6 +112,9 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
   };
 
     const calculateDose = (med: Medication) => {
+    const defaultDose = ((med as any).dosageText || '').toString().trim();
+    if ((!weight || weight <= 0 || Number.isNaN(weight)) && defaultDose) return sanitizeDosageText(defaultDose);
+    if ((!totalAgeMonths || totalAgeMonths <= 0 || Number.isNaN(totalAgeMonths)) && defaultDose) return sanitizeDosageText(defaultDose);
     if (!weight || weight <= 0 || Number.isNaN(weight)) return "⚠️ أدخل الوزن أولاً";
     if (!totalAgeMonths || totalAgeMonths <= 0 || Number.isNaN(totalAgeMonths)) return "⚠️ أدخل العمر أولاً";
     if (typeof med.calculationRule === 'function') {
@@ -128,7 +131,8 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
       const isAgeValid = Number.isFinite(totalAgeMonths) && totalAgeMonths > 0;
 
       if (!isWeightValid || !isAgeValid) {
-        onAddMedication(selectedMed, '');
+        const defaultDose = ((selectedMed as any).dosageText || '').toString().trim();
+        onAddMedication(selectedMed, defaultDose ? sanitizeDosageText(defaultDose) : '');
         setSelectedMed(null);
         setSearchTerm('');
         setIsOpen(false);
@@ -449,6 +453,7 @@ export const QuickSearchSection: React.FC<QuickSearchSectionProps> = ({
                 })()}
                 {selectedMed.warnings && selectedMed.warnings.length > 0 && (
                   <div className="mt-3 space-y-1">
+                    <span className="text-warning-700 uppercase text-[9px] block mb-2">تحذيرات</span>
                     {selectedMed.warnings.map((w, i) => (
                       <div key={i} className="flex items-start gap-2 bg-warning-50 border border-warning-100 rounded-xl px-3 py-2 text-warning-800">
                         <span className="text-sm">⚠️</span>

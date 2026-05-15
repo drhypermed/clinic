@@ -54,6 +54,8 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         setAgeMonths,
         ageDays,
         setAgeDays,
+        dateOfBirth,
+        setDateOfBirth,
         // حقول الهوية الجديدة: الجنس ثابت + الحمل/الرضاعه snapshot للزيارة
         gender,
         setGender,
@@ -278,6 +280,7 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         ageYears, setAgeYears,
         ageMonths, setAgeMonths,
         ageDays, setAgeDays,
+        dateOfBirth, setDateOfBirth,
         // حقول الهوية الجديدة — الجنس ثابت، الحمل والرضاعه snapshot للزيارة
         gender, setGender,
         pregnant, setPregnant,

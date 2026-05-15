@@ -31,6 +31,7 @@ type RenalStatus = typeof ALLOWED_STATUSES[number];
 
 interface RenalDoseResult {
   status: RenalStatus;
+  resolvedDrugName?: string;
   recommendation: string;
   reasoning: string;
   reference: string;
@@ -80,7 +81,11 @@ real medical decisions for a patient with kidney impairment.
    - Sanford Guide
    - FDA Label
    - Drug Prescribing in Renal Failure (Aronoff)
-4. If the drug name is ambiguous or unrecognized → status="insufficient_data".
+4. If the drug name is ambiguous or unrecognized, use Google Search grounding first to
+   identify whether it is a brand/trade name, misspelling, or local-market name.
+   Prefer official labels, manufacturer pages, medicines regulators, or reputable drug
+   databases. If identified, evaluate the active ingredient/generic name.
+   If the drug is still ambiguous after search → status="insufficient_data".
 5. If CrCl > 90 mL/min and the drug has no specific renal warning → status="normal".
 6. If the drug is **contraindicated** in this CrCl range → status="avoid".
 7. If a documented dose adjustment exists → status="adjust" with EXACT dosing from
@@ -95,6 +100,7 @@ real medical decisions for a patient with kidney impairment.
 ═══ OUTPUT FORMAT (JSON ONLY, NO MARKDOWN) ═══
 {
   "status": "normal" | "adjust" | "avoid" | "insufficient_data",
+  "resolvedDrugName": "<generic/active ingredient if discovered, otherwise the typed drug name>",
   "recommendation": "<Arabic, specific. For adjust: exact dose+frequency. For insufficient_data: 'يُرجى الرجوع لمرجع كلوي موثوق'>",
   "reasoning": "<Arabic, ≤30 words, mechanism + why this CrCl matters>",
   "reference": "<EXACT name from whitelist above, or empty string for insufficient_data>",
@@ -105,6 +111,7 @@ real medical decisions for a patient with kidney impairment.
 Drug: "Gentamicin", CrCl: 30 mL/min
 {
   "status": "adjust",
+  "resolvedDrugName": "Gentamicin",
   "recommendation": "خفض الجرعة إلى 1.5 ملغم/كغم كل 24 ساعة بدلاً من كل 8 ساعات",
   "reasoning": "الـ Gentamicin يخرج بالكلى مباشرة وله سمية كلوية وأذنية تتراكم في القصور الكلوي",
   "reference": "Renal Drug Handbook",
@@ -115,6 +122,7 @@ Drug: "Gentamicin", CrCl: 30 mL/min
 Drug: "Drug-X" (unknown/rare), CrCl: 40 mL/min
 {
   "status": "insufficient_data",
+  "resolvedDrugName": "",
   "recommendation": "يُرجى الرجوع لمرجع كلوي موثوق قبل الوصف",
   "reasoning": "لا توجد بيانات موثقة عن تعديل جرعة هذا الدواء في القصور الكلوي",
   "reference": "",
@@ -133,6 +141,7 @@ RESPONSE (JSON ONLY):
       // thinkingBudget=1500 (كان 0 تلقائياً) — قرارات الجرعات الكلوية محتاجة تفكير عميق.
       thinkingBudget: 1500,
       feature: 'renal_dose',
+      googleSearch: true,
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};
@@ -142,6 +151,7 @@ RESPONSE (JSON ONLY):
     // ─ في حالة فشل الـAPI، نرجع insufficient_data بدل ما نخترع جرعة.
     return {
       status: 'insufficient_data',
+      resolvedDrugName: '',
       recommendation: 'تعذّر الاتصال بالخدمة. يُرجى الرجوع لمرجع كلوي موثوق قبل الوصف.',
       reasoning: `تعذّر إكمال الحساب التلقائي مع قيمة CrCl = ${crcl} مل/دقيقة.`,
       reference: '',
@@ -163,6 +173,7 @@ RESPONSE (JSON ONLY):
 const sanitizeRenalDoseResult = (raw: any): RenalDoseResult => {
   const rawStatus = String(raw?.status || '').trim().toLowerCase();
   const recommendation = String(raw?.recommendation || '').trim();
+  const resolvedDrugName = String(raw?.resolvedDrugName || raw?.genericName || raw?.activeIngredient || '').trim();
   const reasoning = String(raw?.reasoning || '').trim();
   const reference = String(raw?.reference || '').trim();
   const criticalNote = raw?.criticalNote ? String(raw.criticalNote).trim() : null;
@@ -196,6 +207,7 @@ const sanitizeRenalDoseResult = (raw: any): RenalDoseResult => {
   if (status === 'insufficient_data') {
     return {
       status,
+      resolvedDrugName,
       recommendation: recommendation || 'يُرجى الرجوع لمرجع كلوي موثوق قبل الوصف.',
       reasoning: reasoning || 'البيانات غير كافية للوصول لتوصية موثوقة لهذا الدواء.',
       reference: '',
@@ -206,6 +218,7 @@ const sanitizeRenalDoseResult = (raw: any): RenalDoseResult => {
 
   return {
     status,
+    resolvedDrugName,
     recommendation,
     reasoning,
     reference,

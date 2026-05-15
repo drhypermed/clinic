@@ -183,6 +183,15 @@ export const MedicationBasicInfoSection: React.FC<Props> = ({ formData, isNewMed
           />
         </div>
         <div>
+          <label className={labelClass}>تعليمات هامة</label>
+          <textarea
+            value={formData.instructions || ''}
+            onChange={(e) => updateField('instructions', e.target.value)}
+            rows={3}
+            className={`${fieldClass} resize-none leading-relaxed`}
+          />
+        </div>
+        <div>
           <label className={labelClass}>التحذيرات <span className="font-normal text-slate-400">(كل سطر = تحذير)</span></label>
           <textarea
             value={formData.warnings?.join('\n') || ''}

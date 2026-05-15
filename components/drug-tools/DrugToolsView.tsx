@@ -59,7 +59,6 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
     ['', 'renal'] as const,
   );
   const [accountType, setAccountType] = useState<'free' | 'premium' | 'pro_max'>('free');
-  const [accountTypeResolved, setAccountTypeResolved] = useState(false);
   const [lockedNotice, setLockedNotice] = useState<{ title: string; message: string } | null>(null);
   const [accessControls, setAccessControls] = useState({
     // المنطق الموحّد: الحد اليومي للمجاني هو الحاكم — لو = 0 يعني الأداه مقفولة عليه.
@@ -98,7 +97,6 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
   useEffect(() => {
     if (!userId) {
       setAccountType('free');
-      setAccountTypeResolved(true);
       return;
     }
     let mounted = true;
@@ -112,13 +110,11 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
         const resolvedType = resolveEffectiveAccountTypeFromData(data, getTrustedNowMs());
         if (mounted) {
           setAccountType(resolvedType);
-          setAccountTypeResolved(true);
         }
       } catch (error) {
         console.error('Failed to resolve account type for drug tools:', error);
         if (mounted) {
           setAccountType('free');
-          setAccountTypeResolved(true);
         }
       }
     })();
@@ -131,7 +127,6 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
   const isPro = accountType === 'premium' || accountType === 'pro_max';
   // الأداه "مقفولة على المجاني" لو الأدمن خلى الحد اليومي للمجاني = 0.
   // ده الحاكم الوحيد دلوقتي — مفيش toggle منفصل.
-  const isLockedForFree = accessControls.freeRenalToolDailyLimit === 0;
   const toolRules = useMemo(
     () => ({
       renal: {
@@ -240,14 +235,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
               description="تعديل الجرعات بناءً على وظائف الكلى"
               icon={<span className="text-lg">🧪</span>}
               tone={TOOL_TONES.renal}
-              // اللون يعكس قرار الأدمن من خلال الحد اليومي للمجاني:
-              //   - الأدمن خلى الحد للمجاني = 0 → الأداه مقفولة عليه → ذهبي بريميوم
-              //     (متطابق مع أزرار التداخلات/الحمل في كشف جديد).
-              //   - الأدمن حط حد > 0 → الأداه متاحة للجميع → أخضر عادي.
-              // accountTypeResolved لازم يكون true عشان نتجنب وميض اللون قبل ما القيم
-              // الفعلية تتحمّل من Firestore (الـ default الـ initial = 5000 = أخضر).
-              premiumGold={accountTypeResolved && isLockedForFree}
-              badgeLabel={accountTypeResolved && isLockedForFree && !isPro ? accessControls.premiumTagLabel || 'Pro' : undefined}
+              premiumGold
               onClick={async () => {
                 setLockedNotice(null);
                 if (await canOpenTool('renal')) {

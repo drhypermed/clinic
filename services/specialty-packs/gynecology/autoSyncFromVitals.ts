@@ -97,24 +97,23 @@ export const syncVitalsToPregnancyIfGyn = async ({
     let action: 'created' | 'updated';
 
     if (existingIdx >= 0) {
-        // تحديث وزن الأم — بنحافظ على وزن الجنين والنبض والسونار
+        // تحديث الزياره — بنحافظ على وزن الجنين والنبض والسونار
+        // (وزن الأم يُجلب من record.weight عند الحاجة)
         const existing = file.visits[existingIdx];
         const merged: PregnancyVisit = {
             ...existing,
             gestationalWeek: existing.gestationalWeek || week || undefined,
-            maternalWeight: cleanWeight,
             updatedAt: now,
         };
         updatedVisits = file.visits.map((v, i) => (i === existingIdx ? merged : v));
         action = 'updated';
     } else {
-        // زياره جديده — وزن الأم + الأسبوع المحسوب من LMP فقط
-        // وزن الجنين والنبض والسونار يبقوا فاضيين عشان الدكتورة تملاهم
+        // زياره جديده — الأسبوع المحسوب من LMP فقط
+        // (وزن الأم وبيانات الجنين يُجلبان من record.weight و recordSnapshot)
         const created: PregnancyVisit = {
             id: newId(),
             dateKey,
             gestationalWeek: week ?? undefined,
-            maternalWeight: cleanWeight,
             updatedAt: now,
         };
         updatedVisits = [created, ...file.visits].sort((a, b) =>

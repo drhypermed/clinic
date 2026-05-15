@@ -3,7 +3,7 @@ import type {
   SecretaryVitalFieldDefinition,
   SecretaryVitalsVisibility,
 } from '../../types';
-import { isSecretaryFieldEnabled } from '../../utils/secretaryVitals';
+import { isPediatricSpecialtyForSecretaryVitals, isSecretaryFieldEnabled } from '../../utils/secretaryVitals';
 import { useCopyFeedback } from '../../hooks/useCopyFeedback';
 
 /**
@@ -17,12 +17,13 @@ import { useCopyFeedback } from '../../hooks/useCopyFeedback';
 interface BookingSectionSecretaryProps {
   isOpen: boolean;                      // حالة فتح/غلق القسم
   onToggleOpen: () => void;
-  // اسم الطبيب المرتبط — يُعرض داخل قسم إعدادات السكرتارية بدلاً من الإيميل
-  doctorName?: string | null;
+  // إيميل الطبيب المرتبط — يُعرض داخل قسم إعدادات السكرتارية لنسخه وإعطائه للسكرتارية
+  doctorEmail?: string | null;
   /** اسم الفرع الحالي — يظهر لتوضيح أن كلمة السر مرتبطة بهذا الفرع */
   currentBranchLabel?: string;
   /** هل الدكتور عنده أكثر من فرع (يفعّل لافتة توضيحية) */
   hasMultipleBranches?: boolean;
+  doctorSpecialty?: string;
   bookingFormTitle: string;             // الاسم الذي سيظهر للسكرتيرة في تطبيقها
   onBookingFormTitleChange: (value: string) => void;
   secretaryPassword: string;            // كلمة المرور المطلوبة لدخول السكرتارية
@@ -39,18 +40,19 @@ interface BookingSectionSecretaryProps {
 
 export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = ({
   isOpen, onToggleOpen,
-  doctorName,
+  doctorEmail,
   currentBranchLabel,
   hasMultipleBranches = false,
+  doctorSpecialty,
   bookingFormTitle, onBookingFormTitleChange, secretaryPassword,
   secretaryVitalFields,
   secretaryVitalsVisibility, onSecretaryVitalVisibilityChange,
   onSecretaryPasswordChange, credentialsSaving, credentialsError,
   credentialsSuccess, onSaveCredentials, alwaysExpanded = false,
 }) => {
-  // الاسم بيظل بحالة الـcase الأصلية (مش toLowerCase زي الإيميل) لأنه عربي/مختلط
-  const normalizedDoctorName = String(doctorName || '').trim();
-  const { copied: doctorNameCopied, copy: copyNameToClipboard } = useCopyFeedback({ resetMs: 1800 });
+  const normalizedDoctorEmail = String(doctorEmail || '').trim().toLowerCase();
+  const { copied: doctorEmailCopied, copy: copyEmailToClipboard } = useCopyFeedback({ resetMs: 1800 });
+  const canConfigureSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const sortedSecretaryFields = [...(secretaryVitalFields || [])].sort((left, right) => left.order - right.order);
   const enabledVitalsCount = sortedSecretaryFields.filter((field) =>
     isSecretaryFieldEnabled(secretaryVitalsVisibility, field.id, field.key)
@@ -69,9 +71,8 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
     });
   };
 
-  // نسخ اسم الطبيب — مفيد للسكرتارية لو احتاجت تستخدمه في رسالة أو ملف خارجي
-  const copyDoctorName = () => {
-    if (normalizedDoctorName) copyNameToClipboard(normalizedDoctorName);
+  const copyDoctorEmail = () => {
+    if (normalizedDoctorEmail) copyEmailToClipboard(normalizedDoctorEmail);
   };
 
   return (
@@ -121,33 +122,33 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             />
           </div>
 
-          {/* حقل اسم الطبيب — يعرض الاسم المسجَّل في ملف الطبيب الشخصي ليعرفه السكرتارية بوضوح */}
+          {/* حقل إيميل الطبيب — بيانات الدخول التي سيستخدمها حساب السكرتارية */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 mb-1">اسم الطبيب</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1">إيميل الطبيب</label>
             <div className="flex items-center gap-2">
               <div
-                // نص عربي محاذاته يمين (بدل الإيميل اللي كان left/ltr)
-                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 font-bold text-sm text-right select-none"
+                dir="ltr"
+                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 font-bold text-sm text-left select-none"
                 onCopy={(e) => e.preventDefault()}
               >
-                {normalizedDoctorName || 'لا يوجد اسم مسجل لحساب الطبيب'}
+                {normalizedDoctorEmail || 'لا يوجد إيميل مسجل لحساب الطبيب'}
               </div>
               <button
                 type="button"
-                onClick={copyDoctorName}
-                disabled={!normalizedDoctorName}
-                title="نسخ اسم الطبيب"
+                onClick={copyDoctorEmail}
+                disabled={!normalizedDoctorEmail}
+                title="نسخ إيميل الطبيب"
                 className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-50"
-                aria-label="نسخ اسم الطبيب"
+                aria-label="نسخ إيميل الطبيب"
               >
-                {doctorNameCopied ? (
+                {doctorEmailCopied ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                 ) : (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
                 )}
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">يمكن نسخ الاسم من علامة النسخ فقط.</p>
+            <p className="text-[10px] text-slate-400 mt-1">يمكن نسخ الإيميل من علامة النسخ فقط لإرساله للسكرتارية.</p>
           </div>
 
           <div className="sm:col-span-2">
@@ -170,12 +171,12 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             {/* تحذير بصري لو الطبيب كتب حاجة أقل من 6 حروف */}
             {secretaryPassword.trim().length > 0 && secretaryPassword.trim().length < 6 && (
               <p className="text-[10px] text-danger-600 font-bold mt-1">
-                ⚠️ الرقم السري لازم يكون 6 حروف/أرقام على الأقل.
+                الرقم السري لازم يكون 6 حروف/أرقام على الأقل.
               </p>
             )}
             {hasMultipleBranches ? (
               <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
-                ⚠️ كل فرع له كلمة سر مستقلة. الكلمة دي تخص <b>الفرع النشط حالياً</b>. لتحديد كلمة سر لفرع آخر، بدّل الفرع النشط من التطبيق.
+                كل فرع له كلمة سر مستقلة. الكلمة دي تخص <b>الفرع النشط حالياً</b>. لتحديد كلمة سر لفرع آخر، بدّل الفرع النشط من التطبيق.
                 السكرتارية اللي هتدخل بالكلمة دي هتشوف مواعيد هذا الفرع فقط.
               </p>
             ) : (
@@ -183,6 +184,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             )}
           </div>
 
+          {canConfigureSecretaryVitals && (
           <div className="sm:col-span-2 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -241,6 +243,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
               </p>
             )}
           </div>
+          )}
 
           <div className="sm:col-span-2 mt-2 flex flex-wrap items-center justify-between gap-3">
             <div
@@ -256,7 +259,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
                   جاري الحفظ...
                 </span>
               ) : credentialsError ? (
-                <span className="text-danger-600">⚠️ {credentialsError}</span>
+                <span className="text-danger-600">{credentialsError}</span>
               ) : credentialsSuccess ? (
                 <span className="flex items-center gap-1 text-success-600">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>

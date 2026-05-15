@@ -1,26 +1,22 @@
 /**
- * GrowthEntriesList — قائمه قياسات النمو + إضافه/تعديل/حذف
+ * GrowthEntriesList — قائمه قياسات النمو للعرض داخل ملف الطفل
  *
  * بنعرض القياسات كجدول مدمج:
- *   التاريخ | العمر | وزن | طول | محيط الرأس | الفرق عن السابق | إجراءات
+ *   التاريخ | العمر | وزن | طول | محيط الرأس | الفرق عن السابق
  *
  * الفرق عن القياس السابق بيتلوّن (أخضر=زياده، أحمر=نقصان، رمادي=ثابت).
+ * القياسات الجديده تتسجل من كشف جديد عبر الفايتالز، مش من ملف الطفل.
  */
 
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
     calculateDelta, formatChildAge,
 } from '../../../services/specialty-packs/pediatrics';
 import type { GrowthEntry } from '../../../services/specialty-packs/pediatrics';
-import { GrowthEntryForm } from './GrowthEntryForm';
 
 interface GrowthEntriesListProps {
     dateOfBirth?: string;
     entries: GrowthEntry[];
-    disabled?: boolean;
-    onAdd: (entry: Omit<GrowthEntry, 'id' | 'updatedAt'>) => void;
-    onUpdate: (id: string, patch: Partial<GrowthEntry>) => void;
-    onDelete: (id: string) => void;
 }
 
 const formatDate = (iso?: string): string => {
@@ -58,68 +54,25 @@ const renderDeltaBadge = (
 };
 
 export const GrowthEntriesList: React.FC<GrowthEntriesListProps> = ({
-    dateOfBirth, entries, disabled, onAdd, onUpdate, onDelete,
+    dateOfBirth, entries,
 }) => {
-    const [adding, setAdding] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-
-    const editingEntry = useMemo(
-        () => entries.find((e) => e.id === editingId) || null,
-        [editingId, entries],
-    );
-
     return (
         <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h4 className="text-sm font-black text-slate-800">
                     قياسات النمو ({entries.length})
                 </h4>
-                {!adding && !editingEntry && !disabled && (
-                    <button
-                        type="button"
-                        onClick={() => setAdding(true)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-sky-700 px-3 py-1.5 text-xs font-black text-white shadow-sm hover:from-sky-600 hover:to-sky-800 transition"
-                    >
-                        + إضافه قياس
-                    </button>
-                )}
             </div>
 
-            {adding && (
-                <GrowthEntryForm
-                    dateOfBirth={dateOfBirth}
-                    onSubmit={(e) => {
-                        onAdd(e);
-                        setAdding(false);
-                    }}
-                    onCancel={() => setAdding(false)}
-                    submitLabel="حفظ القياس"
-                />
-            )}
-
-            {editingEntry && (
-                <GrowthEntryForm
-                    dateOfBirth={dateOfBirth}
-                    initialEntry={editingEntry}
-                    onSubmit={(patch) => {
-                        onUpdate(editingEntry.id, patch);
-                        setEditingId(null);
-                    }}
-                    onCancel={() => setEditingId(null)}
-                    submitLabel="حفظ التعديلات"
-                />
-            )}
-
-            {entries.length === 0 && !adding && (
+            {entries.length === 0 && (
                 <div className="rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/30 p-4 text-center text-xs font-bold text-slate-500">
-                    مفيش قياسات لسه — اضغط "إضافه قياس" لتسجيل أول قياس.
+                    مفيش قياسات نمو مسجله لسه. القياسات الجديده تتسجل من كشف جديد.
                 </div>
             )}
 
             {entries.length > 0 && (
                 <ul className="space-y-2">
                     {entries.map((entry, idx) => {
-                        if (entry.id === editingId) return null;
                         // القياس السابق (الأحدث منه — لأن القائمه من الأحدث للأقدم)
                         // الفرق بيظهر كـ"current - previous" يعني نشوف زياده/نقصان من السابق للحالي
                         const previousEntry = entries[idx + 1];
@@ -140,27 +93,6 @@ export const GrowthEntriesList: React.FC<GrowthEntriesListProps> = ({
                                             </span>
                                         )}
                                     </div>
-                                    {!disabled && (
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => setEditingId(entry.id)}
-                                                className="text-[11px] font-bold text-brand-600 hover:text-brand-800 px-2 py-0.5 rounded"
-                                            >
-                                                تعديل
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const ok = window.confirm('هل تريد حذف هذا القياس؟');
-                                                    if (ok) onDelete(entry.id);
-                                                }}
-                                                className="text-[11px] font-bold text-danger-600 hover:text-danger-800 px-2 py-0.5 rounded"
-                                            >
-                                                حذف
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] sm:text-xs">

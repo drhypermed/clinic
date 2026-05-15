@@ -17,6 +17,7 @@ export interface CreateSaveRecordActionParams {
     ageYears: string;
     ageMonths: string;
     ageDays: string;
+    dateOfBirth: string;
     // حقول الهوية الجديدة: الجنس ثابت للمريض، والحمل والرضاعة snapshot للزيارة
     gender: PatientGender | '';
     pregnant: boolean | null;

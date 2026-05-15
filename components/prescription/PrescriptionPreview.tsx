@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, useMemo, useEffect } from 'react';
-import { PrescriptionItem, Medication, AlternativeMed, PrescriptionSettings, VitalSignConfig } from '../../types';
+import { PrescriptionItem, Medication, AlternativeMed, PrescriptionSettings, VitalSignConfig, ReadyPrescription } from '../../types';
 import { PrescriptionHeader } from './PrescriptionHeader';
 import { PrescriptionFooter } from './PrescriptionFooter';
 import { AlternativesModal } from './AlternativesModal';
@@ -48,6 +48,7 @@ interface PrescriptionPreviewProps {
   rxItems: PrescriptionItem[];
   generalAdvice?: string[];
   labInvestigations?: string[];
+  readyPrescriptions?: ReadyPrescription[];
   usageStats?: Record<string, number>;
   onRemoveItem: (index: number) => void;
   onUpdateItemName: (index: number, name: string) => void;
@@ -100,7 +101,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   examination, examEn = '', setExamEn,
   investigations, investigationsEn = '', setInvestigationsEn,
   diagnosisEn, setDiagnosisEn,
-  rxItems, generalAdvice = [], labInvestigations = [],
+  rxItems, generalAdvice = [], labInvestigations = [], readyPrescriptions = [],
   usageStats,
   onRemoveItem, onUpdateItemName, onUpdateItemInstruction,
   onUpdateAdvice, onRemoveAdvice, onUpdateLab, onRemoveLab,
@@ -466,6 +467,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
                       middleBackgroundColor={middleBackgroundColor}
                       onUpdateLab={onUpdateLab} onRemoveLab={onRemoveLab}
                       onUpdateAdvice={onUpdateAdvice} onRemoveAdvice={onRemoveAdvice}
+                      readyPrescriptions={readyPrescriptions}
                     />
                   </div>
                 </div>

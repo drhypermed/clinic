@@ -38,6 +38,8 @@ type PublicBookingFormSectionProps = {
   onPatientNameChange: (value: string) => void;
   age: string;
   onAgeChange: (value: string) => void;
+  dateOfBirth: string;
+  onDateOfBirthChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
   gender: PatientGender | '';
@@ -118,6 +120,8 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   onPatientNameChange,
   age,
   onAgeChange,
+  dateOfBirth,
+  onDateOfBirthChange,
   phone,
   onPhoneChange,
   gender,
@@ -208,6 +212,8 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               onPatientNameChange={onPatientNameChange}
               age={age}
               onAgeChange={onAgeChange}
+              dateOfBirth={dateOfBirth}
+              onDateOfBirthChange={onDateOfBirthChange}
               phone={phone}
               onPhoneChange={onPhoneChange}
               gender={gender}

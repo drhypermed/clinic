@@ -9,6 +9,8 @@
  * مفصوله عن الـUI عشان نقدر نختبرها لوحدها.
  */
 
+import { getCairoDayKey } from '../../../utils/cairoTime';
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const parseDateKey = (dateKey?: string | null): Date | null => {
@@ -22,15 +24,8 @@ const parseDateKey = (dateKey?: string | null): Date | null => {
     return date;
 };
 
-const formatDateKey = (date: Date): string => {
-    const y = date.getUTCFullYear();
-    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(date.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-};
-
-/** تاريخ النهارده بصيغه YYYY-MM-DD */
-export const getTodayDateKey = (): string => formatDateKey(new Date());
+/** تاريخ النهارده بصيغه YYYY-MM-DD حسب توقيت العيادة في مصر */
+export const getTodayDateKey = (): string => getCairoDayKey(new Date());
 
 /** عمر الطفل بالأيام في تاريخ معيّن */
 export const calculateAgeInDays = (

@@ -525,6 +525,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
         onUpdatePatientIdentity={handleUpdatePatientIdentity}
         onSaveAdditionalInfo={handleSaveAdditionalInfo}
         branchId={branchId}
+        doctorSpecialty={doctorSpecialty}
       />
     </>
   );

@@ -46,19 +46,20 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
     // نختار أحدث قياس وزن/طول متاح من السجلات (حتى لو السجل الأحدث فاضي القياسات)
     const firstWithWeight = sorted.find((item) => String(item.weight || '').trim());
     const firstWithHeight = sorted.find((item) => String(item.height || '').trim());
-    // أحدث gender/dateOfBirth متاحين — ثابتان، ما يتغيروش بين سجلات نفس المريض
+    // أحدث gender متاح — ثابت، ما يتغيرش بين سجلات نفس المريض
     const genderFromRecords = sorted.map((item) => item.gender).find((value) => Boolean(value));
+    const firstWithFileId = sorted.find((item) => String(item.patientFileId || '').trim());
+    const firstWithFileNameKey = sorted.find((item) => String(item.patientFileNameKey || '').trim());
 
     suggestions.push({
       id: latest.id,
       patientName: latest.patientName,
       phone: latest.phone,
-      ageYears: latest.age?.years || '',
-      ageMonths: latest.age?.months || '',
-      ageDays: latest.age?.days || '',
       ageText: buildAgeText(latest.age?.years, latest.age?.months, latest.age?.days),
       lastExamDate,
       lastConsultationDate,
+      patientFileId: String(firstWithFileId?.patientFileId || '').trim() || undefined,
+      patientFileNameKey: String(firstWithFileNameKey?.patientFileNameKey || '').trim() || undefined,
       patientFileNumber:
         toPositiveFileNumber(latest.patientFileNumber)
         ?? sorted.map((item) => toPositiveFileNumber(item.patientFileNumber)).find((value) => Boolean(value)),

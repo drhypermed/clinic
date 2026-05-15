@@ -43,6 +43,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     success: boolean;
     patientName: string;
     age: string;
+    dateOfBirth: string;
     phone: string;
     gender: PatientGender | '';
     pregnant: boolean | null;
@@ -85,6 +86,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     setEditingAppointmentId: Dispatch<SetStateAction<string | null>>;
     setPatientName: Dispatch<SetStateAction<string>>;
     setAge: Dispatch<SetStateAction<string>>;
+    setDateOfBirth: Dispatch<SetStateAction<string>>;
     setPhone: Dispatch<SetStateAction<string>>;
     setGender: Dispatch<SetStateAction<PatientGender | ''>>;
     setPregnant: Dispatch<SetStateAction<boolean | null>>;

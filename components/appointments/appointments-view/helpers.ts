@@ -196,6 +196,7 @@ export const buildPatientSuggestions = (records: PatientRecord[]): PatientSugges
       const previous = byKey.get(key);
       // نحتفظ بأحدث gender متاح (الأحدث = الأدق بعد تعديلات المستخدم)
       const inheritedGender = record.gender ?? previous?.gender;
+      const inheritedDateOfBirth = record.dateOfBirth ?? previous?.dateOfBirth;
       byKey.set(key, {
         id: record.id,
         patientName: name,
@@ -205,6 +206,7 @@ export const buildPatientSuggestions = (records: PatientRecord[]): PatientSugges
         lastConsultationDate: records.filter(r => (r.patientName||'').trim() === name && (r.phone||'').trim() === phoneValue && (r.isConsultationOnly || !!r.consultation?.date)).map(r => r.isConsultationOnly ? r.date : r.consultation?.date).filter(Boolean).sort((a,b) => new Date(b!).getTime() - new Date(a!).getTime())[0],
         patientFileNumber: toPositiveFileNumber(record.patientFileNumber) ?? previous?.patientFileNumber,
         gender: inheritedGender,
+        dateOfBirth: inheritedDateOfBirth,
         _time: recTime,
       });
     }
@@ -278,6 +280,7 @@ export const buildRecentExamCandidates = (records: PatientRecord[]): RecentExamP
       patientName: (rec.patientName || '').trim() || 'بدون اسم',
       age: buildAgeTextFromRecordAge(rec.age),
       phone: rec.phone,
+      dateOfBirth: rec.dateOfBirth,
       examCompletedAt: rec.date,
       consultationSourceRecordId: rec.id,
       // نقل الهوية الثابتة (الجنس) مع المريض للاستشارة التالية

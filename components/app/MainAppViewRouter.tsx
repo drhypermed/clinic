@@ -20,7 +20,7 @@ import React from 'react';
 import type {
   ClinicAppointment, PatientRecord, PaymentType,
   SecretaryVitalFieldDefinition, SecretaryVitalsVisibility,
-  PrescriptionSettings, Medication, VitalSigns, Branch,
+  PrescriptionSettings, Medication, VitalSigns, Branch, ReadyPrescription,
 } from '../../types';
 import type { AppView } from './utils';
 import { MedicationDetailsModal } from '../medication/MedicationDetailsModal';
@@ -122,12 +122,16 @@ interface MainAppViewRouterProps {
   ageYears: string; setAgeYears: (v: string) => void;
   ageMonths: string; setAgeMonths: (v: string) => void;
   ageDays: string; setAgeDays: (v: string) => void;
+  dateOfBirth: string; setDateOfBirth: (v: string) => void;
   // حقول الهوية الجديدة: الجنس ثابت + الحمل/الرضاعة snapshot
   gender: import('../../types').PatientGender | ''; setGender: (v: import('../../types').PatientGender | '') => void;
   pregnant: boolean | null; setPregnant: (v: boolean | null) => void;
   // عمر الحمل بالأسابيع — يُمرَّر للـPatientInfoSection ويُسجَّل لو pregnant=true
   gestationalAgeWeeks: number | null; setGestationalAgeWeeks: (v: number | null) => void;
   breastfeeding: boolean | null; setBreastfeeding: (v: boolean | null) => void;
+  activePatientFileId: string | null;
+  activePatientFileNumber: number | null;
+  activePatientFileNameKey: string | null;
   setActivePatientFileId: (v: string | null) => void;
   setActivePatientFileNumber: (v: number | null) => void;
   setActivePatientFileNameKey: (v: string | null) => void;
@@ -173,6 +177,7 @@ interface MainAppViewRouterProps {
   /** rxItems شكلها PrescriptionItem — any للمرونة عند التمرير */
   rxItems: any;
   generalAdvice: string[]; labInvestigations: string[];
+  readyPrescriptions: ReadyPrescription[];
   // setters مباشرة للنصائح والفحوصات — يستخدمها مودال تحليل الحالة للإضافة
   setGeneralAdvice: React.Dispatch<React.SetStateAction<string[]>>;
   setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
@@ -282,10 +287,14 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           ageYears={p.ageYears} setAgeYears={p.setAgeYears}
           ageMonths={p.ageMonths} setAgeMonths={p.setAgeMonths}
           ageDays={p.ageDays} setAgeDays={p.setAgeDays}
+          dateOfBirth={p.dateOfBirth} setDateOfBirth={p.setDateOfBirth}
           gender={p.gender} setGender={p.setGender}
           pregnant={p.pregnant} setPregnant={p.setPregnant}
           gestationalAgeWeeks={p.gestationalAgeWeeks} setGestationalAgeWeeks={p.setGestationalAgeWeeks}
           breastfeeding={p.breastfeeding} setBreastfeeding={p.setBreastfeeding}
+          activePatientFileId={p.activePatientFileId}
+          activePatientFileNumber={p.activePatientFileNumber}
+          activePatientFileNameKey={p.activePatientFileNameKey}
           setActivePatientFileId={p.setActivePatientFileId}
           setActivePatientFileNumber={p.setActivePatientFileNumber}
           setActivePatientFileNameKey={p.setActivePatientFileNameKey}
@@ -332,6 +341,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onOpenReadyPrescriptions={() => p.setShowReadyPrescriptionsModal(true)}
           consultationDate={p.consultationDate}
           rxItems={p.rxItems} generalAdvice={p.generalAdvice} labInvestigations={p.labInvestigations}
+          readyPrescriptions={p.readyPrescriptions}
           complaintEn={p.complaintEn} setComplaintEn={p.setComplaintEn}
           historyEn={p.historyEn} setHistoryEn={p.setHistoryEn}
           examEn={p.examEn} setExamEn={p.setExamEn}

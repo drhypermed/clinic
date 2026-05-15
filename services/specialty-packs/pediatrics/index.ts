@@ -3,6 +3,7 @@
  */
 
 export {
+    buildPediatricFileStorageKey,
     loadPediatricFile,
     savePediatricFile,
     normalizePediatricFile,

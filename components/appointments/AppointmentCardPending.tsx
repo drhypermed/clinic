@@ -7,12 +7,14 @@ import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from './FirstVisitBadge';
 import { PatientFileLinkSuggestion } from './PatientFileLinkSuggestion';
+import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 interface AppointmentCardPendingProps {
   apt: ClinicAppointment;
   patientFileNumber?: number;
   /** معرف الطبيب — مطلوب لـ PatientFileLinkSuggestion عشان يبحث في patientSummaries */
   doctorId?: string;
+  doctorSpecialty?: string;
   now: number;
   todayStr: string;
   queueOrder?: number;
@@ -43,7 +45,7 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 // ─ React.memo: قائمة المواعيد طويلة (10-50 موعد) في صفحة المواعيد، وكل re-render
 //   كان يعيد render كل البطاقات. الـmemo يخفّض ده لـbatches خفيفة.
 const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = ({
-  apt, patientFileNumber, doctorId, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
+  apt, patientFileNumber, doctorId, doctorSpecialty, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
   secretaryApprovedEntryIds, secretaryEntryAlertResponse, entrySendingId,
   onSendEntryRequest, onOpenExam, onOpenConsultation, onEditAppointment, onRemoveAppointment,
 }) => {
@@ -51,6 +53,7 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
   const isPast = aptTime < now;
   const isToday = toLocalDateStr(new Date(apt.dateTime)) === todayStr;
   const isConsultation = isConsultationAppointment(apt);
+  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const typeLabel = isConsultation ? 'استشارة' : 'كشف';
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -109,7 +112,7 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
             </span>
           )}
           {isPast && (
-            <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-black text-warning-700">⚠️ فات الموعد</span>
+            <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-black text-warning-700">فات الموعد</span>
           )}
           <FirstVisitBadge isFirstVisit={apt.isFirstVisit} />
           {/* الجنس + الحمل + الرضاعة — تظهر لو السكرتاريه دخلتها عشان الطبيب يعرفها من الكارت مباشرة */}
@@ -120,10 +123,10 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
             <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-800">أنثى</span>
           )}
           {apt.pregnant === true && (
-            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤰 حامل</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">حامل</span>
           )}
           {apt.breastfeeding === true && (
-            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">🤱 مرضعة</span>
+            <span className="rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-900">مرضعة</span>
           )}
         </div>
 
@@ -153,7 +156,7 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
           </div>
         )}
 
-        <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
+        {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
 
         {/* Row 5: action buttons */}
         <div className="flex items-center gap-1.5 flex-wrap pt-0.5">

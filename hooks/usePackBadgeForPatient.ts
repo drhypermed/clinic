@@ -33,6 +33,7 @@ import {
 } from '../services/specialty-packs/gynecology';
 import {
     formatChildAge, loadPediatricFile,
+    buildPediatricFileStorageKey,
     type PediatricFile,
 } from '../services/specialty-packs/pediatrics';
 
@@ -59,6 +60,11 @@ const fetchBadge = async (
     userId: string,
     nameKey: string,
     kind: PackBadgeKind,
+    options?: {
+        patientFileId?: string | null;
+        patientFileNumber?: number | null;
+        legacyPatientFileNameKey?: string | null;
+    },
 ): Promise<{ badge: PackBadge | null }> => {
     const cached = getBadgeFromCache(userId, nameKey, kind);
     if (cached) return cached;
@@ -72,7 +78,12 @@ const fetchBadge = async (
                 const file = await loadPregnancyFile(userId, nameKey);
                 badge = buildPregnancyBadge(file);
             } else {
-                const file = await loadPediatricFile(userId, nameKey);
+                const storageKey = buildPediatricFileStorageKey({
+                    patientFileId: options?.patientFileId,
+                    patientFileNumber: options?.patientFileNumber,
+                    patientFileNameKey: nameKey,
+                }) || nameKey;
+                const file = await loadPediatricFile(userId, storageKey, options?.legacyPatientFileNameKey || nameKey);
                 badge = buildPediatricBadge(file);
             }
             const value = { badge };
@@ -98,13 +109,16 @@ export const usePackBadgeForPatient = (
     userId: string | undefined | null,
     patientName: string | undefined | null,
     doctorSpecialty: string | undefined | null,
+    patientFileId?: string | null,
+    patientFileNumber?: number | null,
+    patientFileNameKey?: string | null,
 ): PackBadge | null => {
     const [badge, setBadge] = useState<PackBadge | null>(null);
 
     useEffect(() => {
         const uid = String(userId || '').trim();
         const specialty = String(doctorSpecialty || '').trim();
-        const nameKey = normalizePatientNameForFile(patientName || '');
+        const nameKey = String(patientFileNameKey || '').trim() || normalizePatientNameForFile(patientName || '');
         if (!uid || !specialty || !nameKey) {
             setBadge(null);
             return;
@@ -118,20 +132,28 @@ export const usePackBadgeForPatient = (
             return;
         }
 
-        const cached = getBadgeFromCache(uid, nameKey, kind);
+        const badgeFileKey = kind === 'pediatric'
+            ? buildPediatricFileStorageKey({ patientFileId, patientFileNumber, patientFileNameKey: nameKey }) || nameKey
+            : nameKey;
+
+        const cached = getBadgeFromCache(uid, badgeFileKey, kind);
         if (cached) {
             setBadge(cached.badge);
             return;
         }
 
         let cancelled = false;
-        fetchBadge(uid, nameKey, kind).then((result) => {
+        fetchBadge(uid, badgeFileKey, kind, {
+            patientFileId,
+            patientFileNumber,
+            legacyPatientFileNameKey: normalizePatientNameForFile(patientName || ''),
+        }).then((result) => {
             if (!cancelled) setBadge(result.badge);
         });
         return () => {
             cancelled = true;
         };
-    }, [userId, patientName, doctorSpecialty]);
+    }, [userId, patientName, doctorSpecialty, patientFileId, patientFileNumber, patientFileNameKey]);
 
     return badge;
 };

@@ -15,12 +15,22 @@ interface RecordPackBadgeProps {
     userId?: string | null;
     patientName?: string | null;
     doctorSpecialty?: string | null;
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
+    patientFileNameKey?: string | null;
 }
 
 export const RecordPackBadge: React.FC<RecordPackBadgeProps> = ({
-    userId, patientName, doctorSpecialty,
+    userId, patientName, doctorSpecialty, patientFileId, patientFileNumber, patientFileNameKey,
 }) => {
-    const badge = usePackBadgeForPatient(userId, patientName, doctorSpecialty);
+    const badge = usePackBadgeForPatient(
+        userId,
+        patientName,
+        doctorSpecialty,
+        patientFileId,
+        patientFileNumber,
+        patientFileNameKey,
+    );
     if (!badge) return null;
 
     // ألوان ثابته حسب نوع الباكدج

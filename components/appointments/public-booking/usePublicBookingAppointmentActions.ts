@@ -19,7 +19,10 @@ import { functions } from '../../../services/firebaseConfig';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import { extractBookingQuotaNotice } from './helpers';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
-import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
+import {
+  isPediatricSpecialtyForSecretaryVitals,
+  sanitizeSecretaryVitalsInput,
+} from '../../../utils/secretaryVitals';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
 import { normalizeGender } from '../../../utils/patientIdentity';
@@ -42,6 +45,7 @@ export const usePublicBookingAppointmentActions = ({
   success,
   patientName,
   age,
+  dateOfBirth,
   phone,
   gender,
   pregnant,
@@ -84,6 +88,7 @@ export const usePublicBookingAppointmentActions = ({
   setEditingAppointmentId,
   setPatientName,
   setAge,
+  setDateOfBirth,
   setPhone,
   setGender,
   setPregnant,
@@ -100,6 +105,7 @@ export const usePublicBookingAppointmentActions = ({
   setTodayAppointments,
 }: UsePublicBookingAppointmentActionsParams) => {
   const [entryRequestSendingId, setEntryRequestSendingId] = useState<string | null>(null);
+  const canUseSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
 
   const resolveCurrentSessionToken = (): string | undefined => {
     const token = String(getSessionToken?.() || '').trim();
@@ -213,6 +219,7 @@ export const usePublicBookingAppointmentActions = ({
     setEditingAppointmentId(apt.id);
     setPatientName(apt.patientName || '');
     setAge(apt.age || '');
+    setDateOfBirth(apt.dateOfBirth || '');
     setPhone(apt.phone || '');
     // تحميل حقول الهوية لو الموعد محفوظ بها (الموعد القديم قد لا يحتوي عليها)
     setGender(normalizeGender((apt as any).gender) ?? '');
@@ -220,11 +227,13 @@ export const usePublicBookingAppointmentActions = ({
     setBreastfeeding(typeof (apt as any).breastfeeding === 'boolean' ? (apt as any).breastfeeding : null);
     setVisitReason(apt.visitReason || '');
     setSecretaryVitals(
-      sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
-        visibility: secretaryVitalsVisibility,
-        fieldDefinitions: secretaryVitalFields,
-        doctorSpecialty,
-      }) || {}
+      canUseSecretaryVitals
+        ? sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
+            visibility: secretaryVitalsVisibility,
+            fieldDefinitions: secretaryVitalFields,
+            doctorSpecialty,
+          }) || {}
+        : {}
     );
     setDateStr(toLocalDateStr(dt));
     setTimeStr(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
@@ -262,6 +271,7 @@ export const usePublicBookingAppointmentActions = ({
     }
     const name = sanitizePublicText(patientName);
     const ageVal = sanitizePublicText(age);
+    const dateOfBirthVal = sanitizePublicText(dateOfBirth);
     const ph = sanitizePhoneDigits(phone);
     const reasonVal = sanitizePublicText(visitReason);
     if (!name) { setFormError('يرجى إدخال اسم المريض'); return; }
@@ -282,11 +292,13 @@ export const usePublicBookingAppointmentActions = ({
     const dateTime = chosenDateTime;
     const selectedConsultationCandidate = recentExamPatients.find((c) => c.id === selectedConsultationCandidateId);
     const resolvedAppointmentType: AppointmentType = appointmentType;
-    const sanitizedSecretaryVitals = sanitizeSecretaryVitalsInput(secretaryVitals, {
-      visibility: secretaryVitalsVisibility,
-      fieldDefinitions: secretaryVitalFields,
-      doctorSpecialty,
-    });
+    const sanitizedSecretaryVitals = canUseSecretaryVitals
+      ? sanitizeSecretaryVitalsInput(secretaryVitals, {
+          visibility: secretaryVitalsVisibility,
+          fieldDefinitions: secretaryVitalFields,
+          doctorSpecialty,
+        })
+      : undefined;
     const editingAppointment = editingAppointmentId
       ? todayAppointments.find((item) => item.id === editingAppointmentId) || null
       : null;
@@ -329,6 +341,7 @@ export const usePublicBookingAppointmentActions = ({
         editingAppointment,
         name,
         ageVal,
+        dateOfBirthVal,
         ph,
         reasonVal,
         dateTime,
@@ -356,6 +369,7 @@ export const usePublicBookingAppointmentActions = ({
           branchId: sessionBranchId,
           name,
           ageVal,
+          dateOfBirthVal,
           ph,
           reasonVal,
           sanitizedSecretaryVitals,
@@ -394,6 +408,7 @@ export const usePublicBookingAppointmentActions = ({
       // إعادة تعيين الفورم إلى الحالة الافتراضية
       setPatientName('');
       setAge('');
+      setDateOfBirth('');
       setPhone('');
       setGender('');
       setPregnant(null);
@@ -444,6 +459,7 @@ export const usePublicBookingAppointmentActions = ({
     setEditingAppointmentId(null);
     setPatientName('');
     setAge('');
+    setDateOfBirth('');
     setPhone('');
     setGender('');
     setPregnant(null);

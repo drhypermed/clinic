@@ -243,6 +243,7 @@ module.exports = ({
     // عشان تقرير الأدمن يعرض عداد per-feature.
     const rawFeature = String(request?.data?.feature || 'unknown').trim().toLowerCase();
     const feature = ALLOWED_AI_FEATURES.has(rawFeature) ? rawFeature : 'unknown';
+    const useGoogleSearch = request?.data?.googleSearch === true;
 
     // thinkingBudget لوضع التفكير في gemini-2.5-flash:
     // -1 = ديناميكي (default، الموديل يقرر)، 0 = تعطيل، >0 = حد أقصى tokens.
@@ -374,6 +375,9 @@ module.exports = ({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig,
     };
+    if (useGoogleSearch) {
+      payload.tools = [{ google_search: {} }];
+    }
 
     
     const refundQuota = async () => {

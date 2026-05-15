@@ -30,25 +30,25 @@ export const ToolCard: React.FC<ToolCardProps> = ({
   // المسار الذهبي البريميوم — مطابق لأزرار التداخلات/الحمل في كشف جديد
   if (premiumGold) {
     return (
-      <div className="relative w-full">
-        <span className="gold-premium-halo rounded-2xl" aria-hidden />
+      <div className="relative flex-1 min-w-0">
+        <span className="gold-premium-halo" aria-hidden />
         <button
           onClick={() => {
             void onClick();
           }}
-          className="gold-premium-btn relative w-full rounded-2xl p-3 text-right transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+          className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
           dir="rtl"
         >
-          <span className="gold-premium-shimmer rounded-2xl" aria-hidden />
-          <div className="relative z-10 flex items-center gap-3">
+          <span className="gold-premium-shimmer" aria-hidden />
+          <div className="relative z-10 flex flex-row-reverse items-center justify-center gap-2">
             {/* الأيقونة: خلفيه بيضاء شفافه + ring فاتح زي الأزرار في كشف جديد */}
-            <div className="h-10 w-10 shrink-0 rounded-xl bg-white/30 ring-1 ring-white/50 shadow-inner flex items-center justify-center text-warning-950 text-lg">
+            <div className="relative z-10 top-[1px] inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 ring-1 ring-white/50 shadow-inner text-warning-950">
               {icon}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 text-right">
               <div className="flex items-center justify-between gap-2">
                 {/* لون النص داكن (warning-950) عشان يبان على الخلفيه الذهبيه */}
-                <h3 className="text-sm font-black text-warning-950 truncate">{title}</h3>
+                <h3 className="relative z-10 tracking-tight text-warning-950 truncate">{title}</h3>
                 {badgeLabel && (
                   <span className="shrink-0 rounded-lg bg-white/40 px-2 py-0.5 text-[10px] font-black text-warning-950 ring-1 ring-white/50">
                     {badgeLabel}

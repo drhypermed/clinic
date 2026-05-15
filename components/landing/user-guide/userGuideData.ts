@@ -1188,7 +1188,7 @@ export const USER_GUIDE_CATEGORIES: GuideCategory[] = [
   {
     id: 'specialty',
     title: 'حزم التخصصات',
-    description: 'ميزات إضافيه بتظهر تلقائياً لتخصصات معينه (نسا، ...)',
+    description: 'ميزات إضافيه بتظهر تلقائياً لتخصصات معينه (نسا، أطفال، ...)',
     topics: SPECIALTY_PACK_TOPICS,
   },
 ];

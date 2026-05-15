@@ -49,6 +49,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
         minWeight: undefined,
         maxWeight: undefined,
         matchKeywords: [],
+        dosageText: '',
+        dosageFormula: '',
+        dosageFullText: '',
         dosageConditions: [],
         category: undefined,
         form: undefined
@@ -84,6 +87,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                     minWeight: savedCustomization?.minWeight !== undefined ? savedCustomization.minWeight : baseMedication.minWeight,
                     maxWeight: savedCustomization?.maxWeight !== undefined ? savedCustomization.maxWeight : baseMedication.maxWeight,
                     matchKeywords: savedCustomization?.matchKeywords || baseMedication.matchKeywords || [],
+                    dosageText: savedCustomization?.dosageText || (baseMedication as any).dosageText || '',
+                    dosageFormula: savedCustomization?.dosageFormula || (baseMedication as any).dosageFormula || '',
+                    dosageFullText: savedCustomization?.dosageFullText || (baseMedication as any).dosageFullText || '',
                     category: savedCustomization?.category !== undefined ? savedCustomization.category : baseMedication.category,
                     dosageConditions: savedCustomization?.dosageConditions || [],
                     form: savedCustomization?.form !== undefined ? savedCustomization.form : baseMedication.form
@@ -109,6 +115,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                     minWeight: baseMedication.minWeight,
                     maxWeight: baseMedication.maxWeight,
                     matchKeywords: baseMedication.matchKeywords || [],
+                    dosageText: (baseMedication as any).dosageText || '',
+                    dosageFormula: (baseMedication as any).dosageFormula || '',
+                    dosageFullText: (baseMedication as any).dosageFullText || '',
                     category: baseMedication.category,
                     dosageConditions: [],
                     form: baseMedication.form
@@ -143,6 +152,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                 minWeight: formData.minWeight !== undefined && formData.minWeight !== null ? formData.minWeight : undefined,
                 maxWeight: formData.maxWeight !== undefined && formData.maxWeight !== null ? formData.maxWeight : undefined,
                 matchKeywords: formData.matchKeywords || [],
+                dosageText: formData.dosageText?.trim() || undefined,
+                dosageFormula: formData.dosageFormula?.trim() || undefined,
+                dosageFullText: formData.dosageFullText?.trim() || undefined,
                 category: formData.category !== undefined ? formData.category : undefined,
                 dosageConditions: formData.dosageConditions && formData.dosageConditions.length > 0 ? formData.dosageConditions : undefined,
                 form: formData.form,
@@ -222,6 +234,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                 minWeight: baseMedication.minWeight,
                 maxWeight: baseMedication.maxWeight,
                 matchKeywords: baseMedication.matchKeywords || [],
+                dosageText: (baseMedication as any).dosageText || '',
+                dosageFormula: (baseMedication as any).dosageFormula || '',
+                dosageFullText: (baseMedication as any).dosageFullText || '',
                 category: baseMedication.category,
                 dosageConditions: [],
                 form: baseMedication.form
@@ -297,7 +312,9 @@ export const MedicationEditModal: React.FC<MedicationEditModalProps> = ({
                         />
                         <MedicationDosageBuilder
                             dosageConditions={formData.dosageConditions}
+                            defaultDosageText={formData.dosageText || ''}
                             onChange={(conditions) => updateField('dosageConditions', conditions)}
+                            onDefaultDosageTextChange={(value) => updateField('dosageText', value)}
                         />
                     </div>
 

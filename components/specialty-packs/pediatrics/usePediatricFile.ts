@@ -3,32 +3,45 @@
  *
  * بيحمّل ملف الطفل، بيوفّر دوال تعديل لكل من:
  *   - بيانات الطفل (تاريخ الميلاد، الجنس)
- *   - قياسات النمو (إضافه/تعديل/حذف)
  *   - سجلات التطعيمات (تحديث حاله كل تطعيم)
+ *
+ * قياسات النمو لا تتعدل من ملف الطفل؛ مصدرها مزامنه الفايتالز عند حفظ الكشف.
  *
  * الحفظ التلقائي بـdebounce 800ms — نفس نمط ملف الحمل.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+    buildPediatricFileStorageKey,
     createEmptyPediatricFile, loadPediatricFile, savePediatricFile,
-    type ChildSex, type GrowthEntry, type PediatricFile,
+    type ChildSex, type PediatricFile,
     type VaccinationRecord, type VaccinationStatus,
 } from '../../../services/specialty-packs/pediatrics';
-
-const newGrowthId = (): string =>
-    `gr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 const AUTO_SAVE_DELAY = 800;
 
 interface UsePediatricFileParams {
     userId?: string | null;
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
     patientFileNameKey?: string | null;
+    legacyPatientFileNameKey?: string | null;
 }
 
-export const usePediatricFile = ({ userId, patientFileNameKey }: UsePediatricFileParams) => {
+export const usePediatricFile = ({
+    userId,
+    patientFileId,
+    patientFileNumber,
+    patientFileNameKey,
+    legacyPatientFileNameKey,
+}: UsePediatricFileParams) => {
+    const storageKey = buildPediatricFileStorageKey({
+        patientFileId,
+        patientFileNumber,
+        patientFileNameKey,
+    });
     const [file, setFile] = useState<PediatricFile>(() =>
-        createEmptyPediatricFile(patientFileNameKey || ''),
+        createEmptyPediatricFile(storageKey || ''),
     );
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,14 +54,14 @@ export const usePediatricFile = ({ userId, patientFileNameKey }: UsePediatricFil
     useEffect(() => {
         let mounted = true;
         didLoadRef.current = false;
-        if (!userId || !patientFileNameKey) {
-            setFile(createEmptyPediatricFile(patientFileNameKey || ''));
+        if (!userId || !storageKey) {
+            setFile(createEmptyPediatricFile(storageKey || ''));
             setLoading(false);
             return;
         }
         setLoading(true);
         setError(null);
-        loadPediatricFile(userId, patientFileNameKey)
+        loadPediatricFile(userId, storageKey, legacyPatientFileNameKey)
             .then((data) => {
                 if (!mounted) return;
                 setFile(data);
@@ -65,7 +78,7 @@ export const usePediatricFile = ({ userId, patientFileNameKey }: UsePediatricFil
             mounted = false;
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         };
-    }, [userId, patientFileNameKey]);
+    }, [userId, storageKey, legacyPatientFileNameKey]);
 
     // ─ الحفظ التلقائي مع debounce ─
     const scheduleSave = useCallback((next: PediatricFile) => {
@@ -130,32 +143,6 @@ export const usePediatricFile = ({ userId, patientFileNameKey }: UsePediatricFil
         updateFile((prev) => ({ ...prev, generalNotes: notes || undefined }));
     }, [updateFile]);
 
-    const addGrowthEntry = useCallback((entry: Omit<GrowthEntry, 'id' | 'updatedAt'>) => {
-        updateFile((prev) => ({
-            ...prev,
-            growthEntries: [
-                { ...entry, id: newGrowthId(), updatedAt: new Date().toISOString() },
-                ...prev.growthEntries,
-            ].sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0)),
-        }));
-    }, [updateFile]);
-
-    const updateGrowthEntry = useCallback((id: string, patch: Partial<GrowthEntry>) => {
-        updateFile((prev) => ({
-            ...prev,
-            growthEntries: prev.growthEntries.map((e) =>
-                e.id === id ? { ...e, ...patch, updatedAt: new Date().toISOString() } : e,
-            ),
-        }));
-    }, [updateFile]);
-
-    const deleteGrowthEntry = useCallback((id: string) => {
-        updateFile((prev) => ({
-            ...prev,
-            growthEntries: prev.growthEntries.filter((e) => e.id !== id),
-        }));
-    }, [updateFile]);
-
     const updateVaccination = useCallback(
         (scheduleId: string, patch: Partial<VaccinationRecord>) => {
             updateFile((prev) => {
@@ -189,7 +176,6 @@ export const usePediatricFile = ({ userId, patientFileNameKey }: UsePediatricFil
     return {
         file, loading, error, isSaving,
         setDateOfBirth, setSex, setGeneralNotes,
-        addGrowthEntry, updateGrowthEntry, deleteGrowthEntry,
         updateVaccination, setVaccinationStatus,
         flush,
     };

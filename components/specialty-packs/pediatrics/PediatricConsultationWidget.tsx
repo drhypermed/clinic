@@ -4,40 +4,37 @@
  * نسخه مدمجه بتشتغل أثناء الكشف:
  *   - بتعرض عمر الطفل + آخر قياس (وزن/طول)
  *   - تنبيه لو فيه تطعيم متأخر/مستحق
- *   - زرّ "أضف قياس النهارده" يفتح فورم سريع
+ *   - يوضح أن قياسات النمو تنتقل من الفايتالز عند حفظ الكشف
  *
  * البيانات متشاركه مع PediatricSection — نفس وثيقه pediatricFile__.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    calculateAgeInDays, calculateAgeInMonths, calculateVaccinationTiming,
+    calculateAgeInMonths, calculateVaccinationTiming,
     EGYPTIAN_VACCINATION_SCHEDULE, formatChildAge, getTodayDateKey,
     SCHEDULE_BY_ID,
 } from '../../../services/specialty-packs/pediatrics';
 import { normalizePatientNameForFile } from '../../../services/patient-files';
 import { registerFlusher } from '../../../services/specialty-packs';
+import { calculateAgePartsFromDateOfBirth } from '../../appointments/utils';
 import { usePediatricFile } from './usePediatricFile';
 
 interface PediatricConsultationWidgetProps {
     userId?: string | null;
     patientName?: string | null;
+    patientFileId?: string | null;
+    patientFileNumber?: number | null;
+    patientFileNameKey?: string | null;
+    dateOfBirth?: string | null;
+    visitDate?: string | null;
+    onDateOfBirthChange?: (value: string) => void;
     /**
      * مزامنه السن — يتنادى لما الـDOB يكون متسجل عشان نملي حقول السن في الكشف.
      * بنبعت السن مقسّم سنوات/شهور/أيام بصيغه string جاهزه للـinput.
      */
     onSyncAgeFromDOB?: (years: string, months: string, days: string) => void;
 }
-
-/** قسمه عمر بالأيام إلى سنوات + شهور + أيام (للحقول الموجوده في الكشف) */
-const splitAgeFromDays = (totalDays: number): { years: string; months: string; days: string } => {
-    if (totalDays < 0) return { years: '', months: '', days: '' };
-    const years = Math.floor(totalDays / 365.25);
-    const afterYears = totalDays - Math.floor(years * 365.25);
-    const months = Math.floor(afterYears / 30.4375);
-    const days = Math.max(0, Math.floor(afterYears - months * 30.4375));
-    return { years: String(years), months: String(months), days: String(days) };
-};
 
 const formatDate = (iso?: string): string => {
     if (!iso) return '—';
@@ -47,7 +44,8 @@ const formatDate = (iso?: string): string => {
 };
 
 export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetProps> = ({
-    userId, patientName, onSyncAgeFromDOB,
+    userId, patientName, patientFileId, patientFileNumber, patientFileNameKey,
+    dateOfBirth, visitDate, onDateOfBirthChange, onSyncAgeFromDOB,
 }) => {
     const nameKey = useMemo(
         () => normalizePatientNameForFile(patientName || ''),
@@ -57,7 +55,13 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
         file, loading, error, isSaving,
         setDateOfBirth, setVaccinationStatus,
         flush,
-    } = usePediatricFile({ userId, patientFileNameKey: nameKey || null });
+    } = usePediatricFile({
+        userId,
+        patientFileId,
+        patientFileNumber,
+        patientFileNameKey,
+        legacyPatientFileNameKey: nameKey || null,
+    });
 
     // نسجّل الـflush في الـbus عشان زرار "حفظ الكشف" يقدر يجبر الحفظ
     // قبل ما الـauto-sync يقرا داتا قديمه.
@@ -65,26 +69,26 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
 
     const [expanded, setExpanded] = useState(false);
 
-    // ─ مزامنه السن من DOB → حقول الكشف ─
-    // المفتاح "patient|dob" بيشمل اسم المريض عشان لو ٢ أطفال
-    // عندهم نفس تاريخ الميلاد، الـsync يشتغل للاتنين بشكل منفصل.
-    const lastSyncedKeyRef = useRef<string>('');
     useEffect(() => {
-        if (!onSyncAgeFromDOB) return;
-        const dob = file.dateOfBirth || '';
-        if (!dob) return;
-        const stateKey = `${nameKey}|${dob}`;
-        if (stateKey === lastSyncedKeyRef.current) return;
-        const days = calculateAgeInDays(dob, getTodayDateKey());
-        if (days === null) return;
-        const { years, months, days: d } = splitAgeFromDays(days);
-        onSyncAgeFromDOB(years, months, d);
-        lastSyncedKeyRef.current = stateKey;
-    }, [nameKey, file.dateOfBirth, onSyncAgeFromDOB]);
+        const externalDateOfBirth = String(dateOfBirth || '').trim();
+        if (!file.patientFileNameKey || !externalDateOfBirth || externalDateOfBirth === (file.dateOfBirth || '')) return;
+        setDateOfBirth(externalDateOfBirth);
+    }, [dateOfBirth, file.dateOfBirth, file.patientFileNameKey, setDateOfBirth]);
+
+    const handleManualDateOfBirthChange = (value: string) => {
+        setDateOfBirth(value);
+        onDateOfBirthChange?.(value);
+
+        const parts = calculateAgePartsFromDateOfBirth(value, visitDate || getTodayDateKey());
+        if (parts) {
+            onSyncAgeFromDOB?.(parts.years, parts.months, parts.days);
+        }
+    };
 
     // ⚠️ كل الـhooks لازم تتنادى قبل أي return شرطي عشان مايبقاش
     //   "Rendered more hooks than during the previous render" لما المريض يتكتب.
-    const currentAgeMonths = calculateAgeInMonths(file.dateOfBirth, getTodayDateKey());
+    const effectiveDateOfBirth = file.dateOfBirth || String(dateOfBirth || '').trim() || undefined;
+    const currentAgeMonths = calculateAgeInMonths(effectiveDateOfBirth, getTodayDateKey());
 
     // تطعيمات متأخره/مستحقه — للتنبيه السريع (لازم تتحسب بشكل غير شرطي)
     const dueOrOverdueIds = useMemo(() => {
@@ -102,8 +106,9 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
     // ← مفيش early return — الـwidget يظهر دايماً، حتى من غير اسم مريض
     //   (لما الاسم مكتوبش، نعرض empty state وداخل الـwidget نطلب الإدخال)
     const hasNameKey = Boolean(nameKey);
-    const hasDOB = Boolean(file.dateOfBirth);
-    const ageLabel = formatChildAge(file.dateOfBirth, getTodayDateKey());
+    const hasFileKey = Boolean(file.patientFileNameKey);
+    const hasDOB = Boolean(effectiveDateOfBirth);
+    const ageLabel = formatChildAge(effectiveDateOfBirth, getTodayDateKey());
     const latestGrowth = file.growthEntries[0];
 
     return (
@@ -122,6 +127,10 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
                 {!hasNameKey ? (
                     <span className="text-[11px] font-bold text-slate-500">
                         اكتب اسم الطفل في الكشف عشان نحمّل ملفه
+                    </span>
+                ) : !hasFileKey ? (
+                    <span className="text-[11px] font-bold text-slate-500">
+                        احفظ الكشف عشان يتربط بملف الطفل
                     </span>
                 ) : loading ? (
                     <span className="text-[11px] font-bold text-slate-500">
@@ -152,7 +161,7 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
                         )}
                         {dueOrOverdueIds.length > 0 && (
                             <span className="inline-flex items-center rounded-full bg-danger-50 border border-danger-200 px-2 py-0.5 text-[11px] font-black text-danger-700">
-                                🔔 {dueOrOverdueIds.length} تطعيم مستحق
+                                تنبيه: {dueOrOverdueIds.length} تطعيم مستحق
                             </span>
                         )}
                     </>
@@ -173,7 +182,7 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
                         </div>
                     )}
 
-                    {hasNameKey && (isSaving || error) && (
+                    {hasFileKey && (isSaving || error) && (
                         <div
                             className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
                                 error
@@ -194,11 +203,12 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
                             <input
                                 type="date"
                                 max={getTodayDateKey()}
-                                onChange={(e) => setDateOfBirth(e.target.value)}
+                                onChange={(e) => handleManualDateOfBirthChange(e.target.value)}
                                 className="w-full max-w-xs h-10 rounded-xl border-2 border-sky-200 bg-white px-3 text-sm font-bold focus:border-sky-400 focus:outline-none"
+                                aria-label="تاريخ ميلاد الطفل"
                             />
                             <p className="mt-1 text-[10px] text-slate-500">
-                                💡 بعد التسجيل، السن في الكشف هيتحدث تلقائياً + هتظهر الحسابات والتطعيمات.
+                                ملاحظة: بعد التسجيل، السن في الكشف هيتحدث تلقائياً + هتظهر الحسابات والتطعيمات.
                             </p>
                         </div>
                     )}
@@ -277,7 +287,7 @@ export const PediatricConsultationWidget: React.FC<PediatricConsultationWidgetPr
                     {hasDOB && (
                         <div className="rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/40 px-3 py-2.5">
                             <p className="text-[11px] text-sky-700 font-bold leading-relaxed">
-                                💡 سجل الوزن والطول ومحيط الرأس في الفايتالز فوق. عند حفظ الكشف، كل القياسات تنتقل تلقائياً لجدول النمو الطولي للطفل بتاريخ الكشف.
+                                ملاحظة: سجل الوزن والطول ومحيط الرأس في الفايتالز فوق. عند حفظ الكشف، كل القياسات تنتقل تلقائياً لجدول النمو الطولي للطفل بتاريخ الكشف.
                             </p>
                         </div>
                     )}

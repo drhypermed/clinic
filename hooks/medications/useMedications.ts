@@ -54,6 +54,7 @@ const buildCustomizedCalculationRule = (
         return (weight: number, ageMonths: number) => {
             const matchingCondition = findMatchingDosageCondition(customization.dosageConditions, weight, ageMonths);
             if (matchingCondition) return matchingCondition.text;
+            if (customization.dosageText) return customization.dosageText;
             if (typeof med.calculationRule === 'function') return med.calculationRule(weight, ageMonths);
             return '';
         };
@@ -66,7 +67,7 @@ const buildCustomizedCalculationRule = (
     return null;
 };
 
-const buildNewMedication = (c: MedicationCustomization): Medication => ({
+const buildNewMedication = (c: MedicationCustomization): Medication & Partial<MedicationCustomization> => ({
     id: c.medicationId,
     name: c.name || 'دواء جديد',
     genericName: c.genericName || '',
@@ -84,6 +85,10 @@ const buildNewMedication = (c: MedicationCustomization): Medication => ({
     form: (c.form as any) || 'Tablets',
     matchKeywords: c.matchKeywords || [],
     isNew: true,
+    dateModified: c.dateModified,
+    dosageText: c.dosageText,
+    dosageFormula: c.dosageFormula,
+    dosageFullText: c.dosageFullText,
     calculationRule: (weight: number, ageMonths: number) => {
         if (c.dosageConditions && c.dosageConditions.length > 0) {
             const matchingCondition = findMatchingDosageCondition(c.dosageConditions, weight, ageMonths);
@@ -176,6 +181,10 @@ export const useMedications = (options: UseMedicationsOptions = {}): Medication[
                 minWeight: resolveNumberField(customization, 'minWeight', med.minWeight),
                 maxWeight: resolveNumberField(customization, 'maxWeight', med.maxWeight),
                 category: resolveStringField(customization, 'category', med.category),
+                dosageText: customization.dosageText,
+                dosageFormula: customization.dosageFormula,
+                dosageFullText: customization.dosageFullText,
+                dateModified: customization.dateModified,
                 ...(enhancedMatchKeywords.length > 0 ? { matchKeywords: enhancedMatchKeywords } : {}),
                 ...(customizedCalculationRule ? { calculationRule: customizedCalculationRule } : {})
             };

@@ -31,7 +31,6 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
   prescriptionVitalsConfig,
   prescriptionCustomBoxes,
   onSyncSecretaryVitalsVisibility,
-  doctorName,
   doctorSpecialty,
 }) => {
   const { user } = useAuth();
@@ -71,10 +70,11 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
         isOpen={true}
         onToggleOpen={() => {}}
         alwaysExpanded={true}
-        // اسم الطبيب يُمرَّر للعرض في حقل "اسم الطبيب" داخل قسم إعدادات السكرتارية
-        doctorName={doctorName ?? ''}
+        // إيميل الطبيب هو بيانات الدخول التي تحتاجها السكرتارية.
+        doctorEmail={user?.email ?? ''}
         currentBranchLabel={currentBranchLabel}
         hasMultipleBranches={hasMultipleBranches}
+        doctorSpecialty={doctorSpecialty}
         bookingFormTitle={bookingFormTitle}
         onBookingFormTitleChange={onBookingFormTitleChange}
         secretaryPassword={secretaryPassword}

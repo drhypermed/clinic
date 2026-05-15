@@ -5,13 +5,20 @@ type DosageCondition = NonNullable<MedicationCustomization['dosageConditions']>[
 
 interface Props {
   dosageConditions: MedicationCustomization['dosageConditions'];
+  defaultDosageText?: string;
   onChange: (conditions: DosageCondition[]) => void;
+  onDefaultDosageTextChange?: (value: string) => void;
 }
 
 const subFieldClass =
   'w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 transition-colors';
 
-export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onChange }) => {
+export const MedicationDosageBuilder: React.FC<Props> = ({
+  dosageConditions,
+  defaultDosageText = '',
+  onChange,
+  onDefaultDosageTextChange,
+}) => {
   const conditions = dosageConditions || [];
 
   const addCondition = () => {
@@ -58,6 +65,21 @@ export const MedicationDosageBuilder: React.FC<Props> = ({ dosageConditions, onC
       </div>
 
       <div className="p-3 sm:p-4 space-y-3 max-h-[420px] overflow-y-auto custom-scrollbar">
+        {onDefaultDosageTextChange && (
+          <div className="p-3 sm:p-4 bg-success-50/60 rounded-xl border border-success-100">
+            <label className="text-[10px] font-bold text-success-700 uppercase tracking-wider block mb-1.5">
+              الجرعة الافتراضية
+            </label>
+            <textarea
+              value={defaultDosageText}
+              onChange={(e) => onDefaultDosageTextChange(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 bg-white border border-success-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-none leading-relaxed transition-colors"
+              placeholder="تظهر إذا لم يتم إدخال وزن/عمر أو لم يطابق المريض أي نطاق جرعة."
+            />
+          </div>
+        )}
+
         {conditions.length > 0 ? (
           conditions.map((condition, idx) => (
             <div key={idx} className="p-3 sm:p-4 bg-slate-50 rounded-xl border border-slate-200">

@@ -38,6 +38,7 @@ interface SecureGeminiParams {
    * عشان تقرير الأدمن يعرض عداد per-feature لكل دكتور.
    */
   feature?: AiFeatureName;
+  googleSearch?: boolean;
 }
 
 interface SecureGeminiResponse {
