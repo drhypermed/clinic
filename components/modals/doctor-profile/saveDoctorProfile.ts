@@ -6,8 +6,7 @@
  * 3) مزامنة بيانات الإعلان (doctorAds/{uid}) إن وُجد.
  * 4) استدعاء callbacks لتحديث الحالة في الواجهة.
  */
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebaseConfig';
+import { setDoc } from 'firebase/firestore';
 import {
   deleteDoctorProfileImage,
   uploadDoctorProfileImageBase64,
@@ -83,15 +82,15 @@ export async function saveDoctorProfile({
 
   // (3) مزامنة مع الإعلان العام إن وُجد — قد يفشل إن لم يُنشئه الطبيب بعد
   try {
-    await setDoc(
-      doc(db, 'doctorAds', userId),
-      {
+    const existingAd = await firestoreService.getDoctorAdByDoctorId(userId);
+    if (existingAd) {
+      await firestoreService.saveDoctorAdByDoctorId(userId, {
+        ...existingAd,
         doctorName: name.trim(),
+        doctorSpecialty: resolvedSpecialty || existingAd.doctorSpecialty,
         profileImage: finalImageUrl || '',
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true },
-    );
+      });
+    }
   } catch (adErr) {
     // آمن لتجاهله: ربما الطبيب لم ينشر إعلانًا أو الصلاحيات لم تُفعَّل
     console.info('No doctor ad document found to sync, or permission deferred.', adErr);

@@ -68,6 +68,8 @@ const A: React.FC<{ children: React.ReactNode; className?: string; delay?: numbe
   );
 };
 
+const PUBLIC_PORTAL_URL = 'https://www.drhypermed.com/public';
+
 /* ── features ── */
 interface Feature { icon: React.ReactNode; title: string; desc: string; color: string }
 const FEATURES: Feature[] = [
@@ -289,10 +291,7 @@ export const LandingPage: React.FC = () => {
             </button>
           </A>
 
-          {/* شبكة كرتين فقط — كارد "للمرضى" اتشال لأن ده دومين الأطباء (clinic.drhypermed.com).
-              ملاحظه: الـroute /login/public لسه مفتوح في AppCoreContent.tsx لمن يدخله مباشرة،
-              لكن مش بنعرضه كـCTA من اللاندنج لأن الجمهور المفروض يدخل من dr drhypermed.com بدلاً منه. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {/* طبيب */}
             <A>
               <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
@@ -329,6 +328,29 @@ export const LandingPage: React.FC = () => {
                   <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
                   دخول السكرتارية
                 </button>
+              </div>
+            </A>
+            {/* جمهور */}
+            <A delay={160}>
+              <div className="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-sm hover:shadow-lg transition-all p-5 space-y-3 h-full flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-success-600 text-white flex items-center justify-center shadow-md">
+                    <HiOutlineUserGroup className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-black text-slate-900">للجمهور</h3>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
+                  افتح دليل الأطباء واحجز موعدك — بحث بالتخصص أو المحافظه أو اسم الطبيب.
+                </p>
+                <a
+                  href={PUBLIC_PORTAL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start flex items-center gap-1.5 bg-white ring-1 ring-brand-200 hover:ring-brand-400 text-brand-700 hover:text-brand-800 text-xs font-black px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.97]"
+                >
+                  <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />
+                  بوابة الجمهور
+                </a>
               </div>
             </A>
           </div>

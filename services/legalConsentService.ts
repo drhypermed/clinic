@@ -60,6 +60,37 @@ export const persistLegalDocumentConsent = (
   writeStoredValue(acceptedAtKey, new Date().toISOString());
 };
 
+export interface LegalConsentSnapshot {
+  audience: LegalAudience;
+  termsVersion: string;
+  termsTitle: string;
+  termsEffectiveDate: string;
+  privacyVersion: string;
+  privacyTitle: string;
+  privacyEffectiveDate: string;
+  termsAcceptedAt: string;
+  privacyAcceptedAt: string;
+  recordedAt: string;
+}
+
+export const getAudienceLegalConsentSnapshot = (audience: LegalAudience): LegalConsentSnapshot => {
+  const policies = getLegalPoliciesForAudience(audience);
+  const recordedAt = new Date().toISOString();
+
+  return {
+    audience,
+    termsVersion: policies.terms.version,
+    termsTitle: policies.terms.title,
+    termsEffectiveDate: policies.terms.effectiveDate,
+    privacyVersion: policies.privacy.version,
+    privacyTitle: policies.privacy.title,
+    privacyEffectiveDate: policies.privacy.effectiveDate,
+    termsAcceptedAt: readStoredValue(buildLegalConsentAtKey(audience, policies.terms.kind)) || recordedAt,
+    privacyAcceptedAt: readStoredValue(buildLegalConsentAtKey(audience, policies.privacy.kind)) || recordedAt,
+    recordedAt,
+  };
+};
+
 const isAudienceLegalConsentComplete = (audience: LegalAudience): boolean => {
   const policies = getLegalPoliciesForAudience(audience);
   return (

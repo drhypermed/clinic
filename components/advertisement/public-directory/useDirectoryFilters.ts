@@ -17,7 +17,19 @@
 import { useMemo, useState } from 'react';
 
 import type { DoctorAdProfile } from '../../../types';
+import { MEDICAL_SPECIALTIES } from '../../auth/medicalSpecialties';
 import { CITIES_BY_GOVERNORATE } from '../constants';
+
+const PREFERRED_TOP_SPECIALTIES = [
+  'الباطنة العامة',
+  'طب الأطفال وحديثي الولادة',
+  'طب وجراحة الفم والأسنان',
+  'أمراض النساء والتوليد',
+  'جراحة العظام والمفاصل',
+  'الأمراض الجلدية والتناسلية',
+  'الأنف والأذن والحنجرة',
+];
+
 export const useDirectoryFilters = (ads: DoctorAdProfile[]) => {
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [governorateFilter, setGovernorateFilter] = useState('');
@@ -25,36 +37,14 @@ export const useDirectoryFilters = (ads: DoctorAdProfile[]) => {
   const [searchFilter, setSearchFilter] = useState('');
 
   const specialties = useMemo(() => {
-    return [
-      'أطفال',
-      'أسنان',
-      'أمراض دم',
-      'أمراض صدرية',
-      'أنف وأذن وحنجرة',
-      'أورام',
-      'باطنة',
-      'تخاطب',
-      'تغذية',
-      'جراحة تجميل',
-      'جراحة عامة',
-      'جلدية',
-      'رمد',
-      'علاج طبيعي',
-      'علاج طبيعي وتغذية',
-      'عظام',
-      'قلب',
-      'كلية',
-      'مخ وأعصاب',
-      'مسالك بولية',
-      'نساء وتوليد',
-      'نفسية وعصبية',
-      'أخرى'
-    ].sort((a, b) => a.localeCompare(b));
+    return Array.from(
+      new Set(MEDICAL_SPECIALTIES.map((specialty) => specialty.trim()).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
   }, []);
 
   const topSpecialties = useMemo(() => {
-    return ['باطنة', 'أطفال', 'أسنان', 'نساء وتوليد', 'عظام', 'جلدية', 'أنف وأذن وحنجرة'];
-  }, []);
+    return PREFERRED_TOP_SPECIALTIES.filter((specialty) => specialties.includes(specialty));
+  }, [specialties]);
 
   const citiesForFilter = useMemo(() => {
     if (!governorateFilter) return [];

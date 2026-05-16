@@ -26,6 +26,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from '../common/BrandLogo';
 import { UserGuideSidebarLink } from '../common/UserGuideSidebarLink';
 import { MarketingPackagesSidebarLink } from '../common/MarketingPackagesSidebarLink';
+import { PublicPortalSidebarLink } from '../common/PublicPortalSidebarLink';
 import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
@@ -391,6 +392,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* دليل الاستخدام + باقات الدعاية — قبل زر تسجيل الخروج.
                     الـmt-auto على الـwrapper بيدفع الاتنين لأسفل السايدبار معاً. */}
                 <div className="mt-auto space-y-1">
+                    <PublicPortalSidebarLink
+                        onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
+                    />
                     <UserGuideSidebarLink
                         variant="doctor"
                         onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}

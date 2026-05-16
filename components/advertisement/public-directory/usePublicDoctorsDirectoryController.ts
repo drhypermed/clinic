@@ -18,11 +18,10 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 
 import { type User } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { DoctorAdProfile, DoctorPublicReview, PublicUserBooking } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
-import { auth, db } from '../../../services/firebaseConfig';
+import { auth } from '../../../services/firebaseConfig';
 import {
   SESSION_ROLE_STORAGE_KEY, signInWithGoogle, } from '../../../services/auth-service';
 import { useHomepageBanner } from '../../../hooks/useHomepageBanner';
@@ -372,6 +371,23 @@ export const usePublicDoctorsDirectoryController = ({
   }, [user, profile?.email, profile?.name, profile?.phone, user?.displayName, user?.email]);
 
   useEffect(() => {
+    const currentUser = auth.currentUser || user;
+    if (!currentUser?.uid || currentUser.isAnonymous) return;
+
+    const unsub = firestoreService.subscribeToPublicUserProfile(currentUser.uid, (remoteProfile) => {
+      const remoteEmail = (remoteProfile.email || currentUser.email || '').trim().toLowerCase();
+      const emailLocalPart = remoteEmail ? remoteEmail.split('@')[0] : '';
+      setAccountSnapshot((prev) => ({
+        name: (remoteProfile.name || prev.name || currentUser.displayName || emailLocalPart || '').trim(),
+        email: (remoteEmail || prev.email || '').trim().toLowerCase(),
+        phone: (typeof remoteProfile.phone === 'string' ? remoteProfile.phone : prev.phone || '').trim(),
+      }));
+    });
+
+    return () => unsub();
+  }, [user?.uid, user?.displayName, user?.email]);
+
+  useEffect(() => {
     // للضيف، مفيش verified email — نسيب publicAccountVerified = false.
     const isFirebaseVerified = Boolean(auth.currentUser?.emailVerified || user?.emailVerified);
     setPublicAccountVerified(isFirebaseVerified);
@@ -381,30 +397,25 @@ export const usePublicDoctorsDirectoryController = ({
     const normalizedEmail = (currentUser.email || fallbackEmail || accountSnapshot.email || '').trim().toLowerCase();
     const normalizedName = (accountSnapshot.name || currentUser.displayName || '').trim() || 'مستخدم عام';
     const normalizedPhone = (accountSnapshot.phone || '').trim();
-    const nowIso = new Date().toISOString();
 
-    await setDoc(
-      doc(db, 'users', currentUser.uid),
+    const savedProfile = await firestoreService.savePublicUserProfile(
+      currentUser.uid,
       {
-        authRole: 'public',
-        publicProfile: {
-          name: normalizedName,
-          email: normalizedEmail,
-          phone: normalizedPhone,
-        },
-        updatedAt: nowIso,
-        ...(currentUser.emailVerified ? { publicVerifiedAt: nowIso } : {}),
+        name: normalizedName,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        emailVerified: currentUser.emailVerified,
       },
-      { merge: true }
+      { preserveExistingWhenEmpty: true, preferExisting: true }
     );
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(SESSION_ROLE_STORAGE_KEY, 'public');
     }
     setAccountSnapshot({
-      name: normalizedName,
-      email: normalizedEmail,
-      phone: normalizedPhone,
+      name: savedProfile.name || normalizedName,
+      email: savedProfile.email || normalizedEmail,
+      phone: savedProfile.phone || normalizedPhone,
     });
   };
 
@@ -582,25 +593,18 @@ export const usePublicDoctorsDirectoryController = ({
     const trimmedPhone = nextPhone.trim();
     setAccountSaving(true);
     try {
-      await setDoc(
-        doc(db, 'users', currentUser.uid),
-        {
-          authRole: 'public',
-          publicProfile: {
-            name: trimmedName,
-            email: accountEmail,
-            phone: trimmedPhone,
-          },
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
+      const savedProfile = await firestoreService.savePublicUserProfile(currentUser.uid, {
+        name: trimmedName,
+        email: accountEmail,
+        phone: trimmedPhone,
+        emailVerified: currentUser.emailVerified,
+      });
       // نحدّث الـsnapshot المحلّي عشان السايد بار يعكس التغيير فوراً
       setAccountSnapshot((prev) => ({
         ...prev,
-        name: trimmedName,
-        phone: trimmedPhone,
-        email: accountEmail,
+        name: savedProfile.name || trimmedName,
+        phone: savedProfile.phone || trimmedPhone,
+        email: savedProfile.email || accountEmail,
       }));
       return true;
     } catch (err: any) {

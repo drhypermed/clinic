@@ -27,6 +27,7 @@ import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
 import { MEDICAL_SPECIALTIES } from './medicalSpecialties';
 import { LegalConsentGate } from './legal/LegalConsentGate';
+import { getAudienceLegalConsentSnapshot } from '../../services/legalConsentService';
 import {
   buildDoctorUserProfilePayload,
   getUserProfileDocRef,
@@ -263,6 +264,7 @@ export const DoctorSignupPage: React.FC = () => {
       const storageRef = ref(storage, `doctor-verification/${user.uid}/${Date.now()}_${safeName}`);
       await uploadBytes(storageRef, formValues.licenseImage);
       const licenseImageUrl = await getDownloadURL(storageRef);
+      const legalConsent = getAudienceLegalConsentSnapshot('doctor');
 
       await setDoc(getUserProfileDocRef(user.uid), buildDoctorUserProfilePayload({
         uid: user.uid,
@@ -273,6 +275,7 @@ export const DoctorSignupPage: React.FC = () => {
         verificationDocUrl: licenseImageUrl,
         verificationStatus: 'submitted',
         emailVerified: user.emailVerified ?? true,
+        legalConsent,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }), { merge: true });

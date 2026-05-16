@@ -223,6 +223,150 @@
       ]
     },
     {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "doctorSpecialty",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "governorate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "governorate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "city",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "doctorSpecialty",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "governorate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "doctorAds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublished",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "doctorSpecialty",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "governorate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "city",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "searchTokens",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "records",
       "queryScope": "COLLECTION",
       "fields": [

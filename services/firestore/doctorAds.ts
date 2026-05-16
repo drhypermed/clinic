@@ -57,13 +57,173 @@ interface PublishedAdsFilter {
     search?: string; // نص البحث العام
 }
 
-const SEARCH_CANDIDATE_LIMIT = 100;
+const SEARCH_INDEX_TOKEN_LIMIT = 120;
+const SEARCH_QUERY_TOKEN_LIMIT = 10;
+const LEGACY_SEARCH_FALLBACK_LIMIT = 30;
+const MAX_SEARCH_PREFIX_LENGTH = 14;
+const MIN_SEARCH_TOKEN_LENGTH = 2;
+const ARABIC_DIACRITICS_RE = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+const NON_SEARCH_TEXT_RE = /[^\p{L}\p{N}\s]+/gu;
 
 const normalizeFilterText = (value: unknown): string => normalizeText(value).toLowerCase();
 
-const includesNormalizedText = (haystack: string, needle: string): boolean => {
-    if (!needle) return true;
-    return normalizeFilterText(haystack).includes(needle);
+const normalizeDirectorySearchText = (value: unknown): string => {
+    return normalizeFilterText(value)
+        .replace(ARABIC_DIACRITICS_RE, '')
+        .replace(/\u0640/g, '')
+        .replace(/[إأآٱ]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .replace(NON_SEARCH_TEXT_RE, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const pushUniqueSearchToken = (tokens: string[], token: string): void => {
+    const normalized = token.trim();
+    if (normalized.length < MIN_SEARCH_TOKEN_LENGTH || normalized === 'ال') return;
+    if (!tokens.includes(normalized)) tokens.push(normalized);
+};
+
+const getSearchTermVariants = (term: string): string[] => {
+    if (term.startsWith('ال') && term.length > 3) {
+        return [term, term.slice(2)];
+    }
+    return [term];
+};
+
+const addSearchTermWithPrefixes = (tokens: string[], term: string): void => {
+    getSearchTermVariants(term).forEach((variant) => {
+        pushUniqueSearchToken(tokens, variant);
+        const maxPrefixLength = Math.min(variant.length, MAX_SEARCH_PREFIX_LENGTH);
+        for (let index = MIN_SEARCH_TOKEN_LENGTH; index <= maxPrefixLength; index += 1) {
+            pushUniqueSearchToken(tokens, variant.slice(0, index));
+        }
+    });
+};
+
+const getDirectorySearchTerms = (value: unknown): string[] => {
+    return normalizeDirectorySearchText(value)
+        .split(' ')
+        .map((item) => item.trim())
+        .filter((item) => item.length >= MIN_SEARCH_TOKEN_LENGTH && item !== 'ال');
+};
+
+const addSearchValueTokens = (tokens: string[], value: unknown): void => {
+    const normalized = normalizeDirectorySearchText(value);
+    if (!normalized) return;
+
+    if (normalized.length <= 60) {
+        pushUniqueSearchToken(tokens, normalized);
+    }
+
+    const compact = normalized.replace(/\s+/g, '');
+    if (compact !== normalized && compact.length <= 60) {
+        pushUniqueSearchToken(tokens, compact);
+    }
+
+    getDirectorySearchTerms(normalized).forEach((term) => {
+        addSearchTermWithPrefixes(tokens, term);
+    });
+};
+
+const buildDoctorAdSearchTokens = (ad: Partial<DoctorAdProfile>): string[] => {
+    const tokens: string[] = [];
+    const values: unknown[] = [
+        ad.doctorName,
+        ad.doctorSpecialty,
+        ad.academicDegree,
+        ad.subSpecialties,
+        ad.featuredServicesSummary,
+        ad.workplace,
+        ad.extraInfo,
+        ad.clinicName,
+        ad.bio,
+        ad.governorate,
+        ad.city,
+        ad.addressDetails,
+        ...(Array.isArray(ad.services) ? ad.services : []),
+        ...(Array.isArray(ad.clinicServices) ? ad.clinicServices.map((item) => item.name) : []),
+    ];
+
+    if (Array.isArray(ad.branches)) {
+        ad.branches.forEach((branch) => {
+            values.push(
+                branch.name,
+                branch.governorate,
+                branch.city,
+                branch.addressDetails,
+                branch.contactPhone,
+                branch.whatsapp,
+                ...(Array.isArray(branch.clinicServices) ? branch.clinicServices.map((item) => item.name) : []),
+            );
+        });
+    }
+
+    values.forEach((value) => {
+        if (tokens.length < SEARCH_INDEX_TOKEN_LIMIT) {
+            addSearchValueTokens(tokens, value);
+        }
+    });
+
+    return tokens.slice(0, SEARCH_INDEX_TOKEN_LIMIT);
+};
+
+const buildSearchQueryTokens = (search: unknown): string[] => {
+    const tokens: string[] = [];
+    addSearchValueTokens(tokens, search);
+    return tokens.slice(0, SEARCH_QUERY_TOKEN_LIMIT);
+};
+
+const buildDoctorAdSearchHaystack = (ad: DoctorAdProfile): string => {
+    const values: unknown[] = [
+        ad.doctorName,
+        ad.doctorSpecialty,
+        ad.academicDegree,
+        ad.subSpecialties,
+        ad.featuredServicesSummary,
+        ad.workplace,
+        ad.extraInfo,
+        ad.clinicName,
+        ad.bio,
+        ad.governorate,
+        ad.city,
+        ad.addressDetails,
+        ...(Array.isArray(ad.services) ? ad.services : []),
+        ...(Array.isArray(ad.clinicServices) ? ad.clinicServices.map((item) => item.name) : []),
+    ];
+
+    if (Array.isArray(ad.branches)) {
+        ad.branches.forEach((branch) => {
+            values.push(
+                branch.name,
+                branch.governorate,
+                branch.city,
+                branch.addressDetails,
+                ...(Array.isArray(branch.clinicServices) ? branch.clinicServices.map((item) => item.name) : []),
+            );
+        });
+    }
+
+    return normalizeDirectorySearchText(values.join(' '));
+};
+
+const doctorMatchesSearch = (ad: DoctorAdProfile, normalizedSearch: string): boolean => {
+    if (!normalizedSearch) return true;
+    const haystack = buildDoctorAdSearchHaystack(ad);
+    if (haystack.includes(normalizedSearch)) return true;
+
+    const compactNeedle = normalizedSearch.replace(/\s+/g, '');
+    const compactHaystack = haystack.replace(/\s+/g, '');
+    if (compactNeedle.length >= MIN_SEARCH_TOKEN_LENGTH && compactHaystack.includes(compactNeedle)) {
+        return true;
+    }
+
+    const terms = getDirectorySearchTerms(normalizedSearch);
+    if (terms.length === 0) return false;
+    return terms.every((term) => getSearchTermVariants(term).some((variant) => haystack.includes(variant)));
 };
 
 /** 
@@ -283,21 +443,62 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
     const branchesPrepared = Array.isArray(payload.branches)
         ? payload.branches.map((b, index) => sanitizeDoctorAdBranch(b, index))
         : [];
+    const doctorNamePrepared = toNonEmptyString(payload.doctorName);
+    const doctorSpecialtyPrepared = toNonEmptyString(payload.doctorSpecialty);
+    const academicDegreePrepared = toNonEmptyString(payload.academicDegree);
+    const subSpecialtiesPrepared = toNonEmptyString(payload.subSpecialties);
+    const featuredServicesSummaryPrepared = toNonEmptyString(payload.featuredServicesSummary);
+    const workplacePrepared = toNonEmptyString(payload.workplace);
+    const extraInfoPrepared = toNonEmptyString(payload.extraInfo);
+    const profileImagePrepared = toNonEmptyString(payload.profileImage);
+    const clinicNamePrepared = toNonEmptyString(payload.clinicName);
+    const bioPrepared = toNonEmptyString(payload.bio);
+    const governoratePrepared = toNonEmptyString(payload.governorate);
+    const cityPrepared = toNonEmptyString(payload.city);
+    const addressDetailsPrepared = toNonEmptyString(payload.addressDetails);
+    const contactPhonePrepared = toNonEmptyString(payload.contactPhone);
+    const whatsappPrepared = toNonEmptyString(payload.whatsapp);
+    const socialMediaPlatformPrepared = toNonEmptyString(payload.socialMediaPlatform);
+    const socialMediaUrlPrepared = toNonEmptyString(payload.socialMediaUrl);
+    const publicSlugPrepared = toNonEmptyString(payload.publicSlug);
+    const imageUrlsPrepared = Array.isArray(payload.imageUrls)
+        ? payload.imageUrls.map((item) => toNonEmptyString(item)).filter(Boolean)
+        : [];
+    const searchTokens = buildDoctorAdSearchTokens({
+        doctorName: doctorNamePrepared,
+        doctorSpecialty: doctorSpecialtyPrepared,
+        academicDegree: academicDegreePrepared,
+        subSpecialties: subSpecialtiesPrepared,
+        featuredServicesSummary: featuredServicesSummaryPrepared,
+        workplace: workplacePrepared,
+        extraInfo: extraInfoPrepared,
+        clinicName: clinicNamePrepared,
+        bio: bioPrepared,
+        governorate: governoratePrepared,
+        city: cityPrepared,
+        addressDetails: addressDetailsPrepared,
+        clinicServices: clinicServicesPrepared,
+        services: servicesPrepared,
+        branches: branchesPrepared,
+    });
 
     return {
-        doctorName: toNonEmptyString(payload.doctorName),
-        doctorSpecialty: toNonEmptyString(payload.doctorSpecialty),
-        academicDegree: toNonEmptyString(payload.academicDegree),
-        subSpecialties: toNonEmptyString(payload.subSpecialties),
-        featuredServicesSummary: toNonEmptyString(payload.featuredServicesSummary),
-        workplace: toNonEmptyString(payload.workplace),
-        extraInfo: toNonEmptyString(payload.extraInfo),
-        profileImage: toNonEmptyString(payload.profileImage),
-        clinicName: toNonEmptyString(payload.clinicName),
-        bio: toNonEmptyString(payload.bio),
-        governorate: toNonEmptyString(payload.governorate),
-        city: toNonEmptyString(payload.city),
-        addressDetails: toNonEmptyString(payload.addressDetails),
+        doctorName: doctorNamePrepared,
+        doctorSpecialty: doctorSpecialtyPrepared,
+        specialtyKey: normalizeDirectorySearchText(doctorSpecialtyPrepared),
+        academicDegree: academicDegreePrepared,
+        subSpecialties: subSpecialtiesPrepared,
+        featuredServicesSummary: featuredServicesSummaryPrepared,
+        workplace: workplacePrepared,
+        extraInfo: extraInfoPrepared,
+        profileImage: profileImagePrepared,
+        clinicName: clinicNamePrepared,
+        bio: bioPrepared,
+        governorate: governoratePrepared,
+        governorateKey: normalizeDirectorySearchText(governoratePrepared),
+        city: cityPrepared,
+        cityKey: normalizeDirectorySearchText(cityPrepared),
+        addressDetails: addressDetailsPrepared,
         clinicSchedule: Array.isArray(payload.clinicSchedule)
             ? payload.clinicSchedule
                 .map((item) => ({
@@ -315,11 +516,9 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
         consultationPrice: toNumberOrNull(payload.consultationPrice),
         discountedConsultationPrice: toNumberOrNull(payload.discountedConsultationPrice),
         services: servicesPrepared,
-        imageUrls: Array.isArray(payload.imageUrls)
-            ? payload.imageUrls.map((item) => toNonEmptyString(item)).filter(Boolean)
-            : [],
-        contactPhone: toNonEmptyString(payload.contactPhone),
-        whatsapp: toNonEmptyString(payload.whatsapp),
+        imageUrls: imageUrlsPrepared,
+        contactPhone: contactPhonePrepared,
+        whatsapp: whatsappPrepared,
         socialLinks: Array.isArray(payload.socialLinks)
             ? payload.socialLinks
                 .map((item, index) => ({
@@ -329,13 +528,14 @@ const sanitizeDoctorAdPayload = (payload: Partial<DoctorAdProfile>) => {
                 }))
                 .filter((item) => item.platform && item.url)
             : [],
-        socialMediaPlatform: toNonEmptyString(payload.socialMediaPlatform),
-        socialMediaUrl: toNonEmptyString(payload.socialMediaUrl),
+        socialMediaPlatform: socialMediaPlatformPrepared,
+        socialMediaUrl: socialMediaUrlPrepared,
         yearsExperience: toNumberOrNull(payload.yearsExperience),
-        publicSlug: toNonEmptyString(payload.publicSlug),
+        publicSlug: publicSlugPrepared,
         isPublished: Boolean(payload.isPublished),
         createdAt: toNonEmptyString(payload.createdAt) || nowIso,
         updatedAt: nowIso,
+        searchTokens,
         // الفروع — دي الحقل الرئيسي الجديد للإعلانات اللي فيها أكتر من فرع.
         // ملاحظه: الحقول فوق (governorate, city, clinicSchedule ...) بتجي من
         // الـUI نفسه (useDoctorAdvertisementController.ts:354-366) اللي بينسخ
@@ -437,97 +637,90 @@ export const doctorAdsService = {
         lastVisibleDoc: string | null = null
     ): Promise<{ data: DoctorAdProfile[]; lastVisibleDoc: string | null; hasMore: boolean }> => {
         const ref = collection(db, 'doctorAds');
-        const constraints: QueryConstraint[] = [
-            where('isPublished', '==', true)
-        ];
-
-        // 1. الفلترة على مستوى السيرفر للقيم الأساسية (تخصص/محافظه/مدينه)
-        if (filters.specialty) {
-            constraints.push(where('doctorSpecialty', '==', filters.specialty));
-        }
-        if (filters.governorate) {
-            constraints.push(where('governorate', '==', filters.governorate));
-            if (filters.city) {
-                constraints.push(where('city', '==', filters.city));
-            }
-        }
-
-        // الترتيب الأساسي + tiebreaker على documentId
-        // ISO strings بترتّب معجمياً زي التاريخ، فأحدث updatedAt يطلع الأول.
-        // documentId DESC = ترتيب ثابت لأي دكتورين بنفس الـupdatedAt.
-        constraints.push(orderBy('updatedAt', 'desc'));
-        constraints.push(orderBy(documentId(), 'desc'));
-
-        // مع البحث النصّي: Firestore مش قادر يفلتر عربي صح، فبنجيب كل المطابق ونقصّم client-side.
-        const useClientSidePagination = Boolean(filters.search);
         const hasCursor = typeof lastVisibleDoc === 'string' && lastVisibleDoc.length > 0;
+        const normalizedSearch = normalizeDirectorySearchText(filters.search);
+        const searchQueryTokens = normalizedSearch ? buildSearchQueryTokens(filters.search) : [];
 
-        // فك تشفير الـcursor الجاي (لو موجود) — try/catch للتسامح مع cache قديم بصياغه مختلفه.
         const parsedCursor: { u?: string; d?: string; o?: number } | null = hasCursor
             ? (() => { try { return JSON.parse(lastVisibleDoc as string); } catch { return null; } })()
             : null;
 
-        if (!useClientSidePagination) {
-            // Firestore cursor — startAfter(updatedAt, docId) = pagination دقيق بلا تخطّي.
+        const buildConstraints = (includeSearchIndex: boolean, resultLimit: number): QueryConstraint[] => {
+            const constraints: QueryConstraint[] = [
+                where('isPublished', '==', true)
+            ];
+
+            if (filters.specialty) {
+                constraints.push(where('doctorSpecialty', '==', filters.specialty));
+            }
+            if (filters.governorate) {
+                constraints.push(where('governorate', '==', filters.governorate));
+                if (filters.city) {
+                    constraints.push(where('city', '==', filters.city));
+                }
+            }
+            if (includeSearchIndex && searchQueryTokens.length > 0) {
+                constraints.push(where('searchTokens', 'array-contains-any', searchQueryTokens));
+            }
+
+            constraints.push(orderBy('updatedAt', 'desc'));
+            constraints.push(orderBy(documentId(), 'desc'));
             if (parsedCursor?.u && parsedCursor?.d) {
                 constraints.push(startAfter(parsedCursor.u, parsedCursor.d));
             }
-            // +1 trick: نطلب صفحه + 1 سطر عشان نعرف بدقّه لو فيه صفحه جايه.
-            constraints.push(limit(pageSize + 1));
-        } else {
-            // Text search is filtered client-side, so keep the candidate set bounded.
-            // This caps worst-case reads while still covering recent relevant doctors.
-            constraints.push(limit(SEARCH_CANDIDATE_LIMIT));
+            constraints.push(limit(resultLimit));
+            return constraints;
+        };
+
+        const buildLegacySearchFallback = async () => {
+            const fallbackSnap = await getDocs(query(
+                ref,
+                ...buildConstraints(false, LEGACY_SEARCH_FALLBACK_LIMIT)
+            ));
+            const data = fallbackSnap.docs
+                .map((docSnap) => normalizeDoctorAd(docSnap.id, docSnap.data() as Record<string, unknown>))
+                .filter((item): item is DoctorAdProfile => Boolean(item))
+                .filter((ad) => doctorMatchesSearch(ad, normalizedSearch))
+                .slice(0, pageSize);
+
+            return {
+                data,
+                lastVisibleDoc: null,
+                hasMore: false,
+            };
+        };
+
+        let snap;
+        try {
+            snap = await getDocs(query(
+                ref,
+                ...buildConstraints(searchQueryTokens.length > 0, pageSize + 1)
+            ));
+        } catch (error) {
+            if (!normalizedSearch) throw error;
+            return buildLegacySearchFallback();
         }
 
-        const q = query(ref, ...constraints);
-        // getDocs (مش cache-first) عشان أي تحديث في إعلانات الأطباء يظهر
-        // للجمهور مباشرة بدون ما يستنى تحديث الكاش الخلفي.
-        const snap = await getDocs(q);
-        let allResults = snap.docs
+        if (normalizedSearch && snap.empty && !hasCursor) {
+            return buildLegacySearchFallback();
+        }
+
+        const hasMore = snap.docs.length > pageSize;
+        const pageDocs = hasMore ? snap.docs.slice(0, pageSize) : snap.docs;
+        let data = pageDocs
             .map((docSnap) => normalizeDoctorAd(docSnap.id, docSnap.data() as Record<string, unknown>))
             .filter((item): item is DoctorAdProfile => Boolean(item));
 
-        // 2. الفلترة النصية المعقدة (تطابق الكلمات والأسماء) - تظل برمجية لدقتها في العربية
-        const normalizedSearch = normalizeFilterText(filters.search);
         if (normalizedSearch) {
-            allResults = allResults.filter((ad) =>
-                [
-                    ad.doctorName,
-                    ad.doctorSpecialty,
-                    ad.governorate,
-                    ad.city,
-                    ad.clinicName || '',
-                    ad.addressDetails || '',
-                ].some((value) => includesNormalizedText(value, normalizedSearch))
-            );
+            data = data.filter((ad) => doctorMatchesSearch(ad, normalizedSearch));
         }
 
-        // 3. تحضير النتيجه النهائيه + الـcursor للصفحه الجايه
-        if (useClientSidePagination) {
-            // مسار البحث: نقصّم النتايج client-side باستخدام offset.
-            const startIndex = parsedCursor?.o != null && Number.isFinite(parsedCursor.o)
-                ? Math.max(0, parsedCursor.o)
-                : 0;
-            const data = allResults.slice(startIndex, startIndex + pageSize);
-            const nextOffset = startIndex + data.length;
-            const hasMore = nextOffset < allResults.length;
-            return {
-                data,
-                lastVisibleDoc: hasMore ? JSON.stringify({ o: nextOffset }) : null,
-                hasMore,
-            };
-        }
-
-        // مسار مفيش بحث: استخدمنا limit(pageSize+1)، فلو رجع > pageSize = فيه صفحه جايه.
-        const hasMore = allResults.length > pageSize;
-        const data = hasMore ? allResults.slice(0, pageSize) : allResults;
-        const lastItem = data[data.length - 1];
-        const lastUpdatedAt = lastItem ? toNonEmptyString(lastItem.updatedAt) : '';
-        const lastDocId = lastItem ? lastItem.doctorId : '';
+        const cursorDoc = hasMore ? pageDocs[pageDocs.length - 1] : null;
+        const cursorData = cursorDoc ? (cursorDoc.data() as Record<string, unknown>) : null;
+        const lastUpdatedAt = cursorData ? toNonEmptyString(cursorData.updatedAt) : '';
+        const lastDocId = cursorDoc?.id || '';
         return {
             data,
-            // الـcursor فيه updatedAt + docId مع بعض — مطلوب الاتنين للـstartAfter.
             lastVisibleDoc: hasMore && lastUpdatedAt && lastDocId
                 ? JSON.stringify({ u: lastUpdatedAt, d: lastDocId })
                 : null,
