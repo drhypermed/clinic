@@ -57,6 +57,8 @@ interface PublishedAdsFilter {
     search?: string; // نص البحث العام
 }
 
+const SEARCH_CANDIDATE_LIMIT = 100;
+
 const normalizeFilterText = (value: unknown): string => normalizeText(value).toLowerCase();
 
 const includesNormalizedText = (haystack: string, needle: string): boolean => {
@@ -472,6 +474,10 @@ export const doctorAdsService = {
             }
             // +1 trick: نطلب صفحه + 1 سطر عشان نعرف بدقّه لو فيه صفحه جايه.
             constraints.push(limit(pageSize + 1));
+        } else {
+            // Text search is filtered client-side, so keep the candidate set bounded.
+            // This caps worst-case reads while still covering recent relevant doctors.
+            constraints.push(limit(SEARCH_CANDIDATE_LIMIT));
         }
 
         const q = query(ref, ...constraints);

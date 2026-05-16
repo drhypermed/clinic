@@ -88,6 +88,8 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
     loadMore,
     hasMore,
     loadingMore,
+    featuredDoctorIds,
+    isFeaturedHomeView,
     branchPickerDoctor,
     branchPickerBranches,
     selectBranchAndGoToBooking,
@@ -202,6 +204,8 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
               onSelectDoctor={openDoctorModal}
               onBookDoctor={goToPublicBookingForm}
               onOpenDoctorReviews={openDoctorReviews}
+              featuredDoctorIds={featuredDoctorIds}
+              isFeaturedHomeView={isFeaturedHomeView}
               hasMore={hasMore}
               loadMore={loadMore}
               loadingMore={loadingMore}

@@ -48,6 +48,26 @@ const persistSlugLookup = async (slug: string, userId: string): Promise<void> =>
   }
 };
 
+const persistPublicBookingSlugLookup = async (slug: string, userId: string): Promise<void> => {
+  const normalizedSlug = normalizeSlug(slug);
+  const normalizedUserId = sanitizeDocSegment(userId);
+  if (!normalizedSlug || !normalizedUserId) return;
+
+  try {
+    await setDoc(
+      doc(db, 'publicBookingLookup', normalizedUserId),
+      {
+        userId: normalizedUserId,
+        publicUrlSlug: normalizedSlug,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error('[Firestore] Error persisting public booking slug lookup:', error);
+  }
+};
+
 /** جلب الرابط الحالي للعيادة أو إنشاء واحد جديد (خاص برابط السكرتارية) */
 export const getOrCreateBookingUrlSlug = async (userId: string): Promise<string> => {
   const normalizedUserId = sanitizeDocSegment(userId);
@@ -91,6 +111,7 @@ export const getOrCreatePublicUrlSlug = async (userId: string): Promise<string> 
     const current = normalizeSlug(snap.exists() ? snap.data().publicUrlSlug : '');
     if (current) {
       await persistSlugLookup(current, normalizedUserId);
+      await persistPublicBookingSlugLookup(current, normalizedUserId);
       return current;
     }
   } catch (error) {
@@ -102,6 +123,7 @@ export const getOrCreatePublicUrlSlug = async (userId: string): Promise<string> 
   try {
     await setDoc(userRef, { publicUrlSlug: slug }, { merge: true });
     await persistSlugLookup(slug, normalizedUserId);
+    await persistPublicBookingSlugLookup(slug, normalizedUserId);
   } catch (error) {
     console.error('[Firestore] Error saving public slug:', error);
   }

@@ -77,7 +77,8 @@ const migrateLegacySlotsToMain = async (slotsRef: any, snapshot: any): Promise<v
 /** الاشتراك اللحظي في المواعيد لضمان تحديثها عند قيام مريض آخر بالحجز أو قيام الطبيب بتغييرها */
 export const subscribeToPublicSlots = (
   secret: string,
-  onUpdate: (slots: PublicBookingSlot[]) => void
+  onUpdate: (slots: PublicBookingSlot[]) => void,
+  onError?: (error: unknown) => void
 ) => {
   const normalizedSecret = normalizePublicSecret(secret);
   if (!normalizedSecret) {
@@ -110,7 +111,14 @@ export const subscribeToPublicSlots = (
   }).catch(() => {});
 
   // 2. المحاولة الثانية: الاشتراك في التحديثات الحية من السيرفر
-  return onSnapshot(q, handleSnap);
+  return onSnapshot(
+    q,
+    handleSnap,
+    (error) => {
+      console.error('[Firestore] Error subscribing to public slots:', error);
+      onError?.(error);
+    }
+  );
 };
 
 /** إضافة فترة زمنية جديدة متاحة للحجز (مع ربطها بفرع اختياري) */

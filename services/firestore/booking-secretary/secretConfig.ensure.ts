@@ -62,6 +62,14 @@ export const mirrorPublicSecretToBookingConfig = async (
   };
   if (slugValue) payload.publicUrlSlug = slugValue;
   await setDoc(configRef, payload, { merge: true });
+
+  const lookupPayload: Record<string, unknown> = {
+    userId: normalizedUserId,
+    publicBookingSecret: publicValue,
+    updatedAt: new Date().toISOString(),
+  };
+  if (slugValue) lookupPayload.publicUrlSlug = slugValue;
+  await setDoc(doc(db, 'publicBookingLookup', normalizedUserId), lookupPayload, { merge: true });
 };
 
 /** ربط البريد الإلكتروني للطبيب بإعدادات السكرتارية (يستخدم للتحقق عند الدخول) */

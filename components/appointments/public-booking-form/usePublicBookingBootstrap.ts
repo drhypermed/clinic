@@ -109,6 +109,7 @@ export const usePublicBookingBootstrap = (
     }
 
     if (!userIdParam) {
+      if (slugParam) return;
       setResolvingSecret(false);
       return;
     }
@@ -127,7 +128,7 @@ export const usePublicBookingBootstrap = (
         console.error('[PublicForm] getPublicSecretByUserId error:', err);
         setResolvingSecret(false);
       });
-  }, [userIdParam, secretParam]);
+  }, [userIdParam, secretParam, slugParam]);
 
   // ─── Public config subscription ───
   // ده subscription مش one-shot fetch — الـcleanup function (unsub) بتقفله صح
@@ -187,24 +188,23 @@ export const usePublicBookingBootstrap = (
 
     const myRequestId = contextRequestIdRef.current;
 
-    // catch + finally — لو الـpromise رفض (شبكه/صلاحيات)، الـloading كان يفضل true
-    // والمريض يشوف "تحميل المواعيد" للأبد. الإصلاح يضمن إن الـloading يقفل في كل
-    // الحالات، ونعرض قائمه فاضيه (المريض يشوف "لا توجد مواعيد متاحه").
-    firestoreService
-      .getPublicSlots(secret)
-      .then((list) => {
+    setSlotsLoading(true);
+    const unsub = firestoreService.subscribeToPublicSlots(
+      secret,
+      (list) => {
         if (contextRequestIdRef.current !== myRequestId) return;
         setSlots(list);
-      })
-      .catch((err) => {
-        if (contextRequestIdRef.current !== myRequestId) return;
-        console.warn('[PublicBooking] getPublicSlots failed:', err);
-        setSlots([]);
-      })
-      .finally(() => {
-        if (contextRequestIdRef.current !== myRequestId) return;
         setSlotsLoading(false);
-      });
+      },
+      (err) => {
+        if (contextRequestIdRef.current !== myRequestId) return;
+        console.warn('[PublicBooking] subscribeToPublicSlots failed:', err);
+        setSlots([]);
+        setSlotsLoading(false);
+      }
+    );
+
+    return () => unsub();
   }, [secret, resolvingSecret]);
 
   // ─── Public branches (الفروع المنشوره) ───

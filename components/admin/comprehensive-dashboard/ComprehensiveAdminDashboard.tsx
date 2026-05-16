@@ -25,6 +25,7 @@ import { LoadingText } from '../../ui/LoadingText';
 import { AccountManagementPanel } from '../account-management/AccountManagementPanel';
 import { FinancialPanel } from '../financial-panel/FinancialPanel';
 import { HomepageBannerManagementPanel } from '../homepage-banner-management/HomepageBannerManagementPanel';
+import { PublicFeaturedDoctorsPanel } from '../public-featured-doctors/PublicFeaturedDoctorsPanel';
 import { PrescriptionFooterLineManagementPanel } from '../prescription-footer-line-management/PrescriptionFooterLineManagementPanel';
 import { AdminDoctorDesignEditorPage } from '../doctor-design-editor/AdminDoctorDesignEditorPage';
 import { ScaleToolsPanel } from '../scale-tools/ScaleToolsPanel';
@@ -61,6 +62,7 @@ const VIEW_META: Record<AdminView, { title: string }> = {
   updateBroadcasts: { title: 'تحديثات التطبيق' },
   reports: { title: 'التقارير والإحصاءات' },
   homeBanner: { title: 'بانرات الصفحة الرئيسية' },
+  publicFeaturedDoctors: { title: 'أطباء الجمهور المميزون' },
   prescriptionFooterLine: { title: 'سطر أسفل الروشتة' },
   doctorDesignEditor: { title: 'مساعدة في تصميم الطبيب' },
   scaleTools: { title: 'أدوات التوسع' },
@@ -189,6 +191,7 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
       updateBroadcasts: 0,
       reports: stats.totalDoctors,
       homeBanner: stats.homeBannerItems,
+      publicFeaturedDoctors: 0,
       prescriptionFooterLine: stats.footerContacts,
       // ─ مفيش عداد منطقي للقسم ده (هو مجرد بحث عند الطلب)
       doctorDesignEditor: 0,
@@ -273,6 +276,8 @@ export const ComprehensiveAdminDashboard: React.FC<AdminDashboardProps> = ({ use
             </div>
           </AdminViewShell>
         );
+      case 'publicFeaturedDoctors':
+        return <AdminViewShell view="publicFeaturedDoctors"><PublicFeaturedDoctorsPanel /></AdminViewShell>;
       case 'prescriptionFooterLine':
         return (
           <AdminViewShell view="prescriptionFooterLine">

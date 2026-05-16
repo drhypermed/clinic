@@ -10,6 +10,7 @@
 import {
   ensurePublicBookingConfig,
   getOrCreatePublicBookingSecret,
+  getPublicBookingLookupByUserId,
   getPublicBookingConfig,
   getPublicSecretByUserId,
   savePublicFormSettings,
@@ -36,6 +37,7 @@ import { getPublicBranches, savePublicBranches } from './booking-public/publicBr
 /** واجهة الخدمة الموحدة للحجز العام */
 export const bookingPublicService = {
   getOrCreatePublicBookingSecret,
+  getPublicBookingLookupByUserId,
   ensurePublicBookingConfig,
   getPublicBookingConfig,
   getPublicSecretByUserId,
@@ -56,4 +58,3 @@ export const bookingPublicService = {
   getPublicBranches,
   savePublicBranches,
 };
-

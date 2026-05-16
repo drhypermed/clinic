@@ -98,6 +98,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     emoji: '🎨',
     items: [
       { id: 'homeBanner', label: 'بانر الصفحة الرئيسية', icon: 'homeBanner' },
+      { id: 'publicFeaturedDoctors', label: 'أطباء الجمهور المميزون', icon: 'users' },
       { id: 'prescriptionFooterLine', label: 'سطر أسفل الروشتة', icon: 'prescriptionFooterLine' },
       // ─ مساعدة الطبيب في تصميم روشتته أو إعلانه — الأدمن بيدخل إيميل الطبيب
       //   ويفتح نفس شاشات الطبيب (وصول مقيّد على المستندين دول فقط)

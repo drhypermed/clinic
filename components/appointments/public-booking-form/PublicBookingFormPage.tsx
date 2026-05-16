@@ -32,6 +32,7 @@ import { usePublicBookingSuggestions } from './usePublicBookingSuggestions';
 import { usePublicBookingShare } from './usePublicBookingShare';
 import { usePublicBookingSubmit } from './usePublicBookingSubmit';
 import { firestoreService } from '../../../services/firestore';
+import { DEFAULT_BRANCH_ID } from '../../../services/firestore/branches';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
 import { formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import {
@@ -153,20 +154,26 @@ export const PublicBookingFormPage: React.FC = () => {
   // ملاحظة: لو الطبيب عنده فرع واحد فقط، useEffect أعلاه يثبّت selectedBranchId
   // تلقائياً للفرع ده، فالفلتر يكمل اشتغاله الصارم بدون شاشة اختيار للمريض.
   const filteredSlots = React.useMemo(() => {
+    const effectiveSelectedBranchId =
+      selectedBranchId || (branches.length === 1 ? branches[0].id : '');
     let baseSlots: typeof slots;
     if (branches.length === 0) {
       // طبيب لسه ما عرّفش أي فروع (حالة قديمة جداً) — نسمح بكل المواعيد
       baseSlots = slots;
-    } else if (!selectedBranchId) {
+    } else if (!effectiveSelectedBranchId) {
       // فيه فروع لكن المريض لسه ما اختارش (أو الفرع الواحد لسه ما اتثبّتش) — نخفي الكل
       baseSlots = [];
     } else {
       // فلترة صارمة دايماً — branchId لازم يطابق الفرع المختار بالضبط
-      baseSlots = slots.filter((slot) => slot.branchId === selectedBranchId);
+      const isSingleBranch = branches.length === 1;
+      baseSlots = slots.filter((slot) => {
+        const slotBranchId = slot.branchId || DEFAULT_BRANCH_ID;
+        return slotBranchId === effectiveSelectedBranchId || (!slot.branchId && isSingleBranch);
+      });
     }
     if (myBookedDateTimes.size === 0) return baseSlots;
     return baseSlots.filter((slot) => !myBookedDateTimes.has(slot.dateTime));
-  }, [slots, selectedBranchId, branches.length, myBookedDateTimes]);
+  }, [slots, selectedBranchId, branches, myBookedDateTimes]);
 
   // ـــ initial values مع استرجاع pending booking لو موجود ـــ
   // pendingBookingSnapshot؟.formValues = القيم المحفوظه قبل redirect.

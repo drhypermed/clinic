@@ -31,6 +31,8 @@ interface DoctorsResultsSectionProps {
   onSelectDoctor: (doctorId: string) => void;
   onBookDoctor: (doctorId: string) => void;
   onOpenDoctorReviews: (doctor: DoctorAdProfile) => void;
+  featuredDoctorIds?: string[];
+  isFeaturedHomeView?: boolean;
   loadMore?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -42,10 +44,14 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
   onSelectDoctor,
   onBookDoctor,
   onOpenDoctorReviews,
+  featuredDoctorIds = [],
+  isFeaturedHomeView = false,
   loadMore,
   hasMore,
   loadingMore,
 }) => {
+  const featuredDoctorIdSet = React.useMemo(() => new Set(featuredDoctorIds), [featuredDoctorIds]);
+
   if (filteredAds.length === 0) {
     return (
       <section className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/95 p-10 text-center shadow-[0_24px_60px_-48px_rgba(2,6,23,0.8)]">
@@ -53,15 +59,23 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
           {/* أيقونة البحث لحالة "مفيش نتائج" */}
           <LuSearch className="w-10 h-10 text-brand-500" strokeWidth={2} />
         </div>
-        <h3 className="text-lg md:text-xl font-black text-slate-800">لا توجد نتائج مطابقة</h3>
-        <p className="mt-2 text-slate-500 font-bold">جرّب تغيير معايير البحث أو مسح الفلاتر</p>
-        <button
-          type="button"
-          onClick={onResetFilters}
-          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black hover:shadow-lg transition-all"
-        >
-          عرض كل الأطباء
-        </button>
+        <h3 className="text-lg md:text-xl font-black text-slate-800">
+          {isFeaturedHomeView ? 'لا يوجد أطباء مميزون حاليا' : 'لا توجد نتائج مطابقة'}
+        </h3>
+        <p className="mt-2 text-slate-500 font-bold">
+          {isFeaturedHomeView
+            ? 'استخدم البحث أو الفلاتر للوصول إلى باقي الأطباء المنشورين.'
+            : 'جرّب تغيير معايير البحث أو مسح الفلاتر'}
+        </p>
+        {!isFeaturedHomeView && (
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-black hover:shadow-lg transition-all"
+          >
+            عرض كل الأطباء
+          </button>
+        )}
       </section>
     );
   }
@@ -70,6 +84,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
     <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5">
       {filteredAds.map((ad) => {
         const avatarImage = getAvatarImage(ad);
+        const isFeaturedDoctor = featuredDoctorIdSet.has(ad.doctorId);
         const clinicServices = getClinicServices(ad);
         // البطاقة بتعرض بيانات الفرع الأساسي (الأول) — لو الطبيب عنده فروع
         // متعددة، الجمهور بيشوف التفاصيل الباقية لما يفتح صفحة تفاصيل الطبيب.
@@ -102,11 +117,18 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
         return (
           <article
             key={ad.doctorId}
-            className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(37,99,235,0.25)] hover:border-brand-200 transition-all duration-300"
+            className={`group relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(37,99,235,0.25)] hover:border-brand-200 transition-all duration-300 ${isFeaturedDoctor ? 'pt-7' : ''}`}
           >
             {anyDiscount && (
               <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-danger-500 to-slate-500 text-white text-[10px] font-black shadow-lg">
                 عرض خاص
+              </div>
+            )}
+
+            {isFeaturedDoctor && (
+              <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-warning-200 bg-warning-50 px-2.5 py-1 text-[10px] font-black text-warning-800 shadow-sm">
+                <LuStar className="h-3 w-3 fill-warning-500 text-warning-500" strokeWidth={2} />
+                طبيب مميز
               </div>
             )}
 

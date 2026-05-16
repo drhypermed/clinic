@@ -8,6 +8,7 @@
  */
 import React from 'react';
 import type { PublicBookingSlot, PublicBranchInfo } from '../../../types';
+import { DEFAULT_BRANCH_ID } from '../../../services/firestore/branches';
 
 type BranchSelectorScreenProps = {
   branches: PublicBranchInfo[];
@@ -30,8 +31,7 @@ export const BranchSelectorScreen: React.FC<BranchSelectorScreenProps> = ({
   const slotCountByBranch = React.useMemo(() => {
     const counts: Record<string, number> = {};
     for (const slot of slots) {
-      const key = slot.branchId || '';
-      if (!key) continue;
+      const key = slot.branchId || DEFAULT_BRANCH_ID;
       counts[key] = (counts[key] || 0) + 1;
     }
     return counts;

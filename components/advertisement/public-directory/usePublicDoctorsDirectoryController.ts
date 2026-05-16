@@ -38,6 +38,9 @@ import { getCachedDirectoryPage, setCachedDirectoryPage } from './directoryCache
 // الـpage بتـreload وكل state بيضيع. بنحفظ الـintent هنا عشان نـauto-resume
 // الحجز بعد ما المريض يرجع من Google.
 const PENDING_BOOKING_INTENT_KEY = 'dh_pending_booking_intent';
+const PUBLIC_DIRECTORY_PAGE_SIZE = 10;
+const MIN_DIRECTORY_SEARCH_LENGTH = 2;
+const DIRECTORY_SEARCH_DEBOUNCE_MS = 450;
 
 export const usePublicDoctorsDirectoryController = ({
   user,
@@ -55,6 +58,7 @@ export const usePublicDoctorsDirectoryController = ({
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingMoreRef = useRef(false);
   const [hasMore, setHasMore] = useState(true);
+  const [featuredDoctorIds, setFeaturedDoctorIds] = useState<string[]>([]);
   // cursor للـpagination — نص opaque بيرجع من الـservice. شكله مختلف حسب نوع الـquery:
   //   • بدون بحث نصّي → updatedAt ISO لآخر دكتور في الصفحه (Firestore startAfter).
   //   • مع بحث نصّي  → رقم offset داخل string (slice client-side بعد الفلتره).
@@ -105,6 +109,27 @@ export const usePublicDoctorsDirectoryController = ({
     stats,
     resetFilters,
   } = useDirectoryFilters(ads);
+  const [effectiveSearchFilter, setEffectiveSearchFilter] = useState('');
+
+  useEffect(() => {
+    const nextSearch = searchFilter.trim();
+    const timer = window.setTimeout(() => {
+      setEffectiveSearchFilter(nextSearch.length >= MIN_DIRECTORY_SEARCH_LENGTH ? nextSearch : '');
+    }, DIRECTORY_SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [searchFilter]);
+
+  const directoryQueryFilters = useMemo(() => ({
+    specialty: specialtyFilter,
+    governorate: governorateFilter,
+    city: cityFilter,
+    search: effectiveSearchFilter,
+  }), [specialtyFilter, governorateFilter, cityFilter, effectiveSearchFilter]);
+  const isFeaturedHomeView = !directoryQueryFilters.specialty &&
+    !directoryQueryFilters.governorate &&
+    !directoryQueryFilters.city &&
+    !directoryQueryFilters.search;
   const {
     reviewFeedback,
     reviewSubmittingId,
@@ -121,10 +146,25 @@ export const usePublicDoctorsDirectoryController = ({
   // ده وحّد كل مسارات الحجز العام تحت /p/* بدل /book-public/* legacy.
   // اشتراط جوجل بقى إعداد خاص بكل طبيب (publicBookingConfig.requireGoogleSignIn) بدل
   // ?entry=public-site القديم — مفيش لزوم لـquery params تتحكّم في السلوك دلوقتي.
-  const buildSiteBookingUrl = (doctorId: string, branchId = ''): string => {
+  const buildSiteBookingUrl = async (doctorId: string, branchId = ''): Promise<string> => {
     const params = new URLSearchParams();
     if (branchId) params.set('branch', branchId);
     const qs = params.toString();
+
+    try {
+      const lookup = await firestoreService.getPublicBookingLookupByUserId(doctorId);
+      const publicSlug = String(lookup?.publicUrlSlug || '').trim();
+      if (publicSlug) {
+        return `/p/${encodeURIComponent(publicSlug)}${qs ? `?${qs}` : ''}`;
+      }
+      const publicSecret = String(lookup?.publicBookingSecret || '').trim();
+      if (publicSecret) {
+        return `/book-public/s/${encodeURIComponent(publicSecret)}${qs ? `?${qs}` : ''}`;
+      }
+    } catch (err) {
+      console.warn('[publicDirectory] failed to resolve canonical booking link:', err);
+    }
+
     return `/p/${encodeURIComponent(doctorId)}${qs ? `?${qs}` : ''}`;
   };
 
@@ -155,15 +195,32 @@ export const usePublicDoctorsDirectoryController = ({
   // توفير متوقّع: ~70% من قراءات الصفحه الأولى.
   useEffect(() => {
     let active = true;
-    const filters = {
-      specialty: specialtyFilter,
-      governorate: governorateFilter,
-      city: cityFilter,
-      search: searchFilter,
-    };
+    const filters = directoryQueryFilters;
 
     const fetchFirstPage = async () => {
       setError('');
+
+      if (isFeaturedHomeView) {
+        setLoading(true);
+        try {
+          const { data, featuredDoctorIds: activeFeaturedIds } =
+            await firestoreService.getActivePublicFeaturedDoctorAds();
+
+          if (active) {
+            setAds(data);
+            setFeaturedDoctorIds(activeFeaturedIds);
+            setLastVisibleDoc(null);
+            setHasMore(false);
+            setLoading(false);
+          }
+        } catch (err: any) {
+          if (active) {
+            setLoading(false);
+            setError(err?.message || 'تعذر تحميل الأطباء المميزين.');
+          }
+        }
+        return;
+      }
 
       // 1) محاوله قراءه من الكاش أولاً — cache hit = عرض فوري بدون request
       const cached = getCachedDirectoryPage(filters);
@@ -180,7 +237,7 @@ export const usePublicDoctorsDirectoryController = ({
       try {
         const { data, lastVisibleDoc: newLastDoc, hasMore: newHasMore } = await firestoreService.getPublishedDoctorAdsPaginated(
           filters,
-          20,
+          PUBLIC_DIRECTORY_PAGE_SIZE,
           null
         );
 
@@ -209,22 +266,18 @@ export const usePublicDoctorsDirectoryController = ({
     return () => {
       active = false;
     };
-  }, [specialtyFilter, governorateFilter, cityFilter, searchFilter]);
+  }, [directoryQueryFilters, isFeaturedHomeView]);
 
   const loadMore = async () => {
     if (loadingMoreRef.current || !hasMore) return;
+    if (isFeaturedHomeView) return;
     loadingMoreRef.current = true;
     setLoadingMore(true);
     setError('');
     try {
       const { data, lastVisibleDoc: newLastDoc, hasMore: newHasMore } = await firestoreService.getPublishedDoctorAdsPaginated(
-        {
-          specialty: specialtyFilter,
-          governorate: governorateFilter,
-          city: cityFilter,
-          search: searchFilter,
-        },
-        20,
+        directoryQueryFilters,
+        PUBLIC_DIRECTORY_PAGE_SIZE,
         lastVisibleDoc
       );
 
@@ -248,8 +301,8 @@ export const usePublicDoctorsDirectoryController = ({
   // كان فيه listener لحظي (onSnapshot) شغّال طول ما الصفحه مفتوحه — كارثه على التكلفه
   // عند 100K مستخدم (= 100K listener شغّال بيحرق قراءات 24/7).
   //
-  // الحل: نجيبهم بس لمّا المستخدم يفتح panel "حجوزاتي" (lazy load) + one-time fetch
-  // مع cache-first. السبب إن مفيش طبيب بيعدّل حجوزات المريض من بعيد، فمفيش داعي للمزامنه اللحظيّه.
+  // الحل: نفتح listener فقط لمّا المستخدم يفتح panel "حجوزاتي" (lazy live).
+  // ده يخلّي زر التقييم يظهر فور حفظ الطبيب للسجل، من غير listener دائم على الصفحة الرئيسية.
   //
   // توفير متوقّع: ~95% من قراءات الحجوزات (معظم الجمهور مش بيفتح panel الحجوزات).
   useEffect(() => {
@@ -260,28 +313,23 @@ export const usePublicDoctorsDirectoryController = ({
       return;
     }
 
-    // مش بنجيب إلا لمّا الـpanel يفتح — توفير 95%+ من القراءات
-    if (!showBookingsPanel) return;
+    // مش بنفتح listener إلا لمّا الـpanel يفتح — توفير 95%+ من القراءات
+    if (!showBookingsPanel) {
+      setMyBookingsLoading(false);
+      return;
+    }
 
     let active = true;
     setMyBookingsLoading(true);
-    // catch + finally — قبل الإصلاح، الـpromise لو رفض كان loading يفضل true للأبد.
-    // دلوقتي finally يضمن إن الـloading يقفل في كل الحالات (success/failure).
-    firestoreService
-      .getPublicUserBookingsOnce(user.uid)
-      .then((bookings) => {
-        if (active) setMyBookings(bookings);
-      })
-      .catch((err) => {
-        console.warn('[publicDirectory] getPublicUserBookingsOnce failed:', err);
-        if (active) setMyBookings([]);
-      })
-      .finally(() => {
-        if (active) setMyBookingsLoading(false);
-      });
+    const unsub = firestoreService.subscribeToPublicUserBookings(user.uid, (bookings) => {
+      if (!active) return;
+      setMyBookings(bookings);
+      setMyBookingsLoading(false);
+    });
 
     return () => {
       active = false;
+      unsub();
     };
   }, [user?.uid, showBookingsPanel]);
 
@@ -376,7 +424,7 @@ export const usePublicDoctorsDirectoryController = ({
 
   // استكمال خطوات الحجز بعد تسجيل الدخول. لو الطبيب عنده فرع واحد بنروح للفورم
   // مباشرة، ولو عنده أكتر من فرع بنفتح المريض على مودال اختيار الفرع.
-  const continueBookingFlow = (doctorId?: string) => {
+  const continueBookingFlow = async (doctorId?: string) => {
     const targetDoctorId = doctorId || authPromptDoctorId;
     closeAuthPrompt();
     if (!targetDoctorId) return;
@@ -390,7 +438,7 @@ export const usePublicDoctorsDirectoryController = ({
       return;
     }
     // فرع واحد (أو طبيب قديم بدون branches) → روحلة الفورم على طول.
-    navigate(buildSiteBookingUrl(targetDoctorId));
+    navigate(await buildSiteBookingUrl(targetDoctorId));
   };
 
   // Auto-resume الحجز بعد الرجوع من signInWithRedirect.
@@ -405,7 +453,7 @@ export const usePublicDoctorsDirectoryController = ({
     if (!pendingDoctorId) return;
 
     try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
-    continueBookingFlow(pendingDoctorId);
+    void continueBookingFlow(pendingDoctorId);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- continueBookingFlow معرَّفه
   // داخل الـcomponent ومش memoized. الـlogic معتمد فقط على user يتحدد بعد الـredirect.
   }, [user]);
@@ -430,7 +478,7 @@ export const usePublicDoctorsDirectoryController = ({
       setPublicAccountVerified(true);
       // popup نجح — نمسح الـintent ونكمل في نفس الـsession (الـmount effect مش هيـtrigger)
       try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
-      continueBookingFlow();
+      await continueBookingFlow();
     } catch (err: any) {
       // المستخدم لغى الـpopup أو حصل خطأ — نمسح الـintent عشان ميـauto-resume غلط
       try { sessionStorage.removeItem(PENDING_BOOKING_INTENT_KEY); } catch { /* تجاهل */ }
@@ -457,15 +505,15 @@ export const usePublicDoctorsDirectoryController = ({
       return;
     }
 
-    continueBookingFlow(doctorId);
+    void continueBookingFlow(doctorId);
   };
 
   // المريض اختار فرع من المودال → نقفل المودال ونروح للفورم محدّداً الفرع مسبقاً.
-  const selectBranchAndGoToBooking = (branchId: string) => {
+  const selectBranchAndGoToBooking = async (branchId: string) => {
     const targetDoctorId = branchPickerDoctorId;
     setBranchPickerDoctorId('');
     if (targetDoctorId && branchId) {
-      navigate(buildSiteBookingUrl(targetDoctorId, branchId));
+      navigate(await buildSiteBookingUrl(targetDoctorId, branchId));
     }
   };
 
@@ -712,6 +760,8 @@ export const usePublicDoctorsDirectoryController = ({
     loadMore,
     hasMore,
     loadingMore,
+    featuredDoctorIds,
+    isFeaturedHomeView,
     // مودال اختيار الفرع
     branchPickerDoctor,
     branchPickerBranches,

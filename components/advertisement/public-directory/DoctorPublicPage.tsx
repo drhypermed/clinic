@@ -182,12 +182,27 @@ export const DoctorPublicPage: React.FC = () => {
   // الـJSON-LD لجوجل — بيظهر النجوم والسعر في نتايج البحث
   const physicianSchema = buildDoctorPhysicianSchema(doctor);
 
-  const handleBookClick = () => {
+  const handleBookClick = async () => {
     // ندخل المريض مباشره على فورم الحجز /p/{userId} بدل ما نوديه للديركتوري الأول.
     // الـ Bootstrap يحلّ الـ userId ويعرض شاشة اختيار الفرع تلقائياً لو فيه فروع متعدده،
     // أو يدخل الفورم مباشره لو فرع واحد. اشتراط جوجل بيتحكّم فيه إعداد الطبيب نفسه.
     const branchId = activeBranch?.id || '';
     const branchParam = branchId ? `?branch=${encodeURIComponent(branchId)}` : '';
+    try {
+      const lookup = await firestoreService.getPublicBookingLookupByUserId(doctor.doctorId);
+      const publicSlug = String(lookup?.publicUrlSlug || '').trim();
+      if (publicSlug) {
+        navigate(`/p/${encodeURIComponent(publicSlug)}${branchParam}`);
+        return;
+      }
+      const publicSecret = String(lookup?.publicBookingSecret || '').trim();
+      if (publicSecret) {
+        navigate(`/book-public/s/${encodeURIComponent(publicSecret)}${branchParam}`);
+        return;
+      }
+    } catch (err) {
+      console.warn('[DoctorPublicPage] failed to resolve canonical booking link:', err);
+    }
     navigate(`/p/${encodeURIComponent(doctor.doctorId)}${branchParam}`);
   };
 

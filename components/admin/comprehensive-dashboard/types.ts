@@ -23,6 +23,7 @@ export type AdminView =
   | 'updateBroadcasts'
   | 'reports'
   | 'homeBanner'
+  | 'publicFeaturedDoctors'
   | 'prescriptionFooterLine'
   | 'doctorDesignEditor'   // ─ مساعدة طبيب في تصميم روشتته/إعلانه (وصول مقيّد على المستندين دول فقط)
   | 'scaleTools'           // ─ أدوات التوسع (المراحل 1-3): إعادة حساب الإحصائيات/ملخصات المرضى + مفاتيح التشغيل

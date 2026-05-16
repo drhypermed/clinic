@@ -7,6 +7,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { LuX } from 'react-icons/lu';
 import { LoadingText } from '../../ui/LoadingText';
 
 interface AccountPanelModalProps {
@@ -52,6 +53,15 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
     }
   }, [open, accountName, accountPhone]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const dirty = name.trim() !== accountName.trim() || phone.trim() !== accountPhone.trim();
@@ -78,7 +88,18 @@ export const AccountPanelModal: React.FC<AccountPanelModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
-        <h3 className="text-xl font-black text-slate-900">حسابي</h3>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-xl font-black text-slate-900">حسابي</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-9 h-9 shrink-0 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition inline-flex items-center justify-center"
+            aria-label="إغلاق"
+            title="إغلاق"
+          >
+            <LuX className="w-5 h-5" strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </div>
 
         {/* الاسم — قابل للتعديل */}
         <div className="space-y-1.5">

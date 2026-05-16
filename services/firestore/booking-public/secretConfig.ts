@@ -64,6 +64,68 @@ interface PublicBookingConfigData {
   requireGoogleSignIn?: boolean;
 }
 
+export interface PublicBookingLookupData {
+  publicBookingSecret?: string;
+  publicUrlSlug?: string;
+}
+
+const readPublicBookingLookup = async (userId: string): Promise<PublicBookingLookupData | null> => {
+  const normalizedUserId = sanitizeDocSegment(userId);
+  if (!normalizedUserId) return null;
+
+  const lookupRef = doc(db, 'publicBookingLookup', normalizedUserId);
+  const snap = await getDocCacheFirst(lookupRef);
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  const publicBookingSecret = normalizePublicSecret(data?.publicBookingSecret);
+  const publicUrlSlug = toOptionalText(data?.publicUrlSlug);
+  if (!publicBookingSecret && !publicUrlSlug) return null;
+
+  return {
+    publicBookingSecret: publicBookingSecret || undefined,
+    publicUrlSlug,
+  };
+};
+
+const persistPublicBookingLookup = async (
+  userId: string,
+  values: PublicBookingLookupData
+): Promise<void> => {
+  const normalizedUserId = sanitizeDocSegment(userId);
+  if (!normalizedUserId) return;
+
+  const publicBookingSecret = normalizePublicSecret(values.publicBookingSecret);
+  const publicUrlSlug = toOptionalText(values.publicUrlSlug);
+  if (!publicBookingSecret && !publicUrlSlug) return;
+
+  const payload: Record<string, unknown> = {
+    userId: normalizedUserId,
+    updatedAt: new Date().toISOString(),
+  };
+  if (publicBookingSecret) payload.publicBookingSecret = publicBookingSecret;
+  if (publicUrlSlug) payload.publicUrlSlug = publicUrlSlug;
+
+  try {
+    await setDoc(doc(db, 'publicBookingLookup', normalizedUserId), payload, { merge: true });
+  } catch (error) {
+    console.warn('[Firestore] Failed to persist public booking lookup:', error);
+  }
+};
+
+export const getPublicBookingLookupByUserId = async (
+  userId: string
+): Promise<PublicBookingLookupData | null> => {
+  try {
+    return await readPublicBookingLookup(userId);
+  } catch (error) {
+    if (!isPermissionDeniedError(error)) {
+      console.warn('[Firestore] Failed to read public booking lookup:', error);
+    }
+    return null;
+  }
+};
+
 /** 
  * التأكد من وجود ربط بين الـ UserId والـ Secret في Firestore.
  * يقوم أيضاً بحذف أي رموز قديمة (Stale) مرتبطة بنفس المستخدم لضمان وجود رمز فعال واحد فقط.
@@ -82,6 +144,7 @@ export const ensurePublicBookingConfig = async (
     { userId: normalizedUserId, updatedAt: new Date().toISOString() },
     { merge: true }
   );
+  await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: normalizedSecret });
 
   try {
     // تنظيف الرموز القديمة لنفس المستخدم
@@ -121,19 +184,26 @@ export const getOrCreatePublicBookingSecret = async (userId: string): Promise<st
   const userRef = doc(db, 'users', normalizedUserId);
 
   /** وظيفة مساعدة لاستخدام رمز موجود مع مزامنته */
-  const useExistingSecret = async (rawSecret: unknown): Promise<string | null> => {
+  const useExistingSecret = async (
+    rawSecret: unknown,
+    rawPublicUrlSlug?: unknown
+  ): Promise<string | null> => {
     const normalizedSecret = normalizePublicSecret(rawSecret);
     if (!normalizedSecret) return null;
 
     writeLocalStorageSafe(localKey, normalizedSecret);
     await ensurePublicBookingConfig(normalizedUserId, normalizedSecret);
+    await persistPublicBookingLookup(normalizedUserId, {
+      publicBookingSecret: normalizedSecret,
+      publicUrlSlug: toOptionalText(rawPublicUrlSlug),
+    });
     return normalizedSecret;
   };
 
   // 1. المحاولة من السيرفر مباشرة (الأكثر دقة)
   try {
     const snap = await getDocFromServer(userRef);
-    const existing = await useExistingSecret(snap.data()?.publicBookingSecret);
+    const existing = await useExistingSecret(snap.data()?.publicBookingSecret, snap.data()?.publicUrlSlug);
     if (existing) return existing;
   } catch (error) {
     console.warn('[Firestore] Failed to get public secret from server, trying cache/local:', error);
@@ -142,7 +212,7 @@ export const getOrCreatePublicBookingSecret = async (userId: string): Promise<st
   // 2. المحاولة من الكاش المحلي (في حال عدم وجود اتصال)
   try {
     const snap = await getDocCacheFirst(userRef);
-    const existing = await useExistingSecret(snap.data()?.publicBookingSecret);
+    const existing = await useExistingSecret(snap.data()?.publicBookingSecret, snap.data()?.publicUrlSlug);
     if (existing) return existing;
   } catch (error) {
     console.error('[Firestore] Failed to get public secret from cache:', error);
@@ -155,6 +225,7 @@ export const getOrCreatePublicBookingSecret = async (userId: string): Promise<st
       console.error('[Firestore] Failed to sync local public secret to server:', error)
     );
     await ensurePublicBookingConfig(normalizedUserId, cached);
+    await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: cached });
     return cached;
   }
 
@@ -169,6 +240,7 @@ export const getOrCreatePublicBookingSecret = async (userId: string): Promise<st
 
   writeLocalStorageSafe(localKey, secret);
   await ensurePublicBookingConfig(normalizedUserId, secret);
+  await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: secret });
   return secret;
 };
 
@@ -201,6 +273,9 @@ export const getPublicSecretByUserId = async (userId: string): Promise<string | 
   if (!normalizedUserId) return null;
 
   try {
+    const lookup = await getPublicBookingLookupByUserId(normalizedUserId);
+    if (lookup?.publicBookingSecret) return lookup.publicBookingSecret;
+
     const configsRef = collection(db, 'publicBookingConfig');
 
     // محاولة جلب أحدث رمز مسجل
@@ -287,6 +362,7 @@ export const savePublicFormSettings = async (
     },
     { merge: true }
   );
+  await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: normalizedSecret });
 };
 
 /** الاشتراك اللحظي في إعدادات الحجز لمراقبة أي تغييرات من الطبيب */
@@ -326,4 +402,3 @@ export const subscribeToPublicConfig = (
   // 2. المحاولة الثانية: الاشتراك في التحديثات الحية من السيرفر
   return onSnapshot(configRef, handleSnap);
 };
-

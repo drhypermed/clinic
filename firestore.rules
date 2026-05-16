@@ -38,7 +38,9 @@ service cloud.firestore {
     }
 
     function isHomepageBannerSetting(settingId) {
-      return settingId == 'homepageBanner' || settingId == 'homepageBannerPublic';
+      return settingId == 'homepageBanner' ||
+        settingId == 'homepageBannerPublic' ||
+        settingId == 'publicFeaturedDoctors';
     }
 
     function bookingConfigExists(secret) {
@@ -688,10 +690,29 @@ service cloud.firestore {
         allow get, list: if true;
         allow create, update: if
           isPublicBookingOwner(secret) &&
-          request.resource.data.keys().hasOnly(['dateTime']) &&
-          request.resource.data.dateTime is string;
+          request.resource.data.keys().hasOnly(['dateTime', 'branchId']) &&
+          request.resource.data.dateTime is string &&
+          (!('branchId' in request.resource.data) || request.resource.data.branchId is string) &&
+          isValidBranchForUser(
+            get(/databases/$(database)/documents/publicBookingConfig/$(secret)).data.userId,
+            request.resource.data
+          );
         allow delete: if isPublicBookingOwner(secret);
       }
+    }
+
+    match /publicBookingLookup/{userId} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if
+        request.auth != null &&
+        (request.auth.uid == userId || isAdmin()) &&
+        request.resource.data.userId == userId &&
+        request.resource.data.keys().hasOnly(['userId', 'publicBookingSecret', 'publicUrlSlug', 'updatedAt']) &&
+        (!('publicBookingSecret' in request.resource.data) || request.resource.data.publicBookingSecret is string) &&
+        (!('publicUrlSlug' in request.resource.data) || request.resource.data.publicUrlSlug is string) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is string);
+      allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
     // ─── publicBookingClaims: حماية server-side ضد الحجز المكرر لنفس الـ slot ───
