@@ -25,6 +25,7 @@ export interface BasicPatientSuggestion {
   patientFileId?: string;
   patientFileNameKey?: string;
   lastWeight?: string;
+  lastWeightDate?: string;
   lastHeight?: string;
   /** جنس المريض (ثابت مدى الحياة) — يُعرض في dropdown الاقتراحات */
   gender?: PatientGender;

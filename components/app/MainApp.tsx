@@ -62,6 +62,7 @@ import { useBranchSecretsMap } from './main-app/useBranchSecretsMap';
 import { useMainAppAppointmentOpener } from './main-app/useMainAppAppointmentOpener';
 import { useMainAppPrescriptionExport } from './main-app/useMainAppPrescriptionExport';
 import { useMainAppResetControls } from './main-app/useMainAppResetControls';
+import { useDraftPatientFileNumber } from './main-app/useDraftPatientFileNumber';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { WhatsAppDownloadGuideModal } from '../prescription/WhatsAppDownloadGuideModal';
 import { useBranches } from '../../hooks/useBranches';
@@ -166,6 +167,13 @@ export const MainApp: React.FC = () => {
 
   const { user, signOut, updateUserProfile } = useAuth();
   const userId = user?.uid ?? '';
+  const displayPatientFileNumber = useDraftPatientFileNumber({
+    userId,
+    patientName,
+    activePatientFileId,
+    activePatientFileNumber,
+    activePatientFileNameKey,
+  });
 
   const {
     branches,
@@ -554,6 +562,7 @@ export const MainApp: React.FC = () => {
               breastfeeding={breastfeeding} setBreastfeeding={setBreastfeeding}
               activePatientFileId={activePatientFileId}
               activePatientFileNumber={activePatientFileNumber}
+              displayPatientFileNumber={displayPatientFileNumber}
               activePatientFileNameKey={activePatientFileNameKey}
               setActivePatientFileId={setActivePatientFileId}
               setActivePatientFileNumber={setActivePatientFileNumber}

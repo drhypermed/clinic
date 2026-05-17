@@ -22,6 +22,7 @@ import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVit
 interface PrescriptionPreviewProps {
   patientName: string;
   setPatientName: (name: string) => void;
+  patientFileNumber?: number | null;
   ageYears: string;
   ageMonths: string;
   ageDays: string;
@@ -95,6 +96,7 @@ const DEFAULT_PREVIEW_VITALS: VitalSignConfig[] = [
 // parent يمرر callbacks مستقرة و actionsBar memoized).
 export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, PrescriptionPreviewProps>(({
   patientName, setPatientName,
+  patientFileNumber,
   ageYears, ageMonths, ageDays,
   weight, height, bmi,
   vitals,
@@ -383,6 +385,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
                 <PrescriptionHeader isDataOnlyMode={isDataOnlyMode} headerSettings={prescriptionSettings?.header} />
                 <InfoBar
                   patientName={patientName} setPatientName={setPatientName}
+                  patientFileNumber={patientFileNumber}
                   ageString={ageString} headerFontSize={theme.headerFontSize}
                   isDataOnlyMode={isDataOnlyMode} isPrintMode={isPrintMode}
                   hasContent={hasContent} date={consultationDate}

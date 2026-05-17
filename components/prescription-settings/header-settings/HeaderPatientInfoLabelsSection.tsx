@@ -16,7 +16,7 @@ export const HeaderPatientInfoLabelsSection: React.FC<HeaderPatientInfoLabelsSec
   applyInfoLabelPreset,
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
       {/* حقل تعديل نص "الاسم" وتنسيقه */}
       <div className="space-y-2">
         <label className={LABEL_CLASS}>نص الاسم</label>
@@ -38,6 +38,30 @@ export const HeaderPatientInfoLabelsSection: React.FC<HeaderPatientInfoLabelsSec
             )
           }
           onApplyPreset={(s) => applyInfoLabelPreset('nameLabelStyle', header.nameLabelStyle || defaultInfoLabelStyle, s)}
+        />
+      </div>
+      {/* حقل تعديل نص "رقم الملف" وتنسيقه */}
+      <div className="space-y-2">
+        <label className={LABEL_CLASS}>نص رقم الملف</label>
+        <input
+          type="text"
+          value={header.fileNumberLabel || 'ملف'}
+          onChange={(e) => updateHeader({ fileNumberLabel: e.target.value })}
+          className="w-full p-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-brand-500 outline-none"
+        />
+        <StyleControl
+          style={header.fileNumberLabelStyle || defaultInfoLabelStyle}
+          onChange={(s) =>
+            handleStyleChange(
+              s,
+              'fileNumberLabelStyle',
+              header.fileNumberLabelStyle || defaultInfoLabelStyle,
+              (x) => updateHeader({ fileNumberLabelStyle: x })
+            )
+          }
+          onApplyPreset={(s) =>
+            applyInfoLabelPreset('fileNumberLabelStyle', header.fileNumberLabelStyle || defaultInfoLabelStyle, s)
+          }
         />
       </div>
       {/* حقل تعديل نص "السن" وتنسيقه */}

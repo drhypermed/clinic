@@ -16,6 +16,7 @@ import type { SettingsTabId } from '../PrescriptionSettingsTabs';
 export const HEADER_H_PX = 146;
 export const INFOBAR_H_PX = 42;
 export const FOOTER_H_PX = 80;
+export const PREVIEW_PATIENT_FILE_NUMBER = 1024;
 
 /** ──────────────────────────────────────────────────────────────────
  *  حالة طبية نموذجية للمعاينة: التهاب لوزتين حاد بكتيري (Acute Tonsillopharyngitis)

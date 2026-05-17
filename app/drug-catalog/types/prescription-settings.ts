@@ -90,12 +90,18 @@ export interface PrescriptionHeaderSettings {
   bottomBorderOpacity?: number; // 0-1
 
   // شريط المعلومات (الاسم / العمر / التاريخ) تحت الهيدر مباشرة
+  showPatientName?: boolean;
+  showPatientAge?: boolean;
+  showPatientDate?: boolean;
+  showPatientFileNumber?: boolean;
   nameLabel?: string;
   ageLabel?: string;
   dateLabel?: string;
+  fileNumberLabel?: string;
   nameLabelStyle?: TextStyle;
   ageLabelStyle?: TextStyle;
   dateLabelStyle?: TextStyle;
+  fileNumberLabelStyle?: TextStyle;
   infoBarBackgroundColor?: string;
   infoBarBackgroundOpacity?: number; // 0-1
   infoBarLabelColor?: string;

@@ -21,6 +21,7 @@ import {
     serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { getDocCacheFirst } from '../firestore/cacheFirst';
 import { PATIENT_FILES_COUNTER_DOC_ID } from './constants';
 import {
     buildPatientFileDocIdFromNameKey,
@@ -29,6 +30,52 @@ import {
     toPositiveIntegerOrZero,
 } from './normalizers';
 import type { PatientFileReference } from './types';
+
+export interface PatientFileNumberPreview extends PatientFileReference {
+    exists: boolean;
+}
+
+/**
+ * قراءة رقم ملف للعرض قبل الحفظ فقط.
+ * لا يكتب في Firestore ولا يحرّك العداد؛ الرقم الرسمي يظل مسؤولية
+ * ensurePatientFileReference داخل transaction وقت الحفظ.
+ */
+export const getPatientFileNumberPreview = async (
+    userId: string,
+    patientName: string
+): Promise<PatientFileNumberPreview | null> => {
+    const patientFileNameKey = buildPatientFileNameKey(patientName);
+    if (!userId || !patientFileNameKey) return null;
+
+    const patientFileId = buildPatientFileDocIdFromNameKey(patientFileNameKey);
+    const patientFileRef = doc(db, 'users', userId, 'settings', patientFileId);
+    const counterRef = doc(db, 'users', userId, 'settings', PATIENT_FILES_COUNTER_DOC_ID);
+
+    const patientFileSnap = await getDocCacheFirst(patientFileRef);
+    if (patientFileSnap.exists()) {
+        const data = patientFileSnap.data() as { patientFileNumber?: unknown };
+        const patientFileNumber = toPositiveIntegerOrZero(data.patientFileNumber);
+        if (patientFileNumber > 0) {
+            return {
+                patientFileId,
+                patientFileNumber,
+                patientFileNameKey,
+                exists: true,
+            };
+        }
+    }
+
+    const counterSnap = await getDocCacheFirst(counterRef);
+    const counterData = counterSnap.data() as { lastNumber?: unknown } | undefined;
+    const nextNumber = toPositiveIntegerOrZero(counterData?.lastNumber) + 1;
+
+    return {
+        patientFileId,
+        patientFileNumber: nextNumber,
+        patientFileNameKey,
+        exists: false,
+    };
+};
 
 /** ضمان وجود ملف مريض (أو إنشائه) وإرجاع مرجعه الكامل */
 export const ensurePatientFileReference = async (

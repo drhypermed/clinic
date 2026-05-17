@@ -131,6 +131,7 @@ interface MainAppViewRouterProps {
   breastfeeding: boolean | null; setBreastfeeding: (v: boolean | null) => void;
   activePatientFileId: string | null;
   activePatientFileNumber: number | null;
+  displayPatientFileNumber: number | null;
   activePatientFileNameKey: string | null;
   setActivePatientFileId: (v: string | null) => void;
   setActivePatientFileNumber: (v: number | null) => void;
@@ -294,6 +295,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           breastfeeding={p.breastfeeding} setBreastfeeding={p.setBreastfeeding}
           activePatientFileId={p.activePatientFileId}
           activePatientFileNumber={p.activePatientFileNumber}
+          displayPatientFileNumber={p.displayPatientFileNumber}
           activePatientFileNameKey={p.activePatientFileNameKey}
           setActivePatientFileId={p.setActivePatientFileId}
           setActivePatientFileNumber={p.setActivePatientFileNumber}

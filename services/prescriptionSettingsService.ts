@@ -16,7 +16,12 @@ import { branchDocKey } from './financial-data/normalizers';
 const DEFAULT_HEADER: PrescriptionHeaderSettings = {
     doctorName: 'اسم الطبيب',
     degrees: ['الشهادة / الدرجة العلمية'],
-    specialties: ['التخصصات / الخدمات']
+    specialties: ['التخصصات / الخدمات'],
+    showPatientName: true,
+    showPatientAge: true,
+    showPatientDate: true,
+    showPatientFileNumber: true,
+    fileNumberLabel: 'ملف'
 };
 
 /** الإعدادات الافتراضية للفوتر (تذييل الروشتة) */

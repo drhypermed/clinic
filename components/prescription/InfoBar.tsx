@@ -6,6 +6,7 @@ import { hexToRgba } from './shared/prescriptionStyleUtils';
 interface InfoBarProps {
   patientName: string;
   setPatientName: (name: string) => void;
+  patientFileNumber?: number | null;
   ageString: string;
   headerFontSize: string;
   /** Override بالـ inline px من إعدادات المستخدم — يطغى على className لو مُمرَّر */
@@ -100,6 +101,7 @@ const buildTextStyles = (
 export const InfoBar: React.FC<InfoBarProps> = ({
   patientName,
   setPatientName,
+  patientFileNumber,
   ageString,
   headerFontSize,
   headerInfoPx,
@@ -161,6 +163,16 @@ export const InfoBar: React.FC<InfoBarProps> = ({
   const nameLabel = headerSettings?.nameLabel || 'الاسم';
   const ageLabel = headerSettings?.ageLabel || 'السن';
   const dateLabel = headerSettings?.dateLabel || 'التاريخ';
+  const fileNumberLabel = headerSettings?.fileNumberLabel || 'ملف';
+  const normalizedFileNumber = Number(patientFileNumber);
+  const fileNumberText = Number.isFinite(normalizedFileNumber) && normalizedFileNumber > 0
+    ? `#${Math.floor(normalizedFileNumber)}`
+    : '';
+  const showPatientName = headerSettings?.showPatientName !== false;
+  const showPatientAge = headerSettings?.showPatientAge !== false;
+  const showPatientDate = headerSettings?.showPatientDate !== false;
+  const showPatientFileNumber = headerSettings?.showPatientFileNumber !== false && Boolean(fileNumberText);
+  const showIdentityCell = showPatientName || showPatientFileNumber;
 
   const infoBarBg = headerSettings?.infoBarBackgroundColor || '#ffffff';
   const infoBarBgOpacity = headerSettings?.infoBarBackgroundOpacity ?? 1;
@@ -195,16 +207,23 @@ export const InfoBar: React.FC<InfoBarProps> = ({
   const divider1Color = isDataOnlyMode ? 'transparent' : hexToRgba(infoBarDivider1Color, infoBarDivider1Opacity);
   const divider2Color = isDataOnlyMode ? 'transparent' : hexToRgba(infoBarDivider2Color, infoBarDivider2Opacity);
 
+  const visibleColumnIds = [
+    showIdentityCell ? 'identity' : '',
+    showPatientAge ? 'age' : '',
+    showPatientDate ? 'date' : '',
+  ].filter(Boolean);
+  const visibleColumnCount = visibleColumnIds.length;
+  const columnPercents = React.useMemo(() => {
+    if (visibleColumnCount <= 0) return [100];
+    if (visibleColumnCount === 1) return [100];
+    if (visibleColumnCount === 2) return showIdentityCell ? [60, 40] : [50, 50];
+    return [45, 25, 30];
+  }, [showIdentityCell, visibleColumnCount]);
+  const gridTemplateColumns = columnPercents.map((value) => `${value}%`).join(' ');
   const pxToPercent = (px: number) => (barWidth > 0 ? (px / barWidth) * 100 : 0);
-  const minColumnPercent = 12;
-  const rawDivider1Percent = 45 + pxToPercent(infoBarDivider1OffsetX);
-  const divider1Percent = Math.min(100 - (minColumnPercent * 2), Math.max(minColumnPercent, rawDivider1Percent));
-  const rawDivider2Percent = 70 + pxToPercent(infoBarDivider2OffsetX);
-  const divider2Percent = Math.min(100 - minColumnPercent, Math.max(divider1Percent + minColumnPercent, rawDivider2Percent));
-  
-  const col1 = divider1Percent;
-  const col2 = Math.max(minColumnPercent, divider2Percent - divider1Percent);
-  const col3 = Math.max(minColumnPercent, 100 - divider2Percent);
+  const clampDivider = (value: number) => Math.min(98, Math.max(2, value));
+  const divider1Percent = clampDivider((columnPercents[0] || 100) + pxToPercent(infoBarDivider1OffsetX));
+  const divider2Percent = clampDivider((columnPercents[0] || 0) + (columnPercents[1] || 0) + pxToPercent(infoBarDivider2OffsetX));
   const isReadOnlyName = isPrintMode || isDataOnlyMode;
   const infoValueColorStyle = { color: infoBarValueColor };
   const labelClass = `font-black ${headerFontSize} shrink-0 whitespace-nowrap ml-2 ${isDataOnlyMode ? 'invisible' : ''}`;
@@ -234,9 +253,9 @@ export const InfoBar: React.FC<InfoBarProps> = ({
   return (
     <div
       ref={barRef}
-      className="relative h-[42px] overflow-hidden grid grid-cols-[45%_25%_30%] items-center font-bold text-slate-800 shrink-0"
+      className="relative h-[42px] overflow-hidden grid items-center font-bold text-slate-800 shrink-0"
       style={{
-        gridTemplateColumns: `${col1}% ${col2}% ${col3}%`,
+        gridTemplateColumns,
         borderBottomStyle: 'solid',
         borderBottomWidth: showInfoBarBottomBorder ? `${Math.max(0, infoBarBorderWidth)}px` : '0px',
         borderBottomColor,
@@ -246,58 +265,91 @@ export const InfoBar: React.FC<InfoBarProps> = ({
       }}
       dir="rtl"
     >
-      {renderDivider(showInfoBarDivider1, infoBarDivider1OffsetY, divider1Percent, infoBarDivider1Width, divider1Color)}
-      {renderDivider(showInfoBarDivider2, infoBarDivider2OffsetY, divider2Percent, infoBarDivider2Width, divider2Color)}
+      {visibleColumnCount > 1 && renderDivider(showInfoBarDivider1, infoBarDivider1OffsetY, divider1Percent, infoBarDivider1Width, divider1Color)}
+      {visibleColumnCount > 2 && renderDivider(showInfoBarDivider2, infoBarDivider2OffsetY, divider2Percent, infoBarDivider2Width, divider2Color)}
 
-      <div className="flex items-center min-w-0 h-full px-2">
-        <span
-          className={labelClass}
-          style={buildTextStyles(headerSettings?.nameLabelStyle, labelStyleDefaults)}
-        >
-          {nameLabel} :
-        </span>
-        <div className="flex-1 min-w-0 overflow-hidden">
-          {isReadOnlyName ? (
-            <div className={`font-bold ${getNameFontSize(patientName)} leading-tight whitespace-nowrap text-right truncate`} style={infoValueColorStyle}>
-              {patientName}
+      {showIdentityCell && (
+        <div className="flex flex-col justify-center min-w-0 h-full px-2 overflow-hidden">
+          {showPatientName && (
+            <div className="flex items-center min-w-0">
+              <span
+                className={labelClass}
+                style={buildTextStyles(headerSettings?.nameLabelStyle, labelStyleDefaults)}
+              >
+                {nameLabel} :
+              </span>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                {isReadOnlyName ? (
+                  <div className={`font-bold ${getNameFontSize(patientName)} leading-tight whitespace-nowrap text-right truncate`} style={infoValueColorStyle}>
+                    {patientName}
+                  </div>
+                ) : (
+                  <input
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                    className={`bg-transparent w-full font-bold ${getNameFontSize(patientName)} outline-none h-full text-right`}
+                    style={infoValueColorStyle}
+                    placeholder=""
+                  />
+                )}
+              </div>
             </div>
-          ) : (
-            <input
-              value={patientName}
-              onChange={(e) => setPatientName(e.target.value)}
-              className={`bg-transparent w-full font-bold ${getNameFontSize(patientName)} outline-none h-full text-right`}
-              style={infoValueColorStyle}
-              placeholder=""
-            />
+          )}
+          {showPatientFileNumber && (
+            <div className={`flex items-center min-w-0 leading-none ${showPatientName ? 'mt-0.5 pr-1' : ''}`}>
+              <span
+                className="font-black text-[8px] shrink-0 whitespace-nowrap ml-1"
+                style={buildTextStyles(headerSettings?.fileNumberLabelStyle, {
+                  ...labelStyleDefaults,
+                  fontWeight: '900',
+                })}
+              >
+                {fileNumberLabel} :
+              </span>
+              <span
+                dir="ltr"
+                className="font-mono font-black text-[9px] whitespace-nowrap truncate min-w-0 opacity-80"
+                style={{ ...infoValueColorStyle, ...(headerInfoStyle || {}) }}
+              >
+                {fileNumberText}
+              </span>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
-      <div className="flex items-center justify-start min-w-0 h-full px-2 overflow-hidden">
-        <span
-          className={labelClass}
-          style={buildTextStyles(headerSettings?.ageLabelStyle, labelStyleDefaults)}
-        >
-          {ageLabel} :
-        </span>
-        <div className="font-bold text-right leading-tight min-w-0 flex-1 overflow-hidden whitespace-nowrap text-ellipsis" style={{ ...infoValueColorStyle, fontSize: `${getAgeFontSizePx(ageString)}px` }}>
-          {ageString}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-start min-w-0 h-full px-2 overflow-hidden">
-        <div className="flex items-center min-w-0">
+      {showPatientAge && (
+        <div className="flex items-center justify-start min-w-0 h-full px-2 overflow-hidden">
           <span
             className={labelClass}
-            style={buildTextStyles(headerSettings?.dateLabelStyle, labelStyleDefaults)}
+            style={buildTextStyles(headerSettings?.ageLabelStyle, labelStyleDefaults)}
           >
-            {dateLabel} :
+            {ageLabel} :
           </span>
-          <div dir="ltr" className={`font-mono font-black ${headerFontSize} text-left whitespace-nowrap truncate min-w-0`} style={{ ...infoValueColorStyle, ...(headerInfoStyle || {}) }}>
-            {displayDate}
+          <div className="font-bold text-right leading-tight min-w-0 flex-1 overflow-hidden whitespace-nowrap text-ellipsis" style={{ ...infoValueColorStyle, fontSize: `${getAgeFontSizePx(ageString)}px` }}>
+            {ageString}
           </div>
         </div>
-      </div>
+      )}
+
+      {showPatientDate && (
+        <div className="flex items-center justify-start min-w-0 h-full px-2 overflow-hidden">
+          <div className="flex items-center min-w-0">
+            <span
+              className={labelClass}
+              style={buildTextStyles(headerSettings?.dateLabelStyle, labelStyleDefaults)}
+            >
+              {dateLabel} :
+            </span>
+            <div dir="ltr" className={`font-mono font-black ${headerFontSize} text-left whitespace-nowrap truncate min-w-0`} style={{ ...infoValueColorStyle, ...(headerInfoStyle || {}) }}>
+              {displayDate}
+            </div>
+          </div>
+        </div>
+      )}
+      {visibleColumnCount === 0 && (
+        <div className="h-full" aria-hidden />
+      )}
     </div>
   );
 };

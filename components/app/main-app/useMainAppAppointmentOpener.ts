@@ -32,6 +32,7 @@ import {
   isPediatricSpecialtyForSecretaryVitals,
   sanitizeSecretaryVitalsInput,
 } from '../../../utils/secretaryVitals';
+import { getReusableWeightForVisit } from '../../../utils/patientMeasurements';
 import { resolveConsultationRecordForAppointment } from '../utils';
 import type { AppView } from '../utils';
 import { resolveAppointmentVisitDate } from './helpers';
@@ -291,6 +292,9 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
       : undefined;
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
+    if (!appointmentSecretaryVitals?.weight) {
+      setWeight(getReusableWeightForVisit(recordToOpen.weight, recordToOpen.date, appointmentVisitDate));
+    }
     applySecretaryVitalsFromAppointment(appointmentSecretaryVitals, { setWeight, setHeight, setVitals });
     setAppointmentSecretaryCustomValues(appointmentCustomValues);
 

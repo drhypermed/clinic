@@ -53,6 +53,7 @@ import { InsurancePaymentSelector } from '../prescription/InsurancePaymentSelect
 import {
   normalizeGender,
 } from '../../utils/patientIdentity';
+import { getReusableWeightForVisit } from '../../utils/patientMeasurements';
 // سقف قوائم الروشتة المتفق عليه: 15 عنصر لكل قائمة (أدوية/فحوصات/تعليمات)
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
 
@@ -100,6 +101,7 @@ interface MainAppPrescriptionSectionProps {
   setBreastfeeding: (value: boolean | null) => void;
   activePatientFileId: string | null;
   activePatientFileNumber: number | null;
+  displayPatientFileNumber: number | null;
   activePatientFileNameKey: string | null;
   setActivePatientFileId: (value: string | null) => void;
   setActivePatientFileNumber: (value: number | null) => void;
@@ -253,7 +255,7 @@ interface MainAppPrescriptionSectionProps {
 export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProps> = ({
   analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
   gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
-  activePatientFileId, activePatientFileNumber, activePatientFileNameKey,
+  activePatientFileId, activePatientFileNumber, displayPatientFileNumber, activePatientFileNameKey,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
   complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
   caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
@@ -803,7 +805,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     // في الاستشارة بس: نجلب آخر وزن/طول تلقائياً من سجلات المريض
                     // الكشف بيقاس من جديد في كل زيارة، والاستشارة بتبني على قياسات الكشف السابق
                     if (visitType === 'consultation') {
-                      if (item.lastWeight) setWeight(item.lastWeight);
+                      setWeight(getReusableWeightForVisit(item.lastWeight, item.lastWeightDate, visitDate));
                       if (item.lastHeight) setHeight(item.lastHeight);
                     }
                   }}
@@ -1008,7 +1010,8 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
           <PrescriptionPreview
             consultationDate={consultationDate} rxItems={rxItems} generalAdvice={generalAdvice} labInvestigations={labInvestigations}
             readyPrescriptions={readyPrescriptions}
-            patientName={patientName} setPatientName={setPatientName} ageYears={ageYears} ageMonths={ageMonths} ageDays={ageDays}
+            patientName={patientName} setPatientName={setPatientName} patientFileNumber={displayPatientFileNumber}
+            ageYears={ageYears} ageMonths={ageMonths} ageDays={ageDays}
             weight={weight} setWeight={setWeight} height={height} setHeight={setHeight} bmi={bmi} vitals={vitals}
             complaint={complaint} complaintEn={complaintEn} setComplaintEn={setComplaintEn}
             medicalHistory={medicalHistory} historyEn={historyEn} setHistoryEn={setHistoryEn}

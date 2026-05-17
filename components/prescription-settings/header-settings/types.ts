@@ -39,7 +39,7 @@ export interface HeaderSectionSharedProps {
 export interface HeaderPatientInfoSectionProps extends HeaderSectionSharedProps {
   defaultInfoLabelStyle: TextStyle;
   applyInfoLabelPreset: (
-    field: 'nameLabelStyle' | 'ageLabelStyle' | 'dateLabelStyle',
+    field: 'nameLabelStyle' | 'ageLabelStyle' | 'dateLabelStyle' | 'fileNumberLabelStyle',
     base: TextStyle,
     presetStyle: string
   ) => void;

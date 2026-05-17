@@ -13,6 +13,7 @@ import { AdditionalNotes } from '../../prescription/AdditionalNotes';
 import { ClinicalDetails } from '../../prescription/ClinicalDetails';
 import { MM_TO_PX } from '../utils';
 import {
+  PREVIEW_PATIENT_FILE_NUMBER,
   PRINT_PREVIEW_LABS,
   PRINT_PREVIEW_ADVICE,
   PRINT_PREVIEW_CLINICAL,
@@ -84,6 +85,7 @@ export const PreviewPrintPanel: React.FC<Props> = ({
           <InfoBar
             patientName="أحمد محمد علي"
             setPatientName={() => {}}
+            patientFileNumber={PREVIEW_PATIENT_FILE_NUMBER}
             ageString="42 سنة"
             headerFontSize="text-[13px]"
             isDataOnlyMode={false}

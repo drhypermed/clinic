@@ -12,6 +12,11 @@ const DEFAULT_HEADER: PrescriptionHeaderSettings = {
   doctorName: 'اسم الطبيب',
   degrees: ['الشهادة / الدرجة العلمية'],
   specialties: ['التخصص'],
+  showPatientName: true,
+  showPatientAge: true,
+  showPatientDate: true,
+  showPatientFileNumber: true,
+  fileNumberLabel: 'ملف',
 };
 
 const sanitizeHtml = (html: string) => ({ __html: DOMPurify.sanitize(html) });

@@ -65,6 +65,7 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
         ?? sorted.map((item) => toPositiveFileNumber(item.patientFileNumber)).find((value) => Boolean(value)),
       // آخر وزن/طول متاح — يُستخدم لجلبهم تلقائياً في الاستشارة
       lastWeight: String(firstWithWeight?.weight || '').trim() || undefined,
+      lastWeightDate: firstWithWeight?.date || undefined,
       lastHeight: String(firstWithHeight?.height || '').trim() || undefined,
       // الهوية الثابتة — للـ auto-fill عند اختيار المريض
       gender: genderFromRecords,

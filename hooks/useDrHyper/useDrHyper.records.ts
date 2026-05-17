@@ -19,6 +19,7 @@ import {
     buildGeneratedConsultationRecordId,
     buildSeparatedConsultationRecordPayload,
 } from './useDrHyper.consultationRecords';
+import { getReusableWeightForVisit } from '../../utils/patientMeasurements';
 
 interface CreateRecordActionsParams {
     user: any;
@@ -445,7 +446,7 @@ export const createRecordActions = ({
         applyPatientFileIdentity(record);
 
         applyDemographics(record);
-        setWeight(record.weight);
+        setWeight(getReusableWeightForVisit(record.weight, record.date, getVisitDateDay()));
         setHeight(record.height || '');
         setVitals(EMPTY_VITALS);
         setVisitDate(getVisitDateDay());

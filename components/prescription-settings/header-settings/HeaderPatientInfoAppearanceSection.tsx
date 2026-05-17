@@ -10,6 +10,28 @@ export const HeaderPatientInfoAppearanceSection: React.FC<HeaderPatientInfoAppea
 }) => {
   return (
     <>
+      <div className="rounded-xl border border-slate-200 p-3 bg-white">
+        <label className={LABEL_CLASS}>الخانات الظاهرة في الروشتة</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 mt-2">
+          {[
+            { key: 'showPatientName', label: 'اسم المريض' },
+            { key: 'showPatientFileNumber', label: 'رقم الملف' },
+            { key: 'showPatientAge', label: 'السن' },
+            { key: 'showPatientDate', label: 'التاريخ' },
+          ].map((item) => (
+            <label key={item.key} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="checkbox"
+                checked={(header[item.key as keyof typeof header] as boolean | undefined) !== false}
+                onChange={(e) => updateHeader({ [item.key]: e.target.checked })}
+                className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
+              />
+              <span className="text-sm font-bold text-slate-700">{item.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* لون خلفية شريط المعلومات بالكامل */}
         <div>

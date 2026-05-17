@@ -21,9 +21,9 @@ export const HeaderPatientInfoSection: React.FC<HeaderPatientInfoSectionProps> =
 }) => {
   return (
     <>
-      {/* قسم إعدادات بيانات المريض (الاسم، السن، تاريخ الكشف) */}
+      {/* قسم إعدادات بيانات المريض (الاسم، السن، تاريخ الكشف، رقم الملف) */}
       <CollapsibleSection
-        title="بيانات المريض (الاسم • السن • التاريخ)"
+        title="بيانات المريض (الاسم • السن • التاريخ • رقم الملف)"
         isOpen={openSection === 'patientInfoBar'}
         onToggle={() => toggle('patientInfoBar')}
         className="p-4 bg-gradient-to-br from-slate-50 to-white"

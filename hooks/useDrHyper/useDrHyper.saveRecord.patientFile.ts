@@ -11,7 +11,11 @@
  *      من اسم المريض والهاتف.
  */
 
-import { buildPatientFileNameKey, patientFilesService } from '../../services/patient-files';
+import {
+    buildPatientFileDocIdFromNameKey,
+    buildPatientFileNameKey,
+    patientFilesService,
+} from '../../services/patient-files';
 import type { ResolvedPatientFileReference } from './useDrHyper.saveRecord.types';
 
 interface ResolvePatientFileReferenceInput {
@@ -35,9 +39,22 @@ export const resolvePatientFileReference = async (
     const normalizedActivePatientFileId = String(input.activePatientFileId || '').trim();
     const parsedActivePatientFileNumber = Number(input.activePatientFileNumber);
     const normalizedActivePatientFileNameKey = String(input.activePatientFileNameKey || '').trim();
+    const targetPatientFileNameKey = buildPatientFileNameKey(patientName);
+    const expectedPatientFileId = targetPatientFileNameKey
+        ? buildPatientFileDocIdFromNameKey(targetPatientFileNameKey)
+        : '';
+    const activeMatchesCurrentPatient = Boolean(
+        targetPatientFileNameKey
+        && (
+            (normalizedActivePatientFileNameKey && normalizedActivePatientFileNameKey === targetPatientFileNameKey)
+            || (!normalizedActivePatientFileNameKey && normalizedActivePatientFileId === expectedPatientFileId)
+        )
+    );
 
     // 1. البيانات النشطة كاملة → استخدمها مباشرة
     if (
+        activeMatchesCurrentPatient
+        &&
         normalizedActivePatientFileId
         && Number.isFinite(parsedActivePatientFileNumber)
         && parsedActivePatientFileNumber > 0
@@ -45,13 +62,14 @@ export const resolvePatientFileReference = async (
         patientFileReference = {
             patientFileId: normalizedActivePatientFileId,
             patientFileNumber: Math.floor(parsedActivePatientFileNumber),
-            patientFileNameKey: normalizedActivePatientFileNameKey || buildPatientFileNameKey(patientName),
+            patientFileNameKey: normalizedActivePatientFileNameKey || targetPatientFileNameKey,
         };
     }
 
     // 2. رقم أو nameKey فقط → حل عبر syncPatientIdentityByFile
     if (
         !patientFileReference
+        && activeMatchesCurrentPatient
         && (
             (Number.isFinite(parsedActivePatientFileNumber) && parsedActivePatientFileNumber > 0)
             || normalizedActivePatientFileNameKey
@@ -122,10 +140,34 @@ interface SyncPatientIdentityAfterSaveInput {
 export const syncPatientIdentityAfterSave = async (
     input: SyncPatientIdentityAfterSaveInput
 ): Promise<ResolvedPatientFileReference | null> => {
+    const expectedPatientFileId = input.targetPatientFileNameKey
+        ? buildPatientFileDocIdFromNameKey(input.targetPatientFileNameKey)
+        : '';
+    const activeMatchesCurrentPatient = Boolean(
+        input.targetPatientFileNameKey
+        && (
+            (
+                input.normalizedActivePatientFileNameKey
+                && input.normalizedActivePatientFileNameKey === input.targetPatientFileNameKey
+            )
+            || (
+                !input.normalizedActivePatientFileNameKey
+                && input.normalizedActivePatientFileId === expectedPatientFileId
+            )
+        )
+    );
     const fallbackPatientFileNumber =
-        Number.isFinite(input.parsedActivePatientFileNumber) && input.parsedActivePatientFileNumber > 0
+        activeMatchesCurrentPatient
+        && Number.isFinite(input.parsedActivePatientFileNumber)
+        && input.parsedActivePatientFileNumber > 0
             ? Math.floor(input.parsedActivePatientFileNumber)
             : undefined;
+    const fallbackPatientFileId = activeMatchesCurrentPatient
+        ? input.normalizedActivePatientFileId
+        : '';
+    const fallbackPatientFileNameKey = activeMatchesCurrentPatient
+        ? input.normalizedActivePatientFileNameKey
+        : '';
 
     try {
         const syncResult = await patientFilesService.syncPatientIdentityByFile({
@@ -139,12 +181,12 @@ export const syncPatientIdentityAfterSave = async (
             },
             gender: input.gender,
             patientFileId:
-                input.patientFileReference?.patientFileId || input.normalizedActivePatientFileId || undefined,
+                input.patientFileReference?.patientFileId || fallbackPatientFileId || undefined,
             patientFileNumber: input.patientFileReference?.patientFileNumber || fallbackPatientFileNumber,
             patientFileNameKey:
                 input.targetPatientFileNameKey
                 || input.patientFileReference?.patientFileNameKey
-                || input.normalizedActivePatientFileNameKey
+                || fallbackPatientFileNameKey
                 || undefined,
         });
 

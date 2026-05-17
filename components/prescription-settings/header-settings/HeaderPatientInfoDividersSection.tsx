@@ -12,7 +12,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
     <div className="rounded-xl border border-slate-200 p-3 bg-white">
       <label className={LABEL_CLASS}>الخطوط العمودية بين الخانات</label>
       <div className="space-y-4 mt-3">
-        {/* التحكم في الخط العمودي الأول (بين الاسم والسن) */}
+        {/* التحكم في الخط العمودي الأول بين أول خانتين ظاهرتين */}
         <div className="rounded-lg border border-slate-200 p-3 bg-slate-50">
           <label className="flex items-center gap-2 mb-3">
             <input
@@ -21,7 +21,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
               onChange={(e) => updateHeader({ showInfoBarDivider1: e.target.checked })}
               className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
             />
-            <span className="text-sm font-bold text-slate-700">الخط بين الاسم والسن</span>
+            <span className="text-sm font-bold text-slate-700">الخط الأول بين الخانات الظاهرة</span>
           </label>
 
           {(header.showInfoBarDivider1 ?? header.showInfoBarDividers) !== false && (
@@ -110,7 +110,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
           )}
         </div>
 
-        {/* التحكم في الخط العمودي الثاني (بين السن والتاريخ) */}
+        {/* التحكم في الخط العمودي الثاني بين ثاني وثالث خانة ظاهرة */}
         <div className="rounded-lg border border-slate-200 p-3 bg-slate-50">
           <label className="flex items-center gap-2 mb-3">
             <input
@@ -119,7 +119,7 @@ export const HeaderPatientInfoDividersSection: React.FC<HeaderPatientInfoDivider
               onChange={(e) => updateHeader({ showInfoBarDivider2: e.target.checked })}
               className="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300"
             />
-            <span className="text-sm font-bold text-slate-700">الخط بين السن والتاريخ</span>
+            <span className="text-sm font-bold text-slate-700">الخط الثاني بين الخانات الظاهرة</span>
           </label>
 
           {(header.showInfoBarDivider2 ?? header.showInfoBarDividers) !== false && (

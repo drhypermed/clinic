@@ -24,7 +24,7 @@
  *   - `syncIdentity.ts`          : مزامنة هوية المريض عبر السجلات/المواعيد.
  */
 
-import { ensurePatientFileReference } from './patientFileReference';
+import { ensurePatientFileReference, getPatientFileNumberPreview } from './patientFileReference';
 import { ensurePatientFilesSeniorityIndex } from './seniorityIndex';
 import { syncPatientIdentityByFile } from './syncIdentity';
 import { savePatientAdditionalInfo } from './additionalInfo';
@@ -36,6 +36,7 @@ import {
 } from './reportPreferences';
 
 export {
+    buildPatientFileDocIdFromNameKey,
     buildPatientFileNameKey,
     normalizePatientNameForFile,
 } from './normalizers';
@@ -44,6 +45,7 @@ export {
 export const patientFilesService = {
     ensurePatientFilesSeniorityIndex,
     ensurePatientFileReference,
+    getPatientFileNumberPreview,
     syncPatientIdentityByFile,
     savePatientAdditionalInfo,
     loadReportPreferences,

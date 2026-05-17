@@ -34,6 +34,7 @@ import {
   FOOTER_H_PX,
   HEADER_H_PX,
   INFOBAR_H_PX,
+  PREVIEW_PATIENT_FILE_NUMBER,
   PRINT_PREVIEW_RX_ITEMS,
   TAB_COLORS,
   TAB_LABELS,
@@ -216,6 +217,7 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
                 <InfoBar
                   patientName="اسم المريض"
                   setPatientName={() => {}}
+                  patientFileNumber={PREVIEW_PATIENT_FILE_NUMBER}
                   ageString="35 سنة و 2 شهر"
                   headerFontSize="text-[13px]"
                   isDataOnlyMode={false}
