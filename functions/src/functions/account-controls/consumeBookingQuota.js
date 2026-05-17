@@ -95,8 +95,29 @@ module.exports = (context) => {
     if (!doctorId) {
       throw new HttpsError('invalid-argument', 'doctorId is required');
     }
+
+    // Public form booking no longer uses account quota. Keep this compatibility
+    // response so older cached PWA bundles that still call the function do not
+    // block appointment creation.
+    if (feature === 'publicFormBooking') {
+      const dayKey = getCairoDateKey(new Date());
+      return {
+        accountType: 'free',
+        feature,
+        limit: 999999,
+        used: 0,
+        remaining: 999999,
+        dayKey,
+        whatsappNumber: '',
+        whatsappUrl: '',
+        limitReachedMessage: '',
+        whatsappMessage: '',
+        quotaDisabled: true,
+      };
+    }
+
     const authUid = String(request?.auth?.uid || '').trim();
-    const isPublicUnauthFeature = feature === 'publicFormBooking' || feature === 'secretaryEntryRequest';
+    const isPublicUnauthFeature = feature === 'secretaryEntryRequest';
     const shouldValidatePublicSecret = isPublicUnauthFeature && authUid !== doctorId;
 
     // Hardening: unauthenticated calls are allowed only for explicitly public flows
@@ -126,8 +147,7 @@ module.exports = (context) => {
 
     const db = getDb();
     if (shouldValidatePublicSecret) {
-      const configCollection = feature === 'publicFormBooking' ? 'publicBookingConfig' : 'bookingConfig';
-      const secretSnap = await db.collection(configCollection).doc(secret).get();
+      const secretSnap = await db.collection('bookingConfig').doc(secret).get();
       const secretOwnerId = secretSnap.exists ? String(secretSnap.data()?.userId || '').trim() : '';
       if (!secretOwnerId || secretOwnerId !== doctorId) {
         throw new HttpsError('permission-denied', 'secret does not match doctorId');
@@ -169,17 +189,11 @@ module.exports = (context) => {
           wa: { freeKey: 'freePublicBookingWhatsappMessage', premiumKey: 'premiumPublicBookingWhatsappMessage', proMaxKey: 'proMaxPublicBookingWhatsappMessage' },
           limit: { freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
         }
-        : feature === 'publicFormBooking'
-          ? {
-            msg: { freeKey: 'freePublicFormBookingLimitMessage', premiumKey: 'premiumPublicFormBookingLimitMessage', proMaxKey: 'proMaxPublicFormBookingLimitMessage' },
-            wa: { freeKey: 'freePublicFormBookingWhatsappMessage', premiumKey: 'premiumPublicFormBookingWhatsappMessage', proMaxKey: 'proMaxPublicFormBookingWhatsappMessage' },
-            limit: { freeKey: 'freePublicFormBookingDailyLimit', premiumKey: 'premiumPublicFormBookingDailyLimit', proMaxKey: 'proMaxPublicFormBookingDailyLimit' },
-          }
-          : {
-            msg: { freeKey: 'freeSecretaryEntryRequestLimitMessage', premiumKey: 'premiumSecretaryEntryRequestLimitMessage', proMaxKey: 'proMaxSecretaryEntryRequestLimitMessage' },
-            wa: { freeKey: 'freeSecretaryEntryRequestWhatsappMessage', premiumKey: 'premiumSecretaryEntryRequestWhatsappMessage', proMaxKey: 'proMaxSecretaryEntryRequestWhatsappMessage' },
-            limit: { freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
-          };
+        : {
+          msg: { freeKey: 'freeSecretaryEntryRequestLimitMessage', premiumKey: 'premiumSecretaryEntryRequestLimitMessage', proMaxKey: 'proMaxSecretaryEntryRequestLimitMessage' },
+          wa: { freeKey: 'freeSecretaryEntryRequestWhatsappMessage', premiumKey: 'premiumSecretaryEntryRequestWhatsappMessage', proMaxKey: 'proMaxSecretaryEntryRequestWhatsappMessage' },
+          limit: { freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
+        };
 
       const limitReachedMessage = pickTierValue(accountType, config, tierKeys.msg);
       const whatsappMessage = pickTierValue(accountType, config, tierKeys.wa);
@@ -188,9 +202,7 @@ module.exports = (context) => {
 
       const fieldName = feature === 'publicBooking'
         ? 'publicBookingCount'
-        : feature === 'publicFormBooking'
-          ? 'publicFormBookingCount'
-          : 'secretaryEntryRequestCount';
+        : 'secretaryEntryRequestCount';
       const usageDoc = await loadUnifiedUsageDoc({ db, userId: doctorId, usageDocId, tx });
       const used = Number(usageDoc.mergedUsageData?.[fieldName] || 0);
 

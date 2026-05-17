@@ -247,9 +247,7 @@ export const consumeBookingQuota = async (
 
     const fallbackLimit = feature === 'publicBooking'
       ? pickByTier(tier, normalizedControls.freePublicBookingDailyLimit, normalizedControls.premiumPublicBookingDailyLimit, normalizedControls.proMaxPublicBookingDailyLimit)
-      : feature === 'publicFormBooking'
-        ? pickByTier(tier, normalizedControls.freePublicFormBookingDailyLimit, normalizedControls.premiumPublicFormBookingDailyLimit, normalizedControls.proMaxPublicFormBookingDailyLimit)
-        : pickByTier(tier, normalizedControls.freeSecretaryEntryRequestDailyLimit, normalizedControls.premiumSecretaryEntryRequestDailyLimit, normalizedControls.proMaxSecretaryEntryRequestDailyLimit);
+      : pickByTier(tier, normalizedControls.freeSecretaryEntryRequestDailyLimit, normalizedControls.premiumSecretaryEntryRequestDailyLimit, normalizedControls.proMaxSecretaryEntryRequestDailyLimit);
 
     return {
       accountType: tier,

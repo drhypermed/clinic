@@ -41,8 +41,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   premiumMedicalReportDailyLimit: 80,
   freePublicBookingDailyLimit: 10,                // إضافة الموعد (صفحة المواعيد)
   premiumPublicBookingDailyLimit: 200,
-  freePublicFormBookingDailyLimit: 10,            // حجز موعد من فورم الجمهور
-  premiumPublicFormBookingDailyLimit: 200,
   freeSecretaryEntryRequestDailyLimit: 20,        // إرسال إلى الطبيب من السكرتارية
   premiumSecretaryEntryRequestDailyLimit: 300,
   freeReadyPrescriptionDailyLimit: 3,             // حفظ روشتة جاهزة (يومياً)
@@ -92,8 +90,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} تقرير) لميزة «طباعة تقرير طبي للحالة» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
   freePublicBookingLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} موعد) لميزة «إضافة الموعد» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
-  freePublicFormBookingLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} حجز) لميزة «حجز موعد من فورم الجمهور» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
   freeSecretaryEntryRequestLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} طلب) لميزة «إرسال إلى الطبيب من السكرتارية» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
   freeReadyPrescriptionDailyLimitMessage:
@@ -128,8 +124,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} تقرير) لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
   premiumPublicBookingLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} موعد) لميزة «إضافة الموعد» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
-  premiumPublicFormBookingLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} حجز) لميزة «حجز موعد من فورم الجمهور» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
   premiumSecretaryEntryRequestLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} طلب) لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
   premiumReadyPrescriptionDailyLimitMessage:
@@ -186,8 +180,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freePublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
-  freePublicFormBookingWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حجز موعد من فورم الجمهور» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freeSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freeReadyPrescriptionWhatsappMessage:
@@ -235,8 +227,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumPublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
-  premiumPublicFormBookingWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حجز موعد من فورم الجمهور» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumReadyPrescriptionWhatsappMessage:
@@ -274,7 +264,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   proMaxPregnancyToolDailyLimit: 200,
   proMaxMedicalReportDailyLimit: 80,
   proMaxPublicBookingDailyLimit: 200,
-  proMaxPublicFormBookingDailyLimit: 200,
   proMaxSecretaryEntryRequestDailyLimit: 300,
   proMaxReadyPrescriptionDailyLimit: 50,
   proMaxRenalToolDailyLimit: 200, // 🆕 اتنقلت لـ"حدود الميزات" 2026-04
@@ -311,8 +300,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} تقرير) لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxPublicBookingLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} موعد) لميزة «إضافة الموعد» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
-  proMaxPublicFormBookingLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} حجز) لميزة «حجز موعد من فورم الجمهور» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxSecretaryEntryRequestLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} طلب) لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxReadyPrescriptionDailyLimitMessage:
@@ -351,8 +338,6 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxPublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
-  proMaxPublicFormBookingWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حجز موعد من فورم الجمهور» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxReadyPrescriptionWhatsappMessage:

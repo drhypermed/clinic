@@ -28,6 +28,7 @@ import {
   isDoctorLikeUserData,
   isPublicLikeUserData,
 } from '../firestore/profileRoles';
+import { getAudienceLegalConsentSnapshot } from '../legalConsentService';
 
 const PUBLIC_BLACKLIST_COLLECTION = 'publicBlacklistedEmails';
 
@@ -140,20 +141,56 @@ export const ensurePublicUserFirestoreProfile = async (user: User): Promise<void
   const nowIso = new Date().toISOString();
   const email = normalizeEmail(user.email);
   const displayName = user.displayName?.trim() || 'مستخدم جمهور';
+  const publicLegalConsent = getAudienceLegalConsentSnapshot('public');
 
   // قراءة مباشرة من السيرفر — ضمن مسار تسجيل دخول الجمهور، نحتاج الحالة الحقيقية للوثيقة
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
+  const existingData = userSnap.exists() ? (userSnap.data() as Record<string, any>) : {};
+  const existingPublicLegalConsent =
+    existingData?.legalConsent && typeof existingData.legalConsent === 'object'
+      ? existingData.legalConsent.public
+      : null;
+  const hasCurrentLegalConsent =
+    existingPublicLegalConsent &&
+    existingPublicLegalConsent.termsVersion === publicLegalConsent.termsVersion &&
+    existingPublicLegalConsent.privacyVersion === publicLegalConsent.privacyVersion;
+  const lastLoginAt = typeof existingData?.lastLoginAt === 'string' ? existingData.lastLoginAt : '';
+  const shouldRefreshDailyLogin = !lastLoginAt || lastLoginAt.slice(0, 10) !== nowIso.slice(0, 10);
+  const needsIdentityUpdate =
+    existingData?.uid !== user.uid ||
+    existingData?.displayName !== displayName ||
+    existingData?.name !== displayName ||
+    normalizeEmail(existingData?.email) !== email ||
+    Boolean(existingData?.emailVerified) !== Boolean(user.emailVerified) ||
+    existingData?.authRole !== 'public' ||
+    existingData?.userRole !== 'public';
+
+  if (userSnap.exists() && !needsIdentityUpdate && !shouldRefreshDailyLogin && hasCurrentLegalConsent) {
+    return;
+  }
 
   const profilePayload: Record<string, any> = {
-    uid: user.uid,
-    displayName,
-    name: displayName,
-    email,
-    emailVerified: Boolean(user.emailVerified),
-    lastLoginAt: nowIso,
     updatedAt: nowIso,
   };
+
+  if (needsIdentityUpdate || !userSnap.exists()) {
+    profilePayload.uid = user.uid;
+    profilePayload.displayName = displayName;
+    profilePayload.name = displayName;
+    profilePayload.email = email;
+    profilePayload.emailVerified = Boolean(user.emailVerified);
+  }
+
+  if (shouldRefreshDailyLogin || !userSnap.exists()) {
+    profilePayload.lastLoginAt = nowIso;
+  }
+
+  if (!hasCurrentLegalConsent) {
+    profilePayload.legalConsent = {
+      public: publicLegalConsent,
+    };
+  }
 
   // إضافة تاريخ الإنشاء إذا كان المستخدم جديداً تماماً
   if (!userSnap.exists()) {

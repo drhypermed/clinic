@@ -61,6 +61,32 @@ service cloud.firestore {
         config.data.userId == request.auth.uid;
     }
 
+    function doctorUserDocActiveForPublicAccess(userDoc) {
+      let email = userDoc.data.doctorEmail is string
+        ? userDoc.data.doctorEmail.lower()
+        : (
+          userDoc.data.email is string
+            ? userDoc.data.email.lower()
+            : ''
+        );
+      return userDoc.data.isAccountDisabled != true &&
+        userDoc.data.verificationStatus != 'deleted' &&
+        (email == '' || !exists(/databases/$(database)/documents/blacklistedEmails/$(email)));
+    }
+
+    function doctorAccountActiveForPublicAccess(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+        doctorUserDocActiveForPublicAccess(get(/databases/$(database)/documents/users/$(userId)));
+    }
+
+    function publicBookingSecretDoctorIsActive(secret) {
+      return exists(/databases/$(database)/documents/publicBookingConfig/$(secret)) &&
+        get(/databases/$(database)/documents/publicBookingConfig/$(secret)).data.userId is string &&
+        doctorAccountActiveForPublicAccess(
+          get(/databases/$(database)/documents/publicBookingConfig/$(secret)).data.userId
+        );
+    }
+
     // التحقق من أن الـ branchId الخاص بالموعد تابع فعلاً لفروع الطبيب.
     // نقبل: غياب الحقل، سلسلة فارغة، 'main' (الفرع الافتراضي)، أو فرع موجود في /users/{userId}/branches/.
     function isValidBranchForUser(userId, data) {
@@ -318,7 +344,8 @@ service cloud.firestore {
             (
               request.resource.data.publicBookingSecret is string &&
               exists(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)) &&
-              get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == userId
+              get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == userId &&
+              doctorAccountActiveForPublicAccess(userId)
             )
           );
       }
@@ -683,11 +710,13 @@ service cloud.firestore {
       allow list: if false;
     }
     match /publicBookingConfig/{secret} {
-      allow get: if true;
+      allow get: if
+        resource.data.userId is string &&
+        doctorAccountActiveForPublicAccess(resource.data.userId);
       allow list: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.publicBookingSecret == secret;
       match /slots/{slotId} {
-        allow get, list: if true;
+        allow get, list: if publicBookingSecretDoctorIsActive(secret);
         allow create, update: if
           isPublicBookingOwner(secret) &&
           request.resource.data.keys().hasOnly(['dateTime', 'branchId']) &&
@@ -702,7 +731,7 @@ service cloud.firestore {
     }
 
     match /publicBookingLookup/{userId} {
-      allow get: if true;
+      allow get: if doctorAccountActiveForPublicAccess(userId);
       allow list: if false;
       allow create, update: if
         request.auth != null &&
@@ -727,14 +756,14 @@ service cloud.firestore {
       allow create: if
         request.resource.data.userId is string &&
         request.resource.data.slotId is string &&
-        request.resource.data.appointmentId is string;
+        request.resource.data.appointmentId is string &&
+        doctorAccountActiveForPublicAccess(request.resource.data.userId);
       allow update, delete: if false; // claims immutable
     }
 
-    // ─── publicBookingRateLimits: حد أقصى 5 حجوزات في 24 ساعه لنفس الهاتف ───
-    // doc بـid ثابت: doctorId_phoneDigits. فيه bucketStart + count.
-    // الـtransaction بيقرا الـcounter قبل ما يحجز، ولو تخطى 5 يرفض. ده يحمي من
-    // spam على عيادة واحده (مريض مزيّف يفضل يحجز).
+    // ─── publicBookingRateLimits: توافق فقط مع نسخ PWA قديمه ───
+    // الحجز العام الجديد لا يستخدم هذا الحد. نترك المسار مقيدًا بالحساب النشط
+    // حتى لا تفشل نسخ قديمه مخزنه مؤقتًا أثناء الانتقال.
     match /publicBookingRateLimits/{rateLimitKey} {
       allow get: if true;
       allow list: if false;
@@ -743,6 +772,7 @@ service cloud.firestore {
         request.resource.data.userId is string &&
         request.resource.data.bucketStart is number &&
         request.resource.data.count is number &&
+        doctorAccountActiveForPublicAccess(request.resource.data.userId) &&
         request.resource.data.count <= 100; // upper hard cap (safety)
       allow delete: if false;
     }

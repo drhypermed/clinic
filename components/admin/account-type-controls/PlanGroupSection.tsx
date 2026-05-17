@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import {
   FaSliders, FaWandMagicSparkles, FaFloppyDisk,
-  FaPrint, FaCalendarCheck, FaUserTie, FaFileLines,
+  FaPrint, FaCalendarCheck, FaUserTie,
   FaPills, FaBoxArchive, FaCrown, FaUser,
   FaPenToSquare, FaChevronDown,
 } from 'react-icons/fa6';
@@ -33,7 +33,6 @@ const GROUP_ICON: Record<string, React.ReactElement> = {
   medical_report_print: <FaPrint />,
   public_booking: <FaCalendarCheck />,
   secretary_request: <FaUserTie />,
-  public_form_booking: <FaFileLines />,
   ready_daily: <FaPills />,
   ready_capacity: <FaBoxArchive />,
   medication_customizations_capacity: <FaSliders />,

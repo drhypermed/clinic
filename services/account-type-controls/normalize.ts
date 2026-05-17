@@ -102,8 +102,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumRecordsMaxCount = toSafeLimit(raw?.premiumRecordsMaxCount, DEFAULT_CONTROLS.premiumRecordsMaxCount);
   const freePublicBookingDailyLimit = toSafeLimit(raw?.freePublicBookingDailyLimit, DEFAULT_CONTROLS.freePublicBookingDailyLimit);
   const premiumPublicBookingDailyLimit = toSafeLimit(raw?.premiumPublicBookingDailyLimit, DEFAULT_CONTROLS.premiumPublicBookingDailyLimit);
-  const freePublicFormBookingDailyLimit = toSafeLimit(raw?.freePublicFormBookingDailyLimit, DEFAULT_CONTROLS.freePublicFormBookingDailyLimit);
-  const premiumPublicFormBookingDailyLimit = toSafeLimit(raw?.premiumPublicFormBookingDailyLimit, DEFAULT_CONTROLS.premiumPublicFormBookingDailyLimit);
   const freeSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.freeSecretaryEntryRequestDailyLimit, DEFAULT_CONTROLS.freeSecretaryEntryRequestDailyLimit);
   const premiumSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.premiumSecretaryEntryRequestDailyLimit, DEFAULT_CONTROLS.premiumSecretaryEntryRequestDailyLimit);
   const freeReadyPrescriptionDailyLimit = toSafeLimit(raw?.freeReadyPrescriptionDailyLimit, DEFAULT_CONTROLS.freeReadyPrescriptionDailyLimit);
@@ -177,14 +175,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumPublicBookingLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.premiumPublicBookingLimitMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumPublicBookingLimitMessage
-  );
-  const freePublicFormBookingLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freePublicFormBookingLimitMessage, legacyMessage),
-    DEFAULT_CONTROLS.freePublicFormBookingLimitMessage
-  );
-  const premiumPublicFormBookingLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumPublicFormBookingLimitMessage, legacyMessage),
-    DEFAULT_CONTROLS.premiumPublicFormBookingLimitMessage
   );
   const freeSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeSecretaryEntryRequestLimitMessage, legacyMessage),
@@ -278,14 +268,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   const premiumPublicBookingWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.premiumPublicBookingWhatsappMessage, legacyMessage),
     DEFAULT_CONTROLS.premiumPublicBookingWhatsappMessage
-  );
-  const freePublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freePublicFormBookingWhatsappMessage, legacyMessage),
-    DEFAULT_CONTROLS.freePublicFormBookingWhatsappMessage
-  );
-  const premiumPublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumPublicFormBookingWhatsappMessage, legacyMessage),
-    DEFAULT_CONTROLS.premiumPublicFormBookingWhatsappMessage
   );
   const freeSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeSecretaryEntryRequestWhatsappMessage, legacyMessage),
@@ -442,7 +424,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
   );
   const proMaxRecordsMaxCount = toSafeLimit(raw?.proMaxRecordsMaxCount, proMaxDefaults.proMaxRecordsMaxCount);
   const proMaxPublicBookingDailyLimit = toSafeLimit(raw?.proMaxPublicBookingDailyLimit, proMaxDefaults.proMaxPublicBookingDailyLimit);
-  const proMaxPublicFormBookingDailyLimit = toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, proMaxDefaults.proMaxPublicFormBookingDailyLimit);
   const proMaxSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, proMaxDefaults.proMaxSecretaryEntryRequestDailyLimit);
   const proMaxReadyPrescriptionDailyLimit = toSafeLimit(raw?.proMaxReadyPrescriptionDailyLimit, proMaxDefaults.proMaxReadyPrescriptionDailyLimit);
   const proMaxMedicalReportDailyLimit = toSafeLimit(raw?.proMaxMedicalReportDailyLimit, proMaxDefaults.proMaxMedicalReportDailyLimit);
@@ -496,7 +477,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxDefaults.proMaxRecordsCapacityMessage,
   );
   const proMaxPublicBookingLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, proMaxDefaults.proMaxPublicBookingLimitMessage);
-  const proMaxPublicFormBookingLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingLimitMessage, proMaxDefaults.proMaxPublicFormBookingLimitMessage);
   const proMaxSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, proMaxDefaults.proMaxSecretaryEntryRequestLimitMessage);
   const proMaxReadyPrescriptionDailyLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, proMaxDefaults.proMaxReadyPrescriptionDailyLimitMessage);
   const proMaxMedicalReportLimitMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportLimitMessage, proMaxDefaults.proMaxMedicalReportLimitMessage);
@@ -510,7 +490,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxDefaults.proMaxRecordsCapacityWhatsappMessage,
   );
   const proMaxPublicBookingWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, proMaxDefaults.proMaxPublicBookingWhatsappMessage);
-  const proMaxPublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingWhatsappMessage, proMaxDefaults.proMaxPublicFormBookingWhatsappMessage);
   const proMaxSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, proMaxDefaults.proMaxSecretaryEntryRequestWhatsappMessage);
   const proMaxReadyPrescriptionWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionWhatsappMessage, proMaxDefaults.proMaxReadyPrescriptionWhatsappMessage);
   const proMaxMedicalReportWhatsappMessage = normalizeMessageAllowEmpty(raw?.proMaxMedicalReportWhatsappMessage, proMaxDefaults.proMaxMedicalReportWhatsappMessage);
@@ -539,8 +518,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumRecordsMaxCount,
     freePublicBookingDailyLimit,
     premiumPublicBookingDailyLimit,
-    freePublicFormBookingDailyLimit,
-    premiumPublicFormBookingDailyLimit,
     freeSecretaryEntryRequestDailyLimit,
     premiumSecretaryEntryRequestDailyLimit,
     freeReadyPrescriptionDailyLimit,
@@ -567,8 +544,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumRecordsCapacityMessage,
     freePublicBookingLimitMessage,
     premiumPublicBookingLimitMessage,
-    freePublicFormBookingLimitMessage,
-    premiumPublicFormBookingLimitMessage,
     freeSecretaryEntryRequestLimitMessage,
     premiumSecretaryEntryRequestLimitMessage,
     freeReadyPrescriptionDailyLimitMessage,
@@ -593,8 +568,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumRecordsCapacityWhatsappMessage,
     freePublicBookingWhatsappMessage,
     premiumPublicBookingWhatsappMessage,
-    freePublicFormBookingWhatsappMessage,
-    premiumPublicFormBookingWhatsappMessage,
     freeSecretaryEntryRequestWhatsappMessage,
     premiumSecretaryEntryRequestWhatsappMessage,
     freeReadyPrescriptionWhatsappMessage,
@@ -653,7 +626,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxQuickAddWhatsappMessage,
     proMaxRecordsMaxCount,
     proMaxPublicBookingDailyLimit,
-    proMaxPublicFormBookingDailyLimit,
     proMaxSecretaryEntryRequestDailyLimit,
     proMaxReadyPrescriptionDailyLimit,
     proMaxMedicalReportDailyLimit,
@@ -684,7 +656,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxAnalysisLimitMessage,
     proMaxRecordsCapacityMessage,
     proMaxPublicBookingLimitMessage,
-    proMaxPublicFormBookingLimitMessage,
     proMaxSecretaryEntryRequestLimitMessage,
     proMaxReadyPrescriptionDailyLimitMessage,
     proMaxMedicalReportLimitMessage,
@@ -695,7 +666,6 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     proMaxAnalysisWhatsappMessage,
     proMaxRecordsCapacityWhatsappMessage,
     proMaxPublicBookingWhatsappMessage,
-    proMaxPublicFormBookingWhatsappMessage,
     proMaxSecretaryEntryRequestWhatsappMessage,
     proMaxReadyPrescriptionWhatsappMessage,
     proMaxMedicalReportWhatsappMessage,

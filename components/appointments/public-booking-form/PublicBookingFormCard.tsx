@@ -2,12 +2,13 @@
  * الملف: PublicBookingFormCard.tsx
  * الوصف: "بطاقة الحجز" المركزية. 
  * تجمع هذه البطاقة المكونات الفرعية (اختيار الموعد + بيانات المريض) في إطار 
- * بصري واحد يتميز بـ: 
- * - تدرج لوني جذاب (Amber Gradient) في الترويسة. 
+ * بصري واحد يتميز بـ:
+ * - ترويسة هادئة وأزرار واضحة مناسبة لاستخدام الجمهور على الموبايل.
  * - توزيع منطقي للخطوات (نوع الحجز -> الموعد -> البيانات). 
  * - عرض رسائل الخطأ والتنبيهات (Alerts) بشكل مدمج داخل البطاقة.
  */
 import React from 'react';
+import { FaArrowRight } from 'react-icons/fa6';
 
 import type { PatientGender, PublicBookingSlot } from '../../../types';
 import type { AppointmentType } from '../add-appointment-form/types';
@@ -31,8 +32,6 @@ type PublicBookingFormCardProps = {
   phone: string;
   patientName: string;
   age: string;
-  dateOfBirth?: string;
-  onDateOfBirthChange?: (value: string) => void;
   gender: PatientGender | '';
   pregnant: boolean | null;
   breastfeeding: boolean | null;
@@ -43,7 +42,6 @@ type PublicBookingFormCardProps = {
   latestPhoneForName: PatientSuggestionOption | null;
   maxPhoneLength: number;
   maxNameLength: number;
-  maxAgeLength: number;
   maxReasonLength: number;
   onPhoneFocus: () => void;
   onPhoneBlur: () => void;
@@ -66,6 +64,7 @@ type PublicBookingFormCardProps = {
   // غير كده (المريض مسجل، أو الطبيب مش طالب جوجل) → زر submit عادي.
   isLoggedIn?: boolean;
   requireGoogleSignIn?: boolean;
+  onBack?: () => void;
   onLoginToBook?: (selectedSlotId: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 };
@@ -94,7 +93,6 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   latestPhoneForName,
   maxPhoneLength,
   maxNameLength,
-  maxAgeLength,
   maxReasonLength,
   onPhoneFocus,
   onPhoneBlur,
@@ -114,23 +112,42 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   submitting,
   isLoggedIn = true,
   requireGoogleSignIn = false,
+  onBack,
   onLoginToBook,
   onSubmit,
 }) => {
   // الـ Google button يظهر فقط لو الطبيب طالب جوجل والمريض غير مسجّل دخول
   const showGoogleButton = requireGoogleSignIn && !isLoggedIn;
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-warning-500 to-warning-600 px-4 py-3 text-center">
-        <h1 className="text-lg font-black text-white">{configTitle?.trim() || 'حجز موعد - فورم الجمهور'}</h1>
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 bg-white px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-black text-slate-700 transition-colors hover:bg-slate-100"
+              title="العودة للصفحة السابقة"
+            >
+              <FaArrowRight className="w-4 h-4" aria-hidden="true" />
+              عودة
+            </button>
+          ) : (
+            <span className="w-20 shrink-0" aria-hidden="true" />
+          )}
+          <h1 className="min-w-0 flex-1 text-center text-lg font-black text-slate-900">
+            {configTitle?.trim() || 'حجز موعد - فورم الجمهور'}
+          </h1>
+          <span className="w-20 shrink-0" aria-hidden="true" />
+        </div>
         {!configTitle?.trim() && (
-          <p className="text-white/90 text-sm mt-0.5">اختر ميعادًا من المواعيد المتاحة وأكمل البيانات</p>
+          <p className="mt-0.5 text-center text-sm font-bold text-slate-500">اختر ميعادًا من المواعيد المتاحة وأكمل البيانات</p>
         )}
       </div>
 
       {contactInfo?.trim() && (
-        <div className="px-4 py-3 bg-warning-50 border-b border-warning-100">
-          <p className="text-slate-700 font-bold text-sm whitespace-pre-wrap" dir="rtl">
+        <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="whitespace-pre-wrap text-sm font-bold text-slate-700" dir="rtl">
             {contactInfo.trim()}
           </p>
         </div>
@@ -143,8 +160,8 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
             <button
               type="button"
               onClick={onSelectExam}
-              className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${appointmentType === 'exam'
-                ? 'bg-warning-600 text-white border-warning-600'
+              className={`rounded-lg border px-3 py-2 text-sm font-black transition-all ${appointmentType === 'exam'
+                ? 'bg-brand-600 text-white border-brand-600'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
             >
@@ -153,8 +170,8 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
             <button
               type="button"
               onClick={onSelectConsultation}
-              className={`px-3 py-2 rounded-xl border text-sm font-black transition-all ${appointmentType === 'consultation'
-                ? 'bg-slate-600 text-white border-slate-600'
+              className={`rounded-lg border px-3 py-2 text-sm font-black transition-all ${appointmentType === 'consultation'
+                ? 'bg-brand-600 text-white border-brand-600'
                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
             >
@@ -187,7 +204,6 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
           latestPhoneForName={latestPhoneForName}
           maxPhoneLength={maxPhoneLength}
           maxNameLength={maxNameLength}
-          maxAgeLength={maxAgeLength}
           maxReasonLength={maxReasonLength}
           onPhoneFocus={onPhoneFocus}
           onPhoneBlur={onPhoneBlur}
@@ -212,11 +228,11 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
               type="button"
               disabled={submitting}
               onClick={() => onLoginToBook?.(selectedSlotId)}
-              className="w-full py-3 rounded-xl bg-white border-2 border-warning-500 text-warning-700 font-black shadow-md hover:bg-warning-50 transition-all disabled:opacity-60 flex items-center justify-center gap-3"
+              className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-brand-500 bg-white py-3 font-black text-brand-700 shadow-sm transition-all hover:bg-brand-50 disabled:opacity-60"
             >
               {submitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-warning-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
                   <span>جاري تسجيل الدخول والحجز...</span>
                 </>
               ) : (
@@ -234,7 +250,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-warning-500 to-warning-600 text-white font-black shadow-md hover:from-warning-600 hover:to-warning-700 transition-all disabled:opacity-60"
+              className="w-full rounded-lg bg-brand-600 py-3 font-black text-white shadow-sm transition-all hover:bg-brand-700 disabled:opacity-60"
             >
               {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
             </button>

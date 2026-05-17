@@ -106,8 +106,6 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     rows: [
       { label: 'إضافة الموعد (صفحة المواعيد)', unit: 'موعد/يوم',
         freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
-      { label: 'حجز موعد من فورم الجمهور', unit: 'حجز/يوم',
-        freeKey: 'freePublicFormBookingDailyLimit', premiumKey: 'premiumPublicFormBookingDailyLimit', proMaxKey: 'proMaxPublicFormBookingDailyLimit' },
       { label: 'إرسال إلى الطبيب من السكرتارية', unit: 'طلب/يوم',
         freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
     ],

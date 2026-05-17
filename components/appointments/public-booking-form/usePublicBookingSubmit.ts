@@ -30,6 +30,7 @@ type UsePublicBookingSubmitParams = {
   secret: string;
   // إعداد الطبيب لاشتراط جوجل — بديل isFromPublicSite القديم اللي كان مربوط بمصدر الرابط
   requireGoogleSignIn: boolean;
+  publicLegalConsentReady?: boolean;
   slots: PublicBookingSlot[];
   appointmentType: AppointmentType;
   selectedConsultationCandidateId: string;
@@ -52,6 +53,7 @@ export const usePublicBookingSubmit = ({
   userId,
   secret,
   requireGoogleSignIn,
+  publicLegalConsentReady = true,
   slots,
   appointmentType,
   selectedConsultationCandidateId,
@@ -80,6 +82,11 @@ export const usePublicBookingSubmit = ({
 
     if (!userId || !secret) {
       setFormError('رابط الحجز غير صالح');
+      return;
+    }
+
+    if (requireGoogleSignIn && !publicLegalConsentReady) {
+      setFormError('يلزم الموافقة على شروط وسياسة خصوصية الجمهور قبل المتابعة.');
       return;
     }
 
@@ -198,14 +205,18 @@ export const usePublicBookingSubmit = ({
         return;
       }
 
-      // rate limit: نفس الهاتف عدّى الحد المسموح في 24 ساعه
-      if (message.includes('rate-limit-exceeded')) {
-        setFormError('وصلت للحد الأقصى من الحجوزات اليوميه برقم التليفون ده (5 حجوزات). جرّب بكره أو اتواصل مع العيادة مباشرة.');
+      if (message.includes('public-slot-not-found')) {
+        setFormError('هذا الموعد لم يعد متاحًا. حدّث الصفحة واختر موعدًا آخر.');
+        return;
+      }
+
+      if (message.includes('public-slot-mismatch') || message.includes('public-slot-branch-mismatch')) {
+        setFormError('بيانات الموعد تغيرت. حدّث الصفحة واختر الموعد مرة أخرى.');
         return;
       }
 
       if (code === 'permission-denied') {
-        setFormError('تعذر إتمام الحجز بسبب صلاحيات الوصول. تأكد من الرابط أو حاول مرة أخرى.');
+        setFormError('رابط الحجز غير متاح حاليًا. قد يكون حساب الطبيب غير مفعل أو تم إيقاف الرابط.');
       } else {
         setFormError('فشل إتمام الحجز. يرجى المحاولة مرة أخرى.');
       }

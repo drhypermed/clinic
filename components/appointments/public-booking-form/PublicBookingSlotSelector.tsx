@@ -8,6 +8,7 @@
  * - معالجة حالات "عدم وجود مواعيد" برسالة تنبيه واضحة للمريض.
  */
 import React from 'react';
+import { FaCalendarCheck } from 'react-icons/fa6';
 import { LoadingText } from '../../ui/LoadingText';
 
 import type { PublicBookingSlot } from '../../../types';
@@ -33,13 +34,19 @@ export const PublicBookingSlotSelector: React.FC<PublicBookingSlotSelectorProps>
       {slotsLoading ? (
         <p className="text-slate-500 font-bold text-sm"><LoadingText>جاري تحميل المواعيد</LoadingText></p>
       ) : slots.length === 0 ? (
-        <p className="text-warning-600 font-bold text-sm">لا توجد مواعيد متاحة حاليًا. يرجى المحاولة لاحقًا.</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-600">
+          لا توجد مواعيد متاحة حاليًا. يرجى المحاولة لاحقًا.
+        </div>
       ) : (
-        <div className="space-y-2 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
+        <div className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-2">
           {slots.map((slot) => (
             <label
               key={slot.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-white border border-transparent hover:border-warning-200 cursor-pointer transition-all"
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
+                selectedSlotId === slot.id
+                  ? 'border-brand-500 bg-white shadow-sm'
+                  : 'border-transparent hover:border-brand-200 hover:bg-white'
+              }`}
             >
               <input
                 type="radio"
@@ -47,9 +54,10 @@ export const PublicBookingSlotSelector: React.FC<PublicBookingSlotSelectorProps>
                 value={slot.id}
                 checked={selectedSlotId === slot.id}
                 onChange={() => onSelectSlot(slot.id)}
-                className="w-4 h-4 text-warning-600"
+                className="h-4 w-4 text-brand-600"
               />
-              <span className="font-bold text-slate-700 text-sm">{formatSlotLabel(slot.dateTime)}</span>
+              <FaCalendarCheck className="h-4 w-4 shrink-0 text-brand-500" aria-hidden="true" />
+              <span className="text-sm font-bold text-slate-700">{formatSlotLabel(slot.dateTime)}</span>
             </label>
           ))}
         </div>

@@ -23,9 +23,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   freePublicBookingDailyLimit: 10,
   premiumPublicBookingDailyLimit: 200,
   proMaxPublicBookingDailyLimit: 200,
-  freePublicFormBookingDailyLimit: 10,
-  premiumPublicFormBookingDailyLimit: 200,
-  proMaxPublicFormBookingDailyLimit: 200,
   freeSecretaryEntryRequestDailyLimit: 20,
   premiumSecretaryEntryRequestDailyLimit: 300,
   proMaxSecretaryEntryRequestDailyLimit: 300,
@@ -46,10 +43,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   premiumMedicalReportDailyLimit: 80,
   proMaxMedicalReportDailyLimit: 80,
   // ✂️ شيلنا حد الترجمة (2026-05) — الترجمة بقت جزء من الزرّين
-  // 🆕 (2026-05) الزر السريع "إضافة بدون تحليل" — حد منفصل عن التحليل العميق
-  freeQuickAddDailyLimit: 5,
-  premiumQuickAddDailyLimit: 100,
-  proMaxQuickAddDailyLimit: 200,
   freeReadyPrescriptionsMaxCount: 5,
   premiumReadyPrescriptionsMaxCount: 100,
   proMaxReadyPrescriptionsMaxCount: 100,
@@ -88,9 +81,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   freePublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) للحساب المجاني. للتواصل واتساب',
   premiumPublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) لحساب برو. للتواصل واتساب',
   proMaxPublicBookingLimitMessage: 'تم استهلاك الحد اليومي لإضافة موعد عند الطبيب ({limit}) لحساب برو ماكس. للتواصل واتساب',
-  freePublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) للحساب المجاني. للتواصل واتساب',
-  premiumPublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) لحساب برو. للتواصل واتساب',
-  proMaxPublicFormBookingLimitMessage: 'تم استهلاك الحد اليومي للحجز من فورم الجمهور ({limit}) لحساب برو ماكس. للتواصل واتساب',
   freeSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) للحساب المجاني. للتواصل واتساب',
   premiumSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) لحساب برو. للتواصل واتساب',
   proMaxSecretaryEntryRequestLimitMessage: 'تم استهلاك الحد اليومي لارسال موعد للطبيب من خلال السكرتارية ({limit}) لحساب برو ماكس. للتواصل واتساب',
@@ -101,10 +91,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   premiumMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو. للتواصل واتساب',
   proMaxMedicalReportLimitMessage: 'تم استهلاك الحد اليومي لطباعة التقرير الطبي للحالة ({limit}) لحساب برو ماكس. للتواصل واتساب',
   // ✂️ شيلنا رسائل الترجمة (2026-05)
-  // 🆕 (2026-05) رسائل الزر السريع "إضافة بدون تحليل"
-  freeQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) للحساب المجاني. للتواصل واتساب',
-  premiumQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو. للتواصل واتساب',
-  proMaxQuickAddLimitMessage: 'تم استهلاك الحد اليومي للإضافة بدون تحليل ({limit} مرة) لحساب برو ماكس. للتواصل واتساب',
   // ─── أدوات الأدوية (التداخلات + الحمل + الكلى) — اتنقلوا لـ"حدود الميزات" ───
   freeInteractionToolLimitMessage: 'تم استهلاك الحد اليومي لفحص التداخلات الدوائية ({limit} مرة) للحساب المجاني. للتواصل واتساب',
   premiumInteractionToolLimitMessage: 'تم استهلاك الحد اليومي لفحص التداخلات الدوائية ({limit} مرة) لحساب برو. للتواصل واتساب',
@@ -154,9 +140,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   freePublicBookingWhatsappMessage: 'تجاوزت حد إضافة المواعيد اليومية وأرغب في الاشتراك.',
   premiumPublicBookingWhatsappMessage: 'استهلكت حد إضافة المواعيد اليومية وأرغب في ترقية الباقة.',
   proMaxPublicBookingWhatsappMessage: 'استهلكت حد إضافة المواعيد اليومية في باقة برو ماكس وأرغب في التواصل.',
-  freePublicFormBookingWhatsappMessage: 'تجاوزت حد الحجز اليومي من فورم الجمهور وأرغب في الاشتراك.',
-  premiumPublicFormBookingWhatsappMessage: 'استهلكت حد الحجز اليومي من فورم الجمهور وأرغب في ترقية الباقة.',
-  proMaxPublicFormBookingWhatsappMessage: 'استهلكت حد الحجز اليومي من فورم الجمهور في باقة برو ماكس وأرغب في التواصل.',
   freeSecretaryEntryRequestWhatsappMessage: 'تجاوزت حد ارسال الموعد للطبيب من خلال السكرتارية وأرغب في الاشتراك.',
   premiumSecretaryEntryRequestWhatsappMessage: 'استهلكت حد ارسال الموعد للطبيب من خلال السكرتارية وأرغب في ترقية الباقة.',
   proMaxSecretaryEntryRequestWhatsappMessage: 'استهلكت حد ارسال الموعد للطبيب من خلال السكرتارية في باقة برو ماكس وأرغب في التواصل.',
@@ -167,10 +150,6 @@ const DEFAULT_SMART_RX_CONFIG = {
   premiumMedicalReportWhatsappMessage: 'استهلكت الحد اليومي لطباعة التقرير الطبي للحالة وأرغب في ترقية الباقة.',
   proMaxMedicalReportWhatsappMessage: 'استهلكت الحد اليومي لطباعة التقرير الطبي للحالة في باقة برو ماكس وأرغب في التواصل.',
   // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
-  // 🆕 (2026-05) رسائل واتساب الزر السريع "إضافة بدون تحليل"
-  freeQuickAddWhatsappMessage: 'تجاوزت الحد اليومي للإضافة بدون تحليل وأرغب في الاشتراك.',
-  premiumQuickAddWhatsappMessage: 'استهلكت الحد اليومي للإضافة بدون تحليل وأرغب في ترقية الباقة.',
-  proMaxQuickAddWhatsappMessage: 'استهلكت الحد اليومي للإضافة بدون تحليل في باقة برو ماكس وأرغب في التواصل.',
   // ─── أدوات الأدوية (التداخلات + الحمل + الكلى) ───
   freeInteractionToolWhatsappMessage: 'تجاوزت الحد اليومي لفحص التداخلات الدوائية وأرغب في الاشتراك.',
   premiumInteractionToolWhatsappMessage: 'استهلكت الحد اليومي لفحص التداخلات الدوائية وأرغب في ترقية الباقة.',

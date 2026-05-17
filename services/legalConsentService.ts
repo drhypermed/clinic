@@ -91,7 +91,7 @@ export const getAudienceLegalConsentSnapshot = (audience: LegalAudience): LegalC
   };
 };
 
-const isAudienceLegalConsentComplete = (audience: LegalAudience): boolean => {
+export const isAudienceLegalConsentComplete = (audience: LegalAudience): boolean => {
   const policies = getLegalPoliciesForAudience(audience);
   return (
     hasAcceptedLegalDocumentVersion(audience, policies.terms) &&

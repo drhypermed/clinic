@@ -41,7 +41,7 @@ export const PublicBookingTopBar: React.FC<PublicBookingTopBarProps> = ({
           onClick={onBack}
           className="flex-1 h-10 px-4 rounded-xl border border-slate-300 bg-white text-slate-800 font-black text-sm hover:bg-slate-50"
         >
-          رجوع للصفحة الرئيسية
+          رجوع للصفحة السابقة
         </button>
         <div className="relative">
           <button

@@ -2,15 +2,13 @@
  * إنشاء المواعيد من الحجز العام (Create Appointment from Public)
  * هذا الملف هو الجسر الذي يربط بين حجز المريض من الرابط العام وبين جدول مواعيد الطبيب داخل العيادة.
  * الميزات:
- * 1. خصم من "كوتة" الحجوزات المتاحة للطبيب (Quota Management).
- * 2. استخدام التبادل الذري (Atomic Transaction) لضمان حجز الموعد وحذف الفترة الزمنية في لحظة واحدة ومنع الحجز المزدوج.
- * 3. إنشاء نسخة "مرآة" (Mirror) من الحجز في سجل المريض الشخصي لمتابعته لاحقاً.
+ * 1. استخدام التبادل الذري (Atomic Transaction) لضمان حجز الموعد ومنع الحجز المزدوج.
+ * 2. إنشاء نسخة "مرآة" (Mirror) من الحجز في سجل المريض الشخصي لمتابعته لاحقاً.
  */
 
 import { collection, doc, runTransaction } from 'firebase/firestore';
 import { ClinicAppointment } from '../../../types';
 import { normalizeText } from '../../../utils/textEncoding';
-import { consumeBookingQuota } from '../../accountTypeControlsService';
 import { db } from '../../firebaseConfig';
 import {
   normalizePublicSecret,
@@ -63,7 +61,7 @@ interface PublicBookingMeta {
 
 /** 
  * الوظيفة الرئيسية لتحويل الحجز العام إلى موعد عيادة رسمي.
- * تقوم بالتحقق من التوقيت، وخصم الكوتة، وتوثيق الموعد في قاعدة بيانات الطبيب.
+ * تقوم بالتحقق من التوقيت وتوثيق الموعد في قاعدة بيانات الطبيب.
  */
 export const createAppointmentFromPublic = async (
   userId: string,
@@ -88,10 +86,6 @@ export const createAppointmentFromPublic = async (
   if ((data.discountAmount ?? 0) > 0 && (data.discountPercent ?? 0) > 0) {
     throw new Error('discount-conflict');
   }
-
-  // Check quota before creating the appointment document. Appointment create triggers
-  // doctor push notifications, so a post-create rollback can leave a phantom alert.
-  await consumeBookingQuota('publicFormBooking', normalizedUserId, normalizedPublicSecret);
 
   const createdAt = new Date().toISOString();
   const patientName = normalizeText(data.patientName);
@@ -146,13 +140,13 @@ export const createAppointmentFromPublic = async (
   };
 
   // الـ Slot يبقى متاحاً لباقي الجمهور بعد الحجز — الإخفاء لمن حجز يتم client-side
-  // عبر فلترة مواعيد المستخدم. الـ Transaction قبل خصم الكوتة حتى لا نخسرها لو الـ Slot غير موجود.
+  // عبر فلترة مواعيد المستخدم.
   //
   // ─── حماية server-side ضد الحجز المكرر (نفس الـslot لنفس المريض) ───
   // قبل ده، الـguard كان client-side فقط (myBookedDateTimes filter). لو مريض شطر فتح
   // متصفحين أو مسح localStorage، كان يقدر يحجز نفس الـslot مرتين. دلوقتي بنحفظ
   // claim doc بـid ثابت بناءً على الـsecret+slot+المعرّف (Google UID أو الهاتف).
-  // لو الـclaim موجود = duplicate → نرفض الحجز قبل خصم الكوتة.
+  // لو الـclaim موجود = duplicate → نرفض الحجز قبل إنشاء الموعد.
   //
   // الـclaim doc محفوظ في collection publicBookingClaims/{claimKey} وفيه:
   // - userId (الطبيب)
@@ -164,16 +158,6 @@ export const createAppointmentFromPublic = async (
   const claimIdentifier = meta?.publicUserId || phoneDigits || 'anonymous';
   const claimKey = `${normalizedPublicSecret}_${normalizedSlotId}_${claimIdentifier}`;
   const claimRef = doc(db, 'publicBookingClaims', claimKey);
-
-  // ─── rate limit: نفس الهاتف عند نفس الطبيب — حد أقصى 5 حجوزات في 24 ساعه ───
-  // doc بـid ثابت لكل phone+doctor، فيه bucketStart + count.
-  // bucket = أول لحظة في الـ24 ساعه الجارية (UTC). لو الـbucket انتهى، reset.
-  // الـlimit الحالي: 5 — مرن لأطباء عيلات (الأب يحجز لأولاده مثلاً).
-  const RATE_LIMIT_PER_24H = 5;
-  const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
-  const rateLimitKey = `${normalizedUserId}_${phoneDigits || 'anonymous'}`;
-  const rateLimitRef = doc(db, 'publicBookingRateLimits', rateLimitKey);
-  const nowMs = Date.now();
 
   await runTransaction(db, async (transaction) => {
     const slotSnap = await transaction.get(slotRef);
@@ -198,25 +182,6 @@ export const createAppointmentFromPublic = async (
       throw new Error('slot-already-booked-by-user');
     }
 
-    // فحص rate limit — لو الـbucket لسه نشط وعدد الحجوزات تجاوز الحد، رفض
-    let bucketCount = 0;
-    let bucketStart = nowMs;
-    if (phoneDigits) {
-      const rateLimitSnap = await transaction.get(rateLimitRef);
-      if (rateLimitSnap.exists()) {
-        const rateLimitData = rateLimitSnap.data() as Record<string, unknown>;
-        const storedBucketStart = Number(rateLimitData.bucketStart) || 0;
-        const storedCount = Number(rateLimitData.count) || 0;
-        if (nowMs - storedBucketStart < RATE_LIMIT_WINDOW_MS) {
-          if (storedCount >= RATE_LIMIT_PER_24H) {
-            throw new Error('rate-limit-exceeded');
-          }
-          bucketStart = storedBucketStart;
-          bucketCount = storedCount;
-        }
-      }
-    }
-
     // claim الـslot للمريض ده — مفتاح ثابت يمنع أي محاوله تانيه لنفس التوليفه
     transaction.set(claimRef, {
       userId: normalizedUserId,
@@ -226,17 +191,6 @@ export const createAppointmentFromPublic = async (
       appointmentId: appointmentDocRef.id,
       createdAt,
     });
-
-    // تحديث rate limit — increment أو reset البكت
-    if (phoneDigits) {
-      transaction.set(rateLimitRef, {
-        userId: normalizedUserId,
-        phone: phoneDigits,
-        bucketStart,
-        count: bucketCount + 1,
-        lastBookingAt: createdAt,
-      });
-    }
 
     transaction.set(
       appointmentDocRef,

@@ -64,8 +64,6 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumInsuranceCompaniesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumInsuranceCompaniesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumInsuranceCompaniesCapacityWhatsappMessage);
   const freePublicBookingDailyLimit = toSafeLimit(raw?.freePublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.freePublicBookingDailyLimit);
   const premiumPublicBookingDailyLimit = toSafeLimit(raw?.premiumPublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPublicBookingDailyLimit);
-  const freePublicFormBookingDailyLimit = toSafeLimit(raw?.freePublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.freePublicFormBookingDailyLimit);
-  const premiumPublicFormBookingDailyLimit = toSafeLimit(raw?.premiumPublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPublicFormBookingDailyLimit);
   const freeSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.freeSecretaryEntryRequestDailyLimit, DEFAULT_SMART_RX_CONFIG.freeSecretaryEntryRequestDailyLimit);
   const premiumSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.premiumSecretaryEntryRequestDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumSecretaryEntryRequestDailyLimit);
   const freeReadyPrescriptionDailyLimit = toSafeLimit(raw?.freeReadyPrescriptionDailyLimit, DEFAULT_SMART_RX_CONFIG.freeReadyPrescriptionDailyLimit);
@@ -164,14 +162,6 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumPublicBookingLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.premiumPublicBookingLimitMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumPublicBookingLimitMessage
-  );
-  const freePublicFormBookingLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freePublicFormBookingLimitMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.freePublicFormBookingLimitMessage
-  );
-  const premiumPublicFormBookingLimitMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumPublicFormBookingLimitMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.premiumPublicFormBookingLimitMessage
   );
   const freeSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeSecretaryEntryRequestLimitMessage, legacyMessage),
@@ -273,14 +263,6 @@ const normalizeSmartRxConfig = (raw) => {
     firstDefined(raw?.premiumPublicBookingWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.premiumPublicBookingWhatsappMessage
   );
-  const freePublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.freePublicFormBookingWhatsappMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.freePublicFormBookingWhatsappMessage
-  );
-  const premiumPublicFormBookingWhatsappMessage = normalizeMessageAllowEmpty(
-    firstDefined(raw?.premiumPublicFormBookingWhatsappMessage, legacyMessage),
-    DEFAULT_SMART_RX_CONFIG.premiumPublicFormBookingWhatsappMessage
-  );
   const freeSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freeSecretaryEntryRequestWhatsappMessage, legacyMessage),
     DEFAULT_SMART_RX_CONFIG.freeSecretaryEntryRequestWhatsappMessage
@@ -360,8 +342,6 @@ const normalizeSmartRxConfig = (raw) => {
     premiumInsuranceCompaniesCapacityWhatsappMessage,
     freePublicBookingDailyLimit,
     premiumPublicBookingDailyLimit,
-    freePublicFormBookingDailyLimit,
-    premiumPublicFormBookingDailyLimit,
     freeSecretaryEntryRequestDailyLimit,
     premiumSecretaryEntryRequestDailyLimit,
     freeReadyPrescriptionDailyLimit,
@@ -411,8 +391,6 @@ const normalizeSmartRxConfig = (raw) => {
     premiumPrescriptionWhatsappWhatsappMessage,
     freePublicBookingLimitMessage,
     premiumPublicBookingLimitMessage,
-    freePublicFormBookingLimitMessage,
-    premiumPublicFormBookingLimitMessage,
     freeSecretaryEntryRequestLimitMessage,
     premiumSecretaryEntryRequestLimitMessage,
     freeReadyPrescriptionDailyLimitMessage,
@@ -438,8 +416,6 @@ const normalizeSmartRxConfig = (raw) => {
     premiumRenalToolWhatsappMessage,
     freePublicBookingWhatsappMessage,
     premiumPublicBookingWhatsappMessage,
-    freePublicFormBookingWhatsappMessage,
-    premiumPublicFormBookingWhatsappMessage,
     freeSecretaryEntryRequestWhatsappMessage,
     premiumSecretaryEntryRequestWhatsappMessage,
     freeReadyPrescriptionWhatsappMessage,
@@ -470,7 +446,6 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxInsuranceCompaniesCapacityMessage: normalizeMessageAllowEmpty(raw?.proMaxInsuranceCompaniesCapacityMessage, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesCapacityMessage),
     proMaxInsuranceCompaniesCapacityWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxInsuranceCompaniesCapacityWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxInsuranceCompaniesCapacityWhatsappMessage),
     proMaxPublicBookingDailyLimit: toSafeLimit(raw?.proMaxPublicBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingDailyLimit),
-    proMaxPublicFormBookingDailyLimit: toSafeLimit(raw?.proMaxPublicFormBookingDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingDailyLimit),
     proMaxSecretaryEntryRequestDailyLimit: toSafeLimit(raw?.proMaxSecretaryEntryRequestDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestDailyLimit),
     proMaxReadyPrescriptionDailyLimit: toSafeLimit(raw?.proMaxReadyPrescriptionDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionDailyLimit),
     proMaxMedicalReportDailyLimit: toSafeLimit(raw?.proMaxMedicalReportDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportDailyLimit),
@@ -509,7 +484,6 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxPrescriptionWhatsappLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappLimitMessage),
     proMaxPrescriptionWhatsappWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappWhatsappMessage),
     proMaxPublicBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingLimitMessage),
-    proMaxPublicFormBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingLimitMessage),
     proMaxSecretaryEntryRequestLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestLimitMessage),
     proMaxReadyPrescriptionDailyLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionDailyLimitMessage),
     proMaxMedicalReportLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicalReportLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportLimitMessage),
@@ -535,7 +509,6 @@ const normalizeSmartRxConfig = (raw) => {
       DEFAULT_SMART_RX_CONFIG.proMaxRenalToolWhatsappMessage,
     ),
     proMaxPublicBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingWhatsappMessage),
-    proMaxPublicFormBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicFormBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicFormBookingWhatsappMessage),
     proMaxSecretaryEntryRequestWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestWhatsappMessage),
     proMaxReadyPrescriptionWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionWhatsappMessage),
     proMaxMedicalReportWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxMedicalReportWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxMedicalReportWhatsappMessage),

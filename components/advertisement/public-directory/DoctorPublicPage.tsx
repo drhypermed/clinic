@@ -16,7 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   HiOutlineMapPin,
   HiOutlineStar,
@@ -108,6 +108,7 @@ const formatPrice = (value: number | null | undefined): string | null => {
 export const DoctorPublicPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const routeLocation = useLocation();
   const [doctor, setDoctor] = useState<DoctorAdProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -188,22 +189,23 @@ export const DoctorPublicPage: React.FC = () => {
     // أو يدخل الفورم مباشره لو فرع واحد. اشتراط جوجل بيتحكّم فيه إعداد الطبيب نفسه.
     const branchId = activeBranch?.id || '';
     const branchParam = branchId ? `?branch=${encodeURIComponent(branchId)}` : '';
+    const navigationState = { from: `${routeLocation.pathname}${routeLocation.search}` };
     try {
       const lookup = await firestoreService.getPublicBookingLookupByUserId(doctor.doctorId);
       const publicSlug = String(lookup?.publicUrlSlug || '').trim();
       if (publicSlug) {
-        navigate(`/p/${encodeURIComponent(publicSlug)}${branchParam}`);
+        navigate(`/p/${encodeURIComponent(publicSlug)}${branchParam}`, { state: navigationState });
         return;
       }
       const publicSecret = String(lookup?.publicBookingSecret || '').trim();
       if (publicSecret) {
-        navigate(`/book-public/s/${encodeURIComponent(publicSecret)}${branchParam}`);
+        navigate(`/book-public/s/${encodeURIComponent(publicSecret)}${branchParam}`, { state: navigationState });
         return;
       }
     } catch (err) {
       console.warn('[DoctorPublicPage] failed to resolve canonical booking link:', err);
     }
-    navigate(`/p/${encodeURIComponent(doctor.doctorId)}${branchParam}`);
+    navigate(`/p/${encodeURIComponent(doctor.doctorId)}${branchParam}`, { state: navigationState });
   };
 
   return (

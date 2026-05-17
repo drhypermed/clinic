@@ -15,7 +15,7 @@ import { LoadingText } from '../../ui/LoadingText';
 
 export const PublicBookingLoadingView: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warning-50 to-warning-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4" dir="rtl">
       <div className="text-slate-600 font-bold"><LoadingText>جاري التحميل</LoadingText></div>
     </div>
   );
@@ -23,8 +23,8 @@ export const PublicBookingLoadingView: React.FC = () => {
 
 export const PublicBookingInvalidLinkView: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warning-50 to-warning-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 max-w-md w-full text-center">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4" dir="rtl">
+      <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
         <p className="text-slate-700 font-bold">رابط غير صالح أو منتهي الصلاحية.</p>
       </div>
     </div>

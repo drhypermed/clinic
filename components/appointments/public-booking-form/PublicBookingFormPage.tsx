@@ -27,6 +27,7 @@ import { PublicBookingInvalidLinkView, PublicBookingLoadingView } from './Public
 import { useAuth } from '../../../hooks/useAuth';
 import { BranchSelectorScreen } from './BranchSelectorScreen';
 import { PublicBookingFormCard } from './PublicBookingFormCard';
+import { LegalConsentGate } from '../../auth/legal/LegalConsentGate';
 import { usePublicBookingBootstrap } from './usePublicBookingBootstrap';
 import { usePublicBookingSuggestions } from './usePublicBookingSuggestions';
 import { usePublicBookingShare } from './usePublicBookingShare';
@@ -42,6 +43,7 @@ import {
   MAX_PUBLIC_REASON_LENGTH,
 } from './constants';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
+import { isAudienceLegalConsentComplete } from '../../../services/legalConsentService';
 // حفظ بيانات الحجز قبل Google signin — عشان لو الـpopup فشل ووحينا redirect،
 // نسترجع البيانات بعد رجوع المريض ونكمّل الحجز تلقائياً بدل ما يضيع كل شيء.
 import {
@@ -57,6 +59,9 @@ export const PublicBookingFormPage: React.FC = () => {
   const location = useLocation();
   const { slug: slugParam = '', secret: secretParam = '', userId: userIdRouteParam = '' } = useParams<{ slug: string; secret: string; userId: string }>();
   const { user, loading: authLoading, signInGoogle } = useAuth();
+  const [isPublicLegalReady, setIsPublicLegalReady] = useState<boolean>(() =>
+    isAudienceLegalConsentComplete('public'),
+  );
   // الفرع المرسل من الديركتوري أو من رابط فرع مخصّص — لو المريض اختار فرع،
   // بنحدّده هنا مسبّقاً عشان مايشوفش شاشه اختيار تانيه جوّه الفورم.
   const preselectedBranchId = new URLSearchParams(location.search).get('branch') || '';
@@ -205,6 +210,19 @@ export const PublicBookingFormPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
 
+  const handleBackToPreviousPage = React.useCallback(() => {
+    const stateFrom = (location.state as { from?: unknown } | null)?.from;
+    if (typeof stateFrom === 'string' && stateFrom.startsWith('/') && !stateFrom.startsWith('//')) {
+      navigate(stateFrom);
+      return;
+    }
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate('/');
+  }, [location.state, navigate]);
+
   const {
     normalize,
     normalizePhone,
@@ -231,12 +249,14 @@ export const PublicBookingFormPage: React.FC = () => {
     formError,
     bookingQuotaNotice,
     submitting,
+    setFormError,
     handleSubmit,
   } = usePublicBookingSubmit({
     userId,
     secret,
     // اشتراط جوجل يجي من إعداد الطبيب نفسه في publicBookingConfig
     requireGoogleSignIn: Boolean(config?.requireGoogleSignIn),
+    publicLegalConsentReady: isPublicLegalReady,
     slots: filteredSlots,
     appointmentType,
     selectedConsultationCandidateId,
@@ -362,6 +382,7 @@ export const PublicBookingFormPage: React.FC = () => {
         slots={slots}
         doctorName={doctorSummary.doctorName}
         clinicTitle={config?.title}
+        onBack={handleBackToPreviousPage}
         onSelect={setSelectedBranchId}
       />
     );
@@ -382,7 +403,7 @@ export const PublicBookingFormPage: React.FC = () => {
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4" dir="rtl">
         <div className="w-full max-w-2xl space-y-4">
           <BookingSuccessCard
             clinicName={config?.title}
@@ -411,7 +432,7 @@ export const PublicBookingFormPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-50 py-8 px-4" dir="rtl">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8" dir="rtl">
       <div className="max-w-xl mx-auto">
         <AppUpdateBroadcastBanner
           audience="public"
@@ -423,10 +444,19 @@ export const PublicBookingFormPage: React.FC = () => {
           showShareMenu={showShareMenu}
           linkCopied={linkCopied}
           doctorName={doctorSummary.doctorName || config?.title || 'حجز موعد'}
-          onBack={() => navigate('/')}
+          onBack={handleBackToPreviousPage}
           onToggleShareMenu={() => setShowShareMenu(!showShareMenu)}
           onShare={shareToSocialMedia}
         />
+
+        {Boolean(config?.requireGoogleSignIn) && !isPublicLegalReady && (
+          <div className="mb-4">
+            <LegalConsentGate
+              audience="public"
+              onValidityChange={setIsPublicLegalReady}
+            />
+          </div>
+        )}
 
         <PublicBookingFormCard
           configTitle={config?.title}
@@ -458,7 +488,6 @@ export const PublicBookingFormPage: React.FC = () => {
           latestPhoneForName={latestPhoneForName}
           maxPhoneLength={MAX_PUBLIC_PHONE_LENGTH}
           maxNameLength={MAX_PUBLIC_NAME_LENGTH}
-          maxAgeLength={MAX_PUBLIC_AGE_LENGTH}
           maxReasonLength={MAX_PUBLIC_REASON_LENGTH}
           onPhoneFocus={() => setActiveSuggestionField('phone')}
           onPhoneBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
@@ -484,7 +513,13 @@ export const PublicBookingFormPage: React.FC = () => {
           submitting={submitting}
           isLoggedIn={Boolean(user)}
           requireGoogleSignIn={Boolean(config?.requireGoogleSignIn)}
+          onBack={handleBackToPreviousPage}
           onLoginToBook={async (slotId) => {
+            if (!isPublicLegalReady) {
+              setFormError('يلزم الموافقة على شروط وسياسة خصوصية الجمهور قبل المتابعة.');
+              return;
+            }
+
             // احفظ الـ slotId وارفع علم الانتظار قبل فتح Google login
             pendingSlotIdRef.current = slotId;
             setPendingSubmit(true);
@@ -511,11 +546,12 @@ export const PublicBookingFormPage: React.FC = () => {
             );
             try {
               await signInGoogle('public');
-            } catch {
+            } catch (error: any) {
               // المريض أغلق الـpopup أو رفض — نعيد الزر لحالته الطبيعية ونمسح الـsnapshot
               setPendingSubmit(false);
               pendingSlotIdRef.current = '';
               clearPendingBooking();
+              setFormError(error?.message || 'تعذر تسجيل الدخول بـ Google. يرجى المحاولة مرة أخرى.');
             }
           }}
           onSubmit={(e) => handleSubmit(e, selectedSlotId)}

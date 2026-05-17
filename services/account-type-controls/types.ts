@@ -21,9 +21,6 @@ export interface AccountTypeControls {
   // حدود المواعيد المضافة يدوياً
   freePublicBookingDailyLimit: number;
   premiumPublicBookingDailyLimit: number;
-  // حدود الحجز عبر فورم الجمهور
-  freePublicFormBookingDailyLimit: number;
-  premiumPublicFormBookingDailyLimit: number;
   // حدود طلبات السكرتارية
   freeSecretaryEntryRequestDailyLimit: number;
   premiumSecretaryEntryRequestDailyLimit: number;
@@ -64,8 +61,6 @@ export interface AccountTypeControls {
   premiumRecordsCapacityMessage: string;
   freePublicBookingLimitMessage: string;
   premiumPublicBookingLimitMessage: string;
-  freePublicFormBookingLimitMessage: string;
-  premiumPublicFormBookingLimitMessage: string;
   freeSecretaryEntryRequestLimitMessage: string;
   premiumSecretaryEntryRequestLimitMessage: string;
   freeReadyPrescriptionDailyLimitMessage: string;
@@ -101,8 +96,6 @@ export interface AccountTypeControls {
   premiumRecordsCapacityWhatsappMessage: string;
   freePublicBookingWhatsappMessage: string;
   premiumPublicBookingWhatsappMessage: string;
-  freePublicFormBookingWhatsappMessage: string;
-  premiumPublicFormBookingWhatsappMessage: string;
   freeSecretaryEntryRequestWhatsappMessage: string;
   premiumSecretaryEntryRequestWhatsappMessage: string;
   freeReadyPrescriptionWhatsappMessage: string;
@@ -168,7 +161,6 @@ export interface AccountTypeControls {
   proMaxQuickAddWhatsappMessage?: string;
   proMaxRecordsMaxCount?: number;
   proMaxPublicBookingDailyLimit?: number;
-  proMaxPublicFormBookingDailyLimit?: number;
   proMaxSecretaryEntryRequestDailyLimit?: number;
   proMaxReadyPrescriptionDailyLimit?: number;
   proMaxMedicalReportDailyLimit?: number;
@@ -200,7 +192,6 @@ export interface AccountTypeControls {
   proMaxAnalysisLimitMessage?: string;
   proMaxRecordsCapacityMessage?: string;
   proMaxPublicBookingLimitMessage?: string;
-  proMaxPublicFormBookingLimitMessage?: string;
   proMaxSecretaryEntryRequestLimitMessage?: string;
   proMaxReadyPrescriptionDailyLimitMessage?: string;
   proMaxMedicalReportLimitMessage?: string;
@@ -211,7 +202,6 @@ export interface AccountTypeControls {
   proMaxAnalysisWhatsappMessage?: string;
   proMaxRecordsCapacityWhatsappMessage?: string;
   proMaxPublicBookingWhatsappMessage?: string;
-  proMaxPublicFormBookingWhatsappMessage?: string;
   proMaxSecretaryEntryRequestWhatsappMessage?: string;
   proMaxReadyPrescriptionWhatsappMessage?: string;
   proMaxMedicalReportWhatsappMessage?: string;
@@ -286,7 +276,7 @@ export interface StorageQuotaResult {
   whatsappMessage: string;
 }
 
-export type BookingQuotaFeature = 'publicBooking' | 'publicFormBooking' | 'secretaryEntryRequest';
+export type BookingQuotaFeature = 'publicBooking' | 'secretaryEntryRequest';
 
 /** نتيجة فحص الكوتة لعمليات الحجز والمواعيد */
 export interface BookingQuotaResult {

@@ -48,6 +48,13 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
     setAcceptedPrivacy(checked);
   };
 
+  const handleAcceptAll = () => {
+    persistLegalDocumentConsent(audience, policies.terms, true);
+    persistLegalDocumentConsent(audience, policies.privacy, true);
+    setAcceptedTerms(true);
+    setAcceptedPrivacy(true);
+  };
+
   return (
     <>
       <div
@@ -122,6 +129,16 @@ export const LegalConsentGate: React.FC<LegalConsentGateProps> = ({ audience, on
               : 'يلزم الموافقة على الشروط وسياسة الخصوصية قبل المتابعة.'}
           </span>
         </div>
+
+        {!isValid && (
+          <button
+            type="button"
+            onClick={handleAcceptAll}
+            className={`w-full rounded-xl px-4 py-2.5 text-sm font-black text-white bg-gradient-to-b transition-all active:scale-[0.98] ${readBtn}`}
+          >
+            أوافق على الشروط وسياسة الخصوصية وأتابع
+          </button>
+        )}
       </div>
 
       <LegalDocumentModal
