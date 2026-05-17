@@ -97,6 +97,7 @@ module.exports = (context) => {
     }
     const authUid = String(request?.auth?.uid || '').trim();
     const isPublicUnauthFeature = feature === 'publicFormBooking' || feature === 'secretaryEntryRequest';
+    const shouldValidatePublicSecret = isPublicUnauthFeature && authUid !== doctorId;
 
     // Hardening: unauthenticated calls are allowed only for explicitly public flows
     // and must prove ownership by passing a valid secret linked to the same doctorId.
@@ -108,9 +109,14 @@ module.exports = (context) => {
         throw new HttpsError('invalid-argument', 'secret is required for unauthenticated booking quota');
       }
     }
+    if (shouldValidatePublicSecret && !secret) {
+      throw new HttpsError('invalid-argument', 'secret is required for public booking quota');
+    }
 
-    // If authenticated, check if it's the same doctor or an admin
-    if (authUid && authUid !== doctorId) {
+    // If authenticated, check if it's the same doctor or an admin. Public booking
+    // flows are allowed for patient/secretary auth too, but only after the secret
+    // is verified against the target doctor below.
+    if (authUid && authUid !== doctorId && !isPublicUnauthFeature) {
       try {
         await assertAdminRequest(request);
       } catch {
@@ -119,7 +125,7 @@ module.exports = (context) => {
     }
 
     const db = getDb();
-    if (!authUid && isPublicUnauthFeature) {
+    if (shouldValidatePublicSecret) {
       const configCollection = feature === 'publicFormBooking' ? 'publicBookingConfig' : 'bookingConfig';
       const secretSnap = await db.collection(configCollection).doc(secret).get();
       const secretOwnerId = secretSnap.exists ? String(secretSnap.data()?.userId || '').trim() : '';

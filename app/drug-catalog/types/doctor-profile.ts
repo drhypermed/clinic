@@ -159,6 +159,7 @@ export interface PublicUserBooking {
   patientName: string;
   phone: string;
   visitReason?: string;
+  branchId?: string;
   appointmentType?: 'exam' | 'consultation';
 
   // ربط بالاستشارة بعد كشف سابق (لو Applicable)

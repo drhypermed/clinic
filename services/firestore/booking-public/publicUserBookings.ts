@@ -40,6 +40,7 @@ export const savePublicUserBooking = async (
     patientName: normalizeText(booking.patientName),
     phone: normalizeText(booking.phone),
     visitReason: booking.visitReason ? normalizeText(booking.visitReason) : undefined,
+    branchId: booking.branchId ? normalizeText(booking.branchId) : undefined,
     reviewComment: booking.reviewComment ? normalizeText(booking.reviewComment) : undefined,
     completedAt: booking.completedAt,
     rating: booking.rating,

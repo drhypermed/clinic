@@ -11,7 +11,7 @@
  * التصميم يعتمد على سايد بار ثابت على الديسكتوب وقائمة هامبرغر على الموبايل
  * مع أربع واجهات فرعية: الملف الشخصي، مواعيد اليوم، حجز موعد جديد، فورم الجمهور.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotificationPermissionPrompt } from '../../common/NotificationPermissionPrompt';
 import { AppUpdateBroadcastBanner } from '../../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../../common/InAppAudienceNotificationPopup';
@@ -44,6 +44,36 @@ export const PublicBookingPage: React.FC = () => {
   useHideBootSplash('public-booking-mounted');
   const [currentView, setCurrentView] = useState<SecretaryBookingView>('newBooking');
   const [showProfile, setShowProfile] = useState(false);
+
+  // منع تمرير الصفحة الخلفية عند فتح الملف الشخصي
+  useEffect(() => {
+    if (!showProfile) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const previousPaddingInlineEnd = document.body.style.paddingInlineEnd;
+
+    // تعويض عرض شريط التمرير حتى لا ينقفز المحتوى
+    const scrollbarCompensation = Math.max(
+      0,
+      window.innerWidth - document.documentElement.clientWidth,
+    );
+
+    document.body.style.overflow = 'hidden';
+    if (scrollbarCompensation > 0) {
+      const computedPaddingRight =
+        Number.parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+      const compensatedPadding = `${computedPaddingRight + scrollbarCompensation}px`;
+      document.body.style.paddingRight = compensatedPadding;
+      document.body.style.paddingInlineEnd = compensatedPadding;
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+      document.body.style.paddingInlineEnd = previousPaddingInlineEnd;
+    };
+  }, [showProfile]);
 
   const {
     configLoading,
@@ -302,8 +332,8 @@ export const PublicBookingPage: React.FC = () => {
 
         {/* ====== Profile Overlay ====== */}
         {showProfile && (
-          <div className="fixed inset-0 z-[1100] flex items-start justify-center bg-black/50 pt-10 px-4" onClick={() => setShowProfile(false)}>
-            <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 px-4 overflow-y-auto" onClick={() => setShowProfile(false)}>
+            <div className="w-full max-w-md my-auto" onClick={(e) => e.stopPropagation()}>
               <PublicBookingProfileView
                 secretaryAvatarText={secretaryAvatarText}
                 secretaryNameInput={secretaryNameInput}

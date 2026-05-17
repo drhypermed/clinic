@@ -81,6 +81,7 @@ export const normalizePublicUserBooking = (
   patientName: normalizeText(data.patientName),
   phone: normalizeText(data.phone),
   visitReason: toOptionalText(data.visitReason),
+  branchId: typeof data.branchId === 'string' ? data.branchId.trim() || undefined : undefined,
   appointmentType:
     data.appointmentType === 'consultation'
       ? 'consultation'

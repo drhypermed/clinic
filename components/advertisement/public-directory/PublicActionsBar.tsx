@@ -59,13 +59,6 @@ export const PublicActionsBar: React.FC<PublicActionsBarProps> = ({
       icon: <FaCalendarCheck className="w-5 h-5" />,
     },
     {
-      id: 'account',
-      label: 'حسابي',
-      isActive: false,
-      onClick: onOpenAccount,
-      icon: <FaCircleUser className="w-5 h-5" />,
-    },
-    {
       id: 'join',
       label: 'انضمام كطبيب',
       isActive: false,

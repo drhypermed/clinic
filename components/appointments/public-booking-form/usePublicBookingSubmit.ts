@@ -114,10 +114,6 @@ export const usePublicBookingSubmit = ({
       setFormError('يرجى اختيار موعد متاح من القائمة');
       return;
     }
-    if (!reasonVal) {
-      setFormError('يرجى إدخال سبب الزيارة');
-      return;
-    }
     if (isFirstVisit === null) {
       setFormError('يرجى تحديد إذا كانت هذه أول زيارة أم لا');
       return;

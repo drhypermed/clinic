@@ -251,7 +251,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs font-bold text-slate-500">سبب الزيارة</label>
+          <label className="text-xs font-bold text-slate-500">سبب الزيارة <span className="text-slate-400">(اختياري)</span></label>
           <span className="text-[10px] font-bold text-slate-400">
             {visitReason.length}/{maxReasonLength}
           </span>
@@ -261,7 +261,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           value={visitReason}
           onChange={(e) => onVisitReasonChange(e.target.value)}
           maxLength={maxReasonLength}
-          placeholder="مثال: كشف دوري، متابعة..."
+          placeholder="مثال: كشف دوري، متابعة... (اختياري)"
           className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold"
           dir="rtl"
         />

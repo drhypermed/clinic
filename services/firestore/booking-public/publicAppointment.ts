@@ -7,13 +7,12 @@
  * 3. إنشاء نسخة "مرآة" (Mirror) من الحجز في سجل المريض الشخصي لمتابعته لاحقاً.
  */
 
-import { collection, deleteDoc, doc, runTransaction } from 'firebase/firestore';
+import { collection, doc, runTransaction } from 'firebase/firestore';
 import { ClinicAppointment } from '../../../types';
 import { normalizeText } from '../../../utils/textEncoding';
 import { consumeBookingQuota } from '../../accountTypeControlsService';
 import { db } from '../../firebaseConfig';
 import {
-  isBookingLimitExceededError,
   normalizePublicSecret,
   omitUndefined,
   sanitizeDocSegment,
@@ -90,6 +89,10 @@ export const createAppointmentFromPublic = async (
     throw new Error('discount-conflict');
   }
 
+  // Check quota before creating the appointment document. Appointment create triggers
+  // doctor push notifications, so a post-create rollback can leave a phantom alert.
+  await consumeBookingQuota('publicFormBooking', normalizedUserId, normalizedPublicSecret);
+
   const createdAt = new Date().toISOString();
   const patientName = normalizeText(data.patientName);
   const phone = normalizeText(data.phone);
@@ -97,6 +100,8 @@ export const createAppointmentFromPublic = async (
   const visitReason = normalizeText(data.visitReason);
   const doctorName = normalizeText(meta?.doctorName) || 'غير معروف';
   const doctorSpecialty = normalizeText(meta?.doctorSpecialty);
+  const requestedBranchId = typeof data.branchId === 'string' ? data.branchId.trim() : '';
+  let resolvedBranchId = requestedBranchId || 'main';
   const isConsultationBooking =
     data.appointmentType === 'consultation' || Boolean(data.consultationSourceAppointmentId);
 
@@ -132,7 +137,7 @@ export const createAppointmentFromPublic = async (
     discountPercent: data.discountPercent,
     discountReasonId: data.discountReasonId,
     discountReasonLabel: data.discountReasonLabel,
-    branchId: data.branchId,
+    branchId: resolvedBranchId,
     // حقول الهوية الجديدة — تنتشر مع الموعد للسكرتارية والطبيب
     gender: data.gender,
     dateOfBirth: data.dateOfBirth,
@@ -181,6 +186,11 @@ export const createAppointmentFromPublic = async (
     if (storedDateTime && storedDateTime !== slotDateTime) {
       throw new Error('public-slot-mismatch');
     }
+    const slotBranchId = typeof slotData.branchId === 'string' ? slotData.branchId.trim() : '';
+    if (slotBranchId && requestedBranchId && slotBranchId !== requestedBranchId) {
+      throw new Error('public-slot-branch-mismatch');
+    }
+    resolvedBranchId = slotBranchId || requestedBranchId || 'main';
 
     // فحص الـclaim — لو موجود يبقى المريض ده حجز نفس الـslot قبل كده
     const claimSnap = await transaction.get(claimRef);
@@ -230,18 +240,9 @@ export const createAppointmentFromPublic = async (
 
     transaction.set(
       appointmentDocRef,
-      omitUndefined(appointment as unknown as Record<string, unknown>)
+      omitUndefined({ ...(appointment as unknown as Record<string, unknown>), branchId: resolvedBranchId })
     );
   });
-
-  // إدارة الكوتة بعد نجاح الحجز: لو فشلت، نحذف الموعد كإجراء تراجعي
-  try {
-    await consumeBookingQuota('publicFormBooking', normalizedUserId, normalizedPublicSecret);
-  } catch (error) {
-    try { await deleteDoc(appointmentDocRef); } catch { /* best-effort rollback */ }
-    if (isBookingLimitExceededError(error)) throw error;
-    throw new Error('booking-quota-check-failed');
-  }
 
   // إنشاء نسخة مرآة (Mirror) في حساب المريض لتمكينه من رؤية مواعيده
   const normalizedPublicUserId = sanitizeDocSegment(meta?.publicUserId);
@@ -257,6 +258,7 @@ export const createAppointmentFromPublic = async (
         patientName,
         phone,
         visitReason: visitReason || undefined,
+        branchId: resolvedBranchId,
         appointmentType: isConsultationBooking ? 'consultation' : 'exam',
         consultationSourceAppointmentId: data.consultationSourceAppointmentId,
         consultationSourceCompletedAt: data.consultationSourceCompletedAt,

@@ -25,7 +25,6 @@ const LEGACY_INSTALL_FLAG_KEYS = ['dh_pwa_installed', 'dh_pwa_installed_main', '
 // ⚠️ استثناء: flag منفصل لاختيار المستخدم "إخفاء مطلقًا" — بطلب صريح من المستخدم.
 // لو وجد في localStorage، الكارت ما يظهرش. بيتمسح لما المستخدم يمسح الكاش أو ينزل التطبيق من جديد.
 const HIDE_FOREVER_KEY = 'dh_pwa_install_hidden_forever';
-const DEFAULT_MANIFEST_PATH = '/manifest.webmanifest';
 // متغير عالمي لحفظ الحدث (Event) لضمان عدم ضياعه عند التنقل بين الصفحات
 let cachedBeforeInstallPromptEvent: BeforeInstallPromptEvent | null = null;
 
@@ -167,13 +166,17 @@ export const PwaInstallPrompt: React.FC = () => {
   }, [isSecretaryRoute]);
 
   useEffect(() => {
-    const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
-    if (!manifestLink) return;
+    if (!isSecretaryRoute) return;
 
-    if (!isSecretaryRoute) {
-      manifestLink.href = DEFAULT_MANIFEST_PATH;
-      return;
+    let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+    let createdManifestLink = false;
+    if (!manifestLink) {
+      manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      document.head.appendChild(manifestLink);
+      createdManifestLink = true;
     }
+    const previousManifestHref = manifestLink.getAttribute('href');
 
     const origin = window.location.origin;
     const startUrl = `${location.pathname}${location.search}${location.hash}` || '/';
@@ -184,7 +187,11 @@ export const PwaInstallPrompt: React.FC = () => {
 
     return () => {
       URL.revokeObjectURL(objectUrl);
-      manifestLink.href = DEFAULT_MANIFEST_PATH;
+      if (createdManifestLink) {
+        manifestLink.parentNode?.removeChild(manifestLink);
+      } else if (previousManifestHref) {
+        manifestLink.href = previousManifestHref;
+      }
     };
   }, [isSecretaryRoute, location.pathname, location.search, location.hash]);
 
