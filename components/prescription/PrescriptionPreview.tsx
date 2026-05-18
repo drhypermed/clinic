@@ -144,7 +144,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   const drugBorderColor = typo?.drugBorderColor ?? '#f1f5f9';
   const sectionTitleColor = typo?.sectionTitleColor ?? '#7f1d1d';
 
-  /** أحجام الخطوط والتنسيقات الموحدة للروشتة */
+  /** Ø£Ø­Ø¬Ø§Ù… Ø§Ù„Ø®Ø·ÙˆØ· ÙˆØ§Ù„ØªÙ†Ø³ÙŠÙ‚Ø§Øª Ø§Ù„Ù…ÙˆØ­Ø¯Ø© Ù„Ù„Ø±ÙˆØ´ØªØ© */
   const theme = {
     medNameSize: `text-[${medNamePx}px]`,
     medInstSize: `text-[${medInstPx}px]`,
@@ -169,6 +169,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
     sectionTitleColor,
   };
 
+  /** أحجام الخطوط والتنسيقات الموحدة للروشتة */
   // أبعاد الورقة الفعلية المختارة (A4/A5/مخصص) — الروشتة ترتسم بهذه الأبعاد
   // مباشرةً: A5 = 148×210mm، A4 = 210×297mm، custom = الأبعاد المُدخَلة.
   const paperDims = useMemo(() => getPaperDimensions(prescriptionSettings?.paperSize), [prescriptionSettings?.paperSize]);

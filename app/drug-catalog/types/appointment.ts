@@ -23,6 +23,8 @@ export interface ClinicAppointment {
   createdAt?: string; // ISO — وقت إنشاء الحجز
   /** وقت تنفيذ فتح الكشف (تم الكشف) - ISO */
   examCompletedAt?: string;
+  /** وقت تنفيذ الاستشارة - ISO */
+  consultationCompletedAt?: string;
   /** السن (مثلاً: ٣٠ سنة أو ٥ سنوات) */
   age?: string;
   /** سبب الزيارة */

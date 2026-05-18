@@ -29,6 +29,7 @@ import {
     sanitizeSecretaryVitalsInput,
     toSecretaryCustomFieldId,
 } from '../../../utils/secretaryVitals';
+import { isConsultationAppointment } from '../../../utils/appointmentType';
 import { buildAgeTextFromParts } from './helpers';
 
 interface UseAppointmentSyncOnSaveArgs {
@@ -64,7 +65,7 @@ interface UseAppointmentSyncOnSaveArgs {
     prescriptionSecretaryFieldDefinitions: SecretaryVitalFieldDefinition[];
     doctorSpecialty?: string | null;
     // Save handler
-    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean } | undefined | void> | any;
+    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean; reason?: string } | undefined | void> | any;
     showNotification: (msg: string, type?: 'success' | 'error' | 'info', opts?: any) => void;
 }
 
@@ -106,6 +107,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
 
         const completedAt = new Date().toISOString();
         const normalizedPaymentType = paymentType || 'cash';
+        const isConsultation = isConsultationAppointment(openedAppointmentContext);
         const normalizedPatientName = String(patientName || '').trim() || openedAppointmentContext.patientName;
         const normalizedPhone = String(phone || '').trim() || openedAppointmentContext.phone;
         const normalizedAge =
@@ -150,6 +152,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
             phone: normalizedPhone,
             age: normalizedAge,
             examCompletedAt: completedAt,
+            ...(isConsultation ? { consultationCompletedAt: completedAt } : {}),
             secretaryVitals: sanitizedVitals,
             ...(activePatientFileId ? { patientFileId: activePatientFileId } : {}),
             ...(Number.isFinite(Number(activePatientFileNumber)) && Number(activePatientFileNumber) > 0
@@ -210,7 +213,8 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
 
     const handleSaveRecordWithAppointmentSync = React.useCallback(async (e?: React.MouseEvent<any>) => {
         const saveResult = await handleSaveRecord(e);
-        if (!saveResult?.ok || !openedAppointmentContext) return;
+        if (!openedAppointmentContext) return;
+        if (!saveResult?.ok && saveResult?.reason !== 'no-changes') return;
 
         try {
             await syncOpenedAppointmentAfterRecordSave();

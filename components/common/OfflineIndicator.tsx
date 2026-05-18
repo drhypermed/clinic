@@ -64,7 +64,7 @@ export const OfflineIndicator: React.FC = () => {
     // لو نفس الحالة ومفيش تغيير، مايتعملش حاجة (بس لو الـmessage موجود بنخليه)
     if (!kind) {
       // لو الحالة بقت online ومفيش تغيير سابق محتاج رسالة نجاح، نخفي أي رسالة قائمة
-      if (state === 'online' && message?.persistent) {
+      if (state === 'online') {
         setMessage(null);
         if (hideTimerRef.current != null) {
           window.clearTimeout(hideTimerRef.current);
@@ -81,7 +81,11 @@ export const OfflineIndicator: React.FC = () => {
     }
 
     const id = ++messageCounterRef.current;
-    setMessage({ kind, persistent, id });
+    setMessage((current) => (
+      current?.kind === kind && current.persistent === persistent
+        ? current
+        : { kind, persistent, id }
+    ));
 
     // الرسائل المؤقتة بس هي اللي بتختفي تلقائي
     if (!persistent) {
@@ -90,7 +94,7 @@ export const OfflineIndicator: React.FC = () => {
         hideTimerRef.current = null;
       }, AUTO_HIDE_MS);
     }
-  }, [state, message]);
+  }, [state]);
 
   useEffect(() => () => {
     if (hideTimerRef.current != null) window.clearTimeout(hideTimerRef.current);
@@ -100,14 +104,14 @@ export const OfflineIndicator: React.FC = () => {
 
   const config = {
     offline: {
-      bg: 'bg-slate-900/95',
+      bg: 'bg-danger-700',
       text: 'text-white',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728m-3.536-3.536a4 4 0 010-5.656M3 3l18 18" />
         </svg>
       ),
-      label: 'غير متصل بالإنترنت — التطبيق يعمل من الذاكرة المحلية',
+      label: 'غير متصل بالإنترنت',
     },
     unstable: {
       // أصفر warning — تحذير بسيط بدون ما نخوّف المستخدم زي offline الأسود
@@ -154,15 +158,15 @@ export const OfflineIndicator: React.FC = () => {
 
   return (
     <div
-      key={message.id}
-      className={`fixed top-0 left-0 right-0 z-[9999] ${config.bg} ${config.text} backdrop-blur-sm shadow-lg pointer-events-none animate-[slideDown_0.25s_ease-out]`}
+      className={`fixed inset-x-0 top-0 z-[9999] ${config.bg} ${config.text} shadow-lg pointer-events-none`}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
       dir="rtl"
       role="status"
       aria-live="polite"
     >
-      <div className="max-w-5xl mx-auto px-4 py-1.5 flex items-center justify-center gap-2 text-xs md:text-sm font-black">
+      <div className="mx-auto flex min-h-9 w-full max-w-5xl items-center justify-center gap-2 px-3 py-2 text-center text-xs font-black leading-5 sm:px-4 md:text-sm">
         {config.icon}
-        <span>{config.label}</span>
+        <span className="min-w-0 break-words">{config.label}</span>
       </div>
     </div>
   );

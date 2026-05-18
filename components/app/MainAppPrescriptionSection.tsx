@@ -55,6 +55,10 @@ import {
 } from '../../utils/patientIdentity';
 import { getReusableWeightForVisit } from '../../utils/patientMeasurements';
 // سقف قوائم الروشتة المتفق عليه: 15 عنصر لكل قائمة (أدوية/فحوصات/تعليمات)
+import {
+  caseAnalysisPrescriptionListTextKey,
+  normalizeCaseAnalysisPrescriptionListText,
+} from '../../utils/rx/caseAnalysisText';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
 
 /**
@@ -414,8 +418,11 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   // إضافة فحص للروشتة بصيغة "Name (سبب الطلب)" — الطبيب طلب إن السبب يتضاف في
   // نفس السطر مش تحته عشان يتكتب في الروشتة المطبوعة زي الاسم والفحوصات القياسية.
   const handleModalAddInvestigation = React.useCallback((nameEn: string, reasonAr: string) => {
-    const name = nameEn.trim();
-    const reason = (reasonAr || '').trim();
+    const name = normalizeCaseAnalysisPrescriptionListText(nameEn);
+    const reason = normalizeCaseAnalysisPrescriptionListText(reasonAr);
+    if (!name) return;
+
+    const nameKey = caseAnalysisPrescriptionListTextKey(name);
     // النص النهائي اللي هيتكتب في الروشتة — اسم إنجليزي متبوع بالسبب بين قوسين
     const combinedText = reason ? `${name} (${reason})` : name;
 
@@ -423,11 +430,13 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     //    (ترتيب مهم: لو عملنا فحص السقف الأول، المستخدم يشوف رسالة "الحد الأقصى" غلط
     //    لما بيضغط على فحص مكرر وقائمته 15)
     const existsByName = labInvestigations.some((item) => {
-      const itemName = item.split('(')[0].trim().toLowerCase();
-      return itemName === name.toLowerCase();
+      const itemNameKey = caseAnalysisPrescriptionListTextKey(item.split('(')[0]);
+      return itemNameKey === nameKey;
     });
     if (existsByName) {
-      setAddedInvestigationsFromModal((prev) => prev.includes(name) ? prev : [...prev, name]);
+      setAddedInvestigationsFromModal((prev) => (
+        prev.some((item) => caseAnalysisPrescriptionListTextKey(item) === nameKey) ? prev : [...prev, name]
+      ));
       return;
     }
 
@@ -439,18 +448,23 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
 
     // 3) إضافة فعلية + تعليم الفحص كمُضاف في المودال
     setLabInvestigations((prev) => [...prev, combinedText]);
-    setAddedInvestigationsFromModal((prev) => prev.includes(name) ? prev : [...prev, name]);
+    setAddedInvestigationsFromModal((prev) => (
+      prev.some((item) => caseAnalysisPrescriptionListTextKey(item) === nameKey) ? prev : [...prev, name]
+    ));
   }, [setLabInvestigations, setAddedInvestigationsFromModal, labInvestigations, showNotification]);
 
   // إضافة تعليمة/نصيحة عربية للنصائح العامة في الروشتة
   const handleModalAddInstruction = React.useCallback((text: string) => {
-    const trimmed = text.trim();
+    const trimmed = normalizeCaseAnalysisPrescriptionListText(text);
     if (!trimmed) return;
+    const instructionKey = caseAnalysisPrescriptionListTextKey(trimmed);
 
     // نفس منطق الفحوصات: تكرار أولاً، سقف ثانياً، حتى لا نظهر رسالة "الحد الأقصى" غلط
-    const alreadyExists = generalAdvice.some((item) => item.trim() === trimmed);
+    const alreadyExists = generalAdvice.some((item) => caseAnalysisPrescriptionListTextKey(item) === instructionKey);
     if (alreadyExists) {
-      setAddedInstructionsFromModal((prev) => prev.includes(trimmed) ? prev : [...prev, trimmed]);
+      setAddedInstructionsFromModal((prev) => (
+        prev.some((item) => caseAnalysisPrescriptionListTextKey(item) === instructionKey) ? prev : [...prev, trimmed]
+      ));
       return;
     }
 
@@ -460,7 +474,9 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     }
 
     setGeneralAdvice((prev) => [...prev, trimmed]);
-    setAddedInstructionsFromModal((prev) => prev.includes(trimmed) ? prev : [...prev, trimmed]);
+    setAddedInstructionsFromModal((prev) => (
+      prev.some((item) => caseAnalysisPrescriptionListTextKey(item) === instructionKey) ? prev : [...prev, trimmed]
+    ));
   }, [setGeneralAdvice, setAddedInstructionsFromModal, generalAdvice, showNotification]);
 
   // إغلاق المودال — ما نمسحش الحالة عشان الطبيب لو قفل بالغلط يفتحها تاني

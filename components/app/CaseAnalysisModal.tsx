@@ -16,6 +16,7 @@
 import React from 'react';
 import { ModalOverlay } from '../ui/ModalOverlay';
 import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
+import { caseAnalysisPrescriptionListTextKey } from '../../utils/rx/caseAnalysisText';
 
 interface CaseAnalysisModalProps {
   isOpen: boolean;                          // حالة فتح النافذة
@@ -209,11 +210,11 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
     [addedDiagnoses],
   );
   const addedInvestigationsSet = React.useMemo(
-    () => new Set(addedInvestigations.map((s) => s.toLowerCase())),
+    () => new Set(addedInvestigations.map((s) => caseAnalysisPrescriptionListTextKey(s))),
     [addedInvestigations],
   );
   const addedInstructionsSet = React.useMemo(
-    () => new Set(addedInstructions.map((s) => s.trim())),
+    () => new Set(addedInstructions.map((s) => caseAnalysisPrescriptionListTextKey(s))),
     [addedInstructions],
   );
 
@@ -447,7 +448,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             {/* حاوية LTR: الاسم الإنجليزي على الشمال، السبب العربي بين قوسين بجنبه */}
             <div className="p-4 space-y-2" dir="ltr">
               {result.suggestedInvestigations.map((inv, idx) => {
-                const isAdded = addedInvestigationsSet.has(inv.nameEn.toLowerCase());
+                const isAdded = addedInvestigationsSet.has(caseAnalysisPrescriptionListTextKey(inv.nameEn));
                 return (
                   <div
                     key={`${inv.nameEn}-${idx}`}
@@ -481,7 +482,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
             <SectionHeader icon="instructions" title="تعليمات هامة" tone="emerald" dir="rtl" />
             <div className="p-4 space-y-2">
               {result.importantInstructionsAr.map((ins, idx) => {
-                const isAdded = addedInstructionsSet.has(ins.trim());
+                const isAdded = addedInstructionsSet.has(caseAnalysisPrescriptionListTextKey(ins));
                 return (
                   <div
                     key={`${ins}-${idx}`}

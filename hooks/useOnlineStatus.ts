@@ -4,6 +4,9 @@ import { db } from '../services/firebaseConfig';
 
 export type SyncState = 'online' | 'offline' | 'unstable' | 'syncing';
 
+const SYNCING_SHOW_DELAY_MS = 700;
+const SYNCING_MIN_VISIBLE_MS = 1400;
+
 /**
  * حالة اتصال التطبيق بخادم Firestore:
  * - online:   متصل ومتزامن
@@ -84,15 +87,57 @@ export const useOnlineStatus = (): SyncState => {
   useEffect(() => {
     if (!isOnline) return;
     const token = ++syncTokenRef.current;
-    setIsSyncing(true);
     let cancelled = false;
+    let didShowSyncing = false;
+    let syncingShownAt = 0;
+    let showTimer: number | null = window.setTimeout(() => {
+      if (cancelled || token !== syncTokenRef.current) return;
+      didShowSyncing = true;
+      syncingShownAt = Date.now();
+      setIsSyncing(true);
+    }, SYNCING_SHOW_DELAY_MS);
+    let hideTimer: number | null = null;
+
+    const clearShowTimer = () => {
+      if (showTimer == null) return;
+      window.clearTimeout(showTimer);
+      showTimer = null;
+    };
+
+    const hideSyncing = () => {
+      if (cancelled || token !== syncTokenRef.current) return;
+
+      if (!didShowSyncing) {
+        setIsSyncing(false);
+        return;
+      }
+
+      const visibleForMs = Date.now() - syncingShownAt;
+      const remainingVisibleMs = Math.max(0, SYNCING_MIN_VISIBLE_MS - visibleForMs);
+
+      if (remainingVisibleMs <= 0) {
+        setIsSyncing(false);
+        return;
+      }
+
+      hideTimer = window.setTimeout(() => {
+        if (cancelled || token !== syncTokenRef.current) return;
+        setIsSyncing(false);
+      }, remainingVisibleMs);
+    };
+
     waitForPendingWrites(db)
       .catch(() => { /* ignore */ })
       .finally(() => {
-        if (cancelled || token !== syncTokenRef.current) return;
-        setIsSyncing(false);
+        clearShowTimer();
+        hideSyncing();
       });
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+      clearShowTimer();
+      if (hideTimer != null) window.clearTimeout(hideTimer);
+    };
   }, [isOnline]);
 
   // الأولوية: offline > syncing > unstable > online

@@ -337,7 +337,6 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
                 paperMargins={paperMargins}
                 printScale={printScale}
                 printOffset={printOffset}
-                middleBgColor={middleBgColor}
                 printRxItems={printRxItems}
                 vitalConfig={vitalConfig}
               />

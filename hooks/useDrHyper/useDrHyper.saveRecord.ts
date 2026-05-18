@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { DEFAULT_BRANCH_ID } from '../../services/firestore/branches';
 import { usageTrackingService } from '../../services/usageTrackingService';
@@ -24,7 +24,7 @@ import {
 } from './useDrHyper.consultationRecords';
 import { buildCairoDateWithCurrentTime, buildCairoDateTime, getCairoDayKey } from '../../utils/cairoTime';
 import type { PatientRecord } from '../../types';
-import { buildPatientFileNameKey } from '../../services/patient-files';
+import { buildPatientFileDocIdFromNameKey, buildPatientFileNameKey } from '../../services/patient-files';
 import { syncVitalsToGrowthIfPediatric } from '../../services/specialty-packs/pediatrics';
 import { buildPregnancyRecordSnapshot, syncVitalsToPregnancyIfGyn } from '../../services/specialty-packs/gynecology';
 import { flushAllSpecialtyPackSaves } from '../../services/specialty-packs';
@@ -67,6 +67,9 @@ const findLatestExamForPatient = (
   if (!exams.length) return undefined;
   return [...exams].sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
 };
+
+const isBrowserOffline = (): boolean =>
+  typeof navigator !== 'undefined' && navigator.onLine === false;
 
 export const createSaveRecordAction = ({
   user,
@@ -134,9 +137,27 @@ export const createSaveRecordAction = ({
   activeBranchId,
   records,
 }: CreateSaveRecordActionParams) => {
+  let queuedLocalWrite = false;
+
+  const commitFirestoreWrite = async (
+    write: () => Promise<unknown>,
+    label: string,
+  ): Promise<void> => {
+    const writePromise = write();
+    if (isBrowserOffline()) {
+      queuedLocalWrite = true;
+      void writePromise.catch((err) => {
+        console.error(`Queued Firestore write failed (${label}):`, err);
+      });
+      return;
+    }
+    await writePromise;
+  };
+
   // تنبيه بنتيجة الحفظ — رسالة أوفلاين أو نجاح عادي
   const notifySaveResult = (offlineMessage: string, onlineMessage: string) => {
-    if (markOfflineSyncPendingIfNeeded()) {
+    if (queuedLocalWrite || markOfflineSyncPendingIfNeeded()) {
+      markOfflineSyncPendingIfNeeded();
       showNotification(offlineMessage, 'info', { id: 'save-record-success' });
       return;
     }
@@ -153,6 +174,7 @@ export const createSaveRecordAction = ({
   };
 
   const handleSaveRecord = async (e?: React.MouseEvent<HTMLElement>): Promise<SaveRecordResult> => {
+    queuedLocalWrite = false;
     // ─── Validations المبدئية ──────────────────────────────────────────
     if (!patientName.trim()) {
       showNotification('يرجى إدخال اسم المريض أولاً', 'error', { id: 'save-record-validation' });
@@ -368,7 +390,12 @@ export const createSaveRecordAction = ({
             patientFileNumber: patientFileReference.patientFileNumber,
             patientFileNameKey: targetPatientFileNameKey,
           }
-        : {};
+        : targetPatientFileNameKey
+          ? {
+              patientFileId: buildPatientFileDocIdFromNameKey(targetPatientFileNameKey),
+              patientFileNameKey: targetPatientFileNameKey,
+            }
+          : {};
 
       const payload = sanitizeForFirestore(currentData) as Record<string, unknown>;
       if (!payload || typeof payload !== 'object') {
@@ -388,7 +415,10 @@ export const createSaveRecordAction = ({
         const oldConsultationRecordId = String(activeRecordId || '').trim();
         if (oldConsultationRecordId) {
           try {
-            await deleteDoc(doc(db, 'users', user.uid, 'records', oldConsultationRecordId));
+            await commitFirestoreWrite(
+              () => deleteDoc(doc(db, 'users', user.uid, 'records', oldConsultationRecordId)),
+              'delete old consultation during conversion',
+            );
           } catch (deleteError) {
             console.warn(
               'Failed to delete old consultation during conversion to exam:',
@@ -397,11 +427,15 @@ export const createSaveRecordAction = ({
           }
         }
 
-        const docRef = await addDoc(collection(db, 'users', user.uid, 'records'), {
-          ...payload,
-          ...patientFilePayload,
-          createdAt: serverTimestamp(),
-        });
+        const docRef = doc(collection(db, 'users', user.uid, 'records'));
+        await commitFirestoreWrite(
+          () => setDoc(docRef, {
+            ...payload,
+            ...patientFilePayload,
+            createdAt: serverTimestamp(),
+          }),
+          'create exam converted from consultation',
+        );
         setActiveRecordId(docRef.id);
         setIsConsultationMode(false);
         setConsultationSourceRecordId(null);
@@ -476,14 +510,17 @@ export const createSaveRecordAction = ({
               : undefined,
         }) as Record<string, unknown>;
 
-        await setDoc(
-          doc(db, 'users', user.uid, 'records', consultationDocId),
-          {
-            ...consultationUpdate,
-            ...(isEditingExistingConsultationRecord ? {} : { createdAt: serverTimestamp() }),
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
+        await commitFirestoreWrite(
+          () => setDoc(
+            doc(db, 'users', user.uid, 'records', consultationDocId),
+            {
+              ...consultationUpdate,
+              ...(isEditingExistingConsultationRecord ? {} : { createdAt: serverTimestamp() }),
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true },
+          ),
+          'save consultation record',
         );
         savedRecordId = consultationDocId;
 
@@ -512,14 +549,17 @@ export const createSaveRecordAction = ({
           branchId: persistedExamBranchId || payload.branchId,
         };
 
-        await setDoc(
-          doc(db, 'users', user.uid, 'records', activeRecordId),
-          {
-            ...updatePayload,
-            ...patientFilePayload,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
+        await commitFirestoreWrite(
+          () => setDoc(
+            doc(db, 'users', user.uid, 'records', activeRecordId),
+            {
+              ...updatePayload,
+              ...patientFilePayload,
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true },
+          ),
+          'update exam record',
         );
         savedRecordId = activeRecordId;
 
@@ -567,7 +607,11 @@ export const createSaveRecordAction = ({
           createdAt: serverTimestamp(),
         };
 
-        const docRef = await addDoc(collection(db, 'users', user.uid, 'records'), finalRecord);
+        const docRef = doc(collection(db, 'users', user.uid, 'records'));
+        await commitFirestoreWrite(
+          () => setDoc(docRef, finalRecord),
+          'create standalone consultation record',
+        );
         setActiveRecordId(docRef.id);
         savedRecordId = docRef.id;
         setIsPastConsultationMode(false);
@@ -580,11 +624,15 @@ export const createSaveRecordAction = ({
         trackSavedRecord('new_consultation', docRef.id);
       } else {
         // سجل كشف جديد تماماً
-        const docRef = await addDoc(collection(db, 'users', user.uid, 'records'), {
-          ...payload,
-          ...patientFilePayload,
-          createdAt: serverTimestamp(),
-        });
+        const docRef = doc(collection(db, 'users', user.uid, 'records'));
+        await commitFirestoreWrite(
+          () => setDoc(docRef, {
+            ...payload,
+            ...patientFilePayload,
+            createdAt: serverTimestamp(),
+          }),
+          'create exam record',
+        );
         setActiveRecordId(docRef.id);
         savedRecordId = docRef.id;
 
@@ -607,7 +655,7 @@ export const createSaveRecordAction = ({
 
       // مزامنة هوية المريض عبر كل السجلات/المواعيد (helper مستخرج)
       // نمرر الجنس كمان عشان ينتشر على كل سجلات ومواعيد المريض (الجنس ثابت)
-      const syncResult = await syncPatientIdentityAfterSave({
+      const syncPatientIdentityPayload = {
         userId: user.uid,
         patientName,
         phone,
@@ -620,7 +668,16 @@ export const createSaveRecordAction = ({
         parsedActivePatientFileNumber,
         normalizedActivePatientFileNameKey,
         targetPatientFileNameKey,
-      });
+      };
+
+      let syncResult: Awaited<ReturnType<typeof syncPatientIdentityAfterSave>> = null;
+      if (queuedLocalWrite || isBrowserOffline()) {
+        void syncPatientIdentityAfterSave(syncPatientIdentityPayload).catch((syncError) => {
+          console.error('Background patient identity sync failed:', syncError);
+        });
+      } else {
+        syncResult = await syncPatientIdentityAfterSave(syncPatientIdentityPayload);
+      }
 
       if (syncResult) {
         setActivePatientFileId(syncResult.patientFileId);

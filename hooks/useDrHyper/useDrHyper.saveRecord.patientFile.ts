@@ -18,6 +18,9 @@ import {
 } from '../../services/patient-files';
 import type { ResolvedPatientFileReference } from './useDrHyper.saveRecord.types';
 
+const isBrowserOffline = (): boolean =>
+    typeof navigator !== 'undefined' && navigator.onLine === false;
+
 interface ResolvePatientFileReferenceInput {
     userId: string;
     patientName: string;
@@ -69,6 +72,7 @@ export const resolvePatientFileReference = async (
     // 2. رقم أو nameKey فقط → حل عبر syncPatientIdentityByFile
     if (
         !patientFileReference
+        && !isBrowserOffline()
         && activeMatchesCurrentPatient
         && (
             (Number.isFinite(parsedActivePatientFileNumber) && parsedActivePatientFileNumber > 0)
@@ -105,7 +109,7 @@ export const resolvePatientFileReference = async (
 
     // 3. fallback نهائي: ensurePatientFileReference
     try {
-        if (!patientFileReference) {
+        if (!patientFileReference && !isBrowserOffline()) {
             patientFileReference = await patientFilesService.ensurePatientFileReference(
                 userId,
                 patientName,
