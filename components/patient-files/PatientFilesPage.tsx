@@ -84,20 +84,52 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   // لما السيرفر متاح، الـvisits بتكون فاضية في الـsummary — الـmodal بيحمّلها
   // lazy لما الطبيب يفتح ملف معيّن (~50 قراءة لمريض بـ50 زياره).
   const patientFiles = useMemo<PatientFileData[]>(() => {
+    const localFiles = buildPatientFiles(records);
     if (serverSummaries) {
-      return serverSummaries.map((s) => ({
-        key: s.patientFileNameKey,
-        name: s.patientName,
-        fileNumber: s.patientFileNumber,
-        fileId: s.patientFileId,
-        phones: Array.isArray(s.phones) ? s.phones : [],
-        visits: [], // ما بنحفظهاش في الـsummary — modal بيجيبها lazy عند الحاجة
-        examCount: s.totalExams,
-        consultationCount: s.totalConsultations,
-        latestVisitDate: s.lastVisitAtMs ? new Date(s.lastVisitAtMs).toISOString() : undefined,
-      }));
+      const merged = new Map<string, PatientFileData>();
+
+      serverSummaries.forEach((s) => {
+        merged.set(s.patientFileNameKey, {
+          key: s.patientFileNameKey,
+          name: s.patientName,
+          fileNumber: s.patientFileNumber,
+          fileId: s.patientFileId,
+          phones: Array.isArray(s.phones) ? s.phones : [],
+          visits: [], // ما بنحفظهاش في الـsummary — modal بيجيبها lazy عند الحاجة
+          examCount: s.totalExams,
+          consultationCount: s.totalConsultations,
+          latestVisitDate: s.lastVisitAtMs ? new Date(s.lastVisitAtMs).toISOString() : undefined,
+        });
+      });
+
+      localFiles.forEach((localFile) => {
+        const existing = merged.get(localFile.key);
+        if (!existing) {
+          merged.set(localFile.key, localFile);
+          return;
+        }
+
+        const existingLatest = Date.parse(String(existing.latestVisitDate || ''));
+        const localLatest = Date.parse(String(localFile.latestVisitDate || ''));
+        merged.set(localFile.key, {
+          ...existing,
+          name: localFile.name || existing.name,
+          fileId: existing.fileId || localFile.fileId,
+          fileNumber: isPositiveFileNumber(existing.fileNumber) ? existing.fileNumber : localFile.fileNumber,
+          phones: uniqueTrimmed([...existing.phones, ...localFile.phones]),
+          visits: localFile.visits.length > 0 ? localFile.visits : existing.visits,
+          examCount: Math.max(existing.examCount, localFile.examCount),
+          consultationCount: Math.max(existing.consultationCount, localFile.consultationCount),
+          latestVisitDate:
+            Number.isFinite(localLatest) && (!Number.isFinite(existingLatest) || localLatest > existingLatest)
+              ? localFile.latestVisitDate
+              : existing.latestVisitDate,
+        });
+      });
+
+      return Array.from(merged.values());
     }
-    return buildPatientFiles(records);
+    return localFiles;
   }, [serverSummaries, records]);
 
   useEffect(() => {

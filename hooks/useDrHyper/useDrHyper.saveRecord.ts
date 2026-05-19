@@ -71,6 +71,21 @@ const findLatestExamForPatient = (
 const isBrowserOffline = (): boolean =>
   typeof navigator !== 'undefined' && navigator.onLine === false;
 
+const runWhenBrowserOnline = (task: () => Promise<void>): void => {
+  if (typeof window === 'undefined') return;
+  if (!isBrowserOffline()) {
+    void task();
+    return;
+  }
+
+  const handleOnline = () => {
+    window.removeEventListener('online', handleOnline);
+    void task();
+  };
+
+  window.addEventListener('online', handleOnline, { once: true });
+};
+
 export const createSaveRecordAction = ({
   user,
   patientName,
@@ -672,8 +687,17 @@ export const createSaveRecordAction = ({
 
       let syncResult: Awaited<ReturnType<typeof syncPatientIdentityAfterSave>> = null;
       if (queuedLocalWrite || isBrowserOffline()) {
-        void syncPatientIdentityAfterSave(syncPatientIdentityPayload).catch((syncError) => {
-          console.error('Background patient identity sync failed:', syncError);
+        runWhenBrowserOnline(async () => {
+          try {
+            const onlineSyncResult = await syncPatientIdentityAfterSave(syncPatientIdentityPayload);
+            if (onlineSyncResult) {
+              setActivePatientFileId(onlineSyncResult.patientFileId);
+              setActivePatientFileNumber(onlineSyncResult.patientFileNumber);
+              setActivePatientFileNameKey(onlineSyncResult.patientFileNameKey);
+            }
+          } catch (syncError) {
+            console.error('Background patient identity sync failed:', syncError);
+          }
         });
       } else {
         syncResult = await syncPatientIdentityAfterSave(syncPatientIdentityPayload);
