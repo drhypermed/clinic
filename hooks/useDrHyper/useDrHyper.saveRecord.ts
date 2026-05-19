@@ -154,16 +154,11 @@ export const createSaveRecordAction = ({
 }: CreateSaveRecordActionParams) => {
   let queuedLocalWrite = false;
 
-  const commitFirestoreWrite = async (
-    write: () => Promise<unknown>,
-    label: string,
-  ): Promise<void> => {
+  const commitFirestoreWrite = async (write: () => Promise<unknown>): Promise<void> => {
     const writePromise = write();
     if (isBrowserOffline()) {
       queuedLocalWrite = true;
-      void writePromise.catch((err) => {
-        console.error(`Queued Firestore write failed (${label}):`, err);
-      });
+      void writePromise.catch(() => {});
       return;
     }
     await writePromise;
@@ -432,7 +427,6 @@ export const createSaveRecordAction = ({
           try {
             await commitFirestoreWrite(
               () => deleteDoc(doc(db, 'users', user.uid, 'records', oldConsultationRecordId)),
-              'delete old consultation during conversion',
             );
           } catch (deleteError) {
             console.warn(
@@ -449,7 +443,6 @@ export const createSaveRecordAction = ({
             ...patientFilePayload,
             createdAt: serverTimestamp(),
           }),
-          'create exam converted from consultation',
         );
         setActiveRecordId(docRef.id);
         setIsConsultationMode(false);
@@ -535,7 +528,6 @@ export const createSaveRecordAction = ({
             },
             { merge: true },
           ),
-          'save consultation record',
         );
         savedRecordId = consultationDocId;
 
@@ -574,7 +566,6 @@ export const createSaveRecordAction = ({
             },
             { merge: true },
           ),
-          'update exam record',
         );
         savedRecordId = activeRecordId;
 
@@ -625,7 +616,6 @@ export const createSaveRecordAction = ({
         const docRef = doc(collection(db, 'users', user.uid, 'records'));
         await commitFirestoreWrite(
           () => setDoc(docRef, finalRecord),
-          'create standalone consultation record',
         );
         setActiveRecordId(docRef.id);
         savedRecordId = docRef.id;
@@ -646,7 +636,6 @@ export const createSaveRecordAction = ({
             ...patientFilePayload,
             createdAt: serverTimestamp(),
           }),
-          'create exam record',
         );
         setActiveRecordId(docRef.id);
         savedRecordId = docRef.id;
@@ -695,8 +684,8 @@ export const createSaveRecordAction = ({
               setActivePatientFileNumber(onlineSyncResult.patientFileNumber);
               setActivePatientFileNameKey(onlineSyncResult.patientFileNameKey);
             }
-          } catch (syncError) {
-            console.error('Background patient identity sync failed:', syncError);
+          } catch {
+            // best-effort background sync; the online event can fire again on later reconnects
           }
         });
       } else {
