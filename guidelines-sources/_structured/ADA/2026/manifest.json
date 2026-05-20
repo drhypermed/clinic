@@ -1,0 +1,195 @@
+{
+  "generatedAt": "2026-05-19T21:47:37.885Z",
+  "sourceDir": "guidelines-sources/ADA/2026",
+  "outputDir": "guidelines-sources/_structured/ADA/2026",
+  "assetDir": "guidelines-sources/_assets/ADA/2026",
+  "tools": {
+    "pdftotext": "pdftotext.exe",
+    "pdfimages": "pdfimages.exe",
+    "pdfinfo": "pdfinfo.exe",
+    "pdftoppm": "pdftoppm.exe",
+    "pdfjs": "scripts"
+  },
+  "documents": [
+    {
+      "title": "1. Improving Care and Promoting Health in Populations",
+      "sourcePdf": "guidelines-sources/ADA/2026/1. Improving Care and Promoting Health in Populations.pdf",
+      "pageCount": 15,
+      "recommendations": 8,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2026/1.-improving-care-and-promoting-health-in-populations/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/1.-improving-care-and-promoting-health-in-populations/document.md"
+    },
+    {
+      "title": "2. Diagnosis and Classification of Diabetes",
+      "sourcePdf": "guidelines-sources/ADA/2026/2. Diagnosis and Classification of Diabetes.pdf",
+      "pageCount": 24,
+      "recommendations": 43,
+      "captions": 11,
+      "images": 4,
+      "json": "guidelines-sources/_structured/ADA/2026/2.-diagnosis-and-classification-of-diabetes/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/2.-diagnosis-and-classification-of-diabetes/document.md"
+    },
+    {
+      "title": "3. Prevention or Delay of Diabetes and Associated Comorbidities",
+      "sourcePdf": "guidelines-sources/ADA/2026/3. Prevention or Delay of Diabetes and Associated Comorbidities.pdf",
+      "pageCount": 12,
+      "recommendations": 16,
+      "captions": 0,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/3.-prevention-or-delay-of-diabetes-and-associated-comorbidities/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/3.-prevention-or-delay-of-diabetes-and-associated-comorbidities/document.md"
+    },
+    {
+      "title": "4. Comprehensive Medical Evaluation and Assessment of Comorbidities",
+      "sourcePdf": "guidelines-sources/ADA/2026/4. Comprehensive Medical Evaluation and Assessment of Comorbidities.pdf",
+      "pageCount": 29,
+      "recommendations": 35,
+      "captions": 10,
+      "images": 8,
+      "json": "guidelines-sources/_structured/ADA/2026/4.-comprehensive-medical-evaluation-and-assessment-of-comorbidities/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/4.-comprehensive-medical-evaluation-and-assessment-of-comorbidities/document.md"
+    },
+    {
+      "title": "5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes",
+      "sourcePdf": "guidelines-sources/ADA/2026/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes.pdf",
+      "pageCount": 44,
+      "recommendations": 56,
+      "captions": 9,
+      "images": 46,
+      "json": "guidelines-sources/_structured/ADA/2026/5.-facilitating-positive-health-behaviors-and-well-being-to-improve-health-outcomes/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/5.-facilitating-positive-health-behaviors-and-well-being-to-improve-health-outcomes/document.md"
+    },
+    {
+      "title": "6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises",
+      "sourcePdf": "guidelines-sources/ADA/2026/6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises.pdf",
+      "pageCount": 19,
+      "recommendations": 23,
+      "captions": 11,
+      "images": 6,
+      "json": "guidelines-sources/_structured/ADA/2026/6.-glycemic-goals-hypoglycemia-and-hyperglycemic-crises/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/6.-glycemic-goals-hypoglycemia-and-hyperglycemic-crises/document.md"
+    },
+    {
+      "title": "7. Diabetes Technology",
+      "sourcePdf": "guidelines-sources/ADA/2026/7. Diabetes Technology.pdf",
+      "pageCount": 17,
+      "recommendations": 32,
+      "captions": 5,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/7.-diabetes-technology/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/7.-diabetes-technology/document.md"
+    },
+    {
+      "title": "8. Obesity and Weight Management for the Prevention and Treatment of Diabetes",
+      "sourcePdf": "guidelines-sources/ADA/2026/8. Obesity and Weight Management for the Prevention and Treatment of Diabetes.pdf",
+      "pageCount": 18,
+      "recommendations": 30,
+      "captions": 1,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-diabetes/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-diabetes/document.md"
+    },
+    {
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment",
+      "sourcePdf": "guidelines-sources/ADA/2026/9. Pharmacologic Approaches to Glycemic Treatment.pdf",
+      "pageCount": 34,
+      "recommendations": 45,
+      "captions": 9,
+      "images": 14,
+      "json": "guidelines-sources/_structured/ADA/2026/9.-pharmacologic-approaches-to-glycemic-treatment/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/9.-pharmacologic-approaches-to-glycemic-treatment/document.md"
+    },
+    {
+      "title": "10. Cardiovascular Disease and Risk Management",
+      "sourcePdf": "guidelines-sources/ADA/2026/10. Cardiovascular Disease and Risk Management.pdf",
+      "pageCount": 31,
+      "recommendations": 60,
+      "captions": 7,
+      "images": 14,
+      "json": "guidelines-sources/_structured/ADA/2026/10.-cardiovascular-disease-and-risk-management/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/10.-cardiovascular-disease-and-risk-management/document.md"
+    },
+    {
+      "title": "11. Chronic Kidney Disease and Risk Management",
+      "sourcePdf": "guidelines-sources/ADA/2026/11. Chronic Kidney Disease and Risk Management.pdf",
+      "pageCount": 16,
+      "recommendations": 19,
+      "captions": 6,
+      "images": 4,
+      "json": "guidelines-sources/_structured/ADA/2026/11.-chronic-kidney-disease-and-risk-management/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/11.-chronic-kidney-disease-and-risk-management/document.md"
+    },
+    {
+      "title": "12. Retinopathy, Neuropathy, and Foot Care",
+      "sourcePdf": "guidelines-sources/ADA/2026/12. Retinopathy, Neuropathy, and Foot Care.pdf",
+      "pageCount": 17,
+      "recommendations": 32,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2026/12.-retinopathy-neuropathy-and-foot-care/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/12.-retinopathy-neuropathy-and-foot-care/document.md"
+    },
+    {
+      "title": "13. Older Adults",
+      "sourcePdf": "guidelines-sources/ADA/2026/13. Older Adults.pdf",
+      "pageCount": 21,
+      "recommendations": 25,
+      "captions": 5,
+      "images": 9,
+      "json": "guidelines-sources/_structured/ADA/2026/13.-older-adults/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/13.-older-adults/document.md"
+    },
+    {
+      "title": "14. Children and Adolescents",
+      "sourcePdf": "guidelines-sources/ADA/2026/14. Children and Adolescents.pdf",
+      "pageCount": 25,
+      "recommendations": 80,
+      "captions": 1,
+      "images": 4,
+      "json": "guidelines-sources/_structured/ADA/2026/14.-children-and-adolescents/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/14.-children-and-adolescents/document.md"
+    },
+    {
+      "title": "15. Management of Diabetes in Pregnancy",
+      "sourcePdf": "guidelines-sources/ADA/2026/15. Management of Diabetes in Pregnancy.pdf",
+      "pageCount": 19,
+      "recommendations": 32,
+      "captions": 3,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/15.-management-of-diabetes-in-pregnancy/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/15.-management-of-diabetes-in-pregnancy/document.md"
+    },
+    {
+      "title": "16. Diabetes Care in the Hospital",
+      "sourcePdf": "guidelines-sources/ADA/2026/16. Diabetes Care in the Hospital.pdf",
+      "pageCount": 18,
+      "recommendations": 21,
+      "captions": 3,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/16.-diabetes-care-in-the-hospital/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/16.-diabetes-care-in-the-hospital/document.md"
+    },
+    {
+      "title": "17. Diabetes Advocacy",
+      "sourcePdf": "guidelines-sources/ADA/2026/17. Diabetes Advocacy.pdf",
+      "pageCount": 3,
+      "recommendations": 0,
+      "captions": 0,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2026/17.-diabetes-advocacy/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/17.-diabetes-advocacy/document.md"
+    },
+    {
+      "title": "Summary of Revisions",
+      "sourcePdf": "guidelines-sources/ADA/2026/Summary of Revisions.pdf",
+      "pageCount": 8,
+      "recommendations": 0,
+      "captions": 14,
+      "images": 2,
+      "json": "guidelines-sources/_structured/ADA/2026/summary-of-revisions/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2026/summary-of-revisions/document.md"
+    }
+  ]
+}

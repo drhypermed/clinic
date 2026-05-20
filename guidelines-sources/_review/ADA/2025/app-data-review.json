@@ -1,0 +1,3239 @@
+{
+  "generatedAt": "2026-05-19T19:13:17.024Z",
+  "totals": {
+    "topics": 26,
+    "sourceSupported": 26,
+    "needsReview": 0,
+    "numericClaims": 104,
+    "unverifiedNumericClaims": 0
+  },
+  "topicReviews": [
+    {
+      "id": "health-behaviors-full",
+      "file": "components/guidelines/data/ada2025/behaviorsGoalsTechnology.ts",
+      "group": "behaviorsGoalsTech",
+      "title": "5. Positive Health Behaviors and Well-being",
+      "sourceIds": [
+        "health-behaviors"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "5.45",
+          "grade": "C",
+          "page": 21,
+          "score": 0.6,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Implement screening protocols for psychosocial concerns, including diabetes distress, depression, anxiety, fear of hypoglycemia, and disordered eating behaviors. Screen at least annually or when there is a change in disease, treatment, or life circumstances."
+        },
+        {
+          "recommendationId": "5.2",
+          "grade": "E",
+          "page": 1,
+          "score": 0.5,
+          "categories": [
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Provide DSMES at diagnosis, annually and/or when not meeting treatment goals, when complicating factors develop (e.g., medical, functional, and psychosocial), and when transitions in life and care occur."
+        },
+        {
+          "recommendationId": "5.43",
+          "grade": "A",
+          "page": 20,
+          "score": 0.462,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Behavioral strategies should be used to support diabetes self-management and engagement in health behaviors (e.g., taking medications, using diabetes technologies, and engaging in physical activity and healthy eating) to promote optimal health-related quality of life and health outcomes."
+        },
+        {
+          "recommendationId": "5.46",
+          "grade": "B",
+          "page": 21,
+          "score": 0.436,
+          "categories": [
+            "acute-emergency-risk",
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "When indicated, refer to behavioral health professionals or other trained health care professionals, ideally those with experience in diabetes, for further assessment and treatment for symptoms of diabetes distress, depression, suicidality, anxiety, treatmentrelated fear of hypoglycemia, disordered eating, and/or cognitive capacities. Such specialized psychosocial care should use age-appropriate standardized and validated tools and treatment approaches."
+        },
+        {
+          "recommendationId": "5.49",
+          "grade": "B",
+          "page": 25,
+          "score": 0.429,
+          "categories": [
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen people with diabetes for anxiety symptoms. Health care professionals can discuss diabetes-related worries and should consider referral to a qualified behavioral health professional for further assessment and treatment if anxiety symptoms indicate interference with diabetes self-management behaviors or quality of life."
+        },
+        {
+          "recommendationId": "5.50",
+          "grade": "B",
+          "page": 25,
+          "score": 0.375,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen people with diabetes at risk for hypoglycemia or fear of hypoglycemia, especially if they have experienced severe and/or frequent hypoglycemic events."
+        },
+        {
+          "recommendationId": "5.6",
+          "grade": "B",
+          "page": 2,
+          "score": 0.375,
+          "categories": [
+            "therapy-change-affordability",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Consider offering DSMES via telehealth and/or digital interventions as needed to meet individual preferences, address barriers to access, and improve satisfaction."
+        },
+        {
+          "recommendationId": "5.11",
+          "grade": "A",
+          "page": 5,
+          "score": 0.371,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Because diabetes medical nutrition therapy can result in cost savings B and improved cardiometabolic outcomes, A medical nutrition therapy should be adequately reimbursed by insurance. E Promote energy balance 5.12 Provide weight management treatment based on nutrition, physical activity, and behavioral therapy for all people with overweight or obesity, aiming for at least 3–7% weight loss."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "glycemic-goals-full",
+      "file": "components/guidelines/data/ada2025/behaviorsGoalsTechnology.ts",
+      "group": "behaviorsGoalsTech",
+      "title": "6. Glycemic Goals and Hypoglycemia",
+      "sourceIds": [
+        "glycemic-goals"
+      ],
+      "visualSourceIds": [
+        "glycemic-goals"
+      ],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "<7%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "70-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">70%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">250 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<5%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "181-250 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<25%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<=36%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<70 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<4%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<54 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<1%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=54 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "54-69 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "6.3a",
+          "grade": "A",
+          "page": 3,
+          "score": 0.857,
+          "categories": [
+            "acute-emergency-risk",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "An A1C goal of <7% (<53 mmol/ mol) is appropriate for many nonpregnant adults without severe hypoglycemia or frequent hypoglycemia affecting health or quality of life."
+        },
+        {
+          "recommendationId": "6.3b",
+          "grade": "B",
+          "page": 3,
+          "score": 0.8,
+          "categories": [
+            "screening-diagnosis-thresholds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "A goal time in range of >70% in people using CGM is appropriate for many nonpregnant adults."
+        },
+        {
+          "recommendationId": "6.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.632,
+          "categories": [
+            "screening-diagnosis-thresholds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Assess glycemic status by A1C A and/or continuous glucose monitoring (CGM) metrics such as time in range, time above range, and time below range. B Fructosamine or CGM can be used for glycemic monitoring when an alternative to A1C is required."
+        },
+        {
+          "recommendationId": "6.12",
+          "grade": "A",
+          "page": 8,
+          "score": 0.591,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals at high risk for hypoglycemia or with severe and/or frequent hypoglycemia for fear of hypoglycemia at least annually and when clinically appropriate. E Refer to a trained health care professional for evidence-based intervention."
+        },
+        {
+          "recommendationId": "6.13",
+          "grade": "E",
+          "page": 8,
+          "score": 0.538,
+          "categories": [
+            "acute-emergency-risk"
+          ],
+          "warnings": [],
+          "text": "Clinicians should consider an individual’s risk for hypoglycemia (see Table 6.5) when selecting diabetes medications and glycemic goals."
+        },
+        {
+          "recommendationId": "6.14",
+          "grade": "A",
+          "page": 8,
+          "score": 0.5,
+          "categories": [
+            "acute-emergency-risk",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Use of CGM is beneficial and recommended for individuals at high risk for hypoglycemia."
+        },
+        {
+          "recommendationId": "6.11",
+          "grade": "A",
+          "page": 8,
+          "score": 0.45,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals at risk for hypoglycemia for impaired hypoglycemia awareness at least annually and when clinically appropriate. E Refer to a trained health care professional for evidence-based intervention to improve hypoglycemia awareness."
+        },
+        {
+          "recommendationId": "6.15",
+          "grade": "B",
+          "page": 8,
+          "score": 0.433,
+          "categories": [
+            "acute-emergency-risk",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Glucose is the preferred treatment for the conscious individual with glucose <70 mg/dL (<3.9 mmol/L), although any form of carbohydrate that contains glucose may be used. Avoid using foods or beverages high in fat and/or protein for initial treatment of hypoglycemia. Fifteen minutes after initial treatment, repeat the treatment if hypoglycemia persists."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "technology-full",
+      "file": "components/guidelines/data/ada2025/behaviorsGoalsTechnology.ts",
+      "group": "behaviorsGoalsTech",
+      "title": "7. Diabetes Technology",
+      "sourceIds": [
+        "diabetes-technology"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/7. Diabetes Technology Standards of Care in Diabetes 2025.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "7.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.467,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Initiation of continuous glucose monitoring (CGM) should be offered to people with type 1 diabetes early in the disease, even at time of diagnosis."
+        },
+        {
+          "recommendationId": "7.24",
+          "grade": "B",
+          "page": 8,
+          "score": 0.455,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Offer connected insulin pens for people with diabetes taking multiple daily insulin injections."
+        },
+        {
+          "recommendationId": "7.28",
+          "grade": "E",
+          "page": 9,
+          "score": 0.417,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Individuals with diabetes who have been using CSII should have continued access acrossthird-party payors."
+        },
+        {
+          "recommendationId": "7.30",
+          "grade": "B",
+          "page": 13,
+          "score": 0.412,
+          "categories": [
+            "insulin-high-risk-meds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Consider combining technology (CGM, insulin pump, and/or diabetes apps) with online or virtual coaching to improve glycemic outcomes in individuals with diabetes or prediabetes."
+        },
+        {
+          "recommendationId": "7.6",
+          "grade": "E",
+          "page": 2,
+          "score": 0.391,
+          "categories": [
+            "insulin-high-risk-meds",
+            "screening-diagnosis-thresholds",
+            "therapy-change-affordability",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "People with diabetes who have been using CGM, continuous subcutaneous insulin infusion (CSII), and/or automated insulin delivery (AID) for diabetes management should have continued access across third-party payors, regardless of age or A1C levels."
+        },
+        {
+          "recommendationId": "7.31",
+          "grade": "B",
+          "page": 13,
+          "score": 0.375,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "In people with diabetes wearing personal CGM, the use of CGM should be continued when clinically appropriate during hospitalization, with confirmatory point-of-care glucose measurements for insulin dosing and hypoglycemia assessment and treatment under an institutional protocol."
+        },
+        {
+          "recommendationId": "7.26",
+          "grade": "A",
+          "page": 9,
+          "score": 0.353,
+          "categories": [
+            "acute-emergency-risk",
+            "children-adolescents",
+            "insulin-high-risk-meds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "AID systems should be the preferred insulin delivery method to improve glycemic outcomes and reduce hypoglycemia and disparities in youth and adults with type 1 diabetes A and other types of insulin-deficient diabetes E who are capable of using the device (either by themselves or with a caregiver). Choice of an AID system should be made based on the individual’s circumstances, preferences, and needs."
+        },
+        {
+          "recommendationId": "7.27",
+          "grade": "A",
+          "page": 9,
+          "score": 0.333,
+          "categories": [
+            "children-adolescents",
+            "insulin-high-risk-meds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Insulin pump therapy, preferably with CGM, should be offered for diabetes management to youth and adults on MDI with type 2 diabetes who can use the device safely (either by themselves or with a caregiver). The choice of device should be made based on the individual’s circumstances, preferences, and needs."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "cardiovascular-risk-full",
+      "file": "components/guidelines/data/ada2025/complications.ts",
+      "group": "complicationsRisk",
+      "title": "10. Cardiovascular Disease and Risk Management",
+      "sourceIds": [
+        "cardiovascular-risk"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/10. Cardiovascular Disease and Risk Management.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "6 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<130",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "80 mmHg",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=50%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<70 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<55 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=500 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "150-499 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "10.4",
+          "grade": "A",
+          "page": 3,
+          "score": 1,
+          "categories": [
+            "cardiovascular",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "The on-treatment blood pressure goal is <130/80 mmHg, if it can be safely attained."
+        },
+        {
+          "recommendationId": "10.27",
+          "grade": "A",
+          "page": 9,
+          "score": 0.75,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "For people of all ages with diabetes and ASCVD, high-intensity statin therapy should be added to lifestyle therapy."
+        },
+        {
+          "recommendationId": "10.32",
+          "grade": "B",
+          "page": 13,
+          "score": 0.727,
+          "categories": [
+            "cardiovascular",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In individuals with ASCVD or other cardiovascular risk factors on a statin with managed LDL cholesterol but elevated triglycerides (150–499 mg/dL [1.7–5.6 mmol/L]), the addition of icosapent ethyl can be considered to reduce cardiovascular risk."
+        },
+        {
+          "recommendationId": "10.19",
+          "grade": "A",
+          "page": 9,
+          "score": 0.714,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "For people with diabetes aged 40–75 years without ASCVD, use moderate-intensity statin therapy in addition to lifestyle therapy."
+        },
+        {
+          "recommendationId": "10.42a",
+          "grade": "A",
+          "page": 16,
+          "score": 0.654,
+          "categories": [
+            "acute-emergency-risk",
+            "renal-ckd",
+            "cardiovascular",
+            "insulin-high-risk-meds",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "In people with type 2 diabetes and established ASCVD, multiple ASCVD risk factors, or chronic kidney disease (CKD), an SGLT2 inhibitor with demonstrated cardiovascular benefit is recommended to reduce the risk of major adverse cardiovascular events and/or heart failure hospitalization."
+        },
+        {
+          "recommendationId": "10.42c",
+          "grade": "A",
+          "page": 16,
+          "score": 0.652,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular",
+            "insulin-high-risk-meds",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "In people with type 2 diabetes and established ASCVD or multiple risk factors for ASCVD, combined therapy with an SGLT2 inhibitor with demonstrated cardiovascular benefit and a GLP-1 RA with demonstrated cardiovascular benefit may be considered for additive reduction of the risk of adverse cardiovascular and kidney events."
+        },
+        {
+          "recommendationId": "10.20",
+          "grade": "C",
+          "page": 9,
+          "score": 0.647,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "For people with diabetes aged 20–39 years with additional ASCVD risk factors, it may be reasonable to initiate statin therapy in addition to lifestyle therapy."
+        },
+        {
+          "recommendationId": "10.45",
+          "grade": "A",
+          "page": 17,
+          "score": 0.647,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "In individuals with diabetes with established ASCVD or aged ≥55 years with additional cardiovascular risk factors, ACE inhibitor or ARB therapy is recommended to reduce the risk of cardiovascular events and mortality."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "kidney-disease-full",
+      "file": "components/guidelines/data/ada2025/complications.ts",
+      "group": "complicationsRisk",
+      "title": "11. Chronic Kidney Disease and Risk Management",
+      "sourceIds": [
+        "kidney-disease"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/11. Chronic Kidney Disease and Risk Management.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "5 years",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=20 mL/min/1.73 m2",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<30 mL/min/1.73 m2",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "11.4c",
+          "grade": "A",
+          "page": 2,
+          "score": 0.667,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "An ACE inhibitor or an ARB is not recommended for the primary prevention of CKD in people with diabetes who have normal blood pressure, normal UACR (<30 mg/g creatinine), and normal eGFR."
+        },
+        {
+          "recommendationId": "11.5a",
+          "grade": "A",
+          "page": 2,
+          "score": 0.667,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular",
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "For people with type 2 diabetes and CKD, use of a sodium–glucose cotransporter 2 (SGLT2) inhibitor with demonstrated benefit is recommended to reduce CKD progression and cardiovascular events in individuals with eGFR ≥20 mL/min/1.73 m2 ."
+        },
+        {
+          "recommendationId": "11.7",
+          "grade": "B",
+          "page": 2,
+          "score": 0.667,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Aim to reduce urinary albumin by ≥30% in people with CKD and albuminuria ≥300 mg/g to slow CKD progression."
+        },
+        {
+          "recommendationId": "11.10",
+          "grade": "B",
+          "page": 3,
+          "score": 0.615,
+          "categories": [
+            "renal-ckd"
+          ],
+          "warnings": [],
+          "text": "Refer to a nephrologist for uncertainty about the etiology of kidney disease, difficult management issues, and rapidly progressing kidney disease."
+        },
+        {
+          "recommendationId": "11.5b",
+          "grade": "A",
+          "page": 2,
+          "score": 0.556,
+          "categories": [
+            "acute-emergency-risk",
+            "renal-ckd",
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "To reduce cardiovascular risk and kidney disease progression in people with type 2 diabetes and CKD, a glucagon-like peptide 1 agonist with demonstrated benefit in this population is recommended."
+        },
+        {
+          "recommendationId": "11.4a",
+          "grade": "B",
+          "page": 1,
+          "score": 0.526,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "In nonpregnant people with diabetes and hypertension, either an ACE inhibitor or an angiotensin receptor blocker (ARB) is recommended for those with moderately increased albuminuria (UACR 30–299 mg/g creatinine)"
+        },
+        {
+          "recommendationId": "11.1b",
+          "grade": "B",
+          "page": 1,
+          "score": 0.526,
+          "categories": [
+            "renal-ckd"
+          ],
+          "warnings": [],
+          "text": "In people with established chronic kidney disease (CKD), monitor urinary albumin (e.g., spot UACR) and eGFR 1–4 times per year depending on the stage of the kidney disease (Fig. 11.1)."
+        },
+        {
+          "recommendationId": "11.5c",
+          "grade": "A",
+          "page": 2,
+          "score": 0.476,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "To reduce cardiovascular events and CKD progression in people with CKD and albuminuria, a nonsteroidal MRA that has been shown to be effective in clinical trials is recommended (if eGFR is ≥25 mL/min/1.73 m2 ). Potassium levels should be monitored."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "retina-neuro-foot-full",
+      "file": "components/guidelines/data/ada2025/complications.ts",
+      "group": "complicationsRisk",
+      "title": "12. Retinopathy, Neuropathy, and Foot Care",
+      "sourceIds": [
+        "retina-neuro-foot"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/12. Retinopathy, Neuropathy, and Foot Care.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "5 years",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "6-12 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "3-6 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "1-3 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "12.8",
+          "grade": "B",
+          "page": 2,
+          "score": 0.524,
+          "categories": [
+            "pregnancy-childbearing",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Individuals with preexisting type 1 or type 2 diabetes should receive an eye exam before pregnancy as well as in the first trimester and may need to be monitored every trimester and for 1 year postpartum as indicated by the degree of retinopathy."
+        },
+        {
+          "recommendationId": "12.21",
+          "grade": "E",
+          "page": 5,
+          "score": 0.5,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Assess and treat pain related to diabetic peripheral neuropathy B and symptoms of autonomic neuropathy to improve quality of life."
+        },
+        {
+          "recommendationId": "12.20",
+          "grade": "B",
+          "page": 5,
+          "score": 0.478,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Optimize glucose management to prevent or delay the development of neuropathy in people with type 1 diabetes A and to slow the progression of neuropathy in people with type 2 diabetes. C Optimize weight, blood pressure, and serum lipid management to reduce the risk or slow the progression of diabetic neuropathy."
+        },
+        {
+          "recommendationId": "12.19",
+          "grade": "E",
+          "page": 4,
+          "score": 0.36,
+          "categories": [
+            "renal-ckd"
+          ],
+          "warnings": [],
+          "text": "Symptoms and signs of autonomic neuropathy should be assessed in people with diabetes starting at diagnosis of type 2 diabetes and 5 years after the diagnosis of type 1 diabetes, and at least annually thereafter, and with evidence of other microvascular complications, particularly kidney disease and diabetic peripheral neuropathy. Screening can include asking about orthostatic dizziness, syncope, early satiety, erectile dysfunction, changes in sweating patterns, or dry cracked skin in the extremities. Signs of autonomic neuropathy include orthostatic hypotension, a resting tachycardia, or evidence of peripheral dryness or cracking of skin."
+        },
+        {
+          "recommendationId": "12.7",
+          "grade": "B",
+          "page": 2,
+          "score": 0.353,
+          "categories": [
+            "pregnancy-childbearing",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Counsel individuals of childbearing potential with preexisting type 1 or type 2 diabetes who are planning pregnancy or who are pregnant on the risk of development and/or progression of diabetic retinopathy."
+        },
+        {
+          "recommendationId": "12.5",
+          "grade": "B",
+          "page": 2,
+          "score": 0.343,
+          "categories": [
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "If there is no evidence of retinopathy from one or more annual eye exams and glycemic indicators are within the goal range, then screening every 1–2 years may be considered. If any level of diabetic retinopathy is present, subsequent dilated retinal examinations should be repeated at least annually by an ophthalmologist or optometrist. If retinopathy is progressing or sightthreatening, then examinations by an ophthalmologist will be required more frequently."
+        },
+        {
+          "recommendationId": "12.1",
+          "grade": "A",
+          "page": 1,
+          "score": 0.333,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Implement strategies to help people with diabetes reach glycemic goals to reduce the risk or slow the progression of diabetic retinopathy."
+        },
+        {
+          "recommendationId": "12.16",
+          "grade": "E",
+          "page": 4,
+          "score": 0.333,
+          "categories": [
+            "acute-emergency-risk"
+          ],
+          "warnings": [],
+          "text": "People with vision loss from diabetes should receive educational materials and resources for eye care support in addition to self-management education (e.g., glycemic management and hypoglycemia awareness)."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "diagnostic-criteria",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Diagnostic Criteria in Nonpregnant Individuals",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": ">=6.5%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=126 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=200 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "8 hours",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "3-6 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "5.7-6.4%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "100-125 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "140-199 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "75 g",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.1a",
+          "grade": "B",
+          "page": 1,
+          "score": 0.636,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Diagnose diabetes based on A1C or plasma glucose criteria. Plasma glucose criteria include either the fasting plasma glucose (FPG), 2-h plasma glucose (2-h PG) during a 75-g oral glucose tolerance test (OGTT), or random glucose accompanied by classic hyperglycemic symptoms/crises (Table 2.1)."
+        },
+        {
+          "recommendationId": "2.12",
+          "grade": "B",
+          "page": 8,
+          "score": 0.5,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "To screen for prediabetes and type 2 diabetes, FPG, 2-h PG during 75-g OGTT, and A1C are each appropriate (Table 2.1 and Table 2.2)."
+        },
+        {
+          "recommendationId": "2.22",
+          "grade": "B",
+          "page": 14,
+          "score": 0.5,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "The OGTT is the preferred test to make a diagnosis of PTDM."
+        },
+        {
+          "recommendationId": "2.28",
+          "grade": "B",
+          "page": 16,
+          "score": 0.438,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals with GDM for prediabetes or diabetes at 4–12 weeks postpartum, using the 75-g OGTT and clinically appropriate nonpregnancy diagnostic criteria."
+        },
+        {
+          "recommendationId": "2.3",
+          "grade": "B",
+          "page": 3,
+          "score": 0.412,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Evaluate for the possibility of a problem or interference with either test when there is consistent and substantial discordance between blood glucose values and A1C test results."
+        },
+        {
+          "recommendationId": "2.13",
+          "grade": "E",
+          "page": 8,
+          "score": 0.353,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "When using OGTT as a screening tool for prediabetes or diabetes, adequate carbohydrate intake (at least 150 g/day) should be assured for 3 days prior to testing.E"
+        },
+        {
+          "recommendationId": "2.18",
+          "grade": "B",
+          "page": 13,
+          "score": 0.313,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Annual screening for cystic fibrosis–related diabetes (CFRD) with an OGTT should begin by age 10 years in all people with cystic fibrosis not previously diagnosed with CFRD."
+        },
+        {
+          "recommendationId": "2.19",
+          "grade": "B",
+          "page": 13,
+          "score": 0.308,
+          "categories": [
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "A1C is not recommended as a screening test for CFRD due to low sensitivity. However, a value of ≥6.5% (≥48 mmol/mol) is consistent with a diagnosis of CFRD."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "a1c-use-limitations",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Using A1C Safely",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.4",
+          "grade": "B",
+          "page": 3,
+          "score": 0.6,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In conditions associated with an altered relationship between A1C and glycemia, such as some hemoglobin variants, pregnancy (second and third trimesters and the postpartum period), glucose-6-phosphate dehydrogenase deficiency, HIV, hemodialysis, recent blood loss or transfusion, hemolysis, or erythropoietin therapy, plasma glucose criteria should be used to diagnose diabetes."
+        },
+        {
+          "recommendationId": "2.3",
+          "grade": "B",
+          "page": 3,
+          "score": 0.412,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Evaluate for the possibility of a problem or interference with either test when there is consistent and substantial discordance between blood glucose values and A1C test results."
+        },
+        {
+          "recommendationId": "2.2b",
+          "grade": "B",
+          "page": 3,
+          "score": 0.36,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Point-of-care A1C testing for diabetes screening and diagnosis should be restricted to devices approved for diagnosis by the U.S. Food and Drug Administration at Clinical Laboratory Improvement Amendments–certified laboratories that perform testing of moderate complexity or higher by trained personnel."
+        },
+        {
+          "recommendationId": "2.19",
+          "grade": "B",
+          "page": 13,
+          "score": 0.231,
+          "categories": [
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "A1C is not recommended as a screening test for CFRD due to low sensitivity. However, a value of ≥6.5% (≥48 mmol/mol) is consistent with a diagnosis of CFRD."
+        },
+        {
+          "recommendationId": "2.26c",
+          "grade": "B",
+          "page": 16,
+          "score": 0.214,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen for early abnormal glucose metabolism with dysglycemia using FPG 110–125 mg/dL (6.1– 6.9 mmol/L) or A1C 5.9–6.4% (41– 47 mmol/mol)."
+        },
+        {
+          "recommendationId": "2.5",
+          "grade": "E",
+          "page": 4,
+          "score": 0.2,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Classify people with hyperglycemia into appropriate diagnostic categories to aid in personalized management."
+        },
+        {
+          "recommendationId": "2.28",
+          "grade": "B",
+          "page": 16,
+          "score": 0.188,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals with GDM for prediabetes or diabetes at 4–12 weeks postpartum, using the 75-g OGTT and clinically appropriate nonpregnancy diagnostic criteria."
+        },
+        {
+          "recommendationId": "2.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.188,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Autoantibody-based screening for presymptomatic type 1 diabetes should be offered to those with a family history of type 1 diabetes or otherwise known elevated genetic risk."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "classification-type1",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Classification and Type 1 Diabetes Screening",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.938,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Autoantibody-based screening for presymptomatic type 1 diabetes should be offered to those with a family history of type 1 diabetes or otherwise known elevated genetic risk."
+        },
+        {
+          "recommendationId": "2.5",
+          "grade": "E",
+          "page": 4,
+          "score": 0.9,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Classify people with hyperglycemia into appropriate diagnostic categories to aid in personalized management."
+        },
+        {
+          "recommendationId": "2.9",
+          "grade": "E",
+          "page": 6,
+          "score": 0.643,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Standardized islet autoantibody tests are recommended for classification of diabetes in adults who have phenotypic risk factors that overlap with those for type 1 diabetes (e.g., younger age at diagnosis, unintentional weight loss, ketoacidosis, or short time to insulin treatment)."
+        },
+        {
+          "recommendationId": "2.6",
+          "grade": "B",
+          "page": 6,
+          "score": 0.529,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Screening for presymptomatic type 1 diabetes may be done by detection of autoantibodies to insulin, glutamic acid decarboxylase (GAD), islet antigen 2 (IA-2), or zinc transporter 8 (ZnT8)."
+        },
+        {
+          "recommendationId": "2.24b",
+          "grade": "B",
+          "page": 14,
+          "score": 0.364,
+          "categories": [
+            "children-adolescents",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Children and young adults who do not have typical characteristics of type 1 or type 2 diabetes and family history of diabetes in successive generations (suggestive of an autosomal dominant pattern of inheritance) should have genetic testing for maturityonsetdiabetes of the young (MODY)."
+        },
+        {
+          "recommendationId": "2.18",
+          "grade": "B",
+          "page": 13,
+          "score": 0.313,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Annual screening for cystic fibrosis–related diabetes (CFRD) with an OGTT should begin by age 10 years in all people with cystic fibrosis not previously diagnosed with CFRD."
+        },
+        {
+          "recommendationId": "2.12",
+          "grade": "B",
+          "page": 8,
+          "score": 0.3,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "To screen for prediabetes and type 2 diabetes, FPG, 2-h PG during 75-g OGTT, and A1C are each appropriate (Table 2.1 and Table 2.2)."
+        },
+        {
+          "recommendationId": "2.25",
+          "grade": "E",
+          "page": 16,
+          "score": 0.25,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In individuals who are planning pregnancy, screen those with risk factors (Table 2.5) B and consider testing all individuals of childbearing potential for undiagnosed prediabetes or diabetes."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "prediabetes-type2-screening",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Prediabetes and Type 2 Diabetes Screening",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "35 years",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "3 years",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "150 g/day",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.12",
+          "grade": "B",
+          "page": 8,
+          "score": 0.8,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "To screen for prediabetes and type 2 diabetes, FPG, 2-h PG during 75-g OGTT, and A1C are each appropriate (Table 2.1 and Table 2.2)."
+        },
+        {
+          "recommendationId": "2.13",
+          "grade": "E",
+          "page": 8,
+          "score": 0.706,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "When using OGTT as a screening tool for prediabetes or diabetes, adequate carbohydrate intake (at least 150 g/day) should be assured for 3 days prior to testing.E"
+        },
+        {
+          "recommendationId": "2.18",
+          "grade": "B",
+          "page": 13,
+          "score": 0.5,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Annual screening for cystic fibrosis–related diabetes (CFRD) with an OGTT should begin by age 10 years in all people with cystic fibrosis not previously diagnosed with CFRD."
+        },
+        {
+          "recommendationId": "2.28",
+          "grade": "B",
+          "page": 16,
+          "score": 0.438,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals with GDM for prediabetes or diabetes at 4–12 weeks postpartum, using the 75-g OGTT and clinically appropriate nonpregnancy diagnostic criteria."
+        },
+        {
+          "recommendationId": "2.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.313,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Autoantibody-based screening for presymptomatic type 1 diabetes should be offered to those with a family history of type 1 diabetes or otherwise known elevated genetic risk."
+        },
+        {
+          "recommendationId": "2.5",
+          "grade": "E",
+          "page": 4,
+          "score": 0.3,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Classify people with hyperglycemia into appropriate diagnostic categories to aid in personalized management."
+        },
+        {
+          "recommendationId": "2.1a",
+          "grade": "B",
+          "page": 1,
+          "score": 0.273,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Diagnose diabetes based on A1C or plasma glucose criteria. Plasma glucose criteria include either the fasting plasma glucose (FPG), 2-h plasma glucose (2-h PG) during a 75-g oral glucose tolerance test (OGTT), or random glucose accompanied by classic hyperglycemic symptoms/crises (Table 2.1)."
+        },
+        {
+          "recommendationId": "2.15b",
+          "grade": "B",
+          "page": 9,
+          "score": 0.263,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In people who are prescribed second-generation antipsychotic medications, screen for prediabetes and diabetes at baseline and repeat 12– 16 weeks after medication initiation or sooner, if clinically indicated, and annually thereafter."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "prediabetes-definition",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Prediabetes Definition and Risk Meaning",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "5.7-6.4%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "100-125 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "140-199 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">6.0%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.12",
+          "grade": "B",
+          "page": 8,
+          "score": 0.5,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "To screen for prediabetes and type 2 diabetes, FPG, 2-h PG during 75-g OGTT, and A1C are each appropriate (Table 2.1 and Table 2.2)."
+        },
+        {
+          "recommendationId": "2.1a",
+          "grade": "B",
+          "page": 1,
+          "score": 0.364,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Diagnose diabetes based on A1C or plasma glucose criteria. Plasma glucose criteria include either the fasting plasma glucose (FPG), 2-h plasma glucose (2-h PG) during a 75-g oral glucose tolerance test (OGTT), or random glucose accompanied by classic hyperglycemic symptoms/crises (Table 2.1)."
+        },
+        {
+          "recommendationId": "2.28",
+          "grade": "B",
+          "page": 16,
+          "score": 0.25,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals with GDM for prediabetes or diabetes at 4–12 weeks postpartum, using the 75-g OGTT and clinically appropriate nonpregnancy diagnostic criteria."
+        },
+        {
+          "recommendationId": "2.26b",
+          "grade": "B",
+          "page": 16,
+          "score": 0.24,
+          "categories": [
+            "pregnancy-childbearing",
+            "insulin-high-risk-meds",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Before 15 weeks of gestation, screen for abnormal glucose metabolism to identify individuals who are at higher risk of adverse pregnancy and neonatal outcomes, are more likely to need insulin, and are at high risk of a later gestational diabetes mellitus (GDM) diagnosis."
+        },
+        {
+          "recommendationId": "2.13",
+          "grade": "E",
+          "page": 8,
+          "score": 0.235,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "When using OGTT as a screening tool for prediabetes or diabetes, adequate carbohydrate intake (at least 150 g/day) should be assured for 3 days prior to testing.E"
+        },
+        {
+          "recommendationId": "2.18",
+          "grade": "B",
+          "page": 13,
+          "score": 0.188,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Annual screening for cystic fibrosis–related diabetes (CFRD) with an OGTT should begin by age 10 years in all people with cystic fibrosis not previously diagnosed with CFRD."
+        },
+        {
+          "recommendationId": "2.22",
+          "grade": "B",
+          "page": 14,
+          "score": 0.167,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "The OGTT is the preferred test to make a diagnosis of PTDM."
+        },
+        {
+          "recommendationId": "2.27",
+          "grade": "A",
+          "page": 16,
+          "score": 0.167,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen for GDM at 24–28 weeks of gestation in pregnant individuals not previously found to have diabetes or high-risk abnormal glucose metabolism detected earlier in the current pregnancy."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "gdm-diagnosis",
+      "file": "components/guidelines/data/ada2025/diagnosisClassification.ts",
+      "group": "diagnosisClassification",
+      "title": "Gestational Diabetes Screening and Diagnosis",
+      "sourceIds": [
+        "diagnosis-classification"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "15 weeks",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "24-28 weeks",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "92 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "153 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "140 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "24-28 week",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "110-125 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "5.9-6.4%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "2.26c",
+          "grade": "B",
+          "page": 16,
+          "score": 0.714,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen for early abnormal glucose metabolism with dysglycemia using FPG 110–125 mg/dL (6.1– 6.9 mmol/L) or A1C 5.9–6.4% (41– 47 mmol/mol)."
+        },
+        {
+          "recommendationId": "2.22",
+          "grade": "B",
+          "page": 14,
+          "score": 0.667,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "The OGTT is the preferred test to make a diagnosis of PTDM."
+        },
+        {
+          "recommendationId": "2.26b",
+          "grade": "B",
+          "page": 16,
+          "score": 0.56,
+          "categories": [
+            "pregnancy-childbearing",
+            "insulin-high-risk-meds",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Before 15 weeks of gestation, screen for abnormal glucose metabolism to identify individuals who are at higher risk of adverse pregnancy and neonatal outcomes, are more likely to need insulin, and are at high risk of a later gestational diabetes mellitus (GDM) diagnosis."
+        },
+        {
+          "recommendationId": "2.27",
+          "grade": "A",
+          "page": 16,
+          "score": 0.556,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen for GDM at 24–28 weeks of gestation in pregnant individuals not previously found to have diabetes or high-risk abnormal glucose metabolism detected earlier in the current pregnancy."
+        },
+        {
+          "recommendationId": "2.25",
+          "grade": "E",
+          "page": 16,
+          "score": 0.5,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In individuals who are planning pregnancy, screen those with risk factors (Table 2.5) B and consider testing all individuals of childbearing potential for undiagnosed prediabetes or diabetes."
+        },
+        {
+          "recommendationId": "2.28",
+          "grade": "B",
+          "page": 16,
+          "score": 0.5,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen individuals with GDM for prediabetes or diabetes at 4–12 weeks postpartum, using the 75-g OGTT and clinically appropriate nonpregnancy diagnostic criteria."
+        },
+        {
+          "recommendationId": "2.18",
+          "grade": "B",
+          "page": 13,
+          "score": 0.438,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Annual screening for cystic fibrosis–related diabetes (CFRD) with an OGTT should begin by age 10 years in all people with cystic fibrosis not previously diagnosed with CFRD."
+        },
+        {
+          "recommendationId": "2.1a",
+          "grade": "B",
+          "page": 1,
+          "score": 0.409,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Diagnose diabetes based on A1C or plasma glucose criteria. Plasma glucose criteria include either the fasting plasma glucose (FPG), 2-h plasma glucose (2-h PG) during a 75-g oral glucose tolerance test (OGTT), or random glucose accompanied by classic hyperglycemic symptoms/crises (Table 2.1)."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "population-health-core",
+      "file": "components/guidelines/data/ada2025/improvingCare.ts",
+      "group": "populationCare",
+      "title": "Population Health and Person-Centered Care",
+      "sourceIds": [
+        "improving-care"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "1.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.643,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Ensure treatment decisions are timely, rely on evidence-based guidelines, capture key elements within the social determinants of health, and are made collaboratively with people with or at risk for diabetes and caregivers based on individual preferences, prognoses, comorbidities, and informed financial considerations."
+        },
+        {
+          "recommendationId": "1.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.35,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "During clinical encounters, assess for social determinants of health, including food insecurity, insecurity,financial barriers, health insurance and health care access, environmental and neighborhood factors, and social capital/social support,"
+        },
+        {
+          "recommendationId": "1.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.308,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Align approaches to diabetes management with evidence-based care models. These models emphasize person-centered team care, integrated longterm treatment approaches to diabetes and comorbidities, and ongoing collaborative communication and goal setting between all team members and with people with diabetes."
+        },
+        {
+          "recommendationId": "1.6",
+          "grade": "C",
+          "page": 6,
+          "score": 0.296,
+          "categories": [
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Health systems should assess and address disparities in diabetes care and health outcomes (e.g., by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language for health care discussions, disability, and other social determinants of health)."
+        },
+        {
+          "recommendationId": "1.9",
+          "grade": "B",
+          "page": 6,
+          "score": 0.25,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Consider the involvement of community health workers to support management of diabetes and cardiovascular risk factors, especially in underserved communities and health care systems."
+        },
+        {
+          "recommendationId": "1.5",
+          "grade": "A",
+          "page": 1,
+          "score": 0.143,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Health systems should adopt a culture of quality improvement, implement benchmarking programs, and engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "care-models-teams",
+      "file": "components/guidelines/data/ada2025/improvingCare.ts",
+      "group": "populationCare",
+      "title": "Care Models, Teams, and Registries",
+      "sourceIds": [
+        "improving-care"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "1.9",
+          "grade": "B",
+          "page": 6,
+          "score": 0.5,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Consider the involvement of community health workers to support management of diabetes and cardiovascular risk factors, especially in underserved communities and health care systems."
+        },
+        {
+          "recommendationId": "1.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.385,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Align approaches to diabetes management with evidence-based care models. These models emphasize person-centered team care, integrated longterm treatment approaches to diabetes and comorbidities, and ongoing collaborative communication and goal setting between all team members and with people with diabetes."
+        },
+        {
+          "recommendationId": "1.5",
+          "grade": "A",
+          "page": 1,
+          "score": 0.286,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Health systems should adopt a culture of quality improvement, implement benchmarking programs, and engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes."
+        },
+        {
+          "recommendationId": "1.6",
+          "grade": "C",
+          "page": 6,
+          "score": 0.185,
+          "categories": [
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Health systems should assess and address disparities in diabetes care and health outcomes (e.g., by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language for health care discussions, disability, and other social determinants of health)."
+        },
+        {
+          "recommendationId": "1.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.179,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Ensure treatment decisions are timely, rely on evidence-based guidelines, capture key elements within the social determinants of health, and are made collaboratively with people with or at risk for diabetes and caregivers based on individual preferences, prognoses, comorbidities, and informed financial considerations."
+        },
+        {
+          "recommendationId": "1.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.15,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "During clinical encounters, assess for social determinants of health, including food insecurity, insecurity,financial barriers, health insurance and health care access, environmental and neighborhood factors, and social capital/social support,"
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "quality-improvement",
+      "file": "components/guidelines/data/ada2025/improvingCare.ts",
+      "group": "populationCare",
+      "title": "Quality Improvement and Measurement",
+      "sourceIds": [
+        "improving-care"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "1.5",
+          "grade": "A",
+          "page": 1,
+          "score": 0.714,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Health systems should adopt a culture of quality improvement, implement benchmarking programs, and engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes."
+        },
+        {
+          "recommendationId": "1.9",
+          "grade": "B",
+          "page": 6,
+          "score": 0.375,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Consider the involvement of community health workers to support management of diabetes and cardiovascular risk factors, especially in underserved communities and health care systems."
+        },
+        {
+          "recommendationId": "1.6",
+          "grade": "C",
+          "page": 6,
+          "score": 0.37,
+          "categories": [
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Health systems should assess and address disparities in diabetes care and health outcomes (e.g., by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language for health care discussions, disability, and other social determinants of health)."
+        },
+        {
+          "recommendationId": "1.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.25,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "During clinical encounters, assess for social determinants of health, including food insecurity, insecurity,financial barriers, health insurance and health care access, environmental and neighborhood factors, and social capital/social support,"
+        },
+        {
+          "recommendationId": "1.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.179,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Ensure treatment decisions are timely, rely on evidence-based guidelines, capture key elements within the social determinants of health, and are made collaboratively with people with or at risk for diabetes and caregivers based on individual preferences, prognoses, comorbidities, and informed financial considerations."
+        },
+        {
+          "recommendationId": "1.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.154,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Align approaches to diabetes management with evidence-based care models. These models emphasize person-centered team care, integrated longterm treatment approaches to diabetes and comorbidities, and ongoing collaborative communication and goal setting between all team members and with people with diabetes."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "sdoh-disparities",
+      "file": "components/guidelines/data/ada2025/improvingCare.ts",
+      "group": "populationCare",
+      "title": "Social Determinants of Health and Disparities",
+      "sourceIds": [
+        "improving-care"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "1.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.9,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "During clinical encounters, assess for social determinants of health, including food insecurity, insecurity,financial barriers, health insurance and health care access, environmental and neighborhood factors, and social capital/social support,"
+        },
+        {
+          "recommendationId": "1.6",
+          "grade": "C",
+          "page": 6,
+          "score": 0.815,
+          "categories": [
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Health systems should assess and address disparities in diabetes care and health outcomes (e.g., by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language for health care discussions, disability, and other social determinants of health)."
+        },
+        {
+          "recommendationId": "1.9",
+          "grade": "B",
+          "page": 6,
+          "score": 0.438,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Consider the involvement of community health workers to support management of diabetes and cardiovascular risk factors, especially in underserved communities and health care systems."
+        },
+        {
+          "recommendationId": "1.5",
+          "grade": "A",
+          "page": 1,
+          "score": 0.286,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Health systems should adopt a culture of quality improvement, implement benchmarking programs, and engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes."
+        },
+        {
+          "recommendationId": "1.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.214,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Ensure treatment decisions are timely, rely on evidence-based guidelines, capture key elements within the social determinants of health, and are made collaboratively with people with or at risk for diabetes and caregivers based on individual preferences, prognoses, comorbidities, and informed financial considerations."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "patient-subgroups",
+      "file": "components/guidelines/data/ada2025/improvingCare.ts",
+      "group": "populationCare",
+      "title": "Matching Team Members to Patient Subgroups",
+      "sourceIds": [
+        "improving-care"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "1.9",
+          "grade": "B",
+          "page": 6,
+          "score": 0.313,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Consider the involvement of community health workers to support management of diabetes and cardiovascular risk factors, especially in underserved communities and health care systems."
+        },
+        {
+          "recommendationId": "1.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.308,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Align approaches to diabetes management with evidence-based care models. These models emphasize person-centered team care, integrated longterm treatment approaches to diabetes and comorbidities, and ongoing collaborative communication and goal setting between all team members and with people with diabetes."
+        },
+        {
+          "recommendationId": "1.7",
+          "grade": "B",
+          "page": 6,
+          "score": 0.3,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "During clinical encounters, assess for social determinants of health, including food insecurity, insecurity,financial barriers, health insurance and health care access, environmental and neighborhood factors, and social capital/social support,"
+        },
+        {
+          "recommendationId": "1.1",
+          "grade": "B",
+          "page": 1,
+          "score": 0.214,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Ensure treatment decisions are timely, rely on evidence-based guidelines, capture key elements within the social determinants of health, and are made collaboratively with people with or at risk for diabetes and caregivers based on individual preferences, prognoses, comorbidities, and informed financial considerations."
+        },
+        {
+          "recommendationId": "1.6",
+          "grade": "C",
+          "page": 6,
+          "score": 0.148,
+          "categories": [
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Health systems should assess and address disparities in diabetes care and health outcomes (e.g., by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language for health care discussions, disability, and other social determinants of health)."
+        },
+        {
+          "recommendationId": "1.5",
+          "grade": "A",
+          "page": 1,
+          "score": 0.143,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Health systems should adopt a culture of quality improvement, implement benchmarking programs, and engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "prevention-delay-full",
+      "file": "components/guidelines/data/ada2025/preventionEvaluation.ts",
+      "group": "preventionEvaluation",
+      "title": "3. Prevention or Delay of Diabetes and Comorbidities",
+      "sourceIds": [
+        "prevention-delay"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": ">=35",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "25-59 years",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=110 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=6.0%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "3.12",
+          "grade": "B",
+          "page": 6,
+          "score": 0.857,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "In adults with overweight or obesity at high risk of type 2 diabetes, care goals should include weight loss and maintenance, minimizing the progression of hyperglycemia, and attention to cardiovascular risk."
+        },
+        {
+          "recommendationId": "3.7",
+          "grade": "A",
+          "page": 4,
+          "score": 0.667,
+          "categories": [
+            "pregnancy-childbearing",
+            "insulin-high-risk-meds",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Metformin for the prevention of type 2 diabetes should be considered in adults at high risk of type 2 diabetes, as typified by the DPP, especially those aged 25–59 years with BMI ≥35 kg/m2 , higher fasting plasma glucose (e.g., ≥110 mg/dL [≥6 mmol/L]), and higher A1C (e.g., ≥6.0% [≥42 mmol/mol]), and in individuals with prior gestational diabetes mellitus."
+        },
+        {
+          "recommendationId": "3.13",
+          "grade": "B",
+          "page": 6,
+          "score": 0.625,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Pharmacotherapy (e.g., for weight management, minimizing the progression of hyperglycemia, and cardiovascular risk reduction) should be considered to support person-centered care goals."
+        },
+        {
+          "recommendationId": "3.8",
+          "grade": "B",
+          "page": 4,
+          "score": 0.529,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Long-term use of metformin may be associated with vitamin B12 deficiency; consider periodic assessment of vitamin B12 level in metformintreated individuals, especially in those with anemia or peripheral neuropathy."
+        },
+        {
+          "recommendationId": "3.5",
+          "grade": "E",
+          "page": 2,
+          "score": 0.455,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Given the cost-effectiveness of lifestyle behavior modification programs for diabetes prevention, such diabetes prevention programs should be offered to adults at high riskof type 2 diabetes. A Diabetes prevention programs should be covered by third-party payors, and inconsistencies in access should be addressed."
+        },
+        {
+          "recommendationId": "3.14",
+          "grade": "A",
+          "page": 6,
+          "score": 0.441,
+          "categories": [
+            "pregnancy-childbearing",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "More intensive preventive approaches should be considered in individuals who are at particularly high risk of progression to diabetes, including individuals with BMI ≥35 kg/m2 , those at higher glucose levels (e.g., fasting plasma glucose 110–125 mg/dL [6.1–6.9 mmol/L], 2-h postchallenge glucose 173–199 mg/dL [9.6–11.0 mmol/L], and A1C ≥6.0% [≥42 mmol/mol]), and individuals with a history of gestational diabetes mellitus."
+        },
+        {
+          "recommendationId": "3.10",
+          "grade": "B",
+          "page": 5,
+          "score": 0.393,
+          "categories": [
+            "cardiovascular",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Statin therapy may increase the risk of type 2 diabetes in people at high risk of developing type 2 diabetes. In such individuals, glucose status should be monitored regularly and diabetes prevention approaches reinforced. It is not recommended that statins be avoided or discontinued for this adverse effect."
+        },
+        {
+          "recommendationId": "3.9",
+          "grade": "B",
+          "page": 5,
+          "score": 0.385,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Prediabetes is associated with heightened cardiovascular risk; therefore, screening for and treatment of modifiable risk factors for cardiovascular disease are suggested."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "comprehensive-evaluation-full",
+      "file": "components/guidelines/data/ada2025/preventionEvaluation.ts",
+      "group": "preventionEvaluation",
+      "title": "4. Comprehensive Medical Evaluation and Comorbidity Assessment",
+      "sourceIds": [
+        "comprehensive-evaluation"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "4.8",
+          "grade": "A",
+          "page": 6,
+          "score": 0.8,
+          "categories": [
+            "contraindication-adverse-effects",
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Assess fracture risk in older adults with diabetes as a part of routine care in diabetes clinical practice, according to risk factors and comorbidities."
+        },
+        {
+          "recommendationId": "4.31a",
+          "grade": "B",
+          "page": 17,
+          "score": 0.615,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Adults with type 2 diabetes and MASLD are at increased cardiovascular risk; therefore, comprehensive management of cardiovascular risk factors is recommended."
+        },
+        {
+          "recommendationId": "4.4",
+          "grade": "B",
+          "page": 3,
+          "score": 0.611,
+          "categories": [
+            "acute-emergency-risk",
+            "cardiovascular",
+            "older-adults-frailty"
+          ],
+          "warnings": [
+            "missing-spaces"
+          ],
+          "text": "Ongoing management should be guided by the assessment of overall health and functional status, diabetes complications, cardiovascular risk, hypoglycemia risk, and shared decisionmaking to set therapeutic goals."
+        },
+        {
+          "recommendationId": "4.3",
+          "grade": "A",
+          "page": 3,
+          "score": 0.538,
+          "categories": [
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "A complete medical evaluation should be performed at the initial visit and follow-up, as appropriate, to: • Confirm the diagnosis and classify diabetes. A • Assess glycemic status and previous treatment. A • Evaluate for diabetes complications, potential comorbid conditions, and overall health status. A • Identify care partners and support system. E • Assess social determinants of health and structural barriers to optimal health and health care. A • Review risk factor management in the person with diabetes. A • Begin engagement with the person with diabetes in the formulation of a care management plan including initial goals of care. A • Develop a plan for continuing care."
+        },
+        {
+          "recommendationId": "4.19",
+          "grade": "B",
+          "page": 13,
+          "score": 0.522,
+          "categories": [
+            "renal-ckd",
+            "cardiovascular",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In men with diabetes or prediabetes, screen for ED, particularly in those with high cardiovascular risk, retinopathy, cardiovascular disease, chronic kidney disease, peripheral or autonomic neuropathy, longer duration of diabetes, depression, and hypogonadism, and in those who are not meeting glycemic goals."
+        },
+        {
+          "recommendationId": "4.27a",
+          "grade": "B",
+          "page": 17,
+          "score": 0.52,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "In adults with type 2 diabetes and biopsy-proven MASH or those at high risk for liver fibrosis (based on noninvasive tests), pioglitazone, a GLP-1 RA, or a dual GIP and GLP-1 RA is preferred for glycemic management because of potential beneficial effects on MASH."
+        },
+        {
+          "recommendationId": "4.27b",
+          "grade": "B",
+          "page": 17,
+          "score": 0.519,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Combination therapy with pioglitazone plus GLP-1 RA can be considered for the treatment of hyperglycemia in adults with type 2 diabetes with biopsyproven MASH or those at high risk of liver fibrosis (identified with noninvasive tests) because of potential beneficial effects on MASH.B"
+        },
+        {
+          "recommendationId": "4.30b",
+          "grade": "C",
+          "page": 17,
+          "score": 0.5,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Insulin therapy is the preferred agent for the treatment of hyperglycemia in adults with type 2 diabetes with decompensated cirrhosis."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "older-adults-full",
+      "file": "components/guidelines/data/ada2025/specialSituations.ts",
+      "group": "specialPopulations",
+      "title": "13. Older Adults",
+      "sourceIds": [
+        "older-adults"
+      ],
+      "visualSourceIds": [
+        "older-adults"
+      ],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/13. Older Adults.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "<7.0-7.5%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "80-130 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "manual-table-or-figure-review",
+          "reviewNote": "ADA 2025 Table 13.1: healthy older adult fasting/premeal glucose goal"
+        },
+        {
+          "claim": "80-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "manual-table-or-figure-review",
+          "reviewNote": "ADA 2025 Table 13.1: healthy older adult bedtime glucose goal"
+        },
+        {
+          "claim": "<8.0%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "90-150 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "100-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "manual-table-or-figure-review",
+          "reviewNote": "ADA 2025 Table 13.1: very complex/poor health fasting/premeal glucose goal"
+        },
+        {
+          "claim": "110-200 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "manual-table-or-figure-review",
+          "reviewNote": "ADA 2025 Table 13.1: very complex/poor health bedtime glucose goal"
+        },
+        {
+          "claim": ">10",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "13.16c",
+          "grade": "B",
+          "page": 7,
+          "score": 0.765,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds",
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Simplify complex treatment plans (especially insulin) to reduce the risk of hypoglycemia and polypharmacy and decrease the treatment burden if it can be achieved within the individualized glycemic goals."
+        },
+        {
+          "recommendationId": "13.15",
+          "grade": "B",
+          "page": 7,
+          "score": 0.714,
+          "categories": [
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Overtreatment of diabetes is common in older adults and should be avoided."
+        },
+        {
+          "recommendationId": "13.8c",
+          "grade": "C",
+          "page": 4,
+          "score": 0.708,
+          "categories": [
+            "acute-emergency-risk",
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Older adults with very complex or poor health receive minimal benefit from stringent glycemic goals. Clinicians should focus on avoiding hypoglycemia and symptomatic hyperglycemia rather than achieving stringent glycemic goals."
+        },
+        {
+          "recommendationId": "13.10",
+          "grade": "B",
+          "page": 4,
+          "score": 0.636,
+          "categories": [
+            "cardiovascular",
+            "older-adults-frailty",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Treatment of hypertension to individualized goal levels is indicated in most older adults with diabetes."
+        },
+        {
+          "recommendationId": "13.2",
+          "grade": "B",
+          "page": 1,
+          "score": 0.63,
+          "categories": [
+            "acute-emergency-risk",
+            "contraindication-adverse-effects",
+            "older-adults-frailty",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen at least annually for geriatric syndromes (e.g., cognitive impairment, depression, urinary incontinence, falls, persistent pain, and frailty), hypoglycemia, and polypharmacy in older adults with diabetes, as they may affect diabetes management and diminish quality of life."
+        },
+        {
+          "recommendationId": "13.16a",
+          "grade": "B",
+          "page": 7,
+          "score": 0.579,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds",
+            "therapy-change-affordability"
+          ],
+          "warnings": [],
+          "text": "Deintensify hypoglycemiacausing medications (e.g., insulin, sulfonylureas, or meglitinides) or switch to a medication class with low hypoglycemia risk for individuals who are at high risk for hypoglycemia, using individualized glycemic goals."
+        },
+        {
+          "recommendationId": "13.16b",
+          "grade": "E",
+          "page": 7,
+          "score": 0.526,
+          "categories": [
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "In older adults with diabetes, deintensify diabetes medications for individuals for whom the harms and/or burdens of treatment may be greater than the benefits, within individualized glycemic goals."
+        },
+        {
+          "recommendationId": "13.4",
+          "grade": "B",
+          "page": 3,
+          "score": 0.522,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds",
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Ascertain and address episodes of hypoglycemia at routine visits because older adults with diabetes have a greater risk of hypoglycemia, especially when treated with hypoglycemic agents (e.g., sulfonylureas, meglitinides, and insulin)."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "children-adolescents-full",
+      "file": "components/guidelines/data/ada2025/specialSituations.ts",
+      "group": "specialPopulations",
+      "title": "14. Children and Adolescents",
+      "sourceIds": [
+        "children-adolescents"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/14. Children and Adolescents.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "<7%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<7.5%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<8%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "126-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "14.31",
+          "grade": "B",
+          "page": 8,
+          "score": 0.636,
+          "categories": [
+            "children-adolescents",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Screen youth with type 1 diabetes for celiac disease by measuring IgA tissue transglutaminase (tTG) antibodies, with documentation of normal total serum IgA levels, soon after the diagnosis of diabetes, or IgG tTG and deamidated gliadin antibodies if IgA is deficient."
+        },
+        {
+          "recommendationId": "14.32",
+          "grade": "B",
+          "page": 8,
+          "score": 0.619,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Repeat screening for celiac disease within 2 years of diabetes diagnosis and then again after 5 years and consider more frequent screening in youth who have symptoms or a firstdegree relative with celiac disease."
+        },
+        {
+          "recommendationId": "14.29",
+          "grade": "B",
+          "page": 8,
+          "score": 0.615,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Consider testing children with type 1 diabetes for antithyroid peroxidase and antithyroglobulin antibodies soon after diagnosis."
+        },
+        {
+          "recommendationId": "14.83",
+          "grade": "C",
+          "page": 15,
+          "score": 0.545,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Screening for retinopathy should be performed by dilated fundoscopy at or soon after diagnosis and annually thereafter."
+        },
+        {
+          "recommendationId": "14.106",
+          "grade": "E",
+          "page": 17,
+          "score": 0.522,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Diabetes care teams should implement transition preparation programs for youth beginning in early adolescence and, at the latest, at least 1 year before the anticipated transfer from pediatric to adult health care."
+        },
+        {
+          "recommendationId": "14.2",
+          "grade": "A",
+          "page": 4,
+          "score": 0.5,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Individualized medical nutrition therapy (MNT) is recommended for youth with type 1 diabetes as an essential component of the overall treatment plan."
+        },
+        {
+          "recommendationId": "14.87",
+          "grade": "B",
+          "page": 15,
+          "score": 0.471,
+          "categories": [
+            "children-adolescents"
+          ],
+          "warnings": [],
+          "text": "Evaluation of youth with type 2 diabetes for metabolic dysfunction– associated steatotic liver disease (by measuring AST and ALT) should be done at diagnosis and annually thereafter."
+        },
+        {
+          "recommendationId": "14.60",
+          "grade": "C",
+          "page": 12,
+          "score": 0.455,
+          "categories": [
+            "acute-emergency-risk",
+            "children-adolescents",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Consider setting an A1C goal of <6.5% (<48 mmol/mol) for most children and adolescents with type 2 diabetes who have a low risk of hypoglycemia. For those at higher risk of hypoglycemia, A1C goals should be individualized as clinically appropriate."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "pregnancy-management-full",
+      "file": "components/guidelines/data/ada2025/specialSituations.ts",
+      "group": "specialPopulations",
+      "title": "15. Management of Diabetes in Pregnancy",
+      "sourceIds": [
+        "pregnancy-management"
+      ],
+      "visualSourceIds": [
+        "pregnancy-management"
+      ],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/15. Management of Diabetes in Pregnancy.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "<95 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<140 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<120 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "70-95 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "110-140 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "100-120 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<6.5%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<6%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<7%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<70 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<63 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "4-12 weeks",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "15.17",
+          "grade": "B",
+          "page": 6,
+          "score": 0.818,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Insulin should be used to manage type 1 diabetes in pregnancy A and is the preferred agent for the management of GDM A and type 2 diabetes in pregnancy."
+        },
+        {
+          "recommendationId": "15.9",
+          "grade": "B",
+          "page": 4,
+          "score": 0.652,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Due to increased red blood cell turnover, A1C is slightly lower during pregnancy in people with and without diabetes. Ideally, the A1C goal in pregnancy is <6% (<42 mmol/mol) if this can be achieved without significant hypoglycemia, but the goal may be relaxed to <7% (<53 mmol/mol) if necessary to prevent hypoglycemia."
+        },
+        {
+          "recommendationId": "15.13",
+          "grade": "C",
+          "page": 4,
+          "score": 0.545,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Commonly used estimated A1C and glucose management indicator calculations should not be used in pregnancy as estimates of A1C."
+        },
+        {
+          "recommendationId": "15.8",
+          "grade": "B",
+          "page": 4,
+          "score": 0.542,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Fasting, preprandial, and postprandial blood glucose monitoring are recommended in individuals with diabetes in pregnancy to achieve optimal glucose levels. Glucose goals are fasting plasma glucose <95 mg/dL (<5.3 mmol/L) and either 1-h postprandial glucose <140 mg/dL (<7.8 mmol/L) or 2-h postprandial glucose <120 mg/dL (<6.7 mmol/L)."
+        },
+        {
+          "recommendationId": "15.27",
+          "grade": "A",
+          "page": 10,
+          "score": 0.5,
+          "categories": [
+            "pregnancy-childbearing"
+          ],
+          "warnings": [],
+          "text": "A contraceptive plan should be discussed and implemented with all people with diabetes of childbearing potential."
+        },
+        {
+          "recommendationId": "15.29",
+          "grade": "E",
+          "page": 10,
+          "score": 0.5,
+          "categories": [
+            "pregnancy-childbearing"
+          ],
+          "warnings": [],
+          "text": "Postpartum care should include psychosocial assessment and support for self-care."
+        },
+        {
+          "recommendationId": "15.12",
+          "grade": "E",
+          "page": 4,
+          "score": 0.462,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [
+            "hyphenation-fragments"
+          ],
+          "text": "CGM metrics may be used in combination with blood glucose monitoring to achieve optimal pre- and postprandial glycemic goals."
+        },
+        {
+          "recommendationId": "15.2",
+          "grade": "A",
+          "page": 1,
+          "score": 0.444,
+          "categories": [
+            "pregnancy-childbearing",
+            "children-adolescents",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Family planning should be discussed, and effective contraception (with consideration of long-acting, reversible contraception) should be prescribed and used until an individual’s treatment plan and A1C are optimized for pregnancy."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "hospital-care-full",
+      "file": "components/guidelines/data/ada2025/specialSituations.ts",
+      "group": "specialPopulations",
+      "title": "16. Diabetes Care in the Hospital",
+      "sourceIds": [
+        "hospital-care",
+        "glycemic-goals"
+      ],
+      "visualSourceIds": [
+        "glycemic-goals",
+        "hospital-care"
+      ],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/16. Diabetes Care in the Hospital.pdf",
+        "guidelines-sources/ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "140-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "100-180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=180 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=200 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=3.0 mmol/L",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<7.3",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<18 mmol/L",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=600 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">300",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">320",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=7.3",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=15 mmol/L",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "200 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "250 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "16.5b",
+          "grade": "B",
+          "page": 2,
+          "score": 0.643,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "For noncritically ill individuals (those not in the ICU), a glycemic goal of 100–180 mg/dL (5.610.0 mmol/L) is recommended if it can be achieved without significant hypoglycemia."
+        },
+        {
+          "recommendationId": "16.4a",
+          "grade": "A",
+          "page": 2,
+          "score": 0.591,
+          "categories": [
+            "insulin-high-risk-meds",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Insulin should be initiated or intensified for treatment of persistent hyperglycemia starting at a threshold of ≥180 mg/dL (≥10.0 mmol/L) (confirmed on two occasions within 24 h) for the majority of critically ill individuals (those in the intensive care unit [ICU])."
+        },
+        {
+          "recommendationId": "16.4b",
+          "grade": "B",
+          "page": 2,
+          "score": 0.565,
+          "categories": [
+            "insulin-high-risk-meds",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [
+            "missing-spaces"
+          ],
+          "text": "Insulin and/or other glucoselowering therapies should be initiated or intensified for treatment of persistent hyperglycemia starting at a threshold of ≥180 mg/dL (≥10.0 mmol/L) (confirmed on two occasions within 24 h) for the majority of noncritically ill individuals (those not in the ICU)."
+        },
+        {
+          "recommendationId": "16.5a",
+          "grade": "B",
+          "page": 2,
+          "score": 0.519,
+          "categories": [
+            "acute-emergency-risk",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "Once therapy is initiated, a glycemic goal of 140–180 mg/dL (7.8–10.0 mmol/L) is recommended for most critically ill individuals (those in the ICU) with hyperglycemia. A More stringent individualized glycemic goals may be appropriate for selected critically ill individuals if they can be achieved without significant hypoglycemia."
+        },
+        {
+          "recommendationId": "6.3a",
+          "grade": "A",
+          "page": 3,
+          "score": 0.5,
+          "categories": [
+            "acute-emergency-risk",
+            "contraindication-adverse-effects",
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "An A1C goal of <7% (<53 mmol/ mol) is appropriate for many nonpregnant adults without severe hypoglycemia or frequent hypoglycemia affecting health or quality of life."
+        },
+        {
+          "recommendationId": "16.9",
+          "grade": "A",
+          "page": 4,
+          "score": 0.5,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "An insulin plan with basal, prandial, and correction components is the preferred treatment for most noncritically ill hospitalized individuals with adequate nutritional intake."
+        },
+        {
+          "recommendationId": "16.8b",
+          "grade": "A",
+          "page": 4,
+          "score": 0.467,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "Basal insulin or a basal plus bolus correction insulin plan is the preferred treatment for noncritically ill hospitalized individuals with poor or no oral intake."
+        },
+        {
+          "recommendationId": "6.13",
+          "grade": "E",
+          "page": 8,
+          "score": 0.462,
+          "categories": [
+            "acute-emergency-risk"
+          ],
+          "warnings": [],
+          "text": "Clinicians should consider an individual’s risk for hypoglycemia (see Table 6.5) when selecting diabetes medications and glycemic goals."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "advocacy-full",
+      "file": "components/guidelines/data/ada2025/specialSituations.ts",
+      "group": "specialPopulations",
+      "title": "17. Diabetes Advocacy",
+      "sourceIds": [
+        "advocacy"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/17. Diabetes Advocacy.pdf"
+      ],
+      "numericClaims": [],
+      "sensitiveCandidates": [],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "obesity-weight-full",
+      "file": "components/guidelines/data/ada2025/weightPharmacology.ts",
+      "group": "weightPharmacology",
+      "title": "8. Obesity and Weight Management",
+      "sourceIds": [
+        "obesity-weight"
+      ],
+      "visualSourceIds": [],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "3-7%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">10%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "8.4",
+          "grade": "A",
+          "page": 2,
+          "score": 0.625,
+          "categories": [
+            "screening-diagnosis-thresholds"
+          ],
+          "warnings": [],
+          "text": "In people with type 2 diabetes and overweight or obesity, weight management should represent a primary goal of treatment along with glycemic management."
+        },
+        {
+          "recommendationId": "8.5",
+          "grade": "B",
+          "page": 2,
+          "score": 0.571,
+          "categories": [
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Provide weight management treatment, aiming for any magnitude of weight loss. Weight loss of 3–7% of baseline weight improves glycemia and other intermediate cardiovascular risk factors. A Sustained loss of >10% of body weight usually confers greater benefits, including disease-modifying effects and possible remission of type 2 diabetes, and may improve long-term cardiovascular outcomes and mortality."
+        },
+        {
+          "recommendationId": "8.24",
+          "grade": "B",
+          "page": 9,
+          "score": 0.533,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "People who undergo metabolic surgery should receive long-term medical and behavioral support and routine micronutrient, nutritional, and metabolic status monitoring."
+        },
+        {
+          "recommendationId": "8.18",
+          "grade": "B",
+          "page": 4,
+          "score": 0.526,
+          "categories": [
+            "screening-diagnosis-thresholds",
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Screen people with diabetes and obesity who have lost significant weight for malnutrition, especially those who have undergone metabolic surgery A and those treated with weight management pharmacologic therapy."
+        },
+        {
+          "recommendationId": "8.13",
+          "grade": "A",
+          "page": 3,
+          "score": 0.444,
+          "categories": [
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "Nutritional supplements have not been shown to be effective for weight loss and are not recommended."
+        },
+        {
+          "recommendationId": "8.23",
+          "grade": "B",
+          "page": 9,
+          "score": 0.368,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "People being considered for metabolic surgery should be evaluated for comorbid psychological conditions and social and situational circumstances that have the potential to interfere with surgery outcomes."
+        },
+        {
+          "recommendationId": "8.21",
+          "grade": "A",
+          "page": 9,
+          "score": 0.35,
+          "categories": [
+            "procedures-surgery-devices"
+          ],
+          "warnings": [],
+          "text": "Consider metabolic surgery as a weight and glycemic management approach in people with diabetes with BMI ≥30.0 kg/m2 (or ≥27.5 kg/m2 in Asian American individuals) who are otherwise good surgical candidates."
+        },
+        {
+          "recommendationId": "8.17",
+          "grade": "A",
+          "page": 4,
+          "score": 0.333,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "In people with diabetes and overweight or obesity, the preferred pharmacotherapy should be a glucagonlike peptide 1 receptor agonist or dual glucose-dependent insulinotropic polypeptide and glucagon-like peptide 1 receptor agonist with greater weight loss efficacy (i.e., semaglutide or tirzepatide), especially considering their added weight-independent benefits (e.g., glycemic and cardiometabolic)."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    },
+    {
+      "id": "pharmacologic-treatment-full",
+      "file": "components/guidelines/data/ada2025/weightPharmacology.ts",
+      "group": "weightPharmacology",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment",
+      "sourceIds": [
+        "pharmacologic-treatment"
+      ],
+      "visualSourceIds": [
+        "pharmacologic-treatment"
+      ],
+      "sourceDocuments": [
+        "guidelines-sources/ADA/2025/9. Pharmacologic Approaches to Glycemic Treatment.pdf"
+      ],
+      "numericClaims": [
+        {
+          "claim": "3-6 months",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "1.5-2.0%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">10%",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": ">=300 mg/dL",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<45 mL/min/1.73 m2",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        },
+        {
+          "claim": "<30 mL/min/1.73 m2",
+          "verifiedInSource": true,
+          "verificationMethod": "exact-source-text"
+        }
+      ],
+      "sensitiveCandidates": [
+        {
+          "recommendationId": "9.19",
+          "grade": "A",
+          "page": 8,
+          "score": 0.762,
+          "categories": [
+            "acute-emergency-risk",
+            "renal-ckd",
+            "cardiovascular"
+          ],
+          "warnings": [],
+          "text": "Choice of glucose-lowering therapy modification should take into consideration individualized glycemic and weight goals, presence of comorbidities (cardiovascular, kidney, liver, and other metabolic comorbidities), and the risk of hypoglycemia."
+        },
+        {
+          "recommendationId": "9.20",
+          "grade": "A",
+          "page": 8,
+          "score": 0.65,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [
+            "missing-spaces"
+          ],
+          "text": "When initiating a new glucoselowering medication, reassess the need for and/or dose of medications with higher hypoglycemia risk (i.e., sulfonylureas, meglitinides, and insulin) to minimize the risk of hypoglycemia and treatment burden."
+        },
+        {
+          "recommendationId": "9.25",
+          "grade": "A",
+          "page": 8,
+          "score": 0.643,
+          "categories": [
+            "acute-emergency-risk",
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "If insulin is used, combination therapy with a GLP-1 RA, including a dual GIP and GLP-1 RA, is recommended for greater glycemic effectiveness as well as beneficial effects on weight and hypoglycemia risk for adults with type 2 diabetes. Insulin dosing should be reassessed upon addition or dose escalation of a GLP-1 RA or dual GIP and GLP-1 RA."
+        },
+        {
+          "recommendationId": "9.8",
+          "grade": "E",
+          "page": 7,
+          "score": 0.61,
+          "categories": [
+            "acute-emergency-risk",
+            "renal-ckd",
+            "cardiovascular",
+            "contraindication-adverse-effects",
+            "therapy-change-affordability"
+          ],
+          "warnings": [
+            "missing-spaces"
+          ],
+          "text": "A person-centered shared decisionmaking approach should guide the choice of glucose-lowering medications for adults with type 2 diabetes. Use medications that provide sufficient effectiveness to achieve and maintain intended treatment goals with consideration of the effects on cardiovascular, kidney, weight, and other relevant comorbidities; hypoglycemia risk; cost and access; risk for adverse reactions and tolerability; and individual preferences (Fig. 9.3 and Table 9.2)."
+        },
+        {
+          "recommendationId": "9.18",
+          "grade": "A",
+          "page": 8,
+          "score": 0.6,
+          "categories": [
+            "older-adults-frailty"
+          ],
+          "warnings": [],
+          "text": "Treatment modification (intensification or deintensification) for adults not meeting individualized treatment goals should not be delayed."
+        },
+        {
+          "recommendationId": "9.14",
+          "grade": "B",
+          "page": 7,
+          "score": 0.588,
+          "categories": [
+            "acute-emergency-risk",
+            "renal-ckd",
+            "cardiovascular",
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "In adults with type 2 diabetes and advanced CKD (eGFR <30 mL/min/1.73 m2 ), a GLP-1 RA is preferred for glycemic management due to lower risk of hypoglycemia and for cardiovascular event reduction."
+        },
+        {
+          "recommendationId": "9.24",
+          "grade": "A",
+          "page": 8,
+          "score": 0.583,
+          "categories": [
+            "insulin-high-risk-meds"
+          ],
+          "warnings": [],
+          "text": "In adults with type 2 diabetes and no evidence of insulin deficiency, a GLP-1 RA, including a dual GIP and GLP-1 RA, is preferred to insulin (Fig. 9.4)."
+        },
+        {
+          "recommendationId": "9.26",
+          "grade": "A",
+          "page": 8,
+          "score": 0.571,
+          "categories": [
+            "renal-ckd",
+            "insulin-high-risk-meds",
+            "contraindication-adverse-effects"
+          ],
+          "warnings": [],
+          "text": "In adults with type 2 diabetes who are initiating insulin therapy, continue glucose-lowering agents (unless contraindicated or not tolerated) for ongoing glycemic and metabolic benefits (i.e., weight, cardiometabolic, or kidney benefits)."
+        }
+      ],
+      "issues": [],
+      "status": "source-supported"
+    }
+  ]
+}

@@ -422,6 +422,13 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             discountExpense={stats.dailyDiscountExpense}
                             totalDailyExpenses={(parseFloat(financialData.dailyExpense || '0') || 0) + stats.dailyDiscountExpense}
                         />
+                        <NetProfitCard
+                            totalIncome={stats.dailyTotalRevenue}
+                            totalExpenses={(parseFloat(financialData.dailyExpense || '0') || 0) + stats.dailyDiscountExpense}
+                            currentMonthLabel={navigation.formattedSelectedDay}
+                            title="صافي الأرباح اليومية"
+                            periodName="اليوم"
+                        />
                     </>
                 )}
 

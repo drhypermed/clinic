@@ -6,6 +6,7 @@ export type AppView =
   | 'patientFiles'      // ملفات المرضى الموحدة
   | 'appointments'      // المواعيد والحجوزات
   | 'financialReports'  // التقارير المالية والأرباح
+  | 'guidelines'        // مكتبة الجايدلاينز الطبية
   | 'drugtools'         // قاعدة بيانات الأدوية
   | 'medicationEdit'    // تعديل بيانات دواء
   | 'settings'          // إعدادات الروشتة والتصميم
@@ -21,6 +22,7 @@ export const VIEW_TO_PATH: Record<AppView, string> = {
   patientFiles: '/patient-files',
   appointments: '/appointments',
   financialReports: '/financial-reports',
+  guidelines: '/guidelines',
   drugtools: '/drug-tools',
   medicationEdit: '/drug-tools/edit',
   settings: '/settings',
@@ -46,6 +48,9 @@ const ARABIC_PATH_MAP: Record<string, AppView> = {
   '/التقارير-المالية': 'financialReports',
   '/التقارير': 'financialReports',
   '/المالية': 'financialReports',
+  '/الجايدلاينز': 'guidelines',
+  '/الدلائل-الطبية': 'guidelines',
+  '/guidelines': 'guidelines',
   '/أدوات-الأدوية': 'drugtools',
   '/الأدوية': 'drugtools',
   '/تعديل-الأدوية': 'medicationEdit',
@@ -95,6 +100,9 @@ export const resolveViewFromPath = (pathname: string): AppView | null => {
     case '/financial-reports':
     case '/app/financial-reports':
       return 'financialReports';
+    case '/guidelines':
+    case '/app/guidelines':
+      return 'guidelines';
     case '/drug-tools':
     case '/app/drug-tools':
       return 'drugtools';

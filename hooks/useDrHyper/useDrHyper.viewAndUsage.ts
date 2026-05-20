@@ -24,6 +24,7 @@ type DrHyperView =
   | 'patientFiles'     // ملفات المرضى الموحدة
   | 'appointments'     // المواعيد والحجوزات
   | 'financialReports' // التقارير المالية
+  | 'guidelines'       // مكتبة الجايدلاينز الطبية
   | 'drugtools'        // الأدوات الطبية (التفاعلات، إلخ)
   | 'medicationEdit'   // تعديل قاعدة بيانات الأدوية
   | 'settings'         // إعدادات الروشتة والحساب
@@ -39,6 +40,7 @@ const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
   'patientFiles',
   'appointments',
   'financialReports',
+  'guidelines',
   'drugtools',
   'medicationEdit',
   'settings',

@@ -1,0 +1,242 @@
+export type GuidelineLanguage = 'ar' | 'en';
+
+export type LocalizedText = Record<GuidelineLanguage, string>;
+
+export type GuidelineSource = {
+  id: string;
+  title: string;
+  citation: string;
+  url: string;
+  localFile?: string;
+};
+
+export type GuidelineSourceRecommendation = {
+  id: string;
+  grade: string;
+  page: number;
+  text: string;
+};
+
+export type GuidelineSourceTableFigure = {
+  kind: string;
+  id: string;
+  page: number;
+  caption: string;
+};
+
+export type GuidelineSourceTableExtract = {
+  page: number;
+  relatedItems: string[];
+  rows: string[];
+};
+
+export type GuidelineSourceDigest = {
+  sourceId: string;
+  title: string;
+  sourcePdf: string;
+  recommendations: GuidelineSourceRecommendation[];
+  tablesAndFigures: GuidelineSourceTableFigure[];
+  tableTextRows?: GuidelineSourceTableExtract[];
+};
+
+export type GuidelineQuickDecisionBlock = {
+  title: LocalizedText;
+  content: LocalizedText;
+  color?: 'amber' | 'emerald' | 'blue' | 'red' | 'purple' | 'slate';
+};
+
+export type GuidelineQuickDecision = {
+  when?: LocalizedText;
+  start?: LocalizedText;
+  followUp?: LocalizedText;
+  warn?: LocalizedText;
+  customBlocks?: GuidelineQuickDecisionBlock[];
+};
+
+export type GuidelineDetailBlock = {
+  title: LocalizedText;
+  items: Record<GuidelineLanguage, string[]>;
+};
+
+export type GuidelineVisualAsset = {
+  title: LocalizedText;
+  label: string;
+  imageSrc: string;
+  sourceId: string;
+  page: number;
+  takeaways?: Record<GuidelineLanguage, string[]>;
+};
+
+export type GuidelineTopic = {
+  id: string;
+  group:
+    | 'populationCare'
+    | 'diagnosisClassification'
+    | 'preventionEvaluation'
+    | 'behaviorsGoalsTech'
+    | 'weightPharmacology'
+    | 'complicationsRisk'
+    | 'specialPopulations';
+  title: LocalizedText;
+  summary: LocalizedText;
+  points: Record<GuidelineLanguage, string[]>;
+  details?: GuidelineDetailBlock[];
+  quickDecision?: GuidelineQuickDecision;
+  practiceNote?: LocalizedText;
+  visuals?: GuidelineVisualAsset[];
+
+  sourceIds: string[];
+  tags: string[];
+};
+
+export type GuidelineCollection = {
+  id: string;
+  school: string;
+  year: number;
+  title: LocalizedText;
+  subtitle: LocalizedText;
+  sourceDate: string;
+  sources: GuidelineSource[];
+  topics: GuidelineTopic[];
+  recommendationDigest?: GuidelineSourceDigest[];
+};
+
+import { ADA_2025_DIAGNOSIS_TOPICS } from './data/ada2025/diagnosisClassification';
+import { ADA_2025_IMPROVING_CARE_TOPICS } from './data/ada2025/improvingCare';
+import { ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS } from './data/ada2025/behaviorsGoalsTechnology';
+import { ADA_2025_COMPLICATIONS_TOPICS } from './data/ada2025/complications';
+import { ADA_2025_PREVENTION_EVALUATION_TOPICS } from './data/ada2025/preventionEvaluation';
+import { ADA_2025_SPECIAL_SITUATIONS_TOPICS } from './data/ada2025/specialSituations';
+import { ADA_2025_REMAINING_SOURCES } from './data/ada2025/sources';
+import { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS } from './data/ada2025/weightPharmacology';
+import { ADA_2025_RECOMMENDATION_DIGEST } from './data/ada2025/recommendationDigest';
+
+import { ADA_2026_DIAGNOSIS_TOPICS } from './data/ada2026/diagnosisClassification';
+import { ADA_2026_IMPROVING_CARE_TOPICS } from './data/ada2026/improvingCare';
+import { ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS } from './data/ada2026/behaviorsGoalsTechnology';
+import { ADA_2026_COMPLICATIONS_TOPICS } from './data/ada2026/complications';
+import { ADA_2026_PREVENTION_EVALUATION_TOPICS } from './data/ada2026/preventionEvaluation';
+import { ADA_2026_SPECIAL_SITUATIONS_TOPICS } from './data/ada2026/specialSituations';
+import { ADA_2026_REMAINING_SOURCES } from './data/ada2026/sources';
+import { ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS } from './data/ada2026/weightPharmacology';
+import { ADA_2026_RECOMMENDATION_DIGEST } from './data/ada2026/recommendationDigest';
+
+export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
+  {
+    id: 'ada-2026',
+    school: 'ADA',
+    year: 2026,
+    sourceDate: 'January 2026',
+    title: {
+      en: 'ADA Standards of Care in Diabetes 2026',
+      ar: 'معايير الرعاية في السكري ADA 2026',
+    },
+    subtitle: {
+      en: 'A bilingual, source-linked clinical digest focused on actionable ADA 2026 clinical topics.',
+      ar: 'ملخص سريري ثنائي اللغة مبني على المصادر، يركز على الموضوعات السريرية العملية في ADA 2026.',
+    },
+    sources: [
+      {
+        id: 'improving-care',
+        title: '1. Improving Care and Promoting Health in Populations',
+        citation:
+          'American Diabetes Association Professional Practice Committee. 1. Improving care and promoting health in populations: Standards of Care in Diabetes-2026. Diabetes Care 2026;49(Suppl. 1).',
+        url: 'https://doi.org/10.2337/dc26-S001',
+        localFile: '1. Improving Care and Promoting Health in Populations.pdf',
+      },
+      {
+        id: 'diagnosis-classification',
+        title: '2. Diagnosis and Classification of Diabetes',
+        citation:
+          'American Diabetes Association Professional Practice Committee. 2. Diagnosis and classification of diabetes: Standards of Care in Diabetes-2026. Diabetes Care 2026;49(Suppl. 1).',
+        url: 'https://doi.org/10.2337/dc26-S002',
+        localFile: '2. Diagnosis and Classification of Diabetes.pdf',
+      },
+      ...ADA_2026_REMAINING_SOURCES,
+    ],
+    topics: [
+      ...ADA_2026_IMPROVING_CARE_TOPICS,
+      ...ADA_2026_DIAGNOSIS_TOPICS,
+      ...ADA_2026_PREVENTION_EVALUATION_TOPICS,
+      ...ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS,
+      ...ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS,
+      ...ADA_2026_COMPLICATIONS_TOPICS,
+      ...ADA_2026_SPECIAL_SITUATIONS_TOPICS,
+    ],
+    recommendationDigest: ADA_2026_RECOMMENDATION_DIGEST,
+  },
+  {
+    id: 'ada-2025',
+    school: 'ADA',
+    year: 2025,
+    sourceDate: 'December 2024',
+    title: {
+      en: 'ADA Standards of Care in Diabetes 2025',
+      ar: 'معايير الرعاية في السكري ADA 2025',
+    },
+    subtitle: {
+      en: 'A bilingual, source-linked clinical digest focused on actionable ADA 2025 clinical topics.',
+      ar: 'ملخص سريري ثنائي اللغة مبني على المصادر، يركز على الموضوعات السريرية العملية في ADA 2025.',
+    },
+    sources: [
+      {
+        id: 'improving-care',
+        title: '1. Improving Care and Promoting Health in Populations',
+        citation:
+          'American Diabetes Association Professional Practice Committee. 1. Improving care and promoting health in populations: Standards of Care in Diabetes-2025. Diabetes Care 2025;48(Suppl. 1):S14-S26. doi:10.2337/dc25-S001.',
+        url: 'https://doi.org/10.2337/dc25-S001',
+        localFile: '1. Improving Care and Promoting.pdf',
+      },
+      {
+        id: 'diagnosis-classification',
+        title: '2. Diagnosis and Classification of Diabetes',
+        citation:
+          'American Diabetes Association Professional Practice Committee. 2. Diagnosis and classification of diabetes: Standards of Care in Diabetes-2025. Diabetes Care 2025;48(Suppl. 1):S27-S49. doi:10.2337/dc25-S002.',
+        url: 'https://doi.org/10.2337/dc25-S002',
+        localFile: '2. Diagnosis and Classification of DM.pdf',
+      },
+      ...ADA_2025_REMAINING_SOURCES,
+    ],
+    topics: [
+      ...ADA_2025_IMPROVING_CARE_TOPICS,
+      ...ADA_2025_DIAGNOSIS_TOPICS,
+      ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
+      ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
+      ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
+      ...ADA_2025_COMPLICATIONS_TOPICS,
+      ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
+    ],
+    recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
+  },
+];
+
+export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedText> = {
+  populationCare: {
+    en: '1. Improving Care',
+    ar: '1. تحسين الرعاية وصحة السكان',
+  },
+  diagnosisClassification: {
+    en: '2. Diagnosis and Classification',
+    ar: '2. التشخيص والتصنيف',
+  },
+  preventionEvaluation: {
+    en: '3-4. Prevention and Evaluation',
+    ar: '3-4. الوقاية والتقييم الشامل',
+  },
+  behaviorsGoalsTech: {
+    en: '5-7. Behaviors, Goals, and Technology',
+    ar: '5-7. السلوكيات والأهداف والتكنولوجيا',
+  },
+  weightPharmacology: {
+    en: '8-9. Weight and Pharmacology',
+    ar: '8-9. الوزن والعلاج الدوائي',
+  },
+  complicationsRisk: {
+    en: '10-12. Complications and Risk',
+    ar: '10-12. المضاعفات وإدارة الخطورة',
+  },
+  specialPopulations: {
+    en: '13-17. Special Populations and Settings',
+    ar: '13-17. فئات وسياقات خاصة',
+  },
+};

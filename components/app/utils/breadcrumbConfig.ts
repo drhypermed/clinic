@@ -22,6 +22,7 @@ const VIEW_LABELS: Record<AppView, string> = {
   patientFiles: 'ملفات المرضى',
   appointments: 'المواعيد',
   financialReports: 'التقارير المالية',
+  guidelines: 'الجايدلاينز',
   drugtools: 'أدوات الأدوية',
   medicationEdit: 'تعديل الأدوية',
   settings: 'تصميم الروشتة',

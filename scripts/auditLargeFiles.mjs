@@ -38,7 +38,13 @@ export const countLines = (content) => {
   return content.split(/\r?\n/).length;
 };
 
-const shouldIncludeFile = (filePath) => CODE_EXTENSIONS.has(path.extname(filePath));
+const shouldIncludeFile = (filePath) => {
+  const normalized = filePath.replace(/\\/g, '/');
+  if (normalized.includes('guidelines/data/')) {
+    return false;
+  }
+  return CODE_EXTENSIONS.has(path.extname(filePath));
+};
 
 const isIgnoredDirectory = (directoryName) => IGNORED_DIRS.has(directoryName);
 

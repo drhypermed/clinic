@@ -1,0 +1,235 @@
+{
+  "generatedAt": "2026-05-19T16:51:22.619Z",
+  "sourceDir": "guidelines-sources/ADA/2025",
+  "outputDir": "guidelines-sources/_structured/ADA/2025",
+  "assetDir": "guidelines-sources/_assets/ADA/2025",
+  "tools": {
+    "pdftotext": "C:\\Users\\a_g20\\AppData\\Local\\Microsoft\\WinGet\\Packages\\oschwartz10612.Poppler_Microsoft.Winget.Source_8wekyb3d8bbwe\\poppler-25.07.0\\Library\\bin\\pdftotext.exe",
+    "pdfimages": "C:\\Users\\a_g20\\AppData\\Local\\Microsoft\\WinGet\\Packages\\oschwartz10612.Poppler_Microsoft.Winget.Source_8wekyb3d8bbwe\\poppler-25.07.0\\Library\\bin\\pdfimages.exe",
+    "pdfinfo": "C:\\Users\\a_g20\\AppData\\Local\\Microsoft\\WinGet\\Packages\\oschwartz10612.Poppler_Microsoft.Winget.Source_8wekyb3d8bbwe\\poppler-25.07.0\\Library\\bin\\pdfinfo.exe",
+    "pdftoppm": "C:\\Users\\a_g20\\AppData\\Local\\Microsoft\\WinGet\\Packages\\oschwartz10612.Poppler_Microsoft.Winget.Source_8wekyb3d8bbwe\\poppler-25.07.0\\Library\\bin\\pdftoppm.exe",
+    "pdfjs": "scripts"
+  },
+  "documents": [
+    {
+      "title": "1. Improving Care and Promoting",
+      "sourcePdf": "guidelines-sources/ADA/2025/1. Improving Care and Promoting.pdf",
+      "pageCount": 14,
+      "recommendations": 9,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/1.-improving-care-and-promoting/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/1.-improving-care-and-promoting/document.md"
+    },
+    {
+      "title": "2. Diagnosis and Classification of DM",
+      "sourcePdf": "guidelines-sources/ADA/2025/2. Diagnosis and Classification of DM.pdf",
+      "pageCount": 24,
+      "recommendations": 36,
+      "captions": 12,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/2.-diagnosis-and-classification-of-dm/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/2.-diagnosis-and-classification-of-dm/document.md"
+    },
+    {
+      "title": "3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025.pdf",
+      "pageCount": 10,
+      "recommendations": 15,
+      "captions": 0,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/3.-prevention-or-delay-of-diabetes-and-associated-comorbidities-standards-of-care-in-diabe/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/3.-prevention-or-delay-of-diabetes-and-associated-comorbidities-standards-of-care-in-diabe/document.md"
+    },
+    {
+      "title": "4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025.pdf",
+      "pageCount": 28,
+      "recommendations": 37,
+      "captions": 11,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/4.-comprehensive-medical-evaluation-and-assessment-of-comorbidities-standards-of-care-in-d/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/4.-comprehensive-medical-evaluation-and-assessment-of-comorbidities-standards-of-care-in-d/document.md"
+    },
+    {
+      "title": "5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025.pdf",
+      "pageCount": 43,
+      "recommendations": 52,
+      "captions": 9,
+      "images": 37,
+      "json": "guidelines-sources/_structured/ADA/2025/5.-facilitating-positive-health-behaviors-and-well-being-to-improve-health-outcomes-standa/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/5.-facilitating-positive-health-behaviors-and-well-being-to-improve-health-outcomes-standa/document.md"
+    },
+    {
+      "title": "6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.pdf",
+      "pageCount": 19,
+      "recommendations": 23,
+      "captions": 14,
+      "images": 19,
+      "json": "guidelines-sources/_structured/ADA/2025/6.-glycemic-goals-and-hypoglycemia-standards-of-care-in-diabetes-2025/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/6.-glycemic-goals-and-hypoglycemia-standards-of-care-in-diabetes-2025/document.md"
+    },
+    {
+      "title": "7. Diabetes Technology Standards of Care in Diabetes 2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/7. Diabetes Technology Standards of Care in Diabetes 2025.pdf",
+      "pageCount": 22,
+      "recommendations": 31,
+      "captions": 4,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/7.-diabetes-technology-standards-of-care-in-diabetes-2025/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/7.-diabetes-technology-standards-of-care-in-diabetes-2025/document.md"
+    },
+    {
+      "title": "8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.pdf",
+      "pageCount": 15,
+      "recommendations": 28,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-type-2-diabetes-stand/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-type-2-diabetes-stand/document.md"
+    },
+    {
+      "title": "8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes",
+      "sourcePdf": "guidelines-sources/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes.pdf",
+      "pageCount": 15,
+      "recommendations": 28,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-type-2-diabetes/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/8.-obesity-and-weight-management-for-the-prevention-and-treatment-of-type-2-diabetes/document.md"
+    },
+    {
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment",
+      "sourcePdf": "guidelines-sources/ADA/2025/9. Pharmacologic Approaches to Glycemic Treatment.pdf",
+      "pageCount": 27,
+      "recommendations": 36,
+      "captions": 8,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/9.-pharmacologic-approaches-to-glycemic-treatment/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/9.-pharmacologic-approaches-to-glycemic-treatment/document.md"
+    },
+    {
+      "title": "10. Cardiovascular Disease and Risk Management",
+      "sourcePdf": "guidelines-sources/ADA/2025/10. Cardiovascular Disease and Risk Management.pdf",
+      "pageCount": 33,
+      "recommendations": 60,
+      "captions": 8,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/10.-cardiovascular-disease-and-risk-management/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/10.-cardiovascular-disease-and-risk-management/document.md"
+    },
+    {
+      "title": "11. Chronic Kidney Disease and Risk Management",
+      "sourcePdf": "guidelines-sources/ADA/2025/11. Chronic Kidney Disease and Risk Management.pdf",
+      "pageCount": 14,
+      "recommendations": 16,
+      "captions": 6,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/11.-chronic-kidney-disease-and-risk-management/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/11.-chronic-kidney-disease-and-risk-management/document.md"
+    },
+    {
+      "title": "12. Retinopathy, Neuropathy, and Foot Care",
+      "sourcePdf": "guidelines-sources/ADA/2025/12. Retinopathy, Neuropathy, and Foot Care.pdf",
+      "pageCount": 15,
+      "recommendations": 31,
+      "captions": 3,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/12.-retinopathy-neuropathy-and-foot-care/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/12.-retinopathy-neuropathy-and-foot-care/document.md"
+    },
+    {
+      "title": "13. Older Adults",
+      "sourcePdf": "guidelines-sources/ADA/2025/13. Older Adults.pdf",
+      "pageCount": 18,
+      "recommendations": 26,
+      "captions": 5,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/13.-older-adults/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/13.-older-adults/document.md"
+    },
+    {
+      "title": "14. Children and Adolescents",
+      "sourcePdf": "guidelines-sources/ADA/2025/14. Children and Adolescents.pdf",
+      "pageCount": 24,
+      "recommendations": 105,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/14.-children-and-adolescents/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/14.-children-and-adolescents/document.md"
+    },
+    {
+      "title": "15. Management of Diabetes in Pregnancy",
+      "sourcePdf": "guidelines-sources/ADA/2025/15. Management of Diabetes in Pregnancy.pdf",
+      "pageCount": 16,
+      "recommendations": 32,
+      "captions": 2,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/15.-management-of-diabetes-in-pregnancy/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/15.-management-of-diabetes-in-pregnancy/document.md"
+    },
+    {
+      "title": "16. Diabetes Care in the Hospital",
+      "sourcePdf": "guidelines-sources/ADA/2025/16. Diabetes Care in the Hospital.pdf",
+      "pageCount": 15,
+      "recommendations": 19,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/16.-diabetes-care-in-the-hospital/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/16.-diabetes-care-in-the-hospital/document.md"
+    },
+    {
+      "title": "17. Diabetes Advocacy",
+      "sourcePdf": "guidelines-sources/ADA/2025/17. Diabetes Advocacy.pdf",
+      "pageCount": 3,
+      "recommendations": 0,
+      "captions": 0,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/17.-diabetes-advocacy/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/17.-diabetes-advocacy/document.md"
+    },
+    {
+      "title": "Disclosures",
+      "sourcePdf": "guidelines-sources/ADA/2025/Disclosures.pdf",
+      "pageCount": 8,
+      "recommendations": 0,
+      "captions": 0,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/disclosures/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/disclosures/document.md"
+    },
+    {
+      "title": "Index",
+      "sourcePdf": "guidelines-sources/ADA/2025/Index.pdf",
+      "pageCount": 10,
+      "recommendations": 0,
+      "captions": 0,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/index/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/index/document.md"
+    },
+    {
+      "title": "Introduction and Methodology Standards of Care in Diabetes2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/Introduction and Methodology Standards of Care in Diabetes2025.pdf",
+      "pageCount": 6,
+      "recommendations": 0,
+      "captions": 1,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/introduction-and-methodology-standards-of-care-in-diabetes2025/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/introduction-and-methodology-standards-of-care-in-diabetes2025/document.md"
+    },
+    {
+      "title": "Summary of Revisions Standards of Care in Diabetes 2025",
+      "sourcePdf": "guidelines-sources/ADA/2025/Summary of Revisions Standards of Care in Diabetes 2025.pdf",
+      "pageCount": 9,
+      "recommendations": 0,
+      "captions": 19,
+      "images": 0,
+      "json": "guidelines-sources/_structured/ADA/2025/summary-of-revisions-standards-of-care-in-diabetes-2025/document.json",
+      "markdown": "guidelines-sources/_structured/ADA/2025/summary-of-revisions-standards-of-care-in-diabetes-2025/document.md"
+    }
+  ]
+}

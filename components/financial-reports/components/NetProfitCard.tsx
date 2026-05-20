@@ -19,8 +19,12 @@ interface NetProfitCardProps {
     /** إجمالي المصروفات */
     /** إجمالي المصروفات */
     totalExpenses: number;
-    /** اسم الشهر الحالي */
+    /** اسم الشهر الحالي أو اليوم */
     currentMonthLabel: string;
+    /** العنوان (اختياري) */
+    title?: string;
+    /** اسم الفترة (اختياري، مثلاً: الشهر، اليوم) */
+    periodName?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,6 +42,8 @@ export const NetProfitCard: React.FC<NetProfitCardProps> = ({
     totalIncome,
     totalExpenses,
     currentMonthLabel,
+    title = 'صافي الأرباح الشهرية',
+    periodName = 'الشهر',
 }) => {
     const netProfit = totalIncome - totalExpenses;
     const isProfit = netProfit >= 0;
@@ -48,7 +54,7 @@ export const NetProfitCard: React.FC<NetProfitCardProps> = ({
                 isProfit ? 'bg-gradient-to-r from-brand-700 to-brand-600' : 'bg-gradient-to-r from-danger-600 to-danger-500'
             }`}>
                 <span className="text-base">📊</span>
-                <span className="text-sm font-black text-white">صافي الأرباح الشهرية</span>
+                <span className="text-sm font-black text-white">{title}</span>
                 <span className="mr-auto text-xs font-bold text-white/80 bg-white/15 rounded-full px-2.5 py-0.5">{currentMonthLabel}</span>
             </div>
 
@@ -62,7 +68,7 @@ export const NetProfitCard: React.FC<NetProfitCardProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                         </div>
-                        <span className="font-bold text-sm">{isProfit ? 'ربح' : 'خسارة'} الشهر</span>
+                        <span className="font-bold text-sm">{isProfit ? 'ربح' : 'خسارة'} {periodName}</span>
                     </div>
                     <div className="text-2xl sm:text-4xl font-black mb-1 tracking-tight break-words">
                         {formatCurrency(netProfit)}

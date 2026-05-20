@@ -39,6 +39,7 @@ const loadMedicationEdit = () => import('../medication/MedicationEditPage').then
 const loadPrescriptionSettings = () => import('../prescription-settings').then(m => ({ default: m.PrescriptionSettingsPage }));
 const loadAdvertisement = () => import('../advertisement/AdvertisementAndPublicPage').then(m => ({ default: m.AdvertisementAndPublicPage }));
 const loadFinancialReports = () => import('../financial-reports/FinancialReportsPage').then(m => ({ default: m.FinancialReportsPage }));
+const loadGuidelines = () => import('../guidelines/GuidelinesPage').then(m => ({ default: m.GuidelinesPage }));
 const loadBranchSettings = () => import('../branch-settings').then(m => ({ default: m.BranchSettingsPage }));
 const loadPermissions = () => import('../permissions/PermissionsPage').then(m => ({ default: m.PermissionsPage }));
 
@@ -53,6 +54,7 @@ const MedicationEditPage = React.lazy(loadMedicationEdit);
 const PrescriptionSettingsPage = React.lazy(loadPrescriptionSettings);
 const AdvertisementAndPublicPage = React.lazy(loadAdvertisement);
 const FinancialReportsPage = React.lazy(loadFinancialReports);
+const GuidelinesPage = React.lazy(loadGuidelines);
 const BranchSettingsPage = React.lazy(loadBranchSettings);
 const PermissionsPage = React.lazy(loadPermissions);
 
@@ -472,6 +474,10 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           branchId={p.activeBranchId}
           branches={p.branches}
         />
+      )}
+
+      {p.currentView === 'guidelines' && (
+        <GuidelinesPage />
       )}
 
       {p.currentView === 'drugtools' && (

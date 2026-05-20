@@ -17,7 +17,7 @@ import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { LoadingStateScreen } from '../app/LoadingStateScreen';
 import {
     FaHouse, FaStethoscope, FaClipboardList, FaFolderOpen,
-    FaCalendarCheck, FaChartPie, FaFlask, FaKey,
+    FaCalendarCheck, FaChartPie, FaBookMedical, FaFlask, FaKey,
     FaPaintbrush, FaBullhorn, FaBuilding, FaShieldHalved,
     FaRightFromBracket, FaCircleUser, FaBars, FaXmark,
     FaLock,
@@ -31,7 +31,7 @@ import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
 /** أنواع الواجهات المتاحة للتنقل */
-type ViewType = 'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'secretary' | 'financialReports' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement' | 'permissions';
+type ViewType = 'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'secretary' | 'financialReports' | 'guidelines' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement' | 'permissions';
 
 interface SidebarProps {
     currentView: string; // الواجهة المحددة حالياً
@@ -112,6 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'patientFiles',     label: 'ملفات المرضى',     icon: <FaFolderOpen className="w-5 h-5" /> },
         { id: 'appointments',     label: 'المواعيد',           icon: <FaCalendarCheck className="w-5 h-5" />, badge: todayAppointmentsCount > 0 ? todayAppointmentsCount : undefined },
         { id: 'financialReports', label: 'التقارير المالية',  icon: <FaChartPie className="w-5 h-5" /> },
+        { id: 'guidelines',        label: 'الجايدلاينز',        icon: <FaBookMedical className="w-5 h-5" /> },
         { id: 'drugtools',        label: 'أدوات الأدوية',     icon: <FaFlask className="w-5 h-5" /> },
         { id: 'secretary',        label: 'السكرتارية',         icon: <FaKey className="w-5 h-5" /> },
         { id: 'settings',         label: 'تصميم الروشتة',     icon: <FaPaintbrush className="w-5 h-5" /> },
@@ -485,6 +486,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 {currentView === 'patientFiles' && 'ملفات المرضى'}
                                 {currentView === 'appointments' && 'المواعيد'}
                                 {currentView === 'financialReports' && 'التقارير المالية'}
+                                {currentView === 'guidelines' && 'الجايدلاينز'}
                                 {currentView === 'drugtools' && 'أدوات الأدوية'}
                                 {currentView === 'medicationEdit' && 'تعديل الأدوية'}
                                 {currentView === 'settings' && 'تصميم الروشتة'}
