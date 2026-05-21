@@ -80,8 +80,6 @@ export type GuidelineTopic = {
     | 'complicationsRisk'
     | 'specialPopulations'
     | 'ginaIntroduction'
-    | 'ginaDiagnosingAsthma'
-    | 'ginaAssessingAsthma'
     | 'ginaGeneralPrinciples'
     | 'ginaAdultMedication'
     | 'ginaChildMedication'
@@ -346,9 +344,7 @@ export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedTe
   },
   ginaIntroduction: { en: 'Introduction & Facts', ar: 'مقدمة وحقائق' },
   ginaDiagnosis: { en: 'Diagnosing Asthma', ar: 'تشخيص الربو' },
-  ginaDiagnosingAsthma: { en: 'Diagnosing Asthma', ar: 'تشخيص الربو' },
   ginaAssessment: { en: 'Assessing Asthma', ar: 'تقييم الربو' },
-  ginaAssessingAsthma: { en: 'Assessing Asthma', ar: 'تقييم الربو' },
   ginaGeneralPrinciples: { en: 'General Principles', ar: 'مبادئ عامة' },
   ginaAdultMedication: { en: 'Treating Adults & Adolescents', ar: 'علاج البالغين والمراهقين' },
   ginaChildMedication: { en: 'Treating Children 6-11 Years', ar: 'علاج الأطفال 6-11 سنة' },
