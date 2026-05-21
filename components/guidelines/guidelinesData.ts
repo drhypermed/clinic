@@ -22,6 +22,8 @@ export type GuidelineSourceTableFigure = {
   id: string;
   page: number;
   caption: string;
+  imageSrc?: string;
+  title?: string;
 };
 
 export type GuidelineSourceTableExtract = {
@@ -76,7 +78,18 @@ export type GuidelineTopic = {
     | 'behaviorsGoalsTech'
     | 'weightPharmacology'
     | 'complicationsRisk'
-    | 'specialPopulations';
+    | 'specialPopulations'
+    | 'ginaIntroduction'
+    | 'ginaDiagnosingAsthma'
+    | 'ginaAssessingAsthma'
+    | 'ginaGeneralPrinciples'
+    | 'ginaAdultMedication'
+    | 'ginaChildMedication'
+    | 'ginaSpecificPopulations'
+    | 'ginaExacerbations'
+    | 'ginaReferenceTables'
+    | 'ginaDiagnosis'
+    | 'ginaAssessment';
   title: LocalizedText;
   summary: LocalizedText;
   points: Record<GuidelineLanguage, string[]>;
@@ -106,6 +119,7 @@ export type GuidelineCollectionData = {
 
 import { ADA_2025_REMAINING_SOURCES } from './data/ada2025/sources';
 import { ADA_2026_REMAINING_SOURCES } from './data/ada2026/sources';
+import { GINA_2025_SOURCES } from './data/gina2025/sources';
 
 export const loadGuidelineCollectionData = async (id: string): Promise<GuidelineCollectionData | null> => {
   if (id === 'ada-2026') {
@@ -172,6 +186,46 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
         ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
       ],
       recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
+    };
+  }
+
+  if (id === 'gina-2025') {
+    const [
+      { GINA_2025_INTRODUCTION_TOPICS },
+      { GINA_2025_DIAGNOSIS_TOPICS },
+      { GINA_2025_ASSESSMENT_TOPICS },
+      { GINA_2025_GENERAL_PRINCIPLES_TOPICS },
+      { GINA_2025_ADULT_MEDICATION_TOPICS },
+      { GINA_2025_CHILD_MEDICATION_TOPICS },
+      { GINA_2025_SPECIFIC_POPULATIONS_TOPICS },
+      { GINA_2025_EXACERBATIONS_TOPICS },
+      { GINA_2025_REFERENCE_TABLES_TOPICS },
+      { GINA_2025_RECOMMENDATION_DIGEST },
+    ] = await Promise.all([
+      import('./data/gina2025/introduction'),
+      import('./data/gina2025/diagnosingAsthma'),
+      import('./data/gina2025/assessingAsthma'),
+      import('./data/gina2025/generalPrinciples'),
+      import('./data/gina2025/adultMedication'),
+      import('./data/gina2025/childMedication'),
+      import('./data/gina2025/specificPopulations'),
+      import('./data/gina2025/exacerbations'),
+      import('./data/gina2025/referenceTables'),
+      import('./data/gina2025/recommendationDigest'),
+    ]);
+    return {
+      topics: [
+        ...GINA_2025_INTRODUCTION_TOPICS,
+        ...GINA_2025_DIAGNOSIS_TOPICS,
+        ...GINA_2025_ASSESSMENT_TOPICS,
+        ...GINA_2025_GENERAL_PRINCIPLES_TOPICS,
+        ...GINA_2025_ADULT_MEDICATION_TOPICS,
+        ...GINA_2025_CHILD_MEDICATION_TOPICS,
+        ...GINA_2025_SPECIFIC_POPULATIONS_TOPICS,
+        ...GINA_2025_EXACERBATIONS_TOPICS,
+        ...GINA_2025_REFERENCE_TABLES_TOPICS,
+      ],
+      recommendationDigest: GINA_2025_RECOMMENDATION_DIGEST,
     };
   }
   return null;
@@ -244,6 +298,21 @@ export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
       ...ADA_2025_REMAINING_SOURCES,
     ],
   },
+  {
+    id: 'gina-2025',
+    school: 'GINA',
+    year: 2025,
+    sourceDate: 'May 2025',
+    title: {
+      en: 'GINA Global Strategy for Asthma 2025',
+      ar: 'استراتيجية GINA لمرض الربو 2025',
+    },
+    subtitle: {
+      en: 'A comprehensive, source-linked digest focused on actionable GINA 2025 topics.',
+      ar: 'ملخص شامل وموثق يركز على الموضوعات العملية في GINA 2025.',
+    },
+    sources: GINA_2025_SOURCES,
+  },
 ];
 
 export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedText> = {
@@ -275,4 +344,16 @@ export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedTe
     en: '13-17. Special Populations and Settings',
     ar: '13-17. فئات وسياقات خاصة',
   },
+  ginaIntroduction: { en: 'Introduction & Facts', ar: 'مقدمة وحقائق' },
+  ginaDiagnosis: { en: 'Diagnosing Asthma', ar: 'تشخيص الربو' },
+  ginaDiagnosingAsthma: { en: 'Diagnosing Asthma', ar: 'تشخيص الربو' },
+  ginaAssessment: { en: 'Assessing Asthma', ar: 'تقييم الربو' },
+  ginaAssessingAsthma: { en: 'Assessing Asthma', ar: 'تقييم الربو' },
+  ginaGeneralPrinciples: { en: 'General Principles', ar: 'مبادئ عامة' },
+  ginaAdultMedication: { en: 'Treating Adults & Adolescents', ar: 'علاج البالغين والمراهقين' },
+  ginaChildMedication: { en: 'Treating Children 6-11 Years', ar: 'علاج الأطفال 6-11 سنة' },
+  ginaSpecificPopulations: { en: 'Specific Populations', ar: 'حالات خاصة' },
+  ginaExacerbations: { en: 'Exacerbations', ar: 'الانتكاسات' },
+  ginaReferenceTables: { en: 'Reference Tables', ar: 'جداول مرجعية' },
 };
+
