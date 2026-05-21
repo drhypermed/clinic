@@ -49,6 +49,15 @@ const topicPalettes: Record<GuidelineTopic['group'], typeof defaultTopicPalette>
   weightPharmacology: defaultTopicPalette,
   complicationsRisk: defaultTopicPalette,
   specialPopulations: defaultTopicPalette,
+  ginaIntroduction: defaultTopicPalette,
+  ginaDiagnosis: defaultTopicPalette,
+  ginaAssessment: defaultTopicPalette,
+  ginaGeneralPrinciples: defaultTopicPalette,
+  ginaAdultMedication: defaultTopicPalette,
+  ginaChildMedication: defaultTopicPalette,
+  ginaSpecificPopulations: defaultTopicPalette,
+  ginaExacerbations: defaultTopicPalette,
+  ginaReferenceTables: defaultTopicPalette,
 };
 
 const priorityTagFragments = [
@@ -202,6 +211,13 @@ export const GuidelinesPage: React.FC = () => {
         setIsLoading(false);
       }
     });
+
+    if (selectedCollectionId.startsWith('gina')) {
+      setSelectedGroup('ginaIntroduction');
+    } else if (selectedCollectionId.startsWith('ada')) {
+      setSelectedGroup('populationCare');
+    }
+
     return () => {
       isMounted = false;
     };
@@ -269,15 +285,30 @@ export const GuidelinesPage: React.FC = () => {
   const localizedDirection = getLanguageDirection(language);
   const localizedTextAlign = getLanguageTextAlign(language);
   const englishTextClass = 'text-left [unicode-bidi:plaintext]';
-  const groups: GuidelineTopic['group'][] = [
-    'populationCare',
-    'diagnosisClassification',
-    'preventionEvaluation',
-    'behaviorsGoalsTech',
-    'weightPharmacology',
-    'complicationsRisk',
-    'specialPopulations',
-  ];
+  const groups = useMemo<GuidelineTopic['group'][]>(() => {
+    if (selectedCollectionId.startsWith('gina')) {
+      return [
+        'ginaIntroduction',
+        'ginaDiagnosingAsthma',
+        'ginaAssessingAsthma',
+        'ginaGeneralPrinciples',
+        'ginaAdultMedication',
+        'ginaChildMedication',
+        'ginaSpecificPopulations',
+        'ginaExacerbations',
+        'ginaReferenceTables',
+      ];
+    }
+    return [
+      'populationCare',
+      'diagnosisClassification',
+      'preventionEvaluation',
+      'behaviorsGoalsTech',
+      'weightPharmacology',
+      'complicationsRisk',
+      'specialPopulations',
+    ];
+  }, [selectedCollectionId]);
 
 
 
@@ -446,34 +477,36 @@ export const GuidelinesPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <div className="mb-2 text-xs font-black text-slate-500">
-                  {isArabic ? 'نوع المحتوى' : 'Content Type'}
+              {selectedCollectionId && (
+                <div>
+                  <div className="mb-2 text-xs font-black text-slate-500">
+                    {isArabic ? 'الفهرس' : 'Table of Contents'}
+                  </div>
+                  <div className="space-y-1.5">
+                    {groups.map((group) => {
+                      const active = selectedGroup === group;
+                      const palette = getTopicPalette(group);
+                      const label = GUIDELINE_GROUP_LABELS[group][language];
+                      const count = collectionData?.topics.filter((topic) => topic.group === group).length ?? 0;
+                      return (
+                        <button
+                          key={group}
+                          type="button"
+                          onClick={() => setSelectedGroup(group)}
+                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-black transition ${
+                            active ? palette.active : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                          }`}
+                        >
+                          <span>{label}</span>
+                          <span className={`rounded-md px-2 py-0.5 text-xs ${active ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700'}`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  {groups.map((group) => {
-                    const active = selectedGroup === group;
-                    const palette = getTopicPalette(group);
-                    const label = GUIDELINE_GROUP_LABELS[group][language];
-                    const count = collectionData?.topics.filter((topic) => topic.group === group).length ?? 0;
-                    return (
-                      <button
-                        key={group}
-                        type="button"
-                        onClick={() => setSelectedGroup(group)}
-                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-black transition ${
-                          active ? palette.active : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
-                        }`}
-                      >
-                        <span>{label}</span>
-                        <span className={`rounded-md px-2 py-0.5 text-xs ${active ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700'}`}>
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              )}
             </div>
           </aside>
 
@@ -612,59 +645,6 @@ export const GuidelinesPage: React.FC = () => {
                         </ul>
                       </div>
 
-                      {/* Layer 2: Quick Decision */}
-                      {topic.quickDecision && (
-                        <div className="mt-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/50 p-4 ring-1 ring-amber-200/60 shadow-sm">
-                          <div className="mb-3 flex items-center gap-2 text-sm font-black text-amber-900">
-                            <LuShieldCheck className="h-5 w-5 text-amber-600" />
-                            {isArabic ? 'قرار سريع (Cheat Sheet)' : 'Quick Decision'}
-                          </div>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {topic.quickDecision.when && (
-                              <div className="rounded-xl border border-amber-100/80 bg-white/80 p-3 shadow-sm">
-                                <div className="mb-1 text-xs font-black text-amber-800">{isArabic ? 'متى؟' : 'When?'}</div>
-                                <div className="text-sm font-bold text-slate-800">{renderTextWithPills(topic.quickDecision.when[language], highlightTerms)}</div>
-                              </div>
-                            )}
-                            {topic.quickDecision.start && (
-                              <div className="rounded-xl border border-emerald-100/80 bg-white/80 p-3 shadow-sm">
-                                <div className="mb-1 text-xs font-black text-emerald-800">{isArabic ? 'أبدأ بإيه؟' : 'Start with?'}</div>
-                                <div className="text-sm font-bold text-slate-800">{renderTextWithPills(topic.quickDecision.start[language], highlightTerms)}</div>
-                              </div>
-                            )}
-                            {topic.quickDecision.followUp && (
-                              <div className="rounded-xl border border-blue-100/80 bg-white/80 p-3 shadow-sm">
-                                <div className="mb-1 text-xs font-black text-blue-800">{isArabic ? 'أتابع إمتى؟' : 'Follow up?'}</div>
-                                <div className="text-sm font-bold text-slate-800">{renderTextWithPills(topic.quickDecision.followUp[language], highlightTerms)}</div>
-                              </div>
-                            )}
-                            {topic.quickDecision.warn && (
-                              <div className="rounded-xl border border-red-100/80 bg-white/80 p-3 shadow-sm">
-                                <div className="mb-1 text-xs font-black text-red-800">{isArabic ? 'أحذر إمتى؟' : 'Warn/Refer?'}</div>
-                                <div className="text-sm font-bold text-slate-800">{renderTextWithPills(topic.quickDecision.warn[language], highlightTerms)}</div>
-                              </div>
-                            )}
-                            {topic.quickDecision.customBlocks?.map((block, i) => {
-                              const colorStyles = {
-                                amber: 'border-amber-100/80 text-amber-800',
-                                emerald: 'border-emerald-100/80 text-emerald-800',
-                                blue: 'border-blue-100/80 text-blue-800',
-                                red: 'border-red-100/80 text-red-800',
-                                purple: 'border-purple-100/80 text-purple-800',
-                                slate: 'border-slate-100/80 text-slate-800',
-                              }[block.color || 'slate'];
-                              const [borderClass, textClass] = (colorStyles || 'border-slate-100/80 text-slate-800').split(' ');
-
-                              return (
-                                <div key={i} className={`rounded-xl border ${borderClass} bg-white/80 p-3 shadow-sm`}>
-                                  <div className={`mb-1 text-xs font-black ${textClass}`}>{renderHighlightedText(block.title[language], highlightTerms)}</div>
-                                  <div className="text-sm font-bold text-slate-800">{renderTextWithPills(block.content[language], highlightTerms)}</div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Layer 3: Visuals & Takeaways */}
                       {topic.visuals && topic.visuals.length > 0 && (
@@ -800,17 +780,17 @@ export const GuidelinesPage: React.FC = () => {
                       {isArabic ? 'النص الرسمي' : 'Official Text'}
                     </div>
                     <h2 className="mt-3 text-lg font-black leading-tight text-slate-950">
-                      {isArabic ? 'توصيات ADA الأصلية للمراجعة' : 'Original ADA Recommendations for Review'}
+                      {isArabic ? `توصيات ${selectedCollection?.school ?? ''} الأصلية للمراجعة` : `Original ${selectedCollection?.school ?? ''} Recommendations for Review`}
                     </h2>
                     <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-slate-600">
                       {isArabic
-                        ? 'استخدم هذا الجزء عند الحاجة لمراجعة نص التوصية الأصلي كما ورد في ADA، مع رقم التوصية، درجة الدليل، ورقم الصفحة. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.'
-                        : 'Use this section when you need the original ADA recommendation text, with recommendation number, evidence grade, and page. The practical digest is above; this section is for source-level review.'}
+                        ? `استخدم هذا الجزء عند الحاجة لمراجعة نص التوصية الأصلي كما ورد في ${selectedCollection?.school ?? ''}، مع رقم التوصية، درجة الدليل، ورقم الصفحة. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.`
+                        : `Use this section when you need the original ${selectedCollection?.school ?? ''} recommendation text, with recommendation number, evidence grade, and page. The practical digest is above; this section is for source-level review.`}
                     </p>
                   </div>
                   <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-black text-blue-700">
                     <span dir="ltr">
-                      {filteredSourceDigests.length} {isArabic ? 'فصل' : 'chapters'} · {filteredRecommendationCount} {isArabic ? 'توصية' : 'recommendations'}
+                      {filteredSourceDigests.length} {isArabic ? 'فصل' : 'chapters'} · {filteredRecommendationCount > 0 ? `${filteredRecommendationCount} ${isArabic ? 'توصية' : 'recommendations'}` : `${filteredSourceDigests.reduce((acc, d) => acc + (d.tablesAndFigures?.length || 0), 0)} ${isArabic ? 'صفحة رسمية' : 'official pages'}`}
                     </span>
                   </div>
                 </div>
@@ -830,7 +810,9 @@ export const GuidelinesPage: React.FC = () => {
                               <LuBookOpen className="h-4 w-4 text-blue-600" />
                               <span>{renderHighlightedText(digest.title, highlightTerms)}</span>
                               <span className="rounded-md bg-white px-2 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-100">
-                                {digest.recommendations.length} {isArabic ? 'توصية' : 'recommendations'}
+                                {digest.recommendations.length > 0 
+                                  ? `${digest.recommendations.length} ${isArabic ? 'توصية' : 'recommendations'}` 
+                                  : `${digest.tablesAndFigures?.length || 0} ${isArabic ? 'صفحة رسمية' : 'official pages'}`}
                               </span>
                             </span>
                           </summary>
@@ -863,6 +845,23 @@ export const GuidelinesPage: React.FC = () => {
                                   </li>
                                 ))}
                               </ol>
+                            )}
+
+                            {digest.tablesAndFigures?.length > 0 && (
+                              <div className="mt-4 space-y-4 border-t border-blue-100 pt-4">
+                                {digest.tablesAndFigures.map((item) => (
+                                  <figure key={`${digest.sourceId}-${item.id}`} className="overflow-hidden rounded-xl border border-blue-100 bg-blue-50/50">
+                                    <a href={item.imageSrc} target="_blank" rel="noreferrer" className="block bg-white p-1">
+                                      <img
+                                        src={item.imageSrc}
+                                        alt={item.title}
+                                        loading="lazy"
+                                        className="w-full object-contain"
+                                      />
+                                    </a>
+                                  </figure>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </details>

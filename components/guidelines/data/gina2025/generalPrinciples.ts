@@ -3,7 +3,7 @@ import type { GuidelineTopic } from '../../guidelinesData';
 export const GINA_2025_GENERAL_PRINCIPLES_TOPICS: GuidelineTopic[] = [
   {
     id: 'essential-asthma-medicines',
-    group: 'ginaGeneral',
+    group: 'ginaGeneralPrinciples',
     title: {
       en: 'Essential Asthma Medicines (The Danger of SABA-only)',
       ar: 'الأدوية الأساسية للربو (وخطورة الاعتماد على موسع الشعب فقط)',
@@ -39,7 +39,7 @@ export const GINA_2025_GENERAL_PRINCIPLES_TOPICS: GuidelineTopic[] = [
   },
   {
     id: 'principles-selecting-treatment',
-    group: 'ginaGeneral',
+    group: 'ginaGeneralPrinciples',
     title: {
       en: 'Principles of Selecting & Adjusting Treatment',
       ar: 'مبادئ اختيار وتعديل العلاج',
@@ -69,7 +69,7 @@ export const GINA_2025_GENERAL_PRINCIPLES_TOPICS: GuidelineTopic[] = [
   },
   {
     id: 'non-pharmacological-management',
-    group: 'ginaGeneral',
+    group: 'ginaGeneralPrinciples',
     title: {
       en: 'Non-pharmacological Management & Adherence',
       ar: 'الإدارة غير الدوائية وتقييم الالتزام',
