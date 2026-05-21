@@ -3,7 +3,7 @@ import type { GuidelineTopic } from '../../guidelinesData';
 export const GINA_2025_ASSESSMENT_TOPICS: GuidelineTopic[] = [
   {
     id: 'assessing-asthma-control',
-    group: 'ginaAssessingAsthma',
+    group: 'ginaAssessment',
     title: {
       en: 'Assessing Asthma Control',
       ar: 'تقييم التحكم في الربو',
@@ -33,7 +33,7 @@ export const GINA_2025_ASSESSMENT_TOPICS: GuidelineTopic[] = [
   },
   {
     id: 'risk-factors-exacerbations',
-    group: 'ginaAssessingAsthma',
+    group: 'ginaAssessment',
     title: {
       en: 'Risk Factors for Exacerbations',
       ar: 'عوامل الخطر لحدوث انتكاسات (Asthma Attacks)',
@@ -63,7 +63,7 @@ export const GINA_2025_ASSESSMENT_TOPICS: GuidelineTopic[] = [
   },
   {
     id: 'asthma-severity',
-    group: 'ginaAssessingAsthma',
+    group: 'ginaAssessment',
     title: {
       en: 'Assessing Asthma Severity',
       ar: 'تقييم شدة الربو (Severity)',

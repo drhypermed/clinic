@@ -289,8 +289,8 @@ export const GuidelinesPage: React.FC = () => {
     if (selectedCollectionId.startsWith('gina')) {
       return [
         'ginaIntroduction',
-        'ginaDiagnosingAsthma',
-        'ginaAssessingAsthma',
+        'ginaDiagnosis',
+        'ginaAssessment',
         'ginaGeneralPrinciples',
         'ginaAdultMedication',
         'ginaChildMedication',
