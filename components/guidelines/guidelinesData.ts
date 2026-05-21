@@ -97,29 +97,85 @@ export type GuidelineCollection = {
   subtitle: LocalizedText;
   sourceDate: string;
   sources: GuidelineSource[];
+};
+
+export type GuidelineCollectionData = {
   topics: GuidelineTopic[];
   recommendationDigest?: GuidelineSourceDigest[];
 };
 
-import { ADA_2025_DIAGNOSIS_TOPICS } from './data/ada2025/diagnosisClassification';
-import { ADA_2025_IMPROVING_CARE_TOPICS } from './data/ada2025/improvingCare';
-import { ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS } from './data/ada2025/behaviorsGoalsTechnology';
-import { ADA_2025_COMPLICATIONS_TOPICS } from './data/ada2025/complications';
-import { ADA_2025_PREVENTION_EVALUATION_TOPICS } from './data/ada2025/preventionEvaluation';
-import { ADA_2025_SPECIAL_SITUATIONS_TOPICS } from './data/ada2025/specialSituations';
 import { ADA_2025_REMAINING_SOURCES } from './data/ada2025/sources';
-import { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS } from './data/ada2025/weightPharmacology';
-import { ADA_2025_RECOMMENDATION_DIGEST } from './data/ada2025/recommendationDigest';
-
-import { ADA_2026_DIAGNOSIS_TOPICS } from './data/ada2026/diagnosisClassification';
-import { ADA_2026_IMPROVING_CARE_TOPICS } from './data/ada2026/improvingCare';
-import { ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS } from './data/ada2026/behaviorsGoalsTechnology';
-import { ADA_2026_COMPLICATIONS_TOPICS } from './data/ada2026/complications';
-import { ADA_2026_PREVENTION_EVALUATION_TOPICS } from './data/ada2026/preventionEvaluation';
-import { ADA_2026_SPECIAL_SITUATIONS_TOPICS } from './data/ada2026/specialSituations';
 import { ADA_2026_REMAINING_SOURCES } from './data/ada2026/sources';
-import { ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS } from './data/ada2026/weightPharmacology';
-import { ADA_2026_RECOMMENDATION_DIGEST } from './data/ada2026/recommendationDigest';
+
+export const loadGuidelineCollectionData = async (id: string): Promise<GuidelineCollectionData | null> => {
+  if (id === 'ada-2026') {
+    const [
+      { ADA_2026_IMPROVING_CARE_TOPICS },
+      { ADA_2026_DIAGNOSIS_TOPICS },
+      { ADA_2026_PREVENTION_EVALUATION_TOPICS },
+      { ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS },
+      { ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS },
+      { ADA_2026_COMPLICATIONS_TOPICS },
+      { ADA_2026_SPECIAL_SITUATIONS_TOPICS },
+      { ADA_2026_RECOMMENDATION_DIGEST },
+    ] = await Promise.all([
+      import('./data/ada2026/improvingCare'),
+      import('./data/ada2026/diagnosisClassification'),
+      import('./data/ada2026/preventionEvaluation'),
+      import('./data/ada2026/behaviorsGoalsTechnology'),
+      import('./data/ada2026/weightPharmacology'),
+      import('./data/ada2026/complications'),
+      import('./data/ada2026/specialSituations'),
+      import('./data/ada2026/recommendationDigest'),
+    ]);
+    return {
+      topics: [
+        ...ADA_2026_IMPROVING_CARE_TOPICS,
+        ...ADA_2026_DIAGNOSIS_TOPICS,
+        ...ADA_2026_PREVENTION_EVALUATION_TOPICS,
+        ...ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS,
+        ...ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS,
+        ...ADA_2026_COMPLICATIONS_TOPICS,
+        ...ADA_2026_SPECIAL_SITUATIONS_TOPICS,
+      ],
+      recommendationDigest: ADA_2026_RECOMMENDATION_DIGEST,
+    };
+  }
+  if (id === 'ada-2025') {
+    const [
+      { ADA_2025_IMPROVING_CARE_TOPICS },
+      { ADA_2025_DIAGNOSIS_TOPICS },
+      { ADA_2025_PREVENTION_EVALUATION_TOPICS },
+      { ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS },
+      { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS },
+      { ADA_2025_COMPLICATIONS_TOPICS },
+      { ADA_2025_SPECIAL_SITUATIONS_TOPICS },
+      { ADA_2025_RECOMMENDATION_DIGEST },
+    ] = await Promise.all([
+      import('./data/ada2025/improvingCare'),
+      import('./data/ada2025/diagnosisClassification'),
+      import('./data/ada2025/preventionEvaluation'),
+      import('./data/ada2025/behaviorsGoalsTechnology'),
+      import('./data/ada2025/weightPharmacology'),
+      import('./data/ada2025/complications'),
+      import('./data/ada2025/specialSituations'),
+      import('./data/ada2025/recommendationDigest'),
+    ]);
+    return {
+      topics: [
+        ...ADA_2025_IMPROVING_CARE_TOPICS,
+        ...ADA_2025_DIAGNOSIS_TOPICS,
+        ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
+        ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
+        ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
+        ...ADA_2025_COMPLICATIONS_TOPICS,
+        ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
+      ],
+      recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
+    };
+  }
+  return null;
+};
 
 export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
   {
@@ -154,16 +210,6 @@ export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
       },
       ...ADA_2026_REMAINING_SOURCES,
     ],
-    topics: [
-      ...ADA_2026_IMPROVING_CARE_TOPICS,
-      ...ADA_2026_DIAGNOSIS_TOPICS,
-      ...ADA_2026_PREVENTION_EVALUATION_TOPICS,
-      ...ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS,
-      ...ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS,
-      ...ADA_2026_COMPLICATIONS_TOPICS,
-      ...ADA_2026_SPECIAL_SITUATIONS_TOPICS,
-    ],
-    recommendationDigest: ADA_2026_RECOMMENDATION_DIGEST,
   },
   {
     id: 'ada-2025',
@@ -197,16 +243,6 @@ export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
       },
       ...ADA_2025_REMAINING_SOURCES,
     ],
-    topics: [
-      ...ADA_2025_IMPROVING_CARE_TOPICS,
-      ...ADA_2025_DIAGNOSIS_TOPICS,
-      ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
-      ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
-      ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
-      ...ADA_2025_COMPLICATIONS_TOPICS,
-      ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
-    ],
-    recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
   },
 ];
 

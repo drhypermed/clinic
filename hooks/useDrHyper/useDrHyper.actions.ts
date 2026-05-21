@@ -37,6 +37,7 @@ interface UseDrHyperActionsArgs {
   onTrackSmartPrescription?: (complaint: string) => void;
   /** الفرع النشط لحفظه مع السجلات */
   activeBranchId?: string;
+  requestDraftSync: () => void;
 }
 
 export const useDrHyperActions = ({
@@ -60,6 +61,7 @@ export const useDrHyperActions = ({
   applyLimitPlaceholder,
   onTrackSmartPrescription,
   activeBranchId,
+  requestDraftSync,
 }: UseDrHyperActionsArgs) => {
   const {
     setHistoryStack,
@@ -378,6 +380,7 @@ export const useDrHyperActions = ({
     setDiscountReasonId,
     setDiscountReasonLabel,
     handleReset,
+    requestDraftSync,
   });
 
   const smartRxActions = createSmartRxActions({

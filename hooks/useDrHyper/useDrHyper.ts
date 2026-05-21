@@ -236,6 +236,7 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
             }).catch((err) => console.error('Failed to track case analysis:', err));
         },
         activeBranchId,
+        requestDraftSync: draftPersistence.requestDraftSync,
     });
 
     // أغلفة تربط حفظ/إعادة الضبط بنظام الـ draft: عند النجاح نضع بصمة محفوظة ونمسح الـ draft،

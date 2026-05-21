@@ -128,6 +128,8 @@ interface UseDrHyperDraftReturn {
   markDraftSaved: () => void;
   /** يتم استدعاؤها بعد handleReset: تمسح الـ draft وتعيد ضبط dirty-tracking. */
   clearDraft: () => void;
+  /** يطلب مزامنة البصمة المحفوظة مع البصمة الحية في دورة الـ render القادمة (مفيد بعد تحميل سجل) */
+  requestDraftSync: () => void;
 }
 
 export const useDrHyperDraft = ({
@@ -137,6 +139,7 @@ export const useDrHyperDraft = ({
 }: UseDrHyperDraftParams): UseDrHyperDraftReturn => {
   // بصمة آخر حفظ/إعادة ضبط — نستخدمها لمقارنة التغييرات غير المحفوظة.
   const [savedSignature, setSavedSignature] = useState<string>('');
+  const [syncRequested, setSyncRequested] = useState(false);
   const restoredRef = useRef<string | null>(null);
 
   // البصمة الحية للفورم — تتغير مع أي تعديل.
@@ -251,6 +254,12 @@ export const useDrHyperDraft = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  // Keep a ref to the latest liveSignature to avoid stale closures in async callbacks like markDraftSaved
+  const liveSignatureRef = useRef(liveSignature);
+  useEffect(() => {
+    liveSignatureRef.current = liveSignature;
+  }, [liveSignature]);
+
   // الحفظ التلقائي — debounced.
   useEffect(() => {
     if (!userId) return;
@@ -262,12 +271,19 @@ export const useDrHyperDraft = ({
       return;
     }
 
+    if (liveSignature === savedSignature) {
+      // لو البصمة الحالية هي نفسها المحفوظة، معناه مفيش تغييرات جديدة.
+      // نمسح أي draft موجود لتجنب استرجاعه بالخطأ عند إعادة التحميل.
+      removeDraftFromStorage(userId);
+      return;
+    }
+
     const timer = setTimeout(() => {
       writeDraftToStorage(userId, liveSnapshot);
     }, DRAFT_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [userId, liveSignature, liveSnapshot]);
+  }, [userId, liveSignature, liveSnapshot, savedSignature]);
 
   const hasUnsavedChanges = useMemo(() => {
     if (!hasMeaningfulContent(liveSnapshot)) return false;
@@ -275,9 +291,20 @@ export const useDrHyperDraft = ({
   }, [liveSignature, liveSnapshot, savedSignature]);
 
   const markDraftSaved = useCallback(() => {
-    setSavedSignature(liveSignature);
+    setSavedSignature(liveSignatureRef.current);
     if (userId) removeDraftFromStorage(userId);
-  }, [liveSignature, userId]);
+  }, [userId]);
+
+  const requestDraftSync = useCallback(() => {
+    setSyncRequested(true);
+  }, []);
+
+  useEffect(() => {
+    if (syncRequested) {
+      setSavedSignature(liveSignature);
+      setSyncRequested(false);
+    }
+  }, [syncRequested, liveSignature]);
 
   const clearDraft = useCallback(() => {
     if (userId) removeDraftFromStorage(userId);
@@ -287,5 +314,5 @@ export const useDrHyperDraft = ({
     setSavedSignature('');
   }, [userId]);
 
-  return { hasUnsavedChanges, markDraftSaved, clearDraft };
+  return { hasUnsavedChanges, markDraftSaved, clearDraft, requestDraftSync };
 };

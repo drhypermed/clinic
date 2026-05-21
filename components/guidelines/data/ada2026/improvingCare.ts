@@ -14,16 +14,14 @@ export const ADA_2026_IMPROVING_CARE_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Ensure treatment decisions are timely, rely on evidence-based guidelines, address social determinants of health, and incorporate shared decision-making. (B)',
-        'Clinical choices should account for individual values, preferences, prognoses, comorbidities, and informed financial considerations. (B)',
-        'Align approaches to diabetes management with evidence-based care models emphasizing person-centered team care and ongoing collaborative goal setting. (A)',
-        'Diabetes care must be individualized for each person\'s context across the life span.',
+        'Base clinical choices on individual values, comorbidities, and realistic financial constraints.',
+        'Avoid clinical inertia: timely treatment adjustments are critical.',
+        'Individualize care across the life span; do not use a one-size-fits-all approach.',
       ],
       ar: [
-        'يجب أن تكون قرارات العلاج في وقتها المناسب، مبنية على الدليل، وتعالج محددات الصحة الاجتماعية، وتشمل القرار المشترك. (B)',
-        'ينبغي أن تراعي الخيارات السريرية قيم الفرد، تفضيلاته، توقعات سيره المرضي، أمراضه المصاحبة، والاعتبارات المالية المستنيرة. (B)',
-        'يجب مواءمة منهجيات إدارة السكري مع نماذج الرعاية المبنية على الدليل، والتي تركز على رعاية الفريق المتمركزة حول المريض وتحديد الأهداف التعاونية المستمرة. (A)',
-        'يجب تخصيص رعاية السكري لتناسب سياق كل شخص على مدار مراحل حياته.',
+        'يجب أن تعتمد اختيارات العلاج على قيم المريض، الأمراض المصاحبة، وقدرته المادية الواقعية.',
+        'تجنب القصور السريري (Clinical Inertia): تعديل العلاج في الوقت المناسب أمر بالغ الأهمية.',
+        'قم بتخصيص خطة الرعاية حسب عمر وحالة كل مريض؛ لا توجد خطة واحدة تناسب الجميع.',
       ],
     },
     details: [
@@ -57,14 +55,12 @@ export const ADA_2026_IMPROVING_CARE_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Care systems should facilitate in-person and virtual team-based care. (B)',
-        'Include those knowledgeable and experienced in diabetes management as part of the care team. (B)',
-        'Utilize patient registries, decision support tools, proactive care planning, and community involvement to meet the needs of individuals with diabetes. (B)',
+        'Leverage virtual care (telehealth) when in-person visits are a barrier.',
+        'Use patient registries and proactive outreach to catch patients lost to follow-up.',
       ],
       ar: [
-        'ينبغي للأنظمة الصحية أن تسهل الرعاية الجماعية حضورياً وافتراضياً (عن بُعد). (B)',
-        'يجب أن يضم فريق الرعاية محترفين ذوي معرفة وخبرة في إدارة السكري. (B)',
-        'ينبغي استخدام سجلات المرضى، أدوات دعم القرار، التخطيط الاستباقي للرعاية، وإشراك المجتمع لتلبية احتياجات المصابين بالسكري. (B)',
+        'استفد من الرعاية عن بُعد (Telehealth) عندما تكون الزيارات الحضورية عائقاً للمريض.',
+        'استخدم سجلات المرضى والتواصل الاستباقي للوصول للمرضى المنقطعين عن المتابعة.',
       ],
     },
     sourceIds: ['improving-care'],
@@ -83,16 +79,12 @@ export const ADA_2026_IMPROVING_CARE_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Assess diabetes management, risk factors, and complications using reliable and relevant data metrics to improve processes of care and health outcomes. (B)',
-        'Ensure attention to individual values, preferences, goals for care, and treatment burden, including costs of care. (B)',
-        'Health systems should adopt a culture of continuous quality improvement and implement benchmarking programs. (A)',
-        'Engage interprofessional teams to support sustainable and scalable process changes to improve quality of care and health outcomes. (A)',
+        'Use objective data (A1C, BP, LDL) to benchmark clinic performance.',
+        'Address treatment burden and cost in every chronic care visit.',
       ],
       ar: [
-        'يجب تقييم إدارة السكري، عوامل الخطورة، والمضاعفات باستخدام مؤشرات بيانات موثوقة وذات صلة لتحسين مسارات الرعاية والنتائج الصحية. (B)',
-        'تأكد من الاهتمام بقيم الفرد، وتفضيلاته، وأهداف الرعاية، وعبء العلاج، بما في ذلك تكاليف الرعاية. (B)',
-        'ينبغي للأنظمة الصحية تبني ثقافة التحسين المستمر للجودة وتطبيق برامج المقارنة المرجعية. (A)',
-        'قم بإشراك فرق متعددة التخصصات لدعم التغييرات المستدامة والقابلة للتوسع في مسارات العمل لتحسين جودة الرعاية والنتائج الصحية. (A)',
+        'استخدم البيانات الموضوعية (كالتراكمي، ضغط الدم، والكوليسترول) لتقييم أداء العيادة بانتظام.',
+        'ناقش عبء العلاج والتكلفة المادية مع المريض في كل زيارة متابعة.',
       ],
     },
     sourceIds: ['improving-care'],
@@ -111,16 +103,12 @@ export const ADA_2026_IMPROVING_CARE_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Health systems should assess and address gaps in diabetes care and health outcomes by stratifying clinical quality data by factors such as insurance status, race, ethnicity, preferred language, disability, and SDOH. (B)',
-        'Provide people with diabetes additional self-management support from lay health coaches, navigators, or community health workers when available. (B)',
-        'Consider digital self-management tools or coaches as appropriate. (B)',
-        'Consider the involvement of community health workers to support management of diabetes and cardiovascular and kidney risk factors, especially in underserved communities. (B)',
+        'Screen for food and housing insecurity; they directly impact medication adherence.',
+        'Refer to community health workers or lay navigators for patients struggling with SDOH.',
       ],
       ar: [
-        'ينبغي للأنظمة الصحية تقييم ومعالجة الفجوات في رعاية السكري عبر تصنيف بيانات الجودة السريرية حسب التأمين، العرق، اللغة، الإعاقة، ومحددات الصحة الاجتماعية (SDOH). (B)',
-        'قم بتوفير دعم إضافي للإدارة الذاتية عبر الموجهين الصحيين، الملاحين، أو العاملين في صحة المجتمع عند توفرهم. (B)',
-        'يمكن التفكير في استخدام أدوات أو موجهين رقميين للإدارة الذاتية حسبما يكون مناسباً. (B)',
-        'ضع في اعتبارك إشراك العاملين في صحة المجتمع لدعم إدارة السكري وعوامل الخطورة للقلب والكلى، خاصة في المجتمعات المحرومة. (B)',
+        'ابحث عن مؤشرات انعدام الأمن الغذائي أو السكني؛ فهي تؤثر بشكل مباشر على الالتزام بالعلاج.',
+        'وجّه المرضى الذين يواجهون تحديات اجتماعية إلى مؤسسات دعم المجتمع أو الرعاية الاجتماعية المحلية.',
       ],
     },
     sourceIds: ['improving-care'],
@@ -139,16 +127,14 @@ export const ADA_2026_IMPROVING_CARE_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Intensive insulin therapy requires clinicians experienced in advanced diabetes management and technology.',
-        'Children and adolescents need coordination with schools, caregivers, and gradual transition of self-management.',
-        'Older adults require assessment of nutritional status, vision, hearing, dexterity, cognition, and mobility.',
-        'Pregnant individuals need coordination with maternal-fetal medicine specialists, CDCES, and a planned transition to primary care postpartum.',
+        'Youth: Coordinate with schools/caregivers and transition self-management responsibilities gradually.',
+        'Older Adults: Assess cognition, mobility, vision, and adjust A1C targets to avoid hypoglycemia.',
+        'Pregnancy: Immediate coordination with maternal-fetal specialists and strict postpartum follow-up is required.',
       ],
       ar: [
-        'العلاج المكثف بالإنسولين يتطلب أطباء ذوي خبرة في الإدارة المتقدمة للسكري والتكنولوجيا.',
-        'الأطفال والمراهقون يحتاجون تنسيقاً مع المدارس ومقدمي الرعاية، ونقلاً تدريجياً لمسؤولية الإدارة الذاتية.',
-        'كبار السن يحتاجون تقييماً للحالة الغذائية، النظر، السمع، المهارة اليدوية، الإدراك، والحركة.',
-        'الحوامل يحتجن تنسيقاً مع مختصي طب الجنين، ومثقفي السكري (CDCES)، وخطة انتقال منظمة للرعاية الأولية بعد الولادة.',
+        'الأطفال والمراهقون: نسق مع المدارس والأهل، وقم بنقل مسؤولية الإدارة الذاتية تدريجياً.',
+        'كبار السن: قيّم القدرة الإدراكية، الحركة، والنظر، وقم بتخفيف أهداف السكر لتجنب الهبوط.',
+        'الحوامل: يتطلب الأمر تنسيقاً فورياً مع طبيب النساء والمتابعة الدقيقة جداً بعد الولادة.',
       ],
     },
     sourceIds: ['improving-care'],

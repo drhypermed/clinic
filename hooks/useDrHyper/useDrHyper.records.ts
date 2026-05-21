@@ -80,6 +80,7 @@ interface CreateRecordActionsParams {
     setDiscountReasonId: React.Dispatch<React.SetStateAction<string>>;
     setDiscountReasonLabel: React.Dispatch<React.SetStateAction<string>>;
     handleReset: (e?: React.MouseEvent<any>) => void;
+    requestDraftSync: () => void;
 }
 
 export const createRecordActions = ({
@@ -136,6 +137,7 @@ export const createRecordActions = ({
     setCurrentView,
     setHistoryStack,
     setFutureStack,
+    requestDraftSync,
 }: CreateRecordActionsParams) => {
     const applyDemographics = (record: PatientRecord) => {
         applyPatientDemographicsFromRecord(record, {
@@ -250,6 +252,7 @@ export const createRecordActions = ({
             visitIsoDate: rec.date,
             visitType: 'exam',
         });
+        requestDraftSync();
         showNotification('تم تحميل السجل', 'info');
     };
 
@@ -277,6 +280,7 @@ export const createRecordActions = ({
             visitIsoDate: consultationData.date,
             visitType: 'consultation',
         });
+        requestDraftSync();
         showNotification('تم تحميل الاستشارة', 'info');
     };
 

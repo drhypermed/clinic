@@ -1,23 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   LuBookOpen,
   LuCalendar,
+  LuChevronDown,
   LuCircleCheck,
   LuExternalLink,
   LuFileText,
+  LuFolder,
+  LuFolderOpen,
   LuImage,
-  LuLanguages,
+  LuMenu,
   LuSearch,
   LuShieldCheck,
   LuSparkles,
+  LuX,
 } from 'react-icons/lu';
 import {
   GUIDELINE_COLLECTIONS,
   GUIDELINE_GROUP_LABELS,
   type GuidelineCollection,
+  type GuidelineCollectionData,
   type GuidelineLanguage,
   type GuidelineSourceDigest,
   type GuidelineTopic,
+  loadGuidelineCollectionData,
 } from './guidelinesData';
 
 const languageLabels: Record<GuidelineLanguage, string> = {
@@ -104,9 +110,7 @@ const renderHighlightedText = (text: string, terms: string[]) => {
     );
   });
 };
-
-const clinicalRegex = /((?:<|>|>=|<=)?\s*\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?(?:-\d+(?:\.\d+)?)?\s*(?:%|mg\/dL|mmHg|mmol\/L|kg\/m2|units(?:\/dose)?|g|h|m2|kg|mL\/min\/1\.73\s*m2|hours|weeks|months|years|days|أشهر|شهر|أسابيع|أسبوع|أيام|يوم|ساعات|ساعة|سنة|سنوات|مرات|مرة)|(?:<|>|>=|<=)\s*\d+(?:\.\d+)?|\b\d+\/\d+\b|\b\d+-\d+\b)/gi;
-
+const clinicalRegex = /((?:<|>|≥|≤|>=|<=|~)?\s*\b\d+(?:[,.]\d+)*(?:\s*-\s*\d+(?:[,.]\d+)*)?(?:\s*\/\s*\d+(?:[,.]\d+)*)?\s*(?:%|mg\/dL|mmHg|mmol\/L|kg\/m2|U(?:\/L)?|units?(?:\/dose)?|g(?:\/dL)?|mg|mcg|mEq|L|mL(?:\/min(?:\/1\.73\s*m2)?)?|h|m2|kg|cm|hours?|weeks?|months?|years?|days?|أشهر|شهر|أسابيع|أسبوع|أيام|يوم|ساعات|ساعة|سنة|سنوات|مرات|مرة|جرعات|جرعة|حبات|حبة)?)/gi;
 const renderTextWithPills = (text: string, highlightTerms: string[]) => {
   if (!text) return text;
   const tokens = text.split(clinicalRegex);
@@ -169,12 +173,42 @@ const buildSourceDigestSearchText = (digest: GuidelineSourceDigest, collection: 
 
 export const GuidelinesPage: React.FC = () => {
   const [language, setLanguage] = useState<GuidelineLanguage>('ar');
-  const [selectedCollectionId, setSelectedCollectionId] = useState(GUIDELINE_COLLECTIONS[0]?.id ?? '');
+  const [selectedCollectionId, setSelectedCollectionId] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<GuidelineTopic['group']>('populationCare');
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedSchool, setExpandedSchool] = useState(GUIDELINE_COLLECTIONS[0]?.school ?? '');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const collectionsBySchool = useMemo(() => {
+    const map = new Map<string, GuidelineCollection[]>();
+    for (const c of GUIDELINE_COLLECTIONS) {
+      const arr = map.get(c.school) || [];
+      arr.push(c);
+      map.set(c.school, arr);
+    }
+    return map;
+  }, []);
+
+  const [collectionData, setCollectionData] = useState<GuidelineCollectionData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setCollectionData(null);
+    loadGuidelineCollectionData(selectedCollectionId).then((data) => {
+      if (isMounted) {
+        setCollectionData(data);
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCollectionId]);
 
   const selectedCollection = useMemo(
-    () => GUIDELINE_COLLECTIONS.find((item) => item.id === selectedCollectionId) ?? GUIDELINE_COLLECTIONS[0],
+    () => GUIDELINE_COLLECTIONS.find((item) => item.id === selectedCollectionId) ?? null,
     [selectedCollectionId],
   );
 
@@ -182,17 +216,17 @@ export const GuidelinesPage: React.FC = () => {
   const highlightTerms = useMemo(() => buildHighlightTerms(searchTerm), [searchTerm]);
 
   const filteredTopics = useMemo(() => {
-    if (!selectedCollection) return [];
-    return selectedCollection.topics.filter((topic) => {
+    if (!selectedCollection || !collectionData) return [];
+    return collectionData.topics.filter((topic) => {
       if (topic.group !== selectedGroup) return false;
       if (!query) return true;
       return buildTopicSearchText(topic, selectedCollection).includes(query);
     });
-  }, [query, selectedCollection, selectedGroup]);
+  }, [query, selectedCollection, collectionData, selectedGroup]);
 
   const selectedGroupTopicCount = useMemo(
-    () => selectedCollection?.topics.filter((topic) => topic.group === selectedGroup).length ?? 0,
-    [selectedCollection, selectedGroup],
+    () => collectionData?.topics.filter((topic) => topic.group === selectedGroup).length ?? 0,
+    [collectionData, selectedGroup],
   );
 
   const sourcesById = useMemo(() => {
@@ -201,25 +235,25 @@ export const GuidelinesPage: React.FC = () => {
   }, [selectedCollection]);
 
   const groupSourceIds = useMemo(() => {
-    if (!selectedCollection) return null;
+    if (!collectionData) return null;
     return new Set(
-      selectedCollection.topics
+      collectionData.topics
         .filter((topic) => topic.group === selectedGroup)
         .flatMap((topic) => [
           ...topic.sourceIds,
           ...(topic.visuals?.map((visual) => visual.sourceId) ?? []),
         ]),
     );
-  }, [selectedCollection, selectedGroup]);
+  }, [collectionData, selectedGroup]);
 
   const filteredSourceDigests = useMemo(() => {
-    if (!selectedCollection?.recommendationDigest) return [];
-    return selectedCollection.recommendationDigest.filter((digest) => {
+    if (!collectionData?.recommendationDigest) return [];
+    return collectionData.recommendationDigest.filter((digest) => {
       if (groupSourceIds && !groupSourceIds.has(digest.sourceId)) return false;
       if (!query) return true;
       return buildSourceDigestSearchText(digest, selectedCollection).includes(query);
     });
-  }, [groupSourceIds, query, selectedCollection]);
+  }, [groupSourceIds, query, selectedCollection, collectionData]);
 
   const filteredRecommendationCount = useMemo(
     () => filteredSourceDigests.reduce((total, digest) => total + digest.recommendations.length, 0),
@@ -245,9 +279,7 @@ export const GuidelinesPage: React.FC = () => {
     'specialPopulations',
   ];
 
-  if (!selectedCollection) {
-    return null;
-  }
+
 
   const selectedGroupLabel = GUIDELINE_GROUP_LABELS[selectedGroup][language];
 
@@ -257,80 +289,147 @@ export const GuidelinesPage: React.FC = () => {
         <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-xl shadow-blue-950/10">
           <div>
             <div className="bg-gradient-to-br from-blue-950 via-blue-800 to-sky-700 p-4 text-white sm:p-6">
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white/12 px-3 py-1.5 text-xs font-black text-blue-50 ring-1 ring-white/20">
-                  <LuBookOpen className="h-4 w-4" />
-                  {isArabic ? 'مكتبة الجايدلاينز' : 'Guidelines Library'}
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white/12 px-3 py-1.5 text-xs font-black text-blue-50 ring-1 ring-white/20">
-                  <LuShieldCheck className="h-4 w-4" />
-                  {isArabic ? 'ملخص موثق بالمصادر' : 'Source-linked digest'}
-                </span>
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-lg bg-white/12 px-3 py-1.5 text-xs font-black text-blue-50 ring-1 ring-white/20">
+                    <LuBookOpen className="h-4 w-4" />
+                    {isArabic ? 'مكتبة الجايدلاينز' : 'Guidelines Library'}
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-lg bg-white/12 px-3 py-1.5 text-xs font-black text-blue-50 ring-1 ring-white/20">
+                    <LuShieldCheck className="h-4 w-4" />
+                    {isArabic ? 'ملخص موثق بالمصادر' : 'Source-linked digest'}
+                  </span>
+                </div>
+                {/* Language Switcher */}
+                <div className="flex items-center gap-1 rounded-xl bg-white/10 p-1 ring-1 ring-white/20">
+                  {(['ar', 'en'] as GuidelineLanguage[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setLanguage(item)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${
+                        language === item ? 'bg-white text-blue-900 shadow-sm' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      {item === 'ar' ? 'العربية' : 'English'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <h1 dir={localizedDirection} className={`text-2xl font-black leading-tight text-white sm:text-3xl ${localizedTextAlign}`}>
-                {renderHighlightedText(selectedCollection.title[language], highlightTerms)}
+                {selectedCollection ? renderHighlightedText(selectedCollection.title[language], highlightTerms) : (isArabic ? 'مكتبة الأدلة الإرشادية الطبية' : 'Medical Guidelines Library')}
               </h1>
               <p dir={localizedDirection} className={`mt-3 max-w-3xl text-sm font-semibold leading-7 text-blue-50/90 sm:text-base ${localizedTextAlign}`}>
-                {renderHighlightedText(selectedCollection.subtitle[language], highlightTerms)}
+                {selectedCollection ? renderHighlightedText(selectedCollection.subtitle[language], highlightTerms) : (isArabic ? 'اختر التخصص أو المدرسة من القائمة لبدء تصفح المراجع السريرية الأحدث الموثقة عالمياً.' : 'Select a specialty or school from the menu to start browsing the latest internationally verified clinical references.')}
               </p>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
-                  <div className="flex items-center gap-2 text-xs font-black text-blue-100">
-                    <LuSparkles className="h-4 w-4" />
-                    {isArabic ? 'المدرسة' : 'School'}
+              {selectedCollection && (
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                    <div className="flex items-center gap-2 text-xs font-black text-blue-100">
+                      <LuSparkles className="h-4 w-4" />
+                      {isArabic ? 'المدرسة' : 'School'}
+                    </div>
+                    <div className="mt-1 text-lg font-black text-white">{selectedCollection.school}</div>
                   </div>
-                  <div className="mt-1 text-lg font-black text-white">{selectedCollection.school}</div>
-                </div>
-                <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
-                  <div className="flex items-center gap-2 text-xs font-black text-blue-100">
-                    <LuCalendar className="h-4 w-4" />
-                    {isArabic ? 'السنة' : 'Year'}
+                  <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                    <div className="flex items-center gap-2 text-xs font-black text-blue-100">
+                      <LuCalendar className="h-4 w-4" />
+                      {isArabic ? 'السنة' : 'Year'}
+                    </div>
+                    <div className="mt-1 text-lg font-black text-white">{selectedCollection.year}</div>
                   </div>
-                  <div className="mt-1 text-lg font-black text-white">{selectedCollection.year}</div>
-                </div>
-                <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
-                  <div className="flex items-center gap-2 text-xs font-black text-blue-100">
-                    <LuFileText className="h-4 w-4" />
-                    {isArabic ? 'آخر مراجعة مصدرية' : 'Source review'}
+                  <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                    <div className="flex items-center gap-2 text-xs font-black text-blue-100">
+                      <LuFileText className="h-4 w-4" />
+                      {isArabic ? 'آخر مراجعة مصدرية' : 'Source review'}
+                    </div>
+                    <div className="mt-1 text-sm font-black text-white">{selectedCollection.sourceDate}</div>
                   </div>
-                  <div className="mt-1 text-sm font-black text-white">{selectedCollection.sourceDate}</div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <aside className="max-h-72 overflow-y-auto border-t border-blue-100 bg-blue-50/80 p-4 text-slate-900">
-              <div className="text-xs font-black uppercase text-blue-700">
-                {isArabic ? 'مهم قبل الاستخدام' : 'Before clinical use'}
-              </div>
+            <details className="border-t border-blue-100 bg-blue-50/60">
+              <summary className="cursor-pointer px-4 py-2.5 text-xs font-black text-blue-700 hover:bg-blue-50/80">
+                <span className="inline-flex items-center gap-2">
+                  <LuShieldCheck className="h-3.5 w-3.5" />
+                  {isArabic ? 'مهم قبل الاستخدام — اضغط للقراءة' : 'Important — Click to read'}
+                </span>
+              </summary>
+              <div className="border-t border-blue-100 px-4 py-3">
               <p className="mt-2 text-sm font-semibold leading-7 text-slate-700">
                 {isArabic
                   ? 'هذا القسم عبارة عن منصة بحثية ومساعد علمي تدريبي للأطباء والممارسين الصحيين، يجمع ويلخص الأدلة الإرشادية العالمية من مصادرها الرسمية المعتمدة (مثل ADA, AHA, ESC, GINA وغيرها). هذا التلخيص التفاعلي مُصمم لتسهيل الوصول السريع للمعلومة ولا يُغني إطلاقاً عن تقدير الطبيب السريري الشخصي، ولا يحل محل النسخ الكاملة والأدلة الأصلية الصادرة عن الهيئات المختصة. اتخاذ قرار العلاج والتشخيص النهائي والرجوع للمصادر يقع بالكامل على عاتق الطبيب المعالج.'
                   : 'This section serves as a clinical reference and educational study aid for healthcare professionals, consolidating and summarizing international guidelines from official authoritative bodies (e.g., ADA, AHA, ESC, GINA). These interactive digests are designed to facilitate quick reference and must not substitute for the full official text or the physician’s independent clinical judgment. The treating physician bears sole responsibility for final diagnosis, treatment decisions, and primary source verification.'}
               </p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {selectedCollection.sources.map((source) => (
-                  <a
-                    key={source.id}
-                    href={source.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    dir="ltr"
-                    className="flex items-start justify-start gap-2 rounded-xl border border-blue-100 bg-white p-3 text-left text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50"
-                  >
-                    <LuExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-                    <span>{source.title}</span>
-                  </a>
-                ))}
               </div>
-            </aside>
+            </details>
           </div>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <aside className="rounded-2xl border border-blue-100 bg-white/95 p-4 shadow-xl shadow-blue-950/10 lg:sticky lg:top-4 lg:self-start">
+        <section className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white p-3 text-sm font-black text-blue-700 shadow-sm transition hover:bg-blue-50 active:scale-95"
+            >
+              {isMobileMenuOpen ? <LuX className="h-5 w-5" /> : <LuMenu className="h-5 w-5" />}
+              {isArabic ? 'تصفح المدارس والأقسام' : 'Browse Schools & Sections'}
+            </button>
+          </div>
+          <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} rounded-2xl border border-blue-100 bg-white/95 p-4 shadow-xl shadow-blue-950/10 lg:sticky lg:top-4 lg:self-start lg:block`}>
             <div className="space-y-4">
+              <div>
+                <div className="mb-2 text-xs font-black text-slate-500">
+                  {isArabic ? 'المدارس والإصدارات' : 'Schools & Editions'}
+                </div>
+                <div className="space-y-1">
+                  {Array.from(collectionsBySchool.entries()).map(([school, collections]) => {
+                    const isOpen = expandedSchool === school;
+                    return (
+                      <div key={school}>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedSchool(isOpen ? '' : school)}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-black text-slate-800 transition hover:bg-blue-50"
+                        >
+                          {isOpen ? <LuFolderOpen className="h-4 w-4 text-blue-600" /> : <LuFolder className="h-4 w-4 text-slate-400" />}
+                          <span className="flex-1 text-start">{school}</span>
+                          <LuChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {isOpen && (
+                          <div className={`mt-1 space-y-1 border-blue-100 ${isArabic ? 'mr-4 border-r-2 pr-2' : 'ml-4 border-l-2 pl-2'}`}>
+                            {collections.map((c, idx) => {
+                              const isActive = c.id === selectedCollectionId;
+                              return (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() => setSelectedCollectionId(c.id)}
+                                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm font-black transition ${
+                                    isActive ? 'bg-gradient-to-r from-blue-50 to-sky-50 text-blue-800 ring-1 ring-blue-200' : 'text-slate-600 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  <LuFileText className={`h-3.5 w-3.5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                                  <span>{c.year}</span>
+                                  {idx === 0 && (
+                                    <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700 ring-1 ring-emerald-100">
+                                      {isArabic ? 'الأحدث' : 'Latest'}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <label className="mb-2 block text-xs font-black text-slate-500">
                   {isArabic ? 'بحث سريع' : 'Quick Search'}
@@ -348,52 +447,6 @@ export const GuidelinesPage: React.FC = () => {
               </div>
 
               <div>
-                <div className="mb-2 flex items-center gap-2 text-xs font-black text-slate-500">
-                  <LuLanguages className="h-4 w-4" />
-                  {isArabic ? 'اللغة' : 'Language'}
-                </div>
-                <div className="grid grid-cols-2 gap-2 rounded-xl bg-blue-50 p-1 ring-1 ring-blue-100">
-                  {(['ar', 'en'] as GuidelineLanguage[]).map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setLanguage(item)}
-                      dir={getLanguageDirection(item)}
-                      className={`rounded-md px-3 py-2 text-xs font-black transition ${
-                        language === item ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-blue-800'
-                      }`}
-                    >
-                      {languageLabels[item]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-2 text-xs font-black text-slate-500">
-                  {isArabic ? 'المدرسة والسنة' : 'School and Year'}
-                </div>
-                <div className="space-y-2">
-                  {GUIDELINE_COLLECTIONS.map((collection) => (
-                    <button
-                      key={collection.id}
-                      type="button"
-                      onClick={() => setSelectedCollectionId(collection.id)}
-                      dir={localizedDirection}
-                      className={`w-full rounded-lg border px-3 py-2.5 text-start transition ${
-                        collection.id === selectedCollection.id
-                          ? 'border-blue-300 bg-gradient-to-r from-blue-50 to-sky-50 text-blue-900 shadow-sm'
-                          : 'border-blue-100 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50'
-                      }`}
-                    >
-                      <span className="block text-sm font-black">{collection.school} {collection.year}</span>
-                      <span className="block text-xs font-semibold text-slate-500">{collection.title[language]}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
                 <div className="mb-2 text-xs font-black text-slate-500">
                   {isArabic ? 'نوع المحتوى' : 'Content Type'}
                 </div>
@@ -402,7 +455,7 @@ export const GuidelinesPage: React.FC = () => {
                     const active = selectedGroup === group;
                     const palette = getTopicPalette(group);
                     const label = GUIDELINE_GROUP_LABELS[group][language];
-                    const count = selectedCollection.topics.filter((topic) => topic.group === group).length;
+                    const count = collectionData?.topics.filter((topic) => topic.group === group).length ?? 0;
                     return (
                       <button
                         key={group}
@@ -424,60 +477,74 @@ export const GuidelinesPage: React.FC = () => {
             </div>
           </aside>
 
-          <main className="space-y-4">
-            <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white/95 shadow-xl shadow-blue-950/5">
-              <div className="border-b border-blue-50 bg-gradient-to-r from-blue-50 to-white p-4">
-                <div className="text-xs font-black uppercase text-blue-700">
-                  {isArabic ? 'التقسيم الحالي' : 'Current Section'}
-                </div>
-                <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-xl font-black text-slate-950">
-                    {renderHighlightedText(selectedGroupLabel, highlightTerms)}
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(filteredTopics.flatMap((topic) => topic.tags))).slice(0, 6).map((tag) => (
-                      <span key={tag} className="rounded-lg bg-white px-2.5 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-100">
-                        {renderHighlightedText(tag, highlightTerms)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-2 p-4 sm:grid-cols-4">
-                <div className="rounded-xl bg-blue-50 p-3 ring-1 ring-blue-100">
-                  <div className="text-xs font-black text-blue-700">{isArabic ? 'موضوعات عملية' : 'Practical Topics'}</div>
-                  <div className="mt-1 text-xl font-black text-slate-950" dir="ltr">{filteredTopics.length}/{selectedGroupTopicCount}</div>
-                </div>
-                <div className="rounded-xl bg-blue-50 p-3 ring-1 ring-blue-100">
-                  <div className="text-xs font-black text-blue-700">{isArabic ? 'توصيات رسمية' : 'Official Recommendations'}</div>
-                  <div className="mt-1 text-xl font-black text-slate-950" dir="ltr">{filteredRecommendationCount}</div>
-                </div>
-                <div className="rounded-xl bg-blue-50 p-3 ring-1 ring-blue-100">
-                  <div className="text-xs font-black text-blue-700">{isArabic ? 'صور داعمة' : 'Supporting Visuals'}</div>
-                  <div className="mt-1 text-xl font-black text-slate-950" dir="ltr">{filteredVisualCount}</div>
-                </div>
-                <div className="rounded-xl bg-blue-50 p-3 ring-1 ring-blue-100">
-                  <div className="text-xs font-black text-blue-700">{isArabic ? 'فصول مصدرية' : 'Source Chapters'}</div>
-                  <div className="mt-1 text-xl font-black text-slate-950" dir="ltr">{filteredSourceDigests.length}</div>
+          <main className="min-w-0 space-y-4">
+            {!selectedCollection ? (
+              <div className="flex h-[60vh] flex-col items-center justify-center rounded-2xl border border-dashed border-blue-200 bg-white p-8 text-center shadow-lg shadow-blue-950/5">
+                <LuBookOpen className="mb-4 h-16 w-16 text-blue-200" />
+                <h2 className="mb-2 text-xl font-black text-slate-900">
+                  {isArabic ? 'مرحباً بك في مكتبة الجايدلاينز' : 'Welcome to the Guidelines Library'}
+                </h2>
+                <p className="max-w-md text-sm font-semibold text-slate-500">
+                  {isArabic ? 'يرجى اختيار إحدى المدارس والإصدارات من القائمة لبدء التصفح.' : 'Please select a school and edition from the menu to start browsing.'}
+                </p>
+                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+                    <LuFolderOpen className="h-4 w-4" />
+                    {isArabic ? 'اختر المدرسة' : 'Select School'}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-sky-700">
+                    <LuFileText className="h-4 w-4" />
+                    {isArabic ? 'اختر الإصدار' : 'Select Edition'}
+                  </span>
                 </div>
               </div>
-              {filteredTopics.length > 0 && (
-                <div className="sticky top-0 z-20 flex gap-2 overflow-x-auto border-t border-blue-100 bg-white/95 px-4 py-3 backdrop-blur shadow-sm">
-                  <div className="flex shrink-0 items-center text-xs font-black text-slate-500 mr-2 rtl:ml-2 rtl:mr-0">
-                    {isArabic ? 'انتقال سريع:' : 'Jump to:'}
-                  </div>
-                  {filteredTopics.map((topic) => (
-                    <a
-                      key={topic.id}
-                      href={`#${topic.id}`}
-                      className="shrink-0 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-800 ring-1 ring-blue-200 transition hover:bg-blue-600 hover:text-white"
-                    >
-                      {topic.title[language]}
-                    </a>
-                  ))}
+            ) : isLoading ? (
+              <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-blue-100 bg-white/50 text-blue-800">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+                  <div className="text-sm font-black">{isArabic ? 'جاري التحميل...' : 'Loading...'}</div>
                 </div>
-              )}
-            </section>
+              </div>
+            ) : (
+              <>
+                <section className="sticky top-2 z-30 mb-4 overflow-hidden rounded-2xl border border-blue-100 bg-white/95 shadow-lg shadow-blue-950/5 backdrop-blur">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 lg:p-4">
+                    <div>
+                      <div className="text-[10px] font-black uppercase text-blue-700">
+                        {isArabic ? 'التقسيم الحالي' : 'Current Section'}
+                      </div>
+                      <h2 className="text-lg font-black leading-tight text-slate-950">
+                        {renderHighlightedText(selectedGroupLabel, highlightTerms)}
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1.5 ring-1 ring-blue-100">
+                        <span className="text-sm font-black text-blue-700">{filteredTopics.length}</span>
+                        <span className="text-[10px] font-bold text-blue-600">{isArabic ? 'موضوع' : 'Topics'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1.5 ring-1 ring-blue-100">
+                        <span className="text-sm font-black text-blue-700">{filteredRecommendationCount}</span>
+                        <span className="text-[10px] font-bold text-blue-600">{isArabic ? 'توصية' : 'Recs'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {filteredTopics.length > 0 && (
+                    <div className="flex flex-wrap gap-2 border-t border-blue-50 bg-blue-50/50 px-3 py-2.5">
+                      <div className="mr-1 flex shrink-0 items-center text-[11px] font-black text-slate-500 rtl:ml-1 rtl:mr-0">
+                        {isArabic ? 'انتقال سريع:' : 'Jump to:'}
+                      </div>
+                      {filteredTopics.map((topic) => (
+                        <a
+                          key={topic.id}
+                          href={`#${topic.id}`}
+                          className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-black text-blue-800 ring-1 ring-blue-200 transition hover:bg-blue-600 hover:text-white"
+                        >
+                          {topic.title[language]}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </section>
 
             {filteredTopics.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-blue-200 bg-white p-8 text-center shadow-lg shadow-blue-950/5">
@@ -724,7 +791,7 @@ export const GuidelinesPage: React.FC = () => {
               })
             )}
 
-            {selectedCollection.recommendationDigest?.length ? (
+            {collectionData?.recommendationDigest?.length ? (
               <section dir={localizedDirection} className={`rounded-2xl border border-blue-100 bg-white p-4 shadow-xl shadow-blue-950/5 sm:p-5 ${localizedTextAlign}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -806,6 +873,37 @@ export const GuidelinesPage: React.FC = () => {
               </section>
             ) : null}
 
+            {/* Official Sources & References */}
+            {selectedCollection && (
+              <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-lg shadow-blue-950/5">
+                <div className="border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white p-4">
+                  <div className="flex items-center gap-2 text-sm font-black text-blue-900">
+                    <LuBookOpen className="h-5 w-5 text-blue-600" />
+                    {isArabic ? 'المصادر والمراجع الرسمية' : 'Official Sources & References'}
+                  </div>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">
+                    {selectedCollection.school} {selectedCollection.year} — {selectedCollection.sourceDate}
+                  </p>
+                </div>
+                <div className="grid gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {selectedCollection.sources.map((source) => (
+                    <a
+                      key={source.id}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      dir="ltr"
+                      className="flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50/30 p-3 text-left text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                    >
+                      <LuExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                      <span>{source.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+            </>
+          )}
           </main>
         </section>
       </div>
