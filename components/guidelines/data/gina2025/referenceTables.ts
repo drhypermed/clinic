@@ -28,7 +28,7 @@ export const GINA_2025_REFERENCE_TABLES_TOPICS: GuidelineTopic[] = [
         'ملاحظة هامة: معظم الفائدة العلاجية تتحقق بالجرعات المنخفضة. الجرعات العالية نادراً ما تكون ضرورية وتزيد فقط من الأعراض الجانبية.',
       ],
     },
-    sourceIds: ['gina-2025-intro'], // Fallback for reference tables digest index
+    sourceIds: ['gina-2025-tables'], // Fallback for reference tables digest index
     tags: ['doses', 'ICS', 'budesonide', 'fluticasone'],
   },
   {
@@ -54,7 +54,7 @@ export const GINA_2025_REFERENCE_TABLES_TOPICS: GuidelineTopic[] = [
         'تعتبر هذه البخاخات هي الخيار الأفضل والآمن كبديل للفينتولين.',
       ],
     },
-    sourceIds: ['gina-2025-intro'],
+    sourceIds: ['gina-2025-tables'],
     tags: ['MART', 'AIR', 'symbicort', 'fostair', 'doses'],
   }
 ];

@@ -28,7 +28,7 @@ export const GINA_2025_EXACERBATIONS_TOPICS: GuidelineTopic[] = [
         'جرعة الأقراص المنزلية للأطفال: بريدنيزولون 1-2 مجم/كجم (بحد أقصى 40 مجم) كل صباح لمدة 3-5 أيام.',
       ],
     },
-    sourceIds: ['gina-2025-exacerbation'],
+    sourceIds: ['gina-2025-exacerbations'],
     tags: ['action plan', 'MART', 'OCS', 'home treatment'],
   },
   {
@@ -64,7 +64,7 @@ export const GINA_2025_EXACERBATIONS_TOPICS: GuidelineTopic[] = [
         ar: 'المضادات الحيوية ليس لها أي دور روتيني في علاج انتكاسات الربو الحادة.',
       }
     },
-    sourceIds: ['gina-2025-exacerbation'],
+    sourceIds: ['gina-2025-exacerbations'],
     tags: ['acute', 'ER', 'primary care', 'oxygen', 'SABA'],
   }
 ];
