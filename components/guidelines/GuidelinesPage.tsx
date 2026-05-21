@@ -784,8 +784,12 @@ export const GuidelinesPage: React.FC = () => {
                     </h2>
                     <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-slate-600">
                       {isArabic
-                        ? `استخدم هذا الجزء عند الحاجة لمراجعة نص التوصية الأصلي كما ورد في ${selectedCollection?.school ?? ''}، مع رقم التوصية، درجة الدليل، ورقم الصفحة. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.`
-                        : `Use this section when you need the original ${selectedCollection?.school ?? ''} recommendation text, with recommendation number, evidence grade, and page. The practical digest is above; this section is for source-level review.`}
+                        ? selectedCollectionId.startsWith('gina')
+                          ? `استخدم هذا الجزء عند الحاجة لمراجعة صور صفحات الدليل الأصلي كما وردت في ${selectedCollection?.school ?? ''}. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.`
+                          : `استخدم هذا الجزء عند الحاجة لمراجعة نص التوصية الأصلي كما ورد في ${selectedCollection?.school ?? ''}، مع رقم التوصية، درجة الدليل، ورقم الصفحة. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.`
+                        : selectedCollectionId.startsWith('gina')
+                          ? `Use this section when you need to review the original pages from the ${selectedCollection?.school ?? ''} report. The practical digest is above; this section is for source-level review.`
+                          : `Use this section when you need the original ${selectedCollection?.school ?? ''} recommendation text, with recommendation number, evidence grade, and page. The practical digest is above; this section is for source-level review.`}
                     </p>
                   </div>
                   <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-black text-blue-700">
