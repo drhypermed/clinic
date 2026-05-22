@@ -555,10 +555,12 @@ export const GuidelinesPage: React.FC = () => {
                         <span className="text-sm font-black text-blue-700">{filteredTopics.length}</span>
                         <span className="text-[10px] font-bold text-blue-600">{isArabic ? 'موضوع' : 'Topics'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1.5 ring-1 ring-blue-100">
-                        <span className="text-sm font-black text-blue-700">{filteredRecommendationCount}</span>
-                        <span className="text-[10px] font-bold text-blue-600">{isArabic ? 'توصية' : 'Recs'}</span>
-                      </div>
+                      {filteredRecommendationCount > 0 && (
+                        <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1.5 ring-1 ring-blue-100">
+                          <span className="text-sm font-black text-blue-700">{filteredRecommendationCount}</span>
+                          <span className="text-[10px] font-bold text-blue-600">{isArabic ? 'توصية' : 'Recs'}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {filteredTopics.length > 0 && (
