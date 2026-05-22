@@ -15,14 +15,14 @@ export const GINA_2025_ASSESSMENT_TOPICS: GuidelineTopic[] = [
     points: {
       en: [
         'Assess asthma at every visit, especially after an exacerbation or when prescribing new medication. Assess at least annually even if asymptomatic.',
-        'Symptom control assessment (past 4 weeks): 1) Daytime symptoms > twice/week? 2) Night waking due to asthma? 3) SABA reliever needed > twice/week? 4) Activity limitation due to asthma?',
+        'Symptom control assessment (past 4 weeks): 1) Daytime symptoms > twice/week? 2) Night waking due to asthma? 3) SABA reliever needed > twice/week? 4) Activity limitation due to asthma? The SABA question applies only to patients using SABA reliever, not ICS-formoterol reliever.',
         'Level of control: Well controlled (0 items), Partly controlled (1-2 items), Uncontrolled (3-4 items).',
         'Lung function monitoring: Measure before starting ICS, 3-6 months later, then every 1-2 years (more frequently in high-risk patients).',
         'Always check inhaler technique, adherence, written action plan, and multimorbidities (e.g., GERD, obesity, sleep apnea).',
       ],
       ar: [
         'يجب تقييم الربو في كل زيارة، وخاصة بعد حدوث انتكاسة أو عند كتابة روشتة جديدة. ويُقيم مرة سنوياً على الأقل حتى لو لم توجد أعراض.',
-        'السيطرة على الأعراض (آخر 4 أسابيع): هل يوجد 1) أعراض نهارية أكثر من مرتين بالأسبوع؟ 2) استيقاظ بالليل بسبب الربو؟ 3) احتياج لموسع الشعب (SABA) أكثر من مرتين بالأسبوع؟ 4) تقييد في النشاط اليومي؟',
+        'السيطرة على الأعراض (آخر 4 أسابيع): هل يوجد 1) أعراض نهارية أكثر من مرتين بالأسبوع؟ 2) استيقاظ بالليل بسبب الربو؟ 3) احتياج لموسع الشعب SABA أكثر من مرتين بالأسبوع؟ 4) تقييد في النشاط اليومي؟ سؤال SABA ينطبق فقط على مستخدمي SABA وليس مستخدمي ICS-formoterol كمسكن.',
         'درجة التحكم: مسيطر عليه (ولا واحدة من السابق)، مسيطر عليه جزئياً (1-2 مما سبق)، غير مسيطر عليه (3-4 مما سبق).',
         'متابعة وظائف الرئة: تُقاس قبل بدء الكورتيزون المستنشق، ثم بعد 3-6 أشهر، ثم كل 1-2 سنة (أو أكثر للمرضى الأكثر عرضة للمخاطر).',
         'تأكد دائماً من: طريقة استخدام البخاخة، التزام المريض بالجرعات، وجود خطة عمل مكتوبة، والأمراض المصاحبة (كارتجاع المريء والسمنة).',

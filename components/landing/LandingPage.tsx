@@ -74,6 +74,12 @@ const PUBLIC_PORTAL_URL = 'https://www.drhypermed.com/public';
 interface Feature { icon: React.ReactNode; title: string; desc: string; color: string }
 const FEATURES: Feature[] = [
   {
+    icon: <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />,
+    title: 'مكتبة الجايدلاينز التفاعلية',
+    desc: 'تصفح أحدث التوصيات والبروتوكولات (مثل ADA و ESC) مترجمة للعامية أو بالإنجليزية، مع خوارزميات تفاعلية وتحديثات دورية.',
+    color: 'from-brand-600 to-purple-600',
+  },
+  {
     icon: <HiOutlineDocumentText className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'كتابة وطباعة الروشتات',
     desc: 'روشتة احترافية بشعار عيادتك وتصميمك الشخصي — تختار حجم الورق (A4 أو A5)، تطبع فوراً، تنزّل PDF، أو تبعت للمريض على واتساب بضغطة واحدة.',
@@ -168,12 +174,6 @@ const FEATURES: Feature[] = [
     title: 'حماية وتشفير كامل',
     desc: 'بيانات المرضى مشفّره بالكامل مع نسخ احتياطي تلقائي. صلاحيات مخصّصه لكل مستخدم (طبيب/سكرتاريه). تسجيل دخول آمن بحساب جوجل.',
     color: 'from-success-500 to-success-600',
-  },
-  {
-    icon: <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'مكتبة الجايدلاينز التفاعلية',
-    desc: 'تصفح أحدث التوصيات والبروتوكولات (مثل ADA و ESC) مترجمة للعامية أو بالإنجليزية، مع جرعات الأدوية المصرية وخوارزميات تفاعلية وتحديثات دورية.',
-    color: 'from-brand-600 to-purple-600',
   },
 ];
 
@@ -279,9 +279,9 @@ export const LandingPage: React.FC = () => {
                     <p className="text-slate-400 text-xs">اقرأ الجايدلاينز باللغة الإنجليزية أو مشروحة ببساطة بالعامية المصرية لسرعة الاستيعاب وتطبيقها في عيادتك.</p>
                   </div>
                   <div className="bg-white/5 p-4 rounded-2xl ring-1 ring-white/10">
-                    <FaCapsules className="w-6 h-6 text-purple-400 mb-2" />
-                    <h4 className="text-white font-bold text-sm mb-1">أدوية السوق المصري</h4>
-                    <p className="text-slate-400 text-xs">الجايدلاينز العالمية تم ربطها بأسماء الأدوية المتوفرة في مصر وجرعاتها العملية المباشرة.</p>
+                    <HiOutlineSparkles className="w-6 h-6 text-purple-400 mb-2" />
+                    <h4 className="text-white font-bold text-sm mb-1">خوارزميات تفاعلية ذكية</h4>
+                    <p className="text-slate-400 text-xs">شجرة قرارات تفاعلية بتسهل عليك الوصول للخطوة القادمة في العلاج بخطوات بسيطة وواضحة.</p>
                   </div>
                 </div>
               </div>

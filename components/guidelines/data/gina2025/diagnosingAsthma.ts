@@ -70,16 +70,16 @@ export const GINA_2025_DIAGNOSIS_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'Bronchodilator Reversibility (Spirometry): FEV1 increases by ≥12% and ≥200 mL in adults (or ≥12% in children) after taking a bronchodilator.',
+        'Bronchodilator reversibility: in adults, FEV1 or FVC increases by >=12% and >=200 mL after bronchodilator; in children, FEV1 increases by >=12% predicted (or PEF by >=15%).',
         'PEF Variability: Excessive daily variability over 2 weeks (>10% in adults, >13% in children).',
-        'Significant response to ICS: FEV1 increases by ≥12% and ≥200 mL after 4 weeks of ICS treatment.',
-        'Role of Type 2 Biomarkers: Elevated FeNO or blood eosinophils can support the diagnosis of Type 2 asthma if lung function tests are not definitive, but low levels do not rule out asthma.',
+        'Significant response to ICS: in adults, FEV1 or FVC increases by >=12% and >=200 mL after 4 weeks of ICS treatment; in children, FEV1 increases by >=12% predicted (or PEF by >=15%).',
+        'Role of Type 2 biomarkers: elevated FeNO (>50 ppb in adults/adolescents, >35 ppb in children) or blood eosinophils can support Type 2 asthma if lung function tests are unavailable or negative; low levels do not rule out asthma.',
       ],
       ar: [
-        'استجابة موسع الشعب (Spirometry): زيادة حجم الزفير القسري (FEV1) بنسبة ≥12% وبمقدار ≥200 مل في البالغين (أو ≥12% في الأطفال) بعد استخدام موسع الشعب.',
+        'استجابة موسع الشعب: في البالغين يزيد FEV1 أو FVC بنسبة >=12% وبمقدار >=200 مل بعد موسع الشعب؛ وفي الأطفال يزيد FEV1 بنسبة >=12% من المتوقع (أو يزيد PEF بنسبة >=15%).',
         'تذبذب قياس قوة الزفير (PEF): تذبذب يومي مفرط على مدار أسبوعين (أكثر من 10% للبالغين، أكثر من 13% للأطفال).',
-        'الاستجابة لـ ICS: تحسن FEV1 بنسبة ≥12% وبمقدار ≥200 مل بعد العلاج بالكورتيزون المستنشق لمدة 4 أسابيع.',
-        'دور المؤشرات الحيوية (Biomarkers): ارتفاع الـ FeNO أو الخلايا الحمضية (Eosinophils) بالدم قد يدعم تشخيص الربو من النوع 2، لكن النسب الطبيعية لا تنفي وجود الربو.',
+        'الاستجابة لـ ICS: في البالغين يتحسن FEV1 أو FVC بنسبة >=12% وبمقدار >=200 مل بعد 4 أسابيع من ICS؛ وفي الأطفال يزيد FEV1 بنسبة >=12% من المتوقع (أو يزيد PEF بنسبة >=15%).',
+        'دور المؤشرات الحيوية: ارتفاع FeNO (>50 ppb في البالغين/المراهقين، >35 ppb في الأطفال) أو ارتفاع الإيزينوفيل بالدم قد يدعم تشخيص ربو Type 2 عند عدم توفر اختبارات وظائف الرئة أو سلبيتها؛ القيم المنخفضة لا تنفي الربو.',
       ],
     },
     sourceIds: ['gina-2025-diagnosis'],
@@ -99,21 +99,21 @@ export const GINA_2025_DIAGNOSIS_TOPICS: GuidelineTopic[] = [
     points: {
       en: [
         'Persistent Cough: Cough-variant asthma may only present with a dry cough. Treat with ICS like other asthma phenotypes. Rule out GERD and ACE inhibitors.',
-        'Pregnant Women: NEVER stop or reduce ICS treatment during pregnancy. It is essential for the baby\'s health. Postpone bronchial provocation testing until after delivery.',
+        'Pregnant women: Advise that ICS-containing treatment during pregnancy is important for the baby\'s health, and do not stop or reduce ICS. Postpone bronchial provocation testing until after delivery.',
         'Older Adults: Often under-diagnosed. Distinguish from heart failure and COPD. Asthma+COPD overlap requires ICS treatment.',
         'Patients already on ICS: If uncontrolled, step up treatment and check after 3 months. If controlled, consider stepping down to confirm diagnosis.',
       ],
       ar: [
         'السعال المستمر: قد يكون السعال الجاف هو العرض الوحيد للربو (Cough-variant asthma). يُعالج بالـ ICS. يجب استبعاد ارتجاع المريء وأدوية الضغط (ACE inhibitors).',
-        'الحوامل: إياك أن توقف أو تقلل جرعة الـ ICS أثناء الحمل لحماية الجنين. يُمنع إجراء اختبارات التحدي التنفسي أثناء الحمل، وانتظر لبعد الولادة.',
+        'الحوامل: وضّح أن العلاج المحتوي على ICS أثناء الحمل مهم لصحة الجنين، ولا توقف أو تقلل ICS أثناء الحمل. أجّل اختبارات التحدي التنفسي إلى ما بعد الولادة.',
         'كبار السن: غالباً ما يُشخص الربو خطأ لديهم. يجب التفريق بينه وبين ضعف عضلة القلب والسدة الرئوية (COPD). تداخل الربو مع COPD يستلزم العلاج بـ ICS.',
         'المرضى الذين يستخدمون ICS: إذا كانت الأعراض غير مسيطر عليها، ارفع الجرعة لمدة 3 أشهر ثم أعد التقييم. إذا كانت مسيطراً عليها، يمكنك محاولة تقليل الجرعة لتأكيد التشخيص.',
       ],
     },
     quickDecision: {
       warn: {
-        en: 'Never stop ICS in pregnant women. Do not perform bronchial provocation testing during pregnancy.',
-        ar: 'ممنوع إيقاف الكورتيزون المستنشق (ICS) للحامل، وممنوع عمل اختبار التحدي التنفسي (Provocation test) أثناء الحمل.',
+        en: 'Do not stop or reduce ICS in pregnant women, and do not perform bronchial provocation testing during pregnancy.',
+        ar: 'لا توقف أو تقلل الكورتيزون المستنشق (ICS) للحامل، ولا تُجرِ اختبار التحدي التنفسي (Provocation test) أثناء الحمل.',
       }
     },
     sourceIds: ['gina-2025-diagnosis'],

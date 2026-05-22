@@ -129,6 +129,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       { ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS },
       { ADA_2026_COMPLICATIONS_TOPICS },
       { ADA_2026_SPECIAL_SITUATIONS_TOPICS },
+      { ADA_2026_CLINICAL_ESSENTIALS_TOPICS, ADA_2026_TOPIC_VISUALS },
       { ADA_2026_RECOMMENDATION_DIGEST },
     ] = await Promise.all([
       import('./data/ada2026/improvingCare'),
@@ -138,10 +139,11 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       import('./data/ada2026/weightPharmacology'),
       import('./data/ada2026/complications'),
       import('./data/ada2026/specialSituations'),
+      import('./data/ada2026/clinicalEssentials'),
       import('./data/ada2026/recommendationDigest'),
     ]);
-    return {
-      topics: [
+    const topics = [
+        ...ADA_2026_CLINICAL_ESSENTIALS_TOPICS,
         ...ADA_2026_IMPROVING_CARE_TOPICS,
         ...ADA_2026_DIAGNOSIS_TOPICS,
         ...ADA_2026_PREVENTION_EVALUATION_TOPICS,
@@ -149,7 +151,12 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
         ...ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS,
         ...ADA_2026_COMPLICATIONS_TOPICS,
         ...ADA_2026_SPECIAL_SITUATIONS_TOPICS,
-      ],
+      ].map((topic) => {
+        const visuals = ADA_2026_TOPIC_VISUALS[topic.id];
+        return visuals ? { ...topic, visuals: [...(topic.visuals ?? []), ...visuals] } : topic;
+      });
+    return {
+      topics,
       recommendationDigest: ADA_2026_RECOMMENDATION_DIGEST,
     };
   }
@@ -162,6 +169,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS },
       { ADA_2025_COMPLICATIONS_TOPICS },
       { ADA_2025_SPECIAL_SITUATIONS_TOPICS },
+      { ADA_2025_TOPIC_VISUALS },
       { ADA_2025_RECOMMENDATION_DIGEST },
     ] = await Promise.all([
       import('./data/ada2025/improvingCare'),
@@ -171,18 +179,23 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       import('./data/ada2025/weightPharmacology'),
       import('./data/ada2025/complications'),
       import('./data/ada2025/specialSituations'),
+      import('./data/ada2025/topicVisuals'),
       import('./data/ada2025/recommendationDigest'),
     ]);
+    const topics = [
+      ...ADA_2025_IMPROVING_CARE_TOPICS,
+      ...ADA_2025_DIAGNOSIS_TOPICS,
+      ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
+      ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
+      ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
+      ...ADA_2025_COMPLICATIONS_TOPICS,
+      ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
+    ].map((topic) => {
+      const visuals = ADA_2025_TOPIC_VISUALS[topic.id];
+      return visuals ? { ...topic, visuals: [...(topic.visuals ?? []), ...visuals] } : topic;
+    });
     return {
-      topics: [
-        ...ADA_2025_IMPROVING_CARE_TOPICS,
-        ...ADA_2025_DIAGNOSIS_TOPICS,
-        ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
-        ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
-        ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
-        ...ADA_2025_COMPLICATIONS_TOPICS,
-        ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
-      ],
+      topics,
       recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
     };
   }
@@ -198,6 +211,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       { GINA_2025_SPECIFIC_POPULATIONS_TOPICS },
       { GINA_2025_EXACERBATIONS_TOPICS },
       { GINA_2025_REFERENCE_TABLES_TOPICS },
+      { GINA_2025_CLINICAL_ESSENTIALS_TOPICS },
       { GINA_2025_RECOMMENDATION_DIGEST },
     ] = await Promise.all([
       import('./data/gina2025/introduction'),
@@ -209,6 +223,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       import('./data/gina2025/specificPopulations'),
       import('./data/gina2025/exacerbations'),
       import('./data/gina2025/referenceTables'),
+      import('./data/gina2025/clinicalEssentials'),
       import('./data/gina2025/recommendationDigest'),
     ]);
     return {
@@ -222,6 +237,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
         ...GINA_2025_SPECIFIC_POPULATIONS_TOPICS,
         ...GINA_2025_EXACERBATIONS_TOPICS,
         ...GINA_2025_REFERENCE_TABLES_TOPICS,
+        ...GINA_2025_CLINICAL_ESSENTIALS_TOPICS,
       ],
       recommendationDigest: GINA_2025_RECOMMENDATION_DIGEST,
     };
@@ -300,7 +316,7 @@ export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
     id: 'gina-2025',
     school: 'GINA',
     year: 2025,
-    sourceDate: 'May 2025',
+    sourceDate: 'June 2025',
     title: {
       en: 'GINA Global Strategy for Asthma 2025',
       ar: 'استراتيجية GINA لمرض الربو 2025',

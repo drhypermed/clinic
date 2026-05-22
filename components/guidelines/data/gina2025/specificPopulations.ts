@@ -45,20 +45,20 @@ export const GINA_2025_SPECIFIC_POPULATIONS_TOPICS: GuidelineTopic[] = [
       en: [
         'Asthma control often changes during pregnancy (1/3 improve, 1/3 worsen, 1/3 stay the same).',
         'Uncontrolled asthma puts the baby at high risk of prematurity, low birth weight, and perinatal mortality.',
-        'It is safer for pregnant women to take asthma medications than to have asthma exacerbations.',
-        'NEVER stop ICS during pregnancy. Review asthma control every 4-6 weeks.',
+        'ICS and beta2-agonists are not associated with increased risk of fetal abnormalities, and treating exacerbations reduces fetal hypoxia risk.',
+        'Do not stop or reduce ICS during pregnancy. Review asthma control every 4-6 weeks.',
       ],
       ar: [
         'السيطرة على الربو تتغير غالباً أثناء الحمل (الثلث يتحسن، الثلث يتدهور، الثلث يبقى كما هو).',
         'الربو غير المسيطر عليه يعرض الجنين لخطر الولادة المبكرة، نقص الوزن، أو حتى الوفاة.',
-        'تناول أدوية الربو أثناء الحمل (آمن تماماً) وهو أفضل بكثير من ترك الأم تتعرض لانتكاسات ونقص أكسجين.',
-        'إياك أن توقف الكورتيزون المستنشق (ICS) أثناء الحمل. راجع حالة الحامل كل 4-6 أسابيع.',
+        'لم يرتبط استخدام ICS وbeta2-agonists بزيادة خطر تشوهات الجنين، وعلاج الانتكاسات يقلل خطر نقص الأكسجين على الجنين.',
+        'لا توقف أو تقلل الكورتيزون المستنشق (ICS) أثناء الحمل. راجع حالة الحامل كل 4-6 أسابيع.',
       ],
     },
     quickDecision: {
       warn: {
-        en: 'Never step down or stop asthma controller medication (ICS) simply because the patient is pregnant.',
-        ar: 'ممنوع تقليل أو إيقاف الأدوية الوقائية للربو لمجرد أن المريضة أصبحت حاملاً.',
+        en: 'Do not step down or stop ICS-containing asthma controller medication simply because the patient is pregnant.',
+        ar: 'لا تقلل أو توقف أدوية السيطرة المحتوية على ICS لمجرد أن المريضة أصبحت حاملاً.',
       }
     },
     sourceIds: ['gina-2025-specific'],
@@ -77,12 +77,12 @@ export const GINA_2025_SPECIFIC_POPULATIONS_TOPICS: GuidelineTopic[] = [
     },
     points: {
       en: [
-        'AERD: Strongly suspected if asthma exacerbates after taking aspirin/NSAIDs. Often linked to severe asthma and nasal polyps. Advise patient to AVOID ALL NSAIDs. Challenge testing or desensitization must only be done in a specialized center with resuscitation facilities.',
+        'AERD: Strongly suspected if asthma exacerbates after taking aspirin/NSAIDs. Often linked to severe asthma and nasal polyps. Advise the patient to avoid NSAIDs. Challenge testing or desensitization must only be done in a specialized center with resuscitation facilities.',
         'LTRA in AERD: Adding a leukotriene receptor antagonist (e.g., montelukast) may improve symptoms, but be cautious of neuropsychiatric side effects.',
-        'Food Allergy: Rarely triggers asthma symptoms directly, but confirmed food allergy is a major risk factor for ASTHMA-RELATED DEATH. Patients must have an anaphylaxis plan and injectable epinephrine.',
+        'Food allergy: Rarely triggers asthma symptoms directly, but confirmed food allergy is a major risk factor for asthma-related death. Patients must have an anaphylaxis plan and injectable epinephrine.',
       ],
       ar: [
-        'الربو المحفز بالأسبرين (AERD): يُشتبه به بقوة إذا حدثت انتكاسة بعد أخذ أسبرين أو مسكنات (NSAIDs). غالباً يصاحبه ربو شديد ولحميات أنفية. انصح المريض بتجنب كل المسكنات تماماً. اختبارات التحسس تُجرى فقط في مراكز متخصصة مجهزة للإنعاش.',
+        'الربو المحفز بالأسبرين (AERD): يُشتبه به بقوة إذا حدثت انتكاسة بعد أخذ أسبرين أو NSAIDs. غالباً يصاحبه ربو شديد ولحميات أنفية. انصح المريض بتجنب NSAIDs. اختبارات التحسس أو إزالة التحسس تُجرى فقط في مراكز متخصصة مجهزة للإنعاش.',
         'المونتيلوكاست في (AERD): إضافته للعلاج قد تُحسن الأعراض بقوة، لكن احذر من أعراضه الجانبية النفسية.',
         'حساسية الطعام: نادراً ما تسبب أزمة ربو مباشرة، لكن وجود حساسية طعام مؤكدة هو عامل خطر رئيسي لـ (الوفاة بسبب الربو). يجب أن يمتلك المريض حقنة إبينفرين (Epinephrine) وخطة طوارئ للحساسية المفرطة.',
       ],
@@ -111,14 +111,14 @@ export const GINA_2025_SPECIFIC_POPULATIONS_TOPICS: GuidelineTopic[] = [
       en: [
         'Surgery: Perform when asthma is well-controlled. CONTINUE all ICS-containing treatments peri-operatively. If patient is on long-term high-dose ICS, or had >2 weeks of oral corticosteroids in the past 6 months, give intra-operative hydrocortisone to prevent adrenal crisis.',
         'COVID-19 / Viruses: Well-controlled asthma does NOT increase the risk of severe COVID-19 or death. However, severe asthma (recent OCS use or hospitalization) DOES increase death risk.',
-        'Medication during infections: Patients MUST continue taking their prescribed ICS. Keep respiratory vaccines up to date (influenza, COVID-19, RSV, pneumococcus).',
+        'Medication during infections: patients must continue prescribed asthma medication including ICS. Keep respiratory vaccines up to date according to local advice, including influenza, COVID-19, RSV, pneumococcus, and pertussis.',
         'Nebulizers: AVOID using nebulizers for patients with respiratory infections to prevent spreading the virus. Use pMDI with a spacer (and face mask if needed) instead.',
         'Spirometry: Avoid in confirmed/suspected COVID-19 patients.',
       ],
       ar: [
         'العمليات الجراحية: تُجرى عندما يكون الربو مستقراً. يجب استمرار استخدام بخاخات الكورتيزون (ICS) قبل وبعد العملية. إذا كان المريض على جرعات كورتيزون عالية أو أخذ كورتيزون بالفم لأكثر من أسبوعين خلال الـ 6 أشهر الماضية، يجب إعطاؤه "هيدروكورتيزون" أثناء العملية لمنع صدمة الغدة الكظرية.',
         'كوفيد-19 والفيروسات: الربو المستقر لا يزيد خطر الوفاة بكوفيد. لكن الربو الشديد (من يحتاجون كورتيزون بالفم أو حجز بالمستشفى) يزيد من خطر الوفاة.',
-        'الأدوية أثناء العدوى: يجب على المريض (الاستمرار) في أخذ بخاخاته الوقائية (ICS) بانتظام تام. احرص على تطعيماته (الإنفلونزا، كورونا، المكورات الرئوية).',
+        'الأدوية أثناء العدوى: يجب أن يستمر المريض في أدوية الربو الموصوفة بما فيها ICS. احرص على تحديث تطعيمات الجهاز التنفسي حسب التوصيات المحلية: الإنفلونزا، كوفيد-19، RSV، المكورات الرئوية، والسعال الديكي.',
         'أجهزة النيبولايزر: تجنب استخدام جلسات النيبولايزر لمرضى الالتهابات التنفسية لمنع نشر العدوى في الهواء. استخدم البخاخة المضغوطة (pMDI) مع قمع (Spacer) كبديل آمن وفعال.',
         'قياس وظائف الرئة (Spirometry): تجنب إجرائه للمشتبه بإصابتهم بكوفيد.',
       ],

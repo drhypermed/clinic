@@ -22,8 +22,8 @@ export const GINA_2025_EXACERBATIONS_TOPICS: GuidelineTopic[] = [
       ],
       ar: [
         'مرضى المسار الأول (MART): يأخذ المريض بخات إضافية من الـ ICS-formoterol متى شاء، مع الاستمرار في جرعته اليومية المعتادة.',
-        'مرضى المسار الثاني (الفينتولين): يأخذ المريض الفينتولين عند اللزوم، ويجب رفع جرعة الكورتيزون المستنشق اليومية لمدة أسبوعين (في البالغين قد نرفع الجرعة لـ 4 أضعاف).',
-        'متى يأخذ المريض كورتيزون بالفم (أقراص) في المنزل؟ إذا تدهورت حالته بسرعة خلال يومين بالرغم من العلاج الإضافي، أو إذا كان قياس (PEF) أقل من 60%.',
+        'مرضى المسار الثاني الذين يستخدمون SABA: يأخذ المريض SABA عند اللزوم، ويزيد علاج المداومة المحتوي على ICS لمدة 1-2 أسبوع على الأقل؛ وفي البالغين يمكن التفكير في رفع جرعة ICS إلى 4 أضعاف الجرعة المعتادة لمدة 1-2 أسبوع.',
+        'متى يبدأ الكورتيزون بالفم في خطة العمل المنزلية؟ إذا ساءت الأعراض خلال 2-3 أيام رغم زيادة المسكن، أو ساءت سريعاً، أو كان FEV1/PEF أقل من 60%.',
         'جرعة الأقراص المنزلية للبالغين: بريدنيزولون 40-50 مجم (صباحاً) لمدة 5 إلى 7 أيام. (يُفضل استخدام أقراص قابلة للذوبان أو شراب إذا كان المريض يعاني من ضيق تنفس شديد).',
         'جرعة الأقراص المنزلية للأطفال: بريدنيزولون 1 إلى 2 مجم لكل كيلو (بحد أقصى 40 مجم يومياً للأطفال <12 سنة) (صباحاً) لمدة 3 إلى 5 أيام.',
         'سحب الكورتيزون: إذا كانت مدة كورس الكورتيزون أقل من أسبوعين، (لا داعي) لسحبه تدريجياً (No tapering)، ويمكن إيقافه فجأة بأمان لتجنب إطالة مدة الكورتيزون بلا داعٍ.',
@@ -46,17 +46,17 @@ export const GINA_2025_EXACERBATIONS_TOPICS: GuidelineTopic[] = [
     points: {
       en: [
         'Assess severity: Check for altered consciousness, inability to speak, cyanosis, silent chest. If present, it is life-threatening (transfer to ER/ICU immediately).',
-        'Mild/Moderate Exacerbation: SABA 4-10 puffs by pMDI+spacer every 20 mins for 1 hour. OR start systemic corticosteroids immediately (e.g., Prednisolone 40-50 mg for adults).',
+        'Mild/moderate exacerbation: start SABA 4-10 puffs by pMDI+spacer every 20 minutes for 3 doses if needed; give prednisolone for moderate exacerbations (adults 40-50 mg, children 1-2 mg/kg up to 40 mg).',
         'Give controlled Oxygen if hypoxemic (Target SpO2 93-95% for adults, 94-98% for children).',
-        'Do NOT use routine antibiotics unless there is clear evidence of bacterial infection (e.g., pneumonia).',
-        'Follow-up: Discharge with a short course of oral corticosteroids (3-5 days for kids, 5-7 days for adults) AND step up their regular controller treatment (ICS) for 2-4 weeks.',
+        'Do not use routine antibiotics unless there is clear evidence of bacterial infection (e.g., pneumonia).',
+        'Before discharge and follow-up: continue/complete the short OCS course if used (3-5 days for children, 5-7 days for adults), confirm or start ICS-containing controller treatment, reduce reliever to as-needed use, check technique/adherence, provide an action plan, and arrange follow-up within 2-7 days (1-3 working days for children).',
       ],
       ar: [
-        'الانتكاسة الشديدة/المهددة للحياة: اطلب الإسعاف أو حوله للطوارئ فوراً. أثناء الانتظار، أعطه: فينتولين، أتروفينت (Ipratropium bromide)، أكسجين، وكورتيزون جهازي (IV/Oral).',
-        'علاج الانتكاسة الخفيفة/المتوسطة بالعيادة: أعطِ المريض 4 إلى 10 بخات فينتولين عبر القمع (Spacer) كل 20 دقيقة (تُكرر 3 مرات في أول ساعة). بعدها 4-10 بخات كل 3-4 ساعات. أعطِ أقراص بريدنيزولون 40-50 مجم. أعطِ أكسجين للوصول لنسبة 93-95% للبالغين و 94-98% للأطفال.',
+        'الانتكاسة الشديدة/المهددة للحياة: رتّب التحويل الفوري للرعاية الحادة. أثناء الانتظار أعطِ SABA، وipratropium bromide، وأكسجين، وكورتيزون جهازي.',
+        'علاج الانتكاسة الخفيفة/المتوسطة بالعيادة: أعطِ SABA 4-10 بخات عبر pMDI مع spacer كل 20 دقيقة لثلاث جرعات عند الحاجة. أعطِ prednisolone للانتكاسة المتوسطة: 40-50 مجم للبالغين، و1-2 مجم/كجم للأطفال بحد أقصى 40 مجم. اضبط الأكسجين لهدف 93-95% للبالغين و>=94% للأطفال.',
         'إضافات للطوارئ للانتكاسات الشديدة: يجب إضافة Ipratropium bromide للـ SABA. ويمكن التفكير في إعطاء المغنيسيوم الوريدي (Magnesium sulfate 2g IV على مدار 20 دقيقة) للمرضى الذين لم يستجيبوا للعلاج الأولي.',
-        'ممنوعات: (لا) تطلب أشعة مقطعية/عادية أو غازات بالدم بشكل روتيني، (لا) تكتب مضادات حيوية إلا إذا كان هناك دليل على عدوى بكتيرية (مثل التهاب رئوي)، وممنوع إعطاء المهدئات لاحتمالية تثبيط التنفس.',
-        'روشتة الخروج (Follow-up): اكتب كورتيزون بالفم لمدة أيام قليلة، والأهم: ارفع جرعة البخاخة الوقائية (ICS) الخاصة به (Step-up) لمدة 2-4 أسابيع لمنع تكرار الأزمة.',
+        'لا تُجرِ أشعة مقطعية/عادية أو غازات بالدم بشكل روتيني، ولا تستخدم مضادات حيوية إلا إذا كان هناك دليل على عدوى بكتيرية مثل الالتهاب الرئوي. تجنب إعطاء المهدئات لاحتمالية تثبيط التنفس.',
+        'قبل الخروج والمتابعة: أكمل كورس الكورتيزون بالفم إذا استُخدم، وتأكد أن المريض يستخدم علاجاً يحتوي على ICS، وقلل المسكن ليكون عند اللزوم فقط، وافحص التقنية والالتزام، وأعطِ خطة عمل مكتوبة، وحدد متابعة خلال 2-7 أيام (1-3 أيام عمل للأطفال).',
       ],
     },
     quickDecision: {

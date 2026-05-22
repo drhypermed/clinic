@@ -312,15 +312,15 @@ export const UserGuidePage: React.FC = () => {
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* زر خروج — واضح بنص + أيقونه. على الموبايل النص بيتخفى ويفضل الأيقونه. */}
+            {/* زر فتح القائمه على الموبايل — واضح بنص "المحتويات" */}
             <button
               type="button"
-              onClick={handleBack}
-              className="inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
-              title="خروج من الدليل"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="md:hidden inline-flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 transition-colors shrink-0"
+              title="عرض قائمه المواضيع"
             >
-              <LuX className="w-4 h-4 text-slate-700" />
-              <span className="hidden sm:inline text-xs font-black text-slate-700">خروج</span>
+              <LuList className="w-4 h-4 text-white" />
+              <span className="text-xs font-black text-white">المحتويات</span>
             </button>
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-600 text-white flex items-center justify-center shadow-sm shrink-0">
@@ -332,15 +332,16 @@ export const UserGuidePage: React.FC = () => {
               </div>
             </div>
           </div>
-          {/* زر فتح القائمه على الموبايل — واضح بنص "المحتويات" */}
+          
+          {/* زر خروج — واضح بنص + أيقونه. على الموبايل النص بيتخفى ويفضل الأيقونه. */}
           <button
             type="button"
-            onClick={() => setMobileSidebarOpen(true)}
-            className="md:hidden inline-flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 transition-colors shrink-0"
-            title="عرض قائمه المواضيع"
+            onClick={handleBack}
+            className="inline-flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+            title="خروج من الدليل"
           >
-            <LuList className="w-4 h-4 text-white" />
-            <span className="text-xs font-black text-white">المحتويات</span>
+            <span className="hidden sm:inline text-xs font-black text-slate-700">خروج</span>
+            <LuX className="w-4 h-4 text-slate-700" />
           </button>
         </div>
       </header>
