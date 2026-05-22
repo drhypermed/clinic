@@ -169,6 +169,7 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS },
       { ADA_2025_COMPLICATIONS_TOPICS },
       { ADA_2025_SPECIAL_SITUATIONS_TOPICS },
+      { ADA_2025_CLINICAL_ESSENTIALS_TOPICS },
       { ADA_2025_TOPIC_VISUALS },
       { ADA_2025_RECOMMENDATION_DIGEST },
     ] = await Promise.all([
@@ -179,10 +180,12 @@ export const loadGuidelineCollectionData = async (id: string): Promise<Guideline
       import('./data/ada2025/weightPharmacology'),
       import('./data/ada2025/complications'),
       import('./data/ada2025/specialSituations'),
+      import('./data/ada2025/clinicalEssentials'),
       import('./data/ada2025/topicVisuals'),
       import('./data/ada2025/recommendationDigest'),
     ]);
     const topics = [
+      ...ADA_2025_CLINICAL_ESSENTIALS_TOPICS,
       ...ADA_2025_IMPROVING_CARE_TOPICS,
       ...ADA_2025_DIAGNOSIS_TOPICS,
       ...ADA_2025_PREVENTION_EVALUATION_TOPICS,

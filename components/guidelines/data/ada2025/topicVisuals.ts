@@ -15,6 +15,62 @@ const ada2025Visual = (
 });
 
 export const ADA_2025_TOPIC_VISUALS: Record<string, GuidelineVisualAsset[]> = {
+  'ada2025-clinical-diagnosis-screening-numbers': [
+    ada2025Visual('diagnosis-classification', 2, 'Tables 2.1-2.2', 'Diabetes and prediabetes diagnostic criteria', 'معايير تشخيص السكري وما قبل السكري'),
+    ada2025Visual('diagnosis-classification', 5, 'Figure 2.1', 'Suspected type 1 diabetes workup in adults', 'تقييم الاشتباه في النوع الأول عند البالغين'),
+    ada2025Visual('diagnosis-classification', 9, 'Tables 2.5-2.6', 'Adult and youth screening criteria', 'معايير الفحص للبالغين والأطفال'),
+  ],
+  'ada2025-clinical-prevention-and-annual-evaluation': [
+    ada2025Visual('prevention-delay', 2, 'Section 3 page 2', 'Lifestyle prevention recommendations and DPP targets', 'توصيات الوقاية بنمط الحياة وأهداف DPP'),
+    ada2025Visual('prevention-delay', 4, 'Section 3 page 4', 'Metformin prevention and B12 monitoring recommendations', 'توصيات metformin للوقاية ومتابعة B12'),
+    ada2025Visual('comprehensive-evaluation', 4, 'Table 4.1', 'Comprehensive diabetes medical evaluation', 'التقييم الطبي الشامل للسكري'),
+    ada2025Visual('comprehensive-evaluation', 8, 'Table 4.3', 'Highly recommended immunizations', 'التطعيمات الموصى بها بقوة'),
+    ada2025Visual('comprehensive-evaluation', 16, 'Figure 4.2', 'MASLD fibrosis risk stratification', 'تصنيف خطر تليف الكبد في MASLD'),
+  ],
+  'ada2025-clinical-glycemic-goals-technology': [
+    ada2025Visual('glycemic-goals', 4, 'Table 6.2', 'CGM metrics for clinical care', 'مؤشرات CGM للرعاية السريرية'),
+    ada2025Visual('glycemic-goals', 6, 'Table 6.3', 'Glycemic goals for many nonpregnant adults', 'أهداف السكر للبالغين غير الحوامل'),
+    ada2025Visual('glycemic-goals', 9, 'Tables 6.4-6.5', 'Hypoglycemia classification and risk assessment', 'تصنيف الهبوط وتقييم خطره'),
+    ada2025Visual('diabetes-technology', 5, 'Tables 7.2-7.3', 'Glucose meter interference and CGM device types', 'تداخلات أجهزة القياس وأنواع CGM'),
+  ],
+  'ada2025-clinical-lifestyle-nutrition-exercise': [
+    ada2025Visual('health-behaviors', 5, 'Table 5.1', 'Nutrition therapy recommendations', 'توصيات التغذية العلاجية'),
+    ada2025Visual('health-behaviors', 6, 'Table 5.2', 'Macronutrient recommendations', 'توصيات المغذيات الكبرى'),
+    ada2025Visual('health-behaviors', 18, 'Figure 5.2', '24-hour physical behaviors', 'السلوكيات البدنية خلال 24 ساعة'),
+    ada2025Visual('health-behaviors', 22, 'Table 5.6', 'Behavioral health referral situations', 'متى تحيل للصحة النفسية والسلوكية'),
+  ],
+  'ada2025-clinical-obesity-pharmacology-insulin': [
+    ada2025Visual('obesity-weight', 8, 'Table 8.2', 'Weight management pharmacotherapy doses and costs', 'جرعات وتكلفة أدوية إدارة الوزن'),
+    ada2025Visual('pharmacologic-treatment', 2, 'Figure 9.1', 'Insulin plan choices in type 1 diabetes', 'اختيارات خطط الأنسولين في النوع الأول'),
+    ada2025Visual('pharmacologic-treatment', 10, 'Figure 9.3', 'Type 2 glucose-lowering medication algorithm', 'خوارزمية علاج النوع الثاني'),
+    ada2025Visual('pharmacologic-treatment', 12, 'Figure 9.4', 'Intensifying to injectable therapies', 'تكثيف العلاج للحقن'),
+  ],
+  'ada2025-clinical-cardiorenal-risk-management': [
+    ada2025Visual('cardiovascular-risk', 7, 'Figure 10.2', 'Hypertension treatment in diabetes', 'علاج ارتفاع الضغط في السكري'),
+    ada2025Visual('cardiovascular-risk', 9, 'Table 10.1', 'High- and moderate-intensity statin therapy', 'الستاتين عالي ومتوسط الشدة'),
+    ada2025Visual('cardiovascular-risk', 23, 'Figure 10.7', 'SGLT2/GLP-1 risk reduction approach', 'نهج تقليل الخطر القلبي الكلوي'),
+    ada2025Visual('kidney-disease', 2, 'Figure 11.1', 'CKD risk and monitoring frequency', 'خطر CKD وتكرار المتابعة'),
+    ada2025Visual('kidney-disease', 7, 'Figure 11.2', 'Holistic CKD treatment approach', 'النهج الشامل لعلاج CKD'),
+  ],
+  'ada2025-clinical-retina-neuropathy-foot': [
+    ada2025Visual('retina-neuro-foot', 2, 'Section 12 page 2', 'Retinopathy screening recommendations', 'توصيات فحص الشبكية'),
+    ada2025Visual('retina-neuro-foot', 5, 'Section 12 page 5', 'Neuropathy screening recommendations', 'توصيات فحص الاعتلال العصبي'),
+    ada2025Visual('retina-neuro-foot', 9, 'Table 12.1', 'Diabetic foot risk categories and screening frequency', 'فئات خطر القدم السكري وتكرار الفحص'),
+  ],
+  'ada2025-clinical-pregnancy-children-older-adults': [
+    ada2025Visual('pregnancy-management', 3, 'Table 15.1', 'Preconception care checklist', 'قائمة رعاية ما قبل الحمل'),
+    ada2025Visual('pregnancy-management', 5, 'Table 15.2', 'Blood glucose goals in pregnancy', 'أهداف السكر أثناء الحمل'),
+    ada2025Visual('children-adolescents', 13, 'Figure 14.1', 'New-onset youth diabetes with suspected type 2 diabetes', 'سكري جديد في الأطفال مع اشتباه النوع الثاني'),
+    ada2025Visual('older-adults', 9, 'Figure 13.2', 'Insulin simplification in older adults', 'تبسيط الأنسولين في كبار السن'),
+  ],
+  'ada2025-clinical-hospital-dka-hhs': [
+    ada2025Visual('hospital-care', 2, 'Section 16 page 2', 'Inpatient hyperglycemia thresholds and goals', 'حدود وأهداف السكر داخل المستشفى'),
+    ada2025Visual('hospital-care', 4, 'Section 16 page 4', 'Hospital insulin and technology recommendations', 'توصيات الأنسولين والتكنولوجيا داخل المستشفى'),
+    ada2025Visual('hospital-care', 8, 'Section 16 page 8', 'Perioperative A1C and glucose targets', 'أهداف HbA1c والسكر حول الجراحة'),
+    ada2025Visual('hospital-care', 9, 'Figure 16.1', 'DKA and HHS treatment pathways', 'مسارات علاج DKA وHHS'),
+    ada2025Visual('glycemic-goals', 12, 'Table 6.8', 'DKA/HHS diagnostic criteria', 'معايير تشخيص DKA/HHS'),
+    ada2025Visual('glycemic-goals', 14, 'Table 6.10', 'DKA/HHS clinical presentation', 'العرض السريري في DKA/HHS'),
+  ],
   'population-health-core': [
     ada2025Visual('improving-care', 4, 'Table 1.1', 'Care team members across diabetes subpopulations', '???? ??????? ??? ???? ???? ??????'),
   ],
