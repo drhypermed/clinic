@@ -24,6 +24,7 @@ export const GINA_2025_SPECIFIC_POPULATIONS_TOPICS: GuidelineTopic[] = [
         'التهاب الجيوب الأنفية المزمن مع اللحمية (Nasal Polyps): يرتبط بالربو الشديد. بعض الأدوية البيولوجية تعالج المرضين معاً في نفس الوقت.',
         'السمنة: تجعل الربو صعب السيطرة. فقدان المريض لـ 5% إلى 10% فقط من وزنه يُحسن حالته بشكل ملحوظ.',
         'ارتجاع المريء: الارتجاع (الصامت/بدون أعراض) لا يسبب تدهور الربو كما يُشاع. لا تعالج الارتجاع إلا لو كان المريض يشتكي من أعراضه.',
+        'كبار السن: الأمراض الأخرى وأدويتها تعقد العلاج. راعِ مشاكل المفاصل، ضعف النظر، وضعف قوة الشفط عند اختيار نوع البخاخة المناسبة لهم.',
       ],
     },
     sourceIds: ['gina-2025-specific'],
@@ -62,5 +63,67 @@ export const GINA_2025_SPECIFIC_POPULATIONS_TOPICS: GuidelineTopic[] = [
     },
     sourceIds: ['gina-2025-specific'],
     tags: ['pregnancy', 'maternal health'],
+  },
+  {
+    id: 'gina-specific-aerd-food-allergy',
+    group: 'ginaSpecificPopulations',
+    title: {
+      en: 'Aspirin-Exacerbated Respiratory Disease & Food Allergy',
+      ar: 'الربو المحفز بالأسبرين وحساسية الطعام',
+    },
+    summary: {
+      en: 'Managing AERD (NSAID hypersensitivity) and food allergies in asthma patients.',
+      ar: 'التعامل مع التحسس من الأسبرين/المسكنات، وحساسية الطعام وارتباطها بالربو.',
+    },
+    points: {
+      en: [
+        'AERD: Strongly suspected if asthma exacerbates after taking aspirin/NSAIDs. Often linked to severe asthma and nasal polyps. Advise patient to AVOID ALL NSAIDs. Challenge testing or desensitization must only be done in a specialized center with resuscitation facilities.',
+        'LTRA in AERD: Adding a leukotriene receptor antagonist (e.g., montelukast) may improve symptoms, but be cautious of neuropsychiatric side effects.',
+        'Food Allergy: Rarely triggers asthma symptoms directly, but confirmed food allergy is a major risk factor for ASTHMA-RELATED DEATH. Patients must have an anaphylaxis plan and injectable epinephrine.',
+      ],
+      ar: [
+        'الربو المحفز بالأسبرين (AERD): يُشتبه به بقوة إذا حدثت انتكاسة بعد أخذ أسبرين أو مسكنات (NSAIDs). غالباً يصاحبه ربو شديد ولحميات أنفية. انصح المريض بتجنب كل المسكنات تماماً. اختبارات التحسس تُجرى فقط في مراكز متخصصة مجهزة للإنعاش.',
+        'المونتيلوكاست في (AERD): إضافته للعلاج قد تُحسن الأعراض بقوة، لكن احذر من أعراضه الجانبية النفسية.',
+        'حساسية الطعام: نادراً ما تسبب أزمة ربو مباشرة، لكن وجود حساسية طعام مؤكدة هو عامل خطر رئيسي لـ (الوفاة بسبب الربو). يجب أن يمتلك المريض حقنة إبينفرين (Epinephrine) وخطة طوارئ للحساسية المفرطة.',
+      ],
+    },
+    quickDecision: {
+      warn: {
+        en: 'Food allergy in an asthma patient increases the risk of fatal asthma. Ensure they have injectable epinephrine.',
+        ar: 'حساسية الطعام لدى مريض الربو تزيد من خطر الوفاة. تأكد من توافر حقنة الإبينفرين (قلم الحساسية) لديه.',
+      }
+    },
+    sourceIds: ['gina-2025-specific'],
+    tags: ['AERD', 'aspirin', 'NSAIDs', 'food allergy', 'anaphylaxis'],
+  },
+  {
+    id: 'gina-specific-surgery-covid',
+    group: 'ginaSpecificPopulations',
+    title: {
+      en: 'Surgery & Respiratory Infections (COVID-19)',
+      ar: 'العمليات الجراحية والالتهابات التنفسية (كوفيد-19)',
+    },
+    summary: {
+      en: 'Peri-operative asthma management and guidelines during viral respiratory outbreaks.',
+      ar: 'تجهيز مريض الربو للعمليات الجراحية، والتعليمات أثناء تفشي الفيروسات التنفسية.',
+    },
+    points: {
+      en: [
+        'Surgery: Perform when asthma is well-controlled. CONTINUE all ICS-containing treatments peri-operatively. If patient is on long-term high-dose ICS, or had >2 weeks of oral corticosteroids in the past 6 months, give intra-operative hydrocortisone to prevent adrenal crisis.',
+        'COVID-19 / Viruses: Well-controlled asthma does NOT increase the risk of severe COVID-19 or death. However, severe asthma (recent OCS use or hospitalization) DOES increase death risk.',
+        'Medication during infections: Patients MUST continue taking their prescribed ICS. Keep respiratory vaccines up to date (influenza, COVID-19, RSV, pneumococcus).',
+        'Nebulizers: AVOID using nebulizers for patients with respiratory infections to prevent spreading the virus. Use pMDI with a spacer (and face mask if needed) instead.',
+        'Spirometry: Avoid in confirmed/suspected COVID-19 patients.',
+      ],
+      ar: [
+        'العمليات الجراحية: تُجرى عندما يكون الربو مستقراً. يجب استمرار استخدام بخاخات الكورتيزون (ICS) قبل وبعد العملية. إذا كان المريض على جرعات كورتيزون عالية أو أخذ كورتيزون بالفم لأكثر من أسبوعين خلال الـ 6 أشهر الماضية، يجب إعطاؤه "هيدروكورتيزون" أثناء العملية لمنع صدمة الغدة الكظرية.',
+        'كوفيد-19 والفيروسات: الربو المستقر لا يزيد خطر الوفاة بكوفيد. لكن الربو الشديد (من يحتاجون كورتيزون بالفم أو حجز بالمستشفى) يزيد من خطر الوفاة.',
+        'الأدوية أثناء العدوى: يجب على المريض (الاستمرار) في أخذ بخاخاته الوقائية (ICS) بانتظام تام. احرص على تطعيماته (الإنفلونزا، كورونا، المكورات الرئوية).',
+        'أجهزة النيبولايزر: تجنب استخدام جلسات النيبولايزر لمرضى الالتهابات التنفسية لمنع نشر العدوى في الهواء. استخدم البخاخة المضغوطة (pMDI) مع قمع (Spacer) كبديل آمن وفعال.',
+        'قياس وظائف الرئة (Spirometry): تجنب إجرائه للمشتبه بإصابتهم بكوفيد.',
+      ],
+    },
+    sourceIds: ['gina-2025-specific'],
+    tags: ['surgery', 'hydrocortisone', 'COVID-19', 'nebulizers', 'vaccines'],
   }
 ];

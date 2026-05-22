@@ -1,0 +1,4884 @@
+4. COMPREHENSIVE MEDICAL EVALUATION AND ASSESSMENT OF COMORBIDITIES
+4. Comprehensive Medical
+Evaluation and Assessment of
+Comorbidities: Standards of Care
+in Diabetes—2026
+Diabetes Care 2026;49(Suppl. 1):S61–S88 | https://doi.org/10.2337/dc26-S004
+American Diabetes Association 
+Professional Practice Committee for 
+Diabetes*
+*A complete list of members of the American 
+Diabetes Association Professional Practice
+Committee for Diabetes can be found at https:// 
+doi.org/10.2337/dc26-SINT.
+Duality of interest information for each contributor 
+is available at https://doi.org/10.2337/dc26-SDIS.
+Suggested citation: American Diabetes Association 
+Professional Practice Committee for Diabetes. 
+4. Comprehensive medical evaluation and 
+assessment of comorbidities: Standards of Care 
+in Diabetes—2026. Diabetes Care 2026;49(Suppl. 1): 
+S61–S88
+The BONE HEALTH subsection has received endorsement 
+from the American Society for Bone and Mineral 
+Research.
+© 2025 by the American Diabetes Association. 
+Readers may use this work for educational, 
+noncommercial purposes if properly cited and 
+unaltered. The version of record may be linked 
+at https://diabetesjournals.org/care, but ADA 
+permission is required to post this work on any 
+third-party site or platform. This publication and its 
+contents may not be reproduced, distributed, or 
+used for text or data mining, machine learning, 
+or similar technologies without prior written 
+permission. Requests to reuse, adapt, or distribute 
+this work may be sent to permissions@diabetes 
+.org. More information is available at https:// 
+diabetesjournals.org/journals/pages/license.
+The American Diabetes Association (ADA) “Standards of Care in Diabetes” in­
+cludes the ADA’s current clinical practice recommendations and is intended to 
+provide the components of diabetes care, general treatment goals and guide­
+lines, and tools to evaluate quality of care. Members of the ADA Professional 
+Practice Committee for Diabetes, an interprofessional expert committee, are re­
+sponsible for updating the Standards of Care annually, or more frequently as war­
+ranted. For a detailed description of ADA standards, statements, and reports, as 
+well as the evidence-grading system for ADA’s clinical practice recommendations 
+and a full list of Professional Practice Committee members, please refer to 
+Introduction and Methodology. Readers who wish to comment on the Standards 
+of Care are invited to do so at professional.diabetes.org/SOC.
+PERSON-CENTERED COLLABORATIVE CARE
+Recommendations
+4.1 A communication style that uses person-centered, culturally sensitive, and 
+strength-based language and active listening; elicits individual preferences and be­
+liefs; and assesses literacy, numeracy, and potential barriers to care should be 
+used to optimize health outcomes and health-related quality of life. B
+4.2 People with diabetes can benefit from a coordinated interprofessional 
+team that may include but is not limited to diabetes care and education special­
+ists, primary care and subspecialty clinicians, nurses, registered dietitian nutrition­
+ists, exercise specialists, pharmacists, dentists, podiatrists, and behavioral health 
+professionals. C
+A successful medical evaluation and care plan depends on the beneficial interac­
+tions and care coordination between the person with diabetes and the care team. 
+The Chronic Care Model (1) and other evidence-based care delivery models (see 
+section 1, “Improving Care and Promoting Health in Populations”) can support a 
+person-centered approach to care that requires a close working relationship be­
+tween the person with diabetes, their clinicians, and the broader health care team 
+involved in treatment planning and implementation. People with diabetes should 
+receive health care from a coordinated interprofessional team that may include 
+but is not limited to diabetes care and education specialists, primary care and sub­
+specialty clinicians, nurses, registered dietitian nutritionists, exercise specialists, 
+pharmacists, dentists, podiatrists, behavioral health professionals, and community 
+Diabetes Care Volume 49, Supplement 1, January 2026
+S61
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+partners such as community health workers 
+and community paramedics. Individuals 
+with diabetes and their care partners or 
+caregivers must assume an active role in 
+their care. Based on the preferences and 
+values of the person with diabetes, elicited 
+by the care team, the person with diabetes, 
+their family or support group, and the 
+health care team together formulate the 
+management plan, which includes lifestyle 
+management (see section 5, “Facilitating 
+Positive Health Behaviors and Well-being 
+to Improve Health Outcomes”) and 
+pharmacotherapy, as appropriate.
+The goals of treatment for diabetes 
+are to prevent or delay complications 
+and optimize quality of life (Fig. 4.1). 
+Treatment goals and plans should be 
+cocreated by the care team and people 
+with diabetes based on their individual 
+preferences, values, and goals. This indi­
+vidualized management plan should take 
+into account the person’s age, cognitive 
+abilities, school/work schedule and condi­
+tions, health beliefs, support systems, 
+eating patterns, physical activity, social 
+situation, financial concerns, cultural fac­
+tors, literacy and numeracy (mathemati­
+cal literacy), diabetes history (duration, 
+complications, and current use of medi­
+cations), comorbidities, disabilities, health 
+priorities, other medical conditions, pref­
+erences for care, access to health care 
+services, and life expectancy. People liv­
+ing with diabetes should be engaged in 
+conversation about these aspects of their 
+lives and diabetes management, with 
+routine reassessment as necessary given 
+their changing circumstances across the 
+life span. Various strategies and techniques 
+should be used to support the person’s 
+self-management efforts, including pro­
+viding education on problem-solving and 
+coping skills for all aspects of diabetes 
+management.
+GOALS 
+OF CARE
+s
+REVIEW AND AGREE ON 
+MANAGEMENT PLAN
+• Review management plan
+• Mutually agree on changes
+• Ensure agreed modification of therapy is
+implemented in a timely fashion to avoid
+therapeutic inertia
+• Undertake decision cycle regularly (at least
+once or twice a year)
+• Operate in an integrated system of care
+• Ensure access to DSMES
+• Involve an educated and informed person (and
+the individual’s family or caregiver)
+• Explore personal preferences
+• Language matters (include person-first,
+strengths-based, empowering language)
+• Include motivational interviewing, goal setting,
+and shared decision-making
+PROVIDE ONGOING SUPPORT 
+AND MONITORING OF:
+• Emotional well-being
+• Lifestyle and health behaviors
+• Tolerability of medications
+• Surrogate measures of treatment,
+including BGM and CGM, weight, step
+count, A1C, BP, and lipids
+AGREE ON MANAGEMENT PLAN
+• Specify SMART goals:
+‒ Specific
+‒ Measurable
+‒ Achievable
+‒ Realistic
+‒ Time limited
+ASSESS KEY PERSON CHARACTERISTICS
+• The individual’s preferences, values, and goals
+• Current lifestyle and health behaviors
+• Comorbidities (i.e., CVD, CKD, and HF)
+• Clinical characteristics (i.e., age, A1C, and weight)
+• Mental health, cognition and functional status
+• Social determinants of health
+CONSIDER SPECIFIC 
+FACTORS THAT IMPACT 
+CHOICE OF TREATMENT
+• Individualized glycemic and weight goals
+• Impact on weight, hypoglycemia,
+cardiovascular and kidney protection,
+and MASLD
+• Underlying physiological factors
+• Side effect profiles of medications
+• Complexity of treatment plan (i.e.,
+frequency and mode of administration)
+• Treatment choice to optimize
+medication use and reduce treatment
+discontinuation
+• Access, cost and availability of
+medication(s), and lifestyle choices
+Decision cycle for person-centered glycemic 
+management in type 2 diabetes
+IMPLEMENT 
+MANAGEMENT PLAN
+• Ensure there is regular review; more
+frequent contact initially is often
+desirable for DSMES
+USE SHARED DECISION-MAKING TO 
+CO-CREATE A MANAGEMENT PLAN
+Figure 4.1—Decision cycle for person-centered glycemic management in type 2 diabetes. BGM, blood glucose monitoring; BP, blood pressure; 
+CGM, continuous glucose monitoring; CKD, chronic kidney disease; CVD, cardiovascular disease; DSMES, diabetes self-management education and 
+support; HF, heart failure. MASLD, metabolic dysfunction-associated steatotic liver disease. Adapted from Davies et al. (307). 
+Communication between health care 
+professionals and people with diabetes 
+and their families should acknowledge 
+that multiple factors impact diabetes 
+management but also emphasize that 
+collaboratively developed treatment plans 
+and a healthy lifestyle can significantly im­
+prove disease outcomes and well-being 
+(2). Thus, the goal of communication 
+between health care professionals and 
+people with diabetes is to establish a 
+collaborative relationship and to assess 
+and address self-management barriers 
+without blaming people with diabetes 
+for “noncompliance” or “nonadherence” 
+S62 
+Comprehensive Medical Evaluation and Assessment of Comorbidities
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+when the outcomes of self-management 
+are not optimal (3). The familiar terms 
+noncompliance and nonadherence denote 
+a passive, obedient role for a person with 
+diabetes in “following doctor’s orders,” 
+which is at odds with the active role peo­
+ple with diabetes take in the day-to-day 
+decision-making, planning, monitoring, 
+evaluation, and problem-solving involved 
+in diabetes self-management. Using a 
+nonjudgmental approach that normalizes 
+periodic lapses in management may help 
+minimize the person’s resistance to re­
+porting problems with self-management. 
+Empathizing and using active listening 
+techniques, such as open-ended questions, 
+reflective statements, and summarizing 
+what the person said, can help facilitate 
+communication. Perceptions of people 
+with diabetes about their own ability, or 
+self-efficacy, to self-manage diabetes 
+constitute one important psychosocial 
+factor related to improved diabetes 
+self-management and treatment out­
+comes in diabetes (4) and should be a 
+goal of ongoing assessment, education, 
+and treatment planning.
+Language has a strong impact on per­
+ceptions and behavior. Empowering lan­
+guage can help to inform and motivate, 
+while shame and judgement can be dis­
+couraging. The American Diabetes Asso­
+ciation (ADA) and the Association of 
+Diabetes Care & Education Specialists 
+(ADCES) (formerly called the American 
+Association of Diabetes Educators) joint 
+consensus report, “The Use of Language 
+in Diabetes Care and Education,” provides 
+the authors’ expert opinion regarding the 
+use of language by health care professio­
+nals when speaking or writing about dia­
+betes for people with diabetes or for 
+professional audiences (3,5). Although fur­
+ther research is needed to address the im­
+pact of language on diabetes outcomes, 
+the report includes five key consensus rec­
+ommendations for language use: 
+• Use language that is neutral, non­
+judgmental, and based on facts, ac­
+tions, physiology, or biology.
+• Use language free from stigma.
+• Use language that is strength based, 
+respectful, and inclusive and that 
+imparts hope.
+• Use language that fosters collabora­
+tion between people with diabetes 
+and health care professionals.
+• Use language that is person cen­
+tered (e.g., “person with diabetes” is 
+preferred over “diabetic”).
+COMPREHENSIVE MEDICAL 
+EVALUATION
+Recommendations
+4.3 A complete medical evaluation 
+should be performed at the initial visit 
+and follow-up, as appropriate, to:
+• Confirm the diagnosis and classify 
+diabetes. A
+• Assess glycemic status and previ­
+ous and current treatment. A
+• Evaluate for diabetes complications, 
+potential comorbid conditions, 
+and overall health status. A
+• Identify care partners, support sys­
+tems, and available resources. E
+• Assess social determinants of health 
+and structural barriers to optimal 
+health and health care. A
+• Review risk factor management in 
+the person with diabetes. A
+• Begin engagement with the person 
+with diabetes in the formulation of 
+a care management plan including 
+goals of care. A
+• Develop a plan for continuing care. A
+4.4 Ongoing management should be 
+guided by the assessment of overall 
+health and functional status, diabetes 
+complications, cardiovascular risk, hy­
+poglycemia risk, and shared decision 
+making to set therapeutic goals. B
+The comprehensive medical evaluation 
+includes the initial and follow-up evalua­
+tions, which comprise assessment of 
+complications, psychosocial assessment, 
+management of comorbid conditions, 
+overall health, functional and cognitive 
+status, and engagement of the person 
+with diabetes throughout the process. 
+While a comprehensive list is provided 
+in Table 4.1, in clinical practice the health 
+care professional may need to prioritize 
+select components of the medical evalua­
+tion given the available resources and 
+time. Engaging other members of the 
+health care team can also support com­
+prehensive diabetes care. The goal of 
+these recommendations is to provide 
+the health care team with guidance 
+and information so it can optimally sup­
+port people with diabetes and their 
+care partners. In addition to the medi­
+cal history, physical examination, and 
+laboratory tests, health care professionals 
+should assess diabetes self-management 
+behaviors, nutrition, social determinants 
+of health, and psychosocial health (see 
+section 5, “Facilitating Positive Health 
+Behaviors and Well-being to Improve 
+Health Outcomes”) and give guidance on 
+routine immunizations. The assessment 
+of sleep pattern and duration, bone 
+health, and sexual health should also be 
+considered as an important part of the 
+comprehensive evaluation of a person 
+with diabetes. Follow-up visits should oc­
+cur at least every 3–6 months individual­
+ized to the person and then at least 
+annually.
+Lifestyle management and behavioral 
+health care are cornerstones of diabetes 
+management. People with diabetes should 
+be referred for diabetes self-management 
+education and support, medical nutrition 
+therapy, and assessment of behavioral 
+health concerns as appropriate. People with 
+diabetes should receive recommended 
+preventive care services (e.g., immuni­
+zations and age- and sex-appropriate 
+cancer screening); tobacco use cessa­
+tion counseling; and ophthalmological, 
+dental, podiatric, and other referrals, as 
+needed.
+The assessment of risk of acute and 
+chronic diabetes complications and treat­
+ment planning are key components of 
+initial and follow-up visits (Table 4.2). The 
+risk of atherosclerotic cardiovascular 
+disease (CVD) and heart failure (see 
+section 10, “Cardiovascular Disease and 
+Risk Management”), chronic kidney disease 
+(CKD) staging (see section 11, “Chronic 
+Kidney Disease and Risk Management”), 
+presence of retinopathy and neuropathy 
+(see section 12, “Retinopathy, Neuropathy, 
+and Foot Care”), and risk of treatment- 
+associated hypoglycemia should be used to 
+individualize goals for glycemia (see section 
+6, “Glycemic Goals, Hypoglycemia, and Hy- 
+perglycemic Crises”), blood pressure, and lip­
+ids and to select specific glucose-lowering 
+medication(s) (see section 9, “Pharmacologic 
+Approaches to Glycemic Treatment”), antihy­
+pertension medications, and lipid lowering 
+treatment intensity.
+Additional referrals should be ar­
+ranged as necessary (Table 4.2). Clini­
+cians should ensure that people with 
+diabetes are appropriately screened for 
+complications, comorbidities, and treat­
+ment burden. Glycemic management is 
+a part, not the sole goal, of the clinical 
+encounter.
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S63 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Table 4.1—Components of the comprehensive diabetes medical evaluation at 
+initial, follow-up, and annual visits
+Visit
+Initial Every follow-up
+Annual
+Past medical and family history
+-
+-
+-
+Diabetes history
+-
+-
+-
+• Characteristics at onset (e.g., age and symptoms 
+and/or signs)
+✓
+-
+-
+• Review of previous treatment plans and response
+✓
+-
+-
+• Assess frequency, cause, and severity of past 
+hospitalizations
+✓
+-
+-
+Family history
+-
+-
+-
+• Family history of diabetes in a first-degree relative
+✓
+-
+-
+• Family history of autoimmune disorders
+✓
+-
+-
+Personal history of complications and common 
+comorbidities
+-
+-
+-
+• Common comorbidities (e.g., obesity, OSA, and 
+MASLD)
+✓
+-
+✓
+• High blood pressure or abnormal lipids
+✓
+-
+✓
+• Macrovascular and microvascular complications
+✓
+-
+✓
+• Hypoglycemia: awareness, frequency, causes, and 
+timing of episodes
+✓
+✓
+✓
+• Presence of hemoglobinopathies or anemias
+✓
+-
+✓
+• Last dental visit 
+• Last foot exam
+✓  
+✓
+-
+✓  
+✓
+• Last dilated eye exam
+✓
+-
+✓
+• Visits to specialists
+✓
+-
+-
+• Disability assessment and use of assistive devices 
+(e.g., physical, cognitive, vision and auditory, history 
+of fractures, and podiatry)
+✓
+✓
+✓
+• Personal history of autoimmune disease
+✓
+-
+-
+Surgical and procedure history
+-
+-
+-
+• Surgeries (e.g., metabolic surgery and 
+transplantation)
+✓
+✓
+✓
+Interval history
+-
+-
+-
+• Changes in medical or family history since last visit
+-
+✓
+✓
+Behavioral factors
+-
+-
+-
+• Physical activity, sleep behaviors, eating patterns and 
+weight history
+✓
+✓
+✓
+• Assess familiarity with carbohydrate counting (e.g., 
+type 1 diabetes or type 2 diabetes treated with MDI)
+✓
+-
+✓
+• Screen for OSA
+✓
+✓
+✓
+• Tobacco, alcohol, and substance use
+✓
+-
+✓
+Medications and vaccinations
+-
+-
+-
+• Current medication plan
+✓
+✓
+✓
+• Medication-taking behavior, including rationing of 
+medications and/or medical equipment
+✓
+✓
+✓
+• Medication intolerance or side effects
+✓
+✓
+✓
+• Complementary and alternative medicine use
+✓
+✓
+✓
+• Vaccination history and needs
+✓
+-
+✓
+Technology use
+-
+-
+-
+• Assess use of health apps, online education, patient 
+portals, etc.
+✓
+✓
+✓
+• Glucose monitoring (meter/CGM): results and data use
+✓
+✓
+✓
+• Review insulin pump settings and use and connected 
+pen and glucose data
+✓
+✓
+✓
+Social life assessment
+-
+-
+-
+Social network
+-
+-
+-
+• Identify existing social supports
+✓
+-
+✓
+• Identify surrogate decision maker and advanced care 
+plan
+✓
+-
+✓
+• Identify social determinants of health (e.g., food 
+security, housing stability, transportation access, 
+financial security, and community safety)
+✓
+-
+✓
+IMMUNIZATIONS
+Table 4.3). A
+Children, adolescents, and adults with diabe­
+tes should receive vaccinations accord­
+ing to age-appropriate recommendations 
+(6,7). The Centers for Disease Control and 
+Prevention (CDC) provides vaccination 
+schedules specifically for children, ado­
+lescents, and adults with diabetes (cdc 
+.gov/vaccines/). The CDC Advisory Com­
+mittee on Immunization Practices (ACIP) 
+makes recommendations based on its own 
+review and rating of the evidence, provided 
+in Table 4.3 for selected vaccinations. The 
+ACIP evidence review has evolved over 
+time with the adoption of Grading of Rec­
+ommendations Assessment, Develop­
+ment, and Evaluation (GRADE) in 2010 and 
+then the Evidence to Decision or Evidence 
+to Recommendation frameworks in 2020 
+(8). Here, we discuss the particular im­
+portance of specific vaccines.
+Recommendation
+4.5 Provide routinely recommended 
+vaccinations for children, adolescents, 
+and adults with diabetes as indicated 
+by age (see 
+COVID-19
+People with underlying medical conditions, 
+including diabetes, are more likely to be­
+come severely ill with coronavirus disease 
+2019 (COVID-19). COVID-19 vaccination us­
+ing an appropriate number of doses of 
+updated vaccines is recommended for 
+everyone aged 6 months and older in 
+the U.S. (6,7).
+Hepatitis B
+Compared with the general population, 
+people with type 1 or type 2 diabetes 
+have higher rates of hepatitis. Because of 
+the higher likelihood of transmission of 
+the disease, hepatitis B vaccine is recom­
+mended for adults with diabetes aged 
+<60 years. For adults aged ≥60 years, 
+hepatitis B vaccine may be administered 
+at the discretion of the treating clinician 
+based on the person’s likelihood of ac­
+quiring hepatitis B infection (6,7).
+Influenza
+Influenza is a common, preventable infec­
+tious disease associated with high mortality 
+and morbidity in vulnerable populations, in­
+cluding youth, older adults, and people 
+with chronic diseases. Influenza vaccination 
+Continued on p. S65
+S64 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Table 4.1—Continued 
+Visit
+Initial Every follow-up
+Annual
+• Assess daily routine and environment, including 
+school or work schedules and ability to engage in 
+diabetes self-management
+✓
+✓
+✓
+Physical examination
+-
+-
+-
+• Height, weight, and BMI; growth and pubertal 
+development in children and adolescents
+✓
+✓
+✓
+• Blood pressure determination
+✓
+✓
+✓
+• Orthostatic blood pressure measures (when 
+indicated)
+✓
+-
+✓
+• Fundoscopic examination (refer to eye specialist)
+✓
+-
+✓
+• Thyroid palpation
+✓
+-
+✓
+• Skin examination (e.g., acanthosis nigricans, insulin 
+injection or insertion sites, and lipodystrophy)
+✓
+✓
+✓
+• Comprehensive foot examination, determination of 
+temperature, vibration or pinprick sensation, and  
+10-g monofilament exam
+✓
+-
+✓
+• Visual inspection (e.g., skin integrity, callous 
+formation, foot deformity or ulcer, and toenails)*
+✓
+✓
+✓
+• Check pedal pulses and screen for PAD with ABI 
+testing if a PAD diagnosis would change 
+management
+✓
+-
+✓
+• Screen for depression, anxiety, diabetes distress, fear 
+of hypoglycemia, and disordered eating
+✓
+-
+✓
+• Assessment for cognitive performance if indicated
+✓
+-
+✓
+• Assessment for functional performance if indicated
+✓
+-
+✓
+• Assessment for bone health (e.g., loss of height and 
+kyphosis)
+✓
+-
+✓
+Laboratory evaluation
+-
+-
+-
+• A1C, if the results are not available within the past 3 
+months or if earlier assessment is necessary
+✓
+✓
+✓
+• Lipid profile, including total, LDL, and HDL cholesterol 
+and triglycerides‡
+✓
+-
+-
+• Liver function tests (i.e., FIB-4)‡
+✓
+-
+✓
+• Spot urinary albumin-to-creatinine ratio
+✓
+-
+✓
+• Serum creatinine and estimated glomerular filtration 
+rate§
+✓
+-
+✓
+• Thyroid-stimulating hormone in people with type 1 
+diabetes‡
+✓
+-
+✓
+• Celiac disease screening in people with type 1 
+diabetesjj
+✓
+-
+-
+• Vitamin B12 if taking metformin for >5 years
+✓
+-
+✓
+• CBC with platelets
+✓
+-
+✓
+• Serum potassium levels in people treated with ACE 
+inhibitors, ARBs, or diuretics§
+✓
+-
+✓
+• Calcium, vitamin D, and phosphorous as appropriate
+✓
+-
+✓
+ABI, ankle brachial index; ARBs, angiotensin receptor blockers; CBC, complete blood count; CGM, 
+continuous glucose monitor; FIB-4, fibrosis-4 index; MASLD, metabolic-associated steatotic liver 
+disease; MDI, multiple daily injections; OSA, obstructive sleep apnea; PAD, peripheral arterial dis­
+ease. *Should be performed at every visit in people with diabetes with sensory loss, previous 
+foot ulcers, or amputations. †At 65 years of age or older. ‡May also need to be checked after 
+initiation or dose changes of medications that affect these laboratory values (i.e., diabetes 
+medications, blood pressure medications, cholesterol medications, or thyroid medications). §May 
+be needed more frequently in people with diabetes with known chronic kidney disease or 
+with changes in medications that affect kidney function and serum potassium (see Table 11.2).
+jjIn people with presence of gastrointestinal symptoms, signs, laboratory manifestations, or 
+clinical suspicion suggestive of celiac disease.
+in people with diabetes has been found to 
+significantly reduce influenza and diabetes- 
+related hospital admissions (9). In people 
+with diabetes, the influenza vaccine has 
+been associated with lower risk of all-cause 
+mortality, cardiovascular mortality, and 
+cardiovascular events (10). Given the bene­
+fits of the annual influenza vaccination, 
+it is recommended for all individuals ≥6 
+months of age who do not have a con­
+traindication. The live attenuated influ­
+enza vaccine, which is delivered by nasal 
+spray, is an option for people who are 
+2–49 years of age and are not pregnant, 
+but people with chronic conditions such 
+as diabetes are cautioned against taking 
+the live attenuated influenza vaccine 
+and are instead recommended to re­
+ceive the inactive or recombinant influ­
+enza vaccination. For the 2025–2026 
+season, all influenza vaccines offered in 
+the U.S. are trivalent (6,7).
+Pneumococcal Pneumonia
+Like influenza, pneumococcal pneumo­
+nia is a common, preventable disease. 
+People with diabetes are at increased 
+risk for pneumococcal infection and 
+have been reported to have a high 
+risk of hospitalization and death, with 
+a mortality rate as high as 50% (11). All 
+people with diabetes should receive one of 
+the CDC-recommended pneumococcal 
+vaccines (12).
+Respiratory Syncytial Virus
+Respiratory syncytial virus (RSV) is a cause 
+of respiratory illness in some individuals, 
+including older adults. People with chronic 
+conditions such as diabetes have a 
+higher risk of severe illness. The U.S. 
+Food and Drug Administration (FDA) ap­
+proved the first vaccines for prevention 
+of RSV-associated lower respiratory tract 
+disease in adults aged ≥60 years. The 
+ACIP recommends that all adults aged 
+≥75 years and adults aged 60–74 years 
+who are at increased risk for severe RSV 
+should receive a single dose of RSV vac­
+cine (13).
+ASSESSMENT OF COMORBIDITIES
+Besides assessing diabetes-related compli­
+cations, clinicians and people with diabetes 
+need to be aware of common comorbidities 
+that affect people with diabetes and that 
+may complicate its management (14–16). 
+Diabetes comorbidities are conditions 
+that affect people with diabetes more 
+often than age-matched people without 
+diabetes. This section discusses the com­
+mon comorbidities observed in people with 
+diabetes but is not necessarily inclusive of 
+all the conditions that have been reported.
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S65 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Determination of fracture risk traditionally 
+has relied on measurements of bone min­
+eral density (BMD) and the World Health 
+Organization–defined T-score of ≤−2.5 
+SD. However, it is now established that 
+the consideration of other risk factors im­
+proves the categorization of fracture risk 
+Table 4.2—Essential components for assessment, planning, and referral
+Assessing risk of diabetes complications 
+• ASCVD and heart failure history 
+• ASCVD risk factors and 10-year ASCVD risk assessment 
+• Staging of chronic kidney disease (see Table 11.2) 
+• Hypoglycemia risk (see section 6, “Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises”) 
+• Assessment for retinopathy 
+• Assessment for neuropathy 
+• Assessment for MASLD and MASH 
+Goal setting 
+• Set A1C, blood glucose, and time-in-range goals 
+• Set lipid goal 
+• If hypertension is present, establish blood pressure goal 
+• Weight management and physical activity goals 
+• Diabetes self-management goals 
+Therapeutic treatment plans 
+• Lifestyle management (e.g., registered dietitian nutritionist) 
+• Pharmacologic therapy: glucose lowering 
+• Pharmacologic therapy: cardiovascular and kidney disease risk factors 
+• Weight management with pharmacotherapy or metabolic surgery, as appropriate 
+• Use of glucose monitoring and insulin delivery devices 
+• Referral to diabetes education and medical specialists (as needed) 
+Referrals for initial care management 
+• Eye care professional for annual dilated eye exam 
+• Family planning for individuals of childbearing potential 
+• Registered dietitian nutritionist for medical nutrition therapy 
+• Diabetes self-management education and support 
+• Dentist for comprehensive dental and periodontal examination 
+• Behavioral health professional, if indicated 
+• Audiology, if indicated 
+• Social worker and community resources, if indicated 
+• Rehabilitation medicine or another relevant health care professional for physical and 
+cognitive disability evaluation, if indicated 
+• Other appropriate health care professionals 
+Assessment and treatment planning are essential components of initial and all follow-up vis­
+its. ASCVD, atherosclerotic cardiovascular disease; MASH, metabolic dysfunction-associated 
+steatohepatitis; MASLD, metabolic dysfunction-associated steatotic liver disease.
+Autoimmune Diseases
+People with type 1 diabetes are at in­
+creased risk for other autoimmune 
+diseases, with thyroid disease, celiac 
+disease, and pernicious anemia (vitamin 
+B12 deficiency) being among the most 
+common (17). Other autoimmune con­
+ditions associated with type 1 diabetes 
+include autoimmune liver disease, primary 
+adrenal insufficiency (Addison disease), 
+vitiligo, collagen vascular diseases, and 
+myasthenia gravis (18,19). Type 1 diabe­
+tes may also occur with other autoim­
+mune diseases in the context of specific 
+genetic disorders such as polyglandular 
+autoimmune syndromes (20). Given the 
+high prevalence, nonspecific symptoms, 
+and insidious onset of primary hypothy­
+roidism, routine screening for thyroid 
+dysfunction is recommended for all peo­
+ple with type 1 diabetes. Screening for 
+celiac disease should be considered in 
+adults with diabetes with suggestive symp­
+toms (e.g., diarrhea, malabsorption, and 
+abdominal pain) or signs (e.g., osteo­
+porosis, vitamin deficiencies, and iron 
+deficiency anemia) (21). Measurement of 
+vitamin B12 levels (and reflex methylma­
+lonic acid) should be considered for 
+people with type 1 diabetes and pe­
+ripheral neuropathy or unexplained 
+anemia.
+Recommendations
+4.6 Screen people with type 1 diabe­
+tes for autoimmune thyroid disease 
+soon after diagnosis and thereafter 
+at repeated intervals if clinically indi­
+cated. B
+4.7 Adults with type 1 diabetes should 
+be screened for celiac disease in the 
+presence of gastrointestinal symp­
+toms, signs, laboratory manifesta­
+tions, or clinical suspicion suggestive 
+of celiac disease. B
+Bone Health
+Recommendations
+4.8 Assess fracture risk in older adults 
+with diabetes as a part of routine care 
+in diabetes clinical practice, according 
+to risk factors and comorbidities. A
+4.9 Monitor bone mineral density 
+using dual-energy X-ray absorptiome­
+try in older adults with diabetes (aged 
+≥65 years) and younger individuals 
+with diabetes and multiple risk factors 
+every 2–3 years (Table 4.4). A
+4.10 Consider the potential adverse 
+impact on skeletal health when select­
+ing pharmacological options to lower 
+glucose levels in people with diabetes. 
+Avoiding medications with a known 
+association with higher fracture risk 
+(e.g., thiazolidinediones and sulfony­
+lureas) is recommended, particularly 
+for those at elevated risk for frac­
+tures. B
+4.11 To reduce the risk of falls and 
+fractures, glycemic management goals 
+should be individualized for people with 
+diabetes at a higher risk of fracture. 
+C Prioritize use of glucose-lowering 
+medications that are associated with 
+low risk for hypoglycemia to avoid 
+falls. B
+4.12 Advise people with diabetes on their 
+intake of calcium (1,000–1,200 mg/day) 
+and vitamin D to ensure it meets the 
+recommended daily allowance for 
+those at risk for fracture, either through 
+their food choices or supplemental 
+means. B
+4.13a Consider osteoporosis drug 
+therapy in older adults with diabetes 
+who are at increased risk of fracture, 
+including those with low bone min­
+eral density (T-score ≤−2.5), history 
+of fragility fracture, or elevated Frac­
+ture Risk Assessment Tool score (≥3% 
+for hip fracture or ≥20% for major 
+osteoporotic fracture). B
+4.13b Treatment may be considered 
+for adults with diabetes with a T-score 
+between −2.0 and −2.5 in the presence 
+of additional risk factors for fracture. C
+S66 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Table 4.3—Highly recommended immunizations for people with diabetes (from the Advisory Committee on Immunization 
+Practices and Centers for Disease Control and Prevention)
+Vaccine
+Recommended ages
+Schedule
+GRADE  
+evidence  
+type*
+References
+COVID-19
+All people 6 months of age and 
+older
+Current initial vaccination 
+and boosters
+3
+Centers for Disease Control and 
+Prevention, Interim Clinical 
+Considerations for Use of  
+COVID-19 Vaccines in the  
+United States (305)
+Hepatitis B
+Adults with diabetes aged  
+<60 years; for adults aged 
+≥60 years, hepatitis B vaccine 
+may be administered at the 
+discretion of the treating 
+clinician based on the 
+person’s likelihood of 
+acquiring hepatitis B infection
+-
+1
+Sandul et al., Updated 
+Recommendation for Universal 
+Hepatitis B Vaccination in Adults 
+Aged 19–59 Years - United 
+States, 2024 (306)
+Influenza
+All people with diabetes advised 
+to receive a trivalent 
+influenza vaccine and not to 
+receive live attenuated 
+influenza vaccine
+Annual
+3
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged 19 
+Years or Older - United States, 
+2025 (6,7)
+Pneumonia (PPSV23 
+[Pneumovax])
+19–64 years of age, vaccinate 
+with Pneumovax
+One dose is recommended 
+for those who 
+previously received 
+PCV13; if PCV15 was 
+used, follow with 
+PPSV23 ≥1 year later; 
+PPSV23 is not indicated 
+after PCV20; adults who 
+received only PPSV23 
+may receive PCV15 or 
+PCV20 ≥1 year after 
+their last dose
+2
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged 19 
+Years or Older - United States, 
+2025 (6,7)
+≥65 years of age
+One dose is recommended 
+for those who 
+previously received 
+PCV13; if PCV15 was 
+used, follow with 
+PPSV23 ≥1 year later; 
+PPSV23 is not indicated 
+after PCV20; adults who 
+received only PPSV23 
+may receive PCV15 or 
+PCV20 ≥1 year after 
+their last dose
+2
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged  
+19 Years or Older - United 
+States, 2025 (6,7)
+PCV20 or PCV15
+Adults 19–64 years of age with 
+an immunocompromising 
+condition (e.g., chronic renal 
+failure), cochlear implant, or 
+cerebrospinal fluid leak  
+Adults 19–64 years of age, 
+immunocompetent  
+≥65 years of age, 
+immunocompetent, have 
+shared decision-making 
+One dose of PCV15 or 
+PCV20 is recommended 
+by the Centers for 
+Disease Control and 
+Prevention  
+For those who have 
+never received any 
+pneumococcal vaccine, 
+the Centers for Disease 
+Control and Prevention 
+2
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged 19 
+Continued on p. S68
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S67 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+(Table 4.4). There are factors beyond 
+BMD that contribute to bone strength in 
+people with diabetes.
+Table 4.3—Continued 
+Vaccine
+Recommended ages
+Schedule
+GRADE  
+evidence  
+type*
+References
+discussion with health care 
+professionals
+recommends one dose 
+of PCV15 or PCV20  
+One dose of PCV15 or 
+PCV20; PCSV23 may be 
+given ≥8 weeks after 
+PCV15; PPSV23 is not 
+indicated after PCV20
+Years or Older - United States, 
+2025 (6,7)
+RSV
+Older adults ≥60 years of age 
+with diabetes appear to  
+be a risk group
+Adults aged ≥75 years 
+and those aged  
+≥60 years and at high 
+risk may receive a 
+single dose of an RSV 
+vaccine
+1
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged  
+19 Years or Older - United 
+States, 2025 (6,7)
+Tetanus, diphtheria, 
+pertussis (Tdap)
+All adults; pregnant individuals 
+should have an extra dose
+Booster every 10 years
+2
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged  
+19 Years or Older - United 
+States, 2025 (6,7)
+Zoster
+≥50 years of age
+Two-dose Shingrix, even if 
+previously vaccinated
+1
+Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Children and 
+Adolescents Aged 18 Years or 
+Younger - United States, 2025, 
+and Advisory Committee on 
+Immunization Practices 
+Recommended Immunization 
+Schedule for Adults Aged  
+19 Years or Older - United 
+States, 2025 (6,7)
+For a comprehensive list of vaccines, refer to the Centers for Disease Control and Prevention web site at cdc.gov/vaccines/. Advisory Committee on 
+Immunization Practices recommendations can be found at cdc.gov/acip/?CDC_AAref_Val=https://cdc.gov/vaccines/acip/recommendations. COVID-19, 
+coronavirus disease 2019; GRADE, Grading of Recommendations Assessment, Development, and Evaluation; PCV13, 13-valent pneumococcal conju­
+gate vaccine; PCV15, 15-valent pneumococcal conjugate vaccine; PCV 20, 20-valent pneumococcal conjugate vaccine; PPSV23, 23-valent pneumococ­
+cal polysaccharide vaccine; RSV, respiratory syncytial virus. *Evidence type: 1, randomized controlled trials (RCTs) or overwhelming evidence 
+from observational studies; 2, RCTs with important limitations or exceptionally strong evidence from observational studies; 3, observational 
+studies or RCTs with notable limitations; 4, clinical experience and observations, observational studies with important limitations, or RCTs 
+with several major limitations.
+A low-trauma fracture (defined as a 
+fracture occurring from minimal trauma, 
+such as falling from standing height or 
+less) of the hip, pelvis, vertebra, or fore­
+arm in adults aged ≥65 years is diagnos­
+tic of osteoporosis, regardless of BMD. 
+Such fractures are among the strongest 
+predictors of future fracture risk, espe­
+cially in the first 1–2 years after a 
+fracture (22,23). Osteoporotic fractures, 
+especially those of the hip, are associated 
+with significant morbidity, mortality, and 
+societal costs (24). It is estimated that 
+20% of individuals do not survive to 
+1 year after hip fracture, while 60% do 
+S68 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+not regain their prior functionality, living 
+with permanent disability (25).
+Table 4.4—Diagnostic assessment
+Individuals who should receive BMD testing
+People aged ≥65 years
+Postmenopausal women and men aged ≥50 years with history of adult-age fracture or with 
+diabetes-specific risk factors: 
+• Frequent hypoglycemic events 
+• Diabetes duration >10 years 
+• Diabetes medications: insulin, thiazolidinediones, sulfonylureas 
+• A1C >8% 
+• Peripheral or autonomic neuropathy, retinopathy, nephropathy 
+• Frequent falls 
+• Glucocorticoid use: prednisone at doses >2.5 mg per day for ≥3 months 
+Hip fractures in people with diabetes 
+are associated with higher risk of mortality 
+(28% in women and 57% in men), longer 
+recovery, and delayed healing (26) com­
+pared with individuals without diabetes.
+Epidemiology and Risk Factors
+Age-specific fracture risk is significantly 
+increased in people with type 1 or type 2 
+diabetes in both sexes, with a 34% in­
+crease in fracture risk compared with 
+those without diabetes (27).
+Type 1 Diabetes. Fracture risk in people 
+with type 1 diabetes is increased by 4.35 
+times for hip fractures, 1.83 times for up­
+per-limb fractures, and 1.97 times for ankle 
+fractures (28). Fractures occur at young 
+ages, 10–15 years earlier than they do in 
+people without diabetes. Type 1 diabetes is 
+often associated with low bone mass, al­
+though BMD underestimates the high risk 
+of fracture observed in young individuals 
+(28). Risk of fracture is increased in people 
+with type 1 diabetes with microvascular 
+complications or neuropathy compared 
+with those without these complications. 
+(26). Moreover, average A1C >7.9% (risk ra­
+tio [RR] 3.57 [CI 1.08–11.78]), duration of di­
+abetes >26 years (RR 7.6 [CI 1.67–34.6]), 
+and family history of fractures (RR 2.64 [CI 
+1.15–6.09]) have been independently asso­
+ciated with high risk of nonvertebral frac­
+tures (29).
+Type 2 Diabetes. In people with type 2 
+diabetes, even with normal or higher 
+BMD, hip fracture risk is increased by 
+1.79 times, and risk throughout life is 
+40–70% higher than in it is in individuals 
+without diabetes (27,30,31). According 
+to a meta-analysis that included 15 stud­
+ies, people with type 2 diabetes had a 
+35% higher incidence of vertebral frac­
+tures, causing increased risk of mortality 
+(hazard ratio [HR] 2.11 [95% CI 1.72–2.59]) 
+(32). Fracture risk is also increased in the 
+upper limbs and ankle. Despite normal to 
+high BMD compared with individuals with­
+out type 2 diabetes, the velocity of bone 
+loss with age is greater in individuals with 
+type 2 diabetes, and low BMD remains a 
+risk factor for fractures (33,34).
+Glycemic management significantly 
+impacts fracture risk in people with dia­
+betes. A meta-analysis revealed an 8% in­
+creased fracture risk per 1% rise in A1C 
+level (RR 1.08 [95% CI 1.03–1.14]) (35). 
+Poor glycemic management (A1C >9%) 
+over 2 years in individuals with type 2 di­
+abetes correlated with a 29% heightened 
+fracture risk (36). Notably, this risk was 
+higher among White individuals than in 
+other racial groups. Hypoglycemia also 
+escalates the risk of fractures at the hip 
+and other skeletal sites (RR 1.52 [95% CI 
+1.23–1.88]) (35). A Japanese study ech­
+oed these findings, showing a fracture 
+risk increase (HR 2.24 [95% CI 1.56–3.21]) 
+with severe hypoglycemia episodes (37).
+Longer diabetes duration further ele­
+vates fracture risk (38,39). Data indicate 
+individuals who have had type 2 diabetes 
+for >10 years face significantly higher 
+fracture risks. Longer duration of disease 
+may be associated with deposition of ad­
+vanced glycation end products into the 
+bone matrix, microvascular damage, and 
+a proinflammatory state, which all impair 
+bone cell activity and bone microdamage 
+repair (40) Additionally, high fracture risk 
+is seen in people with CVD, nephropathy, 
+retinopathy, neuropathy, poor physical 
+function, and frequent falls (41–43).
+Screening
+Most evidence on screening in individu­
+als at risk for fracture is available from 
+people with type 2 diabetes; fracture 
+risk prediction using BMD in type 1 dia­
+betes has not been extensively studied. 
+Health care professionals should assess 
+fracture history and risk factors in people 
+with diabetes and recommend measure­
+ment of BMD if appropriate according to 
+the individual’s age and sex.
+Type 2 Diabetes. People with type 2 dia­
+betes have 5–10% higher BMD than 
+people without diabetes, although they 
+present with lower bone strength, im­
+paired bone microarchitecture, and ac­
+celerated bone loss (33,44–46). Fracture 
+risk was higher in large observational 
+studies in participants with diabetes 
+compared with those without diabetes 
+for a given T-score and age (34). There­
+fore, a T-score adjustment of −0.5 has 
+been proposed to improve fracture pre­
+diction by dual-energy X-ray absorpti­
+ometry (DXA). For example, a T-score 
+≤−2.0 should be interpreted as equiva­
+lent to −2.5 in a person without diabetes. 
+Notably, the Fracture Risk Assessment 
+Tool (FRAX), a medical calculator that 
+predicts 10-year risk of fractures, does 
+not incorporate type 2 diabetes as a 
+risk factor and thus has also been shown 
+to underestimate fracture risk for this 
+population (34). Building on the recog­
+nized limitations of FRAX in type 2 diabe­
+tes, multiple large cohort studies and 
+meta-analyses consistently demonstrate 
+that type 2 diabetes is an independent 
+risk factor for fracture and that FRAX sys­
+tematically underestimates fracture risk 
+in this population. This underestimation 
+is observed across diverse ethnic groups, 
+increases with longer diabetes duration, 
+and is particularly pronounced for hip 
+fractures and in older adults with diabe­
+tes. Several strategies have been pro­
+posed to improve FRAX performance in 
+type 2 diabetes, including 1) using the 
+rheumatoid arthritis input as a surrogate 
+for diabetes, 2) lowering the femoral 
+neck T-score input by 0.5 SD, 3) increas­
+ing the age by 10 years, or 4) incorporat­
+ing trabecular bone score adjustments 
+(47–49). However, recent findings indicate 
+that fracture risk may be similar for a 
+given femoral neck T-score in people with 
+and without diabetes (39).
+Fracture risk prediction may be en­
+hanced by use of trabecular bone score 
+(50,51), although such studies are not 
+available for individuals with type 1 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S69 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+diabetes and are based on data from 
+the U.S. or Canada.
+In people with type 2 diabetes, BMD 
+should be monitored by DXA scan in 
+older adults (aged ≥65 years) in the ab­
+sence of other comorbidities and in 
+younger individuals (≥50 years of age) 
+with bone or diabetes-related risk fac­
+tors, such as insulin use or diabetes du­
+ration >10 years (Table 4.4). Reassessment 
+is recommended every 2–3 years (48), 
+depending on the screening evaluation, 
+antiosteoporosis medication initiation/ 
+monitoring, and the presence of additional 
+risk factors, although the evidence on how 
+frequently DXA should be repeated is less 
+robust. According to the European Associa­
+tion for the Study of Obesity (EASO), DXA 
+should be performed every 2 years in indi­
+viduals undergoing metabolic surgery.
+DXA-assisted vertebral fracture assess­
+ment is a convenient and low-cost method 
+to assess vertebral fractures, although tra­
+ditional lateral thoracic/lumbar spine X-ray 
+is still considered the gold standard 
+(52). MRI or computed tomography im­
+aging studies performed for other pur­
+poses should be analyzed for presence 
+of vertebral fractures as well as chest 
+X-rays in hospitalized individuals.
+Type 1 Diabetes. Because hip fracture 
+risk in type 1 diabetes starts to increase 
+after the age of 50 years, clinicians may 
+consider assessing BMD after the 5th 
+decade of life or earlier in the presence 
+of low-trauma fracture or additional risk 
+factors for bone loss (28). In people 
+with type 1 diabetes, BMD underesti­
+mates fracture risk, but studies do not 
+address the extent of underestimation 
+of fracture risk.
+According to the International Society for 
+Pediatric and Adolescent Diabetes (ISPAD), 
+regular assessment of bone health using 
+bone densitometry in children and ado­
+lescents with type 1 diabetes is still con­
+troversial and not recommended, but it 
+may be considered in association with ce­
+liac disease (51).
+Management
+Appropriate glycemic management and 
+minimizing hypoglycemic episodes are 
+crucial for bone health in people with 
+diabetes. Individuals with prolonged 
+disease, microvascular and macrovas­
+cular complications, or frequent hypo­
+glycemic episodes face higher fracture 
+risks and fall risks due to factors like 
+poor vision, neuropathy, sarcopenia, 
+and impaired gait. Health care professio­
+nals should advocate for moderate physi­
+cal activity to enhance muscle health, 
+gait coordination, and balance as part of 
+fracture preventive strategies (42,43,53). 
+For specific recommendations on physical 
+activity for older adults, please refer to 
+section 13, “Older Adults.”
+Osteoporosis and fracture prevention 
+are first based on measures applied to 
+the general population. All people with 
+diabetes should receive an adequate 
+daily intake of protein, calcium, and vi­
+tamin D and stop smoking (54–56). All 
+individuals should engage in regular 
+physical activity, including aerobic activ­
+ities and weight-bearing, flexibility, and 
+balance exercise.
+Intake of calcium (1,000–1,200 mg) 
+should reflect the age-specific recom­
+mendations for the general population 
+and should be obtained through nutri­
+tion plan and/or oral supplements (57).
+The optimal level of 25-hydroxyvitamin 
+D is a matter of controversy (58), al­
+though serum levels 20–30 ng/mL are 
+generally thought to be sufficient (59). 
+For individuals receiving antiresorptive 
+therapy (including bisphosphonate ther­
+apy), a 25-hydroxyvitamin D level of 
+>30 ng/mL has been recommended 
+(60,61).
+The safe upper limit is also a matter of 
+debate, and there is substantial disagree­
+ment over whether to treat to a specified 
+serum level. In the U.S., the recommended 
+daily allowance of vitamin D is 600 IU for 
+people aged 51–70 years and 800 IU for 
+people aged >70 years (59). In clinical 
+practice, this dose of supplement may not 
+be sufficient to reach recommended serum 
+levels of vitamin D, particularly in those at 
+risk for vitamin D deficiency, and therefore 
+supplementation should be individualized. 
+Of note, recent draft recommendations 
+made by the U.S. Preventive Services Task 
+Force caution against supplementation 
+with vitamin D (with or without calcium) for 
+the primary prevention of fractures in com­
+munity-dwelling postmenopausal women 
+and men aged 60 years or older (62).
+Fractures are important outcomes of 
+frailty, a predisability condition that should 
+be mitigated with individualized interven­
+tions to prevent falls, maintain mobility, 
+and delay disability (63). In many circum­
+stances, conservative management (cal­
+cium, vitamin D, and lifestyle measures) 
+are not enough to reduce fracture risk. 
+When pharmacological treatment is 
+needed, treatment initiation strategies are 
+the same as those used for the general 
+population. Antiosteoporosis medications 
+reduce bone resorption (bisphosphonates, 
+selective estrogen receptor modulators, 
+and denosumab), stimulate bone forma­
+tion (teriparatide and abaloparatide), or 
+have dual actions by stimulating bone for­
+mation and reducing bone resorption (ro­
+mosozumab). These agents improve bone 
+density and reduce the risk of vertebral 
+and nonvertebral fractures. Although 
+there are no studies specifically designed 
+for people with diabetes, data on antire­
+sorptive and osteoanabolic agents sug­
+gest efficacy in type 2 diabetes is similar 
+to that for individuals without diabetes 
+(64–66). Using individual participant data 
+from randomized trials, antiresorptive 
+therapies reduce fracture risk in people 
+with and without type 2 diabetes for ver­
+tebral, hip, and nonvertebral fractures 
+(64). No similar studies of efficacy of anti­
+osteoporosis treatment in people with 
+type 1 diabetes have been published.
+Primary Prevention of Fragility Fractures 
+in People With Diabetes. In the general 
+population, it is recommended that peo­
+ple with diabetes with a T-score ≤−2.5 
+or an elevated FRAX score (≥3% for hip 
+fracture or ≥20% for major osteoporotic 
+fracture) should be considered for 
+pharmacological treatment with first-line 
+drug therapy (alendronate, risedronate, 
+ibandronate, and zoledronate or denosu­
+mab). In type 2 diabetes, since T-score 
+underestimates fracture risk (as discussed 
+above), pharmacological treatment should 
+be strongly considered for adults with dia­
+betes with a T-score between −2.0 and 
+−2.5 in the presence of additional risk fac­
+tors for fracture such as falls and elevated 
+FRAX score.
+The risk of hypocalcemia associated 
+with denosumab use in individuals with 
+CKD is markedly increased in advanced 
+CKD (estimated glomerular filtration rate 
+<30 mL/min/1.73 m2) and is highest in 
+dialysis-dependent individuals. This risk 
+must be proactively managed with pre­
+treatment assessment, supplementation, 
+close monitoring, and specialist consulta­
+tion. Data from a phase 3 trial, Future Re­
+vascularization Evaluation in Patients With 
+Diabetes Mellitus: Optimal Management of 
+Multivessel Disease (FREEDOM), and its 10- 
+year extension have shown that people 
+with diabetes treated with denosumab 
+S70 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+experienced positive effects on fasting glu­
+cose (67) and significant improvements in 
+BMD and lower vertebral fracture risk (49). 
+However, according to a post hoc subgroup 
+analysis, a higher risk of nonvertebral frac­
+tures was observed in people with diabetes 
+treated with denosumab (49). Self-manage­
+ment abilities of the person with diabetes 
+should be considered in medication selec­
+tion because inability to maintain the 
+every 6-month denosumab injection 
+schedule can lead to rebound bone loss 
+and spontaneous vertebral fractures, 
+careful individual selection and counsel­
+ing are important prior to drug initiation. Bi­
+sphosphonate therapy (oral or intravenous) 
+may be more appropriate in individuals 
+with poor medication-taking behavior or 
+gaps in access to medical care. As diabetes is 
+a low-bone-turnover condition, very-high- 
+risk individuals should be considered 
+for osteoanabolic therapy (teriparatide, 
+abaloparatide, romosozumab). Teriparatide 
+showed positive effects on BMD and frac­
+ture risk in people with diabetes (65,66).
+Romosozumab received FDA approval 
+only for postmenopausal women with a 
+box warning because it may increase risk of 
+myocardial infarction, stroke, or cardiovas­
+cular death. Although real-world data sug­
+gests that romosozumab may not lead to 
+an increase in cardiac events (68), it should 
+not be prescribed in individuals who experi­
+enced a myocardial infarction or a stroke 
+within the past year (69,70). Osteoanabolic 
+treatments must be followed by antiresorp­
+tives to preserve BMD gains. Without con­
+solidation, BMD declines within a year as 
+increased bone turnover leads to rapid loss 
+of newly formed bone.
+Secondary Prevention of Fragility Fractures.
+The risk of subsequent low-trauma frac­
+ture (hip, spine, nonvertebral site) is 
+high, especially in the first 1–2 years after 
+a fracture. Antiosteoporosis treatment re­
+duces the risk of fracture in older individ­
+uals with prior hip or vertebral fracture.
+As in the general population, people 
+with diabetes who experience fragility 
+fracture should 1) be given the diagno­
+sis of osteoporosis regardless of bone 
+density data and 2) receive the appropriate 
+work-up and therapy to prevent future frac­
+tures (71). Individuals on long-term treat­
+ment with antiosteoporosis medications, 
+with multiple fragility fractures, or with mul­
+tiple comorbidities should be referred to a 
+bone metabolic specialist. In these more 
+complicated cases, a bone specialist may 
+choose to initiate an osteoanabolic agent to 
+optimize bone formation and reduce im­
+mediate fracture risk (72). It is strongly rec­
+ommended that all individuals with a 
+fragility fracture be started on antiosteo­
+porosis therapy and adequate calcium and 
+vitamin D supplementation (if required) as 
+soon as possible. In the appropriate individ­
+ual, therapy may even be initiated during an 
+inpatient stay to reduce care delays (71).
+Glucose-Lowering Medications and  
+Bone Health
+Care plans for type 2 diabetes treatment 
+should consider individual fracture risk and 
+the potential effect of medications on bone 
+metabolism. Metformin has a safe bone 
+health profile (73,74). Studies have re­
+ported increased fracture incidences in 
+women using thiazolidinediones (TZD), 
+with the risk doubling with 1–2 years of 
+TZD use compared with placebo or other 
+glucose-lowering medications (HR 2.23 
+[95% CI 1.65–3.01]) (75,76). According to 
+the Action to Control Cardiovascular Risk 
+in Diabetes (ACCORD) study, reduced risk 
+is noted in women who had discontinued 
+TZD use for 1–2 years (HR 0.57 [95% CI 
+0.35–0.92]) or >2 years (HR 0.42 [95% CI 
+0.24–0.74]) compared with current users 
+(77). Furthermore, individuals with type 2 
+diabetes on sulfonylureas exhibit a height­
+ened fracture risk (RR 1.30 [95% CI 
+1.18–1.43]) (78) because of accelerated 
+bone loss (46) and a higher rate of hypo­
+glycemic events, which can trigger falls 
+and fractures (79). Dipeptidyl peptidase 4 
+inhibitors have been used in clinical prac­
+tice for more than 15 years, and both clini­
+cal trials and postmarketing data suggest a 
+neutral impact on bone health (80,81). 
+Glucagon-like peptide 1 receptor agonists 
+(GLP-1 RAs) at low doses are likely neutral 
+to beneficial with respect to BMD and 
+fracture risk (82), though data are lacking 
+for higher doses in which weight loss may 
+be higher and more rapid with potential 
+counteractive skeletal risk. Use of sodium–
+glucose cotransporter 2 (SGLT2) inhibitors 
+has raised some concerns. The Canagli­
+flozin Cardiovascular Assessment Study 
+(CANVAS) showed that the proportion of 
+subjects with fracture was higher in the 
+canagliflozin groups than the non-canagli­
+flozin groups (2.7% vs. 1.9%, respec­
+tively). Further analyses from the same 
+trial and from the Canagliflozin and Renal 
+Events in Diabetes with Established Ne­
+phropathy Clinical Evaluation (CREDENCE) 
+study found a neutral effect on fracture risk 
+(83–86). Although few data are available, 
+use of empagliflozin, ertugliflozin, or dapagli­
+flozin has not been associated with negative 
+effects on bone health (85–87). Use of insu­
+lin has been shown to be associated with a 
+doubling of the risk of hip fractures (79), 
+likely because of higher risk of hypoglycemia, 
+longer duration of the disease, and comor­
+bidities that may contribute to diminished 
+bone strength.
+In conclusion, glucose-lowering medica­
+tions with a good bone safety profile are 
+preferred. This is especially true in older 
+adults, in people with longer duration of 
+diabetes, or in people with complications. 
+Aggressive therapeutic approaches should 
+be avoided in those who are frail and in 
+older adults to prevent hypoglycemic events 
+and falls.
+Cancer
+Diabetes is associated with increased risk 
+of cancers of the liver, pancreas, endo­
+metrium, colon and rectum, breast, and 
+bladder (88). The association may result 
+from shared risk factors between type 2 
+diabetes and cancer (older age, obesity, 
+and physical inactivity) but may also be 
+due to diabetes-related factors (89), such 
+as underlying disease physiology or dia­
+betes treatments, although evidence for 
+these links is scarce. People with diabe­
+tes should be encouraged to undergo 
+recommended age-and sex-appropriate 
+cancer screenings, coordinated with their 
+primary health care professional, and to 
+reduce their modifiable cancer risk fac­
+tors (obesity, physical inactivity, alcohol 
+use, and smoking). New onset of atypical 
+diabetes (lean body habitus and negative 
+family history) in a middle-aged or older 
+person may precede the diagnosis of 
+pancreatic adenocarcinoma (90). Addi­
+tionally, in a nationwide cancer registry in 
+New Zealand, postpancreatitis diabetes 
+mellitus was associated with significantly 
+higher risk (2.4-fold) of pancreatic cancer 
+compared with pancreatitis after type 2 di­
+abetes (91). However, in the absence of 
+other symptoms (e.g., weight loss and 
+abdominal pain), routine screening for 
+pancreatic cancer is not currently recom­
+mended. Metformin and sulfonylureas 
+may have anticancer properties. Data for 
+pioglitazone are mixed, with a previous 
+concern for bladder cancer association. 
+Recommendations cannot be made at 
+this time (92–94). Thus far, the use of 
+GLP-1 RAs has not been shown to be 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S71 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+associated with the incidence of thy­
+roid cancer, pancreatic cancer, or any 
+other type of cancer in humans (95,96). For 
+information on glycemic management in 
+the context of cancer treatment, see section 
+9, “Pharmacologic Approaches to Glycemic 
+Treatment.”
+Cognitive Impairment/Dementia
+Diabetes is associated with a signifi­
+cantly increased risk and rate of cogni­
+tive decline and an increased risk of 
+dementia (97). A meta-analysis of 122 
+prospective observational studies found 
+that individuals with diabetes had a 
+43% higher risk of all types of dementia, 
+a 43% higher risk of Alzheimer demen­
+tia, and a 91% higher risk of vascular de­
+mentia compared with individuals without 
+diabetes (97). In a 15-year prospective 
+study of community-dwelling people 
+>60 years of age, the presence of diabe­
+tes at baseline significantly increased the 
+age-and sex-adjusted incidence of all- 
+cause dementia, Alzheimer dementia, and 
+vascular dementia compared with rates in 
+those with normal glucose tolerance (98). 
+The reverse is also true: people with 
+Alzheimer dementia are more likely to 
+develop diabetes than people without 
+Alzheimer dementia, possibly linking criti­
+cal metabolic processes that contribute 
+to neurodegeneration (99). A new clinical 
+entity of diabetes-related dementia is be­
+ing recognized as distinct from Alzheimer 
+dementia or vascular dementia. It is char­
+acterized by slow progression of dementia, 
+absence of typical neuroimaging findings 
+seen in Alzheimer or vascular dementia, 
+old age, high A1C levels, long duration 
+of diabetes, high frequency of insulin 
+use, frailty, and sarcopenia or dynapenia 
+(100). See section 13, “Older Adults,” for 
+a more detailed discussion regarding as­
+sessment of cognitive impairment.
+Recommendation
+4.14 In the presence of cognitive 
+impairment, diabetes treatment plans 
+should be simplified as much as pos­
+sible and tailored to minimize the risk 
+of hypoglycemia. B
+Glycemic Status and Cognition
+In individuals with diabetes, higher A1C 
+level is associated with lower cogni­
+tive function (101). A meta-analysis of 
+randomized trials found that intensive 
+glycemic management, compared with 
+higher A1C goals, was associated with 
+a slightly lower rate of cognitive de­
+cline. However, these findings were 
+driven by an older study with an A1C 
+goal of <7.0% in the intensive treat­
+ment arm. Analyses within the ACCORD, 
+Action in Diabetes and Vascular Disease: 
+Preterax and Diamicron MR Controlled 
+Evaluation (ADVANCE), and Veterans Af­
+fairs Diabetes Trial (VADT) studies found 
+that intensive glycemic management (A1C 
+goal of <6.0–6.5%) resulted in no dif­
+ferences in cognitive outcomes com­
+pared with standard control (102,103).
+Results from the China Health and 
+Retirement Study (CHARLS) report that 
+in adults aged >45 years with type 2 di­
+abetes, excessively low and high A1C 
+levels (>9%) were associated with in­
+creased risk of cognitive impairment (104). 
+Therefore, intensive glycemic management 
+should not be advised for the improve­
+ment of cognitive function in individuals 
+with type 2 diabetes. Additionally, people 
+with type 2 diabetes and dementia are 
+at heightened risk for experiencing hyper­
+glycemic crises (diabetic ketoacidosis and 
+hyperglycemic hyperosmolar state) com­
+pared with people without dementia 
+(105), underscoring the importance of 
+supporting and simplifying diabetes man­
+agement for individuals experiencing cog­
+nitive decline and diminished capacity for 
+self-care. In addition, these individuals 
+have increased difficulty with complex 
+treatment and monitoring plans and are 
+at risk for frailty, hypoglycemia, and dis­
+ability (106).
+In type 2 diabetes, severe hypoglyce­
+mia is associated with reduced cognitive 
+function, and those with poor cognitive 
+function have more severe or repeated 
+episodes of hypoglycemia. Multiple ob­
+servational studies of adults with diabetes 
+have found an association between severe 
+hypoglycemic episodes and cognitive de­
+cline or incident dementia (107–110). De­
+creased cognitive function also increases 
+the risk for severe hypoglycemia, likely 
+through impaired ability to recognize 
+and respond appropriately to hypoglycemic 
+symptoms (107,111,112). Additionally, long- 
+term follow up of Diabetes Control and 
+Complications Trial/Epidemiology of Dia­
+betes Interventions and Complications 
+(DCCT/EDIC) showed recurrent severe 
+hypoglycemia was associated with the 
+highest risk of long-term psychomotor and 
+mental function decline (113). Simplifying 
+or deintensifying glycemic therapy 
+and/or liberalizing A1C goals may pre­
+vent hypoglycemia in individuals with 
+cognitive dysfunction. See section 13, 
+“Older Adults,” for more detailed discus­
+sion of hypoglycemia in older people with 
+type 1 and type 2 diabetes.
+Dental Care
+Recommendations
+4.15 People with diabetes should 
+be referred for a dental exam at least 
+once per year. E
+4.16 Coordinate efforts between the 
+medical and dental teams to appro­
+priately adjust glucose-lowering medi­
+cation and treatment plans prior to 
+and in the postdental procedure pe­
+riod as needed. B
+Periodontal disease is more severe, and 
+may be more prevalent, in people with 
+diabetes than in those without and has 
+been associated with higher A1C levels 
+(114,115). Longitudinal studies suggest 
+that people with periodontal disease 
+have higher rates of incident diabetes, 
+suggesting a bidirectional relationship be­
+tween diabetes and periodontal disease. 
+Current evidence suggests that periodon­
+tal disease adversely affects diabetes out­
+comes, and periodontal treatment using 
+subgingival instrumentation may improve 
+glycemic outcomes (116,117).
+The proportion of U.S. adults with di­
+abetes seeing a dentist in the past year 
+was significantly lower than that of individ­
+uals without diabetes (56.7% vs. 65.4%). 
+The majority of clinicians do not discuss 
+oral health with individuals (118). In­
+creased engagement in toothbrushing 
+has been shown to be associated with 
+improved oral health and better glycemic 
+management in people with type 2 dia­
+betes (119). Dental health professionals 
+should be included in the diabetes care 
+team when possible, using a collabora­
+tive interprofessional care approach 
+(120). Early detection of oral health prob­
+lems by clinicians may be helpful to pro­
+mote prompt referral to dental care and 
+mitigate the expensive and extensive pro­
+cedures needed to treat advanced oral 
+disease (121,122). Clinical assessment of 
+people with diabetes should include a 
+dental history and an oral examination, 
+and dental professionals should be in­
+formed about key aspects of the person’s 
+S72 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+health and diabetes treatment plan, in­
+cluding glycemic goals, medications, and 
+comorbid conditions (121,122). It is im­
+portant for dental professionals to know 
+when people with diabetes have high 
+A1C levels, as this population may have 
+lower oral healing capacity (123,124). He­
+patic, cardiovascular, kidney, and pulmo­
+nary conditions should also be known by 
+dental professionals to assist in appro­
+priate dosing of antibiotics and other 
+medications. Coordination between den­
+tal professionals and the diabetes care 
+team will be especially important for 
+people treated with insulin, sulfonylur­
+eas, or meglitinides who are at risk for 
+hypoglycemia during dental procedures, 
+especially if fasting. Hypoglycemia can 
+be mitigated by medication adjustment, 
+blood glucose monitoring before and 
+during the procedure, and treatment of 
+hypoglycemia if appropriate. Therefore, 
+dental professionals caring for people 
+with diabetes should have access to 
+blood glucose monitors during procedures 
+as well as carbohydrates and glucagon to 
+treat any hypoglycemia that occurs.
+Disability
+Recommendation
+4.17 Assess for disability at the ini­
+tial visit and for decline in function 
+at each subsequent visit in people 
+with diabetes. If a disability is im­
+pacting functional ability or capacity 
+to manage their diabetes, a referral 
+should be made to an appropriate 
+health care professional specializing 
+in disability (e.g., physical medicine 
+and rehabilitation specialist, physical 
+therapist, occupational therapist, or 
+speech-language pathologist). C
+A disability is defined as a physical or 
+mental impairment that substantially limits 
+one or more major life activities of an indi­
+vidual (125,126). Activities of daily living 
+(ADLs) and instrumental activities of daily 
+living (IADLs) comprise basic and complex 
+life care tasks, respectively. The capacity to 
+accomplish such tasks serves as an impor­
+tant measure of function. Diabetes is asso­
+ciated with an increase in the risk of work 
+and physical disability, with estimates of 
+50–80% increased risk of disability for 
+people with diabetes compared with 
+people without diabetes (127). Reviews 
+have shown that lower-body functional 
+limitation was the most prevalent dis­
+ability (47–84%) among people with dia­
+betes (128,129). In a systematic review 
+and meta-analysis, the presence of diabe­
+tes increased the risk of mobility disabil­
+ity (15 studies; odds ratio [OR] 1.71 
+[95% CI 1.53–1.91]; RR 1.51 [95% CI 
+1.38–1.64]), of IADL disability (10 studies; 
+OR 1.65 [95% CI 1.55–1.74]), and of ADL 
+disability (16 studies; OR 1.82 [95% CI 
+1.63–2.04]; RR 1.82 [95% CI 1.40–2.36]) 
+(127). In a meta-analysis, diabetes was 
+shown to be associated with an in­
+creased risk of falls in older adults; 
+falls occurred in 25% of individuals 
+with diabetes compared with 18.2% 
+of those without diabetes (130). The 
+mechanisms underlying disability are 
+multifactorial and include obesity, cor­
+onary artery disease, stroke, lower ex­
+tremity complications, and physiological 
+factors such as hyperglycemia, sarcope­
+nia, inflammation, and insulin resistance 
+(131).
+Diabetic peripheral neuropathy (DPN) 
+is a common complication of both type 1 
+and 2 diabetes and may cause impaired 
+postural balance and gait kinematics 
+(132), leading to functional disability. 
+DPN can be found in up to half of people 
+with type 1 or type 2 diabetes, resulting 
+in physical disability, and neuropathic 
+pain, resulting in a diminished quality of 
+life (133). Glycemic management pre­
+vents DPN development in type 1 diabe­
+tes; in contrast, glycemic management 
+has modest or no benefit in individuals 
+with type 2 diabetes, possibly due to the 
+combined effect of coexisting comorbid­
+ities (133). People with lower-extremity 
+involvement due to DPN have 3 times 
+more risk of restricted mobility, resulting 
+in them experiencing more physical dys­
+functions and impairments than people 
+who have diabetes but not neuropathy 
+(134). Furthermore, DPN may progress 
+to nontraumatic lower-limb amputation, 
+which significantly impacts quality of life 
+(135).
+In addition to complications of diabe­
+tes from microvascular conditions such 
+as CKD, retinopathy, autonomic neurop­
+athy, and peripheral neuropathy, it is 
+important to recognize the disabilities 
+caused by macrovascular complications 
+of diabetes. These macrovascular com­
+plications, which include coronary heart 
+disease, stroke, and peripheral arterial 
+disease, can lead to further impairments 
+(128).
+An assessment of disability should be 
+performed to evaluate individuals’ abil­
+ity to perform ADLs and IADLs, ensuring 
+they can manage basic self-care and 
+more complex tasks necessary for spe­
+cific living situations. Referrals may be 
+made as necessary to appropriate health 
+care professionals specializing in disability 
+(e.g., physical medicine and rehabilita­
+tion physician, physical therapist, occu­
+pational therapist, or speech-language 
+pathologist) (127,136,137). Customized 
+rehabilitation interventions for individ­
+uals with a disability from diabetes can 
+recover function, allowing for safe phys­
+ical activity (138), and improve quality 
+of life (139). Additionally, frailty is com­
+monly associated with diabetes, with 
+progression to disability, morbidity, and 
+mortality in older adults. People with di­
+abetes as well as frailty or disability may 
+be sedentary and contend with comorbid 
+conditions such as hypoglycemia, sarcope­
+nia, falls, nutritional deficiencies, obesity, 
+polypharmacy, and cognitive dysfunction. 
+A thorough medical evaluation is impera­
+tive to identify the best approaches to pre­
+ventative and therapeutic interventions for 
+frailty and diabetes management (140).
+A psychosocial assessment should be 
+conducted to screen for behavioral health 
+conditions like depression and anxiety 
+and to understand the individual’s social 
+support and coping mechanisms. Func­
+tional capacity evaluations, involving tests 
+for physical endurance and strength, are 
+used to gauge the ability of the person 
+with diabetes to work and carry out daily 
+activities. Additionally, standardized dis­
+ability questionnaires and scales, such as 
+the Diabetes Distress Scale (DDS) and the 
+World Health Organization Disability As­
+sessment Schedule (WHODAS 2.0), are 
+employed to measure the emotional bur­
+den of diabetes and overall disability 
+(141,142). These suggested structured 
+assessments are particularly relevant if indi­
+viduals have fallen, had emergency depart­
+ment visits, missed appointments, made 
+significant errors in the treatment plan, 
+or exhibit apathy and depressed mood.
+Moreover, when treating people with 
+an acquired disability from diabetes, it 
+is vital to consider social determinants 
+of health, race and ethnicity, and socio­
+economic status (143). Rates of diabetes- 
+related major amputations are higher in 
+individuals who are from racial and ethnic 
+minoritized groups (144), live in rural 
+areas, and are from regions with the 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S73 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+lowest socioeconomic levels (145). Ad­
+dressing the complex challenges faced 
+by individuals with acquired disabilities 
+from diabetes requires a multifaceted ap­
+proach involving solutions from both within 
+and outside the health care system. By fo­
+cusing on social determinants of health, 
+health care professionals can develop ap­
+propriate interventions, provide advocacy, 
+and establish support systems that cater to 
+the specific needs of this population. See 
+section 1, “Improving Care and Promoting 
+Health in Populations.”
+Hepatitis C
+Infection with hepatitis C virus (HCV) is 
+associated with a higher prevalence of 
+type 2 diabetes, which is present in up 
+to one-third of individuals with chronic 
+HCV infection. HCV may impair glucose 
+metabolism by several mechanisms, in­
+cluding directly via viral proteins and 
+indirectly by altering proinflammatory 
+cytokine levels (146). The use of newer 
+direct-acting antiviral drugs produces a 
+sustained virological response (cure) in 
+nearly all cases and has been reported 
+to improve glucose metabolism in indi­
+viduals with diabetes (147). A meta- 
+analysis of mostly observational studies 
+found a mean reduction in A1C levels of 
+0.45% (95% CI −0.60 to −0.30) and re­
+duced requirement for glucose-lowering 
+medication use following successful erad­
+ication of HCV infection (148).
+Sexual Health in Men
+The most common sexual dysfunction in 
+men is erectile dysfunction (ED), with an 
+estimated prevalence of 52.5% in men 
+with diabetes (149). The best predictors of 
+ED are age (>40 years), CVD, diabetes, hy­
+pertension, obesity, dyslipidemia, meta­
+bolic syndrome, hypogonadism, smoking, 
+depression, and use of medications such 
+as antidepressants and opioids (150). Be­
+cause diabetes, poor nutrition, obesity, 
+lack of exercise, and CVD are often inter­
+related, it may be challenging to identify 
+the primary risk factor (151), although 
+the most likely primary underlying risk 
+factor is vascular disease (151).
+Men with diabetes are at increased 
+risk for both CVD and ED, and ED is a 
+predictor of cardiovascular events in 
+men with diabetes (152,153) as well as 
+in men without diabetes. The significant 
+factors associated with ED in men with 
+diabetes are age, peripheral or auto­
+nomic neuropathy, presence of micro­
+vascular disease including retinopathy, 
+CVD, duration of diabetes, poor glyce­
+mic management, hypogonadism, and 
+diuretic therapy (154). Physical activity 
+may be protective. Men with diabetes 
+and ED report a significant decline in 
+quality-of-life measures and an increase 
+in depressive symptoms (155), and de­
+pression is a well-recognized risk factor 
+for ED. Given the bidirectional relationship 
+between ED and depression, treatment of 
+either one can result in improvement in 
+the other condition. CKD is also a risk factor 
+for CVD and ED, with prevalence rates of 
+ED >75% in men on hemodialysis (156).
+Awareness and identification of these 
+characteristics, factors, and behaviors 
+can guide clinicians in early screening, 
+treatment, prevention, and counseling 
+in all men with diabetes and particularly 
+those at higher risk for ED (154). Given 
+the evidence that ED is strongly associ­
+ated with diabetes and CVD, men with 
+ED should be evaluated and managed for 
+cardiovascular and endocrine risk factors. 
+Glycemic assessment in men not previ­
+ously diagnosed with diabetes, lipid profile, 
+and morning total and free testosterone 
+should be considered mandatory in all 
+men newly presenting with ED (157).
+In a recent meta-analysis, testosterone 
+was superior to placebo in improving 
+erectile function in men with testosterone 
+deficiency; however, the magnitude of the 
+effect was lower in the presence of diabe­
+tes and obesity (158).
+Meta-analyses show that all phospho­
+diesterase type 5 inhibitors (PDE5Is) are 
+superior to placebo in treating ED, lower 
+dosages had effects comparable with 
+those of higher dosages, and various 
+PDE5Is show comparable efficacy (151). 
+PDE5Is are associated with an increased 
+risk of headaches, flushing, and dyspep­
+sia (151). First-line therapy for ED in 
+men with diabetes is PDE5Is, but men 
+with diabetes may be less responsive 
+than men without diabetes (149). Strat­
+egies to improve response to PDE5Is in­
+clude daily therapy and optimization of 
+comorbidities. In men with diabetes not 
+responding to PDEIs, other potentially 
+effective treatments may include intra­
+cavernosal injections, intraurethral pros­
+taglandin, vacuum erection devices, and 
+penile prosthetic surgery (149).
+Mean levels of testosterone are lower 
+in men with diabetes than in age-matched 
+men without diabetes, but obesity is a 
+major confounder (159,160). Testoster­
+one replacement in men with symptom­
+atic hypogonadism may have benefits, 
+including improved sexual function, well- 
+being, muscle mass and strength, and 
+bone density (161). In men with diabetes 
+who have symptoms or signs of low tes­
+tosterone (hypogonadism), a morning 
+total testosterone level should be mea­
+sured using an accurate and reliable 
+assay (162). In men who have total 
+testosterone levels close to the lower 
+limit, it is reasonable to determine 
+free testosterone concentrations either di­
+rectly from equilibrium dialysis assays or 
+by calculations that use total testoster­
+one, sex hormone binding globulin, and 
+albumin concentrations (162). Further 
+tests (such as prolactin, luteinizing hor­
+mone and follicle-stimulating hormone 
+levels) may be needed to further evalu­
+ate the individual. Testosterone replace­
+ment in older men with hypogonadism 
+has been associated with increased cor­
+onary artery plaque volume, with no 
+conclusive evidence that testosterone 
+supplementation is associated with in­
+creased cardiovascular risk in all men 
+with hypogonadism (162,163). Further­
+more, ED is also common in people with 
+diabetes (164), and it is reasonable to 
+measure and correct testosterone levels 
+close to the lower limit to address the li­
+bido component that contributes to erec­
+tile difficulties (151).
+Recommendations
+4.18 In men with diabetes or predi­
+abetes, screen for erectile dysfunc­
+tion (ED), particularly in those with 
+high cardiovascular risk, retinopathy, 
+cardiovascular disease, chronic kidney 
+disease, peripheral or autonomic neu­
+ropathy, longer duration of diabetes, 
+depression, and hypogonadism and in 
+those who are not meeting glycemic 
+goals. B
+4.19 In men with diabetes or predi­
+abetes, inquire about sexual health 
+(e.g., low libido and ED). If symp­
+toms and/or signs of hypogonadism 
+are detected, screen with a morning 
+serum total testosterone level. B
+Sexual Health in Women
+Recommendations
+4.20 In women with diabetes or predi­
+abetes, inquire about sexual health by 
+S74 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Female sexual dysfunction (FSD) is com­
+mon in women with diabetes. In an epi­
+demiologic 
+cross-sectional study of 
+community-residing middle-aged and 
+older adults (57–85 years), women with 
+diagnosed diabetes were less likely than 
+men with diagnosed diabetes (adjusted 
+OR 0.28 [95% CI 0.16–0.49]) and women 
+without diabetes (0.63 [0.45–0.87]) to 
+be sexually active (165). Older women 
+with diabetes are as likely as men to 
+have sexual problems but are signifi­
+cantly less likely to have discussed sex 
+with a physician (165).
+While studies showing the association 
+between diabetes and FSD are less con­
+clusive than those in men, most have 
+reported a higher prevalence of FSD in 
+women with diabetes compared with 
+women without diabetes (166), and a 
+meta-analysis found that FSD is more 
+common in women with type 1 and 
+type 2 diabetes (OR 2.27 and 2.49, re­
+spectively) than in women without di­
+abetes (167).
+A wide range of prevalence rates of 
+sexual dysfunctions has been reported 
+in women with diabetes. In women 
+with type 1 diabetes, 16–85% (vs. 0–66% 
+in women without diabetes) report prob­
+lems with desire, 11–76% (vs. 0–41%) re­
+port problems with arousal, and 9–66% 
+(vs. 0–39%) report problems with or­
+gasm; 9–57% (vs. 0–28%) report prob­
+lems with lubrication, and 7–61% (vs. 
+5–39%) report problems with pain. In 
+women with type 2 diabetes, 70–82% 
+(vs. 10–66% in women without diabetes) 
+report problems with desire, 54–68% 
+(vs. 3–41%) report problems with arousal, 
+and 33–84% (vs. 2–39%) report problems 
+with orgasm; 33–66% (vs. 4–28%) report 
+problems with lubrication, and 33–46% 
+(vs. 8–39%) report problems with pain 
+(168).
+Medical comorbidities that are risk fac­
+tors for FSD include hypertension, obesity, 
+metabolic syndrome, smoking, and hyper­
+lipidemia. Clinical factors for consideration 
+include longer duration of diabetic reti­
+nopathy and neuropathy and individuals 
+not meeting glycemic goals. The preva­
+lence of FSD in women with kidney dis­
+ease is 74% (169).
+In women with diabetes, social and 
+psychological components play a major 
+role in FSD. Depression, anxiety, and 
+emotional adjustments to diabetes have 
+been found to be associated with sexual 
+dysfunction in women with diabetes. A 
+study from Norway reported that women 
+with type 1 diabetes with scores on the 
+Female Sexual Function Index (FSFI) (a 
+validated instrument) indicating sexual 
+dysfunction were more likely than women 
+without sexual dysfunction to have dia­
+betes distress, depression, and meno­
+pausal symptoms. They were also older 
+and more likely to be single and post­
+menopausal (170). Another study also 
+showed that women with sexual dys­
+function were significantly more likely 
+to report impaired well-being, elevated 
+diabetes distress, poor adjustment to 
+diabetes, and moderate to severe anxi­
+ety than women without sexual dys­
+function (168).
+In a qualitative study exploring the 
+experiences of sexual health and sexual 
+challenges, women with type 1 diabetes 
+reported that diabetes affected their re­
+lationship, including sex life, and had an 
+impact on their partner. Challenges in­
+cluded reduced sexual desire, decline in 
+frequency, less spontaneous desire re­
+sulting in lack of initiation, and physical 
+challenges such as pain, vaginal dryness, 
+and impaired sensitivity. Several women 
+explained that vaginal dryness was an 
+obstacle during sexual intercourse, lead­
+ing to pain or even refraining from sexual 
+activity. Sexual challenges were perceived 
+to become a source of disappointment 
+to the partners and consequential guilt 
+for the women. Women also reported 
+fear of hypoglycemia during sex, and 
+some reported trying to maintain mild 
+hyperglycemia. Technology devices, such 
+as glucose monitors and insulin pumps, 
+could be perceived as both a physical 
+and mental obstacle during sexual activ­
+ity (171).
+Many women with diabetes would 
+like their health care professional to ini­
+tiate a discussion on how diabetes is af­
+fecting their sex life (172). Women with 
+type 1 diabetes almost unanimously 
+endorsed that sexual health should be 
+addressed, that they would find it a re­
+lief that they were not alone, that they 
+should be provided with information 
+when they are young, and that it would 
+be difficult to address the topic them­
+selves (171). Unfortunately, many health 
+care professionals do not actively dis­
+cuss sexual functioning in consultations, 
+meaning that when the topic is dis­
+cussed it is mostly the person with dia­
+betes who initiates the conversation 
+(165). This leads to a marked underdiag­
+nosis and undertreatment of sexual dys­
+functions in people with diabetes.
+While no specific guidelines are avail­
+able for the treatment of FSD in this 
+population, women with type 1 or type 2 
+diabetes should be encouraged to engage 
+in lifestyle interventions and, in the ab­
+sence of contraindications, may benefit 
+from already-approved treatments for 
+FSD (173). The Look AHEAD (Action for 
+Health in Diabetes) study on interven­
+tion demonstrated statistical improve­
+ments in the FSFI total score and all 
+domains of sexual dysfunction (174). 
+Lifestyle factors that enhance desire and 
+sexual function include nutrition (such 
+as the Mediterranean eating pattern), 
+exercise (such as walking), and smoking 
+cessation. Other interventions include 
+improving glycemic management and 
+prevention of diabetes complications; 
+diagnosis and treatment of menopausal 
+symptoms with hormonal therapies; ad­
+dressing vaginal dryness and dyspareunia 
+as well as urinary tract and mycotic gen­
+ital infections; screening and addressing 
+depression, anxiety, diabetes distress, 
+and related psychosocial issues; and 
+considering FDA-approved centrally act­
+ing medications for hypoactive sexual 
+desire disorder, including flibanserin and 
+bremelanotide.
+screening for desire (libido), arousal, 
+and orgasm difficulties, particularly 
+in those who experience depression 
+and/or anxiety and those with recur-
+rent urinary tract infections. B
+4.21 In postmenopausal women with 
+diabetes or prediabetes, screen for 
+symptoms and/or signs of genitouri­
+nary syndrome of menopause, includ­
+ing vaginal dryness and dyspareunia. B
+Metabolic Dysfunction–Associated 
+Steatotic Liver Disease and Metabolic 
+Dysfunction–Associated 
+Steatohepatitis
+Screening
+Recommendations
+4.22a Screen adults with type 2 dia­
+betes or with prediabetes, particu­
+larly those with obesity or other 
+cardiometabolic risk factors or estab­
+lished cardiovascular disease, for their 
+risk of having or developing cirrhosis 
+related to metabolic dysfunction–
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S75 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+associated steatohepatitis (MASH) 
+using a calculated fibrosis-4 index 
+(FIB-4) (derived from age, ALT, AST, 
+and platelets [mdcalc.com/calc/2200/ 
+fibrosis4-fib-4-index-liver-fibrosis]), even 
+if they have normal liver enzymes. B
+4.22b Adults with diabetes or predi­
+abetes with persistently elevated 
+plasma aminotransferase levels for 
+>6 months and low FIB-4 should be 
+evaluated for other causes of liver 
+disease. B
+4.23 Adults with type 2 diabetes or 
+prediabetes with a FIB-4 ≥ 1.3 should 
+have additional risk stratification by 
+liver stiffness measurement with tran­
+sient elastography, or, if unavailable, 
+the enhanced liver fibrosis (ELF) test. B
+4.24 Refer adults with type 2 diabetes 
+or prediabetes at higher risk for signif­
+icant liver fibrosis (i.e., as indicated by 
+FIB-4, liver stiffness measurement, or 
+ELF) to a gastroenterologist or hepa­
+tologist for further evaluation and 
+management. B
+Metabolic dysfunction–associated stea- 
+totic liver disease (MASLD) has replaced 
+the term nonalcoholic fatty liver disease 
+(NAFLD) to identify steatotic liver disease. 
+The definition includes the presence of 
+steatotic liver disease and at least one 
+cardiometabolic risk factor associated 
+with insulin resistance (e.g., prediabetes, 
+diabetes, atherogenic dyslipidemia, or 
+hypertension) without other identifiable 
+causes of steatosis (175). This is in the 
+absence of ongoing or recent consump­
+tion of significant amounts of alcohol 
+(defined as ingestion of >21 standard 
+drinks per week in men and >14 stan­
+dard drinks per week in women over a 
+2-year period preceding evaluation) or 
+other secondary causes of hepatic stea­
+tosis (176). It is estimated that in adults 
+in the U.S., the prevalence of MASLD is 
+>70% of people with type 2 diabetes 
+(177–179) This is consistent with studies 
+from other countries (180,181). The new 
+definition of MASLD aims to remove 
+potential stigma from the term “fatty” 
+when referring to steatosis, highlights 
+the role of prediabetes and type 2 dia­
+betes in MASLD, and provides a posi­
+tive diagnosis by using cardiometabolic 
+risk factors as surrogates for insulin re­
+sistance, the main driver for the devel­
+opment of steatosis. The new definition 
+correlates well with the past definition 
+of MASLD for people with prediabetes 
+or type 2 diabetes (who already have, 
+by definition, one cardiometabolic risk 
+factor). A separate category outside of 
+MASLD, named metabolic dysfunction 
+and alcoholic liver disease, was created 
+for circumstances in which alcohol in­
+take is greater than that allowed for 
+MASLD but less than that attributed to 
+alcoholic liver disease. More research is 
+needed to better characterize the pre­
+dictive value for metabolic dysfunction–
+associated steatohepatitis (MASH) of 
+different cardiometabolic risk factors 
+and the natural history of metabolic 
+dysfunction and alcoholic liver disease 
+or steatosis in young adults without 
+cardiometabolic risk factors.
+Diabetes is a major risk factor for de­
+veloping MASH (formerly nonalcoholic 
+steatohepatitis, or NASH) and worse 
+liver outcomes (180,181). MASH is de­
+fined histologically as having ≥5% he­
+patic steatosis with inflammation and 
+hepatocyte injury (hepatocyte balloon­
+ing), with or without evidence of liver fi­
+brosis (176). Steatohepatitis is estimated 
+to affect more than half of people with 
+type 2 diabetes with MASLD (182,183). Fi­
+brosis stages are classified histologically 
+as the following: F0, no fibrosis; F1, mild; 
+F2, moderate (significant); F3, severe (ad­
+vanced); and F4, cirrhosis. In the U.S., be­
+tween 12 and 20% of people with type 2 
+diabetes have “at-risk” MASH (i.e., 
+steatohepatitis with clinically significant 
+fibrosis [≥F2] and at risk for cirrhosis) 
+(177,178,182). A similar or higher preva­
+lence has been observed worldwide 
+(180,181,183). People with type 2 diabe­
+tes and at-risk MASH are at an increased 
+risk of future cirrhosis, hepatocellular car­
+cinoma (HCC) (184,185), and liver trans­
+plantation (186). The prevalence of MASLD 
+in people with type 1 diabetes is ∼20% 
+and is driven by obesity, which is becoming 
+more common in this population (187), 
+with a large variability across studies using 
+different steatosis measurement methods 
+(188). The prevalence of liver steatosis in a 
+population with type 1 diabetes by MRI 
+(i.e., the gold standard) with low preva­
+lence of obesity was only 8.8% compared 
+with 68% in people with type 2 diabetes 
+(189). The prevalence of clinically significant 
+fibrosis (≥F2) is estimated to be ∼5% 
+(190), which is much lower than the preva­
+lence in type 2 diabetes (177,178,182). 
+Therefore, screening for fibrosis in people 
+with type 1 diabetes should only be consid­
+ered in the presence of additional risk fac­
+tors for MASLD, such as obesity, incidental 
+hepatic steatosis on imaging, or elevated 
+plasma aminotransferases.
+Clinicians underestimate the preva­
+lence of at-risk MASH and do not con­
+sistently implement appropriate screening 
+strategies in people with prediabetes or 
+type 2 diabetes, thus missing a chance to 
+establish an early diagnosis. This pattern of 
+underdiagnosis is compounded by sparse 
+referral to specialists and inadequate pre­
+scription of medications with potential 
+efficacy in MASH (191,192). The goal 
+of screening for MASLD is to identify peo­
+ple with at-risk MASH to prevent future 
+cirrhosis, HCC, liver transplantation, and 
+all-cause mortality (193–196). This risk is 
+higher in people who have central obesity 
+and cardiometabolic risk factors or insulin 
+resistance, are >50 years of age, and/or 
+have persistently elevated plasma amino­
+transferases (AST and/or ALT >30 units/L 
+for >6 months) (178,197). Some genetic 
+variants that alter hepatocyte triglyceride 
+metabolism may also increase the risk of 
+MASH progression and cirrhosis (198,199), 
+amplifying the impact of obesity, but the 
+role of genetic testing in clinical practice 
+remains to be established. Individuals with 
+MASLD also are at a greater risk of devel­
+oping extrahepatic cancer (185), type 2 dia­
+betes (194), and CVD (200,201). Emerging 
+evidence suggests that MASLD increases 
+the risk of CKD in people with type 2 
+diabetes, particularly when liver fibrosis 
+is present (202,203), although the associ­
+ation of MASLD with diabetic retinopathy 
+is less clear (204).
+The fibrosis-4 index (FIB-4) is the 
+most cost-effective strategy for the ini­
+tial screening of people with prediabe­
+tes and cardiometabolic risk factors or 
+with type 2 diabetes for at-risk MASH in 
+primary care and diabetes clinical set­
+tings (181,192,197,205–208). The diag­
+nostic algorithm for the screening and 
+liver fibrosis risk stratification of people 
+with prediabetes or type 2 diabetes is 
+shown in Fig. 4.2. A screening strategy 
+relying on elevated plasma aminotrans­
+ferases >40 units/L would miss most in­
+dividuals with MASH in these settings, 
+as at-risk MASH with clinically significant 
+fibrosis (≥F2) is frequently observed with 
+plasma aminotransferases below the 
+commonly used cutoff of 40 units/L 
+(177–179,182,209,210). The American 
+College of Gastroenterology considers 
+S76 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+the upper limit of normal ALT levels to 
+be 29–33 units/L for male individuals 
+and 19–25 units/L for female individu­
+als (211), as higher levels are associ­
+ated with increased liver-related mortality. 
+The FIB-4 estimates the risk of hepatic 
+cirrhosis and is calculated from the com­
+putation of age, plasma aminotransfer­
+ases (AST and ALT), and platelet count 
+(mdcalc.com/calc/2200/fibrosis-4-fib-4 
+-index-liver-fibrosis). A value of <1.3 is
+considered low risk of having advanced
+fibrosis (F3–F4) and for developing ad­
+verse liver outcomes, while ≥1.3 is
+considered as having a higher probabil­
+ity of at-risk MASH clinically significant
+fibrosis (≥F2) and increased risk of ad­
+verse liver outcomes. A value of >2.67
+confers a high risk of having advanced
+fibrosis (F3–F4), and referral to the
+liver specialist is warranted without ad­
+ditional testing. FIB-4 predicts changes 
+over time in hepatic fibrosis (212,213) and 
+allows risk stratification of individuals in 
+terms of future liver-related morbidity and 
+mortality (214). FIB-4 has reasonable 
+sensitivity but low specificity; hence, a 
+negative result may rule out fibrosis while 
+a positive result requires confirmatory 
+testing (213,215,216). Therefore, a FIB-4 
+score <1.3 should be taken as a general 
+guidance of having a lower risk of MASH 
+with advanced fibrosis but does not re­
+place clinical judgement. Its low cost, sim­
+plicity, and good specificity make it the 
+initial test of choice (Fig. 4.2). FIB-4 has 
+not been validated in pediatric populations 
+or in adults aged <35 years. In individuals 
+with diabetes ≥65 years of age, higher 
+cutoffs for FIB-4 have been recommended 
+(1.9–2.0 rather than ≥1.3) (217). In some 
+individuals with at-risk MASH, FIB-4 score 
+may be <1.3, especially in those with obe­
+sity and type 2 diabetes. Additional testing 
+may be required if the FIB-4 score is 
+between 1.0 and 1.3 in individuals with 
+type 2 diabetes with multiple cardiome­
+tabolic risk factors.
+Lower risk 
+of cirrhosis
+Managed by primary care 
+(and interprofessional team)
+• 
+• Optimize lifestyle and 
+treatment of comorbidities
+Managed by liver specialist 
+(and interprofessional team)
+•
+Additional imaging and
+biomarker risk stratification
+•
+Treatment + long-term
+follow-up
+Higher risk 
+of  cirrhosis
+Groups with the highest 
+risk of cirrhosis
+?
+Type 2 diabetes
+Prediabetes
+Rule out 
+secondary 
+causes of 
+steatosis 
+or ↑ ALT
+No
+No
+Yes
+Yes
+Diagnostic algorithm for the prevention of cirrhosis in people with
+metabolic dysfunction–associated steatotic liver disease (MASLD)
+Repeat FIB-4 every 1–2
+years
+Is LSM
+≥8.0 kPa* ?
+Obesity
+with ≥1 CV factors
+specialist if ELF ≥9.8
+*Consider ELF if LSM not
+available. Refer to liver
+If FIB-4
+>2.67
+Figure 4.2—Diagnostic algorithm for risk stratification and the prevention of cirrhosis in individuals with metabolic dysfunction-associated steatotic 
+liver disease (MASLD). CV, cardiovascular; ELF, enhanced liver fibrosis test; FIB-4, fibrosis-4 index; LSM, liver stiffness measurement, as measured 
+by vibration-controlled transient elastography. *In the absence of LSM, consider ELF a diagnostic alternative. If ELF ≥9.8, an individual is at high 
+risk of metabolic dysfunction-associated steatohepatitis with advanced liver fibrosis (≥F3–F4) and should be referred to a liver specialist. 
+In individuals with a FIB-4 ≥1.3, there 
+is need for additional risk stratification 
+with a liver stiffness measurement (LSM) 
+by transient elastography (Fig. 4.2). Use 
+of a second nonproprietary diagnostic 
+panel is not recommended (e.g., MASLD 
+fibrosis score and others), as they gener­
+ally do not perform better than FIB-4 
+(176,179,215). Transient elastography (LSM) 
+is the best-validated imaging technique for 
+fibrosis risk stratification, and it predicts 
+future cirrhosis and all-cause mortality in 
+MASLD (176,197,205,206,218). An LSM 
+value of <8.0 kPa has a good negative 
+predictive value to exclude advanced fi­
+brosis (≥F3–F4) (219–221) and indicates 
+lower risk for clinically significant fibrosis. 
+Such individuals with prediabetes or type 2 
+diabetes can be followed in nonspecialty 
+clinics with repeat surveillance testing ev­
+ery ≥2 years, although the precise time 
+interval remains to be established. If 
+the LSM is ≥8.0 kPa, the risk for ad­
+vanced fibrosis (≥F3-F4) is higher and 
+such individuals should be referred to 
+the hepatologist (176,182,197,205) within 
+the framework of an interprofessional 
+team (222–224). FIB-4 followed by LSM 
+helps stratify individuals with diabetes by 
+risk level and minimize specialty referrals 
+(218,225–228) (Fig. 4.2). Given the lack 
+of widespread availability of LSM, the ELF 
+test is a good alternative (229). Individuals 
+with ELF <9.8 are considered at low risk 
+for adverse liver outcomes. Individuals 
+with ELF ≥9.8 are considered at high risk 
+of having MASH with advanced liver fibro­
+sis (≥F3–F4) and therefore are at risk for 
+adverse liver outcomes (176,206,208). 
+diabetesjournals.org/care
+   Comprehensive Medical Evaluation and Assessment of Comorbidities
+S77 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+They should be referred to a gastroenterol­
+ogist or hepatologist. The optimal cutoff for 
+clinical use of ELF in primary care and en­
+docrinology settings is evolving (230–233). 
+An ELF <9.8 suggests an individual is at 
+low risk of advanced liver fibrosis and may 
+be followed in the nonspecialty clinic with 
+repeat testing in ≥2 years but may need 
+repeat testing more often if ELF is between 
+9.2 and 9.7.
+Specialists may order additional tests 
+for fibrosis risk stratification in MASH 
+(175,197,205,208), including magnetic 
+resonance elastography (MRE) (best over­
+all performance, particularly for early 
+fibrosis stages) or multiparametric iron- 
+corrected T1 MRI (cT1) (234) and pat­
+ented blood-based fibrosis biomarkers. 
+While liver biopsy remains the gold stan­
+dard for the diagnosis of MASH, its indi­
+cation is reserved to the discretion of 
+the specialist within an interprofessional 
+team approach due to high costs and 
+potential for morbidity associated with 
+this procedure.
+Management
+Recommendations
+4.25 Adults with type 2 diabetes or 
+prediabetes, particularly with over­
+weight or obesity, who have meta­
+bolic dysfunction–associated steatotic 
+liver disease (MASLD) should be rec­
+ommended lifestyle changes using an 
+interprofessional approach that pro­
+motes weight loss, ideally within a 
+structured nutrition plan and physical 
+activity program for cardiometabolic 
+benefits B and histological improve­
+ment. C
+4.26 In adults with type 2 diabetes, 
+MASLD, and overweight or obesity, 
+consider using a glucagon-like pep­
+tide 1 receptor agonist (GLP-1 RA) 
+with demonstrated benefits in MASH 
+A or a dual glucose-dependent insuli­
+notropic polypeptide (GIP) and GLP-1 
+RA with potential benefits in MASH B 
+for the treatment of obesity as an ad­
+junctive therapy to lifestyle interven­
+tions for weight loss.
+4.27a In adults with type 2 diabetes 
+and biopsy-proven MASH or those 
+at high risk for liver fibrosis (based 
+on noninvasive tests), a GLP-1 RA is 
+preferred for glycemic management 
+due to beneficial effects on MASH. 
+A Pioglitazone B or a dual GIP and 
+GLP-1 RA B can be considered for 
+glycemic management due to po­
+tential beneficial effects on MASH.
+4.27b Combination therapy with 
+pioglitazone plus GLP-1 RA can be 
+considered for the treatment of hy­
+perglycemia in adults with type 2 di­
+abetes with biopsy-proven MASH or 
+those at high risk of liver fibrosis 
+(identified with noninvasive tests) 
+because of potential beneficial ef­
+fects on MASH. B
+4.28 For consideration of treatment 
+with a thyroid hormone receptor-β 
+agonist in adults with type 2 diabe­
+tes or prediabetes with MASLD with 
+moderate (F2) or advanced (F3) liver 
+fibrosis on liver histology, or by a vali­
+dated imaging-based or blood-based 
+test, refer to a gastroenterologist or 
+hepatologist with expertise in MASLD 
+management. A
+4.29 Treatment initiation and moni­
+toring should be individualized and 
+within the context of an interprofes­
+sional team that includes a gastroenter­
+ologist or hepatologist, consideration of 
+individual preferences, and a careful 
+shared-decision cost-benefit discus­
+sion. B
+4.30a In adults with type 2 diabetes 
+and MASLD, use of glucose-lowering 
+therapies other than pioglitazone or 
+GLP-1 RAs may be continued as clini­
+cally indicated, but these therapies 
+lack evidence of benefit in MASH. B
+4.30b Insulin therapy is the pre­
+ferred agent for the treatment of 
+hyperglycemia in adults with type 2 
+diabetes with decompensated cir­
+rhosis. C
+4.31a Adults with type 2 diabetes 
+and MASLD are at increased cardio­
+vascular risk; therefore, comprehen­
+sive management of cardiovascular 
+risk factors is recommended. B
+4.31b Statin therapy is safe in adults 
+with type 2 diabetes and compensated 
+cirrhosis from MASLD and should be 
+initiated or continued for cardiovascu­
+lar risk reduction as clinically indicated. 
+B In people with decompensated cir­
+rhosis, statin therapy should be used 
+with caution, and close monitoring is 
+needed, given limited safety and effi­
+cacy data. B
+4.32a Consider metabolic surgery in 
+appropriate candidates as an option 
+to treat MASH in adults with type 2 
+diabetes and obesity B and to im­
+prove cardiovascular outcomes. B
+4.32b Metabolic surgery should be 
+used with caution in adults with 
+type 2 diabetes with compensated 
+cirrhosis from MASLD B and is not 
+recommended in decompensated 
+cirrhosis. B
+While steatohepatitis and cirrhosis oc­
+cur in lean people with diabetes and 
+are believed to be linked to genetic pre­
+disposition, insulin resistance, and envi­
+ronmental factors (235,236), ample 
+evidence implicates excess visceral fat 
+and overall adiposity in individuals with 
+overweight and obesity in the patho­
+genesis of the disease (236,237). Obe­
+sity in the setting of type 2 diabetes 
+worsens insulin resistance and steato­
+hepatitis, promoting the development 
+of cirrhosis (238). Therefore, clinicians 
+should enact evidence-based interventions 
+(as discussed in section 5, “Facilitating 
+Positive Health Behaviors and Well-being 
+to Improve Health Outcomes”) to pro­
+mote healthy lifestyle change and weight 
+loss for individuals with overweight or 
+obesity and MASLD. There is consensus 
+that a minimum weight loss goal of 5%, 
+preferably ≥10%, is needed to improve 
+liver histology (176,197,205,208), with 
+fibrosis requiring the larger weight re­
+duction to promote change (239,240). 
+However, there is significant individual 
+variability in histological outcomes with 
+weight loss. Individualized, structured 
+weight loss and exercise programs offer 
+greater benefit than standard counsel­
+ing in people with MASLD (241).
+Nutrition plan recommendations to in­
+duce an energy deficit are not different 
+from those for individuals with diabetes 
+with obesity without MASLD and should 
+include a reduction of macronutrient 
+content, limiting saturated fat, refined 
+carbohydrates, and added sugar, with 
+adoption of healthier eating patterns. The 
+Mediterranean eating pattern has the best 
+evidence for improving liver and cardiome­
+tabolic health (205–208,241,242). Both 
+aerobic and resistance training improve 
+MASLD in proportion to treatment en­
+gagement and intensity of the program 
+(243). Obesity pharmacotherapy may 
+assist with weight loss in the context of 
+lifestyle modification if not achieved by 
+lifestyle modification alone (see section 8, 
+S78 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+“Obesity and Weight Management for the 
+Prevention and Treatment of Diabetes”).
+Given the high prevalence of at-risk 
+MASH (∼12–20%) (178,179,181,182), 
+higher risk of disease progression and 
+liver-related mortality (180,196,244), and 
+the lack of pharmacological treatments 
+once cirrhosis is established (245,246), 
+optimizing the pharmacological manage­
+ment of hyperglycemia and obesity in indi­
+viduals with type 2 diabetes and MASH 
+could serve the dual purpose of addressing 
+these comorbidities while treating the liver 
+disease (Fig. 4.3). Therefore, early diagnosis 
+and treatment of MASLD offers the best 
+opportunity for cirrhosis prevention. In 
+phase 2 clinical trials, pioglitazone and 
+some GLP-1 RAs have been shown to be 
+potentially effective to treat steatohepa­
+titis (205,247–250) and to slow fibrosis 
+progression (251,252). They may also 
+decrease CVD (248), which is the num­
+ber one cause of death in individuals 
+with type 2 diabetes and MASLD (200). 
+Recently, a phase 3 clinical trial exam­
+ined the effect of semaglutide in subjects 
+with MASH without cirrhosis (ESSENCE) 
+(253). The trial reported that in 36.8% 
+of individuals treated for 72 weeks with 
+semaglutide 2.4 mg subcutaneously once 
+weekly, improvement in liver fibrosis was 
+achieved with no worsening of steatohe­
+patitis, compared with 22.4% on placebo 
+(P < 0.001), while 62.9% achieved resolu­
+tion of steatohepatitis with no worsen­
+ing of liver fibrosis, compared with 34.3% 
+on placebo (P < 0.001). Based on the 
+phase 3 trial results, the FDA recently ap­
+proved semaglutide for the treatment of 
+MASH with moderate to advanced liver fi­
+brosis (254).
+MASLD
+with F0-F1
+Compensated
+cirrhosis
+Decompensated
+cirrhosis
+MASLD 
+with F2-F3
+(“at risk” 
+MASH)
+Obesity 
+pharmacotherapy
+Diabetes 
+pharmacotherapy
+MASH 
+pharmacotherapy
+Not indicated
+Obesity 
+pharmacotherapy
+Diabetes 
+pharmacotherapy
+MASH 
+pharmacotherapy
+Resmetirom,
+Obesity 
+pharmacotherapy
+Diabetes 
+pharmacotherapy
+MASH 
+pharmacotherapy
+with caution*
+ AVOID
+Obesity 
+pharmacotherapy
+Diabetes 
+pharmacotherapy
+MASH 
+pharmacotherapy
+ AVOID
+Only use insulin
+ AVOID
+Individualize care, 
+targeting the 
+following:
+• Adoption of a
+healthy lifestyle
+• Weight loss (if indicated)
+• Optimal diabetes
+management
+• Cardiovascular
+risk reduction
+• Need for metabolic
+surgery (as recommended
+by guidelines)
+Metabolic dysfunction–associated steatotic liver disease (MASLD) treatment algorithm
+† Only semaglutide among GLP-1 RAs has been approved by the FDA for treatment of MASH.
+* Individualized care and close monitoring needed in compensated cirrhosis given limited safety data available.
+Prefer GLP-1 RA,
+dual GIP and
+GLP-1 RA
+Prefer GLP-1 RA,
+dual GIP and
+GLP-1 RA
+As with F2-F3
+with caution*
+Prefer GLP-1 RA,
+dual GIP and GLP-
+1 RA, pioglitazone,
+SGLT2i
+Prefer GLP-1 RA,
+dual GIP and GLP-
+1 RA, pioglitazone
+As with F2-F3 
+GLP-1 RA†
+Figure 4.3—Metabolic dysfunction-associated steatotic liver disease (MASLD) treatment algorithm. F0-F1, no to minimal fibrosis; F2-F3, moderate 
+fibrosis; F4, cirrhosis; GIP, glucose-dependent insulinotropic polypeptide; GLP-1 RA, glucagon-like peptide 1 receptor agonist; MASH, metabolic 
+dysfunction-associated steatohepatitis; SGLT2i, sodium–glucose cotransporter 2 inhibitor. 
+Semaglutide is currently the only 
+glucose-lowering or obesity medication 
+that is FDA approved for the treatment of 
+MASH. The recommendation to treat hy­
+perglycemia with other GLP-1 RA–based 
+therapies and/or pioglitazone in individu­
+als with type 2 diabetes and MASLD is 
+based on consistent histological benefit 
+for steatohepatitis in several phase 2 ran­
+domized controlled trials (RCTs) with GLP- 
+1 RAs (254–259) and with pioglitazone 
+(255,256) compared with no benefit with 
+metformin or other glucose-lowering 
+medications in MASH (176,197,205).
+Pioglitazone improves glucose and lipid 
+metabolism and reverses steatohepatitis 
+in individuals with prediabetes or type 2 
+diabetes (252,255,257) and even in indi­
+viduals without diabetes (256,258,259) 
+(Fig. 4.3). Fibrosis also improved in some 
+trials (247,259). A meta-analysis (251) 
+concluded that pioglitazone treatment re­
+sults in resolution of MASH and may im­
+prove fibrosis. Furthermore, combination 
+therapy with pioglitazone plus a GLP-1 
+RA has been reported safe and effective 
+for the treatment of hyperglycemia in 
+adults with type 2 diabetes (260–263) as 
+well as in reducing hepatic steatosis 
+(260,262), suggesting additive benefit in 
+individuals with MASLD. It is important 
+diabetesjournals.org/care
+   Comprehensive Medical Evaluation and Assessment of Comorbidities
+S79 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+to note that these studies are based on 
+phase 2 clinical trials and await further 
+phase 3 evidence. However, these plans 
+are attractive because they offer poten­
+tial benefit compared with lack of histo­
+logical benefit (or clinical trial data) from 
+other oral glucose-lowering therapies in 
+MASLD. In the context of treating hyper­
+glycemia in individuals with type 2 diabe­
+tes with MASLD, where the low cost of 
+pioglitazone and any liver improvement 
+would be an added benefit to glycemic 
+management, these plans would be po­
+tentially cost-effective for the treatment 
+of MASLD (264,265). Vitamin E may be 
+beneficial for the treatment of MASH in 
+individuals without diabetes (258). How­
+ever, in individuals with type 2 diabetes, 
+vitamin E monotherapy was found to be 
+ineffective in a small RCT (252), and it did 
+not seem to enhance pioglitazone’s efficacy 
+when used in combination, as reported in 
+an earlier trial in this population (257). Pio­
+glitazone causes dose-dependent weight 
+gain (15 mg/day, mean weight gain of 
+1–2%; 45 mg/day, mean weight gain of 
+3–5%), which can be blunted or reversed 
+if combined with SGLT2 inhibitors or 
+GLP-1 RAs (248,262,263,266). Pioglitazone 
+increases fracture risk, may promote heart 
+failure if used in individuals with preexisting 
+congestive heart failure, and may increase 
+the risk of bladder cancer, although this re­
+mains controversial (176,197,205,248,249).
+GLP-1 RAs are effective at inducing 
+weight loss and ameliorating elevated 
+plasma aminotransferases and steatosis 
+(247) (Fig. 4.3). As discussed above, 
+semaglutide was effective as a treat­
+ment for MASH with moderate to ad­
+vanced liver fibrosis in a phase 3 RCT 
+(253). However, there are few phase 2 
+RCTs of other GLP-1 RAs in individuals 
+with MASH proven by biopsy. A small 
+RCT reported that liraglutide improved 
+some features of MASH and may delay 
+fibrosis progression (267). Tirzepatide is 
+a dual GIP and GLP-1 RA known to re­
+duce liver steatosis in MASLD (268), and 
+a phase 2 paired-biopsy study of 190 
+adults with overweight or obesity with 
+MASH (50–60% of whom had type 2 di­
+abetes) recently reported that doses of 
+5, 10, and 15 mg/day resulted in resolu­
+tion of steatohepatitis without worsen­
+ing of fibrosis in 44%, 56%, and 62% of 
+participants, respectively, compared with 
+10% of participants receiving placebo 
+(P < 0.001 for all three comparisons) (269). 
+Improvement of at least one fibrosis stage 
+without worsening of MASH occurred in 
+55%, 51%, and 51% of participants, respec­
+tively, compared with 30% of participants 
+receiving placebo. Survodutide is a dual 
+GLP-1 and glucagon receptor agonist that 
+is in development, and a phase 2 paired- 
+biopsy trial recently reported benefit in 
+MASH (270). In summary, other GLP-1–
+based therapies (besides semaglutide) 
+and/or pioglitazone are recommended 
+to treat type 2 diabetes in adults with 
+MASH based on histological benefit for 
+steatohepatitis in several phase 2 RCTs 
+(269,270) compared with no benefit with 
+metformin or other glucose-lowering or 
+obesity medications. Within the context of 
+their approved indication (e.g., obesity 
+or type 2 diabetes), these medications 
+are cost-effective to treat the comor­
+bidity, while potentially improving MASH, 
+which becomes an added benefit.
+SGLT2 inhibitors (271–273) and insu­
+lin (249) reduce hepatic steatosis, but 
+their effects on steatohepatitis remain 
+unknown. The use of glucose-lowering 
+agents other than pioglitazone or GLP-1 RAs 
+may be continued in individuals with type 2 
+diabetes and MASLD for glycemic manage­
+ment, as clinically indicated. However, these 
+agents have either failed to improve steato­
+hepatitis in paired-biopsy studies (metfor­
+min) or have no RCTs with liver histological 
+end points (i.e., sulfonylureas, glitinides, 
+dipeptidyl peptidase 4 inhibitors, or 
+acarbose).
+Resmetirom is a thyroid hormone 
+receptor-β agonist approved by the FDA 
+for the treatment of adults with MASLD 
+with moderate (F2) or advanced (F3) 
+liver fibrosis on liver histology or a vali­
+dated imaging- or blood-based test. In a 
+phase 3 RCT, resmetirom for 52 weeks 
+in 966 adults at the highest dose of 
+100 mg (or placebo) met the primary end 
+point of MASH resolution without wors­
+ening of fibrosis in 29.9% of individuals com­
+pared with 9.7% on placebo (P < 0.001) 
+(274). Fibrosis improved in up to 25.9% and 
+14.2%, respectively (P < 0.001). Nausea, 
+vomiting, and diarrhea occurred more often 
+with resmetirom. The gastrointestinal side 
+effects are dose dependent and improve 
+with continued treatment. Resmetirom 
+decreased free thyroxine (T4) levels by 
+∼20% and increased sex hormone-binding 
+protein levels two- to threefold. Although 
+a recent review of the data concluded 
+that there is little concern about these 
+changes, long-term postmarketing data 
+must be collected (275). Guidance by the 
+American Association for the Study of 
+Liver Diseases (AASLD) about optimal indi­
+vidual identification for treatment, safety, 
+and long-term monitoring has recently 
+been published (276). This is especially rel­
+evant because hypothyroidism and hypo­
+gonadism are more prevalent in people 
+with MASLD than in the general population 
+(176,205), and clinicians should monitor all 
+individuals with MASLD for symptoms of 
+endocrine deficiency and manage accord­
+ing to clinical practice guidelines. Per its la­
+bel, candidates for resmetirom treatment 
+are those with MASLD and moderate (F2) 
+to advanced (F3) liver fibrosis but not with 
+cirrhosis or other active liver disease (i.e., 
+alcohol-related liver disease, autoimmune 
+hepatitis, or primary biliary cholangitis) or 
+inadequately managed hypothyroidism or 
+hyperthyroidism. Given complexities asso­
+ciated with selection of an individual for 
+therapy, drug cost, and treatment monitor­
+ing, therapy should be individualized and 
+initiated by a hepatologist or gastroenterol­
+ogist with expertise in MASH within an inter­
+professional team.
+Insulin is the preferred glucose-lowering 
+agent for the treatment of hyperglyce­
+mia in adults with type 2 diabetes with 
+decompensated cirrhosis given the lack 
+of robust evidence about the safety and 
+efficacy of oral agents and noninsulin in­
+jectables (i.e., GLP-1 RAs and dual GIP 
+and GLP-1 RAs) (246), although a recent 
+48-week study suggested that GLP-1 
+RAs are safe in individuals with MASH 
+and compensated cirrhosis (277).
+Metabolic surgery leading to sustained 
+weight loss and improvement of type 2 
+diabetes can improve MASH and cardio­
+metabolic health, altering the natural his­
+tory of the disease (278). Meta-analyses 
+report that 70–80% of people have im­
+provement in hepatic steatosis, 50–75% 
+of people have improvement in inflam­
+mation and hepatocyte ballooning (necrosis), 
+and 30–40% of people have improvement in 
+fibrosis (279,280). It may also reduce the risk 
+of HCC (280). It is important to note that cur­
+rently metabolic surgery is not indicated 
+solely for treatment of MASH. Given that 
+many individuals with MASH have meta­
+bolic risks (type 2 diabetes and obesity) 
+that are indications for metabolic surgery, 
+the improvement in liver health is ex­
+pected, but surgical indication should 
+follow current practice guidelines. Meta­
+bolic surgery should be used with cau­
+tion in individuals with compensated 
+cirrhosis (i.e., asymptomatic stage of 
+S80 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+cirrhosis without associated liver compli­
+cations), but with experienced surgeons 
+the risk of hepatic decompensation is 
+similar to that for individuals with less 
+advanced liver disease. Because of the 
+paucity of safety and outcome data, 
+metabolic surgery is not recommended 
+in individuals with decompensated cirrho­
+sis (i.e., cirrhosis stage with complications 
+such as variceal hemorrhage, ascites, he­
+patic encephalopathy, or jaundice) who 
+also have a much higher risk of postopera­
+tive development of these liver-related 
+complications (176,197,205).
+Adults with type 2 diabetes and MASLD 
+are at an increased risk of CVD and re­
+quire comprehensive management of 
+cardiovascular risk factors (176,197,205). 
+Within an interprofessional approach, statin 
+therapy should be initiated or continued 
+for cardiovascular risk reduction as clinically 
+indicated. Overall, its use appears to be 
+safe in adults with type 2 diabetes and 
+MASH, including in the presence of com­
+pensated cirrhosis (Child-Pugh class A or B 
+cirrhosis) from MASLD. Some studies even 
+suggest that statin use in individuals with 
+chronic liver disease may reduce episodes 
+of hepatic decompensation and/or overall 
+mortality (281,282). Statin therapy is not 
+recommended in decompensated cirrhosis 
+given limited safety and efficacy data 
+(176,197,206).
+Obstructive Sleep Apnea
+Age-adjusted rates of obstructive sleep 
+apnea, a risk factor for CVD, are signifi­
+cantly higher (4- to 10-fold) with obe­
+sity, especially with central obesity (283) 
+(see section 5, “Facilitating Positive Health 
+Behaviors and Well-being to Improve 
+Health Outcomes”). The prevalence of ob­
+structive sleep apnea in the population 
+with type 2 diabetes may be as high as 
+23%, and the prevalence of any sleep-di­
+sordered breathing may be as high as 58% 
+(284,285). In participants with obesity and 
+type 2 diabetes enrolled in the Look 
+AHEAD trial, the prevalence exceeded 
+80% (286). Obstructive sleep apnea should 
+be evaluated in individuals with suggestive 
+symptoms (e.g., excessive daytime sleepi­
+ness, snoring, and witnessed apnea) (287). 
+Sleep apnea treatment (lifestyle modifica­
+tion, continuous positive airway pressure, 
+oral appliances, and surgery) significantly 
+improves quality of life and blood pressure 
+management. Recently, two phase 3 ran­
+domized trials found that among adults 
+with obesity and moderate-to-severe ob­
+structive sleep apnea but without diabe­
+tes, treatment with the dual GIP and 
+GLP-1 RA tirzepatide substantially reduced 
+sleep apnea severity (288). More research 
+is needed to determine the effects of 
+GLP-1 and dual GIP and GLP-1 RAs on sleep 
+apnea in individuals with diabetes.
+Pancreatitis
+Diabetes is linked to diseases of the 
+exocrine pancreas, such as pancreatitis, 
+which may disrupt the global architecture 
+or physiology of the pancreas, often re­
+sulting in both exocrine and endocrine 
+dysfunction. Up to half of individuals with 
+diabetes may have some degree of im­
+paired exocrine pancreas function (289). 
+People with diabetes are at an approxi­
+mately twofold higher risk of developing 
+acute pancreatitis (290).
+Conversely, prediabetes and/or diabe­
+tes has been found to develop in approx­
+imately one-third of individuals after an 
+episode of acute pancreatitis (291); thus, 
+the relationship is likely bidirectional. Post­
+pancreatitis diabetes may include either 
+new-onset disease or previously unrecog­
+nized diabetes (292). Studies of individuals 
+treated with incretin-based therapies for 
+diabetes have also reported that pancre­
+atitis may occur more frequently with 
+these medications, but results have been 
+mixed and causality has not been estab­
+lished (293,294).
+Islet autotransplantation should be 
+considered for individuals requiring total 
+pancreatectomy for medically refractory 
+chronic pancreatitis to prevent postsur­
+gical diabetes. Approximately one-third 
+of individuals undergoing total pancrea­
+tectomy with islet autotransplantation 
+are insulin free 1 year postoperatively, 
+and observational studies from different 
+centers have demonstrated islet graft 
+function up to a decade after the sur­
+gery in some individuals (294–298). Both 
+personal factors for the individual with 
+diabetes and disease factors should be 
+carefully considered when deciding the 
+indications and timing of this surgery. 
+Surgeries should be performed in skilled 
+facilities that have demonstrated exper­
+tise in islet autotransplantation.
+Sensory Impairment
+Hearing impairment, both in high-frequency 
+and low- to midfrequency ranges, is more 
+common in people with diabetes than in 
+those without, with stronger associations 
+found in studies of younger people (299). 
+Proposed pathophysiologic mechanisms 
+include the combined contributions of hy­
+perglycemia and oxidative stress with co­
+chlear microangiopathy and auditory 
+neuropathy (300). In a National Health and 
+Nutrition Examination Survey (NHANES) 
+analysis, hearing impairment was about 
+twice as prevalent in individuals with dia­
+betes as in those without, after adjusting 
+for age and other risk factors for hearing 
+impairment (301). Low HDL cholesterol, 
+coronary heart disease, peripheral neu­
+ropathy, and general poor health have 
+been reported as risk factors for hearing 
+impairment for individuals with diabetes, 
+but an association of hearing loss with gly­
+cemia has not been consistently observed 
+(302). In the DCCT/EDIC cohort, increases 
+in the time-weighted mean A1C was asso­
+ciated with increased risk of hearing im­
+pairment when tested after long-term 
+(>20 years) follow-up, with every 10% 
+increase in A1C leading to 19% high- 
+frequency impairment (303). Impairment 
+in smell, but not taste, has also been re­
+ported in individuals with diabetes (304).
+References
+1. Goh LH, Siah CJR, Tam WWS, Tai ES, Young 
+DYL. Effectiveness of the chronic care model for 
+adults with type 2 diabetes in primary care: a 
+systematic review and meta-analysis. Syst Rev 
+2022;11:273
+2. Rodriguez K, Ryan D, Dickinson JK, Phan V. 
+Improving quality outcomes: the value of diabetes 
+care and education specialists. Clin Diabetes 2022; 
+40:356–365
+3. Dickinson JK, Guzman SJ, Maryniuk MD, et al. 
+The use of language in diabetes care and 
+education. Diabetes Care 2017;40:1790–1799
+4. Ji M, Sereika SM, Dunbar-Jacob J, Erlen JA. 
+Correlation of symptom distress, self-efficacy, 
+and social support with problem-solving and 
+glycemic control among patients with type 2 
+diabetes. Sci Diabetes Self Manag Care 2021;47: 
+85–93
+5. Beverly EA, Hughes AS, Saunders A. Examination 
+of health care providers’ use of language in diabetes 
+care: a secondary qualitative data analysis. Clin 
+Diabetes 2022;40:434–441
+6. Issa AN, Wodi AP, Moser CA, Cineas S. Advisory 
+committee on immunization practices recommended 
+immunization schedule for children and adolescents 
+aged 18 years or younger - United States, 2025. 
+MMWR Morb Mortal Wkly Rep 2025;74:26–29
+7. Wodi AP, Issa AN, Moser CA, Cineas S. 
+Advisory Committee on Immunization Practices 
+Recommended Immunization Schedule for Adults 
+Aged 19 Years or Older - United States, 2025. 
+MMWR Morb Mortal Wkly Rep 2025;74:30–33
+8. Centers for Disease Control and Prevention, 
+Advisory Committee on Immunization Practice 
+(ACIP). ACIP Evidence to Recommendation User’s 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S81 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Guide, 2020. Accessed 25 August 2025. Available 
+from https://stacks.cdc.gov/view/cdc/127248
+9. Goeijenbier M, van Sloten TT, Slobbe L, et al. 
+Benefits of flu vaccination for persons with diabetes 
+mellitus: a review. Vaccine 2017;35:5095–5101
+10. Behrouzi B, Bhatt DL, Cannon CP, et al. 
+Association of influenza vaccination with car- 
+diovascular risk: a meta-analysis. JAMA Netw 
+Open 2022;5:e228873
+11. Kornum JB, Thomsen RW, Riis A, Lervang 
+H-H, Schønheyder HC, Sørensen HT. Diabetes, 
+glycemic control, and risk of hospitalization with 
+pneumonia: a population-based case-control 
+study. Diabetes Care 2008;31:1541–1545
+12. Centers for Disease Control and Prevention. 
+Expanded Recommendations for Use of 
+Pneumococcal Conjugate Vaccines Among Adults 
+Aged ≥50 Years: recommendations of the 
+Advisory Committee on Immunization Practices — 
+United States, 2024. Morbidity and Mortality 
+Weekly Report (MMWR) 2025;74:1–8
+13. Centers for Disease Control and Prevention. 
+Advisory Committee on Immunization Practices 
+Recommended Immunization Schedule for Adults 
+Aged 19 Years or Older — United States, 2025. 
+MMWR Morb Mortal Wkly Rep 2025;74:30–33
+14. Britton A, Roper LE, Kotton CN, et al. Use of 
+respiratory syncytial virus vaccines in adults aged 
+≥60 years: updated recommendations of the 
+Advisory Committee on Immunization Practices - 
+United States, 2024. MMWR Morb Mortal Wkly 
+Rep 2024;73:696–702
+15. Tinetti ME, Fried TR, Boyd CM. Designing 
+health care for the most common chronic 
+condition–multimorbidity. JAMA 2012;307: 
+2493–2494
+16. Sudore RL, Karter AJ, Huang ES, et al. 
+Symptom burden of adults with type 2 diabetes 
+across the disease course: diabetes & aging 
+study. J Gen Intern Med 2012;27:1674–1681
+17. Nederstigt C, Uitbeijerse BS, Janssen LGM, 
+Corssmit EPM, de Koning EJP, Dekkers OM. 
+Associated auto-immune disease in type 1 diabetes 
+patients: a systematic review and meta-analysis. 
+Eur J Endocrinol 2019;180:135–144
+18. Hughes JW, Riddlesworth TD, DiMeglio LA, 
+Miller KM, Rickels MR, McGill JB; T1D Exchange 
+Clinic Network. Autoimmune diseases in children 
+and adults with type 1 diabetes from the T1D 
+Exchange Clinic Registry. J Clin Endocrinol Metab 
+2016;101:4931–4937
+19. Kahaly GJ, Hansen MP. Type 1 diabetes 
+associated autoimmunity. Autoimmun Rev 2016; 
+15:644–648
+20. Eisenbarth GS, Gottlieb PA. Autoimmune 
+polyendocrine syndromes. N Engl J Med 2004; 
+350:2068–2079
+21. Pham-Short A, Donaghue KC, Ambler G, 
+Phelan H, Twigg S, Craig ME. Screening for celiac 
+disease in type 1 diabetes: a systematic review. 
+Pediatrics 2015;136:e170–e176
+22. Cauley JA, Hochberg MC, Lui L-Y, et al. Long- 
+term risk of incident vertebral fractures. JAMA 
+2007;298:2761–2767
+23. Kanis JA, Johnell O, De Laet C, et al. A meta- 
+analysis of previous fracture and subsequent 
+fracture risk. Bone 2004;35:375–382
+24. Pedersen AB, Ehrenstein V, Szépligeti SK, et al. 
+Thirty-five-year trends in first-time hospitalization for 
+hip fracture, 1-year mortality, and the prognostic 
+impact of comorbidity: a Danish Nationwide Cohort 
+Study, 1980–2014. Epidemiology 2017;28:898–905
+25. Tajeu GS, Delzell E, Smith W, et al. Death, 
+debility, and destitution following hip fracture. J 
+Gerontol A Biol Sci Med Sci 2014;69:346–353
+26. Miao J, Brismar K, Nyrén O, Ugarph-Morawski 
+A, Ye W. Elevated hip fracture risk in type 1 diabetic 
+patients: a population-based cohort study in 
+Sweden. Diabetes Care 2005;28:2850–2855
+27. Wang H, Ba Y, Xing Q, Du J-L. Diabetes 
+mellitus and the risk of fractures at specific sites: 
+a meta-analysis. BMJ Open 2019;9:e024067
+28. Weber DR, Haynes K, Leonard MB, Willi SM, 
+Denburg MR. Type 1 diabetes is associated with 
+an increased risk of fracture across the life span: 
+a population-based cohort study using The 
+Health Improvement Network (THIN). Diabetes 
+Care 2015;38:1913–1920
+29. Leanza G, Maddaloni E, Pitocco D, et al. Risk 
+factors for fragility fractures in type 1 diabetes. 
+Bone 2019;125:194–199
+30. Janghorbani M, Van Dam RM, Willett WC, 
+Hu FB. Systematic review of type 1 and type 2 
+diabetes mellitus and risk of fracture. Am J 
+Epidemiol 2007;166:495–505
+31. Napoli N, Schwartz AV, Schafer AL, et al.; 
+Osteoporotic Fractures in Men (MrOS) Study 
+Research Group. Vertebral fracture risk in diabetic 
+elderly men: the MrOS study. J Bone Miner Res 
+2018;33:63–69
+32. Koromani F, Oei L, Shevroja E, et al. Vertebral 
+fractures in individuals with type 2 diabetes: more 
+than skeletal complications alone. Diabetes Care 
+2020;43:137–144
+33. Faraj M, Schwartz AV, Burghardt AJ, et al. 
+Risk factors for bone microarchitecture impairments 
+in older men with type 2 diabetes - the MrOS study. 
+J Clin Endocrinol Metab 2025;110:e1660–e1669
+34. Schwartz AV, Vittinghoff E, Bauer DC, et al.; 
+Study of Osteoporotic Fractures (SOF) Research 
+Group; Osteoporotic Fractures in Men (MrOS) 
+Research Group; Health, Aging, and Body 
+Composition (Health ABC) Research Group. 
+Association of BMD and FRAX score with risk 
+of fracture in older adults with type 2 diabetes. 
+JAMA 2011;305:2184–2192
+35. Hidayat K, Fang Q-L, Shi B-M, Qin L-Q. 
+Influence of glycemic control and hypoglycemia 
+on the risk of fracture in patients with diabetes 
+mellitus: a systematic review and meta-analysis 
+of observational studies. Osteoporos Int 2021;32: 
+1693–1704
+36. Wang B, Wang Z, Poundarik AA, et al. 
+Unmasking fracture risk in type 2 diabetes: the 
+association of longitudinal glycemic hemoglobin 
+level and medications. J Clin Endocrinol Metab 
+2022;107:e1390–e1401
+37. Komorita Y, Iwase M, Fujii H, et al. Both 
+hypo- and hyperglycaemia are associated with 
+increased fracture risk in Japanese people with 
+type 2 diabetes: the Fukuoka Diabetes Registry. 
+Diabet Med 2020;37:838–847
+38. Majumdar SR, Leslie WD, Lix LM, et al. Longer 
+duration of diabetes strongly impacts fracture risk 
+assessment: the Manitoba BMD cohort. J Clin 
+Endocrinol Metab 2016;101:4489–4496
+39. Van Hulten V, Driessen JHM, Andersen S, et 
+al. Fracture risk revisited: bone mineral density T- 
+score and fracture risk in type 2 diabetes. 
+Diabetes Obes Metab 2024;26:5325–5335
+40. Napoli N, Strollo R, Paladini A, Briganti SI, 
+Pozzilli P, Epstein S. Corrigendum to “The Alliance 
+of Mesenchymal Stem Cells, Bone, and Diabetes. 
+Int J Endocrinol 2017;2017:5924671
+41. Vavanikunnel J, Charlier S, Becker C, et al. 
+Association between glycemic control and risk of 
+fracture in diabetic patients: a nested case-control 
+study. J Clin Endocrinol Metab 2019;104:1645–1654
+42. Strotmeyer ES, Cauley JA, Schwartz AV, et al. 
+Nontraumatic fracture risk with diabetes mellitus 
+and impaired fasting glucose in older white and 
+black adults: the health, aging, and body composition 
+study. Arch Intern Med 2005;165:1612–1617
+43. Schwartz AV, Vittinghoff E, Sellmeyer DE, et 
+al.; Health, Aging, and Body Composition Study. 
+Diabetes-related complications, glycemic control, 
+and falls in older adults. Diabetes Care 2008; 
+31:391–396
+44. Piccoli A, Cannata F, Strollo R, et al. Sclerostin 
+regulation, microarchitecture, and advanced glycation 
+end-products in the bone of elderly women with 
+type 2 diabetes. J Bone Miner Res 2020;35:2415–2422
+45. Leanza G, Cannata F, Faraj M, et al. Bone 
+canonical Wnt signaling is downregulated in 
+type 2 diabetes and associates with higher 
+advanced glycation end-products (AGEs) content 
+and reduced bone strength. Elife 2024;12: 
+RP90437
+46. Tramontana F, Napoli N, Litwack-Harrison S, 
+et al. More rapid bone mineral density loss in 
+older men with diabetes: the Osteoporotic Fractures 
+in Men (MrOS) Study. J Clin Endocrinol Metab 
+2024;109:e2283–e2290
+47. Ferrari SL, Abrahamsen B, Napoli N, et al.; 
+Bone and Diabetes Working Group of IOF. 
+Diagnosis and management of bone fragility in 
+diabetes: an emerging challenge. Osteoporos Int 
+2018;29:2585–2596
+48. Leslie WD, Johansson H, McCloskey EV, 
+Harvey NC, Kanis JA, Hans D. Comparison of 
+methods for improving fracture risk assessment 
+in diabetes: the Manitoba BMD Registry. J Bone 
+Miner Res 2018;33:1923–1930
+49. Ferrari S, Eastell R, Napoli N, et al. 
+Denosumab in postmenopausal women with 
+osteoporosis and diabetes: subgroup analysis of 
+FREEDOM and FREEDOM extension. Bone 2020; 
+134:115268
+50. Napoli N, Conte C, Eastell R, et al. Bone 
+turnover markers do not predict fracture risk in 
+type 2 diabetes. J Bone Miner Res 2020;35:2363–2371
+51. International Society for Pediatric and Adolescent 
+Diabetes. ISPAD Clinical Practice Consensus Guidelines 
+2022. Accessed 25 August 2025. Available from 
+https://www.ispad.org/resources/ispad-clinical- 
+practice-consensus-guidelines/2022-ispad-clinical- 
+practice-consensus-guidelines/ispad-cpcg-2022- 
+english.html
+52. LeBoff MS, Greenspan SL, Insogna KL, et al. 
+The clinician’s guide to prevention and treatment 
+of osteoporosis. Osteoporos Int 2022;33:2049–2102
+53. Armamento-Villareal R, Aguirre L, Napoli N, 
+et al. Changes in thigh muscle volume predict 
+bone mineral density response to lifestyle therapy 
+in frail, obese older adults. Osteoporos Int 2014; 
+25:551–558
+54. Ebeling PR, Adler RA, Jones G, et al. 
+Management of endocrine disease: therapeutics 
+of vitamin D. Eur J Endocrinol 2018;179:R239–R259
+55. Maddaloni E, Cavallari I, Napoli N, Conte C. 
+Vitamin D and diabetes mellitus. Front Horm Res 
+2018;50:161–176
+56. Iolascon G, Gimigliano R, Bianco M, et al. Are 
+dietary supplements and nutraceuticals effective 
+for musculoskeletal health and cognitive function? 
+S82 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+A scoping review. J Nutr Health Aging 2017;21: 
+527–538
+57. National Institutes of Health. Calcium—fact 
+sheet for health professionals. Accessed 27 August 
+2025. Available from https://ods.od.nih.gov/ 
+factsheets/Calcium-HealthProfessional
+58. Rosen CJ, Abrams SA, Aloia JF, et al. IOM 
+committee members respond to Endocrine Society 
+vitamin D guideline. J Clin Endocrinol Metab 2012; 
+97:1146–1152
+59. National Institutes of Health. Vitamin D— 
+fact sheet for health professionals. Accessed 
+27 August 2025. Available from https://ods.od 
+.nih.gov/factsheets/VitaminD-HealthProfessional
+60. Carmel AS, Shieh A, Bang H, Bockman RS. The 
+25(OH)D level needed to maintain a favorable 
+bisphosphonate response is ≥33 ng/ml. Osteoporos 
+Int 2012;23:2479–2487
+61. Holick MF, Siris ES, Binkley N, et al. Prevalence 
+of vitamin D inadequacy among postmenopausal 
+North American women receiving osteoporosis 
+therapy. J Clin Endocrinol Metab 2005;90:3215–3224
+62. U.S. Preventive Services Task Force. Vitamin 
+D, Calcium, or Combined Supplementation for 
+the Primary Prevention of Falls and Fractures in 
+Community-Dwelling Adults: preventive Medication. 
+Accessed 25 September 2025. Available from 
+https://www.uspreventiveservicestaskforce.org/ 
+uspstf/draft-recommendation/vitamin-d-calcium- 
+combined-supplementation-primary-prevention- 
+falls-fractures-communitydwelling-adults.
+63. Sinclair AJ, Abdelhafiz A, Dunning T, et al. An 
+international position statement on the management 
+of frailty in diabetes mellitus: summary of 
+recommendations 2017. J Frailty Aging 2018; 
+7:10–20
+64. Eastell R, Vittinghoff E, Lui L-Y, et al. Diabetes 
+mellitus and the benefit of antiresorptive therapy 
+on fracture risk. J Bone Miner Res 2022;37: 
+2121–2131
+65. Langdahl BL, Silverman S, Fujiwara S, et al. 
+Real-world effectiveness of teriparatide on 
+fracture reduction in patients with osteoporosis 
+and comorbidities or risk factors for fractures: 
+integrated analysis of 4 prospective observational 
+studies. Bone 2018;116:58–66
+66. Schwartz AV, Pavo I, Alam J, et al. Teriparatide 
+in patients with osteoporosis and type 2 diabetes. 
+Bone 2016;91:152–158
+67. Napoli N, Pannacciulli N, Vittinghoff E, et al. 
+Effect of denosumab on fasting glucose in women 
+with diabetes or prediabetes from the FREEDOM 
+trial. Diabetes Metab Res Rev 2018;34:e2991
+68. Tsur A, Cahn A, Levy L, Pollack R. Cardiovascular 
+outcomes of romosozumab treatment-real-world 
+data analysis. JBMR Plus 2025;9:ziae146
+69. Langdahl BL, Hofbauer LC, Forfar JC. 
+Cardiovascular safety and sclerostin inhibition. J 
+Clin Endocrinol Metab 2021;106:1845–1853
+70. Cosman F, Crittenden DB, Adachi JD, et al. 
+Romosozumab treatment in postmenopausal 
+women with osteoporosis. N Engl J Med 2016; 
+375:1532–1543
+71. Conley RB, Adib G, Adler RA, et al. 
+Secondary fracture prevention: consensus clinical 
+recommendations from a multistakeholder 
+coalition. J Bone Miner Res 2020;35:36–52
+72. Hofbauer LC, Rachner TD. More DATA to 
+guide sequential osteoporosis therapy. Lancet 
+2015;386:1116–1118
+73. Palermo A, D’Onofrio L, Eastell R, Schwartz 
+AV, Pozzilli P, Napoli N. Oral anti-diabetic drugs 
+and fracture risk, cut to the bone: safe or 
+dangerous? A narrative review. Osteoporos Int 
+2015;26:2073–2089
+74. Maddaloni E, Coleman RL, Holman RR. Risk 
+factors for bone fractures in type 2 diabetes and 
+the impact of once-weekly exenatide: insights 
+from an EXSCEL post-hoc analysis. Diabetes Res 
+Clin Pract 2025;223:112125
+75. Loke YK, Singh S, Furberg CD. Long-term use 
+of thiazolidinediones and fractures in type 2 
+diabetes: a meta-analysis. CMAJ 2009;180:32–39
+76. Dormandy J, Bhattacharya M, van Troostenburg 
+de Bruyn A-R; PROactive Investigators. Safety and 
+tolerability of pioglitazone in high-risk patients with 
+type 2 diabetes: an overview of data from PROactive. 
+Drug Saf 2009;32:187–202
+77. Schwartz AV, Chen H, Ambrosius WT, et al. 
+Effects of TZD use and discontinuation on 
+fracture rates in ACCORD bone study. J Clin 
+Endocrinol Metab 2015;100:4059–4066
+78. Hidayat K, Du X, Wu M-J, Shi B-M. The 
+use of metformin, insulin, sulphonylureas, and 
+thiazolidinediones and the risk of fracture: systematic 
+review and meta-analysis of observational studies. 
+Obes Rev 2019;20:1494–1503
+79. Napoli N, Strotmeyer ES, Ensrud KE, et al. 
+Fracture risk in diabetic elderly men: the MrOS 
+study. Diabetologia 2014;57:2057–2065
+80. Hidayat K, Du X, Shi B-M. Risk of fracture 
+with dipeptidyl peptidase-4 inhibitors, glucagon- 
+like peptide-1 receptor agonists, or sodium- 
+glucose cotransporter-2 inhibitors in real-world 
+use: systematic review and meta-analysis of 
+observational studies. Osteoporos Int 2019;30: 
+1923–1940
+81. Chai S, Liu F, Yang Z, et al. Risk of fracture 
+with dipeptidyl peptidase-4 inhibitors, glucagon- 
+like peptide-1 receptor agonists, or sodium- 
+glucose cotransporter-2 inhibitors in patients 
+with type 2 diabetes mellitus: a systematic 
+review and network meta-analysis combining 
+177 randomized controlled trials with a median 
+follow-up of 26 weeks. Front Pharmacol 2022; 
+13:825417
+82. Karam L, Mabilleau G, Paccou J. Effects of 
+glucagon-like peptide-1 receptor agonists on 
+bone health in people living with obesity. 
+Osteoporos Int. 8 September 2025 [Epub ahead 
+of print]. DOI: 10.1007/s00198-025-07664-1
+83. Bilezikian JP, Watts NB, Usiskin K, et al. 
+Evaluation of bone mineral density and bone 
+biomarkers in patients with type 2 diabetes 
+treated with canagliflozin. J Clin Endocrinol Metab 
+2016;101:44–51
+84. Watts NB, Bilezikian JP, Usiskin K, et al. 
+Effects of canagliflozin on fracture risk in patients 
+with type 2 diabetes mellitus. J Clin Endocrinol 
+Metab 2016;101:157–166
+85. Perkovic V, Jardine MJ, Neal B, et al.; CREDENCE 
+Trial Investigators. Canagliflozin and renal outcomes 
+in type 2 diabetes and nephropathy. N Engl J Med 
+2019;380:2295–2306
+86. Neal B, Perkovic V, Matthews DR. Canagliflozin 
+and cardiovascular and renal events in type 2 
+diabetes. N Engl J Med 2017;377:2099
+87. Li X, Li T, Cheng Y, et al. Effects of SGLT2 
+inhibitors on fractures and bone mineral density 
+in type 2 diabetes: an updated meta-analysis. 
+Diabetes Metab Res Rev 2019;35:e3170
+88. Suh S, Kim KW. Diabetes and cancer: cancer 
+should be screened in routine diabetes assessment. 
+Diabetes Metab J 2019;43:733–743
+89. Giovannucci E, Harlan DM, Archer MC, et al. 
+Diabetes and cancer: a consensus report. CA 
+Cancer J Clin 2010;60:207–221
+90. Aggarwal G, Kamada P, Chari ST. Prevalence 
+of diabetes mellitus in pancreatic cancer compared 
+to common cancers. Pancreas 2013;42:198–201
+91. Cho J, Scragg R, Petrov MS. Postpancreatitis 
+diabetes confers higher risk for pancreatic cancer 
+than type 2 diabetes: results from a nationwide 
+cancer registry. Diabetes Care 2020;43:2106–2112
+92. Ninomiya I, Yamazaki K, Oyama K, et al. 
+Pioglitazone inhibits the proliferation and metastasis 
+of human pancreatic cancer cells. Oncol Lett 2014; 
+8:2709–2714
+93. Hendriks AM, Schrijnders D, Kleefstra N, et 
+al. Sulfonylurea derivatives and cancer, friend or 
+foe? Eur J Pharmacol 2019;861:172598
+94. Hua Y, Zheng Y, Yao Y, Jia R, Ge S, Zhuang A. 
+Metformin and cancer hallmarks: shedding new 
+lights on therapeutic repurposing. J Transl Med 
+2023;21:403
+95. Wang L, Xu R, Kaelber DC, Berger NA. 
+Glucagon-like peptide 1 receptor agonists and 13 
+obesity-associated cancers in patients with type 2 
+diabetes. JAMA Netw Open 2024;7:e2421305
+96. Morales DR, Bu F, Viernes B, et al. Risk of 
+thyroid tumors with glp-1 receptor agonists: a 
+retrospective cohort study. Diabetes Care 2025; 
+48:1386–1394
+97. Xue M, Xu W, Ou Y-N, et al. Diabetes mellitus 
+and risks of cognitive impairment and dementia: 
+a systematic review and meta-analysis of 144 
+prospective studies. Ageing Res Rev 2019;55: 
+100944
+98. Ohara T, Doi Y, Ninomiya T, et al. Glucose 
+tolerance status and risk of dementia in the 
+community: the Hisayama study. Neurology 
+2011;77:1126–1134
+99. Kciuk M, Kruczkowska W, GałeRziewska J, et 
+al. Alzheimer’s disease as type 3 diabetes: 
+understanding the link and implications. Int J Mol 
+Sci 2024;25:11955
+100. Hanyu H. Diabetes-related dementia. Adv 
+Exp Med Biol 2019;1128:147–160
+101. Gudala K, Bansal D, Schifano F, Bhansali A. 
+Diabetes mellitus and risk of dementia: a meta- 
+analysis of prospective observational studies. J 
+Diabetes Investig 2013;4:640–650
+102. Tang X, Cardoso MA, Yang J, Zhou J-B, Simó 
+R. Impact of intensive glucose control on brain 
+health: meta-analysis of cumulative data from 
+16,584 patients with type 2 diabetes mellitus. 
+Diabetes Ther 2021;12:765–779
+103. Launer LJ, Miller ME, Williamson JD, et al.; 
+ACCORD MIND investigators. Effects of intensive 
+glucose lowering on brain structure and function 
+in people with type 2 diabetes (ACCORD MIND): 
+a randomised open-label substudy. Lancet Neurol 
+2011;10:969–977
+104. Xiao Y, Hong X, Neelagar R, Mo H. 
+Association between glycated hemoglobin A1c 
+levels, control status, and cognitive function in 
+type 2 diabetes: a prospective cohort study. Sci 
+Rep 2025;15:5011
+105. McCoy RG, Galindo RJ, Swarna KS, et al. 
+Sociodemographic, clinical, and treatment-related 
+factors associated with hyperglycemic crises 
+among adults with type 1 or type 2 diabetes in 
+the US from 2014 to 2020. JAMA Netw Open 
+2021;4:e2123471
+106. Mair ML, Athavale R, Abdelhafiz AH. Practical 
+considerations for managing patients with diabetes 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S83 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+and dementia. Expert Rev Endocrinol Metab 2017; 
+12:429–440
+107. Punthakee Z, Miller ME, Launer LJ, et al.; 
+ACCORD-MIND Investigators. Poor cognitive 
+function and risk of severe hypoglycemia in type 2 
+diabetes: post hoc epidemiologic analysis of the 
+ACCORD trial. Diabetes Care 2012;35:787–793
+108. Lacy ME, Gilsanz P, Eng C, Beeri MS, Karter 
+AJ, Whitmer RA. Severe hypoglycemia and 
+cognitive function in older adults with type 1 
+diabetes: the Study of Longevity in Diabetes 
+(SOLID). Diabetes Care 2020;43:541–548
+109. Lee AK, Rawlings AM, Lee CJ, et al. Severe 
+hypoglycaemia, mild cognitive impairment, 
+dementia and brain volumes in older adults with 
+type 2 diabetes: the Atherosclerosis Risk in 
+Communities (ARIC) cohort study. Diabetologia 
+2018;61:1956–1965
+110. Ye M, Yang Q, Zhang L, et al. Effect of 
+hypoglycemic events on cognitive function in 
+individuals with type 2 diabetes mellitus: a dose- 
+response meta-analysis. Front Neurol 2024;15: 
+1394499
+111. Mattishent K, Loke YK. Bi-directional 
+interaction between hypoglycaemia and cognitive 
+impairment in elderly patients treated with 
+glucose-lowering agents: a systematic review and 
+meta-analysis. Diabetes Obes Metab 2016;18: 
+135–141
+112. Giorda CB, Ozzello A, Gentile S, et al.; 
+HYPOS-1 Study Group of AMD. Incidence and risk 
+factors for severe and symptomatic hypoglycemia 
+in type 1 diabetes. Results of the HYPOS-1 study. 
+Acta Diabetol 2015;52:845–853
+113. Jacobson AM, Ryan CM, Braffett BH, et al.; 
+DCCT/EDIC Research Group. Cognitive performance 
+declines in older adults with type 1 diabetes: 
+results from 32 years of follow-up in the DCCT and 
+EDIC Study. Lancet Diabetes Endocrinol 2021;9: 
+436–445
+114. Casanova L, Hughes FJ, Preshaw PM. Diabetes 
+and periodontal disease: a two-way relationship. Br 
+Dent J 2014;217:433–437
+115. Eke PI, Thornton-Evans GO, Wei L, Borgnakke 
+WS, Dye BA, Genco RJ. Periodontitis in US adults: 
+National Health and Nutrition Examination Survey 
+2009–2014. J Am Dent Assoc 2018;149:576–588.e6
+116. Borgnakke WS, Ylöstalo PV, Taylor GW, 
+Genco RJ. Effect of periodontal disease on 
+diabetes: systematic review of epidemiologic 
+observational evidence. J Periodontol 2013;84: 
+S135–S152
+117. Simpson TC, Clarkson JE, Worthington HV, 
+et al. Treatment of periodontitis for glycaemic 
+control in people with diabetes mellitus. Cochrane 
+Database Syst Rev 2022;4:CD004714
+118. Ziemer DC, Barnes CS, Rupasinghe RSM, 
+Khare S. 662-P: Oral health: neglected diabetes 
+intervention. Diabetes 69(Suppl 1):662-P
+119. Lipman RD, O’Brien KK, Bardsley JK, Magee 
+MF. A scoping review of the relation between 
+toothbrushing and diabetes knowledge, glycemic 
+control, and oral health outcomes in people with 
+type 2 diabetes. Diabetes Spectr 2023;36: 
+364–372
+120. Abdul Aziz AF, Mohd-Dom TN, Mustafa N, 
+et al. Screening for type 2 diabetes and periodontitis 
+patients (CODAPT-My): a multidisciplinary care 
+approach. BMC Health Serv Res 2022;22:1034
+121. Herrera D, Sanz M, Shapira L, et al. 
+Association between periodontal diseases and 
+cardiovascular diseases, diabetes and respiratory 
+diseases: consensus report of the Joint Workshop 
+by the European Federation of Periodontology 
+(EFP) and the European arm of the World 
+Organization of Family Doctors (WONCA Europe). 
+J Clin Periodontol 2023;50:819–841
+122. Lalla E, Papapanou PN. Diabetes mellitus 
+and periodontitis: a tale of two common interrelated 
+diseases. Nat Rev Endocrinol 2011;7:738–748
+123. Christgau M, Palitzsch KD, Schmalz G, 
+Kreiner U, Frenzel S. Healing response to non- 
+surgical periodontal therapy in patients with 
+diabetes mellitus: clinical, microbiological, and 
+immunologic results. J Clin Periodontol 1998;25: 
+112–124
+124. Retzepi M, Donos N. The effect of diabetes 
+mellitus on osseous healing. Clin Oral Implants 
+Res 2010;21:673–681
+125. United States Code. Americans with 
+Disabilities Act of 1990. Pub. L. No. 101–336 
+42 U.S.C. § 2. 104 Stat. 328. p. 101–336.
+126. United States Code. Americans with Disabilities 
+Act Amendments Act of 2008. Pub. L. No. 110–325 
+42 U.S.C.A. § 12101 et seq
+127. Wong E, Backholer K, Gearon E, et al. 
+Diabetes and risk of physical disability in adults: 
+a systematic review and meta-analysis. Lancet 
+Diabetes Endocrinol 2013;1:106–114
+128. Tomic D, Shaw JE, Magliano DJ. The burden 
+and risks of emerging complications of diabetes 
+mellitus. Nat Rev Endocrinol 2022;18:525–539
+129. Lisy K, Campbell JM, Tufanaru C, Moola S, 
+Lockwood C. The prevalence of disability among 
+people with cancer, cardiovascular disease, chronic 
+respiratory disease and/or diabetes: a systematic 
+review. Int J Evid Based Healthc 2018;16:154–166
+130. Yang Y, Hu X, Zhang Q, Zou R. Diabetes 
+mellitus and risk of falls in older adults: a 
+systematic review and meta-analysis. Age Ageing 
+2016;45:761–767
+131. Gregg EW, Menke A. Diabetes and Disability. 
+In Diabetes in America, 3rd ed. Cowie CC, 
+Casagrande SS, Menke A, et al., Eds. Bethesda, 
+MD, National Institute of Diabetes and Digestive 
+and Kidney Diseases, 2018. Available from https:// 
+www.ncbi.nlm.nih.gov/pubmed/33651544
+132. Khan KS, Andersen H. The Impact of 
+diabetic neuropathy on activities of daily living, 
+postural balance and risk of falls - a systematic 
+review. J Diabetes Sci Technol 2022;16:289–294
+133. Elafros MA, Andersen H, Bennett DL, et 
+al. Towards prevention of diabetic peripheral 
+neuropathy: clinical presentation, pathogenesis, 
+and new treatments. Lancet Neurol 2022;21: 
+922–936
+134. Selvarajah D, Kar D, Khunti K, et al. Diabetic 
+peripheral neuropathy: advances in diagnosis and 
+strategies for screening and early intervention. 
+Lancet Diabetes Endocrinol 2019;7:938–948
+135. Fatma S, Noohu MM. Classification of 
+functionality of people with diabetic peripheral 
+neuropathy based on international classification 
+of functioning, disability and health core set 
+(ICF-CS) of diabetes mellitus. J Diabetes Metab 
+Disord 2020;19:213–221
+136. Zhang Y, Lazzarini PA, McPhail SM, van Netten 
+JJ, Armstrong DG, Pacella RE. Global disability 
+burdens of diabetes-related lower-extremity 
+complications in 1990 and 2016. Diabetes 
+Care 2020;43:964–974
+137. Tsai Y-H, Chuang L-L, Lee Y-J, Chiu C-J. How 
+does diabetes accelerate normal aging? An 
+examination of ADL, IADL, and mobility disability 
+in middle-aged and older adults with and without 
+diabetes. Diabetes Res Clin Pract 2021;182:109114
+138. Streckmann F, Balke M, Cavaletti G, et al. 
+Exercise and neuropathy: systematic review with 
+meta-analysis. Sports Med 2022;52:1043–1065
+139. Jing X, Chen J, Dong Y, et al. Related factors 
+of quality of life of type 2 diabetes patients: a 
+systematic review and meta-analysis. Health 
+Qual Life Outcomes 2018;16:189
+140. Yoon S-J, Kim K-I. Frailty and disability in 
+diabetes. Ann Geriatr Med Res 2019;23:165–169
+141. World Health Organization. WHO Disability 
+Assessment Schedule 2.0 (WHODAS 2.0). Accessed 
+28 August 2025. Available from https://www 
+.who.int/standards/classifications/international- 
+classification-of-functioning-disability-and-health/ 
+who-disability-assessment-schedule
+142. Diabetes Distress Assessment and Resource 
+Center. Diabetes Distress Scale (DDS). Accessed 28 
+August 2025. Available from https://diabetesdistress 
+.org/take-dd-survey/
+143. Hill-Briggs F, Adler NE, Berkowitz SA, et al. 
+Social determinants of health and diabetes: a 
+scientific review. Diabetes Care 2020;44:258–279
+144. Tan T-W, Shih C-D, Concha-Moore KC, et al. 
+Correction: disparities in outcomes of patients 
+admitted with diabetic foot infections. PLoS One 
+2019;14:e0215532
+145. Skrepnek GH, Mills JL, Armstrong DG. A 
+diabetic emergency one million feet long: disparities 
+and burdens of illness among diabetic foot ulcer 
+cases within emergency departments in the United 
+States, 2006–2010. PLoS One 2015;10:e0134914
+146. Lecube A, Hernández C, Genescà J, Simó R. 
+Proinflammatory cytokines, insulin resistance, 
+and insulin secretion in chronic hepatitis C patients: 
+a case-control study. Diabetes Care 2006;29: 
+1096–1101
+147. Hum J, Jou JH, Green PK, et al. Improvement 
+in glycemic control of type 2 diabetes after 
+successful treatment of hepatitis C virus. Diabetes 
+Care 2017;40:1173–1180
+148. Carnovale C, Pozzi M, Dassano A, et al. The 
+impact of a successful treatment of hepatitis C 
+virus on glyco-metabolic control in diabetic 
+patients: a systematic review and meta-analysis. 
+Acta Diabetol 2019;56:341–354
+149. Kouidrat Y, Pizzol D, Cosco T, et al. High 
+prevalence of erectile dysfunction in diabetes: a 
+systematic review and meta-analysis of 145 
+studies. Diabet Med 2017;34:1185–1192
+150. Grover SA, Lowensteyn I, Kaouache M, et 
+al. The prevalence of erectile dysfunction in the 
+primary care setting: importance of risk factors 
+for diabetes and vascular disease. Arch Intern 
+Med 2006;166:213–219
+151. Allen MS, Walter EE. Erectile dysfunction: 
+an umbrella review of meta-analyses of risk- 
+factors, treatment, and prevalence outcomes. J 
+Sex Med 2019;16:531–541
+152. Ma RC-W, So W-Y, Yang X, et al. Erectile 
+dysfunction predicts coronary heart disease in 
+type 2 diabetes. J Am Coll Cardiol 2008;51:2045–2050
+153. Gazzaruso C, Solerte SB, Pujia A, et al. 
+Erectile dysfunction as a predictor of cardiovascular 
+events and death in diabetic patients with 
+angiographically proven asymptomatic coronary 
+artery disease: a potential protective role for 
+statins and 5-phosphodiesterase inhibitors. J 
+Am Coll Cardiol 2008;51:2040–2044
+154. Kalter-Leibovici O, Wainstein J, Ziv A, et al.; 
+Israel Diabetes Research Group (IDRG) Investigators. 
+S84 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+Clinical, socioeconomic, and lifestyle parameters 
+associated with erectile dysfunction among diabetic 
+men. Diabetes Care 2005;28:1739–1744
+155. De Berardis G, Pellegrini F, Franciosi M, et 
+al.; QuED (Quality of Care and Outcomes in 
+Type 2 Diabetes) Study Group. Longitudinal 
+assessment of quality of life in patients with type 2 
+diabetes and self-reported erectile dysfunction. 
+Diabetes Care 2005;28:2637–2643
+156. Navaneethan SD, Vecchio M, Johnson DW, 
+et al. Prevalence and correlates of self-reported 
+sexual dysfunction in CKD: a meta-analysis of 
+observational studies. Am J Kidney Dis 2010;56: 
+670–685
+157. Hackett G, Kirby M, Wylie K, et al. British 
+Society for Sexual Medicine guidelines on the 
+management of erectile dysfunction in men- 
+2017. J Sex Med 2018;15:430–457
+158. Corona G, Rastrelli G, Morgentaler A, 
+Sforza A, Mannucci E, Maggi M. Meta-analysis of 
+results of testosterone therapy on sexual function 
+based on international index of erectile function 
+scores. Eur Urol 2017;72:1000–1011
+159. Dhindsa S, Miller MG, McWhirter CL, et al. 
+Testosterone concentrations in diabetic and 
+nondiabetic obese men. Diabetes Care 2010; 
+33:1186–1192
+160. Grossmann M. Low testosterone in men 
+with type 2 diabetes: significance and treatment. 
+J Clin Endocrinol Metab 2011;96:2341–2353
+161. Bhasin S, Cunningham GR, Hayes FJ, et al.; 
+Task Force, Endocrine Society. Testosterone therapy 
+in men with androgen deficiency syndromes: an 
+Endocrine Society clinical practice guideline. J Clin 
+Endocrinol Metab 2010;95:2536–2559
+162. Bhasin S, Brito JP, Cunningham GR, et al. 
+Testosterone therapy in men with hypogonadism: 
+an Endocrine Society clinical practice guideline. J 
+Clin Endocrinol Metab 2018;103:1715–1744
+163. Braga MAP, Rivera A, Marinheiro G, et al. 
+Long-term cardiovascular safety of testosterone- 
+replacement therapy in middle-aged and older 
+men: a meta-analysis of randomized controlled 
+trials. Am J Cardiovasc Drugs 2025;25:767–777
+164. Shindel AW, Lue TF, Anawalt B, et al. 
+Medical and Surgical Therapy of Erectile Dysfunction. 
+In Endotext. Feingold KR, Anawalt B, Blackman MR, et 
+al., Eds. South Dartmouth, MA, MDText.com, 2000. 
+Available from https://www.ncbi.nlm.nih.gov/ 
+pubmed/25905163
+165. Lindau ST, Tang H, Gomero A, et al. 
+Sexuality among middle-aged and older adults 
+with diagnosed and undiagnosed diabetes: a 
+national, population-based study. Diabetes Care 
+2010;33:2202–2210
+166. Shindel AW, Lue TF, Feingold KR. Sexual 
+Dysfunction in Diabetes. In Endotext. Feingold 
+KR, Anawalt B, Blackman MR, et al., Eds. South 
+Dartmouth, MA, MDText.com, 2000. Available 
+from https://www.ncbi.nlm.nih.gov/pubmed/ 
+25905326
+167. Pontiroli AE, Cortelazzi D, Morabito A. Female 
+sexual dysfunction and diabetes: a systematic review 
+and meta-analysis. J Sex Med 2013;10:1044–1051
+168. Van Cauwenberghe J, Enzlin P, Nefs G, et al. 
+Prevalence of and risk factors for sexual dysfunctions 
+in adults with type 1 or type 2 diabetes: results from 
+Diabetes MILES - Flanders. Diabet Med 2022;39: 
+e14676
+169. Pyrgidis N, Mykoniatis I, Tishukov M, et al. 
+Sexual dysfunction in women with end-stage 
+renal disease: a systematic review and meta- 
+analysis. J Sex Med 2021;18:936–945
+170. Haugstvedt A, Jørgensen J, Strandberg RB, 
+et al. Sexual dysfunction in women with type 1 
+diabetes in Norway: a cross-sectional study on 
+the prevalence and associations with physical 
+and psychosocial complications. Diabet Med 
+2022;39:e14704
+171. Buskoven MEH, Kjørholt EKH, Strandberg 
+RB, Søfteland E, Haugstvedt A. Sexual dysfunction 
+in women with type 1 diabetes in Norway: a 
+qualitative study of women’s experiences. Diabet 
+Med 2022;39:e14856
+172. Hendrieckx C, Halliday JA, Russell-Green S, 
+et al. Adults with diabetes distress often want to 
+talk with their health professionals about it: 
+findings from an audit of 4 Australian specialist 
+diabetes clinics. Can J Diabetes 2020;44:473–480
+173. Di Stasi V, Maseroli E, Vignozzi L. Female 
+sexual dysfunction in diabetes: mechanisms, 
+diagnosis and treatment. Curr Diabetes Rev 
+2022;18:e171121198002
+174. Wing RR, Bond DS, Gendrano IN, 3rd, et al.; 
+Sexual Dysfunction Subgroup of the Look AHEAD 
+Research Group. Effect of intensive lifestyle 
+intervention on sexual dysfunction in women 
+with type 2 diabetes: results from an ancillary 
+Look AHEAD study. Diabetes Care 2013;36:2937–2944
+175. Rinella ME, Lazarus JV, Ratziu V, et al.; 
+NAFLD Nomenclature Consensus Group. A 
+multisociety Delphi consensus statement on new 
+fatty liver disease nomenclature. Hepatology 2023; 
+78:1966–1986
+176. Rinella ME, Neuschwander-Tetri BA, Siddiqui 
+MS, et al. AASLD practice guidance on the clinical 
+assessment and management of nonalcoholic fatty 
+liver disease. Hepatology 2023;77:1797–1835
+177. Lomonaco R, Godinez Leiva E, Bril F, et al. 
+Advanced liver fibrosis is common in patients with 
+type 2 diabetes followed in the outpatient setting: 
+the need for systematic screening. Diabetes Care 
+2021;44:399–406
+178. Ciardullo S, Monti T, Perseghin G. High 
+prevalence of advanced liver fibrosis assessed by 
+transient elastography among U.S. adults with 
+type 2 diabetes. Diabetes Care 2021;44:519–525
+179. Barb D, Repetto EM, Stokes ME, Shankar 
+SS, Cusi K. Type 2 diabetes mellitus increases the 
+risk of hepatic fibrosis in individuals with obesity 
+and nonalcoholic fatty liver disease. Obesity 
+(Silver Spring) 2021;29:1950–1960
+180. Younossi ZM, Golabi P, Price JK, et al. The 
+global epidemiology of nonalcoholic fatty liver 
+disease and nonalcoholic steatohepatitis among 
+patients with type 2 diabetes. Clin Gastroenterol 
+Hepatol 2024;22:1999–2010
+181. Stefan N, Cusi K. A global view of the 
+interplay between non-alcoholic fatty liver disease 
+and diabetes. Lancet Diabetes Endocrinol 2022;10: 
+284–296
+182. Harrison SA, Gawrieh S, Roberts K, et al. 
+Prospective evaluation of the prevalence of non- 
+alcoholic fatty liver disease and steatohepatitis in 
+a large middle-aged US cohort. J Hepatol 2021; 
+75:284–291
+183. Castera L, Laouenan C, Vallet-Pichard A, 
+et al.; QUID-NASH investigators. High prevalence 
+of NASH and advanced fibrosis in type 2 
+diabetes: a prospective study of 330 outpatients 
+undergoing liver biopsies for elevated ALT, 
+using a low threshold. Diabetes Care 2023;46: 
+1354–1362
+184. Paik JM, Golabi P, Younossi Y, Mishra A, 
+Younossi ZM. Changes in the global burden of 
+chronic liver diseases from 2012 to 2017: the 
+growing impact of NAFLD. Hepatology 2020;72: 
+1605–1616
+185. Simon TG, Roelstraete B, Khalili H, Hagström 
+H, Ludvigsson JF. Mortality in biopsy-confirmed 
+nonalcoholic fatty liver disease: results from a 
+nationwide cohort. Gut 2021;70:1375–1382
+186. Burra P, Becchetti C, Germani G. NAFLD 
+and liver transplantation: disease burden, current 
+management and future challenges. JHEP Rep 
+2020;2:100192
+187. Corbin KD, Driscoll KA, Pratley RE, Smith 
+SR, Maahs DM, Mayer-Davis EJ; Advancing Care 
+for Type 1 Diabetes and Obesity Network (ACT1ON). 
+Obesity in type 1 diabetes: pathophysiology, clinical 
+impact, and mechanisms. Endocr Rev 2018;39: 
+629–663
+188. de Vries M, Westerink J, Kaasjager KHAH, 
+de Valk HW. Prevalence of nonalcoholic fatty liver 
+disease (NAFLD) in patients with type 1 diabetes 
+mellitus: a systematic review and meta-analysis. J 
+Clin Endocrinol Metab 2020;105:3842–3853
+189. Cusi K, Sanyal AJ, Zhang S, et al. Non- 
+alcoholic fatty liver disease (NAFLD) prevalence 
+and its metabolic associations in patients with 
+type 1 diabetes and type 2 diabetes. Diabetes 
+Obes Metab 2017;19:1630–1634
+190. Ciardullo S, Perseghin G. Prevalence of 
+elevated liver stiffness in patients with type 1 and 
+type 2 diabetes: a systematic review and meta- 
+analysis. Diabetes Res Clin Pract 2022;190:109981
+191. Younossi ZM, Ong JP, Takahashi H, et al.; 
+Global Nonalcoholic Steatohepatitis Council. A 
+global survey of physicians knowledge about 
+nonalcoholic fatty liver disease. Clin Gastroenterol 
+Hepatol 2022;20:e1456–e1468
+192. Kanwal F, Shubrook JH, Younossi Z, et al. 
+Preparing for the NASH epidemic: a call to action. 
+Diabetes Care 2021;44:2162–2172
+193. Angulo P, Kleiner DE, Dam-Larsen S, et al. 
+Liver fibrosis, but no other histologic features, is 
+associated with long-term outcomes of patients 
+with nonalcoholic fatty liver disease. Gastroenterology 
+2015;149:389–397
+194. Ekstedt M, Hagström H, Nasr P, et al. 
+Fibrosis stage is the strongest predictor for 
+disease-specific mortality in NAFLD after up to 
+33 years of follow-up. Hepatology 2015;61: 
+1547–1554
+195. Taylor RS, Taylor RJ, Bayliss S, et al. 
+Association between fibrosis stage and outcomes 
+of patients with nonalcoholic fatty liver disease: a 
+systematic review and meta-analysis. Gastroenterology 
+2020;158:1611–1625
+196. Sanyal AJ, Van Natta ML, Clark J, et al.; 
+NASH Clinical Research Network (CRN). Prospective 
+study of outcomes in adults with nonalcoholic fatty 
+liver disease. N Engl J Med 2021;385:1559–1569
+197. Kanwal F, Shubrook JH, Adams LA, et al. 
+Clinical care pathway for the risk stratification 
+and management of patients with nonalcoholic 
+fatty liver disease. Gastroenterology 2021;161: 
+1657–1669
+198. Gellert-Kristensen H, Richardson TG, Davey 
+Smith G, Nordestgaard BG, Tybjaerg-Hansen A, 
+Stender S. Combined effect of PNPLA3, TM6SF2, 
+and HSD17B13 variants on risk of cirrhosis and 
+hepatocellular carcinoma in the general population. 
+Hepatology 2020;72:845–856
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S85 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+199. Stender S, Kozlitina J, Nordestgaard BG, 
+Tybjærg-Hansen A, Hobbs HH, Cohen JC. 
+Adiposity amplifies the genetic risk of fatty liver 
+disease conferred by multiple loci. Nat Genet 
+2017;49:842–847
+200. Duell PB, Welty FK, Miller M, et al.; American 
+Heart Association Council on Arteriosclerosis, 
+Thrombosis and Vascular Biology; Council on 
+Hypertension; Council on the Kidney in Cardiovascular 
+Disease; Council on Lifestyle and Cardiometabolic 
+Health; and Council on Peripheral Vascular Disease. 
+Nonalcoholic fatty liver disease and cardiovascular risk: 
+a scientific statement from the American Heart 
+Association. Arterioscler Thromb Vasc Biol 2022; 
+42:e168–e185
+201. Mantovani A, Csermely A, Petracca G, et al. 
+Non-alcoholic fatty liver disease and risk of fatal 
+and non-fatal cardiovascular events: an updated 
+systematic review and meta-analysis. Lancet 
+Gastroenterol Hepatol 2021;6:903–913
+202. Ciardullo S, Ballabeni C, Trevisan R, Perseghin 
+G. Liver stiffness, albuminuria and chronic kidney 
+disease in patients with NAFLD: a systematic 
+review and meta-analysis. Biomolecules 2022; 
+12:105
+203. Musso G, Gambino R, Tabibian JH, et al. 
+Association of non-alcoholic fatty liver disease 
+with chronic kidney disease: a systematic review 
+and meta-analysis. PLoS Med 2014;11:e1001680
+204. Song D, Li C, Wang Z, Zhao Y, Shen B, Zhao 
+W. Association of non-alcoholic fatty liver disease 
+with diabetic retinopathy in type 2 diabetic 
+patients: a meta-analysis of observational studies. 
+J Diabetes Investig 2021;12:1471–1479
+205. Cusi K, Isaacs S, Barb D, et al. American 
+Association of Clinical Endocrinology Clinical practice 
+guideline for the diagnosis and management of 
+nonalcoholic fatty liver disease in primary care and 
+endocrinology clinical settings: co-sponsored by the 
+American Association for the Study of Liver Diseases 
+(AASLD). Endocr Pract 2022;28:528–562
+206. Cusi K, Abdelmalek MF, Apovian CM, et al. 
+Metabolic dysfunction-associated steatotic liver 
+disease (MASLD) in people with diabetes: the 
+need for screening and early intervention. A 
+consensus report of the American Diabetes 
+Association. Diabetes Care 2025;48:1057–1082
+207. Eslam M, Sarin SK, Wong VW-S, et al. The 
+Asian Pacific Association for the Study of the 
+Liver clinical practice guidelines for the diagnosis 
+and management of metabolic associated fatty 
+liver disease. Hepatol Int 2020;14:889–919
+208. European Association for the Study of the 
+Liver (EASL); European Association for the Study 
+of Diabetes (EASD); European Association for the 
+Study of Obesity (EASO). EASL-EASD-EASO clinical 
+practice guidelines on the management of 
+metabolic dysfunction-associated steatotic liver 
+disease (MASLD). J Hepatol 2024;81:492–542
+209. Portillo-Sanchez P, Bril F, Maximos M, et al. 
+High prevalence of nonalcoholic fatty liver disease 
+in patients with type 2 diabetes mellitus and 
+normal plasma aminotransferase levels. J Clin 
+Endocrinol Metab 2015;100:2231–2238
+210. Maximos M, Bril F, Portillo Sanchez P, et al. 
+The role of liver fat and insulin resistance as 
+determinants of plasma aminotransferase elevation 
+in nonalcoholic fatty liver disease. Hepatology 
+2015;61:153–160
+211. Kwo PY, Cohen SM, Lim JK. ACG clinical 
+guideline: evaluation of abnormal liver chemistries. 
+Am J Gastroenterol 2017;112:18–35
+212. Younossi ZM, Anstee QM, Wai-Sun Wong V, 
+et al. The association of histologic and noninvasive 
+tests with adverse clinical and patient-reported 
+outcomes in patients with advanced fibrosis due 
+to nonalcoholic steatohepatitis. Gastroenterology 
+2021;160:1608–1619
+213. Siddiqui MS, Yamada G, Vuppalanchi R, et 
+al.; NASH Clinical Research Network. Diagnostic 
+accuracy of noninvasive fibrosis models to detect 
+change in fibrosis stage. Clin Gastroenterol 
+Hepatol 2019;17:1877–1885
+214. Unalp-Arida A, Ruhl CE. Liver fibrosis scores 
+predict liver disease mortality in the United 
+States population. Hepatology 2017;66:84–95
+215. Qadri S, Ahlholm N, Lønsmann I, et al. 
+Obesity modifies the performance of fibrosis 
+biomarkers in nonalcoholic fatty liver disease. J 
+Clin Endocrinol Metab 2022;107:e2008–e2020
+216. Bril F, McPhaul MJ, Caulfield MP, et al. 
+Performance of plasma biomarkers and diagnostic 
+panels for nonalcoholic steatohepatitis and 
+advanced fibrosis in patients with type 2 diabetes. 
+Diabetes Care 2020;43:290–297
+217. McPherson S, Hardy T, Dufour J-F, et al. Age 
+as a confounding factor for the accurate non- 
+invasive diagnosis of advanced NAFLD fibrosis. 
+Am J Gastroenterol 2017;112:740–751
+218. Castera L, Friedrich-Rust M, Loomba R. 
+Noninvasive assessment of liver disease in patients 
+with nonalcoholic fatty liver disease. Gastroenterology 
+2019;156:1264–1281
+219. Eddowes PJ, Sasso M, Allison M, et al. 
+Accuracy of FibroScan controlled attenuation 
+parameter and liver stiffness measurement in 
+assessing steatosis and fibrosis in patients with 
+nonalcoholic fatty liver disease. Gastroenterology 
+2019;156:1717–1730
+220. Mózes FE, Lee JA, Selvaraj EA, et al.; LITMUS 
+Investigators. Diagnostic accuracy of non-invasive 
+tests for advanced fibrosis in patients with NAFLD: 
+an individual patient data meta-analysis. Gut 
+2022;71:1006–1019
+221. Elhence A, Anand A, Biswas S, et al. 
+Compensated advanced chronic liver disease in 
+nonalcoholic fatty liver disease: two-step strategy 
+is better than Baveno criteria. Dig Dis Sci 2023; 
+68:1016–1025
+222. Wong VWS, Zelber-Sagi S, Cusi K, et al. 
+Management of NAFLD in primary care settings. 
+Liver Int 2022;42:2377–2389
+223. Lazarus JV, Anstee QM, Hagström H, et al. 
+Defining comprehensive models of care for NAFLD. 
+Nat Rev Gastroenterol Hepatol 2021;18:717–729
+224. Cusi K, Budd J, Johnson E, Shubrook J. 
+Making sense of the nonalcoholic fatty liver 
+disease clinical practice guidelines: what clinicians 
+need to know. Diabetes Spectr 2024;37:29–38
+225. Anstee QM, Lawitz EJ, Alkhouri N, et al. 
+Noninvasive tests accurately identify advanced 
+fibrosis due to NASH: baseline data from the 
+STELLAR trials. Hepatology 2019;70:1521–1530
+226. Lee J, Vali Y, Boursier J, et al. Prognostic 
+accuracy of FIB-4, NAFLD fibrosis score and APRI 
+for NAFLD-related events: a systematic review. 
+Liver Int 2021;41:261–270
+227. Chan W-K, Treeprasertsuk S, Goh GB-B, et 
+al. Optimizing use of nonalcoholic fatty liver 
+disease fibrosis score, fibrosis-4 score, and liver 
+stiffness measurement to identify patients with 
+advanced fibrosis. Clin Gastroenterol Hepatol 
+2019;17:2570–2580
+228. Petta S, Wai-Sun Wong V, Bugianesi E, et al. 
+Impact of obesity and alanine aminotransferase 
+levels on the diagnostic accuracy for advanced 
+liver fibrosis of noninvasive tools in patients with 
+nonalcoholic fatty liver disease. Am J Gastroenterol 
+2019;114:916–928
+229. Vali Y, Lee J, Boursier J, et al.; LITMUS 
+systematic review team. Enhanced liver fibrosis 
+test for the non-invasive diagnosis of fibrosis in 
+patients with NAFLD: a systematic review and 
+meta-analysis. J Hepatol 2020;73:252–262
+230. Srivastava A, Gailer R, Tanwar S, et al. 
+Prospective evaluation of a primary care referral 
+pathway for patients with non-alcoholic fatty 
+liver disease. J Hepatol 2019;71:371–378
+231. Saarinen K, Färkkilä M, Jula A, et al. 
+Enhanced liver fibrosis test predicts liver-related 
+outcomes in the general population. JHEP Rep 
+2023;5:100765
+232. Kjaergaard M, Lindvig KP, Thorhauge KH, et 
+al. Using the ELF test, FIB-4 and NAFLD fibrosis 
+score to screen the population for liver disease. J 
+Hepatol 2023;79:277–286
+233. Zoncapè M, Liguori A, Tsochatzis EA. Non- 
+invasive testing and risk-stratification in patients 
+with MASLD. Eur J Intern Med 2024;122:11–19
+234. Andersson A, Kelly M, Imajo K, et al. Clinical 
+utility of magnetic resonance imaging biomarkers 
+for identifying nonalcoholic steatohepatitis patients 
+at high risk of progression: a multicenter pooled data 
+and meta-analysis. Clin Gastroenterol Hepatol 2022; 
+20:2451–2461
+235. Long MT, Noureddin M, Lim JK. AGA clinical 
+practice update: diagnosis and management of 
+nonalcoholic fatty liver disease in lean individuals: 
+expert review. Gastroenterology 2022;163:764–774
+236. Cusi K. Role of obesity and lipotoxicity in 
+the development of nonalcoholic steatohepatitis: 
+pathophysiology and clinical implications. Gastro- 
+enterology 2012;142:711–725
+237. Loomba R, Friedman SL, Shulman GI. 
+Mechanisms and disease consequences of 
+nonalcoholic fatty liver disease. Cell 2021;184: 
+2537–2564
+238. Schuppan D, Surabattula R, Wang XY. 
+Determinants of fibrosis progression and regres- 
+sion in NASH. J Hepatol 2018;68:238–250
+239. Promrat K, Kleiner DE, Niemeier HM, et al. 
+Randomized controlled trial testing the effects of 
+weight loss on nonalcoholic steatohepatitis. Hepato- 
+logy 2010;51:121–129
+240. Vilar-Gomez E, Martinez-Perez Y, Calzadilla- 
+Bertot L, et al. Weight loss through lifestyle 
+modification significantly reduces features of 
+nonalcoholic steatohepatitis. Gastroenterology 2015; 
+149:367–378
+241. Younossi ZM, Zelber-Sagi S, Henry L, Gerber 
+LH. Lifestyle interventions in nonalcoholic fatty 
+liver disease. Nat Rev Gastroenterol Hepatol 
+2023;20:708–722
+242. Arab JP, Dirchwolf M, Alvares-da-Silva MR, 
+et al. Latin American Association for the Study of 
+the Liver (ALEH) practice guidance for the 
+diagnosis and treatment of non-alcoholic fatty 
+liver disease. Ann Hepatol 2020;19:674–690
+243. Sargeant JA, Gray LJ, Bodicoat DH, et al. 
+The effect of exercise training on intrahepatic 
+triglyceride and hepatic insulin sensitivity: a 
+systematic review and meta-analysis. Obes Rev 
+2018;19:1446–1459
+244. Kanwal F, Kramer JR, Li L, et al. Effect of 
+metabolic traits on the risk of cirrhosis and 
+S86 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+hepatocellular cancer in nonalcoholic fatty liver 
+disease. Hepatology 2020;71:808–819
+245. Younossi Z, Stepanova M, Sanyal AJ, et al. 
+The conundrum of cryptogenic cirrhosis: adverse 
+outcomes without treatment options. J Hepatol 
+2018;69:1365–1370
+246. Castera L, Cusi K. Diabetes and cirrhosis: 
+current concepts on diagnosis and management. 
+Hepatology 2023;77:2128–2146
+247. Patel Chavez C, Cusi K, Kadiyala S. The 
+emerging role of glucagon-like peptide-1 receptor 
+agonists for the management of NAFLD. J Clin 
+Endocrinol Metab 2022;107:29–38
+248. Gastaldelli A, Cusi K. From NASH to diabetes 
+and from diabetes to NASH: mechanisms and 
+treatment options. JHEP Rep 2019;1:312–328
+249. Budd J, Cusi K. Role of agents for the 
+treatment of diabetes in the management of 
+nonalcoholic fatty liver disease. Curr Diab Rep 
+2020;20:59
+250. Gonzalez-Rellan MJ, Drucker DJ. The 
+expanding benefits of GLP-1 medicines. Cell Rep 
+Med 2025;6:102214
+251. Musso G, Cassader M, Paschetta E, Gambino 
+R. Thiazolidinediones and Advanced Liver Fibrosis in 
+Nonalcoholic Steatohepatitis: a Meta-analysis. JAMA 
+Intern Med 2017;177:633–640
+252. Bril F, Kalavalapalli S, Clark VC, et al. Response 
+to pioglitazone in patients with nonalcoholic 
+steatohepatitis with vs without type 2 diabetes. 
+Clin Gastroenterol Hepatol 2018;16:558–566
+253. Sanyal AJ, Newsome PN, Kliers I, et al.; 
+ESSENCE Study Group. Phase 3 trial of semaglutide 
+in metabolic dysfunction-associated steatohepatitis. 
+N Engl J Med 2025;392:2089–2099
+254. U.S. Food and Drug Administration. FDA 
+Approves Treatment for Serious Liver Disease 
+Known as ‘MASH’. Accessed 28 August 2025. 
+Available from https://www.fda.gov/drugs/news- 
+events-human-drugs/fda-approves-treatment 
+-serious-liver-disease-known-mash
+255. Belfort R, Harrison SA, Brown K, et al. A 
+placebo-controlled trial of pioglitazone in subjects 
+with nonalcoholic steatohepatitis. N Engl J Med 
+2006;355:2297–2307
+256. Huang J-F, Dai C-Y, Huang C-F, et al. First-in- 
+Asian double-blind randomized trial to assess the 
+efficacy and safety of insulin sensitizer in nonalcoholic 
+steatohepatitis patients. Hepatol Int 2021;15: 
+1136–1147
+257. Cusi K, Orsak B, Bril F, et al. Long-term 
+pioglitazone treatment for patients with nonalcoholic 
+steatohepatitis and prediabetes or type 2 diabetes 
+mellitus: a randomized trial. Ann Intern Med 2016; 
+165:305–315
+258. Sanyal AJ, Chalasani N, Kowdley KV, et al.; 
+NASH CRN. Pioglitazone, vitamin E, or placebo for 
+nonalcoholic steatohepatitis. N Engl J Med 2010; 
+362:1675–1685
+259. Aithal GP, Thomas JA, Kaye PV, et al. 
+Randomized, placebo-controlled trial of pioglitazone in 
+nondiabetic subjects with nonalcoholic steatohepatitis. 
+Gastroenterology 2008;135:1176–1184
+260. Sathyanarayana P, Jogi M, Muthupillai R, 
+Krishnamurthy R, Samson SL, Bajaj M. Effects of 
+combined exenatide and pioglitazone therapy on 
+hepatic fat content in type 2 diabetes. Obesity 
+(Silver Spring) 2011;19:2310–2315
+261. Abdul-Ghani M, Migahid O, Megahed A, 
+DeFronzo RA, Al-Ozairi E, Jayyousi A. Combination 
+therapy with pioglitazone/exenatide improves beta- 
+cell function and produces superior glycaemic 
+control compared with basal/bolus insulin in poorly 
+controlled type 2 diabetes: a 3-year follow-up of 
+the Qatar study. Diabetes Obes Metab 2020;22: 
+2287–2294
+262. Lavynenko O, Abdul-Ghani M, Alatrach M, 
+et al. Combination therapy with pioglitazone/ 
+exenatide/metformin reduces the prevalence of 
+hepatic fibrosis and steatosis: the efficacy and 
+durability of initial combination therapy for type 2 
+diabetes (EDICT). Diabetes Obes Metab 2022; 
+24:899–907
+263. Ahrén B, Masmiquel L, Kumar H, et al. Efficacy 
+and safety of once-weekly semaglutide versus 
+once-daily sitagliptin as an add-on to metformin, 
+thiazolidinediones, or both, in patients with type 2 
+diabetes (SUSTAIN 2): a 56-week, double-blind, 
+phase 3a, randomised trial. Lancet Diabetes Endocrinol 
+2017;5:341–354
+264. Noureddin M, Jones C, Alkhouri N, Gomez 
+EV, Dieterich DT, Rinella ME; NASHNET. Screening 
+for nonalcoholic fatty liver disease in persons 
+with type 2 diabetes in the United States is cost- 
+effective: a comprehensive cost-utility analysis. 
+Gastroenterology 2020;159:1985–1987
+265. Mahady SE, Wong G, Craig JC, George J. 
+Pioglitazone and vitamin E for nonalcoholic 
+steatohepatitis: a cost utility analysis. Hepatology 
+2012;56:2172–2179
+266. Kovacs CS, Seshiah V, Swallow R, et al.; 
+EMPA-REG PIO trial investigators. Empagliflozin 
+improves glycaemic and weight control as add-on 
+therapy to pioglitazone or pioglitazone plus 
+metformin in patients with type 2 diabetes: a 
+24-week, randomized, placebo-controlled trial. 
+Diabetes Obes Metab 2014;16:147–158
+267. Armstrong MJ, Gaunt P, Aithal GP, et al.; 
+LEAN trial team. Liraglutide safety and efficacy in 
+patients with non-alcoholic steatohepatitis (LEAN): 
+a multicentre, double-blind, randomised, placebo- 
+controlled phase 2 study. Lancet 2016;387:679–690
+268. Gastaldelli A, Cusi K, Fernández Landó L, 
+Bray R, Brouwers B, Rodríguez A. Effect of 
+tirzepatide versus insulin degludec on liver fat 
+content and abdominal adipose tissue in people 
+with type 2 diabetes (SURPASS-3 MRI): a substudy 
+of the randomised, open-label, parallel-group, 
+phase 3 SURPASS-3 trial. Lancet Diabetes Endocrinol 
+2022;10:393–406
+269. Loomba R, Hartman ML, Lawitz EJ, et al.; 
+SYNERGY-NASH Investigators. Tirzepatide for 
+metabolic dysfunction-associated steatohepatitis 
+with liver fibrosis. N Engl J Med 2024;391:299–310
+270. Sanyal AJ, Bedossa P, Fraessdorf M, et al.; 
+1404-0043 Trial Investigators. A phase 2 randomized 
+trial of survodutide in MASH and fibrosis. N Engl J 
+Med 2024;391:311–319
+271. Cusi K, Bril F, Barb D, et al. Effect of 
+canagliflozin treatment on hepatic triglyceride 
+content and glucose metabolism in patients with 
+type 2 diabetes. Diabetes Obes Metab 2019;21: 
+812–821
+272. Kahl S, Gancheva S, Straßburger K, et al. 
+Empagliflozin effectively lowers liver fat content 
+in well-controlled type 2 diabetes: a randomized, 
+double-blind, phase 4, placebo-controlled trial. 
+Diabetes Care 2020;43:298–305
+273. Latva-Rasku A, Honka M-J, Kullberg J, et al. 
+The SGLT2 inhibitor dapagliflozin reduces liver fat 
+but does not affect tissue insulin sensitivity: a 
+randomized, double-blind, placebo-controlled study 
+with 8-week treatment in type 2 diabetes patients. 
+Diabetes Care 2019;42:931–937
+274. Harrison SA, Bedossa P, Guy CD, et al.; 
+MAESTRO-NASH Investigators. A phase 3, randomized, 
+controlled trial of resmetirom in NASH with liver 
+fibrosis. N Engl J Med 2024;390:497–509
+275. Cusi K. Selective agonists of thyroid hormone 
+receptor beta for the treatment of NASH. N Engl J 
+Med 2024;390:559–561
+276. Chen VL, Morgan TR, Rotman Y, et al. 
+Resmetirom therapy for metabolic dysfunction- 
+associated steatotic liver disease: October 2024 
+updates to AASLD Practice Guidance [published 
+correction appears in Hepatology 2025;81:E133]. 
+Hepatology 2025;81:312–320
+277. Loomba R, Abdelmalek MF, Armstrong MJ, 
+et al.; NN9931-4492 investigators. Semaglutide 
+2·4 mg once weekly in patients with non-alcoholic 
+steatohepatitis-related cirrhosis: a randomised, 
+placebo-controlled phase 2 trial. Lancet Gastroenterol 
+Hepatol 2023;8:511–522
+278. Aminian A, Al-Kurd A, Wilson R, et al. 
+Association of bariatric surgery with major 
+adverse liver and cardiovascular outcomes in 
+patients with biopsy-proven nonalcoholic steatohepatitis. 
+JAMA 2021;326:2031–2042
+279. Fakhry TK, Mhaskar R, Schwitalla T, Muradova 
+E, Gonzalvo JP, Murr MM. Bariatric surgery improves 
+nonalcoholic fatty liver disease: a contemporary 
+systematic review and meta-analysis. Surg Obes 
+Relat Dis 2019;15:502–511
+280. Ramai D, Singh J, Lester J, et al. Systematic 
+review with meta-analysis: bariatric surgery reduces 
+the incidence of hepatocellular carcinoma. Aliment 
+Pharmacol Ther 2021;53:977–984
+281. Choi J, Nguyen VH, Przybyszewski E, et al. 
+Statin use and risk of hepatocellular carcinoma 
+and liver fibrosis in chronic liver disease. JAMA 
+Intern Med 2025;185:522–530
+282. Kaplan DE, Serper MA, Mehta R, et al.; 
+VOCAL Study Group. Effects of hypercholesterolemia 
+and statin exposure on survival in a large national 
+cohort of patients with cirrhosis. Gastroenterology 
+2019;156:1693–1706
+283. Li C, Ford ES, Zhao G, Croft JB, Balluz LS, 
+Mokdad AH. Prevalence of self-reported clinically 
+diagnosed sleep apnea according to obesity 
+status in men and women: national Health and 
+Nutrition Examination Survey, 2005–2006. Prev 
+Med 2010;51:18–23
+284. West SD, Nicoll DJ, Stradling JR. Prevalence 
+of obstructive sleep apnoea in men with type 2 
+diabetes. Thorax 2006;61:945–950
+285. Resnick HE, Redline S, Shahar E, et al.; 
+Sleep Heart Health Study. Diabetes and sleep 
+disturbances: findings from the Sleep Heart 
+Health Study. Diabetes Care 2003;26:702–709
+286. Foster GD, Sanders MH, Millman R, et al.; 
+Sleep AHEAD Research Group. Obstructive sleep 
+apnea among obese patients with type 2 diabetes. 
+Diabetes Care 2009;32:1017–1019
+287. Bibbins-Domingo K, Grossman DC, Curry 
+SJ, et al.; US Preventive Services Task Force. 
+Screening for obstructive sleep apnea in adults: 
+US Preventive Services Task Force recommendation 
+statement. JAMA 2017;317:407–414
+288. Malhotra A, Grunstein RR, Fietze I, et al.; 
+SURMOUNT-OSA Investigators. Tirzepatide for 
+the treatment of obstructive sleep apnea and 
+obesity. N Engl J Med 2024;391:1193–1205
+289. Piciucchi M, Capurso G, Archibugi L, Delle 
+Fave MM, Capasso M, Delle Fave G. Exocrine 
+pancreatic insufficiency in diabetic patients: 
+diabetesjournals.org/care                                                                                                Comprehensive Medical Evaluation and Assessment of Comorbidities
+S87 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
+prevalence, mechanisms, and treatment. Int J 
+Endocrinol 2015;2015:595649
+290. Lee Y-K, Huang M-Y, Hsu C-Y, Su Y-C. 
+Bidirectional relationship between diabetes and 
+acute pancreatitis: a population-based cohort study 
+in Taiwan. Medicine (Baltimore) 2016;95:e2448
+291. Das SLM, Singh PP, Phillips ARJ, Murphy R, 
+Windsor JA, Petrov MS. Newly diagnosed diabetes 
+mellitus after acute pancreatitis: a systematic review 
+and meta-analysis. Gut 2014;63:818–831
+292. Petrov MS. Diabetes of the exocrine pancreas: 
+American Diabetes Association-compliant lexicon. 
+Pancreatology 2017;17:523–526
+293. Thomsen RW, Pedersen L, Møller N, Kahlert 
+J, Beck-Nielsen H, Sørensen HT. Incretin-based 
+therapy and risk of acute pancreatitis: a nationwide 
+population-based case-control study. Diabetes Care 
+2015;38:1089–1098
+294. Tkác I, Raz I. Combined analysis of three 
+large interventional trials with gliptins indicates 
+increased incidence of acute pancreatitis in 
+patients with type 2 diabetes. Diabetes Care 
+2017;40:284–286
+295. Sutherland DER, Radosevich DM, Bellin 
+MD, et al. Total pancreatectomy and islet 
+autotransplantation for chronic pancreatitis. J 
+Am Coll Surg 2012;214:409–424
+296. Quartuccio M, Hall E, Singh V, et al. 
+Glycemic predictors of insulin independence after 
+total pancreatectomy with islet autotransplantation. 
+J Clin Endocrinol Metab 2017;102:801–809
+297. Webb MA, Illouz SC, Pollard CA, et al. Islet 
+auto transplantation following total pancreatectomy: 
+a long-term assessment of graft function. Pancreas 
+2008;37:282–287
+298. Wu Q, Zhang M, Qin Y, et al. Systematic 
+review and meta-analysis of islet autotransplantation 
+after total pancreatectomy in chronic pancreatitis 
+patients. Endocr J 2015;62:227–234
+299. Baiduc RR, Helzner EP. Epidemiology of diabetes 
+and hearing loss. Semin Hear 2019;40:281–291
+300. Helzner EP, Contrera KJ. Type 2 diabetes 
+and hearing impairment. Curr Diab Rep 2016;16:3
+301. Hicks CW, Wang D, Lin FR, Reed N, 
+Windham BG, Selvin E. Peripheral neuropathy 
+and vision and hearing impairment in US adults 
+with and without diabetes. Am J Epidemiol 
+2023;192:237–245
+302. Bainbridge KE, Hoffman HJ, Cowie CC. Risk 
+factors for hearing impairment among U.S. adults 
+with diabetes: National Health and Nutrition 
+Examination Survey 1999–2004. Diabetes Care 
+2011;34:1540–1545
+303. Schade DS, Lorenzi GM, Braffett BH, et al.; 
+DCCT/EDIC Research Group. Hearing impairment 
+and type 1 diabetes in the Diabetes Control and 
+Complications Trial/Epidemiology of Diabetes 
+Interventions and Complications (DCCT/EDIC) 
+cohort. Diabetes Care 2018;41:2495–2501
+304. Rasmussen VF, Vestergaard ET, Hejlesen O, 
+Andersson CUN, Cichosz SL. Prevalence of taste 
+and smell impairment in adults with diabetes: a 
+cross-sectional analysis of data from the National 
+Health and Nutrition Examination Survey (NHANES). 
+Prim Care Diabetes 2018;12:453–459
+305. Centers for Disease Control and Prevention. 
+Interim Clinical Considerations for Use of COVID-19 
+Vaccines in the United States. Accessed 19 
+September 2025. Available from https://www.cdc 
+.gov/vaccines/covid-19/clinical-considerations/ 
+covid-19-vaccines-us.html
+306. Sandul AL, Rapposelli K, Nyendak M, Kim 
+M. Updated recommendation for universal hepatitis 
+b vaccination in adults aged 19–59 years - United 
+States, 2024. MMWR Morb Mortal Wkly Rep 
+2024;73:1106
+307. Davies MJ, Aroda VR, Collins BS, et al. 
+Management of hyperglycemia in type 2 diabetes, 
+2022. A consensus report by the American 
+Diabetes Association (ADA) and the European 
+Association for the Study of Diabetes (EASD). 
+Diabetes Care 2022;45:2753–2786
+S88 
+Comprehensive Medical Evaluation and Assessment of Comorbidities                          
+Diabetes Care Volume 49, Supplement 1, January 2026 
+Downloaded from http://diabetesjournals.org/care/article-pdf/49/Supplement_1/S61/848865/dc26s004.pdf by guest on 19 May 2026
