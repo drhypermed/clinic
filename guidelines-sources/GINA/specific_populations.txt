@@ -1,0 +1,84 @@
+
+
+--- PAGE 32 ---
+
+32
+Allergic rhinitis and chronic rhinosinusitis 
+Allergic rhinitis is very common among people with asthma. It should be treated with intranasal corticosteroids as well as 
+treating asthma.
+Chronic rhinosinusitis, especially if associated with nasal polyps, is associated with more severe asthma. Treatment of 
+allergic rhinitis or chronic rhinosinusitis reduces nasal symptoms, but may not improve asthma control. Some biologic 
+treatments (anti-immunoglobulin E, anti-interleukin 4 receptor alpha, anti-interleukin 5, and anti-interleukin 5 receptor
+alpha) improve nasal symptoms in patients with chronic rhinosinusitis with nasal polyps and asthma (see the full 2025 
+GINA Report).
+Obesity 
+Asthma is more difficult to control in people with obesity. Include weight reduction in the treatment plan for obese patients 
+with asthma; even 5–10% weight loss can improve asthma control.
+Gastroesophageal reflux disease (GERD) 
+Asymptomatic GERD is unlikely to cause poor asthma control. Symptomatic reflux should be treated, but patients with 
+poorly controlled asthma should not be treated with anti-reflux therapy unless they also have symptomatic reflux.
+The elderly 
+Comorbidities and their treatment may complicate asthma management. Consider all other medicines the person is
+taking, and check for side-effects. When choosing medications and inhaler devices, consider factors like arthritis,
+eyesight, inspiratory flow, and complexity of treatment regimens, and the environmental impact of the inhaler.
+Aspirin-exacerbated respiratory disease (AERD) 
+A history of asthma exacerbation after taking aspirin or other nonsteroidal anti-inflammatory drugs (NSAIDs) strongly 
+suggests AERD. Patients with AERD often have severe asthma and nasal polyposis. If the history clearly suggests AERD, 
+advise the patient to avoid all nonsteroidal anti-inflammatory drugs. Challenge testing can confirm the diagnosis, but this 
+should only be done in a specialized center with resuscitation facilities. In some patients, addition of a leukotriene receptor 
+antagonist to ICS-containing treatment improves lung function and reduces symptoms. (Note: there are concerns about 
+risk of neuropsychiatric side effects with montelukast.) Desensitization is sometimes effective, but this must only be done 
+under specialist care; there is a significantly increased risk of adverse effects such as asthma exacerbation, gastritis and 
+gastrointestinal bleeding.
+Food allergy and anaphylaxis 
+Food allergy may cause anaphylaxis but is rarely a trigger for asthma symptoms. Food allergy must be assessed by
+specialist testing, because confirmed food allergy is a risk factor for asthma-related death. Good asthma control is
+essential. Ensure patients (and parents/caregivers) have an anaphylaxis plan, know how to avoid the allergen, and know 
+how to use injectable epinephrine.
+Surgery in patients with asthma  
+If possible, surgery should be done when the patient has good asthma control. Ensure that ICS-containing treatment is 
+continued throughout the peri-operative period. For patients on long-term high-dose ICS, and patients who have used oral 
+corticosteroids for more than 2 weeks in the previous 6 months, hydrocortisone should be administered during the
+operation to reduce the risk of adrenal crisis.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 33 ---
+
+33
+COVID-19 and other respiratory viral infections 
+People with well-controlled asthma do not have a higher risk of severe COVID-19 or COVID-19-related death than the 
+general population. However, people with severe asthma exacerbations (people who recently needed oral corticosteroids 
+for asthma, and people hospitalized with severe asthma) have a higher risk of death due to COVID-19.
+When COVID-19 or other respiratory viruses are circulating in the community, advise patients to continue taking their 
+prescribed asthma medications, including ICS, even if they have a respiratory infection. Make sure that every patient has 
+a written asthma action plan. Advise people with asthma to keep up to date with respiratory vaccines (including for
+pneumococcus, pertussis, COVID-19, influenza, respiratory syncytial virus) according to local advice for their age-group.
+Avoid using nebulizers for patients with a respiratory infection or a high probability of infection. To deliver SABA for acute
+asthma in adults and children, use a pressurized metered-dose inhaler and spacer, with a mouthpiece or tightly fitting face 
+mask, if needed. Avoid spirometry in patients with confirmed or suspected COVID-19. Follow infection control protocols for 
+other procedures.
+Before prescribing antiviral therapies for COVID-19, consult local prescribing guidelines, and check carefully for potential 
+interactions with asthma therapy.
+For details, see the full 2025 GINA Report. More information is available from the World Health Organization.
+Managing asthma exacerbations
+An exacerbation is an acute or subacute worsening in symptoms and lung function, compared with the patient’s usual 
+status; some patients’ initial presentation of asthma may be with an exacerbation. Exacerbations are usually due to a viral 
+upper respiratory tract infection, exposure to pollen or pollution, or poor adherence to inhaled corticosteroid treatment, but 
+can also occur in people without any of these risk factors.
+An exacerbation is regarded as moderate if it is troublesome for the patient and requires a change in treatment. An
+exacerbation is regarded as severe if urgent treatment is needed to prevent hospitalization or death. Severe
+exacerbations can be fatal, even in people with previously infrequent symptoms.
+When talking to patients about exacerbations, use a word they can understand, e.g. attack, flare-up.
+The management of worsening asthma and exacerbations is a continuum from self-management by the patient
+(or parent/caregiver) with a written asthma action plan, through to management of severe symptoms in primary care,
+the emergency department, and in hospital.
+All patients should have a written asthma action plan. Examples of action plan templates for Track 1 are available at
+https://www.jaci-inpractice.org/article/S2213-2198(21)01128-4/fulltext and
+https://www.nationalasthma.org.au/health-professionals/asthma-action-plans/asthma-action-plan-library.
+How to increase inhaled medication in a written asthma action plan 
+For patients using low-dose ICS-formoterol reliever (adults/adolescents using Track 1 treatment, and children 6–11 
+years using MART): advise the patient to take extra doses of their ICS-formoterol inhaler whenever needed for symptom 
+relief. If using MART, they should also continue their usual doses of maintenance ICS-formoterol. They should get medical 
+care if symptoms are rapidly getting worse, or are not improving after 2–3 days, or if they need more than the total daily 
+maximum number of inhalations (see page 44 for usual and maximal doses).
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

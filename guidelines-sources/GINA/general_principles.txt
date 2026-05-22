@@ -1,0 +1,226 @@
+
+
+--- PAGE 15 ---
+
+15
+Managing asthma: general principles
+The long-term goals of asthma management are to control symptoms (long-term, not just in recent days/weeks) and to 
+prevent exacerbations, airway damage, and medication side-effects. The aim is to achieve the best possible outcomes 
+for the patient. Also ask the patient about their own goals and preferences for their asthma treatment.
+Children with pre-school wheezing often have clinical remission of these symptoms, off treatment, by school-age or 
+adolescence, but this does not mean it is cured, as it often recurs. Risk factors for persistence of childhood asthma 
+include allergy features, a family history of asthma or allergy, later onset of symptoms, wheezing without colds, and 
+maternal smoking or tobacco smoke exposure.
+Some patients with severe asthma demonstrate clinical remission while taking biologic therapy. Predictors of remission 
+in these patients include fewer symptoms, better lung function, little multimorbidity, earlier asthma onset, and no or lower 
+maintenance OCS use at baseline.
+Essential asthma medicines 
+Make sure that every patient’s medication includes ICS (or a combination medication that contains ICS) to reduce 
+their risk of serious exacerbations, even if symptoms are infrequent (see page 23 for options in adults and adolescents 
+and page 29 for options in children 6–11 years).
+ICS-containing medication should be started as soon as possible after diagnosis, for these reasons: 
+• Any patient can have severe exacerbations, even those whose asthma seems to be mild.
+• ICS-containing medication markedly reduces risk of asthma hospitalizations and death. It is very effective in
+preventing severe exacerbations, reducing symptoms, improving lung function, and preventing exercise-induced
+bronchoconstriction, even in patients with mild asthma.
+• Early treatment with low-dose ICS is associated with better lung function than starting when symptoms have
+been present for more than 2–4 years.
+• Patients who have a severe exacerbation when not taking ICS have worse long-term lung function than those
+who have started ICS.
+Every patient needs a reliever containing a rapid-acting bronchodilator to use whenever they have asthma symptoms. 
+The reliever can be either ICS-formoterol, ICS-SABA or SABA. Low-dose ICS-formoterol is the preferred reliever for 
+adolescents and adults, because it reduces the risk of severe exacerbations, compared with treatment regimens with 
+SABA reliever (see 
+page 23 for options in adults and adolescents and page 29 for options in children 6–11 years).
+For safety, GINA recommends that asthma should not be treated solely with as-needed SABA. Most patients with 
+asthma have airway inflammation, even if they have only intermittent or infrequent symptoms. SABA-only treatment is 
+associated with increased risk of exacerbations, worse lung function, and increased risk of death due to asthma. Regular 
+use of SABA increases allergic responses and airway inflammation, and reduces the bronchodilator response to SABA. 
+Over-use of SABA (for example, ≥3 x 200-dose canisters dispensed in a year) is associated with an increased risk of 
+severe exacerbations compared, with 0–2 canisters. Dispensing of ≥12 SABA canisters (possibly less) in a year is 
+associated with increased risk of death due to asthma. Home use of nebulized SABA is also associated with an increased 
+risk of asthma death.
+For more information on asthma medicines see the list of asthma medication classes and medicines on page 38.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 16 ---
+
+16
+Principles of selecting treatment 
+There are different treatment recommendations for adults/adolescents (page 23) and children aged 6–11 years (page 29). 
+See the full 2025 GINA Report for recommendations about children aged 5 years and younger.
+For each age group, GINA provides “preferred” treatment options and “alternative” treatment options. Preferred asthma 
+treatments are the treatments that were most effective in clinical trials, particularly for reducing exacerbations, and/or are 
+more convenient for patients.
+To choose the best treatment for an individual patient, also consider their risk factors, their other medical conditions, 
+the type of asthma they have, their personal goals for their asthma treatment, their ability to use different types of inhalers 
+correctly, whether they are likely to adhere to treatment, the cost of medication, and its environmental impact.
+GINA treatment options for each age group are shown as “steps”. The step number indicates a level of intensity: Step 5 
+has more medicines and higher doses than Step 1. Treatment can be stepped down or up.
+Principles of choosing and using inhalers 
+Inhaled medicines are essential for effective asthma management. Make sure each patient uses their inhaler effectively
+. 
+Incorrect use is very common. It contributes to poor symptom control and exacerbations, and increases the risk of local 
+adverse effects. 
+Choose the medication and the most appropriate device for the patient before prescribing (Figure 3). Consider physical 
+problems such as arthritis, the patient’s skills, and cost. Patients using ICS in a pressurized metered-dose inhaler should 
+use a spacer. If more than one type of inhaler is available for the preferred treatment, and the patient can use these 
+inhalers equally well, discuss their relative environmental impact with the patient (see Figure 3).
+Train patients to use inhalers correctly. Obtain a checklist for each type of inhaler you prescribe, and learn the correct 
+technique so you can show patients.
+Check inhaler technique at every opportunity. Ask the patient to show you how they use the inhaler, and use a checklist 
+for the specific device to identify any errors.
+Correct errors by physically demonstrating the correct technique, paying attention to incorrect steps. Check the patient’s 
+technique again, up to 2–3 times if necessary.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 17 ---
+
+17
+FIGURE 3. Choosing the best inhaler with the patient
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 18 ---
+
+18
+Assess, adjust treatment, review response 
+To minimize risk and control symptoms, assess each patient’s asthma, adjust their treatment, and review the response. 
+Repeat this cycle continuously (Figure 4).
+Asthma control can change, so ICS-containing treatment is periodically adjusted by the healthcare provider or patient/
+parent/caregiver. Treatment can be increased day-to-day, short term or for several months. Treatment can be reduced 
+when good asthma control has been achieved and maintained for 2–3 months (see page 27 and page 31). 
+Every time the treatment is changed, reassess symptom control, exacerbations, side-effects, and lung function, and ask 
+the patient (or parent/caregiver) if they are satisfied with their treatment.
+In general, asthma should be reviewed 1–3 months after starting treatment, then every 3–12 months (every 4–6 weeks 
+during pregnancy). After an exacerbation, review within 1 week. The frequency of review also depends on the patient’s 
+previous symptom control, their risk factors, their response to initial treatment, and their ability and willingness to manage 
+asthma using an action plan.
+Review asthma frequently if a patient has risk factors for a fatal exacerbation, such as other relevant medical conditions, 
+previous near-fatal asthma (ever), a very severe exacerbation in the last year, currently using or recently stopped oral 
+corticosteroids, over-use of SABA, especially if dispensed more than 1 canister (200 doses) per month. If FeNO is high, 
+check and correct adherence and inhaler technique first, before considering step-up in asthma treatment
+FIGURE 4. The asthma management cycle of shared decision-making
+Confirmation of diagnosis if necessary
+Symptom control & modifiable 
+risk factors
+Comorbidities
+Inhaler technique & adherence
+Patient (and parent/caregiver) 
+preferences and goals
+Treatment of modifiable risk factors 
+and comorbidities
+Non-pharmacological strategies 
+Asthma medications including ICS
+Education & skills training, action plan
+Symptoms 
+Exacerbations
+Side-effects
+Comorbidities
+Lung function
+Consider biomarkers
+Patient (and parent/caregiver) 
+satisfaction
+ASSESS
+ADJUST
+REVIEW
+ICS: inhaled corticosteroids
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 19 ---
+
+19
+Managing risk factors 
+Treat risk factors (Table 2, page 12), including other medical conditions that interfere with asthma or asthma treatment.
+There is consistent, high-quality evidence that these strategies can reduce the risk of exacerbations:
+ • Guided self-management
+. Teach patients to monitor their symptoms and/or PEF, give them a written asthma  
+ 
+   action plan (page 21), and review asthma regularly.
+ • T
+reatment regimens that include ICS. For all patients, prescribe treatment that includes ICS. This includes 
+               ICS-formoterol taken as needed for asthma symptoms, ICS taken every day, or combination ICS-LABA taken
+   every day (see options for adults/adolescents on pages 24–25 and options for children on page 29). For adults  
+ 
+   and adolescents, GINA 
+Track 1 with ICS-formoterol reliever (page 24) reduces the risk of severe exacerbations,  
+ 
+   compared with using a SABA reliever
+.
+ • A
+voiding tobacco smoke. Advise and help patients to quit smoking/vaping, and to avoid other people’s smoke/ 
+ 
+   vapes. Advise parents not to smoke or vape in rooms or cars that children use. 
+ • Management of confirmed food allergy. 
+Advise appropriate food avoidance and ensure patient has injectable  
+ 
+   epinephrine for anaphylaxis.
+ • Referral to a specialist center. If available, refer patients with severe asthma for detailed assessment and
+   consideration of add-on biologic medications and/or sputum-guided treatment.
+ • School-based programs
+ that include asthma self-management skills.
+Non-pharmacological treatment 
+In addition to medications, other therapies and strategies may help control symptoms and reduce risk (see the full 2025 
+GINA Report for details).
+There is consistent, high-quality evidence to support some strategies, for example:
+ • Advice about smoking cessation
+. At every visit, strongly encourage smokers to quit. Provide access to
+   counselling and resources. 
+Advise parents/caregivers not to smoke in rooms or cars used by children with asthma. 
+ • Physical activity
+. Encourage people with asthma to do regular physical activity for its general health benefits; it  
+ 
+   may also slightly improve asthma control and lung function. 
+Advise patients how to manage exercise-induced
+   bronchoconstriction.
+ • Investigation for occupational asthma. 
+Ask all patients with adult-onset asthma about their work history.
+   Identify sensitizers in the workplace and remove them as soon as possible. Refer for expert advice, if available.
+ • Managing aspirin-exacerbated respiratory disease. 
+Always ask about previous reactions before prescribing
+   nonsteroidal anti-inflammatory drugs, including aspirin.
+Allergens may contribute 
+to asthma symptoms in sensitized patients, but allergen avoidance is not recommended for other 
+people with asthma. Allergen avoidance strategies are often complex and expensive, and there are no validated methods 
+for identifying those who are likely to benefit.
+Some common triggers for asthma symptoms, such as exercise and laughter, should not be avoided. Others, such as viral 
+respiratory infections and stress, are difficult to avoid and must be managed when they occur.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 20 ---
+
+20
+Check and improve adherence to asthma treatment 
+Many patients do not take their asthma medications as prescribed. Poor adherence may be unintentional (for example, 
+due to forgetfulness, cost, or misunderstanding) and/or intentional (for example, due to belief that the medicine is
+unnecessary, fear of side-effects, cultural issues, or cost).
+If ICS-containing maintenance treatment is prescribed but the patient does not take it regularly, they may be using only 
+SABA reliever. SABA-only treatment results in poor symptom control and increases the risk of exacerbations.
+Identify patients with adherence problems:
+ • Show empathy when asking patients about their treatment use, for example: “Most patients don’t take their
+   inhaler exactly as prescribed. In the last 4 weeks, how many days a week have you been taking it? 0 days a  
+ 
+	 		week,	or	1,	or	2	days	…?”,	or	“Do	you	find	it	easier	to	remember	your	inhaler	in	the	morning	or	night?” 
+ • Check medication usage, from prescription date, inhaler date/dose counter, dispensing records.
+ • Ask patients about their attitudes and beliefs about asthma and medications
+. 
+ • Check adherence if FeNO is high despite prescription of GINA Step 3 or Step 4 treatment.
+Studies have shown improved adherence with these strategies:
+ • Shared decision-making for medication and dose choice
+ • Electronic inhaler reminders for missed doses
+ • Comprehensive asthma education with home visits by asthma nurses
+ • Healthcare providers reviewing feedback about their patients’ dispensing records
+ • An automated voice recognition program with telephone messages triggered when refills are due or overdue
+ • Direct observation of children taking maintenance asthma treatment at school.
+Educate patients and caregivers about asthma 
+Give patients, parents and caregivers information that they can understand clearly.
+Explain:
+ • Why they need long-term treatment for asthma
+ • How to use the inhaler correctly
+ • How to use their written asthma action plan
+ • How to monitor symptoms and/or peak flow
+ • Why they need regular medical review for asthma.
+To manage asthma ef
+fectively, health providers and patients need to work together. When healthcare providers are trained 
+to communicate well, patients with asthma may be more satisfied with their health care, be less restricted by their asthma, 
+and have fewer emergency visits for asthma.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

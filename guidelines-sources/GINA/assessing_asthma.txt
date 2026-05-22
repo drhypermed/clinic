@@ -1,0 +1,149 @@
+
+
+--- PAGE 11 ---
+
+11
+Assessing asthma
+Assess each person’s asthma at every visit. The most important times to reassess asthma are after an exacerbation, and 
+when the patient needs a new prescription for asthma medication. Also assess each person’s asthma at least once every 
+year, even if they have no symptoms.
+How to assess asthma control 
+Asthma control means how much asthma is affecting the person’s health or their risk of future health problems, on their 
+current asthma treatment.
+Asthma control includes both:
+ • Control of asthma symptoms (T
+able 2A, page 12) – assess symptom control at every opportunity. People with  
+ 
+   poorly controlled asthma symptoms have a high risk of exacerbations. Symptoms are also a burden for patients.
+ • Control of risk factors (T
+able 2B, page 12) – identify features that increase the patient’s future risk of having
+   exacerbations (flare-ups, attacks), loss of lung function, or medication side-effects. 
+Assess risk factors at
+   diagnosis and then periodically, including after the patient has had an exacerbation.
+Lung function: Measure lung function with spirometry (or with a PEF meter
+, if spirometry is not possible). Measure lung 
+function before starting ICS treatment, 3–6 months later, and then at least once every 1–2 years. Measure lung function 
+more often in people with a high risk of exacerbations and people with risk factors for lung function decline (Table 2B).
+If a patient has few symptoms despite poor lung function, or good lung function despite frequent symptoms, investigate for 
+underlying conditions.
+Treatment issues: Document the patient’s current treatment. Ask about side-effects. Check inhaler technique by
+watching the patient use their inhaler. Check adherence to treatment by asking the patient how often they take their
+medicines and whether they have any problems. Check that the patient has a written asthma action plan (page 21).
+Ask the patient about their goals and preferences for asthma treatment.
+Assess multimorbidity: Check whether any other medical conditions are causing symptoms, affecting quality of life, or 
+making asthma harder to control (for example, rhinitis, rhinosinusitis, gastroesophageal reflux disease, obesity, obstructive 
+sleep apnea, or depression and anxiety).
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 12 ---
+
+12
+TABLE 2. Assessment of asthma control in adults, adolescents and children 6–11 years
+A. Assess symptom control 
+In the past 4 weeks, has the patient had:
+Daytime symptoms more than twice/week?
+Any night waking due to asthma?
+SABA* reliever needed more than twice/week?
+Any activity limitation due to asthma?
+*Only for patients using SABA reliever (not ICS-formoterol reliever). Do not include SABA taken before exercise.
+B. Assess risk factors
+B.1. Risk factors for exacerbations
+Uncontrolled asthma symptoms (important risk factor)
+Other factors that increase risk of exacerbations, even if the person has few asthma symptoms
+• Over-use of SABA (≥3 x 200-dose canisters/year)†
+• Inadequate ICS (no ICS, poor adherence, incorrect inhaler technique)
+• Medical conditions (obesity, chronic rhinosinusitis, GERD, confirmed food allergy) or pregnancy
+• Exposure to allergens (if sensitized), smoking, vaping, air pollution
+• Major psychological or socioeconomic problems
+• Poor lung function (especially if FEV
+1 <60% predicted), large FEV1 response to bronchodilator
+• Type 2 inflammatory markers (higher blood eosinophil level, high FeNO)§
+• Severe exacerbation in past year or lifetime history of intubation or ICU admission for asthma
+B.2. Risk factors for developing persistent airflow limitation
+• History of preterm birth, low birth weight and rapid infant weight gain, frequent productive cough
+• Lack of ICS treatment in patient with a history of severe exacerbations
+• Exposure to tobacco smoke or noxious chemicals
+• Low initial FEV
+1
+• High eosinophil levels in sputum or blood
+B.3. Risk factors for side-effects of medication
+• Systemic effects: frequent OCS, long-term high-dose and/or potent ICS, P450 inhibitors‡
+• Local effects: high-dose and/or potent ICS, poor inhaler technique
+Level of asthma symptom control
+Well
+controlled
+Partly
+controlled
+Uncontrolled
+None
+of these
+1–2
+of these
+3–4 
+of these
+FeNO: fractional exhaled nitric oxide; FEV1: Forced expiratory volume in 1 second; GERD: gastroesophageal reflux disease;
+ICS: inhaled corticosteroid; OCS: oral corticosteroids; SABA: short-acting beta2-agonist; ICU: intensive care unit
+† Also increases risk of asthma death, especially if very high use (≥1 canister per month)
+‡ Cytochrome P450 inhibitors such as ritonavir, ketoconazole, itraconazole may increase systemic exposure to some types of ICS and 
+some long-acting beta2-agonists
+§ Several factors affect blood eosinophils and FeNO, including sex, age, smoking status & time of day. See GINA 2025 report for details.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 13 ---
+
+13
+How to assess asthma severity 
+Asthma severity usually means the level of treatment needed to control a person’s symptoms and to prevent
+exacerbations. Severity can be assessed after several months of treatment.
+Difficult-to-treat asthma is asthma that is uncontrolled despite prescribing of medium- or high-dose ICS with a second 
+controller (usually a LABA) or with maintenance OCS, or that requires high-dose treatment to maintain good symptom 
+control and reduce the risk of exacerbations. It does not mean a ‘difficult patient’. In many cases, asthma may appear to 
+be difficult to treat because of modifiable factors such as incorrect inhaler technique, poor adherence, smoking or
+comorbidities, or because the diagnosis is incorrect.
+Asthma is severe if it is still uncontrolled despite good adherence with high-dose ICS-LABA and management of
+contributory factors, or if the patient needs high-dose ICS-LABA to maintain good asthma control.
+Asthma is mild if it can be well controlled with ICS-formoterol taken as needed (page 23), or with low-dose ICS taken 
+daily. 
+However, the term “mild asthma” is often understood or used differently than this in the community. Many people with 
+infrequent asthma symptoms think that their asthma is mild and that they do not need ICS treatment because they have 
+not had any severe attacks. Therefore, you should explain that people with infrequent or mild asthma symptoms can have 
+severe or fatal exacerbations if they are treated only with SABA. Explain that treatment with low-dose ICS or as-needed 
+low-dose ICS-formoterol reduces the risk of severe exacerbations by half to two-thirds, compared with SABA alone.
+How to investigate uncontrolled asthma 
+Most patients can achieve good asthma control with treatment that contains ICS, but some patients do not. In these
+cases, look for the cause (Figure 2) before changing the treatment. Always check inhaler technique and adherence first.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 14 ---
+
+14
+FIGURE 2. Investigating asthma in a patient who has poor symptom control or exacerbations  
+           despite treatment
+GERD: gastroesophageal reflux disease; ICS: inhaled corticosteroid; NSAID: nonsteroidal anti-inflammatory drug; Track 1: see page 24.
+Compare inhaler technique with a device-specific checklist, and correct errors; 
+recheck frequently. Have an empathic discussion about barriers to adherence.
+Watch patient using  
+their inhaler. 
+Discuss adherence  
+and barriers to use
+If lung function normal during symptoms, consider halving ICS dose and  
+repeating lung function after 2–3 weeks. Consider biomarkers for Type 2 asthma.
+Confirm the diagnosis  
+of asthma
+Reduce potential  
+risk factors.
+Assess and manage 
+comorbidities
+• For adults/adolescents, switch to GINA Track 1 if available
+• Check for risk factors or inducers such as smoking, beta-blockers,  
+NSAIDs, allergen exposure. Check for and manage conditions such  
+as rhinitis, obesity, GERD, depression/anxiety.
+Consider short-term step up to next treatment level. Use shared  
+decision-making, and balance potential benefits and risks.
+Consider short-term 
+treatment step-up
+Refer for expert  
+advice
+If asthma still uncontrolled after 3–6 months on Step 4 treatment, refer for expert 
+advice. Refer earlier if asthma symptoms severe, or doubts about diagnosis.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

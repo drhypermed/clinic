@@ -1,0 +1,83 @@
+--- USER MESSAGE ---
+<USER_REQUEST>
+النص الرسمي للمراجعة والتوثيق يعني ايه ؟ وايه الفرق بينه وبين النص الرسمي اللي تحت
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-21T00:04:51+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+لا النص الرسمي اللي تحت كان مهم جدا انا اقصد اي حشو تاني
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-21T00:10:52+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+النص الرسمي للمراجعة والتوثيق دا يعني ايه وايه لازمته لما يكون مكتوب ؟
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-21T00:19:44+03:00.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.1 Pro (High) to Gemini 3.5 Flash (High). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+والتعريف اللي في الاول بردو حقائق كل دا كويس وعايز يتضاف واعد الترتيب وتاكد من المعلومات 
+وكمان ليه مش حاطط النص الرسمي في الاخر ؟
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T00:48:10+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+ النص الرسمي
+توصيات ADA الأصلية للمراجعة
+استخدم هذا الجزء عند الحاجة لمراجعة نص التوصية الأصلي كما ورد في ADA، مع رقم التوصية، درجة الدليل، ورقم الصفحة. الملخص العملي موجود بالأعلى، وهذا الجزء للتوثيق والمراجعة الدقيقة.
+
+0 فصل · 0 توصية
+لا توجد توصيات مصدر مطابقة للبحث الحالي.
+
+
+ليه دا يتحط في gina 
+
+كمان المصادر المرتبطه فين ؟
+لابد تراجع وتتاكد من عدم الغلط
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T00:54:58+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+امسح النص الرسمي دا لانه طويل من gina او نظمه واختصره
+وتاكد من فصل كل مدرسة عن بعضها في الكود لسهولة التعديل
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T00:57:09+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+النص الرسمي هل ممكن نضيفه بس مرتب كدا ومنظم ؟ ولو في جدول تكون مصوره ؟ ويكون كل باب تحته النص اللي يخصه بس ؟ واهم شيء تنظيم وتنسيق االفقرات
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T01:00:28+03:00.
+</ADDITIONAL_METADATA>
+
+--- USER MESSAGE ---
+<USER_REQUEST>
+النص الرسمي
+توصيات GINA الأصلية للمراجعة
+
+دا فاضي والصور مش ظاهره
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T01:55:28+03:00.
+</ADDITIONAL_METADATA>
+

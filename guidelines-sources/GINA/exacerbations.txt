@@ -1,0 +1,179 @@
+
+
+--- PAGE 34 ---
+
+34
+Note: Patients whose maintenance treatment is ICS-LABA with a non-formoterol LABA should not use ICS-formoterol as 
+their reliever; they should instead use SABA or ICS-SABA as their reliever.
+For patients using ICS-SABA reliever (adults/adolescents using Track 2 treatment): advise the patient to take extra 
+doses of ICS-SABA (2 inhalations of budesonide-salbutamol 100/100 mcg [delivered dose 80/90 mcg] each time) for 
+symptom relief, and continue their usual maintenance ICS-containing treatment. They should get medical care if they are 
+rapidly deteriorating, or are not improving after 2–3 days, or if they need ICS-SABA more than 6 times in any day.
+Patients using SABA reliever (adults/adolescents using Track 2 treatment, and children 6–11 years): advise the patient 
+to take SABA when needed for symptom relief, and to increase their ICS-containing maintenance treatment (if prescribed) 
+for at least 1–2 weeks. For adults, consider increasing maintenance ICS dose to 4 times usual dose for 1–2 weeks. 
+The patient should get medical care if they need SABA again within 3 hours, or if asthma symptoms are worsening rapidly 
+or are not improving. 
+Use of oral corticosteroids in written asthma action plans 
+For most adults and adolescents, the written asthma action plan should give instructions for when and how to start oral 
+corticosteroid treatment, and whether to contact the doctor first. A short course of oral corticosteroid is often used if:
+• Asthma symptoms are getting worse over 2–3 days, despite using more reliever
+• Asthma symptoms are rapidly getting worse
+• Lung function is low (FEV1 <60% of predicted value, PEF <60% of personal best)
+• Symptoms are worsening in person with a history of sudden severe exacerbations.
+Usual doses are:
+• Adults: prednisolone 40–50 mg each morning for 5–7 days
+• Children: prednisolone 1–2 mg/kg/day up to 40 mg, each morning for 3–5 days.
+If an oral corticosteroid is used for less than 2 weeks, it is not necessary to reduce the dose at the end of treatment before 
+stopping it.
+If patients are provided with a prescription for oral corticosteroids for use as part of their asthma action plan, they should 
+be told to contact their doctor if they start taking the medications. Advise patients about common side-effects, including 
+sleep disturbance, increased appetite, reflux, and mood changes. 
+Oral corticosteroids can be life-saving during severe asthma exacerbations, but there is more and more evidence that the 
+risk of side-effects increases with each course. The need for courses of oral corticosteroids can be reduced by optimizing 
+inhaled therapy
+, including attention to inhaler technique and adherence, and by switching to Track 1 therapy with
+ICS-formoterol, if available.
+Managing exacerbations in primary or acute care 
+Figure 9 (page 36) summarizes assessment and management of asthma exacerbations in adults, adolescents and 
+children 6–11 years in primary care.
+Assess severity of the exacerbation while starting SABA and oxygen (if needed): check for anaphylaxis and assess 
+dyspnea, respiratory rate, pulse rate, oxygen saturation* and lung function (for example, PEF).
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 35 ---
+
+35
+Consider alternative causes of acute breathlessness (for example, heart failure, upper airway dysfunction, inhaled
+foreign body, pulmonary embolism).
+Arrange immediate transfer to an acute care facility if there are signs of severe exacerbation (see Figure 9).
+Immediately give inhaled SABA, inhaled ipratropium bromide, oxygen and systemic corticosteroids. Transfer to intensive 
+care if the patient is drowsy, confused, or has a silent chest.
+*Pulse oximetry may overestimate oxygen saturation in a hypoxemic patient with dark skin color. Oxygen saturation targets should be
+adjusted for altitude, where appropriate.
+Start bronchodilator treatment with repeated doses of SABA (usually by pressurized metered-dose inhaler and spacer) 
+and controlled flow oxygen, if needed and available. Inhaled albuterol (salbutamol) is the most common bronchodilator 
+used to treat acute asthma. High-dose budesonide-formoterol was as effective and safe as high-dose salbutamol in
+studies in patients with FEV
+1 >30% predicted treated in emergency departments. In acute care facilities, consider
+intravenous magnesium sulfate if the patient has an inadequate response to intensive initial treatment.
+Start oral corticosteroids (except for mild exacerbations): Adults: prednisolone 40–50 mg each morning for 5–7 days. 
+Children: prednisolone 1–2 mg/kg/day up to 40 mg, each morning for 3–5 days. See the full 2025 GINA Report for other
+corticosteroid options.
+Titrate oxygen, if needed, to maintain target saturation of 93–95%* in adults and adolescents (≥ 94%* in children
+6–12 years).
+Do not routinely perform chest X-ray or blood gases, or routinely prescribe antibiotics. 
+Do not use sedatives.
+Monitor closely: Check symptoms and oxygen saturation frequently. Measure lung function after 1 hour. Titrate treatment 
+according to response. Transfer to higher-level care if patient’s condition worsens or symptoms fail to respond.
+Decide whether to hospitalize the patient based on clinical status, symptoms and lung function, response to treatment, 
+recent and history of exacerbations, and their ability to manage at home.
+Before discharge, arrange ongoing treatment to reduce the chance of another exacerbation:
+• Prescribe regular maintenance treatment that includes ICS: For adults and adolescents, the preferred
+treatment is ICS-formoterol MART
+, if available. If not, prescribe regular daily medium-dose ICS-LABA.
+For children 6–11 years, the treatment options are low-dose ICS-LABA
+ plus SABA as needed, medium-dose ICS
+plus SABA as needed, or MART
+. See Table 7 for MART doses for adults and children, and see Table 6 for low,
+medium and high-dose ICS if used with as-needed SABA.
+•Reduce reliever use to as-needed: tell patient (or parent/caregiver) to use reliever only as needed for
+symptoms (not regularly), so they can tell if asthma is worsening or improving.
+• Check inhaler technique and adherence.
+• Provide an interim written asthma action plan.
+Arrange follow-up: if possible, within 2–7 days for adults and adolescents, and within 1–2 working days for children. 
+Consider early referral for specialist advice after hospitalization, or for patients with repeated emergency visits for asthma.
+*Pulse oximetry may overestimate oxygen saturation in a hypoxemic patient with dark skin color. Oxygen saturation targets should be
+adjusted for altitude, where appropriate.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 36 ---
+
+36
+FIGURE 9. Management of asthma exacerbations in primary care
+ICS: inhaled corticosteroid; PEF: peak expiratory flow; O2: oxygen; pMDI: pressurized metered-dose inhaler; SABA: short-acting
+beta2-agonist (doses are for salbutamol [albuterol] 100 mcg/actuation).
+IMPROVING
+TRANSFER TO ACUTE 
+CARE FACILITY
+ While waiting: give SABA, 
+ipratropium bromide,  
+O2, systemic corticosteroid
+ ASSESS RESPONSE AT 1 HOUR (or earlier) 
+CONTINUE TREATMENT with SABA as needed
+MILD or MODERATE
+Talks in phrases, prefers  
+sitting to lying, not agitated
+Respiratory rate increased
+Accessory muscles not used
+Pulse rate 100–120 bpm
+O
+2 saturation (on air) 90–95%
+PEF >50% predicted or best
+START TREATMENT
+SABA 4–10 puffs by pMDI + spacer,  
+every 20 minutes for 3 doses, if needed
+Prednisolone for moderate 
+exacerbation: adults 40-50 mg, 
+children 1–2 mg/kg, max. 40 mg
+Controlled oxygen (if available): target 
+saturation 93–95% (children: ≥94%)
+FOLLOW UP UP within 2–7 days (1–3 days for children) 
+Review symptoms and signs: Is the exacerbation resolving? Should prednisone be continued?
+Reliever: as-needed, not regular 
+ICS-containing controller: confirm patient is taking ICS-containing medication. Check inhaler technique  
+and adherence. Adults/adolescents: switch to GINA Track 1 with ICS-formoterol if available (Box 4-6, Box 9-5)
+Risk factors: check and correct modifiable risk factors that may have contributed to exacerbation 
+Refer for expert advice if more than 1 exacerbation in a year
+Action plan: Is it understood? Was it used appropriately? Does it need to be modified?
+ASSESS FOR DISCHARGE
+Symptoms improved, not needing SABA
+PEF improving, and >60-80% of personal 
+best or predicted
+Oxygen saturation >94% room air
+Resources at home adequate
+SEVERE
+Talks in words, sits hunched 
+forwards, agitated
+Respiratory rate >30/min
+Accessory muscles in use
+Pulse rate >120 bpm
+O
+2 saturation (on air) <90%
+PEF ≤50% predicted or best
+Patient presents with acute or sub-acute worsening of asthmaPRIMARY CARE  
+ASSESS the PATIENT
+Are the current symptoms due to asthma? Consider other causes
+Risk factors for asthma-related death?
+Severity of exacerbation? (consider worst feature)
+LIFE-THREATENING
+Drowsy, confused 
+or quiet chest
+ARRANGE at DISCHARGE
+Reliever: as needed, not regularly
+Controller: start, or step up ICS therapy (Track 1 
+preferred). Check inhaler technique, adherence
+Prednisolone: continue, usually total 5–7 days 
+(3–5 days for children). See text for other options.
+Follow up: within 2–7 days (1–3 working days 
+for children)
+URGENT
+WORSENING
+WORSENING
+IMPROVING
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 37 ---
+
+37
+Follow-up after an exacerbation 
+All patients must be followed up regularly by a healthcare provider until symptoms and lung function return to normal.
+Reassess long-term treatment. For adults and adolescents, consider changing to Track 1 (page 24) with ICS-formoterol 
+reliever to reduce the risk of another exacerbation. Check adherence to ICS containing medications. Make sure the
+patient/parent/caregiver understands the purposes of asthma medications, and check if they are using the inhaler
+correctly. Review the written asthma action plan.
+Ask what the patient/parent/caregiver thinks may have caused the exacerbation. Check risk factors for exacerbations, 
+such as smoking, allergen exposure, regular use or over-use of SABA (see Table 2).
+Consider referring patients for expert advice after hospitalization for severe asthma or recurring acute asthma.
+Refer patients who have had more than 1 or 2 exacerbations/year despite medium-dose or high-dose ICS-LABA.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

@@ -1,0 +1,422 @@
+
+
+--- PAGE 21 ---
+
+21
+Provide a written asthma action plan 
+Give all patients (or parents/caregivers) a written asthma action plan, so they can recognize worsening asthma and act 
+appropriately. The plan can be handwritten, printed, digital or pictorial – not just spoken instructions. It must be suitable
+for the person’s level of asthma control, and their ability to understand health information and follow the instructions.
+The written asthma action plan should include:
+ • The patient’
+s usual asthma medications
+ • When to increase inhaled medications and how to do this (page 33)
+ • When to start oral corticosteroids, if needed
+ • How to get urgent medical care if symptoms continue or worsen.
+Action plans can be based on symptoms and/or (in adults) PEF.
+Choosing asthma medication for adults and adolescents
+Starting treatment 
+Adults and adolescents with asthma should not be treated with SABA alone. They should all receive ICS-containing
+treatment. The optimal treatment that should be started immediately after diagnosis of asthma depends on the patient’s 
+history and current symptoms (Table 3). Most adults and adolescents should start with low-dose ICS-containing treatment 
+(page 44). The preferred treatment options use ICS-formoterol as the patient’s reliever, instead of SABA (page 22). This is 
+called anti-inflammatory reliever (AIR) therapy.
+Before starting treatment:
+ • Record evidence for the diagnosis of asthma
+ • Document symptom control and risk factors
+ • Assess lung function, when possible
+ • T
+rain the patient to use the inhaler correctly, and check their technique
+ • Schedule a follow-up visit.
+Treatment tracks 
+There are two approaches to asthma treatment for adults and adolescents (Figure 5):
+ • The preferred treatment, in which the reliever is low-dose ICS-formoterol (“T
+rack 1”, page 24).
+ • Alternative treatment regimens in which the reliever is SABA, or a combination of ICS and SABA
+ (ICS-SABA)  
+ 
+   (“T
+rack 2”, page 25).
+GINA recommends Track 1 because there is strong evidence that it reduces the risk of severe exacerbations, compared 
+with Track 2, with similar symptom control. Track 1 is also simpler, because it requires only one medication and one
+inhaler technique across treatment steps 1–4.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 22 ---
+
+22
+TABLE 3. Suggested initial treatment for adults and adolescents with asthma
+Clinical features Preferred (GINA Track 1) Alternatives (GINA Track 2)
+Infrequent asthma symptoms (for 
+example, 1–2 days/week or less)
+Low-dose ICS-formoterol taken as 
+needed
+Low-dose ICS taken whenever 
+SABA is taken for asthma
+symptoms (combination or separate 
+inhalers)
+Asthma symptoms less than 3–5 
+days/week, with normal or mildly 
+reduced lung function
+Low-dose ICS-formoterol taken as 
+needed
+Regular daily low-dose ICS, plus 
+SABA as needed
+Asthma symptoms most days,
+waking due to asthma once a week 
+or more, or low lung function
+Low-dose ICS-formoterol
+maintenance-and-reliever therapy 
+(MART)
+Regular daily low-dose ICS-LABA, 
+plus SABA or ICS-SABA as needed
+Regular daily medium-dose ICS, 
+plus SABA or ICS-SABA as needed
+Daily asthma symptoms, waking 
+at night with asthma once a week 
+or more, with low lung function, or 
+current smokers
+Medium-dose ICS-formoterol MART Regular daily medium-dose
+ICS-LABA, plus SABA or ICS-SABA 
+as needed
+Regular daily high-dose ICS plus 
+SABA as needed
+During acute asthma exacerbation Treat exacerbation (page 34). Start 
+medium-dose ICS-formoterol MART
+Treat exacerbation (page 34).
+Start regular daily medium-dose
+ICS-LABA, plus SABA as needed
+ICS: inhaled corticosteroids; MART: maintenance-and-reliever therapy with ICS-formoterol; SABA: short-acting beta2-agonist. See page 
+45 for medications and doses for AIR/MART. See page 44 for total daily ICS doses for patients using a SABA or ICS-SABA reliever.
+GINA Track 1 is preferred because it reduces the risk of severe exacerbations compared with treatment with a SABA
+reliever, and it is simpler. Check local regulatory and payer criteria.
+Adjusting treatment 
+After the patient has started treatment, reassess asthma at every visit, adjust treatment if necessary, and review the
+response to treatment.
+Within each track, treatment can be stepped up or down, using the same reliever at each step. A patient can switch from 
+one track to another, if needed. At each step, there are also some other controller options with less evidence for efficacy 
+and safety, or with specific indications.
+If a patient’s asthma is not well controlled, check adherence, inhaler technique, risk factors and comorbidities first, before 
+stepping up treatment or changing to a different medication at the same step.
+If asthma has been well controlled for 3 months or more, consider stepping down.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 23 ---
+
+23
+Summary Guide for Asthma Management and Prevention                                                                            © GINA 2025   www .ginasthma.org
+FIGURE 5. Treatment steps for adults and adolescents
+Non-pharmacologic strategies include smoking cessation, physical activity, pulmonary rehabilitation, weight reduction, vaccinations (see text for more) 
+Allergen immunotherapy, e.g. HDM SLIT: consider for patients with clinically relevant sensitization and not well-controlled (but stable) asthma See text for further information and safety advice  
+GINA 2025 
+Adults & adolescents 
+12+ years
+Personalized asthma management 
+Assess, Adjust, Review  
+for individual patient needs
+TRACK 1: PREFERRED 
+CONTROLLER and RELIEVER
+Using ICS-formoterol as the reliever* 
+reduces the risk of exacerbations 
+compared with using a SABA reliever, 
+and is a simpler regimen
+TRACK 2: Alternative 
+CONTROLLER and RELIEVER
+Before considering a regimen  
+with SABA reliever, check if the 
+patient is likely to adhere to daily 
+controller treatment
+Symptoms 
+Exacerbations
+Side-effects
+Comorbidities
+Lung function
+Consider biomarkers
+Patient (and parent/caregiver) satisfaction
+Comorbidities
+Inhaler technique & adherence
+Patient (and parent/caregiver) preferences and goals
+Non-pharmacological strategies 
+Asthma medications including ICS
+Education & skills training, action plan
+ASSESS
+ADJUST
+REVIEW
+STEPS 1 – 2
+AIR-only*: low-dose ICS-formoterol as needed
+STEP 3
+MART* with  
+low-dose maintenance 
+ICS-formoterol
+STEP 4
+MART* with  
+medium-dose 
+maintenance  
+ICS-formoterol
+STEP 5
+Add-on LAMA
+Refer for assessment of 
+phenotype. Consider trial 
+of high-dose maintenance 
+ICS-formoterol. Consider 
+anti-IgE, anti-IL5/5R,  
+anti-IL4Rα, anti-TSLP
+RELIEVER: As-needed low-dose ICS-formoterol*
+See GINA 
+severe 
+asthma guide
+STEP 1
+Reliever only; if SABA, 
+take ICS with each dose
+STEP 2
+Low dose  
+maintenance ICS
+STEP 3
+Low dose 
+maintenance 
+ICS-LABA
+STEP 4
+Medium dose 
+maintenance 
+ICS-LABA
+STEP 5
+Add-on LAMA
+Refer for assessment of 
+phenotype. Consider trial 
+of high-dose maintenance 
+ICS-LABA. Consider  
+anti-IgE, anti-IL5/5R,  
+anti-IL4Rα, anti-TSLP
+RELIEVER: as-needed ICS-SABA*, or as-needed SABA
+*AIR: Anti-inflammatory reliever; HDM: house dust mite; Ig: immunoglobulin; ICS: inhaled corticosteroids; IL: interleukin; LABA: long-acting beta2-agonist; 
+LAMA: long-acting muscarinic antagonist; MART: maintenance-and reliever therapy with ICS-formoterol; OCS: oral corticosteroid; SLIT: sublingual
+immunotherapy; TSLP: thymic stromal lymphopoietin.  †If prescribing LTRA, advise patient/caregiver about risk of neuropsychiatric adverse effects.
+See page 44 for information about doses of ICS-formoterol and frequency of use.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 24 ---
+
+24
+Track 1 treatment options for adults and adolescents 
+In Track 1, across all steps, the patient takes low-dose ICS-formoterol whenever needed to relieve asthma symptoms
+(Figure 6). Patients can also use low-dose ICS-formoterol before exercise or before or during exposure to allergens,
+if needed. The same ICS-formoterol inhaler is also used for the patient’s maintenance treatment in Steps 3–5.
+FIGURE 6. Track 1 (preferred) treatment Steps 1–4 for adults and adolescents
+AIR: anti-inflammatory reliever; ICS: inhaled corticosteroid; form: formoterol; MART: maintenance-and-reliever therapy with
+ICS-formoterol. See page 44 for ICS-formoterol doses and frequency of use.
+Steps 1–2: The recommended treatment is low-dose ICS-formoterol taken whenever needed to relieve asthma
+symptoms. In clinical trials this treatment reduced the risk of emergency room visits or hospitalizations by about two-thirds 
+compared with SABA alone, and by over one-third compared with low dose ICS (plus SABA as needed for asthma
+symptoms), in patients who previously used SABA alone, low-dose ICS, or a leukotriene receptor antagonist.
+In Steps 3–5, patients take combination ICS-formoterol as daily maintenance treatment, and they take extra doses of 
+the same medication when they have asthma symptoms. This is called “maintenance-and-reliever therapy” (MART) with 
+ICS-formoterol. In patients with or without a history of severe exacerbations, MART reduces the risk of severe
+exacerbations, with a similar level of symptom control, compared with other maintenance treatments (including ICS-LABA 
+and higher-dose ICS) plus as-needed SABA. (Note: ICS-LABA inhalers that do not include formoterol cannot be used as 
+MART.)
+Recommended doses for ICS-formoterol combinations at all steps are shown in the reference table on page 44.
+See the full 2025 GINA Report for a summary of evidence supporting each option.
+Step 5 options for adults and adolescents with severe asthma are shown on page 26.
+STEPS 1 – 2
+Take 1 inhalation ICS-form as 
+needed (AIR-only)
+STEP 3
+Take 1 inhalation ICS-form  
+morning and evening, and 1 
+as needed (Step 3 MART)
+STEP 4
+Take 2 inhalations ICS-form 
+morning and evening, and 1 
+as needed (Step 4 MART)
+STEP 5
+Refer for expert 
+assessment, 
+phenotyping,  
+and add-on  
+treatment for  
+severe asthma
+These examples are for budesonide-formoterol 160/4.5 mcg or BDP-formoterol 100/6 mcg, DPI or pMDI. See Table 7 for other formulations. 
+TRACK 1, Steps 1–4: the PREFERRED treatment for adults and adolescents. 
+Using ICS-formoterol as eliever (AIR), with or without maintenance ICS-formoterol, 
+reduces the risk of exacerbations compared with using a SABA reliever, and is a simpler regimen, with a 
+single medication and dose across treatment steps.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 25 ---
+
+25
+Track 2 treatment options for adults and adolescents 
+In Track 2 the reliever is as-needed SABA or ICS-SABA (Figure 7). This is an alternative approach when ICS-formoterol is 
+not available. Track 2 may also be considered if a patient has stable asthma and no exacerbations with their maintenance 
+ICS-containing treatment, they take it regularly, and they prefer to continue with this treatment.
+FIGURE 7. Track 2 (alternative) treatment Steps 1–4 for adults and adolescents
+*A anti-inflammatory reliever (AIR); ICS: inhaled corticosteroid; LABA: long-acting beta2-agonist; SABA: short acting beta2-agonist. See 
+page 44 for ICS doses.
+In Step 1, the patient uses a SABA when symptoms occur and takes a low dose of ICS at the same time. This can be 
+done by using a combination inhaler that contains ICS and SABA, or the patient can take a low dose of ICS immediately 
+after using SABA, every time they have symptoms.
+In Steps 2–5, the patient takes maintenance ICS-containing medication every day, plus SABA as needed to relieve
+symptoms. In Steps 3–5, adults (≥ 18 years) can use a combination of ICS and SABA in a single inhaler  as their reliever 
+(if available) instead of SABA. This reduces the risk of exacerbations, compared with using a SABA reliever.
+At any step, patients can also take their reliever before exercise, if needed.
+If maintenance and reliever medications are in different types of inhalers, or if changing steps requires a change in inhaler 
+type, train the patient in the correct techniques.
+There is strong evidence that taking ICS every day, even at a low dose, substantially reduces the risks of severe
+exacerbations, hospitalizations and death due to asthma, improves symptoms, and reduces exercise-induced
+bronchoconstriction, compared with SABA-only treatment. Even in patients with symptoms one day per week or less,
+the risk of severe exacerbations is halved, compared with using SABA alone.
+Before prescribing a regimen with SABA reliever, consider whether the patient is likely to use ICS correctly. A patient with 
+low adherence will be exposed to SABA-only treatment and have a higher risk of exacerbations. A maintenance-and-
+reliever regimen with ICS-formoterol (Track 1) would be safer for such patients.
+See page 44 for inhaled corticosteroid doses. See the full 2025 GINA Report for a summary of evidence supporting each option.
+Note: ICS-formoterol should not be used as reliever for patients using daily ICS-LABA with a different (non-formoterol) LABA.
+STEP 1
+No maintenance ICS. 
+If reliever is SABA,  
+take ICS whenever 
+SABA used
+STEP 3
+Low dose  
+maintenance 
+ICS-LABA
+STEP 4
+Medium dose 
+maintenance  
+ICS-LABA
+STEP 5
+Refer for expert 
+assessment, 
+phenotyping,  
+and add-on 
+treatment for 
+severe asthma
+RELIEVER: as-needed ICS-SABA*, or as-needed SABA
+STEP 2
+Low dose 
+maintenance 
+ICS
+TRACK 2, Steps 1–4: Alternative CONTROLLER and RELIEVER for adults 
+and adolescents. 
+Before considering a regimen with SABA reliever, check if the patient is likely to adhere to daily ICS 
+treatment. If controller and reliever are in different types of inhaler device, or if changing steps requires a 
+change in device, train patient in the correct inhaler technique.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 26 ---
+
+26
+Other treatment options for some adults and adolescents 
+Some other treatment options may be available in some countries, that either have specific indications, or have less
+evidence for efficacy or safety compared with the main treatments shown in Track 1 and 2. 
+Specific allergen immunotherapy: If an adult or adolescent has house dust mite allergy, and their asthma is not well 
+controlled by treatment that includes ICS, consider adding house dust mite sublingual immunotherapy. Do not use
+sublingual immunotherapy if forced expiratory volume in 1 second (FEV
+1) is ≤70% predicted. See the full 2025 GINA
+Report for information on immunotherapy with other antigens.
+Long-acting muscarinic antagonist (LAMA): Compared with ICS-LABA, add-on LAMA slightly improves lung function 
+and slightly reduces the risk of exacerbations, but there is no clinically important reduction in symptoms such as
+breathlessness. Before considering add-on LAMA for patients with exacerbations, increase ICS dose to at least medium, 
+or switch to MART. Currently available LAMAs include tiotropium in a separate mist inhaler (patients ≥6 years) and
+combination inhalers containing ICS, LABA and a LAMA (patients ≥18 years) including beclometasone-formoterol-
+glycopyrronium, fluticasone furoate-vilanterol-umeclidinium, and mometasone-indacaterol-glycopyrronium. 
+Leukotriene receptor antagonists: These include montelukast, pranlukast, zafirlukast and zileuton. They are less
+effective than daily ICS, particularly for preventing exacerbations. Montelukast has been associated with risk of serious 
+mental health effects.
+Step 5: managing severe asthma in adults and adolescents 
+If a patient has uncontrolled symptoms and/or exacerbations despite Step 4 treatment, assess causes and optimize
+treatment. Refer the patient for expert assessment, including assessment of severe asthma inflammatory phenotype,
+comorbidities, risk factors, and for potential add-on treatment. If sputum eosinophil count is available, this test may be 
+useful to guide treatment in patients with moderate–severe asthma.
+High-dose ICS-LABA can be considered, but it increases the risk of side effects, including adrenal suppression
+(see Section 8 of the full 2025 GINA Report for details).
+Long-acting muscarinic antagonists can be used in addition to maintenance ICS-LABA treatment, but the potential
+reduction in severe exacerbations is small (page 33).
+Biologic treatment can be added to maximal treatment, if available and affordable. Options include:
+ • Anti-immunoglobin E (subcutaneous omalizumab) for severe allergic asthma 
+ • Ant
+i-interleukin 5 or anti-interleukin 5 receptor alpha for severe eosinophilic asthma. Options include intravenous  
+   reslizumab for patients aged ≥18 years, subcutaneous mepolizumab for patients aged ≥ 6 years, and
+   subcutaneous benralizumab for patients aged ≥ 12 years.
+ • Anti-interleukin 4 receptor alpha (subcutaneous dupilumab) for severe eosinophilic asthma/asthma with 
+Type 2  
+ 
+   airway inflammation or patients who need maintenance oral corticosteroids
+ • Anti-thymic stromal lymphopoietin (subcutaneous tezepelumab) for severe asthma.
+See list of asthma medications on page 38. 
+Always check local eligibility criteria for specific add-on treatments.
+Maintenance oral corticosteroids should only be used as a last resort, and at the lowest possible dose, because
+short-term and long-term systemic side-effects are common and serious.
+For more information, see the full 2025 GINA Report or the GINA booklet Difficult-to-treat and severe asthma in
+adolescent and adult patients, available at ginasthma.org.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 27 ---
+
+27
+Stepping down treatment when asthma is well controlled 
+When good asthma control has been maintained for 2–3 months, consider stepping down treatment. The aims are to find 
+the lowest treatment step that controls both symptoms and exacerbations, and to minimize side-effects.
+Choose an appropriate time for step-down (no respiratory infection, patient not travelling, not pregnant). Assess risk
+factors for exacerbation, including history of previous exacerbations or emergency department visits for asthma, and low 
+lung function (see Table 2, page 12).
+Record symptom control and lung function before stepping down, provide a written asthma action plan, monitor closely, 
+and plan a follow-up visit.
+Reduce the ICS dose by 25–50% by changing to an inhaler with a lower strength of the same ICS or by reducing the 
+frequency of inhalations (see Box 4-13 in the full 2025 GINA Report for information on how to step down from different 
+treatments). Review asthma after each step-down, and wait 2–3 months to confirm asthma is stable before stepping down 
+again. Do not completely stop ICS in adults or adolescents with asthma.
+Non-recommended treatments 
+Maintenance oral corticosteroids should only be used as a last resort.
+GINA does not recommend oral salbutamol, oral theophylline, or inhaled fenoterol, because of the increased risk of
+adverse effects.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 28 ---
+
+28
+TABLE 4. Suggested initial treatment for children with asthma
+Clinical features Preferred
+Infrequent asthma symptoms
+(for example, 1–2 days/week or less)
+Low-dose ICS taken whenever SABA is taken for asthma
+symptoms (combination or separate inhalers)
+Asthma symptoms 2–5 days per week Low-dose ICS maintenance (daily) treatment, plus SABA as needed
+Asthma symptoms most days, waking 
+due to asthma once a week or more
+Options:
+    • Low-dose maintenance ICS, plus SABA as needed
+    • Medium-dose maintenance ICS, plus SABA as needed
+    • Very-low-dose ICS-formoterol maintenance-and-reliever therapy     
+ 
+      (MART)
+Asthma symptoms every day
+, waking 
+at night once or more a week, and low 
+lung function
+Options:
+    • Medium-dose maintenance ICS-LABA, plus SABA as needed
+    • Low-dose ICS-formoterol MART
+During acute asthma exacerbation Treat exacerbation (page 34).
+Start treatment with one of these options:
+    • Low-dose or medium-dose maintenance ICS-LABA, plus SABA as 
+ 
+      needed
+    • Very-low-dose or low-dose ICS-formoterol MAR
+T.
+ICS: inhaled corticosteroids; LABA: long-acting beta2-agonist; MART: maintenance-and-reliever therapy with ICS-formoterol; SABA: 
+short-acting beta2-agonist. See page 45 for formulations and doses used for MART in children. See page 44 for ICS doses for
+maintenance ICS-containing treatment. Check local regulatory and payer criteria.
+Choosing asthma medication for children 6–11 years
+Starting asthma treatment   
+Children aged 6–11 years with asthma should not be treated with SABA alone; they should all receive ICS-containing 
+treatment. The optimal treatment that should be started immediately after diagnosis of asthma depends on the child’s 
+asthma history and current symptoms (Table 4).
+When starting treatment:
+ • Record evidence for the diagnosis of asthma
+ • Document symptom control and risk factors (see T
+able 2) before starting treatment
+ • Assess lung function, when possible, before starting treatment
+ • T
+rain the child and parents to use the inhaler correctly, and check their technique
+ • Schedule a follow-up visit.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

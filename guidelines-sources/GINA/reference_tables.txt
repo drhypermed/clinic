@@ -1,0 +1,429 @@
+
+
+--- PAGE 38 ---
+
+38
+Reference tables
+Anti-inflammatory reliever medications
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Beclometasone-formoterol or budesonide-formoterol
+Low-dose combination ICS-formoterol
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler
+Used as reliever (without maintenance treatment) for adults and adolescents at GINA Track 1 Steps 
+1–2, instead of SABA. Reduces emergency visits/hospitalizations by 65% compared with SABA 
+alone, and by 37% compared with daily ICS plus as-needed SABA.
+Used as the reliever for patients prescribed maintenance-and-reliever therapy with ICS-formoterol 
+(adults and adolescents at GINA Track 1 Steps 3–5, children 6–11 at GINA Steps 3–5). Reduces the 
+risk of severe exacerbations, compared with regimens using SABA as reliever, with similar symptom 
+control.
+Can be used before exercise to prevent exercise-induced bronchoconstriction. Can be used before 
+or during allergen exposure to prevent and relieve asthma symptoms.
+More information:
+Track 1 treatment options for adults and adolescents (page 24)
+Medications and doses: Table 7 (page 44)
+Treatment steps for children 6–11 years (page 29)
+See: ICS in combination with long-acting beta
+2-agonist (ICS-LABA), below
+Low-dose combination ICS-SABA
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Budesonide-salbutamol (albuterol), beclometasone-salbutamol
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler
+Reliever (instead of SABA) for adults and adolescents in GINA Track 2. Maximum 6 doses, each of 2 
+inhalations of 80 mcg budesonide with 90 mcg albuterol, in any 24-hour period.
+Cannot be used for maintenance-and-reliever therapy (MART).
+Not recommended for children
+See:
+Inhaled corticosteroids (ICS), below
+Short-acting inhaled beta
+2-agonist bronchodilators (SABA), below
+TABLE 5. List of asthma medication classes and medicines
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 39 ---
+
+39
+Medications for daily maintenance treatment
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Beclometasone, budesonide, ciclesonide, fluticasone propionate, fluticasone furoate, mometasone, 
+triamcinolone
+Inhaled corticosteroids (ICS)
+ICS in combination with a long-acting beta2-agonist (ICS-LABA)
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler
+Medications that contain ICS are the most effective anti-inflammatory medications for asthma. ICSs 
+reduce symptoms, increase lung function, reduce airway hyperresponsiveness, improve quality of 
+life, and reduce the risk of exacerbations, asthma-related hospitalizations and death.
+Potency and bioavailability varies between ICS. Most of the clinical benefit is achieved at low doses 
+(Table 6).
+Most patients do not experience side-effects.
+Local: oropharyngeal candidiasis, dysphonia. Risk of candidiasis is reduced by rinsing mouth with 
+water and spitting it out after inhaling the medication. Risk of dysphonia and candidiasis with pMDI is 
+reduced by using a spacer.
+Systemic: osteoporosis, cataract, glaucoma with long-term use of high doses. 
+Risk of some systemic adverse effects, such as adrenal suppression, may increase if patient uses 
+medications that inhibit cytochrome P450 (for example, ketoconazole, ritonavir, itraconazole,
+erythromycin, clarithromycin).
+Medications
+Delivery
+Use in asthma
+Beclometasone-formoterol, budesonide-formoterol, fluticasone furoate-vilanterol, fluticasone propionate 
+formoterol, fluticasone propionate-salmeterol, mometasone-formoterol, mometasone-indacaterol
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler
+When a low daily dose of ICS fails to achieve good control of asthma despite correct technique and 
+good adherence, addition of LABA to maintenance ICS improves symptoms, lung function and
+reduces exacerbations. ICS-LABA is more effective than doubling the dose of ICS. Two regimens 
+are available: 
+1. Maintenance-and-reliever therapy (MART): combination of beclometasone or budesonide with 
+formoterol used for both maintenance and reliever treatment (see Anti-inflammatory reliever
+medications, above, and doses in Table 7, page 45)
+2. ICS-LABA as maintenance treatment, plus SABA (or ICS-SABA) as reliever. 
+For adults and adolescents, MART is preferred (GINA Track 1) because it reduces exacerbations 
+compared with the same or higher dose of ICS-LABA maintenance plus as-needed SABA reliever, 
+and is a simpler regimen.
+See:
+Track 1 treatment options for adults and adolescents (page 24)
+Track 2 treatment options for adults and adolescents (page 25)
+Treatment steps for children 6–11 years (page 29)
+Doses in reference tables on page 44 and page 45
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 40 ---
+
+40
+ICS in combination with a long-acting beta2-agonist bronchodilator (ICS-LABA) - CONTINUED
+Adverse effects LABA: tachycardia, headache, muscle cramps. LABA should not be used without ICS in patients 
+with asthma (or asthma+COPD).  
+ICS: See Inhaled corticosteroids (above)
+Leukotriene receptor antagonists (LTRA)
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Montelukast, pranlukast, zafirlukast, zileuton
+Oral: tablets
+Target one part of the inflammatory pathway in asthma. Sometimes used as maintenance therapy, 
+mainly in children. However, LTRA is less effective than low-dose ICS, and ICS plus LTRA is less 
+effective than ICS-LABA.
+Zileuton and zafirlukast: elevated liver function tests
+Montelukast: concerns about risk of serious behavioral and mood changes, including suicidal
+ideation in adults and children – discuss with patients/parents/caregivers
+Add-on maintenance medications
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Patients aged ≥6 years: tiotropium by mist inhaler, in addition to maintenance ICS-LABA treatment
+Patients aged ≥18 years: combination ICS-LABA-LAMA inhalers (beclometasone-formoterol-
+glycopyrronium, fluticasone furoate-vilanterol-umeclidinium, mometasone-indacaterol-glycopyrronium)
+Long-acting muscarinic antagonists (LAMA) – check local eligibility criteria
+Inhaled: pressurized metered-dose inhaler, dry-powder inhaler, or mist inhaler
+Can be added to other treatment for patients with uncontrolled asthma despite ICS-LABA. Consider 
+adding at Step 5 (or Step 4 as add-on to low-dose ICS-LABA), but weaker evidence for benefit. 
+Adding LAMA to ICS-LABA improves lung function by a small amount (but not symptoms or quality 
+of life), and reduces exacerbations by a small amount. For patients with exacerbations, increase ICS 
+to at least medium dose before adding a LAMA. 
+Uncommon: dry mouth, urinary retention
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 41 ---
+
+41
+Anti-immunoglobin E  – check local eligibility criteria
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Patients aged ≥6 years: omalizumab
+Subcutaneous injection: syringe or pen device (self-injection may be an option)
+Can be added to other treatment for patients with severe allergic asthma uncontrolled on high-dose 
+ICS-LABA (see local product information and payer advice for other indications)
+Common: minor reactions at injection site
+Rare: anaphylaxis
+Anti-interleukin 5 and anti-interleukin 5 receptor alpha – check local eligibility criteria
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Patients aged ≥6 years: mepolizumab
+Patients aged ≥12 years: benralizumab
+Patients aged ≥18 years: reslizumab
+Subcutaneous injection: mepolizumab, benralizumab (self-injection may be an option)
+Intravenous infusion: reslizumab
+Can be added to other treatment for patients with severe eosinophilic asthma uncontrolled on high-
+dose ICS-LABA (see local product information and payer advice for other indications). Maintenance 
+oral corticosteroid dose can be significantly reduced with benralizumab and mepolizumab. 
+Common: headache, minor reactions at injection site
+Anti-interleukin 4 receptor alpha – check local eligibility criteria
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Patients aged ≥6 years: dupilumab
+Subcutaneous injection: syringe or pen device (self-injection may be an option)
+Can be added to other treatment for patients with severe eosinophilic asthma or Type 2 airway
+inflammation, if asthma is uncontrolled on high-dose ICS-LABA, or for patients requiring
+maintenance oral corticosteroids (see local product information and payer advice for other
+indications). Not advised for patients with current or past blood eosinophils ≥1500/microliter.
+Common: minor reactions at injection site
+Uncommon: transient blood eosinophilia (4–13% of patients) 
+Rare: eosinophilic granulomatosis with polyangiitis after reducing or stopping oral corticosteroids 
+while on dupilumab
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 42 ---
+
+42
+Anti-thymic stromal lymphopoietin (anti-TSLP) – check local eligibility criteria
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Patients aged ≥12 years: tezepelumab
+Subcutaneous injection: syringe or pen device (self-injection may be an option)
+Can be added to other treatment for patients with severe asthma that is uncontrolled on high-dose 
+ICS-LABA
+Common: minor reactions at injection site
+Rare: anaphylaxis
+Systemic corticosteroids
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Prednisone, prednisolone, methylprednisolone, hydrocortisone, dexamethasone
+Oral (tablets or liquid), intramuscular injection, or intravenous injection
+Short-term use for severe acute exacerbations: effective for preventing short-term recurrence of
+severe asthma exacerbations. Treatment usually oral 5–7 days in adults, 3–5 days in children.
+If used for >2 weeks, reduce dose gradually before stopping. After an exacerbation, optimize
+inhaled therapy to reduce risk of needing another course.
+Long-term use: avoid due to risk of serious adverse effects, except as a last resort, and only if
+asthma cannot be controlled by other treatments. Check and manage adverse effects. Refer patient 
+for specialist review.
+Short courses: sepsis, thromboembolism, sleep disturbance, gastroesophageal reflux, increased 
+appetite, hyperglycemia, mood changes. Multiple short courses increase later risk of diabetes,
+osteoporosis, cataract, glaucoma, heart failure and other conditions.
+Maintenance use: adverse effects include cataract, glaucoma, hypertension, diabetes, adrenal
+suppression, osteoporosis
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 43 ---
+
+43
+Short-acting bronchodilator reliever medications
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Salbutamol (albuterol), terbutaline
+Short-acting inhaled beta2-agonist bronchodilators (SABA)
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler (also solution for nebulization or 
+injection)
+Quick relief of asthma symptoms and bronchoconstriction, and for pretreatment before exercise. 
+SABAs should be used only when needed (not regularly) at the dose needed to relieve symptoms.
+Use without ICS not recommended due to risk of severe exacerbations and asthma-related death 
+(page 15).
+Commonly used for treatment of severe exacerbations in primary care and emergency departments.
+Fenoterol is not recommended because of its association with increased cardiovascular adverse 
+effects and increased risk of asthma mortality.
+Short-term: tremor, tachycardia with initial use
+Regular or frequent use: tolerance results in increased airway hyperresponsiveness, reduced
+bronchodilator effect, and increased airway inflammation. Excess use, or poor response, indicates 
+poor asthma control and risk of exacerbations. Dispensing of 3 or more 200-dose canisters per year 
+is associated with increased risk of exacerbations, and dispensing of 12 or more canisters per year 
+is associated with a markedly increased risk of death.
+Short-acting antimuscarinic antagonists (anticholinergics)
+Medications
+Delivery
+Use in asthma
+Adverse effects
+Ipratropium bromide, oxitropium bromide
+May be in combination inhaler with SABA
+Inhaled: pressurized metered-dose inhaler or dry-powder inhaler; nebulizer
+Short-term use in acute care for severe exacerbations: ipratropium plus SABA reduces risk of
+hospital admission acute asthma, compared with SABA alone
+As-needed use as reliever: less effective than SABA, with slower onset of action
+Dry mouth, bitter taste. Should be used with caution in patients with narrow-angle glaucoma.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 44 ---
+
+44
+Inhaled corticosteroid 
+Beclometasone dipropionate (pMDI)      200–500        >500–1000  >1000
+Beclometasone dipropionate (DPI or pMDI, extrafine particle)  
+ 100–200        >200–400   >400
+Budesonide (DPI or pMDI)  
+     200–400        >400–800   >800
+Ciclesonide (pMDI, extrafine particle)  
+     80–160         >160–320   >320
+Fluticasone furoate (DPI)  
+                 100 
+  200
+Fluticasone propionate (DPI)  
+     100–250        >250–500   >500
+Fluticasone propionate (pMDI)  
+     100–250        >250–500 
+  >500
+Mometasone furoate (DPI)  
+      Depends on DPI device
+Mometasone furoate (pMDI)  
+                 200–400 
+    400
+Total daily ICS dose (mcg)
+Low Medium
+High
+Inhaled corticosteroid 
+Beclometasone dipropionate (pMDI)     100–200        >200–400   >400
+Beclometasone dipropionate (pMDI, extrafine particle) 
+    50–100        >100–200 
+  >200
+Budesonide (DPI) 
+      100–200        >200–400 
+  >400
+Budesonide (nebules) 
+      250–500        >500–1000 >1000
+Ciclesonide (pMDI, extrafine particle) 
+         80            >80–160 
+  >160
+Fluticasone furoate (DPI) 
+               50 
+       –
+Fluticasone propionate (DPI) 
+       50–100        >100–200 
+  >200
+Fluticasone propionate (pMDI) 
+       50–100        >100–200 
+  >200
+Mometasone furoate 
+(pMDI) 
+       
+  100 
+   
+ 200
+Total daily ICS dose (mcg)
+Low Medium High
+Adults and adolescents
+Children 6–11 years
+DPI: dry-powder inhaler; ICS: inhaled corticosteroid; pMDI: pressurized metered-dose inhaler*
+Notes:
+This table shows suggested total daily ICS doses for low dose, medium dose and high dose, not dose equivalence. The table shows metered doses.
+Available doses, regulatory approval, labelling and clinical guidelines may differ between countries. Check the manufacturer’s product Information
+carefully if using new or generic products, or products containing a LAMA. Different preparations of a particular ICS molecule may not be clinically
+equivalent. For example, mometasone doses change when LAMA is added to ICS-LABA.
+A low daily dose of ICS provides most of the clinical benefit for most patients. Some patients have less response to ICS and may need a medium dose 
+if asthma is uncontrolled despite good adherence and correct inhaler technique with a low dose. High doses of ICS are rarely needed. Long-term use of 
+high doses of ICS increases the risk of local and systemic side-effects.
+*A spacer should be used for ICS by pMDI. All the pMDIs listed in this table contain an HFA propellant. New propellants with a lower environmental 
+impact are under development. 
+TABLE 6. Low, medium and high daily metered doses of inhaled corticosteroids
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 45 ---
+
+45
+Age
+(years)
+AIR: anti-inflammatory reliever; DPI: dry-powder inhaler; MART: maintenance-and-reliever therapy; pMDI: pressurized metered-dose 
+inhaler
+*Children: budesonide-formoterol is not recommended for Step 5 MART in children. There are no studies of budesonide-formoterol 
+AIR-only at Steps 1–2 in children.
+#If a patient needs to take more than this number of inhalations in a day, they should seek medical attention the same day.
+†Adults: There are no studies of beclometasone-formoterol for as-needed-only treatment
+‡For MART with beclometasone-formoterol, GINA suggests patients can use up to 12 inhalations total in one day if needed, based on 
+extensive formoterol safety data, including from studies of budesonide-formoterol
+For more inhaler options, see Box 4-8 in the full 2025 GINA Report
+For as-needed use of ICS-formoterol, patients should take one inhalation whenever needed for symptom relief. If
+symptoms have not improved after a few minutes, another dose can be taken. Patients do not need to wait a certain
+number of hours before taking more reliever doses, but they should not take more than the maximum total number of 
+inhalations in a single day. Most patients need far less than this. If a patient feels that they need more doses than the
+recommended maximum total in any day, they should seek medical advice the same day. ICS-formoterol can also be 
+taken before exercise or allergen exposure, instead of a SABA reliever.
+Inhaler: metered dose per
+inhalation [delivered dose]
+in micrograms
+GINA
+Step
+Dosing Maximum
+total in any
+one day
+#
+6–11
+12–17
+≥ 18
+Budesonide-formoterol 100/6
+[80/4.5] DPI*
+Budesonide-formoterol 200/6
+[160/4.5] DPI or pMDI
+Budesonide-formoterol 200/6
+[160/4.5] DPI or pMDI
+Beclometasone-formoterol
+100/6 DPI†
+Beclometasone-formoterol
+100/6 pMDI
+†
+Step 3
+Step 4
+Step 1–2 
+Step 3
+Steps 4–5
+Step 1–2 
+Step 3
+Steps 4–5
+Step 3
+Steps 4–5
+MART: 1 inhalation once daily plus 1 as needed
+MART: 1 inhalation twice daily plus 1 as needed
+AIR-only: 1 inhalation as needed
+MART: 1 inhalation twice (or once) daily plus 1 as needed
+MART: 2 inhalations twice daily plus 1 as needed
+AIR-only: 1 inhalation as needed
+MART: 1 inhalation twice (or once) daily plus 1 as needed
+MART: 2 inhalations twice daily plus 1 as needed
+MART: 1 inhalation twice (or once) daily plus 1 as needed
+MART: 2 inhalations twice daily plus 1 as needed
+8 inhalations
+in any day
+12 inhalations 
+in any day
+12 inhalations 
+in any day
+12 inhalations 
+in any day‡
+TABLE 7. Anti-inflammatory relievers (AIR) and MART– recommended inhalers and doses
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 46 ---
+
+46
+Acknowledgements
+The activities of the Global Initiative of Asthma are supported by the work of members of the GINA Board of Directors and 
+Committees (listed below), and by the sale and licensing of GINA products.
+GINA Science Committee (2024–2025)
+Helen Reddel,* Australia, Chair; Leonard Bacharier, USA; Eric Bateman,† South Africa.; Matteo Bonini, Italy;
+Arnaud Bourdin, France; Christopher Brightling, UK; Guy Brusselle, Belgium; Roland Buhl, Germany; Jeffrey Drazen, USA; 
+Francine M. Ducharme, Canada; Liesbeth Duijts, The Netherlands; Louise Fleming, UK; Hiromasa Inoue,* Japan;
+Alan Kaplan, Canada; Fanny Wai-san Ko, Hong Kong; Refiloe Masekela, South Africa; Paulo Pitrez, Brazil;
+Sundeep Salvi, India; Aziz Sheikh, UK; Min Zhang, China.
+GINA Board of Directors (2024–2025)
+Arzu Yorgancioglu*, Turkey, Chair; Keith Allan*, UK; Eric Bateman,
+† South Africa; Guy Brusselle, Belgium;
+Muhwa Jeremiah Chakaya, Kenya; Alvaro Cruz*, Brazil; Hiromasa Inoue*, Japan; Jerry Krishnan, USA;
+Mark Levy*, United Kingdom; Helen Reddel,* Australia
+† until his death in January 2025
+GINA Dissemination Working Group (2024–2025)
+Mark Levy, UK, Chair; other members indicated by asterisks (*) above
+GINA Advocates 
+Representatives from Africa, the Americas, Asia, Europe and Oceania
+(listed at https://ginasthma.org/about-us/gina-advocates) 
+GINA Program
+Executive Director: Rebecca Decker, USA, Program Director: Kristi Rurey, USA
+Editorial and research assistance
+Charu Grover, Jenni Harman
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE

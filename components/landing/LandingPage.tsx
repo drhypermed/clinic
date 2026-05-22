@@ -169,6 +169,12 @@ const FEATURES: Feature[] = [
     desc: 'بيانات المرضى مشفّره بالكامل مع نسخ احتياطي تلقائي. صلاحيات مخصّصه لكل مستخدم (طبيب/سكرتاريه). تسجيل دخول آمن بحساب جوجل.',
     color: 'from-success-500 to-success-600',
   },
+  {
+    icon: <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />,
+    title: 'مكتبة الجايدلاينز التفاعلية',
+    desc: 'تصفح أحدث التوصيات والبروتوكولات (مثل ADA و ESC) مترجمة للعامية أو بالإنجليزية، مع جرعات الأدوية المصرية وخوارزميات تفاعلية وتحديثات دورية.',
+    color: 'from-brand-600 to-purple-600',
+  },
 ];
 
 /* ════════════ COMPONENT ════════════ */
@@ -246,6 +252,61 @@ export const LandingPage: React.FC = () => {
               </A>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ══════════ الجايدلاينز التفاعلية ══════════ */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-400 via-slate-900 to-slate-900"></div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <A>
+            <div className="flex flex-col lg:flex-row items-center gap-10">
+              <div className="flex-1 text-center lg:text-right text-white">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 mb-6">
+                  <HiOutlineSparkles className="w-4 h-4 text-brand-300" />
+                  <span className="text-xs font-bold text-brand-100">ميزة حصرية ومجانية</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black mb-4 leading-tight">
+                  أول مكتبة <span className="text-transparent bg-clip-text bg-gradient-to-l from-brand-400 to-purple-400">جايدلاينز طبية تفاعلية</span> مصممة لطبيب العيادة في مصر
+                </h2>
+                <p className="text-slate-300 font-semibold leading-relaxed mb-8 text-sm sm:text-base">
+                  وداعاً للبحث في مئات الصفحات المعقدة من الـ PDF. قمنا بتحويل أحدث التوصيات الطبية العالمية (مثل <b>ADA للسكري</b>، و<b>ESC للقلب</b>، وغيرها) إلى بطاقات تفاعلية ذكية.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4 text-right">
+                  <div className="bg-white/5 p-4 rounded-2xl ring-1 ring-white/10">
+                    <HiOutlineBookOpen className="w-6 h-6 text-brand-400 mb-2" />
+                    <h4 className="text-white font-bold text-sm mb-1">توصيات مبسطة بالعامية</h4>
+                    <p className="text-slate-400 text-xs">اقرأ الجايدلاينز باللغة الإنجليزية أو مشروحة ببساطة بالعامية المصرية لسرعة الاستيعاب وتطبيقها في عيادتك.</p>
+                  </div>
+                  <div className="bg-white/5 p-4 rounded-2xl ring-1 ring-white/10">
+                    <FaCapsules className="w-6 h-6 text-purple-400 mb-2" />
+                    <h4 className="text-white font-bold text-sm mb-1">أدوية السوق المصري</h4>
+                    <p className="text-slate-400 text-xs">الجايدلاينز العالمية تم ربطها بأسماء الأدوية المتوفرة في مصر وجرعاتها العملية المباشرة.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 w-full max-w-md lg:max-w-none relative">
+                <div className="absolute -inset-4 bg-gradient-to-br from-brand-500/20 to-purple-500/20 blur-2xl rounded-full"></div>
+                <div className="relative bg-white rounded-3xl p-2 shadow-2xl ring-1 ring-slate-800">
+                  <div className="bg-slate-50 rounded-2xl overflow-hidden aspect-[4/3] flex flex-col">
+                    <div className="bg-slate-100 p-3 border-b border-slate-200 flex items-center gap-2">
+                      <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400"></div><div className="w-3 h-3 rounded-full bg-amber-400"></div><div className="w-3 h-3 rounded-full bg-green-400"></div></div>
+                      <div className="mx-auto bg-white text-[10px] font-bold text-slate-500 px-4 py-1 rounded-full shadow-sm">Guidelines Library</div>
+                    </div>
+                    <div className="flex-1 p-4 flex flex-col gap-3 relative">
+                      <div className="w-3/4 h-6 bg-slate-200 rounded-md"></div>
+                      <div className="w-1/2 h-4 bg-slate-200 rounded-md"></div>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <div className="h-16 bg-blue-50 rounded-xl border border-blue-100 p-2"><div className="w-1/2 h-3 bg-blue-200 rounded mb-2"></div><div className="w-full h-2 bg-blue-100 rounded"></div></div>
+                        <div className="h-16 bg-purple-50 rounded-xl border border-purple-100 p-2"><div className="w-1/2 h-3 bg-purple-200 rounded mb-2"></div><div className="w-full h-2 bg-purple-100 rounded"></div></div>
+                      </div>
+                      <div className="absolute bottom-4 left-4 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Dr Hyper Med Exclusive</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </A>
         </div>
       </section>
 

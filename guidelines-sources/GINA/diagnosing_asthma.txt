@@ -1,0 +1,242 @@
+
+
+--- PAGE 6 ---
+
+6
+Diagnosing Asthma
+Asthma has two defining features (Figure 1, Table 1) : 
+ • A
+ history of typical respiratory symptoms that are variable, meaning that they are sometimes more frequent and  
+ 
+   more severe than at other times, AND
+ • Variable expiratory airflow
+. However, in people with asthma for many years, airflow limitation may become  
+ 
+   permanent.
+Symptoms can include wheeze, difficult breathing, a feeling of tightness in the chest, and cough.
+Physical examination is often normal. Wheezing may be heard, especially during forced expiration.
+The diagnosis of asthma should be confirmed, and the evidence should be documented in the patient's medical
+record. T
+o confirm the diagnosis of asthma, there should be a history of typical variable respiratory symptoms and
+evidence of variable expiratory airflow (current or previous). If patients are already taking ICS treatment, additional tests 
+may be needed to confirm the diagnosis of asthma (see page 9 and GINA 2025 Box 1-4).
+Definitions
+Asthma: a chronic (long-term) respiratory disease with many variations (phenotypes), usually characterized by chronic 
+airway inflammation. Asthma causes respiratory symptoms that get better or worse at different times. Symptoms include
+wheezing, difficult breathing, chest tightness and cough. These symptoms can be mild or severe, frequent or infrequent. 
+When a person with asthma has symptoms, the flow of air out of their lungs is reduced. It is difficult to breathe out
+because the airways become narrower (bronchoconstriction), the airway walls become thicker, and there is more mucus. 
+In people with untreated asthma, expiratory airflow decreases more often and much more than in people without asthma.
+Triggers: anything that can cause asthma symptoms, or make symptoms worse. Triggers include viral respiratory
+infections, allergens in the air at home or work (for example, house dust mite, pets, pollens, or cockroach particles),
+tobacco smoke or vaping, exercise, and stress. These are more likely to cause asthma symptoms when asthma is not 
+already controlled by treatment. Some medicines (for example, beta-blockers) can cause asthma symptoms or
+exacerbations. In some patients, aspirin and other nonsteroidal anti-inflammatory drugs cause asthma symptoms or
+exacerbations.
+Asthma exacerbation (also called asthma flare-up or asthma attack): acute or sub-acute (sudden or gradual) worsening 
+in symptoms (shortness of breath, cough, wheezing, or chest tightness) and lung function, compared with the person’s 
+usual condition. Exacerbations are often triggered by viral upper respiratory tract infection, exposure to pollen or pollution, 
+or poor adherence to ICS treatment, but they can also occur in people without any of these risk factors. Severe
+exacerbations can be fatal, even in people with infrequent symptoms. The risk of severe exacerbations is greatly reduced 
+by taking ICS-containing treatment.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 7 ---
+
+7
+ICS: inhaled corticosteroid; PEF: peak expiratory flow. Box numbers refer to the full 2025 GINA Report.
+FIGURE 1. Diagnosing asthma in clinical practice (adults, adolescents and children 6–11 years)
+Detailed history & examination
+Do history & examination 
+support diagnosis of asthma?
+Is spirometry or PEF  
+available? 
+Review response in  
+1-3 months, including PEF  
+or spirometry if available
+Have symptoms (and 
+lung function if available) 
+improved?
+Further history and tests for 
+alternative diagnoses
+Is alternative diagnosis 
+confirmed?
+Perform lung function  
+test(s), e.g. spirometry or  
+PEF before and after 
+bronchodilator (Box 1-2)
+Is variable expiratory  
+airflow confirmed?
+Repeat during 
+symptoms 
+or consider 
+additional tests 
+(Box 1-2)
+Patient with chronic or  
+recurrent respiratory symptoms
+Are the symptoms typical  
+of asthma?
+Treat for asthma with  
+ICS-containing treatment  
+(Boxes 4-5 & 4-11)
+Treat for alternative  
+diagnosis
+Refer for higher  
+level advice
+If other diagnoses are  
+unlikely, treat empirically with 
+ICS-containing treatment  
+(Boxes 4-5 & 4-11)
+Consider  
+biomarkers*
+Is the patient already  
+taking ICS treatment? 
+See Boxes 1-3 and 1-4  
+for diagnostic approach in 
+patients already on ICS
+Does the patient have  
+severely uncontrolled 
+respiratory symptoms/ 
+signs? 
+ Treat as exacerbation  
+(Box 9-4)  
+**In a patient with typical asthma symptoms, elevated FeNO or elevated blood eosinophils can 
+support a diagnosis of Type 2 asthma. Lower levels do not rule out asthma.
+Investigations Treatment
+YES
+NO
+NO
+YES
+YES
+YES
+NO
+NO
+NO
+YES
+NO
+NO
+YES
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 8 ---
+
+8
+TABLE 1. Criteria for initial diagnosis of asthma in adults (≥18 years) and children (6–17 years)
+1. A history of variable respiratory symptoms
+Typical asthma symptoms are wheeze, shortness of breath, chest tightness, and/or cough.
+These features support the diagnosis of asthma:
+• The person’s symptoms vary in frequency and intensity
+.
+• Symptoms often occur or worsen at night or when the person wakes up.
+• Symptoms are often triggered by exercise, laughter, allergens, or cold air.
+• Symptoms worsen after exertion (very distinctive).
+• Symptoms often occur or worsen when the person has a viral respiratory infection.
+2. Evidence of variable expiratory airflow
+Any of these features indicates excessive variability in expiratory lung function:
+• Significant bronchodilator responsiveness (also called reversibility) measured with spirometry by
+comparing FEV1 before and after inhaled bronchodilator(a) (or PEF if spirometry not available)(b) (d)
+Adults: FEV1 or FVC increases by ≥12% and by ≥200 mL from the pre-bronchodilator value (or PEF increases by ≥20%)
+Children: FEV1 increases by ≥12% of the predicted value (or PEF increases by ≥15%)
+• Excessive average daily variability in PEF over 2 weeks(c)
+Adults: >10%
+Children: >13%
+• Significant response to ICS treatment for 4 weeks
+Adults: FEV1 or FVC increases by ≥12% and by ≥200 mL (or PEF increases by ≥20%(b)) from measurements recorded
+before ICS treatment started
+Children: FEV1 increases by ≥12% of the predicted value (or PEF increases by ≥15%)(b)
+• Positive bronchial challenge test(e)
+• Excessive variation in lung function between visits(f)
+Adults: FEV1 changes between visits by ≥12% and by ≥200 mL (or PEF(g) by ≥20%)
+Children: FEV1 changes between visits by ≥12% (or PEF by ≥15%)(g)
+FEV1: forced expiratory volume in 1 second measured by spirometry; FVC: forced vital capacity measured by spirometry; PEF: peak expiratory flow.
+Notes:
+a. Measure change by comparing spirometry 10–15 minutes before and after 200-400 mcg salbutamol (albuterol). Responsiveness is more likely to be significant if 
+bronchodilators are withheld before test. Recommended withholding periods are on page 9.
+b. PEF is less reliable than spirometry, but can be used if spirometry is not available.
+c.  To calculate average daily variability:
+1. Measure PEF morning and night for 1–2 weeks using same PEF meter (each time, measure PEF 3 times and record only the highest).
+2. Calculate daily variability each day: (difference between morning and evening PEF) divided by ([morning PEF plus evening PEF] divided by 2).
+3.  Add daily variability scores for all days and divide by number of days.
+An online PEF variability calculator is available: https://www.asthmaandlung.org.uk/healthcare-professionals/adult-asthma/diagnosis-testing/perf-calc
+d. In a person with asthma, bronchodilator response may not be present during a viral respiratory infection.
+e. Standardized challenge with methacholine, hyperventilation, hypertonic saline, mannitol, or exercise
+f. Good specificity but poor sensitivity for the diagnosis of asthma
+g. Use the same peak flow meter and record highest of three readings each time.
+Role of Type 2 biomarkers in diagnosis of asthma 
+In patients with typical asthma symptoms, if spirometry or PEF is not available or testing is negative, elevated FeNO 
+(adults/adolescents: >50 ppb; children: >35 ppb) or blood eosinophils above national/regional reference range can 
+support the diagnosis of Type 2 asthma, but can also be due to non-asthma conditions. Lower levels of FeNO or blood 
+eosinophils do not rule out asthma. FeNO and blood eosinophils vary substantially by sex, age and (for FeNO) device 
+and site). Blood eosinophils are higher in the morning, and FeNO is lower in the morning. See Appendix A in full 2025 
+GINA Report.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 9 ---
+
+9
+A previous diagnosis of asthma should be confirmed 
+In primary care, many patients (25–35%) with a diagnosis of asthma may not actually have asthma. If the criteria for 
+asthma (Table 1) have not already been recorded, the patient’s asthma diagnosis should be confirmed by objective tests. 
+If the patient does not show variable expiratory airflow, consider other investigations. For example, if lung function is 
+normal, repeat the bronchodilator response test when the patient has symptoms, or after stopping bronchodilators, such 
+as SABA or long-acting beta
+2-agonist (LABA), for the following times before the test (if safe):
+ • No short-acting beta2-agonist (SABA) for more than 4 hours
+ • No ICS-LABA combination for more than 24 hours, if prescribed for twice daily use (e.g. ICS-formoterol,
+   ICS-salmeterol)
+ • No ICS-LABA combination for more than 36 hours, if prescribed for once daily use (e.g. ICS-vilanterol,
+   ICS-indacaterol)
+ • No long-acting muscarinic antagonists (LAMA) for 36–48 hours.
+How to confirm the diagnosis of asthma in patients taking ICS 
+If the patient is already taking medication that contains ICS and has frequent symptoms, and their lung function is less 
+than 70% predicted, consider increasing treatment to the next step (pages 22 and 30), then measure lung function again
+3 months later. If symptoms and lung function improve, this confirms the diagnosis of asthma. 
+If the patient has few symptoms and their lung function is greater than 70% predicted, consider stepping down
+ICS-containing treatment before measuring lung function again. Ensure that the patient has a written asthma action plan 
+(page 21) and monitor asthma carefully.
+For more information about confirming the diagnosis of asthma, see full 2025 GINA Report Box 1-4 and Box 1-5.
+Diagnosing asthma in specific populations 
+Patients with persistent cough but no other respiratory symptoms: In some children and adults, cough may be the 
+only symptom of asthma, and the patient may not have bronchodilator responsiveness. Cough-variant asthma is
+characterized by cough and airway hyperresponsiveness detected by bronchial provocation testing. It should be treated 
+with ICS-containing medication, like other asthma phenotypes. Other common causes of persistent dry cough include 
+chronic upper airway cough syndrome (‘postnasal drip’), chronic sinusitis, gastroesophageal reflux disease (GERD), 
+treatment with angiotensin-converting enzyme (ACE) inhibitors, inducible laryngeal obstruction (often called vocal cord 
+dysfunction), and eosinophilic bronchitis.
+Occupational asthma and work-aggravated (work-exacerbated) asthma: If a patient’s asthma started in adulthood, 
+ask if there are allergens or irritants in the air at work or at home, and whether their asthma is better when they are away 
+from these places. The diagnosis must be confirmed with objective tests. The patient should be referred to a specialist (if 
+available) without delay. The cause must be identified, and the patient’s exposure to the cause must be stopped immediately.
+Pregnant women: Ask all pregnant women, and those planning pregnancy, whether they have asthma. Advise pregnant 
+women with asthma that it is important to use ICS-containing treatment during pregnancy for their baby’s health, as well 
+as their own health. If the diagnosis of asthma has not been objectively confirmed, start or continue ICS-containing
+treatment, and wait until after delivery to confirm the diagnosis. Do not stop or reduce ICS-containing treatment, and do 
+not do bronchial provocation testing during pregnancy.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
+
+--- PAGE 10 ---
+
+10
+Older adults: Asthma may be under-diagnosed in older adults due to poor perception of airflow limitation, the belief that 
+breathlessness is normal in old age, lack of fitness, or reduced activity. Breathlessness due to heart failure or ischemic 
+heart disease can also be mistakenly attributed to asthma. If patients have a history of smoking or exposure to biomass 
+fuel, consider the possibility of chronic obstructive pulmonary disease (COPD) as a co-occurring or alternative diagnosis.
+Patients with persistent airflow limitation: If a patient has airflow limitation that does not respond to bronchodilator 
+(Table 1), try to distinguish between asthma with persistent airflow limitation and COPD, by analyzing their medical history, 
+pattern of symptoms, and past medical records. If a patient has clinical features consistent with both asthma and COPD, 
+or the diagnosis is uncertain, refer them to a specialist.
+COPD: Patients can have asthma and COPD at the same time. This is called “asthma+COPD” or “asthma-COPD
+overlap”. It is more common among smokers and the elderly. Asthma+COPD is not a specific disease and probably has 
+several causes. Asthma+COPD has worse outcomes than asthma or COPD alone.
+Patients with a diagnosis of COPD who also have asthma (or a history of asthma) should be treated with ICS-containing 
+treatment. Their risk of hospitalization or death is higher if they receive only bronchodilators.
+Diagnosis of asthma in low- and middle-income countries (LMICs): In some LMICs the differential diagnosis of 
+asthma often includes other endemic respiratory disease such as tuberculosis, HIV/AIDS-associated lung diseases, and 
+parasitic or fungal lung diseases. Practical strategies for asthma diagnosis, based on history and clinical findings, have 
+been developed and tested in LMICs. These are less precise than diagnosis based on spirometry, but they help identify 
+patients with probable asthma who need treatment.
+If spirometry is unavailable or unaffordable, peak expiratory flow (PEF) meters can be used to detect variable expiratory 
+airflow to confirm the diagnosis of asthma (Figure 1, Table 1, pages 7 & 8). To avoid underdiagnosis and overdiagnosis 
+of asthma in LMICs, health workers need much greater access to spirometry and PEF meters, and need training to use 
+them.
+COPYRIGHTED MATERIAL - DO NOT COPY OR DISTRIBUTE
