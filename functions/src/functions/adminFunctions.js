@@ -225,6 +225,7 @@ module.exports = ({
     'pregnancy_safety',  // أمان الحمل والرضاعة
     'renal_dose',        // تعديل جرعات الكلى
     'medical_report',    // طباعة تقرير طبي بالـAI
+    'guidelines_chat',   // شات الجايدلاينز من النصوص الرسمية
     'unknown',           // fallback لو الـclient ما بعتش feature
   ]);
 

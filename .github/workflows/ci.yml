@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  validate:
+  validate-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -55,38 +55,16 @@ jobs:
         env:
           CI: true
 
-  deploy:
-    needs: validate
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        env:
-          # نفس المتغيرات — لازم تتحط في GitHub Secrets.
-          VITE_VAPID_KEY: ${{ secrets.VITE_VAPID_KEY }}
-          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
-          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
-
       - name: Deploy to Firebase Hosting
+        # النشر يتم فقط عند الدمج أو الدفع المباشر لفرع main أو master
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: gen-lang-client-0444130146
+
 
       # Firestore Rules و Storage Rules بيتنشروا يدوياً من الجهاز المحلي
       # باستخدام: firebase deploy --only firestore:rules,storage

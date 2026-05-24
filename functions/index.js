@@ -407,6 +407,9 @@ exports.createBranch = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/fun
 exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredProSubscriptions'));
 exports.runExpiredSubscriptionsCheckNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/subscriptionFunctions', 'runExpiredSubscriptionsCheckNow'));
 
+// --- Guidelines Search Functions ---
+exports.searchGuidelineIndex = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/guidelinesSearchFunction', 'searchGuidelineIndex'));
+
 // --- SEO Functions (sitemap + robots) ---
 // الـresponse مكاشّش على CDN لـ24 ساعه — الـFirestore reads تقريباً = 1 في اليوم.
 // minInstances = 0 (مفيش warm instance — SEO ميحتاجش سرعه لحظيّه، الكاش بيتولّى).

@@ -31,8 +31,8 @@ echo.
 echo Uploading...
 echo.
 
-REM Stage app/source changes only. Keep local reports, generated builds, and agent metadata out of commits.
-git add -A -- . ":(exclude).claude" ":(exclude).claude/**" ":(exclude)playwright-report" ":(exclude)playwright-report/**" ":(exclude)test-results" ":(exclude)test-results/**"
+REM Stage app/source changes only (exclusions are now managed automatically via .gitignore).
+git add -A
 if errorlevel 1 goto error
 
 git diff --cached --quiet

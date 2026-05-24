@@ -1,0 +1,974 @@
+{
+  "generatedAt": "2026-05-23T21:05:40.225Z",
+  "sourceRoot": "guidelines-sources",
+  "structuredRoot": "guidelines-sources/_structured/full-text",
+  "rawTextRoot": "guidelines-sources/_extracted/full-text",
+  "reportRoot": "guidelines-sources/_review/full-text-extraction",
+  "totalPdfCount": 96,
+  "extractedCount": 95,
+  "duplicateCount": 1,
+  "failedCount": 0,
+  "totalTextChars": 16578034,
+  "files": [
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/1. Improving Care and Promoting.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/1. Improving Care and Promoting.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/1. Improving Care and Promoting.txt",
+      "sha256": "721091f709efe4e960f0fb0f0604a972854ea4d991921c69044e57f59c135c04",
+      "pageCount": 13,
+      "textChars": 90409,
+      "chunkCount": 14
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/10. Cardiovascular Disease and Risk Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/10. Cardiovascular Disease and Risk Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/10. Cardiovascular Disease and Risk Management.txt",
+      "sha256": "3d72eb552ccb0ad88d495bae1d5f25c11002873b98df8d251d32494ffa628994",
+      "pageCount": 32,
+      "textChars": 219690,
+      "chunkCount": 32
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/11. Chronic Kidney Disease and Risk Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/11. Chronic Kidney Disease and Risk Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/11. Chronic Kidney Disease and Risk Management.txt",
+      "sha256": "bd8d896e8dde4ea1b2e8d81f9f242e7759b47929cd3281fb70dcfabda58e86df",
+      "pageCount": 13,
+      "textChars": 84466,
+      "chunkCount": 14
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/12. Retinopathy, Neuropathy, and Foot Care.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/12. Retinopathy, Neuropathy, and Foot Care.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/12. Retinopathy, Neuropathy, and Foot Care.txt",
+      "sha256": "48ad7355c8d218c8d84987982a5cc1c9f5d5196c2086d5b1c2131683acc77ce3",
+      "pageCount": 14,
+      "textChars": 96160,
+      "chunkCount": 15
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/13. Older Adults.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/13. Older Adults.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/13. Older Adults.txt",
+      "sha256": "f1389f1b72cf6409880bf67e1c1f841f46169a8eb336ac2733e7b41f54e6eb09",
+      "pageCount": 17,
+      "textChars": 109368,
+      "chunkCount": 17
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/14. Children and Adolescents.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/14. Children and Adolescents.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/14. Children and Adolescents.txt",
+      "sha256": "a2c6d1cf76ef30654d52ab6c08a0d4596fb6ad68a8112cede9caa2e24809ace4",
+      "pageCount": 23,
+      "textChars": 156405,
+      "chunkCount": 24
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/15. Management of Diabetes in Pregnancy.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/15. Management of Diabetes in Pregnancy.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/15. Management of Diabetes in Pregnancy.txt",
+      "sha256": "2da63c6cb3e53d9cf5e6ba3a18a8a453eb3b31e65da3565aed839a1c3669e875",
+      "pageCount": 15,
+      "textChars": 104684,
+      "chunkCount": 16
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/16. Diabetes Care in the Hospital.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/16. Diabetes Care in the Hospital.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/16. Diabetes Care in the Hospital.txt",
+      "sha256": "e4a788410c907e662c058f0add46a6c841b705515d3384acfd228f9967617cfa",
+      "pageCount": 14,
+      "textChars": 94801,
+      "chunkCount": 14
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/17. Diabetes Advocacy.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/17. Diabetes Advocacy.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/17. Diabetes Advocacy.txt",
+      "sha256": "5a17bc314b889791d5ac7e1910452b6d22aa81d59f520325bdf14e438a2b1ca1",
+      "pageCount": 2,
+      "textChars": 8012,
+      "chunkCount": 3
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/2. Diagnosis and Classification of DM.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/2. Diagnosis and Classification of DM.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/2. Diagnosis and Classification of DM.txt",
+      "sha256": "7deff83564e3ccacc079d7b2f85ce4542cd859c5d48447b88b8be21fcc92868d",
+      "pageCount": 23,
+      "textChars": 150914,
+      "chunkCount": 24
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/3. Prevention or Delay of Diabetes and Associated Comorbidities Standards of Care in Diabetes—2025.txt",
+      "sha256": "b044ec84689927c998f6fd559de67eeb16c38a2409ce19ba60f762f049f1738f",
+      "pageCount": 9,
+      "textChars": 65306,
+      "chunkCount": 10
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/4. Comprehensive Medical Evaluation and Assessment of Comorbidities Standards of Care in Diabetes2025.txt",
+      "sha256": "30110ef90f98ab0c400206d279e93797ddb20e291acaa791c113e569b303ee7d",
+      "pageCount": 27,
+      "textChars": 185701,
+      "chunkCount": 28
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes Standards of Care in Diabetes2025.txt",
+      "sha256": "e5d36de95ff4ad8b927486681517aa7a0da11c052699de234cfc460828ee3ecd",
+      "pageCount": 42,
+      "textChars": 300205,
+      "chunkCount": 43
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/6. Glycemic Goals and Hypoglycemia Standards of Care in Diabetes 2025.txt",
+      "sha256": "fefe2b3638041fc57159f021fb5838c89fa43a89d02434819a7007054901f3e7",
+      "pageCount": 18,
+      "textChars": 117419,
+      "chunkCount": 18
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/7. Diabetes Technology Standards of Care in Diabetes 2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/7. Diabetes Technology Standards of Care in Diabetes 2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/7. Diabetes Technology Standards of Care in Diabetes 2025.txt",
+      "sha256": "00e55b202d47a6dad9eb6c9fa64a574e8069ef7f7fc0a1661e3b8072d9b95168",
+      "pageCount": 21,
+      "textChars": 155112,
+      "chunkCount": 22
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.txt",
+      "sha256": "407b79c165573482c6a152c5b94f1389d8b136731b1876c487faf247d7613d1c",
+      "pageCount": 14,
+      "textChars": 91888,
+      "chunkCount": 15
+    },
+    {
+      "status": "duplicate",
+      "sourcePath": "ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes.pdf",
+      "sha256": "407b79c165573482c6a152c5b94f1389d8b136731b1876c487faf247d7613d1c",
+      "duplicateOf": "ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.pdf",
+      "canonicalStructuredPath": "guidelines-sources/_structured/full-text/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.json",
+      "canonicalTextPath": "guidelines-sources/_extracted/full-text/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes  Standards of Care in Diabetes 2025.txt",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/8. Obesity and Weight Management for the Prevention and Treatment of Type 2 Diabetes.json"
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/9. Pharmacologic Approaches to Glycemic Treatment.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/9. Pharmacologic Approaches to Glycemic Treatment.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/9. Pharmacologic Approaches to Glycemic Treatment.txt",
+      "sha256": "fd029e009090d56e63d1400932b0f56fc55eb859cfb999c2c3b2728b81470073",
+      "pageCount": 26,
+      "textChars": 165780,
+      "chunkCount": 26
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/Disclosures.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/Disclosures.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/Disclosures.txt",
+      "sha256": "56320dbfe0ff9542e31dc07e81dfa574b46db96bd767b415dfc07587497b5477",
+      "pageCount": 7,
+      "textChars": 15552,
+      "chunkCount": 7
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/Index.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/Index.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/Index.txt",
+      "sha256": "1047210a71a7008f4734c51be25f904262b4c77f64752a79b9301554eae3b10d",
+      "pageCount": 9,
+      "textChars": 58546,
+      "chunkCount": 10
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/Introduction and Methodology Standards of Care in Diabetes2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/Introduction and Methodology Standards of Care in Diabetes2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/Introduction and Methodology Standards of Care in Diabetes2025.txt",
+      "sha256": "b4b7021749653ef812b5abbf409a0a6d108fb43f7a2ee7e967649505866411f2",
+      "pageCount": 5,
+      "textChars": 27015,
+      "chunkCount": 5
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2025/Summary of Revisions Standards of Care in Diabetes 2025.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2025/Summary of Revisions Standards of Care in Diabetes 2025.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2025/Summary of Revisions Standards of Care in Diabetes 2025.txt",
+      "sha256": "438839e1ae6742da2ed407388b66bf522f2186e24f3723683d95e1816ebe5e1a",
+      "pageCount": 8,
+      "textChars": 46814,
+      "chunkCount": 8
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/1. Improving Care and Promoting Health in Populations.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/1. Improving Care and Promoting Health in Populations.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/1. Improving Care and Promoting Health in Populations.txt",
+      "sha256": "22f273ba9f639e6c986556f28dc7a7c8348ec857475f78c44a74b5b6f50fbcd0",
+      "pageCount": 14,
+      "textChars": 100655,
+      "chunkCount": 15
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/10. Cardiovascular Disease and Risk Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/10. Cardiovascular Disease and Risk Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/10. Cardiovascular Disease and Risk Management.txt",
+      "sha256": "c4ba6a2e75790467c3701abe461d7658e0cd23fde020601bf365923fecc88c1b",
+      "pageCount": 30,
+      "textChars": 212042,
+      "chunkCount": 31
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/11. Chronic Kidney Disease and Risk Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/11. Chronic Kidney Disease and Risk Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/11. Chronic Kidney Disease and Risk Management.txt",
+      "sha256": "9b1a501c0760fb3368a23988cef2437d4a50318200336e7f32cbd15a516cd87c",
+      "pageCount": 15,
+      "textChars": 106504,
+      "chunkCount": 16
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/12. Retinopathy, Neuropathy, and Foot Care.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/12. Retinopathy, Neuropathy, and Foot Care.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/12. Retinopathy, Neuropathy, and Foot Care.txt",
+      "sha256": "cea6d9077aae7d1a96d93663a31e13030750beded48b85d86770ddbce1a0160b",
+      "pageCount": 16,
+      "textChars": 112641,
+      "chunkCount": 17
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/13. Older Adults.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/13. Older Adults.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/13. Older Adults.txt",
+      "sha256": "678c1aa773d57794e4b9ba24109d2ba47f38647f0a8010e899100a85347eea2e",
+      "pageCount": 20,
+      "textChars": 123179,
+      "chunkCount": 20
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/14. Children and Adolescents.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/14. Children and Adolescents.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/14. Children and Adolescents.txt",
+      "sha256": "8ce9114a9f34b7280e2f3c9ca664d7807ee7667160443c51153de95244ef32f3",
+      "pageCount": 24,
+      "textChars": 156310,
+      "chunkCount": 24
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/15. Management of Diabetes in Pregnancy.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/15. Management of Diabetes in Pregnancy.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/15. Management of Diabetes in Pregnancy.txt",
+      "sha256": "21f3007280fd16340090d50c31b4e5297ce8bbd282ac7fe28f844742b6e7f139",
+      "pageCount": 18,
+      "textChars": 128420,
+      "chunkCount": 18
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/16. Diabetes Care in the Hospital.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/16. Diabetes Care in the Hospital.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/16. Diabetes Care in the Hospital.txt",
+      "sha256": "e699e7b5e452d7fa98846eabc7cd2ed6aab48b46efc01a5fba2ea17d42aa0bf6",
+      "pageCount": 17,
+      "textChars": 118031,
+      "chunkCount": 18
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/17. Diabetes Advocacy.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/17. Diabetes Advocacy.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/17. Diabetes Advocacy.txt",
+      "sha256": "2eea4374da752a812d09091629d1dec96a09324db323aa46053822e5f998c3aa",
+      "pageCount": 2,
+      "textChars": 8454,
+      "chunkCount": 3
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/2. Diagnosis and Classification of Diabetes.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/2. Diagnosis and Classification of Diabetes.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/2. Diagnosis and Classification of Diabetes.txt",
+      "sha256": "6d33c228c4613685e4252702f91aea5ff82b75ac732105c1feead3429d835f3e",
+      "pageCount": 23,
+      "textChars": 158184,
+      "chunkCount": 24
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/3. Prevention or Delay of Diabetes and Associated Comorbidities.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/3. Prevention or Delay of Diabetes and Associated Comorbidities.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/3. Prevention or Delay of Diabetes and Associated Comorbidities.txt",
+      "sha256": "b6c826d2a49447d3fb7d02739b1ca607f1d503f09720d1bb1b6cfda8fd4f4fde",
+      "pageCount": 11,
+      "textChars": 78239,
+      "chunkCount": 12
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/4. Comprehensive Medical Evaluation and Assessment of Comorbidities.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/4. Comprehensive Medical Evaluation and Assessment of Comorbidities.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/4. Comprehensive Medical Evaluation and Assessment of Comorbidities.txt",
+      "sha256": "eb9f4c611c94a2e9c7476cc628d8ece98bf94f57432f77c6046ee2f18f363fec",
+      "pageCount": 28,
+      "textChars": 187315,
+      "chunkCount": 29
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/5. Facilitating Positive Health Behaviors and Well-being to Improve Health Outcomes.txt",
+      "sha256": "c88f559af15a3cbab2b4d4d2e6f94e6780c8d47a1663569b5b25a45ba092abeb",
+      "pageCount": 43,
+      "textChars": 302682,
+      "chunkCount": 44
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises.txt",
+      "sha256": "c1a2fbf1e8e0b3cc59b316bdf45b031a89b1799262dca7aee8388ec5c6b5fa37",
+      "pageCount": 18,
+      "textChars": 122727,
+      "chunkCount": 19
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/7. Diabetes Technology.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/7. Diabetes Technology.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/7. Diabetes Technology.txt",
+      "sha256": "77063a5d60130713f52ef3af9139f2deb299fb9ec0a0725ca0644dce63d0bead",
+      "pageCount": 16,
+      "textChars": 115456,
+      "chunkCount": 17
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/8. Obesity and Weight Management for the Prevention and Treatment of Diabetes.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/8. Obesity and Weight Management for the Prevention and Treatment of Diabetes.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/8. Obesity and Weight Management for the Prevention and Treatment of Diabetes.txt",
+      "sha256": "dca95d781662fe52ceb448bb7a12caf5c7f0a5d036e55f1a23f2868a5ba99b5a",
+      "pageCount": 17,
+      "textChars": 114222,
+      "chunkCount": 18
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/9. Pharmacologic Approaches to Glycemic Treatment.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/9. Pharmacologic Approaches to Glycemic Treatment.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/9. Pharmacologic Approaches to Glycemic Treatment.txt",
+      "sha256": "8682f11fb4747a770bd667bc0a9b0e61b2b059261d9c7b54d791c447f5f36e7d",
+      "pageCount": 33,
+      "textChars": 211351,
+      "chunkCount": 34
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "ADA/2026/Summary of Revisions.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/ADA/2026/Summary of Revisions.json",
+      "textPath": "guidelines-sources/_extracted/full-text/ADA/2026/Summary of Revisions.txt",
+      "sha256": "c5f4ad2ebd44da23fe571f5101e1bf51bc079466986bff5c3968011135f078b3",
+      "pageCount": 7,
+      "textChars": 39800,
+      "chunkCount": 7
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "GINA/GINA 2026.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/GINA/GINA 2026.json",
+      "textPath": "guidelines-sources/_extracted/full-text/GINA/GINA 2026.txt",
+      "sha256": "33d0453df2d6d49be525a93ae547f71943e9af4f138ab44b9e5eaa765a04b445",
+      "pageCount": 298,
+      "textChars": 1028123,
+      "chunkCount": 260
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "GINA/GINA SUMMARY 2026.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/GINA/GINA SUMMARY 2026.json",
+      "textPath": "guidelines-sources/_extracted/full-text/GINA/GINA SUMMARY 2026.txt",
+      "sha256": "a630f5b12a81e8dc93dc90a307c3e9aacb207dcdd112e6523dbe7d56a231de9c",
+      "pageCount": 47,
+      "textChars": 111448,
+      "chunkCount": 36
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Acute Kidney Injury (AKI) and Acute Kidney Disease (AKD)/2026 AKIAKD Guideline Public Review Draft.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Acute Kidney Injury (AKI) and Acute Kidney Disease (AKD)/2026 AKIAKD Guideline Public Review Draft.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Acute Kidney Injury (AKI) and Acute Kidney Disease (AKD)/2026 AKIAKD Guideline Public Review Draft.txt",
+      "sha256": "a0cf2b6db03a17f3e0c96a746032885b3b14a96786fcc9bb971aeeceff1b8fab",
+      "pageCount": 499,
+      "textChars": 1195264,
+      "chunkCount": 421
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Executive Summary.txt",
+      "sha256": "ef5ed8b018bdf7616824158143e646880ca9475f928ab1b76f8390c23adcb61b",
+      "pageCount": 13,
+      "textChars": 72655,
+      "chunkCount": 13
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Key Takeaways for HCPs.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Key Takeaways for HCPs.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline Key Takeaways for HCPs.txt",
+      "sha256": "d41c85f67e09294762735c338952245951bf7a3552a1b17a94946e29ac9803ff",
+      "pageCount": 1,
+      "textChars": 9508,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Anemia in CKD/KDIGO 2026 Anemia in CKD Guideline.txt",
+      "sha256": "5e72c6f6f5f880e5d842fb8a461585770ba7dac3549da4625745b43f8bc131e1",
+      "pageCount": 99,
+      "textChars": 424018,
+      "chunkCount": 92
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Executive Summary.txt",
+      "sha256": "26de75b6db50abcaa61f2e803668352835bcaac942aa63157900560dcde03a59",
+      "pageCount": 3,
+      "textChars": 15337,
+      "chunkCount": 4
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Top 10 Takeaways for Clinicians.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Top 10 Takeaways for Clinicians.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline Top 10 Takeaways for Clinicians.txt",
+      "sha256": "c141d48f82a569a10c5ba254736d33cb93205402b1a1070510798b97ea2577e3",
+      "pageCount": 1,
+      "textChars": 4155,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Antineutrophilic Cytoplasmic Antibody (ANCA)-Associated Vasculitis/KDIGO 2024 ANCA Vasculitis Guideline.txt",
+      "sha256": "f1b71336d847a2aab8e44129c099a09d1c383580ea38f31187c45be8f9bfdec8",
+      "pageCount": 47,
+      "textChars": 159400,
+      "chunkCount": 37
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/Guideline Key Takeaways - Chapters 1-10.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/Guideline Key Takeaways - Chapters 1-10.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/Guideline Key Takeaways - Chapters 1-10.txt",
+      "sha256": "b4f78eb980a9fcc55ec9a145aeceae2fc1c672431c98a7b0e0a03f5cd67082ac",
+      "pageCount": 10,
+      "textChars": 51481,
+      "chunkCount": 11
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline Executive Summary.txt",
+      "sha256": "97bd680e60b9efb1d472e857c6514ef2ad8958b3f59e3e933218fb06c0ae2c02",
+      "pageCount": 21,
+      "textChars": 99150,
+      "chunkCount": 21
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Autosomal Dominant Polycystic Kidney Disease (ADPKD)/KDIGO 2025 ADPKD Guideline.txt",
+      "sha256": "a2d993887934c06817f571eec2cd61deddda5c5091e38f110f75caccc9d84889",
+      "pageCount": 240,
+      "textChars": 1128596,
+      "chunkCount": 224
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Central Illustration.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Central Illustration.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Central Illustration.txt",
+      "sha256": "3304c41e41442d79ba9a0ad9c2a19f8490eec29f2ec0b7b8355d2320b6118c7a",
+      "pageCount": 1,
+      "textChars": 1008,
+      "chunkCount": 1
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Executive Summary.txt",
+      "sha256": "12c4acaf1903ebd8f910d644754739de9842af214f3553c8a206b719c05b3136",
+      "pageCount": 11,
+      "textChars": 59454,
+      "chunkCount": 12
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Measurement Figure.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Measurement Figure.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Measurement Figure.txt",
+      "sha256": "ceeb7a43efa6d2cd2087353acd4d1f6877cc1d614034aeb25b5ba342c1ae8830",
+      "pageCount": 1,
+      "textChars": 1296,
+      "chunkCount": 1
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Top Ten Key Takeaways for Clinicians.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Top Ten Key Takeaways for Clinicians.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Top Ten Key Takeaways for Clinicians.txt",
+      "sha256": "0a81638ee657971e9216a271ccfc2b2453ee0e01b753f5b4bd00d28be5559ff1",
+      "pageCount": 1,
+      "textChars": 4398,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline.txt",
+      "sha256": "3717244e8a539e710f32180720b442cf0d1dda12810cecbe61e4e8cfb54f7b23",
+      "pageCount": 92,
+      "textChars": 422577,
+      "chunkCount": 77
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Executive Summary.txt",
+      "sha256": "b1bc562dab89af2c591dadef71fa011098290338f914da5db2c8078d4111f537",
+      "pageCount": 18,
+      "textChars": 97684,
+      "chunkCount": 19
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Evaluation.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Evaluation.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Evaluation.txt",
+      "sha256": "98c4fe2afa10e0265993da48529da0b4f67cb6fdf293e9cbf0780ac3621d58b0",
+      "pageCount": 1,
+      "textChars": 6926,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for Nephrologists - Management.txt",
+      "sha256": "7a7dc9345767be1d33cf57f04993ae8b9f290e6f4d007bbf521c7f4dba23c343",
+      "pageCount": 1,
+      "textChars": 7565,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Evaluation.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Evaluation.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Evaluation.txt",
+      "sha256": "2de42be244a83e3d1ecf9fc8f21e98b6dd6b21b5b721c5e8b12d06009ec5540b",
+      "pageCount": 1,
+      "textChars": 6155,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Management.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Management.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 10 Takeaways for PCPs - Management.txt",
+      "sha256": "f1435374f82bcce62d2cca1bbea34f4a4daa6768864546a4cab8d221f14428f2",
+      "pageCount": 1,
+      "textChars": 5348,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 12 Takeaways for Pediatricians.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 12 Takeaways for Pediatricians.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top 12 Takeaways for Pediatricians.txt",
+      "sha256": "a035dc88373b996d12098541f6a1bc2e1181dcd635b057fae4a287d21b608e46",
+      "pageCount": 1,
+      "textChars": 9204,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top Takeaways - People Living with CKD.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top Takeaways - People Living with CKD.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline Top Takeaways - People Living with CKD.txt",
+      "sha256": "a50d07722f56e9775db588d45f7121f519f1ddbed19be630e75e429f0a48efb7",
+      "pageCount": 1,
+      "textChars": 9131,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD Evaluation and Management/KDIGO 2024 CKD Guideline.txt",
+      "sha256": "0b77a9e32ca6c7bbccbddf902be4427bf8bc0d2dd7e3ffbc18042f602f371b27",
+      "pageCount": 199,
+      "textChars": 983468,
+      "chunkCount": 187
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Executive Summary.txt",
+      "sha256": "3824b63dfc571e82e935c88376ab8a4b5ebd4e46823cb4bdb012431838996db6",
+      "pageCount": 11,
+      "textChars": 54819,
+      "chunkCount": 12
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Synopsis.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Synopsis.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/2017 CKD-MBD Guideline Update Synopsis.txt",
+      "sha256": "79dd5705ccc31cf98ef33e81607d87933867fe05ee94c4c18a4cc50e3033c534",
+      "pageCount": 14,
+      "textChars": 72812,
+      "chunkCount": 14
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/KDIGO 2017 CKD-MBD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/KDIGO 2017 CKD-MBD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/CKD-Mineral and Bone Disorder (CKD-MBD)/KDIGO 2017 CKD-MBD Guideline.txt",
+      "sha256": "9de805834e3d6f009c11af84192e696c5b3b09dc9d1b13d141801f7c421969c9",
+      "pageCount": 60,
+      "textChars": 241685,
+      "chunkCount": 47
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/ADA-KDIGO Consensus Report on Diabetes Management in CKD (Diabetes Care).pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/ADA-KDIGO Consensus Report on Diabetes Management in CKD (Diabetes Care).json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/ADA-KDIGO Consensus Report on Diabetes Management in CKD (Diabetes Care).txt",
+      "sha256": "e63a1f405f3dd7acbd9f45641231dc61493a3f54bf845ec1261fc05b57c8bd58",
+      "pageCount": 16,
+      "textChars": 93642,
+      "chunkCount": 16
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/Central Illustration - KDIGO 2022 Diabetes in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/Central Illustration - KDIGO 2022 Diabetes in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/Central Illustration - KDIGO 2022 Diabetes in CKD Guideline.txt",
+      "sha256": "076d24ed1e3d6ecc6ceae77d2ded3bd5461dd30117d737b4f9e05b7e8c0b974d",
+      "pageCount": 1,
+      "textChars": 1979,
+      "chunkCount": 1
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/Executive Summary - KDIGO 2022 Diabetes in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/Executive Summary - KDIGO 2022 Diabetes in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/Executive Summary - KDIGO 2022 Diabetes in CKD Guideline.txt",
+      "sha256": "38224a8a021b96f211a628a4bdcc4d403568e08597884e6ceb504ed38579d693",
+      "pageCount": 10,
+      "textChars": 57898,
+      "chunkCount": 11
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/KDIGO 2022 Diabetes in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/KDIGO 2022 Diabetes in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/KDIGO 2022 Diabetes in CKD Guideline.txt",
+      "sha256": "d2889a8b699ea103129c9f8f8df56c53557993741702e3140e3bd37fb96eb1fb",
+      "pageCount": 128,
+      "textChars": 592094,
+      "chunkCount": 117
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/Top 10 Takeaways for Clinicians - KDIGO 2022 Diabetes in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/Top 10 Takeaways for Clinicians - KDIGO 2022 Diabetes in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/Top 10 Takeaways for Clinicians - KDIGO 2022 Diabetes in CKD Guideline.txt",
+      "sha256": "2df3e87ea9611c42b3cf179f96e82129f54b05984f658b37c9d5a3a3e654adbe",
+      "pageCount": 1,
+      "textChars": 5308,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Diabetes and CKD/Top 10 Takeaways for Patients - KDIGO 2022 Diabetes in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Diabetes and CKD/Top 10 Takeaways for Patients - KDIGO 2022 Diabetes in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Diabetes and CKD/Top 10 Takeaways for Patients - KDIGO 2022 Diabetes in CKD Guideline.txt",
+      "sha256": "9b4e349fc80413d6f1438d0a8e0275188511384ce6e16b1ac82ef53557238baf",
+      "pageCount": 1,
+      "textChars": 4617,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline Executive Summary.txt",
+      "sha256": "cbafa75df5967274f297d3013e6ca1776355ec8efc9dcd41978b621c50dfe826",
+      "pageCount": 27,
+      "textChars": 90466,
+      "chunkCount": 23
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Glomerular Diseases (GD)/2021 Glomerular Diseases Guideline.txt",
+      "sha256": "8ed871ec098c7eba1cfb0ff6bf2355a6c422166b2691aac138f0273307b2acff",
+      "pageCount": 281,
+      "textChars": 1042456,
+      "chunkCount": 213
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Glomerular Diseases (GD)/Glomerular Diseases Guideline Key Takeaways for Clinicians - Full Set.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Glomerular Diseases (GD)/Glomerular Diseases Guideline Key Takeaways for Clinicians - Full Set.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Glomerular Diseases (GD)/Glomerular Diseases Guideline Key Takeaways for Clinicians - Full Set.txt",
+      "sha256": "28b01d0a13a1a8196bbde47d0fa721ab9a9e0d081e1e9d7483919c227dfdfa49",
+      "pageCount": 11,
+      "textChars": 48994,
+      "chunkCount": 12
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Heart Failure in CKD/Guideline Scope of Work.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Heart Failure in CKD/Guideline Scope of Work.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Heart Failure in CKD/Guideline Scope of Work.txt",
+      "sha256": "679e6d6641e214d497ed4ab6d4c72aaaab88f62faa4a2a249cca526591d71dd3",
+      "pageCount": 9,
+      "textChars": 13990,
+      "chunkCount": 5
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline Executive Summary.txt",
+      "sha256": "40931145b3ab15bc51e2f1e253d30e9c926e863fa218e509a747b807e205063a",
+      "pageCount": 10,
+      "textChars": 43645,
+      "chunkCount": 9
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Hepatitis C in CKD/KDIGO 2022 Hepatitis C in CKD Guideline.txt",
+      "sha256": "7a59501d9f9b60ceca7e15ce5ab0bfda33dc31270abed5b91b46288302d50ecf",
+      "pageCount": 78,
+      "textChars": 358326,
+      "chunkCount": 66
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Executive Summary.txt",
+      "sha256": "7512e1fec616d424df76c5407bc97f1b230f01d964b588c1a7168122035b5283",
+      "pageCount": 7,
+      "textChars": 34531,
+      "chunkCount": 7
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAN.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAN.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAN.txt",
+      "sha256": "4c47dda65da47741521db7fdc80ce46482fb8c38df52bf99b66505183d0abadd",
+      "pageCount": 1,
+      "textChars": 7614,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAV.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAV.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline Key Takeaways  IgAV.txt",
+      "sha256": "144a7b7ad9868f7c7762b8aca9bb0ada750bdd2af1105b62772460523ff5a7a0",
+      "pageCount": 1,
+      "textChars": 4618,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/IgA Nephropathy (IgAN)  IgA Vasculitis (IgAV)/KDIGO 2025 IgAN IgAV Guideline.txt",
+      "sha256": "4fe42962842b3f7330ca7bec7551fdb98ae90e56f6a12978c16c5d3a6a1eeb44",
+      "pageCount": 71,
+      "textChars": 284740,
+      "chunkCount": 64
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Lipids in CKD/KDIGO 2013 Lipids in CKD Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Lipids in CKD/KDIGO 2013 Lipids in CKD Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Lipids in CKD/KDIGO 2013 Lipids in CKD Guideline.txt",
+      "sha256": "1310b92cfcf73798af9cafce2dd26cb7360e411583ad92cd443bc1301981b5f6",
+      "pageCount": 56,
+      "textChars": 217209,
+      "chunkCount": 44
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline Executive Summary.txt",
+      "sha256": "9733287c0e9d73a37fee8a3f26b2e9eb870de68fb61558fc13a14a6c4dab7f44",
+      "pageCount": 10,
+      "textChars": 52704,
+      "chunkCount": 11
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Living Kidney Donor/KDIGO 2017 Living Kidney Donors Guideline.txt",
+      "sha256": "8864064d6e902574eb2505402e1ff787c38ee1a82476117e22860757373b568a",
+      "pageCount": 115,
+      "textChars": 654665,
+      "chunkCount": 111
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Executive Summary.txt",
+      "sha256": "0f5c3f57e83218cf5f258d308912f11c3b51408179217df958a01c86b8ff7f3b",
+      "pageCount": 4,
+      "textChars": 19483,
+      "chunkCount": 5
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Top 10 Takeaways for Clinicians.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Top 10 Takeaways for Clinicians.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline Top 10 Takeaways for Clinicians.txt",
+      "sha256": "58a26f961eae967a09deffbc040a9bc1bfcc394cbe999162ebf617d480ac291a",
+      "pageCount": 1,
+      "textChars": 5681,
+      "chunkCount": 2
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Lupus Nephritis (LN)/KDIGO 2024 Lupus Nephritis Guideline.txt",
+      "sha256": "b65b0c624ed315f45189edac2496cb6d5ffe9fb8f64e0b9670ce42ff0d8bab46",
+      "pageCount": 70,
+      "textChars": 311522,
+      "chunkCount": 60
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline Executive Summary.txt",
+      "sha256": "691c9f2354a5900f201d69b5acdebb961d5d26803729407e610a16d0a1c55811",
+      "pageCount": 3,
+      "textChars": 16650,
+      "chunkCount": 4
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Nephrotic Syndrome in Children/Nephrotic Syndrome in Children Guideline.txt",
+      "sha256": "5fc2eca6eca313dbb48b3d9787826896fa95f9675701c6dfe79403836b8a0949",
+      "pageCount": 50,
+      "textChars": 192083,
+      "chunkCount": 41
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline Executive Summary.txt",
+      "sha256": "151a6f780daf9b5fe1ca09262505ff0252f456d3ba02445d7a985f27d6fefb6a",
+      "pageCount": 7,
+      "textChars": 40209,
+      "chunkCount": 8
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Transplant Candidate Guideline/KDIGO 2020 Transplant Candidate Guideline.txt",
+      "sha256": "58f64dcae76177dbc77544dd1ad84aae69e81861d55c5a5be037c963a1a595f3",
+      "pageCount": 106,
+      "textChars": 578365,
+      "chunkCount": 102
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline Executive Summary.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline Executive Summary.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline Executive Summary.txt",
+      "sha256": "2f49145d1ffedcc47631de5736928163e1b9529fbe854f653802db7b7c3213aa",
+      "pageCount": 13,
+      "textChars": 61761,
+      "chunkCount": 14
+    },
+    {
+      "status": "extracted",
+      "sourcePath": "KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline.pdf",
+      "structuredPath": "guidelines-sources/_structured/full-text/KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline.json",
+      "textPath": "guidelines-sources/_extracted/full-text/KDIGO/Transplant Recipient/KDIGO 2009 Transplant Recipient Guideline.txt",
+      "sha256": "50030e0eae12981adf2eb61e5cba783e957c1696394c3acf54ce74a74cb41d81",
+      "pageCount": 168,
+      "textChars": 719660,
+      "chunkCount": 146
+    }
+  ],
+  "finishedAt": "2026-05-23T21:08:24.506Z"
+}

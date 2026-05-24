@@ -1,3 +1,6 @@
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../services/firebaseConfig';
+
 export type GuidelineLanguage = 'ar' | 'en';
 
 export type LocalizedText = Record<GuidelineLanguage, string>;
@@ -8,6 +11,16 @@ export type GuidelineSource = {
   citation: string;
   url: string;
   localFile?: string;
+  folderTitle?: string;
+  folderTopicId?: string;
+  fileTopicId?: string;
+  fileType?: string;
+  pageCount?: number;
+  chunkCount?: number;
+  textChars?: number;
+  structuredTextPath?: string;
+  rawTextPath?: string;
+  sha256?: string;
 };
 
 export type GuidelineSourceRecommendation = {
@@ -15,6 +28,7 @@ export type GuidelineSourceRecommendation = {
   grade: string;
   page: number;
   text: string;
+  topicId?: string;
 };
 
 export type GuidelineSourceTableFigure = {
@@ -87,7 +101,15 @@ export type GuidelineTopic = {
     | 'ginaExacerbations'
     | 'ginaReferenceTables'
     | 'ginaDiagnosis'
-    | 'ginaAssessment';
+    | 'ginaAssessment'
+    | 'kdigoLibrary'
+    | 'kdigoFileIndex'
+    | 'kdigoChapter1'
+    | 'kdigoChapter2'
+    | 'kdigoChapter3'
+    | 'kdigoChapter4'
+    | 'kdigoChapter5'
+    | 'kdigoChapter6';
   title: LocalizedText;
   summary: LocalizedText;
   points: Record<GuidelineLanguage, string[]>;
@@ -118,134 +140,45 @@ export type GuidelineCollectionData = {
 import { ADA_2025_REMAINING_SOURCES } from './data/ada2025/sources';
 import { ADA_2026_REMAINING_SOURCES } from './data/ada2026/sources';
 import { GINA_2025_SOURCES } from './data/gina2025/sources';
+import { KDIGO_SOURCES } from './data/kdigo/sources';
 
 export const loadGuidelineCollectionData = async (id: string): Promise<GuidelineCollectionData | null> => {
-  if (id === 'ada-2026') {
-    const [
-      { ADA_2026_IMPROVING_CARE_TOPICS },
-      { ADA_2026_DIAGNOSIS_TOPICS },
-      { ADA_2026_PREVENTION_EVALUATION_TOPICS },
-      { ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS },
-      { ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS },
-      { ADA_2026_COMPLICATIONS_TOPICS },
-      { ADA_2026_SPECIAL_SITUATIONS_TOPICS },
-      { ADA_2026_CLINICAL_ESSENTIALS_TOPICS, ADA_2026_TOPIC_VISUALS },
-      { ADA_2026_RECOMMENDATION_DIGEST },
-    ] = await Promise.all([
-      import('./data/ada2026/improvingCare'),
-      import('./data/ada2026/diagnosisClassification'),
-      import('./data/ada2026/preventionEvaluation'),
-      import('./data/ada2026/behaviorsGoalsTechnology'),
-      import('./data/ada2026/weightPharmacology'),
-      import('./data/ada2026/complications'),
-      import('./data/ada2026/specialSituations'),
-      import('./data/ada2026/clinicalEssentials'),
-      import('./data/ada2026/recommendationDigest'),
-    ]);
-    const topics = [
-        ...ADA_2026_CLINICAL_ESSENTIALS_TOPICS,
-        ...ADA_2026_IMPROVING_CARE_TOPICS,
-        ...ADA_2026_DIAGNOSIS_TOPICS,
-        ...ADA_2026_PREVENTION_EVALUATION_TOPICS,
-        ...ADA_2026_BEHAVIORS_GOALS_TECH_TOPICS,
-        ...ADA_2026_WEIGHT_PHARMACOLOGY_TOPICS,
-        ...ADA_2026_COMPLICATIONS_TOPICS,
-        ...ADA_2026_SPECIAL_SITUATIONS_TOPICS,
-      ].map((topic) => {
-        const visuals = ADA_2026_TOPIC_VISUALS[topic.id];
-        return visuals ? { ...topic, visuals: [...(topic.visuals ?? []), ...visuals] } : topic;
-      });
-    return {
-      topics,
-      recommendationDigest: ADA_2026_RECOMMENDATION_DIGEST,
-    };
-  }
-  if (id === 'ada-2025') {
-    const [
-      { ADA_2025_IMPROVING_CARE_TOPICS },
-      { ADA_2025_DIAGNOSIS_TOPICS },
-      { ADA_2025_PREVENTION_EVALUATION_TOPICS },
-      { ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS },
-      { ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS },
-      { ADA_2025_COMPLICATIONS_TOPICS },
-      { ADA_2025_SPECIAL_SITUATIONS_TOPICS },
-      { ADA_2025_CLINICAL_ESSENTIALS_TOPICS },
-      { ADA_2025_TOPIC_VISUALS },
-      { ADA_2025_RECOMMENDATION_DIGEST },
-    ] = await Promise.all([
-      import('./data/ada2025/improvingCare'),
-      import('./data/ada2025/diagnosisClassification'),
-      import('./data/ada2025/preventionEvaluation'),
-      import('./data/ada2025/behaviorsGoalsTechnology'),
-      import('./data/ada2025/weightPharmacology'),
-      import('./data/ada2025/complications'),
-      import('./data/ada2025/specialSituations'),
-      import('./data/ada2025/clinicalEssentials'),
-      import('./data/ada2025/topicVisuals'),
-      import('./data/ada2025/recommendationDigest'),
-    ]);
-    const topics = [
-      ...ADA_2025_CLINICAL_ESSENTIALS_TOPICS,
-      ...ADA_2025_IMPROVING_CARE_TOPICS,
-      ...ADA_2025_DIAGNOSIS_TOPICS,
-      ...ADA_2025_PREVENTION_EVALUATION_TOPICS,
-      ...ADA_2025_BEHAVIORS_GOALS_TECH_TOPICS,
-      ...ADA_2025_WEIGHT_PHARMACOLOGY_TOPICS,
-      ...ADA_2025_COMPLICATIONS_TOPICS,
-      ...ADA_2025_SPECIAL_SITUATIONS_TOPICS,
-    ].map((topic) => {
-      const visuals = ADA_2025_TOPIC_VISUALS[topic.id];
-      return visuals ? { ...topic, visuals: [...(topic.visuals ?? []), ...visuals] } : topic;
+  try {
+    // 1. Fetch structured topics from 'guideline_topics' collection
+    const topicsQuery = query(
+      collection(db, 'guideline_topics'),
+      where('collectionId', '==', id)
+    );
+    const topicsSnapshot = await getDocs(topicsQuery);
+    const topics: GuidelineTopic[] = [];
+    topicsSnapshot.forEach((doc) => {
+      topics.push(doc.data() as GuidelineTopic);
     });
+
+    // 2. Fetch recommendation digests from 'guideline_digests' collection
+    const digestsQuery = query(
+      collection(db, 'guideline_digests'),
+      where('collectionId', '==', id)
+    );
+    const digestsSnapshot = await getDocs(digestsQuery);
+    const recommendationDigest: GuidelineSourceDigest[] = [];
+    digestsSnapshot.forEach((doc) => {
+      recommendationDigest.push(doc.data() as GuidelineSourceDigest);
+    });
+
+    if (topics.length === 0) {
+      console.warn(`No structured topics found in Firestore for collection ${id}`);
+      return null;
+    }
+
     return {
       topics,
-      recommendationDigest: ADA_2025_RECOMMENDATION_DIGEST,
+      recommendationDigest: recommendationDigest.length > 0 ? recommendationDigest : undefined,
     };
+  } catch (error) {
+    console.error(`Error loading guideline collection data from Firestore for ${id}:`, error);
+    return null;
   }
-
-  if (id === 'gina-2025') {
-    const [
-      { GINA_2025_INTRODUCTION_TOPICS },
-      { GINA_2025_DIAGNOSIS_TOPICS },
-      { GINA_2025_ASSESSMENT_TOPICS },
-      { GINA_2025_GENERAL_PRINCIPLES_TOPICS },
-      { GINA_2025_ADULT_MEDICATION_TOPICS },
-      { GINA_2025_CHILD_MEDICATION_TOPICS },
-      { GINA_2025_SPECIFIC_POPULATIONS_TOPICS },
-      { GINA_2025_EXACERBATIONS_TOPICS },
-      { GINA_2025_REFERENCE_TABLES_TOPICS },
-      { GINA_2025_CLINICAL_ESSENTIALS_TOPICS },
-      { GINA_2025_RECOMMENDATION_DIGEST },
-    ] = await Promise.all([
-      import('./data/gina2025/introduction'),
-      import('./data/gina2025/diagnosingAsthma'),
-      import('./data/gina2025/assessingAsthma'),
-      import('./data/gina2025/generalPrinciples'),
-      import('./data/gina2025/adultMedication'),
-      import('./data/gina2025/childMedication'),
-      import('./data/gina2025/specificPopulations'),
-      import('./data/gina2025/exacerbations'),
-      import('./data/gina2025/referenceTables'),
-      import('./data/gina2025/clinicalEssentials'),
-      import('./data/gina2025/recommendationDigest'),
-    ]);
-    return {
-      topics: [
-        ...GINA_2025_INTRODUCTION_TOPICS,
-        ...GINA_2025_DIAGNOSIS_TOPICS,
-        ...GINA_2025_ASSESSMENT_TOPICS,
-        ...GINA_2025_GENERAL_PRINCIPLES_TOPICS,
-        ...GINA_2025_ADULT_MEDICATION_TOPICS,
-        ...GINA_2025_CHILD_MEDICATION_TOPICS,
-        ...GINA_2025_SPECIFIC_POPULATIONS_TOPICS,
-        ...GINA_2025_EXACERBATIONS_TOPICS,
-        ...GINA_2025_REFERENCE_TABLES_TOPICS,
-        ...GINA_2025_CLINICAL_ESSENTIALS_TOPICS,
-      ],
-      recommendationDigest: GINA_2025_RECOMMENDATION_DIGEST,
-    };
-  }
-  return null;
 };
 
 export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
@@ -330,6 +263,21 @@ export const GUIDELINE_COLLECTIONS: GuidelineCollection[] = [
     },
     sources: GINA_2025_SOURCES,
   },
+  {
+    id: 'kdigo-2026',
+    school: 'KDIGO',
+    year: 2026,
+    sourceDate: '2026',
+    title: {
+      en: 'KDIGO Clinical Practice Guidelines',
+      ar: 'أدلة الممارسة السريرية KDIGO',
+    },
+    subtitle: {
+      en: 'A comprehensive, source-linked kidney disease library.',
+      ar: 'مكتبة شاملة لأمراض الكلى موثقة بالمصادر.',
+    },
+    sources: KDIGO_SOURCES,
+  },
 ];
 
 export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedText> = {
@@ -370,5 +318,13 @@ export const GUIDELINE_GROUP_LABELS: Record<GuidelineTopic['group'], LocalizedTe
   ginaSpecificPopulations: { en: 'Specific Populations', ar: 'حالات خاصة' },
   ginaExacerbations: { en: 'Exacerbations', ar: 'الانتكاسات' },
   ginaReferenceTables: { en: 'Reference Tables', ar: 'جداول مرجعية' },
+  kdigoLibrary: { en: 'KDIGO Library', ar: 'مكتبة KDIGO' },
+  kdigoFileIndex: { en: 'File Index', ar: 'فهرس الملفات' },
+  kdigoChapter1: { en: 'Chapter 1', ar: 'الفصل 1' },
+  kdigoChapter2: { en: 'Chapter 2', ar: 'الفصل 2' },
+  kdigoChapter3: { en: 'Chapter 3', ar: 'الفصل 3' },
+  kdigoChapter4: { en: 'Chapter 4', ar: 'الفصل 4' },
+  kdigoChapter5: { en: 'Chapter 5', ar: 'الفصل 5' },
+  kdigoChapter6: { en: 'Chapter 6', ar: 'الفصل 6' },
 };
 

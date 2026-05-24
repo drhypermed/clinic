@@ -18,7 +18,8 @@ export type AiFeatureName =
   | 'drug_interactions'  // فحص التداخلات الدوائية
   | 'pregnancy_safety'   // أمان الحمل والرضاعة
   | 'renal_dose'         // تعديل جرعات الكلى
-  | 'medical_report';    // طباعة تقرير طبي بالـAI
+  | 'medical_report'     // طباعة تقرير طبي بالـAI
+  | 'guidelines_chat';   // Guidelines source-grounded chat
 
 interface SecureGeminiParams {
   prompt: string;

@@ -36,3 +36,12 @@ functions/.env
 functions/.env.*
 !.env.example
 !functions/.env.example
+service-account.json
+
+# Agent worktrees and caching
+.claude/
+.claude
+
+# E2E and Test outputs
+playwright-report/
+
