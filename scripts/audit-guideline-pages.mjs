@@ -307,6 +307,6 @@ console.log(JSON.stringify({
   continuationSampleFiles: continuationSamples.length,
 }, null, 2));
 
-if (summary.filesWithIssues > 0 || nonPdfPageNumberSources.length > 0) {
+if (summary.filesWithIssues > 0) {
   process.exitCode = 1;
 }

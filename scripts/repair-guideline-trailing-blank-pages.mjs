@@ -118,6 +118,14 @@ let repaired = 0;
 
 for (const jsonPath of walkFiles(structuredRoot, '.json')) {
   const payload = readJson(jsonPath);
+  if (payload.status === 'extracted') {
+    sourceRecordUpdates.set(rel(jsonPath), {
+      pageCount: Number(payload.pageCount || 0),
+      textChars: Number(payload.textChars || 0),
+      chunkCount: Array.isArray(payload.chunks) ? payload.chunks.length : 0,
+    });
+  }
+
   if (!isTrailingBlankPageBug(payload)) continue;
 
   const pdfPages = storedPdfPageCount(payload);
@@ -155,17 +163,14 @@ let sourceFilesUpdated = 0;
 for (const sourceFile of walkFiles(dataRoot, '.ts')) {
   let text = fs.readFileSync(sourceFile, 'utf8');
   const original = text;
-  for (const [structuredTextPath, update] of sourceRecordUpdates) {
-    if (!text.includes(`"structuredTextPath": "${structuredTextPath}"`)) continue;
-    const escaped = structuredTextPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const recordPattern = new RegExp(`(\\{[\\s\\S]*?"structuredTextPath":\\s*"${escaped}"[\\s\\S]*?\\n\\s*\\})`, 'g');
-    text = text.replace(recordPattern, (record) =>
-      record
-        .replace(/"pageCount":\s*\d+/, `"pageCount": ${update.pageCount}`)
-        .replace(/"textChars":\s*\d+/, `"textChars": ${update.textChars}`)
-        .replace(/"chunkCount":\s*\d+/, `"chunkCount": ${update.chunkCount}`),
-    );
-  }
+  text = text.replace(/\{[\s\S]*?structuredTextPath["']?\s*:\s*['"]([^'"]+)['"][\s\S]*?\n\s*\}/g, (record, structuredTextPath) => {
+    const update = sourceRecordUpdates.get(structuredTextPath);
+    if (!update) return record;
+    return record
+      .replace(/(["']?pageCount["']?\s*:\s*)\d+/, `$1${update.pageCount}`)
+      .replace(/(["']?textChars["']?\s*:\s*)\d+/, `$1${update.textChars}`)
+      .replace(/(["']?chunkCount["']?\s*:\s*)\d+/, `$1${update.chunkCount}`);
+  });
   if (text !== original) {
     fs.writeFileSync(sourceFile, text, 'utf8');
     sourceFilesUpdated += 1;

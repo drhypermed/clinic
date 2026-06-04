@@ -1,5 +1,6 @@
 import React from 'react';
-import type { ChatMessage, GuidelineChatSourceChunk } from './guidelineChatSearch';
+import type { GuidelineChatSourceChunk } from './guidelineChatSearch';
+import type { ChatMessage } from './guidelinesChatUtils';
 
 export const ThinkingSpinner = () => (
   <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
