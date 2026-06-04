@@ -5,6 +5,23 @@ module.exports = ({ getDb }) => {
   const EMBEDDING_DIMENSIONS = 768;
   const VECTOR_FIELD = 'embeddingVector';
   const VECTOR_DISTANCE_FIELD = '_vectorDistance';
+  const RETRIEVAL_LIMITS = {
+    vector: 70,
+    vectorComparison: 100,
+    prefixDefault: 320,
+    selectedKeyword: 260,
+    focusedKeyword: 180,
+    schoolKeyword: 30,
+    broadKeyword: 260,
+    sourceScoped: 320,
+    collectionScan: 360,
+    collectionScanComparison: 520,
+    broadComparisonScan: 420,
+    hydrateExtra: 10,
+    neighborRoots: 4,
+    neighborDocReads: 24,
+    bookPageRead: 90,
+  };
 
   const normalizePathCandidate = (value) => String(value || '').replace(/\\/g, '/').trim();
 
@@ -382,7 +399,7 @@ module.exports = ({ getDb }) => {
     const prefixJobs = [];
     if (terms.length === 0) return [];
 
-    const collectBookIdPrefix = (prefix, expectedCollectionId, limit = 650) => {
+    const collectBookIdPrefix = (prefix, expectedCollectionId, limit = RETRIEVAL_LIMITS.prefixDefault) => {
       if (!prefix) return;
       if (selectedCollectionId && expectedCollectionId && selectedCollectionId !== expectedCollectionId) return;
       prefixJobs.push(
@@ -402,23 +419,23 @@ module.exports = ({ getDb }) => {
     const hasCkdAnemiaIntent = profile.terms.includes('ckd')
       && (profile.terms.includes('iron') || profile.terms.includes('anemia') || profile.terms.includes('anaemia') || profile.terms.includes('tsat') || profile.terms.includes('ferritin'));
     if (hasCkdAnemiaIntent) {
-      collectBookIdPrefix('kdigo-anemia-in-ckd', 'kdigo-2026', 800);
+      collectBookIdPrefix('kdigo-anemia-in-ckd', 'kdigo-2026', 360);
     }
     if (/\b(hepatitis b|hbv)\b/i.test(queryText)) {
-      collectBookIdPrefix('easl-2025-easl-clinical-practice-guidelines-on-the-management-of-', 'easl-2026', 700);
+      collectBookIdPrefix('easl-2025-easl-clinical-practice-guidelines-on-the-management-of-', 'easl-2026', 320);
     }
     if (profile.terms.includes('dka') || profile.terms.includes('ketoacidosis')) {
-      collectBookIdPrefix('ada-2026-16-diabetes-care-in-the-hospital', 'ada-2026', 350);
-      collectBookIdPrefix('ada-2026-6-glycemic-goals-hypoglycemia-and-hyperglycemic-crises', 'ada-2026', 250);
+      collectBookIdPrefix('ada-2026-16-diabetes-care-in-the-hospital', 'ada-2026', 240);
+      collectBookIdPrefix('ada-2026-6-glycemic-goals-hypoglycemia-and-hyperglycemic-crises', 'ada-2026', 180);
       if (profile.populationTags.includes('child')) {
-        collectBookIdPrefix('ada-2026-14-children-and-adolescents', 'ada-2026', 250);
+        collectBookIdPrefix('ada-2026-14-children-and-adolescents', 'ada-2026', 160);
       }
     }
     if (profile.terms.includes('asthma') || profile.terms.includes('mart') || profile.terms.includes('formoterol') || profile.terms.includes('saba') || profile.terms.includes('ics')) {
-      collectBookIdPrefix('gina-gina-2026', 'gina-2026', 650);
+      collectBookIdPrefix('gina-gina-2026', 'gina-2026', 320);
     }
     if (profile.terms.includes('gout') || profile.terms.includes('urate') || profile.terms.includes('allopurinol') || profile.terms.includes('febuxostat') || profile.terms.includes('colchicine')) {
-      collectBookIdPrefix('acr-gout-clinical-practice-guidelines-american-college-of-rheumatology-2020-guideline-for-the-management-of-gout', 'acr-2026', 500);
+      collectBookIdPrefix('acr-gout-clinical-practice-guidelines-american-college-of-rheumatology-2020-guideline-for-the-management-of-gout', 'acr-2026', 260);
     }
 
     if (prefixJobs.length > 0) {
@@ -429,7 +446,7 @@ module.exports = ({ getDb }) => {
       jobs.push(
         chunksRef.where('keywords', 'array-contains-any', terms)
           .where('collectionId', '==', selectedCollectionId)
-          .limit(650)
+          .limit(RETRIEVAL_LIMITS.selectedKeyword)
           .get()
           .then(collect)
           .catch((error) => {
@@ -441,7 +458,7 @@ module.exports = ({ getDb }) => {
         jobs.push(
           chunksRef.where('keywords', 'array-contains-any', terms)
             .where('collectionId', '==', collectionId)
-            .limit(360)
+            .limit(RETRIEVAL_LIMITS.focusedKeyword)
             .get()
             .then(collect)
             .catch(() => {}),
@@ -458,7 +475,7 @@ module.exports = ({ getDb }) => {
           jobs.push(
             chunksRef.where('keywords', 'array-contains-any', terms)
               .where('school', '==', school)
-              .limit(70)
+              .limit(RETRIEVAL_LIMITS.schoolKeyword)
               .get()
               .then(collect)
               .catch(() => {}),
@@ -466,7 +483,7 @@ module.exports = ({ getDb }) => {
         }
       }
 
-      jobs.push(chunksRef.where('keywords', 'array-contains-any', terms).limit(700).get().then(collect).catch((error) => {
+      jobs.push(chunksRef.where('keywords', 'array-contains-any', terms).limit(RETRIEVAL_LIMITS.broadKeyword).get().then(collect).catch((error) => {
         console.warn('[searchGuidelineIndex] broad keyword query failed', { message: error.message });
       }));
     }
@@ -481,7 +498,7 @@ module.exports = ({ getDb }) => {
     const candidates = new Map();
 
     for (const sourcePath of sourcePathCandidates) {
-      const snapshot = await chunksRef.where('sourcePath', '==', sourcePath).limit(1200).get();
+      const snapshot = await chunksRef.where('sourcePath', '==', sourcePath).limit(RETRIEVAL_LIMITS.sourceScoped).get();
       snapshot.forEach((doc) => {
         const chunk = docToChunk(doc);
         mergeCandidate(candidates, chunk, 'source');
@@ -507,14 +524,14 @@ module.exports = ({ getDb }) => {
 
     if (collections.length > 0) {
       await Promise.all(collections.slice(0, needsComparison ? 6 : 3).map((collectionId) =>
-        chunksRef.where('collectionId', '==', collectionId).limit(needsComparison ? 1400 : 2400).get().then(collect).catch((error) => {
+        chunksRef.where('collectionId', '==', collectionId).limit(needsComparison ? RETRIEVAL_LIMITS.collectionScanComparison : RETRIEVAL_LIMITS.collectionScan).get().then(collect).catch((error) => {
           console.warn('[searchGuidelineIndex] collection scan failed', { collectionId, message: error.message });
         })
       ));
     }
 
     if (candidates.size === 0 && needsComparison) {
-      await chunksRef.limit(1600).get().then(collect).catch((error) => {
+      await chunksRef.limit(RETRIEVAL_LIMITS.broadComparisonScan).get().then(collect).catch((error) => {
         console.warn('[searchGuidelineIndex] broad comparison scan failed', { message: error.message });
       });
     }
@@ -596,7 +613,7 @@ module.exports = ({ getDb }) => {
 
     if (docRefs.length === 0) return ranked;
 
-    const snapshots = await db.getAll(...docRefs.slice(0, 40));
+    const snapshots = await db.getAll(...docRefs.slice(0, RETRIEVAL_LIMITS.neighborDocReads));
     snapshots.forEach((doc) => {
       if (!doc.exists) return;
       const chunk = docToChunk(doc);
@@ -706,9 +723,9 @@ module.exports = ({ getDb }) => {
         if (a.bookId === b.bookId) return (a.chunkIndex || 0) - (b.chunkIndex || 0);
         return String(a.label).localeCompare(String(b.label));
       })
-      .slice(0, Math.max(24, limit + 18));
+      .slice(0, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra));
 
-    const hydrated = await hydrateFullChunks(db, prelim, Math.max(24, limit + 18));
+    const hydrated = await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra));
     const ranked = hydrated
       .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, profile, options) }))
       .filter((chunk) => chunk.score >= 8)
@@ -722,7 +739,7 @@ module.exports = ({ getDb }) => {
     const roots = profile.plan?.needsComparison
       ? diversifyForComparison(reranked, Math.max(10, limit))
       : diversifyByBook(reranked, Math.max(8, limit));
-    const withContext = await expandNeighborContext({ db, ranked: roots, maxRoots: 5 });
+    const withContext = await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots });
     return withContext
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
@@ -762,7 +779,7 @@ module.exports = ({ getDb }) => {
     const vectorCandidates = await fetchVectorCandidates({
       db,
       queryEmbedding,
-      limit: profile.plan.needsComparison ? 140 : 90,
+      limit: profile.plan.needsComparison ? RETRIEVAL_LIMITS.vectorComparison : RETRIEVAL_LIMITS.vector,
     });
     if (vectorCandidates.length > 0) {
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
@@ -815,7 +832,7 @@ module.exports = ({ getDb }) => {
   const listGuidelineBooks = async (request) => {
     const data = request.data || {};
     const selectedCollectionId = data.selectedCollectionId ? String(data.selectedCollectionId) : '';
-    const limit = Math.min(1000, Math.max(50, Number(data.limit || 500) || 500));
+    const limit = Math.min(500, Math.max(50, Number(data.limit || 250) || 250));
     const db = getDb();
     let query = db.collection('guideline_books').where('status', '==', 'active');
     if (selectedCollectionId) query = query.where('collectionId', '==', selectedCollectionId);
@@ -864,16 +881,21 @@ module.exports = ({ getDb }) => {
     if (bookId) {
       const bookSnap = await db.collection('guideline_books').doc(bookId).get();
       if (bookSnap.exists) book = { id: bookSnap.id, ...bookSnap.data() };
-      const snapshot = await db.collection('guideline_book_chunks')
-        .where('bookId', '==', bookId)
-        .limit(1200)
-        .get();
-      snapshot.forEach((doc) => chunks.push(docToChunk(doc)));
+      const startIndex = Math.max(1, afterChunkIndex + 1);
+      const readLimit = Math.min(RETRIEVAL_LIMITS.bookPageRead, limit + 1);
+      const refs = Array.from({ length: readLimit }, (_, idx) => {
+        const chunkIndex = startIndex + idx;
+        return db.collection('guideline_book_chunks').doc(`${bookId}:${String(chunkIndex).padStart(5, '0')}`);
+      });
+      const snapshots = await db.getAll(...refs);
+      snapshots.forEach((doc) => {
+        if (doc.exists) chunks.push(docToChunk(doc));
+      });
     } else {
       for (const sourcePath of sourcePathCandidates) {
         const snapshot = await db.collection('guideline_book_chunks')
           .where('sourcePath', '==', sourcePath)
-          .limit(1200)
+          .limit(RETRIEVAL_LIMITS.bookPageRead)
           .get();
         snapshot.forEach((doc) => chunks.push(docToChunk(doc)));
         if (chunks.length > 0) break;
