@@ -335,6 +335,13 @@ const shouldSkipChunk = (chunk, sourcePath) => {
   return etAlCount >= 8 || numberedCitationCount >= 8;
 };
 
+const hasReliablePdfPageNumbers = (sourcePath) => /\.pdf$/i.test(String(sourcePath || ''));
+
+const formatPageRangeForLabel = (sourcePath, startPage, endPage) => {
+  if (!hasReliablePdfPageNumbers(sourcePath) || !startPage) return '';
+  return endPage && endPage !== startPage ? ` pp. ${startPage}-${endPage}` : ` p. ${startPage}`;
+};
+
 const batchCommit = async (writer, count) => {
   if (dryRun) return;
   if (count % 160 === 0) {
@@ -436,7 +443,7 @@ const main = async () => {
 
       globalOrder += 1;
       const chunkId = `${bookId}:${String(chunkIndex).padStart(5, '0')}`;
-      const label = `${school} ${year} - ${folderTitle ? `${folderTitle} / ` : ''}${sourceTitle} pp. ${pageStart}-${pageEnd}`;
+      const label = `${school} ${year} - ${folderTitle ? `${folderTitle} / ` : ''}${sourceTitle}${formatPageRangeForLabel(sourcePath, pageStart, pageEnd)}`;
       const heading = detectHeading(text);
       const keywords = extractKeywords(label, heading, text);
       const concepts = extractConcepts(label, heading, text);

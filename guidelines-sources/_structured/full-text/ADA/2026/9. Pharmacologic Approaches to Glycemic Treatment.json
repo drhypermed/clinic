@@ -26,7 +26,7 @@
     "Optimized": "no",
     "PDF version": "1.6"
   },
-  "pageCount": 34,
+  "pageCount": 33,
   "textChars": 210527,
   "pages": [
     {
@@ -325,15 +325,6 @@
       "textSelection": "raw",
       "textSelectionReason": "multi-column-layout",
       "charCount": 6993
-    },
-    {
-      "pageNumber": 34,
-      "text": "",
-      "layoutText": "",
-      "rawText": "",
-      "textSelection": "raw",
-      "textSelectionReason": "empty-layout",
-      "charCount": 0
     }
   ],
   "chunks": [
@@ -571,7 +562,7 @@
     {
       "id": "chunk-0034",
       "startPage": 33,
-      "endPage": 34,
+      "endPage": 33,
       "text": "report by the American Diabetes\nAssociation (ADA) and the European Association for\nthe Study of Diabetes (EASD). Diabetes Care 2018;\n41:2669–2701\ndiabetesjournals.org/care Pharmacologic Approaches to Glycemic Treatment S215\nDownloaded\nfrom\nhttp://diabetesjournals.org/care/article-pdf/49/Supplement_1/S183/848878/dc26s009.pdf\nby\nguest\non\n19\nMay\n2026",
       "charCount": 349
     }

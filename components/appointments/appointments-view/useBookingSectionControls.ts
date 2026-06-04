@@ -145,12 +145,12 @@ export const useBookingSectionControls = ({
     let cancelled = false;
     (async () => {
       try {
-        const secret = await firestoreService.getOrCreatePublicBookingSecret(userId);
+        const {
+          publicBookingSecret: secret,
+          publicUrlSlug: slug,
+        } = await firestoreService.ensurePublicBookingIdentity(userId);
         if (cancelled) return;
         setPublicBookingSecret(secret);
-        // الـ slug القصير — لو موجود نستخدمه، لو لأ نولّد جديد
-        const slug = await firestoreService.getOrCreatePublicUrlSlug(userId);
-        if (cancelled) return;
         setPublicBookingLink(buildPublicBookingUrl(slug));
       } catch (err) {
         if (cancelled) return;

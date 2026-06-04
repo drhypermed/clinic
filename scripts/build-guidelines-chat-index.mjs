@@ -112,6 +112,13 @@ const shouldSkipChunk = (chunk, sourcePath) => {
   return false;
 };
 
+const hasReliablePdfPageNumbers = (sourcePath) => /\.pdf$/i.test(String(sourcePath || ''));
+
+const formatPageRangeForLabel = (sourcePath, startPage, endPage) => {
+  if (!hasReliablePdfPageNumbers(sourcePath) || !startPage) return '';
+  return endPage && endPage !== startPage ? ` pp. ${startPage}-${endPage}` : ` p. ${startPage}`;
+};
+
 const jsonFiles = walkJsonFiles(sourceRoot);
 const chunks = [];
 const documents = [];
@@ -182,7 +189,7 @@ for (const jsonPath of jsonFiles) {
       sourcePath,
       page: chunk.startPage,
       endPage: chunk.endPage,
-      label: `${school} ${year} - ${folderTitle ? `${folderTitle} / ` : ''}${sourceTitle} pp. ${chunk.startPage}-${chunk.endPage}`,
+      label: `${school} ${year} - ${folderTitle ? `${folderTitle} / ` : ''}${sourceTitle}${formatPageRangeForLabel(sourcePath, chunk.startPage, chunk.endPage)}`,
       kind: 'full-text',
       text,
     });

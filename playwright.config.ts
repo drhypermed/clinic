@@ -1,4 +1,4 @@
-﻿import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -33,9 +33,9 @@ export default defineConfig({
 
   // Start preview server before running end-to-end tests
   webServer: {
-    command: 'npm run preview',
+    command: 'npm run build && npm run preview',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
   },
 });

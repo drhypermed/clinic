@@ -19,6 +19,7 @@ import {
     getUserProfileDocRef,
     resolveAuthRoleFromProfileData,
 } from '../services/firestore/profileRoles';
+import { ensurePublicBookingIdentity } from '../services/firestore/booking-public/secretConfig';
 import {
     signInWithGoogle,
     signOut as authSignOut,
@@ -350,6 +351,11 @@ export const useAuth = (): UseAuthReturn => {
                             } as ExtendedUser;
 
                             setUser(enrichedUser);
+                            if (resolvedAuthRole === 'doctor' && userData?.verificationStatus === 'approved') {
+                                void ensurePublicBookingIdentity(authUser.uid).catch(() => {
+                                    // Silent catch to avoid lint errors
+                                });
+                            }
                             // تخزين نسخة محلية للاستخدام في الـ Hooks الأخرى دون استعلام Firestore
                             localStorage.setItem(profileCacheKey, JSON.stringify({
                                 verificationStatus: userData?.verificationStatus,

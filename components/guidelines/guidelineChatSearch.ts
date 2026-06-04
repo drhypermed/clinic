@@ -7,6 +7,7 @@ import {
 } from './guidelinesData';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebaseConfig';
+import { hasReliablePdfPageNumbers } from './guidelineSourceUtils';
 
 export type GuidelineChatScope = 'current-guideline' | 'all-guidelines' | 'current-file';
 
@@ -288,7 +289,9 @@ export const buildGuidelineChatIndex = (bundles: GuidelineChatCollectionBundle[]
 // --- Citation formatting ---
 
 export const formatChunkCitation = (chunk: GuidelineChatSourceChunk, language: GuidelineLanguage) => {
-  const page = chunk.page ? (chunk.endPage && chunk.endPage !== chunk.page ? `pp. ${chunk.page}-${chunk.endPage}` : `p. ${chunk.page}`) : '';
+  const page = hasReliablePdfPageNumbers(chunk) && chunk.page
+    ? (chunk.endPage && chunk.endPage !== chunk.page ? `pp. ${chunk.page}-${chunk.endPage}` : `p. ${chunk.page}`)
+    : '';
   const file = chunk.fileTitle || chunk.sourceTitle || chunk.collectionTitle;
   const folder = chunk.folderTitle ? `${chunk.folderTitle} / ` : '';
   if (language === 'ar') {

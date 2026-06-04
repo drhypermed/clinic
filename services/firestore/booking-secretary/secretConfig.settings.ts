@@ -30,6 +30,7 @@ import { getDocCacheFirst } from '../cacheFirst';
 import { db } from '../../firebaseConfig';
 import { normalizeBookingSecret, normalizeEmail, sanitizeDocSegment, toOptionalText } from './helpers';
 import { getOrCreateBookingUrlSlug, getOrCreatePublicUrlSlug } from './slugs';
+import { getOrCreatePublicBookingSecret } from '../booking-public/secretConfig';
 import { hashPassword } from '../../../utils/bookingAuth';
 import type {
   SecretaryVitalFieldDefinition,
@@ -267,6 +268,7 @@ export const saveBookingCredentials = async (
 
   const bookingSlug = await getOrCreateBookingUrlSlug(normalizedUserId);
   const publicSlug = await getOrCreatePublicUrlSlug(normalizedUserId);
+  const publicBookingSecret = await getOrCreatePublicBookingSecret(normalizedUserId);
 
   const isNonMainBranch = branchId && branchId !== 'main';
 
@@ -277,6 +279,7 @@ export const saveBookingCredentials = async (
       ...(isNonMainBranch ? {} : { bookingSecret: normalizedSecret }),
       bookingFormTitle: formTitleVal,
       bookingUrlSlug: bookingSlug,
+      publicBookingSecret,
       publicUrlSlug: publicSlug,
       doctorEmail: doctorEmailValue || deleteField(),
       ...(existingSecretaryVitalsVisibility
@@ -307,6 +310,8 @@ export const saveBookingCredentials = async (
       secretarySessionToken: deleteField(),
       secretarySessionTokenUpdatedAt: deleteField(),
       secretaryPassword: deleteField(),
+      publicBookingSecret,
+      publicUrlSlug: publicSlug,
       ...(existingSecretaryVitalsVisibility
         ? { secretaryVitalsVisibility: existingSecretaryVitalsVisibility }
         : {}),

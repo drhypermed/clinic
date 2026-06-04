@@ -144,7 +144,8 @@ const splitPages = (value) =>
   value
     .split('\f')
     .map(normalizeText)
-    .map((page) => page.trim());
+    .map((page) => page.trim())
+    .filter((page, index, pages) => index < pages.length - 1 || page.length > 0);
 
 const countColumnBleedLines = (value) =>
   String(value || '')

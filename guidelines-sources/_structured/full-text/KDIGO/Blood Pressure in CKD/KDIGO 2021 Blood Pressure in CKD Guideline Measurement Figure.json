@@ -25,7 +25,7 @@
     "Optimized": "no",
     "PDF version": "1.5"
   },
-  "pageCount": 2,
+  "pageCount": 1,
   "textChars": 1366,
   "pages": [
     {
@@ -34,20 +34,13 @@
       "layoutText": "• Quiet room (no talking by patient or observer)\n  • No smoking, caffeine, or exercise for ≥30 min before\n  No talking during rest period  measurement\n  and between measurements  • Empty bladder\n  • Note the time of most recent BP medication taken before\n  Cuff to fit arm size  measurements\n  (small, usual, large1)  • Relax for >5 min\n  • At first visit, record BP in both arms. Use the arm that\n  Arm bare and resting.  gives the higher reading for subsequent readings\n  Mid-arm at midpoint of the sternum  • Separate repeated measurements by 1–2 minutes\n  • Use an average of ≥2 readings obtained on ≥2 occasions\n  • Provide patients with the SBP/DBP readings verbally and\n  in writing\nBack\nsupported\n\n  Validated oscillometric\n  or manual auscultatory\n  device2,3, calibrated\n  periodically  Use the correct cuff size, such that the bladder encircles\n  1\n\n  80% of the arm, and note if a larger- or smaller-than-normal\n  cuff size is used\n  2\n  See validated electronic devices lists at www.stridebp.org\n  For auscultatory readings, either the stethoscope\n  3\n\n  diaphragm or bell may be used. Use a palpated radial pulse\n  Feet flat on floor  obliteration pressure to estimate SBP, then inflate the cuff\n  20–30 mm Hg above this level for auscultatory\n  determination of BP level. Deflate the cuff pressure 2 mm Hg\n  per second, and listen for Korotkoff sounds",
       "rawText": "• Quiet room (no talking by patient or observer)\n• No smoking, caffeine, or exercise for ≥30 min before\nmeasurement\n• Empty bladder\n• Note the time of most recent BP medication taken before\nmeasurements\n• Relax for >5 min\n• At first visit, record BP in both arms. Use the arm that\ngives the higher reading for subsequent readings\n• Separate repeated measurements by 1–2 minutes\n• Use an average of ≥2 readings obtained on ≥2 occasions\n• Provide patients with the SBP/DBP readings verbally and\nin writing\nValidated oscillometric\nor manual auscultatory\ndevice2,3\n, calibrated\nperiodically 1\nUse the correct cuff size, such that the bladder encircles\n80% of the arm, and note if a larger- or smaller-than-normal\ncuff size is used\n2\nSee validated electronic devices lists at www.stridebp.org\n3\nFor auscultatory readings, either the stethoscope\ndiaphragm or bell may be used. Use a palpated radial pulse\nobliteration pressure to estimate SBP, then inflate the cuff\n20–30 mm Hg above this level for auscultatory\ndetermination of BP level. Deflate the cuff pressure 2 mm Hg\nper second, and listen for Korotkoff sounds\nFeet flat on floor\nBack\nsupported\nNo talking during rest period\nand between measurements\nCuff to fit arm size\n(small, usual, large1\n)\nArm bare and resting.\nMid-arm at midpoint of the sternum",
       "charCount": 1366
-    },
-    {
-      "pageNumber": 2,
-      "text": "",
-      "layoutText": "",
-      "rawText": "",
-      "charCount": 0
     }
   ],
   "chunks": [
     {
       "id": "chunk-0001",
       "startPage": 1,
-      "endPage": 2,
+      "endPage": 1,
       "text": "• Quiet room (no talking by patient or observer)\n• No smoking, caffeine, or exercise for ≥30 min before\nNo talking during rest period  measurement\nand between measurements  • Empty bladder\n• Note the time of most recent BP medication taken before\nCuff to fit arm size  measurements\n(small, usual, large1)  • Relax for >5 min\n• At first visit, record BP in both arms. Use the arm that\nArm bare and resting.  gives the higher reading for subsequent readings\nMid-arm at midpoint of the sternum  • Separate repeated measurements by 1–2 minutes\n• Use an average of ≥2 readings obtained on ≥2 occasions\n• Provide patients with the SBP/DBP readings verbally and\nin writing\nBack\nsupported\nValidated oscillometric\nor manual auscultatory\ndevice2,3, calibrated\nperiodically  Use the correct cuff size, such that the bladder encircles\n1\n80% of the arm, and note if a larger- or smaller-than-normal\ncuff size is used\n2\nSee validated electronic devices lists at www.stridebp.org\nFor auscultatory readings, either the stethoscope\n3\ndiaphragm or bell may be used. Use a palpated radial pulse\nFeet flat on floor  obliteration pressure to estimate SBP, then inflate the cuff\n20–30 mm Hg above this level for auscultatory\ndetermination of BP level. Deflate the cuff pressure 2 mm Hg\nper second, and listen for Korotkoff sounds",
       "charCount": 1307
     }

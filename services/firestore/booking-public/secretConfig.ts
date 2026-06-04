@@ -21,6 +21,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { getDocCacheFirst, getDocsCacheFirst } from '../cacheFirst';
+import { getOrCreatePublicUrlSlug } from '../booking-secretary/slugs';
 import {
   createPublicBookingSecret,
   normalizePublicSecret,
@@ -101,6 +102,11 @@ const sanitizeBranchFormSettingsMap = (raw: unknown): Record<string, PublicBranc
 export interface PublicBookingLookupData {
   publicBookingSecret?: string;
   publicUrlSlug?: string;
+}
+
+export interface PublicBookingIdentity {
+  publicBookingSecret: string;
+  publicUrlSlug: string;
 }
 
 const readPublicBookingLookup = async (userId: string): Promise<PublicBookingLookupData | null> => {
@@ -292,6 +298,40 @@ export const getOrCreatePublicBookingSecret = async (userId: string): Promise<st
   await ensurePublicBookingConfig(normalizedUserId, secret);
   await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: secret });
   return secret;
+};
+
+export const ensurePublicBookingIdentity = async (
+  userId: string
+): Promise<PublicBookingIdentity> => {
+  const normalizedUserId = sanitizeDocSegment(userId);
+  if (!normalizedUserId) {
+    throw new Error('invalid-user-id');
+  }
+
+  const [publicBookingSecret, publicUrlSlug] = await Promise.all([
+    getOrCreatePublicBookingSecret(normalizedUserId),
+    getOrCreatePublicUrlSlug(normalizedUserId),
+  ]);
+
+  await Promise.all([
+    setDoc(
+      doc(db, 'users', normalizedUserId),
+      { publicBookingSecret, publicUrlSlug },
+      { merge: true }
+    ),
+    setDoc(
+      doc(db, 'publicBookingConfig', publicBookingSecret),
+      {
+        userId: normalizedUserId,
+        publicUrlSlug,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    ),
+    persistPublicBookingLookup(normalizedUserId, { publicBookingSecret, publicUrlSlug }),
+  ]);
+
+  return { publicBookingSecret, publicUrlSlug };
 };
 
 /** جلب بيانات إعدادات نموذج الحجز باستخدام الرمز السري */

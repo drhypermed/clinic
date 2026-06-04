@@ -1,5 +1,6 @@
 import type { GuidelineLanguage } from './guidelinesData';
 import type { GuidelineChatSourceChunk } from './guidelineChatSearch';
+import { hasReliablePdfPageNumbers } from './guidelineSourceUtils';
 import { isLegacyCorruptedWelcomeMessage, trimChatMessages } from '../../services/guidelineChatHistoryService';
 import type { ChatMessage } from './guidelinesChatUtils';
 
@@ -155,6 +156,7 @@ export const getSourceFileName = (source: GuidelineChatSourceChunk) =>
   source.fileTitle || source.sourceTitle || source.label || source.localFile || source.sourcePath || 'Guideline source';
 
 export const getSourcePageLabel = (source: GuidelineChatSourceChunk) => {
+  if (!hasReliablePdfPageNumbers(source)) return '';
   const start = source.pageStart || source.page || 0;
   const end = source.pageEnd || source.endPage || start;
   if (!start) return '';

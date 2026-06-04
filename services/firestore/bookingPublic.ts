@@ -9,6 +9,7 @@
 
 import {
   ensurePublicBookingConfig,
+  ensurePublicBookingIdentity,
   getOrCreatePublicBookingSecret,
   getPublicBookingLookupByUserId,
   getPublicBookingConfig,
@@ -38,6 +39,7 @@ import { getPublicBranches, savePublicBranches } from './booking-public/publicBr
 /** واجهة الخدمة الموحدة للحجز العام */
 export const bookingPublicService = {
   getOrCreatePublicBookingSecret,
+  ensurePublicBookingIdentity,
   getPublicBookingLookupByUserId,
   ensurePublicBookingConfig,
   getPublicBookingConfig,

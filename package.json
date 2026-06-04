@@ -21,6 +21,8 @@
     "extract:guidelines": "node scripts/extract-guidelines-corpus.mjs",
     "index:guidelines": "node scripts/build-guidelines-chat-index.mjs",
     "audit:guidelines": "node scripts/audit-guidelines-pipeline.mjs",
+    "audit:guideline-pages": "node scripts/audit-guideline-pages.mjs",
+    "repair:guideline-pages": "node scripts/repair-guideline-trailing-blank-pages.mjs",
     "cleanup:guidelines:local": "node scripts/cleanup-guidelines-local-artifacts.mjs",
     "pipeline:guidelines": "node scripts/run-guidelines-pipeline.mjs",
     "migrate:guidelines:canonical": "node scripts/migrate-guidelines-canonical.mjs",
