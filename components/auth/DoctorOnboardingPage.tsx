@@ -28,9 +28,10 @@ import {
   getUserProfileDocRef,
   isDoctorLikeUserData,
 } from '../../services/firestore/profileRoles';
+import { compressImage } from '../../services/storageService';
 
 // حد أقصى لحجم صورة الترخيص — نفس قيمة صفحة الـsignup للاتساق
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
 
 // أنماط الحقول — منسوخة من DoctorSignupPage عشان نوحّد الشكل البصري
 const inputBase =
@@ -162,19 +163,27 @@ export const DoctorOnboardingPage: React.FC = () => {
     };
   }, [user?.uid, navigate, signOut]);
 
-  // اختيار صورة الترخيص + معاينة فورية
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // اختيار صورة الترخيص + معاينة فورية مع الضغط المحلي
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_IMAGE_SIZE) {
-      setFormError('حجم الصورة يجب ألا يتجاوز 5 ميجابايت');
+      setFormError('حجم الصورة يجب ألا يتجاوز 20 ميجابايت');
       return;
     }
-    setLicenseImage(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    
     setFormError('');
+    try {
+      const compressedBlob = await compressImage(file, { maxDimension: 1600, quality: 0.82 });
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const compressedFile = new File([compressedBlob], safeName, { type: compressedBlob.type || 'image/jpeg' });
+      setLicenseImage(compressedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(compressedFile);
+    } catch {
+      setFormError('تعذرت معالجة الصورة. يرجى اختيار صورة أخرى.');
+    }
   };
 
   // إزالة الصورة المختارة — يرجّع الحقل لحالته الفارغة
@@ -352,7 +361,7 @@ export const DoctorOnboardingPage: React.FC = () => {
                   >
                     <FaCamera size={28} className="text-slate-400 mb-2" />
                     <span className="text-sm font-bold text-slate-700">اضغط لرفع الصورة</span>
-                    <span className="text-xs text-slate-500 mt-1">الحد الأقصى 5 ميجابايت</span>
+                    <span className="text-xs text-slate-500 mt-1">الحد الأقصى 20 ميجابايت</span>
                     <input
                       id="onboarding-license"
                       type="file"

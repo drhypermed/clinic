@@ -46,15 +46,12 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   freeReadyPrescriptionDailyLimit: 3,             // حفظ روشتة جاهزة (يومياً)
   premiumReadyPrescriptionDailyLimit: 50,
   // ─ 🆕 أزرار تصدير الروشتة (طباعة + تنزيل + واتساب) ─
-  freePrescriptionPrintDailyLimit: 50,
-  premiumPrescriptionPrintDailyLimit: 200,
-  freePrescriptionDownloadDailyLimit: 50,
-  premiumPrescriptionDownloadDailyLimit: 200,
-  freePrescriptionWhatsappDailyLimit: 50,
-  premiumPrescriptionWhatsappDailyLimit: 200,
   // ─ الكلى — اتنقلت لقسم "حدود الميزات" 2026-04 (نفس نمط التداخلات والحمل) ─
   freeRenalToolDailyLimit: 10,
   premiumRenalToolDailyLimit: 100,
+  // ─ شات الجايدلاينز — حد يومي منفصل لتقليل تكلفة Gemini ─
+  freeGuidelinesChatDailyLimit: 2,
+  premiumGuidelinesChatDailyLimit: 15,
 
   // ── حدود كلية (مايتجددش — لازم يحذف عنصر عشان يضيف جديد) ──
   freeRecordsMaxCount: 100,                       // حفظ السجلات الطبية
@@ -163,27 +160,19 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «حاسبة جرعات الكلى» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
   freeRenalToolWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حاسبة جرعات الكلى» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
+  freeGuidelinesChatLimitMessage:
+    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} رسالة) لميزة «شات الجايدلاينز» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
+  freeGuidelinesChatWhatsappMessage:
+    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «شات الجايدلاينز» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   // ─── 🆕 أزرار تصدير الروشتة (مجاني) ─
-  freePrescriptionPrintLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «طباعة الروشتة» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
-  freePrescriptionPrintWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة الروشتة» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
-  freePrescriptionDownloadLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «تنزيل الروشتة» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
-  freePrescriptionDownloadWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «تنزيل الروشتة» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
-  freePrescriptionWhatsappLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «إرسال الروشتة عبر واتساب» ضمن الباقة المجانية. لرفع الحد، يُمكنك ترقية الباقة عبر واتساب.',
-  freePrescriptionWhatsappWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال الروشتة عبر واتساب» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
+  freeReadyPrescriptionWhatsappMessage:
+    'تجاوزت حد حفظ الروشتات الجاهزة وأرغب في الاشتراك.',
   freeMedicalReportWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freePublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freeSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
-  freeReadyPrescriptionWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حفظ روشتة جاهزة» ضمن الباقة المجانية، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
   freeRecordsCapacityWhatsappMessage:
     'تحية طيبة، أتواصل معكم لبلوغي السعة القصوى لـ«حفظ السجلات» ضمن الباقة المجانية، وأرغب في ترقية باقتي لزيادة السعة. شاكراً لكم تعاونكم.',
   freeReadyPrescriptionsCapacityWhatsappMessage:
@@ -210,27 +199,19 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «حاسبة جرعات الكلى» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
   premiumRenalToolWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حاسبة جرعات الكلى» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
+  premiumGuidelinesChatLimitMessage:
+    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} رسالة) لميزة «شات الجايدلاينز» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
+  premiumGuidelinesChatWhatsappMessage:
+    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «شات الجايدلاينز» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   // ─── 🆕 أزرار تصدير الروشتة (برو) ─
-  premiumPrescriptionPrintLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «طباعة الروشتة» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
-  premiumPrescriptionPrintWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة الروشتة» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
-  premiumPrescriptionDownloadLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «تنزيل الروشتة» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
-  premiumPrescriptionDownloadWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «تنزيل الروشتة» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
-  premiumPrescriptionWhatsappLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «إرسال الروشتة عبر واتساب» ضمن باقة برو. لرفع الحد، يُرجى التواصل معنا عبر واتساب.',
-  premiumPrescriptionWhatsappWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال الروشتة عبر واتساب» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
+  premiumReadyPrescriptionWhatsappMessage:
+    'استهلكت حد حفظ الروشتات الجاهزة وأرغب في ترقية الباقة.',
   premiumMedicalReportWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumPublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
-  premiumReadyPrescriptionWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حفظ روشتة جاهزة» ضمن باقة برو، وأرغب في رفع الحد. شاكراً لكم تعاونكم.',
   premiumRecordsCapacityWhatsappMessage:
     'تحية طيبة، أتواصل معكم لبلوغي السعة القصوى لـ«حفظ السجلات» ضمن باقة برو، وأرغب في زيادة السعة. شاكراً لكم تعاونكم.',
   premiumReadyPrescriptionsCapacityWhatsappMessage:
@@ -267,10 +248,8 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   proMaxSecretaryEntryRequestDailyLimit: 300,
   proMaxReadyPrescriptionDailyLimit: 50,
   proMaxRenalToolDailyLimit: 200, // 🆕 اتنقلت لـ"حدود الميزات" 2026-04
+  proMaxGuidelinesChatDailyLimit: 30,
   // ─── 🆕 برو ماكس: أزرار تصدير الروشتة ─
-  proMaxPrescriptionPrintDailyLimit: 500,
-  proMaxPrescriptionDownloadDailyLimit: 500,
-  proMaxPrescriptionWhatsappDailyLimit: 500,
   proMaxRecordsMaxCount: 5000,
   proMaxReadyPrescriptionsMaxCount: 100,
   proMaxMedicationCustomizationsMaxCount: 500,
@@ -289,13 +268,9 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «فحص الدواء أثناء الحمل والرضاعة» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxRenalToolLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «حاسبة جرعات الكلى» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
+  proMaxGuidelinesChatLimitMessage:
+    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} رسالة) لميزة «شات الجايدلاينز» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   // ─── 🆕 برو ماكس: رسائل أزرار تصدير الروشتة ─
-  proMaxPrescriptionPrintLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «طباعة الروشتة» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
-  proMaxPrescriptionDownloadLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «تنزيل الروشتة» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
-  proMaxPrescriptionWhatsappLimitMessage:
-    'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «إرسال الروشتة عبر واتساب» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxMedicalReportLimitMessage:
     'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} تقرير) لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو ماكس. للتواصل معنا، يُرجى الضغط على زر واتساب.',
   proMaxPublicBookingLimitMessage:
@@ -327,21 +302,17 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «فحص الدواء أثناء الحمل والرضاعة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxRenalToolWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حاسبة جرعات الكلى» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
+  proMaxGuidelinesChatWhatsappMessage:
+    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «شات الجايدلاينز» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   // ─── 🆕 برو ماكس: رسائل واتساب أزرار تصدير الروشتة ─
-  proMaxPrescriptionPrintWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة الروشتة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
-  proMaxPrescriptionDownloadWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «تنزيل الروشتة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
-  proMaxPrescriptionWhatsappWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال الروشتة عبر واتساب» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
+  proMaxReadyPrescriptionWhatsappMessage:
+    'استهلكت حد حفظ الروشتات الجاهزة في باقة برو ماكس وأرغب في التواصل.',
   proMaxMedicalReportWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «طباعة تقرير طبي للحالة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxPublicBookingWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إضافة الموعد» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxSecretaryEntryRequestWhatsappMessage:
     'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
-  proMaxReadyPrescriptionWhatsappMessage:
-    'تحية طيبة، أتواصل معكم لاستنفادي الحد اليومي لميزة «حفظ روشتة جاهزة» ضمن باقة برو ماكس، وأرغب في الاستفسار. شاكراً لكم تعاونكم.',
   proMaxRecordsCapacityWhatsappMessage:
     'تحية طيبة، أتواصل معكم لبلوغي السعة القصوى لـ«حفظ السجلات» ضمن باقة برو ماكس، وأرغب في زيادة السعة. شاكراً لكم تعاونكم.',
   proMaxReadyPrescriptionsCapacityWhatsappMessage:

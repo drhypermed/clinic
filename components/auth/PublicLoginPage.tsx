@@ -4,7 +4,7 @@
  * الألوان موحّده مع صفحة دخول الطبيب (أزرق) بدلاً من الأخضر القديم.
  */
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { FaTriangleExclamation } from 'react-icons/fa6';
 import { useAuth } from '../../hooks/useAuth';
@@ -19,7 +19,29 @@ const LOGIN_PUBLIC_PATH = '/login/public';
 
 export const PublicLoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signInGoogle, loading, error } = useAuth();
+  const safeReturnTo = React.useMemo(() => {
+    const raw = new URLSearchParams(location.search).get('returnTo') || '';
+    if (!raw) return '';
+
+    try {
+      const url = new URL(raw, window.location.origin);
+      if (url.origin !== window.location.origin) return '';
+      const target = `${url.pathname}${url.search}${url.hash}`;
+      if (
+        target.startsWith('/p/') ||
+        target.startsWith('/book-public/') ||
+        target === '/public'
+      ) {
+        return target;
+      }
+    } catch {
+      return '';
+    }
+
+    return '';
+  }, [location.search]);
   const waitForAuthToSettle = async (maxMs = 4000) => {
     const startedAt = Date.now();
     while (auth.currentUser && Date.now() - startedAt < maxMs) {
@@ -90,7 +112,7 @@ export const PublicLoginPage: React.FC = () => {
     try {
       await signInGoogle('public');
       clearAuthFlowGuardSoon(LOGIN_PUBLIC_PATH);
-      navigate('/public', { replace: true });
+      navigate(safeReturnTo || '/public', { replace: true });
     } catch (err: any) {
       try {
         await auth.signOut();

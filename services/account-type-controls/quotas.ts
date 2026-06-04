@@ -10,7 +10,7 @@
  * pro_max لو مش عندها قيمة خاصة، بترجع لقيمة premium كـ fallback.
  */
 
-import { BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature } from './types';
+import { BookingQuotaFeature, BookingQuotaResult, CapacityCheckResult, DrugToolQuotaFeature, DrugToolQuotaResult, RecordsCapacityResult, SmartPrescriptionQuotaResult, StorageQuotaFeature } from './types';
 import { StorageQuotaResult } from './types';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '../firebaseConfig';
@@ -22,9 +22,6 @@ import {
   readCapacityCache,
   saveCapacityCache,
 } from './capacityCache';
-import type {
-  BookingQuotaFeature } from '../../types';
-
 const resolveWhatsappUrl = (data: Record<string, unknown>, fallback: string): string => {
   return resolveSafeQuotaWhatsappUrl(data.whatsappUrl, fallback);
 };
@@ -95,6 +92,22 @@ const buildUnlimitedCapacityResult = (tier: TierValue): CapacityCheckResult => (
   limit: 0,
   used: 0,
   remaining: Number.MAX_SAFE_INTEGER,
+  whatsappNumber: '',
+  whatsappUrl: '',
+  limitReachedMessage: '',
+  whatsappMessage: '',
+});
+
+const buildUnlimitedBookingResult = (
+  feature: BookingQuotaFeature,
+  tier: TierValue,
+): BookingQuotaResult => ({
+  accountType: tier,
+  feature,
+  limit: 0,
+  used: 0,
+  remaining: Number.MAX_SAFE_INTEGER,
+  dayKey: '',
   whatsappNumber: '',
   whatsappUrl: '',
   limitReachedMessage: '',
@@ -172,9 +185,8 @@ export const consumeSmartPrescriptionQuota = async (
  * محاولة استهلاك كوتا لعمليات التخزين (سجلات المرضى أو الروشتات الجاهزة).
  *
  * 🆕 (2026-05) — `cachedAccountType`: لو الـ caller عارف الحساب premium/pro_max
- * بنتخطى الـ Cloud Function call تماماً للميزات المدفوعة (طباعة/تنزيل/واتساب/
- * حفظ روشتة جاهزة). ده بيوفر ٢-٥ ثواني انتظار في كل ضغطة. الـ medicalReport
- * يفضل بفحص (خرج عن نطاق الترقية).
+ * بنتخطى الـ Cloud Function call تماماً لحفظ الروشتة الجاهزة. الـ medicalReport
+ * يفضل بفحص (خرج عن نطاق الترقية). تصدير الروشتة اتشال من الكوتة 2026-06.
  */
 export const consumeStorageQuota = async (
   feature: StorageQuotaFeature,
@@ -182,7 +194,7 @@ export const consumeStorageQuota = async (
 ): Promise<StorageQuotaResult> => {
   // التخطي: الميزات اللي اتفتحت للـ paid في 2026-05 فقط
   const SKIP_FOR_PAID: ReadonlySet<StorageQuotaFeature> = new Set([
-    'prescriptionPrint', 'prescriptionDownload', 'prescriptionWhatsapp', 'readyPrescriptionSave',
+    'readyPrescriptionSave',
   ] as StorageQuotaFeature[]);
   if (SKIP_FOR_PAID.has(feature) && isPaidTier(options?.cachedAccountType)) {
     return buildUnlimitedStorageResult(feature, options!.cachedAccountType as TierValue);
@@ -198,17 +210,11 @@ export const consumeStorageQuota = async (
 
     // تحديد الحد الاحتياطي بناءً على الميزة × الفئة
     // ملاحظة: recordSave اتشال — السجلات بقت بفحص "حد كلي" client-side
-    // ─ 🆕 ضفنا 3 ميزات لتصدير الروشتة (طباعة + تنزيل + واتساب) 2026-04 ─
+    // تصدير الروشتة اتشال من الكوتة: طباعة/تنزيل/واتساب تنفذ مباشرة.
     const fallbackLimit =
       feature === 'readyPrescriptionSave'
         ? pickByTier(tier, normalizedControls.freeReadyPrescriptionDailyLimit, normalizedControls.premiumReadyPrescriptionDailyLimit, normalizedControls.proMaxReadyPrescriptionDailyLimit)
-        : feature === 'prescriptionPrint'
-          ? pickByTier(tier, normalizedControls.freePrescriptionPrintDailyLimit, normalizedControls.premiumPrescriptionPrintDailyLimit, normalizedControls.proMaxPrescriptionPrintDailyLimit)
-          : feature === 'prescriptionDownload'
-            ? pickByTier(tier, normalizedControls.freePrescriptionDownloadDailyLimit, normalizedControls.premiumPrescriptionDownloadDailyLimit, normalizedControls.proMaxPrescriptionDownloadDailyLimit)
-            : feature === 'prescriptionWhatsapp'
-              ? pickByTier(tier, normalizedControls.freePrescriptionWhatsappDailyLimit, normalizedControls.premiumPrescriptionWhatsappDailyLimit, normalizedControls.proMaxPrescriptionWhatsappDailyLimit)
-              : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
+        : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
 
     return {
       accountType: tier,
@@ -234,8 +240,14 @@ export const consumeStorageQuota = async (
 export const consumeBookingQuota = async (
   feature: BookingQuotaFeature,
   doctorId: string,
-  secret?: string
+  secret?: string,
+  options?: { cachedAccountType?: TierValue },
 ): Promise<BookingQuotaResult> => {
+  const cachedAccountType = options?.cachedAccountType ?? readCachedAccountType(doctorId);
+  if (isPaidTier(cachedAccountType)) {
+    return buildUnlimitedBookingResult(feature, cachedAccountType as TierValue);
+  }
+
   try {
     const callable = httpsCallable(functions, 'consumeBookingQuota');
     const payload: Record<string, unknown> = { feature, doctorId };
@@ -424,7 +436,14 @@ export const validateReadyPrescriptionsCapacity = async (
  */
 export const validateInsuranceCompaniesCapacity = async (
   payload?: { companyId?: string },
+  options?: { cachedAccountType?: TierValue },
 ): Promise<CapacityCheckResult> => {
+  // 🆕 (2026-05): paid tiers بدون فحص حد كلي لشركات التأمين — أسرع في الحفظ.
+  const cachedAccountType = options?.cachedAccountType ?? readCachedAccountType(auth.currentUser?.uid);
+  if (isPaidTier(cachedAccountType)) {
+    return buildUnlimitedCapacityResult(cachedAccountType as TierValue);
+  }
+
   await ensureAuthenticatedUser();
   try {
     const callable = httpsCallable(functions, 'validateInsuranceCompaniesCapacity');

@@ -106,11 +106,20 @@ const extractKeywords = (text: string, label: string = ''): string[] => {
 
 async function main() {
   console.log('🚀 Starting Guidelines database migration to Firestore...');
-  const bulkWriter = db.bulkWriter();
+  const bulkWriter = db.bulkWriter({
+    throttling: {
+      initialOpsPerSecond: 50,
+      maxOpsPerSecond: 250,
+    },
+  });
   let uploadedCount = 0;
 
   bulkWriter.onWriteError((error) => {
-    console.error('❌ Firestore write failed:', {
+    if ([4, 10, 13, 14].includes(error.code) && error.failedAttempts < 8) {
+      console.warn(`⚠️ Retrying transient Firestore write (attempt ${error.failedAttempts}) for path: ${error.documentRef?.path}`);
+      return true;
+    }
+    console.error('❌ Firestore write failed permanently:', {
       code: error.code,
       message: error.message,
       path: error.documentRef?.path || '',
@@ -175,7 +184,11 @@ async function main() {
 
   // 2. Gather Full-Text Guideline Chunks from compiled JSON index
   console.log('\n📖 Compiling full-text guidelines...');
-  const fullTextIndexPath = path.resolve('public/guidelines-search/full-text-index.json');
+  const generatedFullTextIndexPath = path.resolve('guidelines-sources/_generated/full-text-index.json');
+  const legacyFullTextIndexPath = path.resolve('public/guidelines-search/full-text-index.json');
+  const fullTextIndexPath = fs.existsSync(generatedFullTextIndexPath)
+    ? generatedFullTextIndexPath
+    : legacyFullTextIndexPath;
   let fullTextChunks: any[] = [];
 
   if (fs.existsSync(fullTextIndexPath)) {

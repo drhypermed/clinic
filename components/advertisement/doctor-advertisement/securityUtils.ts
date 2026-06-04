@@ -89,9 +89,11 @@ export const mapDoctorAdActionError = (error: unknown, fallback: string) => {
   const raw = error instanceof Error ? error.message.toLowerCase() : '';
   if (raw.includes('permission-denied')) return 'لا تملك صلاحية تنفيذ هذا الإجراء.';
   if (raw.includes('unauthenticated')) return 'يجب تسجيل الدخول أولاً.';
-  if (raw.includes('unauthorized')) return 'غير مصرح لك بهذا الإجراء.';
   if (raw.includes('storage/unauthorized')) return 'لا تملك صلاحية الوصول لملفات التخزين.';
+  if (raw.includes('unauthorized')) return 'غير مصرح لك بهذا الإجراء.';
   if (raw.includes('storage/object-not-found')) return 'الملف المطلوب غير موجود.';
+  if (raw.includes('storage/quota-exceeded')) return 'مساحة التخزين غير كافية حالياً. حاول لاحقاً أو تواصل مع الدعم.';
+  if (raw.includes('image-too-large-after-compression')) return 'الصورة كبيرة جداً بعد الضغط. جرّب صورة أصغر أو قص مساحة أقل.';
   if (raw.includes('network')) return 'تعذر الاتصال بالخدمة حالياً. حاول مرة أخرى.';
   return fallback;
 };

@@ -20,21 +20,20 @@ import {
     FaCalendarCheck, FaChartPie, FaBookMedical, FaFlask, FaKey,
     FaPaintbrush, FaBullhorn, FaBuilding, FaShieldHalved,
     FaRightFromBracket, FaCircleUser, FaBars, FaXmark,
-    FaLock,
+    FaLock, FaRobot,
 } from 'react-icons/fa6';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from '../common/BrandLogo';
 import { UserGuideSidebarLink } from '../common/UserGuideSidebarLink';
 import { MarketingPackagesSidebarLink } from '../common/MarketingPackagesSidebarLink';
-import { PublicPortalSidebarLink } from '../common/PublicPortalSidebarLink';
 import type { BreadcrumbSegment } from '../app/utils/breadcrumbConfig';
 import type { AppView } from '../app/utils/mainAppRouting';
 
 /** أنواع الواجهات المتاحة للتنقل */
-type ViewType = 'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'secretary' | 'financialReports' | 'guidelines' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement' | 'permissions';
+type ViewType = AppView;
 
 interface SidebarProps {
-    currentView: string; // الواجهة المحددة حالياً
+    currentView: AppView; // الواجهة المحددة حالياً
     setCurrentView: (view: ViewType) => void; // دالة لتغيير الواجهة
     todayAppointmentsCount: number; // عدد مواعيد اليوم (للعرض في الشارة)
     user: User | null; // بيانات المستخدم من Firebase
@@ -112,7 +111,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'patientFiles',     label: 'ملفات المرضى',     icon: <FaFolderOpen className="w-5 h-5" /> },
         { id: 'appointments',     label: 'المواعيد',           icon: <FaCalendarCheck className="w-5 h-5" />, badge: todayAppointmentsCount > 0 ? todayAppointmentsCount : undefined },
         { id: 'financialReports', label: 'التقارير المالية',  icon: <FaChartPie className="w-5 h-5" /> },
-        { id: 'guidelines',        label: 'الجايدلاينز',        icon: <FaBookMedical className="w-5 h-5" /> },
+        { id: 'medicalAssistant', label: 'المساعد الطبي',      icon: <FaRobot className="w-5 h-5" /> },
+        { id: 'guidelinesLibrary', label: 'مكتبة الجايدلاينز', icon: <FaBookMedical className="w-5 h-5" /> },
         { id: 'drugtools',        label: 'أدوات الأدوية',     icon: <FaFlask className="w-5 h-5" /> },
         { id: 'secretary',        label: 'السكرتارية',         icon: <FaKey className="w-5 h-5" /> },
         { id: 'settings',         label: 'تصميم الروشتة',     icon: <FaPaintbrush className="w-5 h-5" /> },
@@ -393,9 +393,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* دليل الاستخدام + باقات الدعاية — قبل زر تسجيل الخروج.
                     الـmt-auto على الـwrapper بيدفع الاتنين لأسفل السايدبار معاً. */}
                 <div className="mt-auto space-y-1">
-                    <PublicPortalSidebarLink
-                        onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
-                    />
                     <UserGuideSidebarLink
                         variant="doctor"
                         onBeforeNavigate={() => { if (isMobile) setMobileMenuOpen(false); }}
@@ -486,13 +483,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 {currentView === 'patientFiles' && 'ملفات المرضى'}
                                 {currentView === 'appointments' && 'المواعيد'}
                                 {currentView === 'financialReports' && 'التقارير المالية'}
-                                {currentView === 'guidelines' && 'الجايدلاينز'}
+                                {currentView === 'medicalAssistant' && 'المساعد الطبي'}
+                                {currentView === 'guidelinesLibrary' && 'مكتبة الجايدلاينز'}
                                 {currentView === 'drugtools' && 'أدوات الأدوية'}
                                 {currentView === 'medicationEdit' && 'تعديل الأدوية'}
                                 {currentView === 'settings' && 'تصميم الروشتة'}
                                 {currentView === 'branchSettings' && 'إعدادات الفروع'}
                                 {currentView === 'advertisement' && 'الإعلان'}
                                 {currentView === 'secretary' && 'السكرتارية'}
+                                {currentView === 'permissions' && 'الأذونات'}
                             </h1>
                         )}
                     </div>

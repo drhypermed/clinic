@@ -1,0 +1,36 @@
+import { GuidelineTopic } from '../../guidelinesData';
+
+export const EASD_2022_CHAPTER_7_TOPICS: GuidelineTopic[] = [
+  {
+    id: 'easd-ada-2022-ch7-special-populations',
+    group: '7. Special Populations & Systems',
+    sourceIds: ['type 2 diabetes'],
+    tags: ['Older Adults', 'Youth', 'Women', 'Technology', 'CGM', 'Team-based Care', 'De-prescribing'],
+    title: {
+      en: 'Section 7: Special Populations & Systems',
+      ar: 'المحور السابع: الفئات الخاصة واعتبارات تنظيم الرعاية'
+    },
+    summary: {
+      en: 'Guideline on how to handle special populations such as older adults, young people, and women, and how to utilize technology and organize work within the clinic.',
+      ar: 'الدليل الإرشادي لكيفية التعامل مع الفئات الخاصة ككبار السن والشباب والنساء، وكيفية توظيف التكنولوجيا وتنظيم العمل داخل العيادة.'
+    },
+    points: {
+      en: [
+        '**1. Older Adults & Frailty:**\n- **Biological Aging and Frailty:** Type 2 diabetes is a model for accelerated biological aging, where physical capacity declines faster. "Physical Frailty" is now recognized as a major diabetes complication.\n- **Organ Protection is Not Age-Dependent:** Advanced age (over 65) should not be a barrier to prescribing organ-protecting medications (SGLT2i and GLP-1 RA). Studies prove older adults derive the same benefits from these drugs as others [75, 86].\n- **De-prescribing:** Frail individuals with declining function benefit less from strict glucose and blood pressure control. The physician must seriously consider "de-prescribing" medications that could cause harm, such as hypoglycemia or hypotension, to prevent falls and complications [75, 112].',
+        '**2. Younger Patients (Youth under 40):**\n- **Disease Aggressiveness:** Youth and adolescents diagnosed with Type 2 face a faster decline in beta-cell function and more severe resistance to traditional therapies. They develop complications (cardiac and renal) much earlier and faster than older adults.\n- **Aggressive Early Intervention:** This group must be considered "very high risk." It is strongly recommended not to rely on slow, stepwise therapy, but to start immediately with "Early Combination Therapy" aiming for an HbA1c < 7% (preferably lower if possible) to preserve pancreatic function and prevent future complications [76, 86, 109].',
+        '**3. Women in Childbearing Age & Sex Differences:**\n- **Cardiac Risks:** The natural cardiac protection women have over men (pre-menopause) completely vanishes with Type 2 diabetes; in fact, the relative increase in cardiac risk is higher in women than men. Despite this, they are underrepresented in clinical trials. Their cardiovascular risk factors must be treated just as aggressively.\n- **Avoiding Fetal Malformations:** For women of childbearing potential, ensure they use highly effective contraception (like IUDs or progestin implants) before prescribing modern medications that may negatively affect the fetus (e.g., SGLT2i or GLP-1 RA) [78, 86].',
+        '**4. Race & Ethnicity:**\n- Ethnic minorities often bear a higher burden of complications and higher rates of early-onset diabetes [76, 77]. The physician must recognize this increased risk and ensure modern, organ-protecting medications (SGLT2i and GLP-1 RA) are prescribed to all eligible patients regardless of race or background, to address healthcare disparities.',
+        '**5. Role of Technology and Telehealth:**\n- **Telehealth and Apps:** Telehealth has proven highly effective (especially post-COVID-19) in patient supervision. Smart apps supporting education and self-management are excellent tools for behavior modification and dose tracking.\n- **CGM:** No longer limited to Type 1; strongly recommended for Type 2 patients on insulin, as it increases Time in Range and significantly reduces hyper/hypoglycemia and "diabetes distress" [122, 123].\n- **Smart Pens and Pumps:** CSII and smart pens are viable options for Type 2 patients on multiple daily injections to simplify dose calculations, provided the patient can handle the technology.',
+        '**6. Working Within the System:**\n- **Team-based Care:** Diabetes cannot be successfully managed by a single doctor in a 15-minute visit. Clinics must be structured with a multidisciplinary team (diabetes educator, dietitian, clinical pharmacist, nurses, and specialists like nephrologists/cardiologists) [87, 124, 125].\n- **CME and Fighting Inertia:** Clinic and health system leaders must provide ongoing training for the medical team to ensure continuous updates to clinical evidence reach patients. Implementing Quality Improvement programs tailored to available resources helps fight "Therapeutic Inertia" and streamlines workflow [124, 125, 126].'
+      ],
+      ar: [
+        '**1. كبار السن وحالة الهشاشة (Older Adults & Frailty):**\n- **الشيخوخة البيولوجية والهشاشة:** السكري من النوع الثاني هو نموذج لتسارع الشيخوخة، وأصبحت "الضعف أو الهشاشة الجسدية" مضاعفة رئيسية.\n- **حماية الأعضاء لا ترتبط بالعمر:** لا ينبغي أن يكون العمر عائقاً أمام وصف الأدوية الواقية للقلب والكلى (SGLT2i و GLP-1 RA)، فكبار السن يجنون نفس الفوائد [75، 86].\n- **التبسيط الدوائي (De-prescribing):** الأفراد الذين يعانون من الهشاشة يستفيدون بشكل أقل من التحكم الصارم. يجب التفكير بجدية في تقليل أو إيقاف الأدوية المسببة للهبوط (Hypoglycaemia) أو انخفاض الضغط لتجنب السقوط [75، 112].',
+        '**2. المرضى الأصغر سناً (الشباب أقل من 40 عاماً):**\n- **شراسة المرض:** الشباب يواجهون تدهوراً أسرع في وظائف خلايا بيتا ومقاومة أشد للعلاجات التقليدية، وتتطور لديهم المضاعفات بشكل مبكر جداً.\n- **التدخل الهجومي المبكر:** يُوصى بشدة بالبدء فوراً بـ "العلاج المركب المبكر" بهدف الوصول لتراكمي أقل من 7% للحفاظ على وظائف البنكرياس ومنع المضاعفات المستقبلية [76، 86، 109].',
+        '**3. النساء في سن الإنجاب والفروق بين الجنسين (Sex Differences & Women):**\n- **مخاطر القلب:** الفائدة التي تحمي النساء من أمراض القلب قبل انقطاع الطمث تتلاشى تماماً عند الإصابة بالنوع الثاني. يجب معالجة عوامل الخطر القلبية لديهن بقوة وحزم.\n- **تجنب التشوهات الجنينية:** يجب التأكد من استخدام النساء في سن الإنجاب لوسائل منع حمل فعالة قبل وصف أدوية حديثة قد تؤثر سلباً على الجنين (مثل SGLT2i أو GLP-1 RA) [78، 86].',
+        '**4. التباين العرقي والإثني (Race & Ethnicity):**\n- الأقليات العرقية غالباً ما تتحمل عبئاً أكبر من المضاعفات ونسب أعلى للإصابة المبكرة. يجب التأكد من وصف الأدوية الحديثة التي تحمي الأعضاء الحيوية لجميع المستحقين بغض النظر عن عرقهم لمعالجة التفاوت في الرعاية.',
+        '**5. دور التكنولوجيا والطب الاتصالي (Technology in Diabetes Care):**\n- **الطب الاتصالي:** أثبت فاعلية كبيرة في الإشراف على المرضى، وتعد التطبيقات الذكية أدوات ممتازة للمساعدة في التثقيف والإدارة الذاتية.\n- **المراقبة المستمرة (CGM):** يُنصح بها بقوة لمرضى النوع الثاني مستخدمي الإنسولين لزيادة "الوقت في النطاق" وتقليل الهبوط.\n- **المضخات والأقلام الذكية:** خيارات متاحة لمستخدمي الإنسولين المتعدد لتسهيل الحسابات، بشرط قدرة المريض على التعامل معها.',
+        '**6. تنظيم العيادة والنظام الصحي (Working Within the System):**\n- **الرعاية القائمة على الفريق:** يجب تنظيم العيادة لتشمل فريقاً متعدد التخصصات (طبيب، مثقف، أخصائي تغذية، صيدلي إكلينيكي) لإدارة المرضى بنجاح.\n- **محاربة القصور:** يجب توفير تدريب مستمر للفريق وتطبيق برامج تحسين الجودة لمحاربة "القصور العلاجي" (Therapeutic Inertia) وتسهيل سير العمل [124، 125، 126].'
+      ]
+    }
+  }
+];

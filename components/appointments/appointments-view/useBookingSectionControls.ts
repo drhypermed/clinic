@@ -2,15 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type {
   CustomBox,
+  PublicBranchInfo,
   PublicBookingSlot,
   SecretaryVitalFieldDefinition,
   VitalSignConfig,
   SecretaryVitalsVisibility,
 } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
-import { branchesService } from '../../../services/firestore/branches';
+import { DEFAULT_BRANCH_ID, branchesService, getAllBranchSecretsMap } from '../../../services/firestore/branches';
 import { useBranches } from '../../../hooks/useBranches';
 import { useCopyFeedback } from '../../../hooks/useCopyFeedback';
+import { buildPublicBookingUrl } from '../../../utils/publicBookingLinks';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import {
   buildSecretaryVitalFieldDefinitions,
@@ -44,6 +46,7 @@ interface UseBookingSectionControlsArgs {
   userEmail?: string | null;
   currentDayStr: string;
   doctorSpecialty?: string | null;
+  activeBranchId?: string | null;
 }
 
 export const useBookingSectionControls = ({
@@ -57,13 +60,16 @@ export const useBookingSectionControls = ({
   userEmail,
   currentDayStr,
   doctorSpecialty,
+  activeBranchId: activeBranchIdProp,
 }: UseBookingSectionControlsArgs) => {
   // قائمة الفروع — لإظهار اسم الفرع النشط في UI كلمة سر السكرتارية
   const branchesHook = useBranches(userId || null);
+  const effectiveActiveBranchId = activeBranchIdProp || branchesHook.activeBranchId;
   const currentBranchLabel = useMemo(() => {
-    const match = branchesHook.branches.find((b) => b.id === branchesHook.activeBranchId);
+    const match = branchesHook.branches.find((b) => b.id === effectiveActiveBranchId);
     return match?.name || '';
-  }, [branchesHook.branches, branchesHook.activeBranchId]);
+  }, [branchesHook.branches, effectiveActiveBranchId]);
+  const effectivePublicBranchId = effectiveActiveBranchId || DEFAULT_BRANCH_ID;
   const hasMultipleBranches = branchesHook.branches.length > 1;
   const secretaryVitalSpecialtyOptions = useMemo(
     () => ({ doctorSpecialty }),
@@ -118,8 +124,6 @@ export const useBookingSectionControls = ({
   const [publicFormContactInfo, setPublicFormContactInfo] = useState('');
   const [publicFormSaving, setPublicFormSaving] = useState(false);
   const [isPublicSettingsSaved, setIsPublicSettingsSaved] = useState(false);
-  // إعداد حماية الحجز بـ Google — لو true يطلب تسجيل دخول جوجل قبل تأكيد الحجز
-  const [publicFormRequireGoogle, setPublicFormRequireGoogle] = useState(false);
 
   // 1. جلب أو توليد المعرف السري لروابط حجز السكرتارية
   useEffect(() => {
@@ -147,7 +151,7 @@ export const useBookingSectionControls = ({
         // الـ slug القصير — لو موجود نستخدمه، لو لأ نولّد جديد
         const slug = await firestoreService.getOrCreatePublicUrlSlug(userId);
         if (cancelled) return;
-        setPublicBookingLink(`${window.location.origin}/p/${slug}`);
+        setPublicBookingLink(buildPublicBookingUrl(slug));
       } catch (err) {
         if (cancelled) return;
         console.warn('[Booking] Failed to build public booking link:', err);
@@ -160,6 +164,11 @@ export const useBookingSectionControls = ({
   // محرومة من قراءة users/{uid} ومن list على publicBookingConfig، فبدون المرآة دي
   // مش هتعرف رابط الفورم العام. الـ slug جديد بقى ضمن المرآة (2026-05) عشان
   // الرابط الـcanonical /p/{slug} يبقى متاح للسكرتيرة كمان.
+  const branchesSignature = useMemo(
+    () => branchesHook.branches.map((branch) => `${branch.id}:${branch.name}`).sort().join('|'),
+    [branchesHook.branches],
+  );
+
   useEffect(() => {
     if (!userId || !bookingSecret || !publicBookingSecret) return;
     let cancelled = false;
@@ -167,11 +176,24 @@ export const useBookingSectionControls = ({
       try {
         const slug = await firestoreService.getOrCreatePublicUrlSlug(userId);
         if (cancelled) return;
-        await firestoreService.mirrorPublicSecretToBookingConfig(
-          bookingSecret,
-          userId,
-          publicBookingSecret,
-          slug,
+        const branchSecretsMap = await getAllBranchSecretsMap(userId).catch(() => ({}));
+        if (cancelled) return;
+        const targetSecrets = Array.from(
+          new Set(
+            [bookingSecret, ...Object.values(branchSecretsMap)]
+              .map((secret) => String(secret || '').trim())
+              .filter(Boolean),
+          ),
+        );
+        await Promise.all(
+          targetSecrets.map((secret) =>
+            firestoreService.mirrorPublicSecretToBookingConfig(
+              secret,
+              userId,
+              publicBookingSecret,
+              slug,
+            ),
+          ),
         );
       } catch (err) {
         if (cancelled) return;
@@ -179,9 +201,50 @@ export const useBookingSectionControls = ({
       }
     })();
     return () => { cancelled = true; };
-  }, [userId, bookingSecret, publicBookingSecret]);
+  }, [userId, bookingSecret, publicBookingSecret, branchesSignature]);
 
   // 4. مزامنة فترات الحجز المتاحة (Slots) للجمهور
+  // Keep the public patient link aware of every clinic branch. Without this mirror,
+  // the public form can only see stale/partial branches and may fall back to main.
+  useEffect(() => {
+    if (!publicBookingSecret || branchesHook.branches.length === 0) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const existing = await firestoreService.getPublicBranches(publicBookingSecret);
+        if (cancelled) return;
+
+        const addressByBranchId = new Map(
+          existing.map((branch) => [branch.id, branch.address || ''])
+        );
+        const toPublish: PublicBranchInfo[] = branchesHook.branches.map((branch) => ({
+          id: branch.id,
+          name: branch.name,
+          address: addressByBranchId.get(branch.id) || undefined,
+          isActive: true,
+        }));
+        const normalizeForCompare = (list: PublicBranchInfo[]) =>
+          JSON.stringify(
+            list.map((branch) => ({
+              id: branch.id,
+              name: branch.name,
+              address: branch.address || '',
+              isActive: branch.isActive !== false,
+            }))
+          );
+
+        if (normalizeForCompare(existing) !== normalizeForCompare(toPublish)) {
+          await firestoreService.savePublicBranches(publicBookingSecret, toPublish);
+        }
+      } catch (err) {
+        if (!cancelled) console.warn('[Booking] Failed to sync public branches:', err);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [publicBookingSecret, branchesHook.branches]);
+
   useEffect(() => {
     if (!publicSectionOpen || !publicBookingSecret) return;
     return firestoreService.subscribeToPublicSlots(publicBookingSecret, setPublicSlots);
@@ -202,17 +265,17 @@ export const useBookingSectionControls = ({
     // تتحفظ بالغلط على السياق الحالي.
     setPublicFormTitle('');
     setPublicFormContactInfo('');
-    setPublicFormRequireGoogle(false);
-
     firestoreService.getPublicBookingConfig(publicBookingSecret)
       .then((config) => {
         if (publicFormRequestIdRef.current !== myRequestId) return;
         // null = الدكتور ما عملش publish لإعدادات بعد — نسيب الحقول فاضيه
         // (المسح اللي عملناه فوق) عشان السكرتيره تكتب من الصفر للسياق الحالي.
         if (config) {
-          setPublicFormTitle(config.title ?? '');
-          setPublicFormContactInfo(config.contactInfo ?? '');
-          setPublicFormRequireGoogle(Boolean(config.requireGoogleSignIn));
+          const branchSettings = config.publicFormSettingsByBranch?.[effectivePublicBranchId];
+          const legacyTitle = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.title : '';
+          const legacyContactInfo = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.contactInfo : '';
+          setPublicFormTitle(branchSettings?.title ?? legacyTitle ?? '');
+          setPublicFormContactInfo(branchSettings?.contactInfo ?? legacyContactInfo ?? '');
         }
       })
       .catch((err) => {
@@ -221,7 +284,7 @@ export const useBookingSectionControls = ({
         // الحقول اتمسحت فوق فعلاً — مفيش لازم نعمل setState تاني، بس لو رجع
         // الاتصال هي تظهر فاضيه بدل قيم قديمه ضلّاله.
       });
-  }, [publicSectionOpen, publicBookingSecret]);
+  }, [publicSectionOpen, publicBookingSecret, effectivePublicBranchId]);
 
   // Counter يزيد مع كل تغيُّر context للسكرتارية (secret/branch/user) — يحمي من
   // stale async responses لو السكرتيره بدّلت الفرع بسرعه ورد قديم رجع بعد الجديد.
@@ -230,7 +293,7 @@ export const useBookingSectionControls = ({
   // 6. تحميل إعدادات السكرتارية (كلمة المرور وعنوان النموذج)
   useEffect(() => {
     if (!bookingSecret) return;
-    const activeBranchId = branchesHook.activeBranchId;
+    const activeBranchId = effectiveActiveBranchId;
     // نوقف الـ auto-save أثناء إعادة التحميل لفرع جديد حتى لا يُحفظ بيانات قديمة
     setSecretarySettingsHydrated(false);
     setSecretarySettingsDirty(false);
@@ -319,7 +382,7 @@ export const useBookingSectionControls = ({
           .catch(handleLoadFailure);
       })
       .catch(handleLoadFailure);
-  }, [bookingSecret, prescriptionSecretaryFields, secretaryVitalSpecialtyOptions, userId, branchesHook.activeBranchId]);
+  }, [bookingSecret, prescriptionSecretaryFields, secretaryVitalSpecialtyOptions, userId, effectiveActiveBranchId]);
 
   useEffect(() => {
     if (!secretarySettingsHydrated || secretarySettingsDirty) return;
@@ -388,7 +451,7 @@ export const useBookingSectionControls = ({
       }
 
       const pass = secretaryPasswordTouched ? secretaryPassword : undefined;
-      const currentBranchId = branchesHook.activeBranchId
+      const currentBranchId = effectiveActiveBranchId
         || (userId ? branchesService.getActiveBranchId(userId) : undefined);
       await firestoreService.updateBookingSettings(
         userId,
@@ -439,7 +502,7 @@ export const useBookingSectionControls = ({
     secretaryVitalsVisibility,
     secretaryVitalFields,
     doctorSpecialty,
-    branchesHook.activeBranchId,
+    effectiveActiveBranchId,
     onSyncSecretaryVitalsVisibility,
   ]);
 
@@ -469,7 +532,8 @@ export const useBookingSectionControls = ({
         publicBookingSecret,
         publicFormTitle,
         publicFormContactInfo,
-        publicFormRequireGoogle,
+        true,
+        effectivePublicBranchId,
       );
       setIsPublicSettingsSaved(true);
       setTimeout(() => setIsPublicSettingsSaved(false), 3000);
@@ -483,7 +547,8 @@ export const useBookingSectionControls = ({
     if (!userId || !publicBookingSecret || Number.isNaN(dt.getTime()) || dt.getTime() < Date.now()) return;
     setPublicSlotAdding(true);
     try {
-      await firestoreService.addPublicSlot(userId, publicBookingSecret, dt.toISOString());
+      const branchId = effectiveActiveBranchId || branchesService.getActiveBranchId(userId);
+      await firestoreService.addPublicSlot(userId, publicBookingSecret, dt.toISOString(), branchId);
       setPublicSlotTimeStr('');
     } finally { setPublicSlotAdding(false); }
   };
@@ -492,6 +557,11 @@ export const useBookingSectionControls = ({
   const removePublicSlot = (slotId: string) => {
     if (publicBookingSecret) firestoreService.deletePublicSlot(publicBookingSecret, slotId).catch(() => {});
   };
+
+  const visiblePublicSlots = useMemo(() => {
+    if (!hasMultipleBranches) return publicSlots;
+    return publicSlots.filter((slot) => (slot.branchId || DEFAULT_BRANCH_ID) === effectivePublicBranchId);
+  }, [publicSlots, hasMultipleBranches, effectivePublicBranchId]);
 
   return {
     bookingLink, linkCopied, copyBookingLink, credentialsSaving, credentialsError, credentialsSuccess,
@@ -526,10 +596,9 @@ export const useBookingSectionControls = ({
     },
     saveBookingCredentials,
     publicBookingLink, publicBookingSecret, publicSectionOpen, togglePublicSection: () => setPublicSectionOpen(!publicSectionOpen),
-    publicSlots, publicSlotDateStr, setPublicSlotDateStr, publicSlotTimeStr, setPublicSlotTimeStr,
+    publicSlots: visiblePublicSlots, publicSlotDateStr, setPublicSlotDateStr, publicSlotTimeStr, setPublicSlotTimeStr,
     publicLinkCopied, copyPublicLink, publicSlotAdding, addPublicSlot, removePublicSlot,
     publicFormTitle, setPublicFormTitle, publicFormContactInfo, setPublicFormContactInfo,
-    publicFormRequireGoogle, setPublicFormRequireGoogle,
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr: toLocalDateStr(new Date()), publicTimeMin: publicSlotDateStr === toLocalDateStr(new Date()) ? currentTimeMin() : undefined,
     currentBranchLabel,

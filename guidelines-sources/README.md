@@ -6,8 +6,6 @@
 
 - `guidelines-sources/_inbox/`
   - ضع هنا أي ملفات جديدة بسرعة لو لسه مش متأكد من المدرسة أو السنة.
-- `guidelines-sources/ADA/2025/`
-  - ملفات ADA 2025.
 - `guidelines-sources/ADA/2026/`
   - ملفات ADA 2026 عند إضافتها.
 - `guidelines-sources/AACE/`

@@ -19,10 +19,7 @@ import { functions } from '../../../services/firebaseConfig';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import { extractBookingQuotaNotice } from './helpers';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
-import {
-  isPediatricSpecialtyForSecretaryVitals,
-  sanitizeSecretaryVitalsInput,
-} from '../../../utils/secretaryVitals';
+import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
 import { normalizeGender } from '../../../utils/patientIdentity';
@@ -105,7 +102,6 @@ export const usePublicBookingAppointmentActions = ({
   setTodayAppointments,
 }: UsePublicBookingAppointmentActionsParams) => {
   const [entryRequestSendingId, setEntryRequestSendingId] = useState<string | null>(null);
-  const canUseSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
 
   const resolveCurrentSessionToken = (): string | undefined => {
     const token = String(getSessionToken?.() || '').trim();
@@ -227,13 +223,11 @@ export const usePublicBookingAppointmentActions = ({
     setBreastfeeding(typeof (apt as any).breastfeeding === 'boolean' ? (apt as any).breastfeeding : null);
     setVisitReason(apt.visitReason || '');
     setSecretaryVitals(
-      canUseSecretaryVitals
-        ? sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
-            visibility: secretaryVitalsVisibility,
-            fieldDefinitions: secretaryVitalFields,
-            doctorSpecialty,
-          }) || {}
-        : {}
+      sanitizeSecretaryVitalsInput((apt as { secretaryVitals?: unknown }).secretaryVitals, {
+        visibility: secretaryVitalsVisibility,
+        fieldDefinitions: secretaryVitalFields,
+        doctorSpecialty,
+      }) || {}
     );
     setDateStr(toLocalDateStr(dt));
     setTimeStr(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
@@ -292,13 +286,11 @@ export const usePublicBookingAppointmentActions = ({
     const dateTime = chosenDateTime;
     const selectedConsultationCandidate = recentExamPatients.find((c) => c.id === selectedConsultationCandidateId);
     const resolvedAppointmentType: AppointmentType = appointmentType;
-    const sanitizedSecretaryVitals = canUseSecretaryVitals
-      ? sanitizeSecretaryVitalsInput(secretaryVitals, {
-          visibility: secretaryVitalsVisibility,
-          fieldDefinitions: secretaryVitalFields,
-          doctorSpecialty,
-        })
-      : undefined;
+    const sanitizedSecretaryVitals = sanitizeSecretaryVitalsInput(secretaryVitals, {
+      visibility: secretaryVitalsVisibility,
+      fieldDefinitions: secretaryVitalFields,
+      doctorSpecialty,
+    });
     const editingAppointment = editingAppointmentId
       ? todayAppointments.find((item) => item.id === editingAppointmentId) || null
       : null;

@@ -36,7 +36,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({
           onClick={() => {
             void onClick();
           }}
-          className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] rounded-xl font-black text-[0.8rem] sm:text-[0.88rem]"
+          className="gold-premium-btn relative w-full flex items-center justify-center gap-2 py-[0.65rem] px-3 rounded-xl font-black text-[0.84rem] sm:text-[0.92rem] leading-tight"
           dir="rtl"
         >
           <span className="gold-premium-shimmer" aria-hidden />
@@ -48,14 +48,14 @@ export const ToolCard: React.FC<ToolCardProps> = ({
             <div className="min-w-0 text-right">
               <div className="flex items-center justify-between gap-2">
                 {/* لون النص داكن (warning-950) عشان يبان على الخلفيه الذهبيه */}
-                <h3 className="relative z-10 tracking-tight text-warning-950 truncate">{title}</h3>
+                <h3 className="relative z-10 text-[#1f1300] drop-shadow-[0_1px_0_rgba(255,255,255,0.75)]">{title}</h3>
                 {badgeLabel && (
-                  <span className="shrink-0 rounded-lg bg-white/40 px-2 py-0.5 text-[10px] font-black text-warning-950 ring-1 ring-white/50">
+                  <span className="shrink-0 rounded-lg bg-white/40 px-2 py-0.5 text-[10px] font-black text-[#1f1300] ring-1 ring-white/50">
                     {badgeLabel}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] font-bold text-warning-900/80 mt-0.5 line-clamp-1">{description}</p>
+              <p className="text-[11px] font-extrabold text-[#4a2a00] mt-0.5 line-clamp-1 drop-shadow-[0_1px_0_rgba(255,255,255,0.55)]">{description}</p>
             </div>
           </div>
         </button>

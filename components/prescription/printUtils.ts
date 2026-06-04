@@ -31,7 +31,34 @@ import { injectPrintPageStyle, applyPaperSizeCssVars } from '../prescription-set
 
 const REENTRY_GUARD_MS = 1200;
 const FONTS_READY_TIMEOUT_MS = 3000;
+const PRINT_DIALOG_FALLBACK_MS = 5000;
 let lastPrintInvocation = 0;
+
+function waitForFrame(): Promise<void> {
+    if (typeof requestAnimationFrame !== 'function') {
+        return new Promise<void>((resolve) => window.setTimeout(resolve, 16));
+    }
+    return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function waitForPaintFrames(count: number): Promise<void> {
+    for (let i = 0; i < count; i += 1) {
+        await Promise.race([
+            waitForFrame(),
+            new Promise<void>((resolve) => window.setTimeout(resolve, 100)),
+        ]);
+    }
+}
+
+function blurActivePrescriptionField(): void {
+    const activeElement = document.activeElement;
+    if (
+        activeElement instanceof HTMLElement
+        && activeElement.closest('#printable-prescription')
+    ) {
+        activeElement.blur();
+    }
+}
 
 /**
  * يضمن إن خط Cairo خلص تحميل قبل ما نفتح حوار الطباعة.
@@ -87,16 +114,14 @@ async function ensureFontsReady(): Promise<void> {
     }
 }
 
-async function waitForPreviewLayout(): Promise<void> {
-    // أولاً: نضمن إن الخطوط حمّلت (Cairo + أي خط CSS) — ده اللي بيظبط
-    // الموبايل لما الطبيب يضغط طباعة قبل ما deferred-load Google Fonts يخلّص.
+export async function waitForPrescriptionPrintDomReady(): Promise<void> {
+    if (typeof document === 'undefined') return;
+
+    blurActivePrescriptionField();
+
+    // Keep this fast: printable mirrors are already in the DOM.
     await ensureFontsReady();
-    // بعدين ننتظر إطارين عشان React يطبّق isPrintMode (تخفي أزرار التحرير)
-    // و ResizeObserver يعيد حساب auto-scale بناءً على الخط الصح، قبل
-    // ما DOM يُلتقط في حوار الطباعة.
-    await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-    );
+    await waitForPaintFrames(2);
 }
 
 /**
@@ -114,7 +139,7 @@ async function triggerNativePrintDialog(paperSize?: PaperSizeSettings): Promise<
     applyPaperSizeCssVars(paperSize);
     injectPrintPageStyle(paperSize);
 
-    await waitForPreviewLayout();
+    await waitForPrescriptionPrintDomReady();
 
     return new Promise<void>((resolve) => {
         let settled = false;
@@ -132,7 +157,7 @@ async function triggerNativePrintDialog(paperSize?: PaperSizeSettings): Promise<
 
         window.addEventListener('afterprint', finish);
         // احتياط على المتصفحات التي لا تُطلق afterprint (iOS Safari القديم)
-        fallback = window.setTimeout(finish, 120_000);
+        fallback = window.setTimeout(finish, PRINT_DIALOG_FALLBACK_MS);
 
         // في Firefox window.print() قد يرمي إذا كانت الصفحة غير جاهزة —
         // نُغلّفها بـ try/catch ونحلّ الوعد فوراً.

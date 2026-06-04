@@ -22,6 +22,7 @@ const LIMIT_MARKERS = [
   'smart_rx_daily_limit_reached',
   'translation_daily_limit_reached',
   'drug_tool_daily_limit_reached',
+  'guidelines_chat_daily_limit_reached',
 ];
 
 /** العلامات التي تدل على مشكلة في الاتصال أو السيرفر (غير متعلقة بالرصيد) */

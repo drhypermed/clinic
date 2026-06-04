@@ -1,0 +1,32 @@
+import { GuidelineTopic } from '../../guidelinesData';
+
+export const EASD_2023_CHAPTER_8_TOPICS: GuidelineTopic[] = [
+  {
+    id: 'easd-2023-ch8-complete',
+    group: '8. Hypoglycaemia',
+    sourceIds: ['type 1 diabetes'],
+    tags: ['Hypoglycemia', 'IAH', 'Rule of 15', 'Glucagon', 'Emergency'],
+    title: {
+      en: 'Section 8: Hypoglycaemia',
+      ar: 'القسم 8: هبوط سكر الدم'
+    },
+    summary: {
+      en: 'Guidelines for managing the biggest clinical challenge, detailing the classification of hypoglycemia levels, assessing impaired awareness, and updates on treatment protocols and emergency management.',
+      ar: 'إرشادات للتعامل مع التحدي السريري الأكبر، مع تصنيف درجات الهبوط، تقييم فقدان الشعور بالهبوط، وتحديثات بروتوكول العلاج والتعامل مع الطوارئ.'
+    },
+    points: {
+      en: [
+        '**1. Modern Clinical Classification of Hypoglycemia Levels:**\nHypoglycemic episodes must be documented in the patient\'s file according to three primary levels:\n- **Level 1 (Alert Value):** Blood sugar between 54 and less than 70 mg/dL.\n- **Level 2 (Clinically Significant Hypoglycemia):** Blood sugar less than 54 mg/dL.\n- **Level 3 (Severe Hypoglycemia):** Not defined by a specific number, but rather as any hypoglycemic episode accompanied by altered mental or physical status requiring assistance from another person for recovery.',
+        '**2. Impaired Awareness of Hypoglycaemia (IAH):**\n- Affects about 25% of patients, increasing their risk of severe hypoglycemia (Level 3) by six-fold.\n- **In the Clinic (How to Assess):** Use a simple question as a quick screening tool: *"Do you experience hypoglycemia symptoms when your sugar is 54 mg/dL or higher, below 54, or do you not feel them at all?"*. If the patient answers that they only feel it below 54 or not at all, they are at a more than 4-fold increased risk of severe hypoglycemia.\n- **Treatment Mechanism (Restoring Awareness):** Strict avoidance of any hypoglycemic episodes for a period can help the autonomic nervous system regain its responsiveness and restore the patient\'s awareness of hypoglycemia symptoms. In such cases, you may need to temporarily raise blood sugar targets higher than usual to protect them.',
+        '**3. Practical Hypoglycemia Treatment Protocol (The Rule of 15) and Updates:**\n- **Standard Treatment:** Giving the patient 15 grams of glucose or simple carbohydrates when blood sugar is less than 70 mg/dL, and rechecking after 15 minutes. The patient may need a larger amount if the sugar is less than 54 mg/dL.\n- **Very Important Note for CGM Users:** There is a natural time lag of 5 to 15 minutes between interstitial fluid readings (sensor) and actual blood readings. Therefore, the patient must be instructed to **rely on fingerstick blood glucose monitoring** to assess their recovery from hypoglycemia, because relying solely on the sensor at that moment will make them believe their sugar is still low, prompting them to eat more and subsequently causing severe hyperglycemia (Overtreatment).\n- **For Hybrid Closed-loop Pump Users:** The patient should be advised that they may need fewer carbohydrates (5-15 grams) to treat hypoglycemia, because the pump would have already sensed the drop and suspended or reduced basal insulin delivery.',
+        '**4. Managing Emergencies (Level 3):**\n- If the patient is unconscious or unable to swallow, giving any food by mouth is strictly prohibited to avoid the risk of choking.\n- **Glucagon** must be administered (via intramuscular/subcutaneous injection or nasal spray) by those around them, or intravenous glucose by medical staff.\n- Once acute symptoms resolve and consciousness is regained, the patient should consume a snack or a main meal containing 20 grams of long-acting carbohydrates to prevent hypoglycemia from recurring, and the cause of the episode must be investigated.'
+      ],
+      ar: [
+        '**1. التصنيف السريري الحديث لدرجات الهبوط:**\nيجب توثيق نوبات الهبوط في ملف المريض وفقاً لثلاث درجات أساسية:\n- **الدرجة 1 (قيمة تحذيرية):** السكر بين 54 إلى أقل من 70 مجم/ديسيلتر.\n- **الدرجة 2 (هبوط سريري مهم):** السكر أقل من 54 مجم/ديسيلتر.\n- **الدرجة 3 (الهبوط الشديد):** لا يُقاس برقم معين، بل يُعرف بأنه أي نوبة هبوط يصاحبها تغير في الحالة العقلية أو الجسدية للمريض بحيث يتطلب مساعدة من شخص آخر للتعافي.',
+        '**2. فقدان الشعور بالهبوط (Impaired Awareness of Hypoglycaemia - IAH):**\n- يُصاب حوالي 25% من المرضى بهذه الحالة، مما يزيد من خطر تعرضهم للهبوط الشديد (الدرجة 3) بستة أضعاف.\n- **في العيادة (كيفية التقييم):** استخدم سؤالاً بسيطاً كأداة فحص سريعة: *"هل تحدث لك أعراض الهبوط عندما يكون السكر 54 مجم/ديسيلتر فأكثر، أم أقل من 54، أم أنك لا تشعر بها؟"*. إذا أجاب المريض بأنه لا يشعر إلا تحت 54 أو لا يشعر إطلاقاً، فهو معرض لخطر الهبوط الشديد بأكثر من 4 أضعاف.\n- **آلية العلاج (كيفية إعادة الشعور):** التجنب الصارم (Strict avoidance) لأي نوبات هبوط لفترة من الزمن يمكن أن يساعد الجهاز العصبي المستقل على استعادة قدرته على الاستجابة وإعادة شعور المريض بأعراض الهبوط. في هذه الحالات، قد تضطر كطبيب لرفع أهداف السكر لتكون أعلى من المعتاد لفترة مؤقتة لحمايته.',
+        '**3. بروتوكول علاج الهبوط العملي (The Rule of 15) وتحديثاته:**\n- **العلاج القياسي:** إعطاء المريض 15 جراماً من الجلوكوز أو الكربوهيدرات البسيطة عندما يكون السكر أقل من 70 مجم/ديسيلتر، وتكرار الفحص بعد 15 دقيقة. قد يحتاج المريض لكمية أكبر إذا كان السكر أقل من 54 مجم/ديسيلتر.\n- **ملاحظة هامة جداً لمستخدمي الحساسات (CGM):** يوجد تأخير زمني طبيعي (Lag) يتراوح بين 5 إلى 15 دقيقة بين القراءة في السائل الخلالي (الحساس) وقراءة الدم الفعلي. لذا، يجب توجيه المريض **لاعتماد قياس وخز الإصبع** لتقييم تعافيه من الهبوط، لأن الاعتماد على الحساس فقط في تلك اللحظة سيجعله يعتقد أن السكر لا يزال منخفضاً، مما يدفعه لتناول المزيد من الطعام وحدوث ارتفاع شديد لاحقاً (Overtreatment).\n- **لمستخدمي المضخات الآلية (Hybrid Closed-loop):** يجب تنبيه المريض أنه قد يحتاج إلى كمية أقل من الكربوهيدرات (5-15 جرام) لعلاج الهبوط، لأن المضخة تكون قد استشعرت الهبوط مسبقاً وأوقفت أو قللت ضخ الإنسولين القاعدي.',
+        '**4. التعامل مع حالات الطوارئ (الدرجة 3):**\n- إذا كان المريض فاقداً للوعي أو غير قادر على البلع، يُمنع إعطاؤه أي طعام بالفم لتجنب خطر الاختناق.\n- يجب إعطاء **الجلوكاجون** (عن طريق الحقن العضلي/تحت الجلد أو البخاخ الأنفي) بواسطة الأشخاص المحيطين به، أو الجلوكوز الوريدي بواسطة الطاقم الطبي.\n- بمجرد اختفاء الأعراض الحادة واستعادة الوعي، يجب أن يتناول المريض وجبة خفيفة أو أساسية تحتوي على 20 جراماً من الكربوهيدرات طويلة المفعول لمنع تكرار الهبوط، مع ضرورة البحث عن سبب النوبة.'
+      ]
+    }
+  }
+];

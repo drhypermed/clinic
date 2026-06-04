@@ -15,6 +15,7 @@ import {
   getPublicSecretByUserId,
   savePublicFormSettings,
   subscribeToPublicConfig,
+  syncPublicBookingDoctorProfile,
 } from './booking-public/secretConfig';
 import {
   addPublicSlot,
@@ -42,6 +43,7 @@ export const bookingPublicService = {
   getPublicBookingConfig,
   getPublicSecretByUserId,
   savePublicFormSettings,
+  syncPublicBookingDoctorProfile,
   getPublicSlots,
   subscribeToPublicConfig,
   subscribeToPublicSlots,

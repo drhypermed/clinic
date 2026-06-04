@@ -85,7 +85,7 @@ const PresetListItemComponent: React.FC<Props> = ({
           size="sm"
           className="text-xs"
         >
-          {isExpanded ? 'إخفاء تفاصيل الروشتة' : 'عرض تفاصيل الروشتة'}
+          {isExpanded ? 'إخفاء التفاصيل' : 'تفاصيل الروشتة'}
         </Button>
         <Button onClick={() => onOpenEditor(preset)} variant="info" size="sm" className="text-xs">
           تعديل

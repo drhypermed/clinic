@@ -34,7 +34,6 @@ import {
   clearTimedPayload,
 } from '../internalToastStorage';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
-import { isPediatricSpecialtyForSecretaryVitals } from '../../../utils/secretaryVitals';
 
 /**
  * مكون صفحة "إدارة المواعيد" (PublicBookingPage) - وهي الواجهة المخصصة للسكرتارية
@@ -252,7 +251,7 @@ export const PublicBookingPage: React.FC = () => {
 
   // عدد مواعيد اليوم (sortedTodayAppointments مفلترة بالفعل لليوم الحالي)
   const todayPendingCount = sortedTodayAppointments.length;
-  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(config?.doctorSpecialty);
+  const canShowSecretaryVitals = true;
 
   // عند تعديل موعد نحول الواجهة لنموذج الحجز تلقائياً
   const handleEditAndSwitchView = (apt: Parameters<typeof handleEditAppointment>[0]) => {

@@ -41,6 +41,7 @@
     "node_modules",
     "dist",
     "build",
+    "scripts/components/**",
     "tests/**",
     "vitest.config.ts"
   ]

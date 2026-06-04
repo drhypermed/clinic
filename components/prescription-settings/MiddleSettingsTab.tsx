@@ -43,8 +43,8 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
                         if (!imageGate.requestImageUpload()) { e.target.value = ''; return; }
                         const f = e.target.files?.[0];
                         if (f) {
-                            if (f.size > 5 * 1024 * 1024) {
-                                showNotification('error', 'حجم الصورة كبير جداً (أقصى 5MB)');
+                            if (f.size > 20 * 1024 * 1024) {
+                                showNotification('error', 'حجم الصورة كبير جداً (أقصى 20MB)');
                                 return;
                             }
                             const r = new FileReader();

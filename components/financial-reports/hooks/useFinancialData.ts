@@ -90,6 +90,8 @@ interface UseFinancialDataReturn {
     yearlyDailyMap: Record<string, DailyFinancialData>;
     /** خريطة Firestore الشهرية للسنة المعروضة — مفلترة بالفرع. */
     yearlyMonthlyMap: Record<string, MonthlyFinancialData>;
+    /** Years whose daily and monthly financial maps finished loading successfully. */
+    loadedFinancialMapYears: number[];
 }
 export const useFinancialData = ({
     userId,
@@ -120,15 +122,26 @@ export const useFinancialData = ({
     const [dailyInsuranceExtras, setDailyInsuranceExtras] = useState<DailyInsuranceExtraEntry[]>([]);
     const [yearlyDailyMap, setYearlyDailyMap] = useState<Record<string, DailyFinancialData>>({});
     const [yearlyMonthlyMap, setYearlyMonthlyMap] = useState<Record<string, MonthlyFinancialData>>({});
+    const [loadedFinancialMapYears, setLoadedFinancialMapYears] = useState<number[]>([]);
     useEffect(() => {
         if (!userId) {
             setYearlyDailyMap({});
             setYearlyMonthlyMap({});
+            setLoadedFinancialMapYears([]);
             return;
         }
         let cancelled = false;
+        let dailyLoaded = false;
+        let monthlyLoaded = false;
         const year = selectedDate.getFullYear();
         const targetBranch = branchId || 'main';
+        setLoadedFinancialMapYears([]);
+
+        const markLoadedWhenReady = () => {
+            if (!cancelled && dailyLoaded && monthlyLoaded) {
+                setLoadedFinancialMapYears([year]);
+            }
+        };
 
         // Bug #B2 fix helper: دمج العناصر المفلترة من Firestore (لفرع معيّن)
         // داخل المفتاح الموحّد بدون ما نمسح عناصر الفروع الأخرى.
@@ -175,6 +188,8 @@ export const useFinancialData = ({
             });
             setLastSyncTime(Date.now());
             window.dispatchEvent(new Event('financialDataUpdated'));
+            dailyLoaded = true;
+            markLoadedWhenReady();
         }).catch(err => { if (!cancelled) console.error('[Financial] Failed to load yearly daily entries:', err); });
 
         financialDataService.getYearlyMonthlyEntries(userId, year, branchId).then(monthly => {
@@ -189,6 +204,8 @@ export const useFinancialData = ({
                 });
             });
             setLastSyncTime(Date.now());
+            monthlyLoaded = true;
+            markLoadedWhenReady();
         }).catch(err => { if (!cancelled) console.error('[Financial] Failed to load yearly monthly entries:', err); });
         return () => { cancelled = true; };
     }, [userId, selectedDate.getFullYear(), branchId]);  // Bug #B4 fix: branchId في الـ dep array
@@ -444,7 +461,8 @@ export const useFinancialData = ({
         dailyInsuranceExtras,
         lastSyncTime,
         yearlyDailyMap,
-        yearlyMonthlyMap
+        yearlyMonthlyMap,
+        loadedFinancialMapYears
     };
 };
 

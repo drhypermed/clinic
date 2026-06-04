@@ -40,6 +40,7 @@ export default defineConfig({
         // ياخد دفّة كل التبويبات المفتوحه من غير ما تتقفل وتتفتح من تاني
         clientsClaim: true,
         inlineWorkboxRuntime: true,
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         importScripts: ['/firebase-messaging-sw.js'],
         globPatterns: ['**/*.{css,html,ico,png,svg,webmanifest,woff2,woff,ttf}', 'assets/!(drug-*)*.js'],
         // استثناء الـlogo الضخم (1.1MB) من الـoffline cache — بيتحمّل مرة واحدة عبر الشبكة، مش محتاج يتخزن في الـSW.

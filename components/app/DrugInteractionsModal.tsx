@@ -105,6 +105,11 @@ const InteractionCard: React.FC<{ item: DrugInteraction; index: number }> = ({ i
               <span>{item.recommendation}</span>
             </div>
           )}
+          {item.source && (
+            <div className="mt-2 text-[0.72rem] font-bold text-slate-500">
+              المصدر: {item.source}
+            </div>
+          )}
         </div>
       </div>
     </div>

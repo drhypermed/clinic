@@ -98,8 +98,8 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     publicFormContactInfo, setPublicFormContactInfo,
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr, publicTimeMin,
+    currentBranchLabel,
     branches: doctorBranches, // الفروع — لتوليد رابط منفصل لكل فرع في قسم الجمهور
-    publicFormRequireGoogle, setPublicFormRequireGoogle, // إعداد حماية جوجل للحجز
   } = useBookingSectionControls({
     userId, bookingSecret: bookingSecretProp, onBookingSecretReady,
     prescriptionVitalsConfig,
@@ -107,6 +107,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     onSyncSecretaryVitalsVisibility,
     userDisplayName: user?.displayName, userEmail: user?.email, currentDayStr,
     doctorSpecialty,
+    activeBranchId,
   });
 
   // معالجة البيانات للعرض (فرز المواعيد حسب التاريخ، حساب الإحصائيات)
@@ -241,9 +242,8 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             onAddPublicSlot={addPublicSlot}
             publicSlots={publicSlots}
             onRemovePublicSlot={removePublicSlot}
+            currentBranchLabel={currentBranchLabel}
             branches={doctorBranches}
-            requireGoogleSignIn={publicFormRequireGoogle}
-            onRequireGoogleSignInChange={setPublicFormRequireGoogle}
           /></div>
         )}
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { firestoreService } from '../../../services/firestore';
-import { safeStorageGetItem, safeStorageSetItem } from '../../../services/auth-service/storage';
+import { safeStorageGetItem, safeStorageRemoveItem, safeStorageSetItem } from '../../../services/auth-service/storage';
 import {
   getAccountTypeCacheKey,
   getDoctorNameCacheKey,
@@ -101,18 +101,22 @@ export const useMainAppProfile = ({ user, userId, updateUserProfile }: UseMainAp
   }, [userId, user?.photoURL]);
 
   // 3. وظيفة تحديث صورة الملف الشخصي (Profile Image Update)
-  const handleProfileImageUpdate = async (base64: string) => {
+  const handleProfileImageUpdate = async (imageUrl: string) => {
     if (!user) return;
     const prev = profileImage;
-    setProfileImage(base64 || undefined); // تحديث فوري في الواجهة (Optimistic Update)
+    setProfileImage(imageUrl || undefined); // تحديث فوري في الواجهة (Optimistic Update)
 
     try {
       const name = (doctorName || user.displayName || '').trim();
       await Promise.all([
-        updateUserProfile(name, base64), // تحديث في Firebase Auth
-        firestoreService.saveUserProfile(user.uid, { doctorName: name, profileImage: base64 }), // تحديث في Firestore
+        updateUserProfile(name, imageUrl), // تحديث في Firebase Auth
+        firestoreService.saveUserProfile(user.uid, { doctorName: name, profileImage: imageUrl }), // تحديث في Firestore
       ]);
-      if (base64) safeStorageSetItem(getProfileImageCacheKey(user.uid), base64);
+      if (imageUrl) {
+        safeStorageSetItem(getProfileImageCacheKey(user.uid), imageUrl);
+      } else {
+        safeStorageRemoveItem(getProfileImageCacheKey(user.uid));
+      }
       setProfileKey((k) => k + 1); // تغيير المفتاح لإجبار الصور على التحديث
     } catch (error) {
       setProfileImage(prev); // العودة للصورة السابقة عند الفشل
@@ -127,7 +131,7 @@ export const useMainAppProfile = ({ user, userId, updateUserProfile }: UseMainAp
     const normalized = name.trim();
     await Promise.all([
       updateUserProfile(normalized),
-      firestoreService.saveUserProfile(user.uid, { doctorName: normalized, profileImage: profileImage || '' }),
+      firestoreService.saveUserProfile(user.uid, { doctorName: normalized }),
     ]);
     setDoctorName(normalized);
     setProfileKey((k) => k + 1);
@@ -140,7 +144,6 @@ export const useMainAppProfile = ({ user, userId, updateUserProfile }: UseMainAp
     await firestoreService.saveUserProfile(user.uid, {
       doctorName: doctorName || user.displayName || '',
       doctorSpecialty: normalized,
-      profileImage: profileImage || '',
     });
     setDoctorSpecialty(normalized);
     setProfileKey((k) => k + 1);

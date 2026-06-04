@@ -61,6 +61,31 @@ const toDayKey = (d: Date) =>
 const toMonthKey = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
+const MAX_RECORD_RANGE_FETCH = 5000;
+
+const toMonthKeyFromParts = (year: number, monthZeroIndexed: number): string =>
+    `${year}-${String(monthZeroIndexed + 1).padStart(2, '0')}`;
+
+const getCompleteMonthKeysForRange = (startMs: number, endMs: number): string[] => {
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return [];
+    const startDate = new Date(startMs);
+    const endDate = new Date(endMs);
+    const months: string[] = [];
+    const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const last = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+    while (cursor.getTime() <= last.getTime()) {
+        const year = cursor.getFullYear();
+        const month = cursor.getMonth();
+        const monthStart = new Date(year, month, 1, 0, 0, 0, 0).getTime();
+        const monthEnd = new Date(year, month + 1, 1, 0, 0, 0, 0).getTime() - 1;
+        if (startMs <= monthStart && endMs >= monthEnd) {
+            months.push(toMonthKeyFromParts(year, month));
+        }
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return months;
+};
+
 /* ──────────────────────────────────────────────────────── */
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -91,6 +116,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // الحساب من records في paginated mode (records محدودة بـ50 سجل). كده كروت
     // السنوي بتطلع صح حتى لو الطبيب عنده آلاف السجلات.
     const [yearlySnapshots, setYearlySnapshots] = React.useState<Record<string, MonthlySnapshot>>({});
+    const [completeRecordMonthKeys, setCompleteRecordMonthKeys] = React.useState<string[]>([]);
+    const [financialMapYearsLoaded, setFinancialMapYearsLoaded] = React.useState<number[]>([]);
     const [labels, setLabels] = React.useState<{ interventionsLabel: string; otherRevenueLabel: string }>({
         interventionsLabel: 'التداخلات',
         otherRevenueLabel: 'دخل آخر',
@@ -100,6 +127,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // 🆕 (2026-05) تنبيه الخمول للحساب المجاني — يظهر قبل التعطيل التلقائي بـ ≤ 30 يوم
     const inactivityWarning = useInactivityWarning(user);
     const { banner, loading: bannerLoading, isVisible: isHomepageBannerVisible } = useHomepageBanner('doctors');
+
+    React.useEffect(() => {
+        setCompleteRecordMonthKeys([]);
+        setFinancialMapYearsLoaded([]);
+    }, [userId, activeBranchId, recordsPagingEnabled]);
+
+    const markCompleteRecordRange = React.useCallback((startMs: number, endMs: number, fetchedCount: number) => {
+        if (!Number.isFinite(fetchedCount) || fetchedCount >= MAX_RECORD_RANGE_FETCH) return;
+        const keys = getCompleteMonthKeysForRange(startMs, endMs);
+        if (keys.length === 0) return;
+        setCompleteRecordMonthKeys((prev) => Array.from(new Set([...prev, ...keys])).sort());
+    }, []);
 
     const bannerPrimaryImageUrl = React.useMemo(() => {
         const mainImage = (banner?.imageUrl || '').trim();
@@ -154,24 +193,34 @@ export const Dashboard: React.FC<DashboardProps> = ({
     React.useEffect(() => {
         if (!userId || !records?.length) return;
         if (!recordsPagingEnabled) return;
+        if (completeRecordMonthKeys.length === 0) return;
         const targetBranch = activeBranchId || 'main';
         const currentYear = currentTime.getFullYear();
         // Timeout عشان maps تلحق تتحمّل (الـuseEffect السنوي بياخد ثواني).
-        const timer = window.setTimeout(() => {
-            void financialDataService.ensureSnapshotsForClosedMonths({
-                userId,
-                branchId: targetBranch,
-                records,
-                yearlyDailyMap: yearlyDailyRawRef.current,
-                yearlyMonthlyMap: yearlyMonthlyRawRef.current,
-                examPrice,
-                consultPrice,
-                loadedMapYears: [currentYear],
-            }).catch((err) => {
-                console.warn('[Dashboard] auto-close snapshots failed:', err);
-            });
-        }, 4000);
-        return () => window.clearTimeout(timer);
+        if (!financialMapYearsLoaded.includes(currentYear)) return;
+        const loadedRecordMonthKeys = new Set<string>();
+        records.forEach((record) => {
+            if ((record.branchId || 'main') !== targetBranch) return;
+            const monthKey = String(record.date || '').slice(0, 7);
+            if (/^\d{4}-\d{2}$/.test(monthKey)) loadedRecordMonthKeys.add(monthKey);
+        });
+        const completeRecordMonthKeysForClose = completeRecordMonthKeys.filter((monthKey) =>
+            loadedRecordMonthKeys.has(monthKey)
+        );
+        if (completeRecordMonthKeysForClose.length === 0) return;
+        void financialDataService.ensureSnapshotsForClosedMonths({
+            userId,
+            branchId: targetBranch,
+            records,
+            yearlyDailyMap: yearlyDailyRawRef.current,
+            yearlyMonthlyMap: yearlyMonthlyRawRef.current,
+            examPrice,
+            consultPrice,
+            loadedMapYears: financialMapYearsLoaded,
+            completeRecordMonthKeys: completeRecordMonthKeysForClose,
+        }).catch((err) => {
+            console.warn('[Dashboard] auto-close snapshots failed:', err);
+        });
     }, [
         userId,
         activeBranchId,
@@ -181,6 +230,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         records?.length,
         examPrice,
         consultPrice,
+        currentTime,
+        records,
+        completeRecordMonthKeys,
+        financialMapYearsLoaded,
     ]);
 
     // ─── جلب الشهور اللي محتاجة records فقط (paginated mode) ─────────
@@ -227,21 +280,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
             // طلب واحد بنطاق يغطي كل الشهور المحتاجة (دمج الـqueries).
             const earliest = Math.min(...monthsNeedingRecords.map((m) => new Date(currentYear, m, 1).getTime()));
             const latest = Math.max(...monthsNeedingRecords.map((m) => new Date(currentYear, m + 1, 0, 23, 59, 59, 999).getTime()));
-            void onFetchRecordsByDateRange(earliest, latest);
+            void onFetchRecordsByDateRange(earliest, latest).then((fetchedCount) => {
+                if (!cancelled) markCompleteRecordRange(earliest, latest, fetchedCount);
+            });
         }).catch(() => {
             // فشل قراءة snapshots — ما نعرفش أي شهور مغطّاة. آمن إن نتجاهل
             // (الـperiodStats هتطلع ناقصة لكن ما نعملش fetch ضخم بدون سبب).
         });
 
         return () => { cancelled = true; };
-    }, [userId, recordsPagingEnabled, onFetchRecordsByDateRange, activeBranchId]);
+    }, [userId, recordsPagingEnabled, onFetchRecordsByDateRange, activeBranchId, markCompleteRecordRange]);
 
     // جلب البيانات المالية السنوية — نشتق السنة من currentTime (يتحدث كل دقيقة) حتى تُعاد الجلب تلقائياً عند بداية سنة جديدة
     const effectiveYear = currentTime.getFullYear();
     React.useEffect(() => {
         if (!userId) return;
         let cancelled = false;
+        let dailyLoaded = false;
+        let monthlyLoaded = false;
         const year = effectiveYear;
+        setFinancialMapYearsLoaded([]);
+
+        const markFinancialMapsLoaded = () => {
+            if (!cancelled && dailyLoaded && monthlyLoaded) {
+                setFinancialMapYearsLoaded([year]);
+            }
+        };
 
         financialDataService.getYearlyDailyEntries(userId, year, activeBranchId).then((entries) => {
             if (cancelled) return;
@@ -263,6 +327,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 agg[dateKey] = { interventions, other, interventionsIns, otherIns, expense };
             });
             setYearlyDaily(agg);
+            dailyLoaded = true;
+            markFinancialMapsLoaded();
         }).catch(() => {});
 
         // Yearly monthly fixed expenses (rent, salaries, tools, electricity, other)
@@ -280,6 +346,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 agg[monthKey] = total;
             });
             setYearlyMonthly(agg);
+            monthlyLoaded = true;
+            markFinancialMapsLoaded();
         }).catch(() => {});
 
         // المسميات بتوصل مُنظّفة من services/financial-data/labels.ts (auto-migration للاحقة "(كاش)" القديمة)

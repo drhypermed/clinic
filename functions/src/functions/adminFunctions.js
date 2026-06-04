@@ -15,6 +15,9 @@ module.exports = ({
   DEFAULT_AI_PROXY_LIMITS,
   getCairoDateKey,
   resolveDoctorAccountType,
+  getSmartRxConfig,
+  pickTierValue,
+  buildWhatsAppUrl,
 }) => {
   
   const deleteDoctorAccount = async (request) => {
@@ -229,6 +232,35 @@ module.exports = ({
     'unknown',           // fallback لو الـclient ما بعتش feature
   ]);
 
+  const applyLimitPlaceholder = (message, limit) => String(message || '')
+    .replace(/\{\s*limit\s*\}/gi, String(limit));
+
+  const buildGuidelinesChatQuotaDetails = ({ accountType, config, limit, used, dayKey }) => {
+    const limitReachedMessage = applyLimitPlaceholder(pickTierValue(accountType, config, {
+      freeKey: 'freeGuidelinesChatLimitMessage',
+      premiumKey: 'premiumGuidelinesChatLimitMessage',
+      proMaxKey: 'proMaxGuidelinesChatLimitMessage',
+    }), limit);
+    const whatsappMessage = pickTierValue(accountType, config, {
+      freeKey: 'freeGuidelinesChatWhatsappMessage',
+      premiumKey: 'premiumGuidelinesChatWhatsappMessage',
+      proMaxKey: 'proMaxGuidelinesChatWhatsappMessage',
+    });
+
+    return {
+      accountType,
+      feature: 'guidelines_chat',
+      limit,
+      used,
+      remaining: 0,
+      dayKey,
+      whatsappNumber: config.whatsappNumber || '',
+      whatsappMessage,
+      whatsappUrl: buildWhatsAppUrl(config.whatsappNumber, whatsappMessage),
+      limitReachedMessage,
+    };
+  };
+
   const generateGeminiContent = async (request) => {
     const auth = request?.auth;
     if (!auth?.uid) {
@@ -296,6 +328,9 @@ module.exports = ({
     const db = getDb();
     const dayKey = getCairoDateKey(new Date());
     const usageDocId = `gemini-${dayKey}`;
+    const guidelinesChatConfig = feature === 'guidelines_chat'
+      ? await getSmartRxConfig()
+      : null;
 
     
     const quota = await db.runTransaction(async (tx) => {
@@ -306,7 +341,7 @@ module.exports = ({
 
       const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
       // برو وبرو ماكس نفس سقف الـ AI proxy (backstop) — الـ pro_max بيستخدم قيمة خاصة لو متوفرة
-      const limit = accountType === 'pro_max'
+      const globalLimit = accountType === 'pro_max'
         ? (DEFAULT_AI_PROXY_LIMITS.proMaxDailyLimit ?? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit)
         : accountType === 'premium'
           ? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit
@@ -328,10 +363,10 @@ module.exports = ({
 
       const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
       const used = Number(usageDoc.mergedUsageData?.geminiCallCount || 0);
-      if (used >= limit) {
+      if (used >= globalLimit) {
         throw new HttpsError('resource-exhausted', 'DAILY_AI_LIMIT_REACHED', {
           accountType,
-          limit,
+          limit: globalLimit,
           used,
           remaining: 0,
           dayKey,
@@ -339,12 +374,43 @@ module.exports = ({
       }
 
       const nextUsed = used + 1;
+      const isGuidelinesChat = feature === 'guidelines_chat';
+      let guidelinesLimit = null;
+      let guidelinesUsed = 0;
+      let nextGuidelinesUsed = 0;
+
+      if (isGuidelinesChat) {
+        guidelinesLimit = Number(pickTierValue(accountType, guidelinesChatConfig, {
+          freeKey: 'freeGuidelinesChatDailyLimit',
+          premiumKey: 'premiumGuidelinesChatDailyLimit',
+          proMaxKey: 'proMaxGuidelinesChatDailyLimit',
+        }) || 0);
+        guidelinesUsed = Number(usageDoc.mergedUsageData?.guidelinesChatCount || 0);
+        if (guidelinesUsed >= guidelinesLimit) {
+          throw new HttpsError('resource-exhausted', 'GUIDELINES_CHAT_DAILY_LIMIT_REACHED', buildGuidelinesChatQuotaDetails({
+            accountType,
+            config: guidelinesChatConfig,
+            limit: guidelinesLimit,
+            used: guidelinesUsed,
+            dayKey,
+          }));
+        }
+        nextGuidelinesUsed = guidelinesUsed + 1;
+      }
+
       tx.set(usageDoc.userUsageRef, {
         doctorId: userId,
         dayKey,
         accountType,
         geminiCallCount: nextUsed,
-        limitApplied: limit,
+        ...(isGuidelinesChat
+          ? {
+            guidelinesChatCount: nextGuidelinesUsed,
+            guidelinesChatLimitApplied: guidelinesLimit,
+          }
+          : {}),
+        limitApplied: isGuidelinesChat ? guidelinesLimit : globalLimit,
+        globalLimitApplied: globalLimit,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         createdAt: usageDoc.userUsageSnap.exists
           ? usageDoc.userUsageSnap.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp()
@@ -353,9 +419,9 @@ module.exports = ({
 
       return {
         accountType,
-        used: nextUsed,
-        limit,
-        remaining: Math.max(limit - nextUsed, 0),
+        used: isGuidelinesChat ? nextGuidelinesUsed : nextUsed,
+        limit: isGuidelinesChat ? guidelinesLimit : globalLimit,
+        remaining: Math.max((isGuidelinesChat ? guidelinesLimit : globalLimit) - (isGuidelinesChat ? nextGuidelinesUsed : nextUsed), 0),
         dayKey,
       };
     });
@@ -387,11 +453,23 @@ module.exports = ({
           const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
           if (usageDoc.userUsageSnap.exists) {
             const currentUsed = Number(usageDoc.mergedUsageData?.geminiCallCount || 0);
+            const refundPayload = {
+              updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            };
+            let shouldRefund = false;
             if (currentUsed > 0) {
-              tx.set(usageDoc.userUsageRef, {
-                geminiCallCount: currentUsed - 1,
-                updatedAt: admin.firestore.FieldValue.serverTimestamp()
-              }, { merge: true });
+              refundPayload.geminiCallCount = currentUsed - 1;
+              shouldRefund = true;
+            }
+            if (feature === 'guidelines_chat') {
+              const currentGuidelinesUsed = Number(usageDoc.mergedUsageData?.guidelinesChatCount || 0);
+              if (currentGuidelinesUsed > 0) {
+                refundPayload.guidelinesChatCount = currentGuidelinesUsed - 1;
+                shouldRefund = true;
+              }
+            }
+            if (shouldRefund) {
+              tx.set(usageDoc.userUsageRef, refundPayload, { merge: true });
             }
           }
         });

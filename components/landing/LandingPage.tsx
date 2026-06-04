@@ -74,10 +74,16 @@ const PUBLIC_PORTAL_URL = 'https://www.drhypermed.com/public';
 interface Feature { icon: React.ReactNode; title: string; desc: string; color: string }
 const FEATURES: Feature[] = [
   {
-    icon: <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'مكتبة الجايدلاينز التفاعلية',
-    desc: 'تصفح أحدث التوصيات والبروتوكولات (مثل ADA و ESC) مترجمة للعامية أو بالإنجليزية، مع خوارزميات تفاعلية وتحديثات دورية.',
+    icon: <FaStethoscope className="w-5 h-5 sm:w-6 sm:h-6" />,
+    title: 'المساعد الطبي',
+    desc: 'شات طبي سريع يعتمد أولاً على الجايدلاينز المرفوعة. اسأل سؤالاً سريرياً، اختار مصدر محدد لو حابب، وشوف المصادر التي اعتمد عليها الرد عند توفرها.',
     color: 'from-brand-600 to-purple-600',
+  },
+  {
+    icon: <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />,
+    title: 'مكتبة الجايدلاينز',
+    desc: 'مكتبة منظمة للأدلة العالمية حسب المصدر والسنة والملف، فيها توصيات وملخصات وجداول وروابط للمصادر الرسمية.',
+    color: 'from-sky-500 to-brand-600',
   },
   {
     icon: <HiOutlineDocumentText className="w-5 h-5 sm:w-6 sm:h-6" />,
@@ -87,20 +93,20 @@ const FEATURES: Feature[] = [
   },
   {
     icon: <FaWandMagicSparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'تنظيف النصوص طبياً بالذكاء الاصطناعي',
+    title: 'تنظيف النصوص طبياً',
     desc: 'اكتب الشكوى والفحص بالعربي أو العاميه أو حتى بأخطاء إملائيه — والتطبيق بيحوّلها في الروشته المطبوعه لمصطلحات طبيّه إنجليزيه سليمه (مثلاً: "نهجان وكحه" → "Dyspnea and cough").',
     color: 'from-brand-500 to-success-500',
   },
   {
     icon: <FaStethoscope className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'تحليل الحالة بالذكاء الاصطناعي',
+    title: 'تحليل الحالة',
     desc: 'ضغطة واحده تطلّعلك ٦ أقسام: تشخيصات تفريقيه (DDx) مرتّبه بالاحتماليه، حالات خطيره لازم تستبعدها (Must Not Miss)، فحوصات مقترحه، تعليمات للمريض، أسئله ناقصه، وعلامات خطر — كل ده مع زر "إضافه" لكل عنصر.',
     color: 'from-slate-500 to-slate-600',
   },
   {
     icon: <FaCapsules className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'قاعده بيانات +5500 دوا مصري',
-    desc: 'بحث بالاسم التجاري أو العلمي أو الاستخدام أو الأعراض — جرعات تلقائيه بالعمر والوزن، أسعار محدّثه، أشكال صيدلانيه، وتحذيرات الاستخدام. وتقدر تضيف أدويه نادره من عندك.',
+    title: 'قاعده بيانات +5300 دوا مصري',
+    desc: 'بحث بالاسم التجاري أو العلمي أو الاستخدام أو الأعراض — جرعات تلقائيه بالعمر والوزن حسب بيانات الدواء، أسعار مسجّلة، أشكال صيدلانيه، وتحذيرات الاستخدام. وتقدر تضيف أدويه نادره من عندك.',
     color: 'from-slate-500 to-danger-600',
   },
   {
@@ -118,7 +124,7 @@ const FEATURES: Feature[] = [
   {
     icon: <HiOutlineCalendarDays className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'حجز المواعيد إلكترونياً',
-    desc: 'رابط حجز مخصّص لعيادتك — المرضى بيحجزوا من موبايلهم بحساب جوجل، وكل حجز جديد بيوصلك إشعار فوري على شاشتك. مع تأكيد تلقائي على الواتساب.',
+    desc: 'رابط حجز مخصّص لعيادتك — المرضى بيحجزوا من موبايلهم، وتقدر تشترط تسجيل دخول Google قبل تأكيد الحجز لو حابب. كل حجز جديد يظهر في المواعيد ويوصلك تنبيه داخل التطبيق.',
     color: 'from-success-500 to-brand-600',
   },
   {
@@ -135,8 +141,8 @@ const FEATURES: Feature[] = [
   },
   {
     icon: <FaWandMagicSparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'تقرير طبي شامل بالذكاء الاصطناعي',
-    desc: 'بضغطه واحده، الذكاء الاصطناعي بيلخّص كل زيارات المريض وتشخيصاته وأدويته في تقرير طبي احترافي قابل للطباعه (عربي أو إنجليزي، A4 أو A5).',
+    title: 'تقرير طبي شامل',
+    desc: 'بضغطه واحده، النظام بيلخّص كل زيارات المريض وتشخيصاته وأدويته في تقرير طبي احترافي قابل للطباعه (عربي أو إنجليزي، A4 أو A5).',
     color: 'from-brand-500 to-warning-500',
   },
   {
@@ -154,7 +160,7 @@ const FEATURES: Feature[] = [
   {
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5 sm:w-6 sm:h-6" />,
     title: 'إدارة فروع متعددة',
-    desc: 'أدر أكتر من فرع لعيادتك — كل فرع بأسعاره وشركات تأمينه ومواعيده وسكرتاريته وتقاريره الماليه المستقله. تبدّل بين الفروع بضغطه.',
+    desc: 'أدر أكتر من فرع حسب حدود باقتك — كل فرع بأسعاره وشركات تأمينه ومواعيده وسكرتاريته وتقاريره الماليه المستقله. تبدّل بين الفروع بضغطه.',
     color: 'from-slate-500 to-slate-700',
   },
   {
@@ -165,14 +171,14 @@ const FEATURES: Feature[] = [
   },
   {
     icon: <HiOutlineBell className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'إشعارات فورية + يشتغل أوفلاين',
-    desc: 'تنبيهات لحظيه على المتصفح والموبايل لكل حجز/طلب دخول/تحديث. التطبيق PWA — يشتغل لو النت ضعيف ويتزامن لما يرجع.',
+    title: 'إشعارات فورية + دعم ضعف الاتصال',
+    desc: 'تنبيهات لحظيه على المتصفح والموبايل لكل حجز أو طلب دخول من السكرتارية. التطبيق PWA وبيستخدم كاش ومزامنة في أجزاء من الشغل عشان يفضل عملي مع ضعف الاتصال.',
     color: 'from-slate-500 to-slate-600',
   },
   {
     icon: <HiOutlineShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />,
-    title: 'حماية وتشفير كامل',
-    desc: 'بيانات المرضى مشفّره بالكامل مع نسخ احتياطي تلقائي. صلاحيات مخصّصه لكل مستخدم (طبيب/سكرتاريه). تسجيل دخول آمن بحساب جوجل.',
+    title: 'حماية وصلاحيات مخصّصة',
+    desc: 'تسجيل دخول آمن بحساب Google للأطباء، وصلاحيات منفصلة للطبيب والسكرتارية، مع قواعد Firestore تحدد مين يقدر يقرأ أو يكتب بيانات العيادة.',
     color: 'from-success-500 to-success-600',
   },
 ];
@@ -218,12 +224,12 @@ export const LandingPage: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-6 sm:gap-10 pt-1 lg:self-center">
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-brand-600"><Counter target={5500} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-brand-600"><Counter target={5300} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">دواء</div>
                   </div>
                   <div className="w-px h-9 bg-slate-200" />
                   <div className="text-center">
-                    <div className="text-2xl sm:text-3xl font-black text-slate-600"><Counter target={200} suffix="+" /></div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-600"><Counter target={20} suffix="+" /></div>
                     <div className="text-[11px] sm:text-xs font-bold text-slate-500 mt-0.5">ميزة</div>
                   </div>
                 </div>
@@ -255,7 +261,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ══════════ الجايدلاينز التفاعلية ══════════ */}
+      {/* ══════════ المساعد الطبي + مكتبة الجايدلاينز ══════════ */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-400 via-slate-900 to-slate-900"></div>
         <div className="max-w-6xl mx-auto relative z-10">
@@ -264,24 +270,25 @@ export const LandingPage: React.FC = () => {
               <div className="flex-1 text-center lg:text-right text-white">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 ring-1 ring-white/20 mb-6">
                   <HiOutlineSparkles className="w-4 h-4 text-brand-300" />
-                  <span className="text-xs font-bold text-brand-100">ميزة حصرية ومجانية</span>
+                  <span className="text-xs font-bold text-brand-100">قسمان منفصلان لطبيب العيادة</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-black mb-4 leading-tight">
-                  أول مكتبة <span className="text-transparent bg-clip-text bg-gradient-to-l from-brand-400 to-purple-400">جايدلاينز طبية تفاعلية</span> مصممة لطبيب العيادة في مصر
+                <h2 className="text-3xl sm:text-4xl font-black mb-4 leading-tight space-y-1">
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-l from-brand-400 to-purple-400">المساعد الطبي</span>
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-l from-sky-300 to-brand-300">مكتبة الجايدلاينز</span>
                 </h2>
                 <p className="text-slate-300 font-semibold leading-relaxed mb-8 text-sm sm:text-base">
-                  وداعاً للبحث في مئات الصفحات المعقدة من الـ PDF. قمنا بتحويل أحدث التوصيات الطبية العالمية (مثل <b>ADA للسكري</b>، و<b>ESC للقلب</b>، وغيرها) إلى بطاقات تفاعلية ذكية.
+                  المساعد الطبي للشات والسؤال السريع، ومكتبة الجايدلاينز للتصفح المنظم حسب المصدر والسنة والملف. كل واحد له مكان واضح داخل التطبيق، والمكتبة تضم مصادر عالمية مثل <b>ADA</b>، <b>ESC</b>، و <b>GINA</b>.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4 text-right">
                   <div className="bg-white/5 p-4 rounded-2xl ring-1 ring-white/10">
-                    <HiOutlineBookOpen className="w-6 h-6 text-brand-400 mb-2" />
-                    <h4 className="text-white font-bold text-sm mb-1">توصيات مبسطة بالعامية</h4>
-                    <p className="text-slate-400 text-xs">اقرأ الجايدلاينز باللغة الإنجليزية أو مشروحة ببساطة بالعامية المصرية لسرعة الاستيعاب وتطبيقها في عيادتك.</p>
+                    <FaWandMagicSparkles className="w-6 h-6 text-purple-400 mb-2" />
+                    <h4 className="text-white font-bold text-sm mb-1">المساعد الطبي</h4>
+                    <p className="text-slate-400 text-xs">اطرح أسئلتك السريرية وسيبحث المساعد أولاً في الجايدلاينز، مع عرض المصادر عند توفرها وتوضيح ما هو خارج النص المرفوع.</p>
                   </div>
                   <div className="bg-white/5 p-4 rounded-2xl ring-1 ring-white/10">
-                    <HiOutlineSparkles className="w-6 h-6 text-purple-400 mb-2" />
-                    <h4 className="text-white font-bold text-sm mb-1">خوارزميات تفاعلية ذكية</h4>
-                    <p className="text-slate-400 text-xs">شجرة قرارات تفاعلية بتسهل عليك الوصول للخطوة القادمة في العلاج بخطوات بسيطة وواضحة.</p>
+                    <HiOutlineBookOpen className="w-6 h-6 text-brand-400 mb-2" />
+                    <h4 className="text-white font-bold text-sm mb-1">مكتبة الجايدلاينز</h4>
+                    <p className="text-slate-400 text-xs">توصيات ومخططات سريرية منظمة، مع شرح مبسط باللغتين العربية والإنجليزية وروابط للمصادر الرسمية لتسريع القرار.</p>
                   </div>
                 </div>
               </div>
@@ -300,7 +307,7 @@ export const LandingPage: React.FC = () => {
                         <div className="h-16 bg-blue-50 rounded-xl border border-blue-100 p-2"><div className="w-1/2 h-3 bg-blue-200 rounded mb-2"></div><div className="w-full h-2 bg-blue-100 rounded"></div></div>
                         <div className="h-16 bg-purple-50 rounded-xl border border-purple-100 p-2"><div className="w-1/2 h-3 bg-purple-200 rounded mb-2"></div><div className="w-full h-2 bg-purple-100 rounded"></div></div>
                       </div>
-                      <div className="absolute bottom-4 left-4 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Dr Hyper Med Exclusive</div>
+                      <div className="absolute bottom-4 left-4 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">مصادر واضحة</div>
                     </div>
                   </div>
                 </div>
@@ -341,7 +348,7 @@ export const LandingPage: React.FC = () => {
                     <span className="text-[10px] font-black bg-brand-600 text-white px-2 py-0.5 rounded-full">جديد</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 font-semibold leading-snug mt-0.5">
-                    شوف كل ميزات التطبيق خطوه بخطوه قبل ما تسجّل — 10 مواضيع مرتّبه بالترتيب اللي هتستخدمه.
+                    شوف كل ميزات التطبيق خطوه بخطوه قبل ما تسجّل — مواضيع مرتّبه بنفس ترتيب التطبيق وفئات الاشتراك.
                   </p>
                 </div>
               </div>
@@ -427,7 +434,7 @@ export const LandingPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
             <FaShieldHalved className="w-3 h-3" />
-            جميع البيانات مشفّرة ومحمية
+            بيانات العيادة محمية بصلاحيات واضحة
           </div>
         </div>
       </footer>

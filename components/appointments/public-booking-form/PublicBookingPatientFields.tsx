@@ -96,7 +96,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
   return (
     <>
       <div className="relative">
-        <label className="block text-xs font-bold text-slate-500 mb-1.5">رقم التليفون</label>
+        <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">رقم التليفون</label>
         <div className="relative">
           <FaPhone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input
@@ -107,7 +107,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
             onChange={(e) => onPhoneChange(e.target.value)}
             maxLength={maxPhoneLength}
             placeholder="01xxxxxxxxx"
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 pl-9 font-bold text-slate-800 outline-none transition-colors focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 pl-9 font-bold text-slate-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100 focus:shadow-sm"
             dir="ltr"
           />
         </div>
@@ -144,14 +144,14 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
       </div>
 
       <div className="relative">
-        <label className="block text-xs font-bold text-slate-500 mb-1.5">اسم المريض</label>
+        <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">اسم المريض</label>
         <input
           type="text"
           value={patientName}
           onChange={(e) => onPatientNameChange(e.target.value)}
           maxLength={maxNameLength}
           placeholder="الاسم الكامل"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 font-bold text-slate-800 outline-none transition-colors focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 font-bold text-slate-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100 focus:shadow-sm"
           dir="rtl"
         />
       </div>
@@ -159,7 +159,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
       {/* السن ثم الجنس في صف واحد على الشاشات الأكبر من الموبايل (بدون فراغات) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5">السن</label>
+          <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">السن</label>
           <AgeUnitInput
             ageString={age}
             onAgeChange={onAgeChange}
@@ -170,7 +170,7 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
         </div>
         {/* الجنس بعد السن مباشرة — ثابت للمريض، ينتقل تلقائي في الحجوزات القادمة */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5">الجنس</label>
+          <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">الجنس</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -265,13 +265,13 @@ export const PublicBookingPatientFields: React.FC<PublicBookingPatientFieldsProp
           onChange={(e) => onVisitReasonChange(e.target.value)}
           maxLength={maxReasonLength}
           placeholder="مثال: كشف دوري، متابعة... (اختياري)"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 font-bold text-slate-800 outline-none transition-colors focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 font-bold text-slate-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100 focus:shadow-sm"
           dir="rtl"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-slate-500 mb-1.5">هل هي أول زيارة؟</label>
+        <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">هل هي أول زيارة؟</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"

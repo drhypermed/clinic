@@ -22,6 +22,13 @@ import {
   normalizeDrugForKey,
   setCache,
 } from './aiResultsCache';
+import {
+  buildDrugNameMatchMap,
+  buildResolvedDrugPromptList,
+  normalizeDrugIdentityText,
+  resolveDrugIdentities,
+  type ResolvedDrugIdentity,
+} from './drugIdentityResolutionService';
 
 // ─── أنواع النتيجة الخارجية ──────────────────────────────────────────────
 /** تصنيف السلامة العام — 4 مستويات عملية للطبيب */
@@ -145,7 +152,11 @@ const normalizeDrugForMatch = (name: string): string => {
  *   3) لو لقيناه → نستبدل اسم الموديل بالاسم الأصلي للعرض المتسق.
  *   4) لو مش موجود → نتجاهل التقييم (anti-hallucination guard).
  */
-const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResult => {
+const sanitizeResult = (
+  raw: unknown,
+  drugNames: string[],
+  resolvedIdentities: ResolvedDrugIdentity[] = [],
+): PregnancySafetyResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
   // خريطة: اسم مُطبَّع → الاسم الأصلي
@@ -156,6 +167,7 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResul
       inputByNormalized.set(norm, original);
     }
   }
+  const resolvedNameMap = buildDrugNameMatchMap(resolvedIdentities);
 
   const rawAssessments = Array.isArray(obj.assessments) ? obj.assessments : [];
   const assessments: PregnancyDrugAssessment[] = [];
@@ -166,7 +178,8 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): PregnancySafetyResul
     if (!rawName) continue;
 
     // نطبّع ونحاول نلاقي الاسم الأصلي في قائمة الطبيب
-    const matched = inputByNormalized.get(normalizeDrugForMatch(rawName));
+    const matched = resolvedNameMap.get(normalizeDrugIdentityText(rawName))
+      || inputByNormalized.get(normalizeDrugForMatch(rawName));
     if (!matched) continue; // anti-hallucination: الاسم مش في القائمة
 
     assessments.push({
@@ -220,6 +233,8 @@ export const checkPregnancySafety = async (
     };
   }
 
+  const resolvedIdentities = await resolveDrugIdentities(cleaned, userId, 'pregnancy_safety');
+
   // ─── فحص الكاش per-drug ────────────────────────────────────────────────
   // كل دواء ليه entry منفصل في الكاش (لأن تقييم كل دواء مستقل عن الباقي).
   // كدا لو الطبيب فحص Panadol + Augmentin قبل كدا، ودلوقتي بيفحص Panadol + Zyrtec،
@@ -227,7 +242,7 @@ export const checkPregnancySafety = async (
   // بنعمل الـ lookups كلها بالـ parallel عشان ما نستنّاش لكل دواء ديسكه.
   const cacheLookups = await Promise.all(
     cleaned.map(async (drug) => {
-      const subkey = normalizeDrugForKey(drug);
+      const subkey = `v3:${normalizeDrugForKey(normalizeDrugIdentityText(drug) || drug)}`;
       const cached = await getCache<PregnancyDrugAssessment>(
         CACHE_KIND_PREGNANCY_SAFETY,
         userId,
@@ -259,12 +274,15 @@ export const checkPregnancySafety = async (
   }
 
   // قائمة مرقّمة — فقط الأدوية اللي مش في الكاش
-  const drugList = drugsToFetch.map((d, i) => `${i + 1}. ${d}`).join('\n');
+  const identitiesToFetch = resolvedIdentities.filter((identity) => drugsToFetch.includes(identity.original));
+  const drugList = buildResolvedDrugPromptList(identitiesToFetch);
 
   const prompt = `You are a senior obstetric + lactation clinical pharmacist. Assess the safety of each drug BOTH in pregnancy AND in lactation. Base EVERY assessment on established references (FDA Pregnancy Category, ACOG, Briggs Drugs in Pregnancy & Lactation, LactMed/NIH, TGA). DO NOT speculate, guess, or invent data.
 
-DRUGS (exactly as written in prescription):
+DRUGS (internet-resolved before this pregnancy/lactation check):
 ${drugList}
+
+IMPORTANT: each numbered item has an "Original" line. Use only those exact Original names in drugName. Canonical names and active ingredients are only identity aids from internet search.
 
 CATEGORIZATION STANDARDS (USE THESE EXACT SCALES)
 - Pregnancy → FDA Category: A | B | C | D | X  (empty only if truly unknown)
@@ -342,14 +360,14 @@ OUTPUT (strict JSON, no fences, no prose):
 
     // sanitize يقيّد النتائج على أسماء drugsToFetch فقط (مش كل cleaned)
     // عشان ما يحصلش overlap مع اللي في الكاش
-    const apiResult = sanitizeResult(parsed, drugsToFetch);
+    const apiResult = sanitizeResult(parsed, drugsToFetch, identitiesToFetch);
 
     // ─── حفظ كل دواء جديد في الكاش ────────────────────────────────────────
     // نحفظ كل assessment بمفتاح منفصل = normalized drug name → قابل لإعادة
     // الاستخدام لأي روشتة مستقبلية فيها نفس الدواء.
     // setCache أصبح async (IndexedDB) فنستخدم void — الحفظ في الخلفية ما يعطلش الـ return.
     for (const assessment of apiResult.assessments) {
-      const subkey = normalizeDrugForKey(assessment.drugName);
+      const subkey = `v3:${normalizeDrugForKey(normalizeDrugIdentityText(assessment.drugName) || assessment.drugName)}`;
       void setCache(CACHE_KIND_PREGNANCY_SAFETY, userId, subkey, assessment);
     }
 

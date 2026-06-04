@@ -48,13 +48,22 @@ const sanitizePublicBranches = (raw: unknown): PublicBranchInfo[] => {
   const result: PublicBranchInfo[] = [];
   for (const item of raw) {
     if (!item || typeof item !== 'object') continue;
-    const entry = item as { id?: unknown; name?: unknown; address?: unknown; isActive?: unknown };
+    const entry = item as { id?: unknown; name?: unknown; address?: unknown; formTitle?: unknown; contactInfo?: unknown; isActive?: unknown };
     const id = typeof entry.id === 'string' ? entry.id.trim() : '';
     const name = typeof entry.name === 'string' ? entry.name.trim() : '';
     if (!id || !name) continue;
     const address = typeof entry.address === 'string' ? entry.address.trim() : '';
+    const formTitle = typeof entry.formTitle === 'string' ? entry.formTitle.trim() : '';
+    const contactInfo = typeof entry.contactInfo === 'string' ? entry.contactInfo.trim() : '';
     const isActive = entry.isActive !== false; // default: true
-    result.push({ id, name, address: address || undefined, isActive });
+    result.push({
+      id,
+      name,
+      address: address || undefined,
+      formTitle: formTitle || undefined,
+      contactInfo: contactInfo || undefined,
+      isActive,
+    });
   }
   return result;
 };

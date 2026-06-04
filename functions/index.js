@@ -117,6 +117,13 @@ const SECRETARY_CALLABLE_OPTIONS = {
   enforceAppCheck: false,
 };
 
+const GUIDELINES_SEARCH_CALLABLE_OPTIONS = {
+  ...SECRETARY_CALLABLE_OPTIONS,
+  memory: '1GiB',
+  timeoutSeconds: 180,
+  concurrency: 4,
+};
+
 const ACCOUNT_CONTROLS_CALLABLE_OPTIONS = {
   ...BASE_CALLABLE_OPTIONS,
   enforceAppCheck: ACCOUNT_CONTROLS_ENFORCE_APP_CHECK,
@@ -408,7 +415,12 @@ exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00',
 exports.runExpiredSubscriptionsCheckNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/subscriptionFunctions', 'runExpiredSubscriptionsCheckNow'));
 
 // --- Guidelines Search Functions ---
-exports.searchGuidelineIndex = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/guidelinesSearchFunction', 'searchGuidelineIndex'));
+exports.searchGuidelineIndex = onCall({
+  ...GUIDELINES_SEARCH_CALLABLE_OPTIONS,
+  secrets: [GEMINI_API_KEY],
+}, lazy('./src/functions/guidelinesSearchFunction', 'searchGuidelineIndex'));
+exports.listGuidelineBooks = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/guidelinesSearchFunction', 'listGuidelineBooks'));
+exports.getGuidelineBookText = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/guidelinesSearchFunction', 'getGuidelineBookText'));
 
 // --- SEO Functions (sitemap + robots) ---
 // الـresponse مكاشّش على CDN لـ24 ساعه — الـFirestore reads تقريباً = 1 في اليوم.

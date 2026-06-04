@@ -115,9 +115,9 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
         // خلفيّه موحّده مع هويّة الطبيب (blue/indigo) — اتغيّرت من teal/cyan
         // عشان الجمهور يتّحد مع لون السايد بار وأزرار الحجز.
         background:
-          'radial-gradient(1200px 320px at 85% -10%, rgba(59,130,246,0.25), transparent 58%),' +
-          'radial-gradient(900px 280px at -12% 0%, rgba(99,102,241,0.20), transparent 60%),' +
-          'linear-gradient(180deg, #dbeafe 0%, #eff6ff 50%, #f5f3ff 100%)',
+          'radial-gradient(980px 220px at 85% -14%, rgba(59,130,246,0.16), transparent 56%),' +
+          'radial-gradient(760px 200px at -12% -6%, rgba(99,102,241,0.13), transparent 58%),' +
+          'linear-gradient(180deg, #eff6ff 0%, #f8fbff 46%, #ffffff 100%)',
       }}
     >
       {/* Schema.org ItemList — ميظهرش في الـUI بس بيتحط في <head> لجوجل */}
@@ -135,12 +135,12 @@ export const PublicDoctorsDirectoryPage: React.FC<PublicDoctorsDirectoryPageProp
 
       {/* Content area — offset right for the desktop sidebar */}
       <div className="md:mr-60">
-        <div className="max-w-7xl mx-auto px-4 pt-3">
+        <div className="max-w-7xl mx-auto px-4">
           <AppUpdateBroadcastBanner audience="public" scopeId={props.user?.uid || undefined} />
         </div>
         <InAppAudienceNotificationPopup audience="public" scopeIds={[props.user?.uid || '']} />
 
-        <main className="max-w-7xl mx-auto px-4 pt-20 pb-6 md:pt-6 md:pb-8">
+        <main className="max-w-7xl mx-auto px-4 pt-16 pb-6 md:pt-4 md:pb-8">
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-600">
             <span className="hover:text-brand-600 cursor-pointer transition-colors">الرئيسية</span>

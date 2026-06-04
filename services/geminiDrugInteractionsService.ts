@@ -20,6 +20,13 @@ import {
   hashDrugList,
   setCache,
 } from './aiResultsCache';
+import {
+  buildDrugNameMatchMap,
+  buildResolvedDrugPromptList,
+  normalizeDrugIdentityText,
+  resolveDrugIdentities,
+  type ResolvedDrugIdentity,
+} from './drugIdentityResolutionService';
 
 // ─── أنواع النتيجة الخارجية ──────────────────────────────────────────────
 /** خطورة التداخل — 4 مستويات معتمدة طبياً */
@@ -32,6 +39,7 @@ export interface DrugInteraction {
   severity: InteractionSeverity; // مستوى الخطورة
   mechanism: string;        // الآلية باختصار (عربي بسيط)
   recommendation: string;   // التوصية السريرية (عربي بسيط)
+  source?: string;           // مصدر مختصر موثوق عند توفره
 }
 
 /** نتيجة الفحص الكاملة */
@@ -73,6 +81,8 @@ const normalizeDrugForMatch = (name: string): string => {
   return name
     .toLowerCase()
     .trim()
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+    .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
     // أي محتوى داخل أقواس — غالباً جرعة أو شكل صيدلاني
     .replace(/\([^)]*\)|\[[^\]]*\]/g, ' ')
     // أرقام متبوعة بوحدات الجرعة الشائعة (مع \b بعدها لمنع match جزئي)
@@ -86,6 +96,281 @@ const normalizeDrugForMatch = (name: string): string => {
     .trim();
 };
 
+type DrugIdentity = {
+  original: string;
+  normalized: string;
+  keys: Set<string>;
+};
+
+type IdentityRule = {
+  key: string;
+  aliases: string[];
+};
+
+const IDENTITY_RULES: IdentityRule[] = [
+  { key: 'warfarin', aliases: ['warfarin', 'marevan', 'coumadin'] },
+  { key: 'apixaban', aliases: ['apixaban', 'eliquis'] },
+  { key: 'rivaroxaban', aliases: ['rivaroxaban', 'xarelto'] },
+  { key: 'dabigatran', aliases: ['dabigatran', 'pradaxa'] },
+  { key: 'enoxaparin', aliases: ['enoxaparin', 'clexane', 'lovenox'] },
+  { key: 'aspirin', aliases: ['aspirin', 'acetylsalicylic', 'jusprin', 'aspocid', 'disprin'] },
+  { key: 'clopidogrel', aliases: ['clopidogrel', 'plavix', 'plavix plus'] },
+  { key: 'ibuprofen', aliases: ['ibuprofen', 'brufen', 'advil', 'motrin'] },
+  { key: 'diclofenac', aliases: ['diclofenac', 'voltaren', 'olfen', 'cataflam'] },
+  { key: 'naproxen', aliases: ['naproxen', 'naprosyn', 'anaprox'] },
+  { key: 'celecoxib', aliases: ['celecoxib', 'celebrex'] },
+  { key: 'spironolactone', aliases: ['spironolactone', 'aldactone'] },
+  { key: 'potassium', aliases: ['potassium', 'kcl', 'slow k', 'potassium chloride'] },
+  { key: 'trimethoprim_sulfamethoxazole', aliases: ['trimethoprim sulfamethoxazole', 'co trimoxazole', 'bactrim', 'septrin', 'trimethoprim', 'sulfamethoxazole'] },
+  { key: 'enalapril', aliases: ['enalapril', 'ezapril', 'renitec'] },
+  { key: 'lisinopril', aliases: ['lisinopril', 'zestril'] },
+  { key: 'ramipril', aliases: ['ramipril', 'tritace'] },
+  { key: 'losartan', aliases: ['losartan', 'cozaar'] },
+  { key: 'valsartan', aliases: ['valsartan', 'diovan'] },
+  { key: 'candesartan', aliases: ['candesartan', 'atacand'] },
+  { key: 'furosemide', aliases: ['furosemide', 'frusemide', 'lasix'] },
+  { key: 'hydrochlorothiazide', aliases: ['hydrochlorothiazide', 'hctz'] },
+  { key: 'clarithromycin', aliases: ['clarithromycin', 'klacid', 'claritt'] },
+  { key: 'erythromycin', aliases: ['erythromycin', 'erythrocin'] },
+  { key: 'azithromycin', aliases: ['azithromycin', 'zithromax', 'azrolid'] },
+  { key: 'ciprofloxacin', aliases: ['ciprofloxacin', 'cipro', 'ciprobay', 'ciproxin'] },
+  { key: 'levofloxacin', aliases: ['levofloxacin', 'tavanic', 'levaquin'] },
+  { key: 'amiodarone', aliases: ['amiodarone', 'cordarone'] },
+  { key: 'digoxin', aliases: ['digoxin', 'lanoxin'] },
+  { key: 'simvastatin', aliases: ['simvastatin', 'zocor'] },
+  { key: 'atorvastatin', aliases: ['atorvastatin', 'lipitor', 'ator'] },
+  { key: 'rosuvastatin', aliases: ['rosuvastatin', 'crestor'] },
+  { key: 'fluoxetine', aliases: ['fluoxetine', 'prozac'] },
+  { key: 'sertraline', aliases: ['sertraline', 'zoloft', 'lustral'] },
+  { key: 'citalopram', aliases: ['citalopram', 'cipram'] },
+  { key: 'escitalopram', aliases: ['escitalopram', 'cipralex'] },
+  { key: 'venlafaxine', aliases: ['venlafaxine', 'effexor'] },
+  { key: 'duloxetine', aliases: ['duloxetine', 'cymbalta'] },
+  { key: 'tramadol', aliases: ['tramadol', 'tramal', 'contramal'] },
+  { key: 'ondansetron', aliases: ['ondansetron', 'zofran'] },
+  { key: 'sildenafil', aliases: ['sildenafil', 'viagra'] },
+  { key: 'tadalafil', aliases: ['tadalafil', 'cialis'] },
+  { key: 'nitroglycerin', aliases: ['nitroglycerin', 'glyceryl trinitrate', 'gtN', 'nitroderm', 'nitrostat'] },
+  { key: 'isosorbide', aliases: ['isosorbide', 'isordil', 'imdur', 'mononitrate', 'dinitrate'] },
+  { key: 'methotrexate', aliases: ['methotrexate', 'mtx'] },
+  { key: 'azathioprine', aliases: ['azathioprine', 'imuran'] },
+  { key: 'allopurinol', aliases: ['allopurinol', 'zyloric'] },
+];
+
+const GROUPS: Record<string, string[]> = {
+  anticoagulant: ['warfarin', 'apixaban', 'rivaroxaban', 'dabigatran', 'enoxaparin'],
+  doac: ['apixaban', 'rivaroxaban', 'dabigatran'],
+  antiplatelet: ['aspirin', 'clopidogrel'],
+  nsaid: ['ibuprofen', 'diclofenac', 'naproxen', 'celecoxib'],
+  acei_arb: ['enalapril', 'lisinopril', 'ramipril', 'losartan', 'valsartan', 'candesartan'],
+  diuretic: ['furosemide', 'hydrochlorothiazide', 'spironolactone'],
+  potassium_raising: ['spironolactone', 'potassium', 'trimethoprim_sulfamethoxazole'],
+  qt_risk: ['amiodarone', 'azithromycin', 'clarithromycin', 'erythromycin', 'ciprofloxacin', 'levofloxacin', 'citalopram', 'escitalopram', 'ondansetron'],
+  strong_cyp3a4_inhibitor: ['clarithromycin', 'erythromycin'],
+  cyp3a4_statin: ['simvastatin', 'atorvastatin'],
+  serotonergic_antidepressant: ['fluoxetine', 'sertraline', 'citalopram', 'escitalopram', 'venlafaxine', 'duloxetine'],
+  pde5: ['sildenafil', 'tadalafil'],
+  nitrate: ['nitroglycerin', 'isosorbide'],
+};
+
+const keyInGroup = (key: string, group: keyof typeof GROUPS): boolean => GROUPS[group].includes(key);
+
+const resolveDrugIdentity = (original: string): DrugIdentity => {
+  const normalized = normalizeDrugForMatch(original);
+  const padded = ` ${normalized} `;
+  const keys = new Set<string>();
+
+  for (const rule of IDENTITY_RULES) {
+    for (const alias of rule.aliases) {
+      const normalizedAlias = normalizeDrugForMatch(alias);
+      if (!normalizedAlias) continue;
+      if (padded.includes(` ${normalizedAlias} `) || normalizedAlias.includes(normalized)) {
+        keys.add(rule.key);
+      }
+    }
+  }
+
+  if (!keys.size && normalized) keys.add(normalized);
+  return { original, normalized, keys };
+};
+
+const buildIdentityMap = (drugNames: string[]): Map<string, DrugIdentity> =>
+  new Map(drugNames.map((name) => [name, resolveDrugIdentity(name)]));
+
+const identitiesMatch = (identity: DrugIdentity, candidateName: string): boolean => {
+  const candidate = resolveDrugIdentity(candidateName);
+  if (identity.normalized && candidate.normalized === identity.normalized) return true;
+  for (const key of candidate.keys) {
+    if (identity.keys.has(key)) return true;
+  }
+  return false;
+};
+
+type LocalInteractionRule = {
+  id: string;
+  source: string;
+  severity: InteractionSeverity;
+  when: (a: string, b: string, allKeys: Set<string>) => boolean;
+  mechanism: string;
+  recommendation: string;
+};
+
+const pair = (a: string, b: string, pred: (x: string, y: string) => boolean) => pred(a, b) || pred(b, a);
+
+const LOCAL_INTERACTION_RULES: LocalInteractionRule[] = [
+  {
+    id: 'pde5-nitrate',
+    source: 'FDA Label / BNF',
+    severity: 'contraindicated',
+    when: (a, b) => pair(a, b, (x, y) => keyInGroup(x, 'pde5') && keyInGroup(y, 'nitrate')),
+    mechanism: 'توسع وعائي تراكمي عبر nitric oxide/cGMP يسبب هبوط ضغط شديد.',
+    recommendation: 'ممنوع الجمع. افصل حسب مدة مفعول الدواء واستبدل أحدهما.',
+  },
+  {
+    id: 'allopurinol-azathioprine',
+    source: 'FDA Label / Stockley',
+    severity: 'contraindicated',
+    when: (a, b) => pair(a, b, (x, y) => x === 'allopurinol' && y === 'azathioprine'),
+    mechanism: 'Allopurinol يثبط أيض azathioprine فيرفع سمية نخاع العظم.',
+    recommendation: 'تجنب الجمع؛ إن اضطررت استخدم جرعة azathioprine منخفضة جدا ومراقبة CBC صارمة.',
+  },
+  {
+    id: 'anticoagulant-antiplatelet-nsaid',
+    source: 'Lexicomp / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => keyInGroup(x, 'anticoagulant') && (keyInGroup(y, 'antiplatelet') || keyInGroup(y, 'nsaid'))),
+    mechanism: 'تأثير مضاد للتجلط/الصفائح أو تهيج معدي تراكمي يزيد خطر النزيف.',
+    recommendation: 'تجنب إن أمكن؛ إن لزم فحدد مدة قصيرة وراقب نزيف/CBC وفكر في حماية معدة.',
+  },
+  {
+    id: 'ssri-nsaid-anticoagulant',
+    source: 'Lexicomp / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => keyInGroup(x, 'serotonergic_antidepressant') && (keyInGroup(y, 'nsaid') || keyInGroup(y, 'anticoagulant'))),
+    mechanism: 'تثبيط serotonin الصفائح مع NSAID/anticoagulant يزيد النزيف خصوصا الهضمي.',
+    recommendation: 'راقب النزيف؛ تجنب NSAID المزمن وفكر في بديل أو PPI عند الخطورة.',
+  },
+  {
+    id: 'ace-arb-potassium',
+    source: 'Lexicomp / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => keyInGroup(x, 'acei_arb') && keyInGroup(y, 'potassium_raising')),
+    mechanism: 'تثبيط RAAS مع دواء رافع للبوتاسيوم يزيد hyperkalemia والفشل الكلوي.',
+    recommendation: 'راقب K/creatinine خلال 3-7 أيام؛ تجنب الجمع عالي الخطورة أو خفض الجرعات.',
+  },
+  {
+    id: 'nsaid-ace-arb-diuretic',
+    source: 'Lexicomp / Stockley',
+    severity: 'major',
+    when: (a, b, all) => pair(a, b, (x, y) => keyInGroup(x, 'nsaid') && keyInGroup(y, 'acei_arb')) && [...all].some((key) => keyInGroup(key, 'diuretic')),
+    mechanism: 'NSAID + RAAS blocker + diuretic يقلل perfusion الكلى ويرفع AKI.',
+    recommendation: 'تجنب الثلاثي خصوصا مع الجفاف/كبار السن؛ راقب creatinine وK مبكرا.',
+  },
+  {
+    id: 'qt-risk-combo',
+    source: 'CredibleMeds / Lexicomp',
+    severity: 'major',
+    when: (a, b) => a !== b && keyInGroup(a, 'qt_risk') && keyInGroup(b, 'qt_risk'),
+    mechanism: 'إطالة QT تراكمية ترفع خطر torsades خاصة مع نقص K/Mg أو مرض قلبي.',
+    recommendation: 'تجنب الجمع عالي الخطورة أو راقب ECG والإلكتروليتات واختر بديل أقل QT.',
+  },
+  {
+    id: 'statin-cyp3a4-inhibitor',
+    source: 'FDA Label / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => keyInGroup(x, 'cyp3a4_statin') && keyInGroup(y, 'strong_cyp3a4_inhibitor')),
+    mechanism: 'تثبيط CYP3A4 يرفع تركيز statin ويزيد myopathy/rhabdomyolysis.',
+    recommendation: 'أوقف simvastatin/atorvastatin مؤقتا أو استخدم بديل مثل rosuvastatin بجرعة مناسبة.',
+  },
+  {
+    id: 'digoxin-pgp-inhibitors',
+    source: 'FDA Label / Lexicomp',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => x === 'digoxin' && ['amiodarone', 'clarithromycin', 'erythromycin'].includes(y)),
+    mechanism: 'تثبيط P-gp يقلل طرح digoxin ويرفع خطر السمية القلبية والهضمية.',
+    recommendation: 'قلل digoxin غالبا وراقب المستوى والنبض وECG وأعراض السمية.',
+  },
+  {
+    id: 'tramadol-serotonergic',
+    source: 'Lexicomp / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => x === 'tramadol' && keyInGroup(y, 'serotonergic_antidepressant')),
+    mechanism: 'تأثير serotonergic وخفض عتبة التشنج يزيد serotonin syndrome/seizures.',
+    recommendation: 'تجنب إن أمكن؛ استخدم مسكن بديل وراقب agitation, tremor, sweating.',
+  },
+  {
+    id: 'methotrexate-tmp-smx',
+    source: 'FDA Label / Stockley',
+    severity: 'major',
+    when: (a, b) => pair(a, b, (x, y) => x === 'methotrexate' && y === 'trimethoprim_sulfamethoxazole'),
+    mechanism: 'تثبيط folate وطرح كلوي متداخل يرفع pancytopenia وسمية methotrexate.',
+    recommendation: 'تجنب الجمع؛ إن اضطررت راقب CBC/creatinine عن قرب وابحث عن بديل مضاد حيوي.',
+  },
+];
+
+export const getLocalDrugInteractions = (cleaned: string[]): DrugInteraction[] => {
+  const identities = cleaned.map(resolveDrugIdentity);
+  const allKeys = new Set(identities.flatMap((identity) => [...identity.keys]));
+  const interactions: DrugInteraction[] = [];
+  const seen = new Set<string>();
+
+  for (let i = 0; i < identities.length; i += 1) {
+    for (let j = i + 1; j < identities.length; j += 1) {
+      for (const keyA of identities[i].keys) {
+        for (const keyB of identities[j].keys) {
+          for (const rule of LOCAL_INTERACTION_RULES) {
+            if (!rule.when(keyA, keyB, allKeys)) continue;
+            const dedupeKey = `${rule.id}|${identities[i].original}|${identities[j].original}`;
+            if (seen.has(dedupeKey)) continue;
+            seen.add(dedupeKey);
+            interactions.push({
+              drugA: identities[i].original,
+              drugB: identities[j].original,
+              severity: rule.severity,
+              mechanism: rule.mechanism,
+              recommendation: rule.recommendation,
+              source: rule.source,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return interactions;
+};
+
+const mergeInteractionResults = (
+  localInteractions: DrugInteraction[],
+  aiResult: DrugInteractionsResult,
+): DrugInteractionsResult => {
+  const merged: DrugInteraction[] = [];
+  const seen = new Set<string>();
+
+  for (const interaction of [...localInteractions, ...(aiResult.interactions || [])]) {
+    const a = normalizeDrugForMatch(interaction.drugA);
+    const b = normalizeDrugForMatch(interaction.drugB);
+    const key = [a, b].sort().join('|') + `|${interaction.severity}|${normalizeDrugForMatch(interaction.mechanism)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(interaction);
+  }
+
+  if (merged.length === 0) return aiResult;
+
+  const localSummary = localInteractions.length > 0
+    ? `تم التقاط ${localInteractions.length} تداخل موثق من قاعدة داخلية معتمدة، مع استكمال الفحص بالمراجع السحابية عند توفرها.`
+    : '';
+
+  return {
+    hasInteractions: true,
+    interactions: merged.slice(0, 15),
+    summaryAr: aiResult.summaryAr || localSummary,
+    insufficientData: false,
+    insufficientDataNote: undefined,
+  };
+};
+
 /**
  * تنظيف استجابة الموديل وضمان البنية حتى لو جاء ناقص.
  *
@@ -95,18 +380,23 @@ const normalizeDrugForMatch = (name: string): string => {
  *   3) لو لقيناهم → نستبدل اسم الموديل بالاسم الأصلي (للعرض المتسق).
  *   4) لو واحد منهم مش موجود → نتجاهل التداخل (anti-hallucination guard).
  */
-const sanitizeResult = (raw: unknown, drugNames: string[]): DrugInteractionsResult => {
+const sanitizeResult = (
+  raw: unknown,
+  drugNames: string[],
+  resolvedIdentities: ResolvedDrugIdentity[] = [],
+): DrugInteractionsResult => {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
-  // خريطة: اسم مُطبَّع → الاسم الأصلي. لو فيه دواءين بنفس التطبيع
-  // (نادر) نحتفظ بأول واحد ظهر — الطبيب هيشوف اسم متّسق على أي حال.
-  const inputByNormalized = new Map<string, string>();
-  for (const original of drugNames) {
-    const norm = normalizeDrugForMatch(original);
-    if (norm && !inputByNormalized.has(norm)) {
-      inputByNormalized.set(norm, original);
+  const inputIdentities = buildIdentityMap(drugNames);
+  const resolvedNameMap = buildDrugNameMatchMap(resolvedIdentities);
+  const findMatchedInput = (rawName: string): string | undefined => {
+    const resolvedMatch = resolvedNameMap.get(normalizeDrugIdentityText(rawName));
+    if (resolvedMatch) return resolvedMatch;
+    for (const identity of inputIdentities.values()) {
+      if (identitiesMatch(identity, rawName)) return identity.original;
     }
-  }
+    return undefined;
+  };
 
   const rawInteractions = Array.isArray(obj.interactions) ? obj.interactions : [];
   const interactions: DrugInteraction[] = [];
@@ -119,8 +409,8 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): DrugInteractionsResu
     if (!rawA || !rawB) continue;
 
     // نطبّع اسمي الدوائين ونحاول نلاقيهم في قائمة الطبيب
-    const matchedA = inputByNormalized.get(normalizeDrugForMatch(rawA));
-    const matchedB = inputByNormalized.get(normalizeDrugForMatch(rawB));
+    const matchedA = findMatchedInput(rawA);
+    const matchedB = findMatchedInput(rawB);
     // anti-hallucination: لو دواء واحد مش في القائمة، نرفض التداخل بالكامل
     if (!matchedA || !matchedB) continue;
     // ما نقبلش تداخل دواء مع نفسه (بعد التطبيع)
@@ -133,6 +423,7 @@ const sanitizeResult = (raw: unknown, drugNames: string[]): DrugInteractionsResu
       severity: normalizeSeverity(it.severity),
       mechanism: toTrimmed(it.mechanism),
       recommendation: toTrimmed(it.recommendation),
+      source: toTrimmed(it.source) || toTrimmed(it.reference) || undefined,
     });
   }
 
@@ -178,10 +469,13 @@ export const checkDrugInteractions = async (
     };
   }
 
+  const localInteractions = getLocalDrugInteractions(cleaned);
+  const resolvedIdentities = await resolveDrugIdentities(cleaned, userId, 'drug_interactions');
+
   // ─── فحص الكاش أولاً ────────────────────────────────────────────────────
   // المفتاح = hash لمجموعة الأدوية (مرتّبة ومطبّعة) — يعني ["Panadol","Augmentin"]
   // و ["augmentin","PANADOL"] يعطوا نفس الـ hash ونفس نتيجة الكاش.
-  const cacheKey = hashDrugList(cleaned);
+  const cacheKey = `v3:${hashDrugList(cleaned)}`;
   // IndexedDB async — لازم await
   const cached = await getCache<DrugInteractionsResult>(
     CACHE_KIND_DRUG_INTERACTIONS,
@@ -195,16 +489,28 @@ export const checkDrugInteractions = async (
   }
 
   // قائمة مرقّمة عشان الموديل يلتزم بالأسماء بالظبط (بدون تصحيح أو هلوسة)
-  const drugList = cleaned.map((d, i) => `${i + 1}. ${d}`).join('\n');
+  const localRecognition = cleaned.map((d) => {
+    const identity = resolveDrugIdentity(d);
+    const recognized = [...identity.keys]
+      .filter((key) => key !== identity.normalized)
+      .join(', ');
+    return recognized ? `${d}: ${recognized}` : '';
+  }).filter(Boolean).join('\n');
+  const drugList = buildResolvedDrugPromptList(resolvedIdentities);
 
   const prompt = `You are a senior clinical pharmacist (PharmD, BCPS-level). Analyze drug-drug interactions ONLY between the drugs listed below. Zero tolerance for hallucination or speculation.
 
-DRUGS (exactly as written in prescription):
+DRUGS (internet-resolved before this interaction check):
 ${drugList}
+
+LOCAL RECOGNITION KEYS:
+${localRecognition || 'none'}
+
+IMPORTANT: each numbered item has an "Original" line. Use only those exact Original names in drugA/drugB. Canonical names and active ingredients are only identity aids from internet search.
 
 ═══ ABSOLUTE ANTI-HALLUCINATION RULES ═══
 1. Only report interactions documented in Lexicomp, Stockley's Drug Interactions, or Micromedex. If you can't cite the mechanism precisely, DO NOT include the interaction.
-2. Use EXACT drug names from the list (verbatim copy — no corrections, no brand→generic conversion in the output).
+2. Use EXACT original drug names from the list before the "|" character. The recognized keys after "|" are only for active-ingredient identification.
 3. If a drug name is ambiguous, misspelled, or unknown → silently skip it. Never guess.
 4. If two drugs have NO established clinically significant interaction → don't include them. A missing interaction is better than a fabricated one.
 5. Do NOT invent drugs not in the list. Do NOT add "possible" or "theoretical" interactions without clinical evidence.
@@ -237,7 +543,8 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
       "drugB": "<exact name from list>",
       "severity": "contraindicated|major|moderate|minor",
       "mechanism": "<Arabic ≤20 words — الآلية الفارماكولوجية ثم النتيجة السريرية>",
-      "recommendation": "<Arabic ≤20 words — فعل محدد>"
+      "recommendation": "<Arabic ≤20 words — فعل محدد>",
+      "source": "Lexicomp|Stockley's Drug Interactions|Micromedex|FDA Label|CredibleMeds"
     }
   ],
   "summaryAr": "<Arabic 1-2 sentences — verdict + أهم تداخل لو موجود>",
@@ -267,6 +574,14 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
 
     const parsed = tryParseJson(responseText || '{}');
     if (!parsed) {
+      if (localInteractions.length > 0) {
+        return {
+          hasInteractions: true,
+          interactions: localInteractions,
+          summaryAr: `تم العثور على ${localInteractions.length} تداخل موثق محليا بين الأدوية المذكورة. تعذر قراءة نتيجة الفحص السحابي.`,
+          insufficientData: false,
+        };
+      }
       return {
         hasInteractions: false,
         interactions: [],
@@ -276,7 +591,8 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
       };
     }
 
-    const result = sanitizeResult(parsed, cleaned);
+    const aiResult = sanitizeResult(parsed, cleaned, resolvedIdentities);
+    const result = mergeInteractionResults(localInteractions, aiResult);
     // نحفظ الكاش فقط لو النتيجة صالحة — الأخطاء ما بتتخزنش عشان الطبيب يعيد المحاولة.
     // بنستخدم void عشان ما ننتظرش الحفظ — النتيجة ترجع للـ UI فوراً والحفظ في الخلفية.
     if (!result.insufficientData) {
@@ -285,6 +601,14 @@ Strict JSON, no fences, no prose. If NO interactions found: empty interactions[]
     return result;
   } catch (error) {
     console.error('Drug interactions check failed:', error);
+    if (localInteractions.length > 0) {
+      return {
+        hasInteractions: true,
+        interactions: localInteractions,
+        summaryAr: `تم العثور على ${localInteractions.length} تداخل موثق محليا بين الأدوية المذكورة. تعذر استكمال الفحص السحابي، فراجع النتيجة إكلينيكيا.`,
+        insufficientData: false,
+      };
+    }
     return {
       hasInteractions: false,
       interactions: [],

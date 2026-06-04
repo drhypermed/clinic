@@ -78,6 +78,8 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumInteractionToolDailyLimit = toSafeLimit(raw?.premiumInteractionToolDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumInteractionToolDailyLimit);
   const freeRenalToolDailyLimit = toSafeLimit(raw?.freeRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.freeRenalToolDailyLimit);
   const premiumRenalToolDailyLimit = toSafeLimit(raw?.premiumRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumRenalToolDailyLimit);
+  const freeGuidelinesChatDailyLimit = toSafeLimit(raw?.freeGuidelinesChatDailyLimit, DEFAULT_SMART_RX_CONFIG.freeGuidelinesChatDailyLimit);
+  const premiumGuidelinesChatDailyLimit = toSafeLimit(raw?.premiumGuidelinesChatDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumGuidelinesChatDailyLimit);
   const freePregnancyToolDailyLimit = toSafeLimit(raw?.freePregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.freePregnancyToolDailyLimit);
   const premiumPregnancyToolDailyLimit = toSafeLimit(raw?.premiumPregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPregnancyToolDailyLimit);
   // ✂️ شيلنا premiumOnly flags — الحد اليومي وحده يحدد دلوقتي.
@@ -128,24 +130,6 @@ const normalizeSmartRxConfig = (raw) => {
     DEFAULT_SMART_RX_CONFIG.premiumPregnancyToolLimitMessage,
   );
   // ─ 🆕 أزرار تصدير الروشتة — حدود يومية + رسائل + واتساب ─
-  const freePrescriptionPrintDailyLimit = toSafeLimit(raw?.freePrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintDailyLimit);
-  const premiumPrescriptionPrintDailyLimit = toSafeLimit(raw?.premiumPrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintDailyLimit);
-  const freePrescriptionDownloadDailyLimit = toSafeLimit(raw?.freePrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadDailyLimit);
-  const premiumPrescriptionDownloadDailyLimit = toSafeLimit(raw?.premiumPrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadDailyLimit);
-  const freePrescriptionWhatsappDailyLimit = toSafeLimit(raw?.freePrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappDailyLimit);
-  const premiumPrescriptionWhatsappDailyLimit = toSafeLimit(raw?.premiumPrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappDailyLimit);
-  const freePrescriptionPrintLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintLimitMessage);
-  const premiumPrescriptionPrintLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintLimitMessage);
-  const freePrescriptionPrintWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionPrintWhatsappMessage);
-  const premiumPrescriptionPrintWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionPrintWhatsappMessage);
-  const freePrescriptionDownloadLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadLimitMessage);
-  const premiumPrescriptionDownloadLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadLimitMessage);
-  const freePrescriptionDownloadWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionDownloadWhatsappMessage);
-  const premiumPrescriptionDownloadWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionDownloadWhatsappMessage);
-  const freePrescriptionWhatsappLimitMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappLimitMessage);
-  const premiumPrescriptionWhatsappLimitMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappLimitMessage);
-  const freePrescriptionWhatsappWhatsappMessage = normalizeMessageAllowEmpty(raw?.freePrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.freePrescriptionWhatsappWhatsappMessage);
-  const premiumPrescriptionWhatsappWhatsappMessage = normalizeMessageAllowEmpty(raw?.premiumPrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.premiumPrescriptionWhatsappWhatsappMessage);
 
   const freeRenalToolLimitMessage = normalizeMessageAllowEmpty(
     raw?.freeRenalToolLimitMessage,
@@ -154,6 +138,14 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumRenalToolLimitMessage = normalizeMessageAllowEmpty(
     raw?.premiumRenalToolLimitMessage,
     DEFAULT_SMART_RX_CONFIG.premiumRenalToolLimitMessage,
+  );
+  const freeGuidelinesChatLimitMessage = normalizeMessageAllowEmpty(
+    raw?.freeGuidelinesChatLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.freeGuidelinesChatLimitMessage,
+  );
+  const premiumGuidelinesChatLimitMessage = normalizeMessageAllowEmpty(
+    raw?.premiumGuidelinesChatLimitMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumGuidelinesChatLimitMessage,
   );
   const freePublicBookingLimitMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freePublicBookingLimitMessage, legacyMessage),
@@ -254,6 +246,14 @@ const normalizeSmartRxConfig = (raw) => {
   const premiumRenalToolWhatsappMessage = normalizeMessageAllowEmpty(
     raw?.premiumRenalToolWhatsappMessage,
     DEFAULT_SMART_RX_CONFIG.premiumRenalToolWhatsappMessage,
+  );
+  const freeGuidelinesChatWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.freeGuidelinesChatWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.freeGuidelinesChatWhatsappMessage,
+  );
+  const premiumGuidelinesChatWhatsappMessage = normalizeMessageAllowEmpty(
+    raw?.premiumGuidelinesChatWhatsappMessage,
+    DEFAULT_SMART_RX_CONFIG.premiumGuidelinesChatWhatsappMessage,
   );
   const freePublicBookingWhatsappMessage = normalizeMessageAllowEmpty(
     firstDefined(raw?.freePublicBookingWhatsappMessage, legacyMessage),
@@ -356,6 +356,8 @@ const normalizeSmartRxConfig = (raw) => {
     premiumInteractionToolDailyLimit,
     freeRenalToolDailyLimit,
     premiumRenalToolDailyLimit,
+    freeGuidelinesChatDailyLimit,
+    premiumGuidelinesChatDailyLimit,
     freePregnancyToolDailyLimit,
     premiumPregnancyToolDailyLimit,
     freeAnalysisLimitMessage,
@@ -370,25 +372,9 @@ const normalizeSmartRxConfig = (raw) => {
     premiumPregnancyToolLimitMessage,
     freeRenalToolLimitMessage,
     premiumRenalToolLimitMessage,
+    freeGuidelinesChatLimitMessage,
+    premiumGuidelinesChatLimitMessage,
     // ─ 🆕 أزرار تصدير الروشتة ─
-    freePrescriptionPrintDailyLimit,
-    premiumPrescriptionPrintDailyLimit,
-    freePrescriptionDownloadDailyLimit,
-    premiumPrescriptionDownloadDailyLimit,
-    freePrescriptionWhatsappDailyLimit,
-    premiumPrescriptionWhatsappDailyLimit,
-    freePrescriptionPrintLimitMessage,
-    premiumPrescriptionPrintLimitMessage,
-    freePrescriptionPrintWhatsappMessage,
-    premiumPrescriptionPrintWhatsappMessage,
-    freePrescriptionDownloadLimitMessage,
-    premiumPrescriptionDownloadLimitMessage,
-    freePrescriptionDownloadWhatsappMessage,
-    premiumPrescriptionDownloadWhatsappMessage,
-    freePrescriptionWhatsappLimitMessage,
-    premiumPrescriptionWhatsappLimitMessage,
-    freePrescriptionWhatsappWhatsappMessage,
-    premiumPrescriptionWhatsappWhatsappMessage,
     freePublicBookingLimitMessage,
     premiumPublicBookingLimitMessage,
     freeSecretaryEntryRequestLimitMessage,
@@ -414,6 +400,8 @@ const normalizeSmartRxConfig = (raw) => {
     premiumPregnancyToolWhatsappMessage,
     freeRenalToolWhatsappMessage,
     premiumRenalToolWhatsappMessage,
+    freeGuidelinesChatWhatsappMessage,
+    premiumGuidelinesChatWhatsappMessage,
     freePublicBookingWhatsappMessage,
     premiumPublicBookingWhatsappMessage,
     freeSecretaryEntryRequestWhatsappMessage,
@@ -453,6 +441,7 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxMedicationCustomizationsMaxCount: toSafeLimit(raw?.proMaxMedicationCustomizationsMaxCount, DEFAULT_SMART_RX_CONFIG.proMaxMedicationCustomizationsMaxCount),
     proMaxInteractionToolDailyLimit: toSafeLimit(raw?.proMaxInteractionToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxInteractionToolDailyLimit),
     proMaxRenalToolDailyLimit: toSafeLimit(raw?.proMaxRenalToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxRenalToolDailyLimit),
+    proMaxGuidelinesChatDailyLimit: toSafeLimit(raw?.proMaxGuidelinesChatDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxGuidelinesChatDailyLimit),
     proMaxPregnancyToolDailyLimit: toSafeLimit(raw?.proMaxPregnancyToolDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPregnancyToolDailyLimit),
     proMaxAnalysisLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxAnalysisLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxAnalysisLimitMessage),
     // ─ رسائل برو ماكس: سعة السجلات + الترجمة (جديد 2026-04) ─
@@ -473,16 +462,11 @@ const normalizeSmartRxConfig = (raw) => {
       raw?.proMaxRenalToolLimitMessage,
       DEFAULT_SMART_RX_CONFIG.proMaxRenalToolLimitMessage,
     ),
+    proMaxGuidelinesChatLimitMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxGuidelinesChatLimitMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxGuidelinesChatLimitMessage,
+    ),
     // ─ 🆕 برو ماكس: أزرار تصدير الروشتة ─
-    proMaxPrescriptionPrintDailyLimit: toSafeLimit(raw?.proMaxPrescriptionPrintDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintDailyLimit),
-    proMaxPrescriptionDownloadDailyLimit: toSafeLimit(raw?.proMaxPrescriptionDownloadDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadDailyLimit),
-    proMaxPrescriptionWhatsappDailyLimit: toSafeLimit(raw?.proMaxPrescriptionWhatsappDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappDailyLimit),
-    proMaxPrescriptionPrintLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionPrintLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintLimitMessage),
-    proMaxPrescriptionPrintWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionPrintWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionPrintWhatsappMessage),
-    proMaxPrescriptionDownloadLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionDownloadLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadLimitMessage),
-    proMaxPrescriptionDownloadWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionDownloadWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionDownloadWhatsappMessage),
-    proMaxPrescriptionWhatsappLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappLimitMessage),
-    proMaxPrescriptionWhatsappWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPrescriptionWhatsappWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPrescriptionWhatsappWhatsappMessage),
     proMaxPublicBookingLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingLimitMessage),
     proMaxSecretaryEntryRequestLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestLimitMessage),
     proMaxReadyPrescriptionDailyLimitMessage: normalizeMessageAllowEmpty(raw?.proMaxReadyPrescriptionDailyLimitMessage, DEFAULT_SMART_RX_CONFIG.proMaxReadyPrescriptionDailyLimitMessage),
@@ -507,6 +491,10 @@ const normalizeSmartRxConfig = (raw) => {
     proMaxRenalToolWhatsappMessage: normalizeMessageAllowEmpty(
       raw?.proMaxRenalToolWhatsappMessage,
       DEFAULT_SMART_RX_CONFIG.proMaxRenalToolWhatsappMessage,
+    ),
+    proMaxGuidelinesChatWhatsappMessage: normalizeMessageAllowEmpty(
+      raw?.proMaxGuidelinesChatWhatsappMessage,
+      DEFAULT_SMART_RX_CONFIG.proMaxGuidelinesChatWhatsappMessage,
     ),
     proMaxPublicBookingWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxPublicBookingWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxPublicBookingWhatsappMessage),
     proMaxSecretaryEntryRequestWhatsappMessage: normalizeMessageAllowEmpty(raw?.proMaxSecretaryEntryRequestWhatsappMessage, DEFAULT_SMART_RX_CONFIG.proMaxSecretaryEntryRequestWhatsappMessage),

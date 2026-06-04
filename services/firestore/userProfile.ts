@@ -10,7 +10,6 @@ import { getDoc, setDoc } from 'firebase/firestore';
 import { subscribeDocCacheFirst } from './cacheFirst';
 import { normalizeText } from '../../utils/textEncoding';
 import {
-    buildDoctorUserProfilePayload,
     buildPublicUserProfilePayload,
     getUserProfileDocRef,
 } from './profileRoles';
@@ -126,7 +125,7 @@ export const userProfileService = {
         if (Object.keys(payload).length === 0) return;
 
         const userRef = getUserProfileDocRef(userId);
-        await setDoc(userRef, buildDoctorUserProfilePayload(payload), { merge: true });
+        await setDoc(userRef, payload, { merge: true });
     },
 
     subscribeToPublicUserProfile: (

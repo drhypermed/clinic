@@ -10,11 +10,13 @@ import React from 'react';
 import { FaArrowRight, FaCircleCheck, FaLocationDot, FaTriangleExclamation } from 'react-icons/fa6';
 import type { PublicBookingSlot, PublicBranchInfo } from '../../../types';
 import { DEFAULT_BRANCH_ID } from '../../../services/firestore/branches';
+import { PublicDoctorAvatar } from './PublicDoctorAvatar';
 
 type BranchSelectorScreenProps = {
   branches: PublicBranchInfo[];
   slots: PublicBookingSlot[]; // كل السلوتس المتاحة (قبل الفلترة بفرع) — عشان نعد المواعيد لكل فرع
   doctorName?: string;
+  doctorProfileImage?: string;
   clinicTitle?: string;
   onBack?: () => void;
   onSelect: (branchId: string) => void;
@@ -24,6 +26,7 @@ export const BranchSelectorScreen: React.FC<BranchSelectorScreenProps> = ({
   branches,
   slots,
   doctorName,
+  doctorProfileImage,
   clinicTitle,
   onBack,
   onSelect,
@@ -41,15 +44,16 @@ export const BranchSelectorScreen: React.FC<BranchSelectorScreenProps> = ({
   }, [slots]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4" dir="rtl">
-      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 bg-white px-5 py-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4" dir="rtl">
+      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-200/40">
+        {/* ─── Hero header ─── */}
+        <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-l from-emerald-700 via-sky-700 to-brand-700 px-5 py-5">
           <div className="flex items-center justify-between gap-3">
             {onBack ? (
               <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-black text-slate-700 transition-colors hover:bg-slate-100"
+                className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-sm font-black text-white backdrop-blur-sm transition-all hover:bg-white/20"
                 title="العودة للصفحة السابقة"
               >
                 <FaArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -58,22 +62,25 @@ export const BranchSelectorScreen: React.FC<BranchSelectorScreenProps> = ({
             ) : (
               <span className="w-20 shrink-0" aria-hidden="true" />
             )}
-            <h1 className="min-w-0 flex-1 text-center text-xl font-black text-slate-900 sm:text-2xl">اختر الفرع للحجز</h1>
+            <h1 className="min-w-0 flex-1 text-center text-lg font-black text-white sm:text-xl">اختر الفرع للحجز</h1>
             <span className="w-20 shrink-0" aria-hidden="true" />
           </div>
           {(doctorName || clinicTitle) && (
-            <p className="mt-1 text-center text-sm font-bold text-slate-500">
-              {doctorName || clinicTitle}
-            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <PublicDoctorAvatar imageUrl={doctorProfileImage} name={doctorName || clinicTitle} size="md" />
+              <p className="min-w-0 truncate text-sm font-bold text-white/80">
+                {doctorName || clinicTitle}
+              </p>
+            </div>
           )}
         </div>
 
-        <div className="p-5 space-y-3">
-          <p className="text-sm font-bold text-slate-600">
+        <div className="p-5 space-y-4">
+          <p className="text-sm font-bold text-slate-500">
             الطبيب لديه أكثر من فرع. اختر الفرع المناسب لك قبل اختيار الموعد.
           </p>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {branches.map((branch) => {
               // عدد المواعيد المتاحة في الفرع — لتقرير المريض
               const slotCount = slotCountByBranch[branch.id] || 0;
@@ -83,38 +90,40 @@ export const BranchSelectorScreen: React.FC<BranchSelectorScreenProps> = ({
                   key={branch.id}
                   type="button"
                   onClick={() => onSelect(branch.id)}
-                  className={`flex w-full items-start justify-between gap-3 rounded-lg border p-4 text-right transition ${
+                  className={`group flex w-full items-start justify-between gap-3 rounded-lg border-2 p-4 text-right transition-all duration-200 ${
                     hasSlots
-                      ? 'border-slate-200 bg-slate-50 hover:border-brand-300 hover:bg-white'
-                      : 'border-warning-200 bg-warning-50 hover:border-warning-300 hover:bg-warning-100'
+                      ? 'border-slate-200 bg-white hover:border-brand-400 hover:bg-brand-50/30 hover:shadow-md hover:shadow-brand-100/30'
+                      : 'border-amber-200 bg-amber-50/50 hover:border-amber-300 hover:bg-amber-100/50'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-black text-slate-800">{branch.name}</div>
+                    <div className="text-base font-black text-slate-800 group-hover:text-brand-800 transition-colors">{branch.name}</div>
                     {branch.address && (
-                      <div className="mt-1 flex items-center gap-1.5 text-sm font-bold text-slate-600">
-                        <FaLocationDot className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                      <div className="mt-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-500">
+                        <FaLocationDot className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
                         <span>{branch.address}</span>
                       </div>
                     )}
                     {/* مؤشر عدد المواعيد المتاحة — يساعد المريض يختار */}
-                    <div className="mt-2">
+                    <div className="mt-2.5">
                       {hasSlots ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-black text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                          <FaCircleCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-700">
+                          <FaCircleCheck className="h-3 w-3" aria-hidden="true" />
                           {slotCount} موعد متاح
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
-                          <FaTriangleExclamation className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-700">
+                          <FaTriangleExclamation className="h-3 w-3" aria-hidden="true" />
                           لا توجد مواعيد متاحة حالياً
                         </span>
                       )}
                     </div>
                   </div>
-                  <svg className="w-5 h-5 text-brand-500 shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
+                  <div className="mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 transition-all group-hover:bg-brand-100 group-hover:text-brand-600">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </div>
                 </button>
               );
             })}

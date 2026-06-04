@@ -1,250 +1,622 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  LuArrowLeft,
   LuBot,
-  LuCheck,
-  LuChevronDown,
+  LuCopy,
   LuEraser,
-  LuFileText,
-  LuGlobe,
-  LuLanguages,
+  LuExternalLink,
+  LuFolder,
   LuLoader,
-  LuMaximize2,
   LuMessageCircle,
+  LuMic,
+  LuMicOff,
   LuPanelRightOpen,
+  LuQuote,
   LuSearch,
   LuSend,
-  LuSettings2,
-  LuShieldCheck,
-  LuSparkles,
   LuX,
 } from 'react-icons/lu';
 import type {
   GuidelineCollection,
   GuidelineCollectionData,
   GuidelineLanguage,
-  GuidelineTopic,
 } from './guidelinesData';
 import {
-  buildGuidelineChatIndex,
   formatChunkCitation,
-  loadAllGuidelineChatCollections,
-  loadFullTextGuidelineChatIndex,
-  searchGuidelineChatIndex,
+  GuidelineChatSearchError,
   searchGuidelineChatIndexCloud,
-  type GuidelineChatResponseMode,
   type GuidelineChatScope,
+  type GuidelineChatResponseMode,
   type GuidelineChatSourceChunk,
 } from './guidelineChatSearch';
-import { generateGuidelineChatAnswer } from '../../services/guidelineChatService';
-
-type ChatRole = 'assistant' | 'user';
-
-type ChatMessage = {
-  id: string;
-  role: ChatRole;
-  content: string;
-  createdAt: number;
-  sources?: GuidelineChatSourceChunk[];
-  status?: 'thinking' | 'error';
-};
+import { generateGuidelineChatAnswer, reformulateGuidelineQuery } from '../../services/guidelineChatService';
+import { useAuth } from '../../hooks/useAuth';
+import { deleteCloudChatHistory, saveCloudChatHistory, subscribeCloudChatHistory, trimChatMessages } from '../../services/guidelineChatHistoryService';
+import { ChatToolbar, type AnswerStyle } from './GuidelinesChatToolbar';
+import {
+  buildAssistantFailureMessage,
+  buildGuidelineSearchQueries,
+  getContentAlignClass,
+  getContentDirection,
+  getMessageTime,
+  getMessagesSignature,
+  getSourceFileName,
+  getSourcePageLabel,
+  getSourcePreview,
+  isOnlyWelcomeMessage,
+  makeId,
+  mergeRankedSources,
+  readStoredMessages,
+  clearStoredMessages,
+  welcomeMessage,
+  writeStoredMessages,
+} from './GuidelinesChat.helpers';
+import {
+  buildCompactHistory,
+  buildContextualSearchQuery,
+  buildSmallTalkReply,
+  findLastSources,
+  getSourceReason,
+  getSpeechRecognitionFactory,
+  inferResponseMode,
+  inferSearchScope,
+  isComparisonQuestion,
+  isSmallTalk,
+  shouldUseConversationContext,
+  type BrowserSpeechRecognition,
+  type ChatMessage,
+} from './guidelinesChatUtils';
 
 type GuidelinesChatProps = {
   language: GuidelineLanguage;
+  onLanguageChange?: (language: GuidelineLanguage) => void;
   selectedCollection: GuidelineCollection | null;
   selectedSourceId: string;
   collectionData: GuidelineCollectionData | null;
+  doctorName?: string | null;
+  doctorSpecialty?: string | null;
   isEmbedded?: boolean;
+  /** When true, show a built-in book picker in the toolbar instead of relying on external selection */
+  showBookPicker?: boolean;
+  onSelectSource?: (collectionId: string, sourceId: string) => void;
 };
 
-const storageKey = 'drhyper-guidelines-chat-v1';
+const ThinkingSpinner = () => (
+  <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" role="presentation">
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.22"
+        strokeWidth="3"
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="3"
+      >
+        <animateTransform
+          attributeName="transform"
+          dur="0.85s"
+          from="0 12 12"
+          repeatCount="indefinite"
+          to="360 12 12"
+          type="rotate"
+        />
+      </path>
+    </svg>
+  </span>
+);
 
-const starterMessages: Record<GuidelineLanguage, ChatMessage> = {
-  ar: {
-    id: 'welcome-ar',
-    role: 'assistant',
-    content:
-      'اسألني من الجايدلاينز المضافة. سأبحث في النصوص الرسمية وأجيب بمصادر، ولو المعلومة غير موجودة سأقول ذلك بوضوح.',
-    createdAt: Date.now(),
-  },
-  en: {
-    id: 'welcome-en',
-    role: 'assistant',
-    content:
-      'Ask me from the added guidelines. I will search the official source text, answer with citations, and say clearly when the information is not available.',
-    createdAt: Date.now(),
-  },
-};
+const hasTransientMessages = (messages: ChatMessage[]) =>
+  messages.some((message) => message.status === 'thinking' || message.status === 'streaming');
 
-const scopeLabels: Record<GuidelineChatScope, Record<GuidelineLanguage, string>> = {
-  'current-section': { ar: 'هذا الملف تحديداً', en: 'This file specifically' },
-  'current-guideline': { ar: 'الجايدلاين الحالي كاملاً', en: 'Entire current guideline' },
-  'all-guidelines': { ar: 'جميع الأدلة (شامل)', en: 'All guidelines (global)' },
-};
+const THINKING_STEP_MS = 900;
 
-const modeLabels: Record<GuidelineChatResponseMode, Record<GuidelineLanguage, string>> = {
-  concise: { ar: 'مختصر', en: 'Concise' },
-  detailed: { ar: 'تفصيلي', en: 'Detailed' },
-  table: { ar: 'جدول', en: 'Table' },
-  official: { ar: 'النص الرسمي', en: 'Official text' },
-};
+const waitForThinkingStep = (durationMs = THINKING_STEP_MS) =>
+  new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(resolve, durationMs);
+      });
+    });
+  });
 
-const suggestions: Record<GuidelineLanguage, string[]> = {
-  ar: [
-    'متى أبدأ iron في CKD not on dialysis؟',
-    'ما هدف hemoglobin مع ESA؟',
-    'متى أبدأ RRT في AKI؟',
-  ],
-  en: [
-    'When should iron be started in CKD not on dialysis?',
-    'What hemoglobin target is recommended with ESA?',
-    'When should RRT be started in AKI?',
-  ],
-};
-
-const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-const compactText = (value: string, max = 460) =>
-  value.length > max ? `${value.slice(0, max).trim()}...` : value;
-
-const readStoredMessages = (language: GuidelineLanguage): ChatMessage[] => {
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return [starterMessages[language]];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) return [starterMessages[language]];
-    return parsed.slice(-40);
-  } catch {
-    return [starterMessages[language]];
-  }
+const waitUntilThinkingStepElapsed = async (startedAt: number, durationMs = THINKING_STEP_MS) => {
+  const remainingMs = durationMs - (Date.now() - startedAt);
+  if (remainingMs > 0) await waitForThinkingStep(remainingMs);
 };
 
 export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   language,
+  onLanguageChange,
   selectedCollection,
   selectedSourceId,
   collectionData,
+  doctorName,
+  doctorSpecialty,
   isEmbedded = false,
+  showBookPicker = false,
+  onSelectSource,
 }) => {
+  const { user } = useAuth();
+  const uid = user?.uid;
+
   const isArabic = language === 'ar';
-  const [isOpen, setIsOpen] = useState(isEmbedded ? true : false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [input, setInput] = useState('');
+  const [isOpen, setIsOpen] = useState(isEmbedded);
   const [scope, setScope] = useState<GuidelineChatScope>('all-guidelines');
-  const [mode, setMode] = useState<GuidelineChatResponseMode>('concise');
-  const [messages, setMessages] = useState<ChatMessage[]>(() => readStoredMessages(language));
+  const [answerStyle, setAnswerStyle] = useState<AnswerStyle>('scientific');
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>(() => readStoredMessages(language, doctorName, doctorSpecialty, uid));
+  const [activeSources, setActiveSources] = useState<GuidelineChatSourceChunk[]>([]);
+  const [sourceSheetOpen, setSourceSheetOpen] = useState(false);
+  const [singleSourceNumber, setSingleSourceNumber] = useState<number | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [highlightedSourceIndex, setHighlightedSourceIndex] = useState<number | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+  const speechRef = useRef<BrowserSpeechRecognition | null>(null);
+  const messagesRef = useRef(messages);
+  const cloudHistoryReadyRef = useRef(false);
+  const applyingCloudHistoryRef = useRef(false);
+  const lastCloudSignatureRef = useRef('');
+  const clearRequestedRef = useRef(false);
 
   const selectedSource = useMemo(() => {
     if (!selectedCollection || !selectedSourceId) return null;
-    return selectedCollection.sources.find((s) => s.id === selectedSourceId) ?? null;
+    return selectedCollection.sources.find((source) => source.id === selectedSourceId) ?? null;
   }, [selectedCollection, selectedSourceId]);
 
   const selectedGroup = useMemo(() => {
     if (!collectionData?.topics || !selectedSourceId) return undefined;
-    const topic = collectionData.topics.find((t) => t.sourceIds.includes(selectedSourceId));
+    const topic = collectionData.topics.find((item) => item.sourceIds.includes(selectedSourceId));
     return topic?.group;
   }, [collectionData, selectedSourceId]);
 
-  useEffect(() => {
-    if (isEmbedded && selectedSourceId) {
-      setScope('current-section');
-    }
-  }, [selectedSourceId, isEmbedded]);
-  const [index, setIndex] = useState<GuidelineChatSourceChunk[]>([]);
-  const [fullTextChunkCount, setFullTextChunkCount] = useState(0);
-  const [isIndexLoading, setIsIndexLoading] = useState(false);
-  const [indexError, setIndexError] = useState('');
-  const [activeSources, setActiveSources] = useState<GuidelineChatSourceChunk[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const scrollToLatestMessage = (behavior: ScrollBehavior = 'auto', settleAfterRender = false) => {
+    const scroll = (mode: ScrollBehavior) => {
+      const container = messagesScrollRef.current;
+      if (container) {
+        const target = container.scrollHeight + container.clientHeight;
+        container.scrollTop = target;
+        container.scrollTo({ top: target, behavior: mode });
+      }
+      bottomRef.current?.scrollIntoView({ behavior: mode, block: 'end' });
+    };
+
+    if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      scroll(behavior);
+      if (settleAfterRender) {
+        window.setTimeout(() => scroll('auto'), 60);
+        window.setTimeout(() => scroll('auto'), 180);
+        window.setTimeout(() => scroll('auto'), 360);
+        window.setTimeout(() => scroll('auto'), 700);
+      }
+    });
+  };
 
   useEffect(() => {
-    if (messages.length > 0) {
-      window.localStorage.setItem(storageKey, JSON.stringify(messages.slice(-40)));
-    }
+    if (isEmbedded) setIsOpen(true);
+  }, [isEmbedded]);
+
+  useEffect(() => {
+    setMessages((current) => {
+      const hasOnlyWelcome = current.length === 1 && current[0]?.id.startsWith('welcome-');
+      return hasOnlyWelcome ? [welcomeMessage(language, doctorName, doctorSpecialty)] : current;
+    });
+  }, [doctorName, doctorSpecialty, language]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [messages, isOpen]);
+    if (!uid) {
+      cloudHistoryReadyRef.current = false;
+      lastCloudSignatureRef.current = '';
+      return;
+    }
 
-  useEffect(() => {
-    if (!isOpen || index.length > 0 || isIndexLoading) return;
-    let isMounted = true;
-    setIsIndexLoading(true);
-    setIndexError('');
-    Promise.allSettled([
-      loadAllGuidelineChatCollections().then(buildGuidelineChatIndex),
-      loadFullTextGuidelineChatIndex(),
-    ])
-      .then(([structuredResult, fullTextResult]) => {
-        if (!isMounted) return;
-        const structuredIndex = structuredResult.status === 'fulfilled' ? structuredResult.value : [];
-        const fullTextIndex = fullTextResult.status === 'fulfilled' ? fullTextResult.value : [];
-        setIndex([...fullTextIndex, ...structuredIndex]);
-        setFullTextChunkCount(fullTextIndex.length);
+    let active = true;
+    cloudHistoryReadyRef.current = false;
+    lastCloudSignatureRef.current = '';
 
-        if (structuredResult.status === 'rejected' && fullTextResult.status === 'rejected') {
-          setIndexError(isArabic ? 'تعذر تجهيز فهرس الجايدلاينز.' : 'Could not prepare the guideline index.');
-        } else if (fullTextResult.status === 'rejected') {
-          setIndexError(isArabic ? 'تم تشغيل الشات على الملخصات فقط؛ لم يتم تحميل النصوص الكاملة.' : 'Chat is running on summaries only; the full-text index did not load.');
+    const unsubscribe = subscribeCloudChatHistory(
+      uid,
+      (cloudMessages) => {
+        if (!active) return;
+
+        if (cloudMessages && cloudMessages.length > 0) {
+          if (clearRequestedRef.current) {
+            void deleteCloudChatHistory(uid);
+            return;
+          }
+
+          const trimmed = trimChatMessages(cloudMessages);
+          const signature = getMessagesSignature(trimmed);
+          cloudHistoryReadyRef.current = true;
+
+          if (hasTransientMessages(messagesRef.current)) {
+            return;
+          }
+
+          clearRequestedRef.current = false;
+          lastCloudSignatureRef.current = signature;
+
+          if (signature !== getMessagesSignature(messagesRef.current)) {
+            applyingCloudHistoryRef.current = true;
+            setMessages(trimmed);
+          }
+          return;
         }
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setIndexError(isArabic ? 'تعذر تجهيز فهرس الجايدلاينز.' : 'Could not prepare the guideline index.');
-      })
-      .finally(() => {
-        if (isMounted) setIsIndexLoading(false);
-      });
+
+        if (clearRequestedRef.current) {
+          const clearedMessages = [welcomeMessage(language, doctorName, doctorSpecialty)];
+          clearRequestedRef.current = false;
+          applyingCloudHistoryRef.current = true;
+          cloudHistoryReadyRef.current = true;
+          lastCloudSignatureRef.current = getMessagesSignature(clearedMessages);
+          messagesRef.current = clearedMessages;
+          clearStoredMessages(uid);
+          setMessages(clearedMessages);
+          return;
+        }
+
+        if (hasTransientMessages(messagesRef.current)) {
+          cloudHistoryReadyRef.current = true;
+          return;
+        }
+
+        const localMessages = readStoredMessages(language, doctorName, doctorSpecialty, uid);
+        const currentMessages = isOnlyWelcomeMessage(messagesRef.current) && !isOnlyWelcomeMessage(localMessages)
+          ? localMessages
+          : messagesRef.current;
+        const trimmed = trimChatMessages(currentMessages);
+        const signature = getMessagesSignature(trimmed);
+        cloudHistoryReadyRef.current = true;
+        lastCloudSignatureRef.current = signature;
+
+        if (getMessagesSignature(messagesRef.current) !== signature) {
+          setMessages(trimmed);
+        }
+        void saveCloudChatHistory(uid, trimmed);
+      },
+      () => {
+        cloudHistoryReadyRef.current = true;
+      },
+    );
+
     return () => {
-      isMounted = false;
+      active = false;
+      unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index.length, isArabic, isOpen]);
+  }, [doctorName, doctorSpecialty, language, uid]);
 
   useEffect(() => {
-    if (!selectedCollection || !collectionData) return;
-    const hasSelected = index.some((chunk) => chunk.collectionId === selectedCollection.id && chunk.kind !== 'full-text');
-    if (hasSelected || isIndexLoading) return;
-    setIndex((current) => buildGuidelineChatIndex([
-      {
-        collection: selectedCollection,
-        data: collectionData,
-      },
-    ]).concat(current));
-  }, [collectionData, index, isIndexLoading, selectedCollection]);
+    const trimmed = trimChatMessages(messages);
+    writeStoredMessages(trimmed, uid);
+    const hasTransient = hasTransientMessages(trimmed);
 
-  const panelWidth = isEmbedded
-    ? 'w-full h-[640px] flex flex-col'
-    : isExpanded
-      ? 'fixed inset-3 z-50'
-      : 'fixed bottom-4 right-4 z-50 w-[calc(100vw-2rem)] max-w-[430px] rtl:left-4 rtl:right-auto';
+    if (uid && cloudHistoryReadyRef.current && !applyingCloudHistoryRef.current && !hasTransient) {
+      const signature = getMessagesSignature(trimmed);
+      if (signature !== lastCloudSignatureRef.current) {
+        lastCloudSignatureRef.current = signature;
+        void saveCloudChatHistory(uid, trimmed);
+      }
+    }
+    applyingCloudHistoryRef.current = false;
 
-  const searchedSources = useMemo(() => {
-    if (!input.trim()) return [];
-    return searchGuidelineChatIndex(index, input, {
-      scope,
-      selectedCollectionId: selectedCollection?.id,
-    }, 8);
-  }, [index, input, scope, selectedCollection?.id]);
+    if (trimmed.length !== messages.length) setMessages(trimmed);
+  }, [messages, uid]);
+
+  useLayoutEffect(() => {
+    if (isOpen) scrollToLatestMessage('auto', true);
+  }, [messages, isOpen, isSending]);
+
+  useEffect(() => () => {
+    speechRef.current?.stop();
+    speechRef.current = null;
+    if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+  }, []);
+
+  const panelClass = isEmbedded
+    ? 'h-full min-h-0 w-full'
+    : 'fixed bottom-3 right-3 z-50 h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[560px] rtl:left-3 rtl:right-auto';
+
+  const clearChat = () => {
+    const clearedMessages = [welcomeMessage(language, doctorName, doctorSpecialty)];
+    clearRequestedRef.current = true;
+    applyingCloudHistoryRef.current = true;
+    lastCloudSignatureRef.current = getMessagesSignature(clearedMessages);
+    messagesRef.current = clearedMessages;
+    clearStoredMessages(uid);
+    setMessages(clearedMessages);
+    setActiveSources([]);
+    setSourceSheetOpen(false);
+    setSingleSourceNumber(null);
+    if (uid) void deleteCloudChatHistory(uid);
+  };
+
+  const copyText = async (value: string) => {
+    await navigator.clipboard?.writeText(value).catch(() => undefined);
+  };
+
+  const addAssistantMessage = (content: string) => {
+    const message: ChatMessage = {
+      id: makeId(),
+      role: 'assistant',
+      content,
+      createdAt: Date.now(),
+    };
+    setMessages((current) => trimChatMessages([...current, message]));
+  };
+
+  const revealAssistantText = (
+    messageId: string,
+    fullText: string,
+    sources: GuidelineChatSourceChunk[],
+  ) => {
+    const tokens = fullText.split(/(\s+)/);
+    let index = 0;
+    const step = Math.max(3, Math.ceil(tokens.length / 120));
+
+    const tick = () => {
+      index = Math.min(tokens.length, index + step);
+      const partial = tokens.slice(0, index).join('');
+      setMessages((current) => current.map((message) => (
+        message.id === messageId
+          ? {
+            ...message,
+            status: index < tokens.length ? 'streaming' : undefined,
+            sources,
+            content: partial || fullText,
+          }
+          : message
+      )));
+      scrollToLatestMessage('auto');
+      if (index < tokens.length) {
+        window.setTimeout(tick, 18);
+      } else {
+        scrollToLatestMessage('auto', true);
+      }
+    };
+
+    tick();
+  };
+
+  const jumpToSource = (sourceIndex: number, sources?: GuidelineChatSourceChunk[]) => {
+    const source = sources?.[sourceIndex];
+    if (source) {
+      setActiveSources([source]);
+      setSingleSourceNumber(sourceIndex + 1);
+      setHighlightedSourceIndex(0);
+    } else if (sources?.length) {
+      setActiveSources(sources);
+      setSingleSourceNumber(null);
+      setHighlightedSourceIndex(Math.min(sourceIndex, sources.length - 1));
+    } else {
+      setSingleSourceNumber(null);
+      setHighlightedSourceIndex(sourceIndex);
+    }
+    setSourceSheetOpen(true);
+  };
+
+  const renderInlineContent = (text: string, message: ChatMessage, keyPrefix: string) =>
+    text.split(/(\[S\d+\]|\*\*[^*]+\*\*)/g).map((part, index) => {
+      const sourceMatch = part.match(/^\[S(\d+)\]$/);
+      if (sourceMatch) {
+        const sourceIndex = Number(sourceMatch[1]) - 1;
+        return (
+          <button
+            key={`${keyPrefix}-source-${index}`}
+            type="button"
+            onClick={() => jumpToSource(sourceIndex, message.sources)}
+            className="mx-0.5 inline-flex items-center rounded-md bg-[#d9fdd3] px-1.5 py-0.5 text-[11px] font-black text-[#075e54] ring-1 ring-emerald-200 hover:bg-emerald-100"
+            title={isArabic ? 'اعرض المصدر' : 'Show source'}
+          >
+            {part}
+          </button>
+        );
+      }
+
+      const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+      if (boldMatch) {
+        return <strong key={`${keyPrefix}-bold-${index}`} className="font-black text-slate-950">{boldMatch[1]}</strong>;
+      }
+
+      return <React.Fragment key={`${keyPrefix}-text-${index}`}>{part}</React.Fragment>;
+    });
+
+  const isTableSeparator = (line: string) =>
+    /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+
+  const parseTableRow = (line: string) =>
+    line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+
+  const renderMarkdownTable = (tableLines: string[], message: ChatMessage, key: string) => {
+    const header = parseTableRow(tableLines[0] || '');
+    const body = tableLines.slice(1).filter((line) => !isTableSeparator(line)).map(parseTableRow);
+    return (
+      <div key={key} className="my-2 max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="min-w-full border-collapse text-xs leading-6">
+          <thead className="bg-slate-50 text-slate-800">
+            <tr>
+              {header.map((cell, index) => (
+                <th key={`${key}-h-${index}`} className="border-b border-slate-200 px-3 py-2 text-start font-black">
+                  {renderInlineContent(cell, message, `${key}-h-${index}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {body.map((row, rowIndex) => (
+              <tr key={`${key}-r-${rowIndex}`} className="odd:bg-white even:bg-slate-50/70">
+                {row.map((cell, cellIndex) => (
+                  <td key={`${key}-r-${rowIndex}-${cellIndex}`} className="border-b border-slate-100 px-3 py-2 align-top font-semibold text-slate-700">
+                    {renderInlineContent(cell, message, `${key}-r-${rowIndex}-${cellIndex}`)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderMessageContent = (message: ChatMessage) => {
+    if (message.status === 'thinking') {
+      return (
+        <span className="inline-flex items-center gap-2 text-[#075e54]">
+          <ThinkingSpinner />
+          {message.content}
+        </span>
+      );
+    }
+
+    if (message.role === 'user') return message.content;
+
+    const lines = message.content.replace(/\r\n/g, '\n').split('\n');
+    const blocks: React.ReactNode[] = [];
+    let index = 0;
+
+    while (index < lines.length) {
+      const line = lines[index];
+      if (!line.trim()) {
+        index += 1;
+        continue;
+      }
+
+      const heading = line.match(/^(#{1,4})\s+(.+)$/);
+      if (heading) {
+        blocks.push(
+          <h4 key={`${message.id}-heading-${index}`} className={`mt-2 font-black leading-7 text-slate-950 ${heading[1].length <= 2 ? 'text-base' : 'text-sm'}`}>
+            {renderInlineContent(heading[2], message, `${message.id}-heading-${index}`)}
+          </h4>,
+        );
+        index += 1;
+        continue;
+      }
+
+      if (line.includes('|') && lines[index + 1]?.includes('|') && isTableSeparator(lines[index + 1])) {
+        const tableLines: string[] = [];
+        while (index < lines.length && lines[index].includes('|')) {
+          tableLines.push(lines[index]);
+          index += 1;
+        }
+        blocks.push(renderMarkdownTable(tableLines, message, `${message.id}-table-${index}`));
+        continue;
+      }
+
+      if (/^\s*[-*•]\s+/.test(line)) {
+        const items: string[] = [];
+        while (index < lines.length && /^\s*[-*•]\s+/.test(lines[index])) {
+          items.push(lines[index].replace(/^\s*[-*•]\s+/, '').trim());
+          index += 1;
+        }
+        blocks.push(
+          <ul key={`${message.id}-ul-${index}`} className="my-2 list-disc space-y-1 ps-5">
+            {items.map((item, itemIndex) => (
+              <li key={`${message.id}-ul-${index}-${itemIndex}`} className="leading-7">
+                {renderInlineContent(item, message, `${message.id}-ul-${index}-${itemIndex}`)}
+              </li>
+            ))}
+          </ul>,
+        );
+        continue;
+      }
+
+      if (/^\s*\d+[.)]\s+/.test(line)) {
+        const items: string[] = [];
+        while (index < lines.length && /^\s*\d+[.)]\s+/.test(lines[index])) {
+          items.push(lines[index].replace(/^\s*\d+[.)]\s+/, '').trim());
+          index += 1;
+        }
+        blocks.push(
+          <ol key={`${message.id}-ol-${index}`} className="my-2 list-decimal space-y-1 ps-5">
+            {items.map((item, itemIndex) => (
+              <li key={`${message.id}-ol-${index}-${itemIndex}`} className="leading-7">
+                {renderInlineContent(item, message, `${message.id}-ol-${index}-${itemIndex}`)}
+              </li>
+            ))}
+          </ol>,
+        );
+        continue;
+      }
+
+      const paragraph: string[] = [];
+      while (
+        index < lines.length
+        && lines[index].trim()
+        && !/^(#{1,4})\s+/.test(lines[index])
+        && !/^\s*[-*•]\s+/.test(lines[index])
+        && !/^\s*\d+[.)]\s+/.test(lines[index])
+        && !(lines[index].includes('|') && lines[index + 1]?.includes('|') && isTableSeparator(lines[index + 1]))
+      ) {
+        paragraph.push(lines[index].trim());
+        index += 1;
+      }
+      blocks.push(
+        <p key={`${message.id}-p-${index}`} className="my-1 leading-7">
+          {renderInlineContent(paragraph.join(' '), message, `${message.id}-p-${index}`)}
+        </p>,
+      );
+    }
+
+    return <div className="space-y-2">{blocks}</div>;
+  };
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      speechRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = getSpeechRecognitionFactory();
+    if (!SpeechRecognition) {
+      addAssistantMessage(language === 'ar'
+        ? 'المتصفح الحالي لا يدعم الإملاء الصوتي. جرب Chrome أو Edge.'
+        : 'This browser does not support voice dictation. Try Chrome or Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = language === 'ar' ? 'ar-EG' : 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onresult = (event) => {
+      let finalText = '';
+      let interimText = '';
+      for (let i = 0; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        if (result.isFinal) finalText += result[0].transcript;
+        else interimText += result[0].transcript;
+      }
+      setInput((finalText || interimText).trim());
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    speechRef.current = recognition;
+    setIsListening(true);
+    recognition.start();
+  };
 
   const sendMessage = async (forcedQuestion?: string) => {
     const question = (forcedQuestion ?? input).trim();
-    if (!question || isSending || isIndexLoading) return;
+    if (!question || isSending) return;
 
     setInput('');
     setIsSending(true);
-
-    let sources = await searchGuidelineChatIndexCloud(question, {
-      scope,
-      selectedCollectionId: selectedCollection?.id,
-      selectedGroup,
-    }, 24);
-
-    if (scope === 'current-section' && selectedSourceId) {
-      sources = sources.filter((chunk) => chunk.sourceId === selectedSourceId);
-    }
-    sources = sources.slice(0, 12);
+    let thinkingStepStartedAt = Date.now();
 
     const userMessage: ChatMessage = {
       id: makeId(),
@@ -252,326 +624,564 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
       content: question,
       createdAt: Date.now(),
     };
-    const thinkingMessage: ChatMessage = {
-      id: makeId(),
+
+    const intentThinkingId = makeId();
+    const intentThinkingMessage: ChatMessage = {
+      id: intentThinkingId,
       role: 'assistant',
-      content: isArabic ? 'أبحث في النصوص الرسمية...' : 'Searching the official source text...',
+      content: isArabic ? 'جاري فهم السؤال والسياق' : 'Understanding the question and context',
       createdAt: Date.now(),
-      sources,
       status: 'thinking',
     };
-    setMessages((current) => [...current, userMessage, thinkingMessage]);
-    setActiveSources(sources);
 
-    if (sources.length === 0) {
+    const updateThinkingMessage = async (
+      content: string,
+      options: { waitBefore?: boolean; durationMs?: number; sources?: GuidelineChatSourceChunk[] } = {},
+    ) => {
+      if (options.waitBefore !== false) {
+        await waitUntilThinkingStepElapsed(thinkingStepStartedAt, options.durationMs);
+      }
+
       setMessages((current) => current.map((message) => (
-        message.id === thinkingMessage.id
+        message.id === intentThinkingId
           ? {
             ...message,
-            status: undefined,
-            content: isArabic
-              ? 'لم أجد نصًا رسميًا مطابقًا داخل الجايدلاينز المضافة حاليًا، ومش هخترع إجابة من خارجها. جرّب صياغة السؤال باسم المرض/الاختصار الطبي، أو تأكد أن الفصل الكامل اتضاف كنص قابل للبحث.'
-              : 'I could not find matching official text in the guidelines currently added, so I will not invent an answer outside them. Try the disease name/medical abbreviation, or confirm that the full chapter was added as searchable text.',
+            content,
+            ...(options.sources ? { sources: options.sources } : {}),
           }
           : message
       )));
+      scrollToLatestMessage('auto', true);
+      thinkingStepStartedAt = Date.now();
+    };
+
+    setMessages((current) => trimChatMessages([...current, userMessage, intentThinkingMessage]));
+    scrollToLatestMessage('auto', true);
+
+    const candidatePreviousSources = activeSources.length ? activeSources : findLastSources(messages);
+    const shouldAnalyzeFollowUp = shouldUseConversationContext({
+      question,
+      previousSources: candidatePreviousSources,
+    });
+    const historyForModel = buildCompactHistory([...messages, userMessage]);
+
+    const intentAnalysis = shouldAnalyzeFollowUp
+      ? await reformulateGuidelineQuery(question, historyForModel)
+      : { isFollowUp: false, reformulatedQuery: question, shouldClearSources: true };
+
+    const followUp = !intentAnalysis.shouldClearSources;
+    const previousSources = followUp ? candidatePreviousSources : [];
+    if (!followUp) {
+      setActiveSources([]);
+      setSingleSourceNumber(null);
+      setHighlightedSourceIndex(null);
+    }
+
+    const reformulatedQuestion = intentAnalysis.reformulatedQuery || question;
+
+    if (isSmallTalk(reformulatedQuestion) || isSmallTalk(question)) {
+      setMessages((current) => current.filter(m => m.id !== intentThinkingId));
+      addAssistantMessage(buildSmallTalkReply(question, language));
+      scrollToLatestMessage('auto', true);
       setIsSending(false);
       return;
     }
 
     try {
+      const comparisonQuestion = isComparisonQuestion(reformulatedQuestion);
+      const effectiveScope = inferSearchScope({ question: reformulatedQuestion, preferredScope: scope, selectedSource, selectedCollection });
+      const contextualQuery = followUp ? buildContextualSearchQuery({ question: reformulatedQuestion, messages, previousSources }) : reformulatedQuestion;
+      const responseMode: GuidelineChatResponseMode = answerStyle === 'concise'
+        ? 'concise'
+        : inferResponseMode(question);
+      const answerSourceLimit = comparisonQuestion || responseMode === 'table' || responseMode === 'detailed' || responseMode === 'official' ? 10 : 8;
+      const searchQueries = buildGuidelineSearchQueries({ question: reformulatedQuestion, contextualQuery, followUp })
+        .slice(0, comparisonQuestion ? 4 : 3);
+      const selectedCollectionScope = effectiveScope === 'current-guideline' ? selectedCollection?.id : undefined;
+
+      await updateThinkingMessage(isArabic ? 'جاري البحث في الجايدلاينز وترتيب أفضل المصادر' : 'Searching guidelines and ranking the best sources');
+
+      const currentFileSources = effectiveScope === 'current-file' && selectedSource
+        ? await searchGuidelineChatIndexCloud(contextualQuery, {
+            scope: 'current-file',
+            selectedCollectionId: selectedCollection?.id,
+            selectedGroup,
+          }, 10, selectedSource)
+        : [];
+
+      const broadSourceGroups: GuidelineChatSourceChunk[][] = [];
+      const enoughSources = comparisonQuestion ? 10 : 6;
+      if (currentFileSources.length < enoughSources) {
+        for (const query of searchQueries) {
+          const group = await searchGuidelineChatIndexCloud(query, {
+            scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
+            selectedCollectionId: selectedCollectionScope,
+            selectedGroup: undefined,
+          }, comparisonQuestion ? 18 : 16, null);
+          broadSourceGroups.push(group);
+          const rankedSoFar = mergeRankedSources(answerSourceLimit, ...broadSourceGroups, currentFileSources);
+          if (rankedSoFar.length >= enoughSources) {
+            break;
+          }
+        }
+      }
+
+      const foundSources = mergeRankedSources(answerSourceLimit, ...broadSourceGroups, currentFileSources);
+      const sources = foundSources.length > 0
+        ? foundSources
+        : (followUp ? previousSources : []);
+      setActiveSources(sources);
+      setSingleSourceNumber(null);
+
+      await updateThinkingMessage(
+        sources.length > 0
+          ? (isArabic ? 'جاري تجهيز الإجابة النهائية' : 'Preparing the final answer')
+          : (isArabic ? 'جاري تجهيز إجابة من مصادر طبية أخرى لأن النص المرفوع لا يغطي النقطة بوضوح' : 'Preparing an answer from other medical sources because the uploaded text does not clearly cover this point'),
+        { sources },
+      );
+
       const answer = await generateGuidelineChatAnswer({
         question,
         language,
-        mode,
+        mode: responseMode,
         chunks: sources,
-        history: messages
-          .filter((message) => message.status !== 'thinking')
-          .slice(-8)
-          .map((message) => ({ role: message.role, content: message.content })),
+        history: historyForModel,
+        answerMode: sources.length > 0 ? 'guideline-first' : 'general-medical',
+        doctorSpecialty,
       });
+
+      revealAssistantText(
+        intentThinkingId,
+        answer || (isArabic ? 'النموذج مرجعش إجابة واضحة. جرب تعيد السؤال بصياغة تانية.' : 'The model did not return a clear answer. Try rephrasing the question.'),
+        sources,
+      );
+    } catch (err: any) {
+      const details = (err as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
+      const quotaMessage = details?.limitReachedMessage;
+      const isSearchError = err instanceof GuidelineChatSearchError || err?.name === 'GuidelineChatSearchError';
+
+      if (quotaMessage) {
+        setMessages((current) => current.map((message) => (
+          message.id === intentThinkingId
+            ? {
+              ...message,
+              status: 'error',
+              sources: previousSources,
+              content: String(quotaMessage).replace(/\{\s*limit\s*\}/gi, String(Number(details?.limit || 0))),
+            }
+            : message
+        )));
+        scrollToLatestMessage('auto', true);
+        return;
+      }
+
+      if (isSearchError) {
+        setActiveSources([]);
+        setSingleSourceNumber(null);
+        setMessages((current) => current.map((message) => (
+          message.id === intentThinkingId
+            ? {
+              ...message,
+              status: 'thinking',
+              sources: [],
+              content: isArabic
+                ? 'ماوصلتش لمعلومة واضحة من الجايدلاينز المرفوعة للنقطة دي. هكمل بإجابة طبية عامة من خارج الملفات مع توضيح ذلك.'
+                : 'I did not reach a clear answer from the uploaded guidelines for this point. I will continue with a general medical answer outside the uploaded files and label it clearly.',
+            }
+            : message
+        )));
+        scrollToLatestMessage('auto', true);
+
+        try {
+          const responseMode: GuidelineChatResponseMode = answerStyle === 'concise'
+            ? 'concise'
+            : inferResponseMode(question);
+          const answer = await generateGuidelineChatAnswer({
+            question,
+            language,
+            mode: responseMode,
+            chunks: [],
+            history: historyForModel,
+            answerMode: 'general-medical',
+            doctorSpecialty,
+          });
+          const prefix = isArabic
+            ? '**تنبيه:** لم أصل لمعلومة واضحة في الملفات المرفوعة لهذه النقطة، لذلك الإجابة التالية من معرفة طبية عامة خارج الجايدلاينز المرفوعة وليست موثقة بمصدر من مكتبة التطبيق.\n\n'
+            : '**Note:** I did not find a clear answer in the uploaded files for this point, so the answer below is general medical knowledge outside the uploaded guidelines and is not sourced from the in-app library.\n\n';
+          revealAssistantText(
+            intentThinkingId,
+            `${prefix}${answer || (isArabic ? 'النموذج مرجعش إجابة واضحة. جرّب تعيد السؤال بصياغة تانية.' : 'The model did not return a clear answer. Try rephrasing the question.')}`,
+            [],
+          );
+        } catch (fallbackErr: any) {
+          console.error('[GuidelinesChat] General medical fallback failed:', fallbackErr);
+          setMessages((current) => current.map((message) => (
+            message.id === intentThinkingId
+              ? {
+                ...message,
+                status: 'error',
+                sources: previousSources,
+                content: buildAssistantFailureMessage(fallbackErr, language, previousSources.length > 0),
+              }
+              : message
+          )));
+          scrollToLatestMessage('auto', true);
+        }
+        return;
+      }
+
+      console.error('[GuidelinesChat] Answer generation failed:', err);
       setMessages((current) => current.map((message) => (
-        message.id === thinkingMessage.id
-          ? { ...message, status: undefined, content: answer || (isArabic ? 'لم يصل رد من النموذج.' : 'No model response was returned.') }
+        message.id === intentThinkingId
+          ? {
+            ...message,
+            status: 'error',
+            sources: previousSources,
+            content: buildAssistantFailureMessage(err, language, previousSources.length > 0),
+          }
           : message
       )));
-    } catch (error) {
-      const fallback = [
-        isArabic
-          ? 'دي أقرب النصوص الرسمية المطابقة التي وجدتها. سأعرض النصوص نفسها بدون إضافة استنتاجات غير مدعومة:'
-          : 'These are the closest matching official excerpts I found. I am showing the source text without adding unsupported conclusions:',
-        ...sources.slice(0, 5).map((source, index) => `[S${index + 1}] ${formatChunkCitation(source, language)}\n${compactText(source.text, 800)}`),
-      ].join('\n\n');
-      setMessages((current) => current.map((message) => (
-        message.id === thinkingMessage.id
-          ? { ...message, status: 'error', content: fallback }
-          : message
-      )));
+      scrollToLatestMessage('auto', true);
     } finally {
       setIsSending(false);
+      scrollToLatestMessage('auto', true);
     }
   };
 
-  const clearChat = () => {
-    const welcome = { ...starterMessages[language], id: makeId(), createdAt: Date.now() };
-    setMessages([welcome]);
-    setActiveSources([]);
+  const renderSourceSheet = () => {
+    if (!sourceSheetOpen) return null;
+    const isSingleSourceView = activeSources.length === 1 && singleSourceNumber !== null;
+    return (
+      <div
+        className="fixed inset-0 z-[1200] bg-slate-950/55 backdrop-blur-sm"
+        onClick={() => {
+          setSourceSheetOpen(false);
+          setSingleSourceNumber(null);
+        }}
+      >
+        <section
+          dir={isArabic ? 'rtl' : 'ltr'}
+          onClick={(event) => event.stopPropagation()}
+          className="mx-auto flex h-[100dvh] w-full max-w-3xl flex-col bg-[#f7f8fa] shadow-2xl sm:my-4 sm:h-[calc(100dvh-2rem)] sm:overflow-hidden sm:rounded-2xl"
+        >
+          <header className="sticky top-0 z-10 grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-slate-200 bg-[#111b21] px-2 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] text-white sm:px-4 sm:py-4">
+            <button
+              type="button"
+              onClick={() => {
+                setSourceSheetOpen(false);
+                setSingleSourceNumber(null);
+              }}
+              className="relative z-20 inline-flex h-11 min-w-[5.25rem] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white/10 px-3 text-sm font-black transition hover:bg-white/15 sm:h-10"
+              aria-label={isArabic ? 'إغلاق المصادر' : 'Close sources'}
+            >
+              <LuArrowLeft className="h-4 w-4" />
+              <span>{isArabic ? 'رجوع' : 'Back'}</span>
+            </button>
+            <div className="min-w-0 flex-1 text-center">
+              <div className="truncate text-base font-black sm:text-lg">
+                {isArabic
+                  ? (isSingleSourceView ? 'المصدر' : 'المصادر')
+                  : (isSingleSourceView ? 'Source' : 'Sources')}
+              </div>
+              <div className="mt-0.5 text-xs font-bold text-slate-300">
+                {isSingleSourceView
+                  ? `S${singleSourceNumber}`
+                  : (isArabic ? `${activeSources.length} مصادر` : `${activeSources.length} sources`)}
+              </div>
+            </div>
+            <div className="h-11 w-3 shrink-0 sm:h-10 sm:w-[84px]" />
+          </header>
+
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            {activeSources.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm font-bold text-slate-500">
+                {isArabic ? 'لا توجد مصادر معروضة حاليا.' : 'No sources are currently open.'}
+              </div>
+            ) : (
+              activeSources.map((source, index) => {
+                const highlighted = highlightedSourceIndex === index;
+                const sourceNumber = singleSourceNumber ?? index + 1;
+                return (
+                  <article
+                    key={`${source.id}-${index}`}
+                    className={`overflow-hidden rounded-xl border bg-white shadow-sm transition ${
+                      highlighted ? 'border-[#25d366] ring-2 ring-[#25d366]/25' : 'border-slate-200'
+                    }`}
+                  >
+                    <div className="bg-[#202c33] px-4 py-3 text-white">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                            <span className="rounded-md bg-[#25d366] px-2 py-1 text-[10px] font-black text-[#063d31]">
+                              S{sourceNumber}
+                            </span>
+                            {getSourcePageLabel(source) ? (
+                              <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] font-black text-white">
+                                {getSourcePageLabel(source)}
+                              </span>
+                            ) : null}
+                            {source.school ? (
+                              <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] font-black text-slate-200">
+                                {source.school}{source.year ? ` ${source.year}` : ''}
+                              </span>
+                            ) : null}
+                          </div>
+                          <h4
+                            dir={getContentDirection(getSourceFileName(source))}
+                            className={`truncate text-sm font-black leading-6 ${getContentAlignClass(getSourceFileName(source))}`}
+                          >
+                            {getSourceFileName(source)}
+                          </h4>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copyText(source.text)}
+                          className="shrink-0 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
+                          title={isArabic ? 'نسخ النص' : 'Copy text'}
+                        >
+                          <LuCopy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <details open={highlighted} className="group">
+                      <summary className="cursor-pointer list-none px-4 py-3">
+                        <div className="flex items-start gap-3">
+                          <LuQuote className="mt-1 h-4 w-4 shrink-0 text-[#128c7e]" />
+                          <div className="min-w-0 flex-1">
+                            <div
+                              dir={getContentDirection(source.heading || getSourcePreview(source))}
+                              className={`text-xs font-black leading-5 text-slate-800 ${getContentAlignClass(source.heading || getSourcePreview(source))}`}
+                            >
+                              {source.heading || getSourcePreview(source) || formatChunkCitation(source, language)}
+                            </div>
+                            <div
+                              dir={getContentDirection(getSourcePreview(source))}
+                              className={`mt-1 line-clamp-2 text-[11px] font-semibold leading-5 text-slate-500 ${getContentAlignClass(getSourcePreview(source))}`}
+                            >
+                              {getSourcePreview(source)}
+                            </div>
+                          </div>
+                        </div>
+                      </summary>
+                      <div className="border-t border-slate-100 px-4 pb-4">
+                        <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] font-bold leading-5 text-[#075e54]">
+                          {getSourceReason(source, language)}
+                        </div>
+                        <div className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] font-bold leading-5 text-slate-500">
+                          {formatChunkCitation(source, language)}
+                          {source.chunkIndex ? ` · chunk ${source.chunkIndex}` : ''}
+                        </div>
+                        <blockquote
+                          dir={getContentDirection(source.text)}
+                          className={`mt-3 whitespace-pre-wrap rounded-lg border border-slate-100 bg-white p-3 text-sm font-semibold leading-7 text-slate-800 ${getContentAlignClass(source.text)}`}
+                        >
+                          {source.text}
+                        </blockquote>
+                        {(source.storagePdfUrl || source.url) ? (
+                          <a
+                            href={source.storagePdfUrl || source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-black text-[#075e54] hover:text-[#063d31]"
+                          >
+                            <LuExternalLink className="h-3.5 w-3.5" />
+                            {isArabic ? 'فتح الملف الأصلي' : 'Open original file'}
+                          </a>
+                        ) : null}
+                      </div>
+                    </details>
+                  </article>
+                );
+              })
+            )}
+          </div>
+        </section>
+      </div>
+    );
   };
+
+  if (!isEmbedded && !isOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-[#063d31] shadow-2xl shadow-emerald-900/30 ring-4 ring-white transition hover:scale-105 hover:bg-[#20bd5a] rtl:left-4 rtl:right-auto"
+        aria-label={isArabic ? 'افتح المساعد الطبي الذكي' : 'Open smart medical assistant'}
+      >
+        <LuMessageCircle className="h-7 w-7" />
+      </button>
+    );
+  }
+
+  if (!isOpen) return null;
 
   return (
     <>
-      {!isEmbedded && !isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-2xl shadow-blue-900/30 ring-4 ring-white transition hover:scale-105 hover:bg-blue-700 rtl:left-4 rtl:right-auto"
-          aria-label={isArabic ? 'افتح شات الجايدلاينز' : 'Open guidelines chat'}
-        >
-          <LuMessageCircle className="h-7 w-7" />
-        </button>
-      )}
-
-      {isOpen && (
-        <section
-          dir={isArabic ? 'rtl' : 'ltr'}
-          className={`${panelWidth} overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-xl ${isEmbedded ? 'shadow-blue-950/5' : 'shadow-slate-950/25'}`}
-        >
-          <div className={`flex flex-col bg-slate-50 ${isEmbedded ? 'h-full' : 'h-full min-h-[620px] max-h-[calc(100vh-2rem)]'}`}>
-            <header className="flex items-center justify-between gap-3 border-b border-blue-100 bg-white px-3 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-sky-400 text-white shadow-lg shadow-blue-900/20">
-                  <LuBot className="h-6 w-6" />
-                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 rtl:left-0 rtl:right-auto" />
+      <section
+        dir={isArabic ? 'rtl' : 'ltr'}
+        className={`${panelClass} flex flex-col overflow-hidden ${
+          isEmbedded
+            ? 'bg-white'
+            : 'rounded-3xl border border-emerald-100 bg-white shadow-2xl shadow-emerald-950/12'
+        }`}
+      >
+        <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#efeae2]">
+          <header className="flex shrink-0 items-center justify-between gap-3 bg-gradient-to-l from-[#075e54] via-[#0b6b5f] to-[#128c7e] px-4 py-3 text-white shadow-sm">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/15">
+                <LuBot className="h-6 w-6" />
+                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[#075e54] bg-[#25d366] rtl:left-0 rtl:right-auto" />
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-base font-black">
+                  {isArabic ? 'المساعد الطبي الذكي' : 'Smart Medical Assistant'}
                 </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-black text-slate-950">
-                    {isArabic ? 'مساعد الجايدلاينز' : 'Guidelines Assistant'}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                    <LuShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                    {isArabic ? 'إجابات من النصوص المضافة فقط' : 'Source-grounded answers only'}
-                  </div>
+                <div className="text-[11px] font-bold text-emerald-100">
+                  {isArabic ? 'متصل الآن' : 'Online'}
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={clearChat}
+                className="rounded-full p-2 text-white/85 transition hover:bg-white/10 hover:text-white"
+                title={isArabic ? 'مسح' : 'Clear'}
+              >
+                <LuEraser className="h-4.5 w-4.5" />
+              </button>
+              {!isEmbedded && (
                 <button
                   type="button"
-                  onClick={() => setIsExpanded((value) => !value)}
-                  className="rounded-full p-2 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700"
-                  title={isArabic ? 'تكبير' : 'Expand'}
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-full p-2 text-white/85 transition hover:bg-white/10 hover:text-white"
+                  title={isArabic ? 'إغلاق' : 'Close'}
                 >
-                  <LuMaximize2 className="h-4 w-4" />
+                  <LuX className="h-5 w-5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={clearChat}
-                  className="rounded-full p-2 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700"
-                  title={isArabic ? 'مسح المحادثة' : 'Clear chat'}
-                >
-                  <LuEraser className="h-4 w-4" />
-                </button>
-                {!isEmbedded && (
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="rounded-full p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-                    title={isArabic ? 'إغلاق' : 'Close'}
-                  >
-                    <LuX className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-            </header>
+              )}
+            </div>
+          </header>
 
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_260px]">
-              <div className="flex min-h-0 flex-col">
-                <div className="border-b border-blue-100 bg-white px-3 py-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1.5 text-[11px] font-black text-blue-800 ring-1 ring-blue-100">
-                      <LuSearch className="h-3.5 w-3.5" />
-                      <select
-                        value={scope}
-                        onChange={(event) => setScope(event.target.value as GuidelineChatScope)}
-                        className="bg-transparent outline-none"
-                      >
-                        {Object.entries(scopeLabels).map(([value, labels]) => (
-                          <option key={value} value={value}>{labels[language]}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1.5 text-[11px] font-black text-slate-700 ring-1 ring-slate-200">
-                      <LuSettings2 className="h-3.5 w-3.5" />
-                      <select
-                        value={mode}
-                        onChange={(event) => setMode(event.target.value as GuidelineChatResponseMode)}
-                        className="bg-transparent outline-none"
-                      >
-                        {Object.entries(modeLabels).map(([value, labels]) => (
-                          <option key={value} value={value}>{labels[language]}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-500 ring-1 ring-slate-200">
-                      <LuGlobe className="h-3.5 w-3.5" />
-                      {selectedCollection?.school ?? (isArabic ? 'كل المصادر' : 'All sources')}
-                    </span>
-                    {scope === 'current-section' && selectedSource && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1.5 text-[11px] font-black text-emerald-800 ring-1 ring-emerald-200/50 truncate max-w-[200px]" title={selectedSource.title}>
-                        <LuFileText className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                        <span>
-                          {isArabic ? 'محدود بـ: ' : 'Scoped to: '}
-                          {selectedSource.title}
-                        </span>
-                      </span>
-                    )}
-                    {isIndexLoading && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1.5 text-[11px] font-black text-amber-700 ring-1 ring-amber-100">
-                        <LuLoader className="h-3.5 w-3.5 animate-spin" />
-                        {isArabic ? 'تجهيز الفهرس' : 'Indexing'}
-                      </span>
-                    )}
-                    {!isIndexLoading && fullTextChunkCount > 0 && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1.5 text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100">
-                        <LuFileText className="h-3.5 w-3.5" />
-                        {isArabic ? `${fullTextChunkCount} مقطع نص كامل` : `${fullTextChunkCount} full-text chunks`}
-                      </span>
-                    )}
-                  </div>
-                  {indexError ? <p className="mt-2 text-xs font-bold text-red-600">{indexError}</p> : null}
-                </div>
+          <ChatToolbar
+            isArabic={isArabic}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            answerStyle={answerStyle}
+            setAnswerStyle={setAnswerStyle}
+            scope={scope}
+            setScope={setScope}
+            selectedSource={selectedSource}
+            selectedCollection={selectedCollection}
+            showBookPicker={showBookPicker}
+            onSelectSource={onSelectSource}
+          />
 
-                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[radial-gradient(circle_at_top,#eff6ff_0,#f8fafc_36%,#eef2ff_100%)] px-3 py-4">
-                  {messages.map((message) => {
-                    const mine = message.role === 'user';
-                    return (
-                      <div key={message.id} className={`flex items-end gap-2 ${mine ? 'justify-end' : 'justify-start'}`}>
-                        {!mine && (
-                          <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white">
-                            <LuBot className="h-4 w-4" />
-                          </div>
-                        )}
-                        <div className={`max-w-[82%] ${mine ? 'text-right' : 'text-left'}`}>
-                          <div
-                            className={`whitespace-pre-wrap rounded-3xl px-4 py-2.5 text-sm font-semibold leading-7 shadow-sm ${
-                              mine
-                                ? 'rounded-br-md bg-blue-600 text-white rtl:rounded-bl-md rtl:rounded-br-3xl'
-                                : message.status === 'error'
-                                  ? 'rounded-bl-md border border-amber-200 bg-amber-50 text-amber-950 rtl:rounded-bl-3xl rtl:rounded-br-md'
-                                  : 'rounded-bl-md border border-slate-100 bg-white text-slate-800 rtl:rounded-bl-3xl rtl:rounded-br-md'
-                            }`}
-                          >
-                            {message.status === 'thinking' ? (
-                              <span className="inline-flex items-center gap-2">
-                                <LuLoader className="h-4 w-4 animate-spin" />
-                                {message.content}
-                              </span>
-                            ) : message.content}
-                          </div>
-                          {message.sources?.length ? (
-                            <button
-                              type="button"
-                              onClick={() => setActiveSources(message.sources ?? [])}
-                              className="mt-1 inline-flex items-center gap-1 text-[11px] font-black text-blue-700 hover:text-blue-900"
-                            >
-                              <LuPanelRightOpen className="h-3.5 w-3.5" />
-                              {isArabic ? `${message.sources.length} مصادر` : `${message.sources.length} sources`}
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={bottomRef} />
-                </div>
-
-                <div className="border-t border-blue-100 bg-white p-3">
-                  {messages.length <= 1 && (
-                    <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                      {suggestions[language].map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => sendMessage(item)}
-                          disabled={isIndexLoading}
-                          className="shrink-0 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-800 transition hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-end gap-2 rounded-3xl border border-blue-100 bg-slate-50 p-2 ring-1 ring-transparent transition focus-within:ring-blue-100">
-                    <textarea
-                      value={input}
-                      onChange={(event) => setInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' && !event.shiftKey) {
-                          event.preventDefault();
-                          sendMessage();
-                        }
-                      }}
-                      placeholder={isArabic ? 'اسأل من الجايدلاينز الرسمية...' : 'Ask from the official guidelines...'}
-                      rows={1}
-                      className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => sendMessage()}
-                      disabled={!input.trim() || isSending || isIndexLoading}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                      aria-label={isArabic ? 'إرسال' : 'Send'}
+          <div
+            ref={messagesScrollRef}
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 pt-3 [background-image:radial-gradient(circle_at_20px_20px,rgba(255,255,255,.45)_1px,transparent_1px)] [background-size:28px_28px] sm:px-5 sm:pb-4"
+          >
+            {messages.map((message) => {
+              const mine = message.role === 'user';
+              const textDirection = mine
+                ? (isArabic ? 'rtl' : 'ltr')
+                : (language === 'ar' ? 'rtl' : 'ltr');
+              return (
+                <div key={message.id} className={`flex items-end gap-2 ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex max-w-[92%] flex-col ${mine ? 'items-end' : 'items-start'} sm:max-w-[84%]`}>
+                    <div
+                      dir={textDirection}
+                      className={`${mine ? 'whitespace-pre-wrap' : ''} relative px-3.5 py-2 text-sm font-semibold leading-7 shadow-sm ${
+                        isArabic ? 'text-right' : 'text-left'
+                      } ${
+                        mine
+                          ? 'rounded-lg rounded-tr-sm bg-[#d9fdd3] text-slate-950 rtl:rounded-l-lg rtl:rounded-r-lg rtl:rounded-tl-sm'
+                          : message.status === 'error'
+                            ? 'rounded-lg rounded-tl-sm border border-amber-200 bg-amber-50 text-amber-950 rtl:rounded-l-lg rtl:rounded-r-lg rtl:rounded-tr-sm'
+                            : 'rounded-lg rounded-tl-sm bg-white text-slate-900 rtl:rounded-l-lg rtl:rounded-r-lg rtl:rounded-tr-sm'
+                      }`}
                     >
-                      {isSending ? <LuLoader className="h-5 w-5 animate-spin" /> : <LuSend className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {searchedSources.length > 0 && (
-                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                      <LuCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      {isArabic ? `تم العثور مبدئيًا على ${searchedSources.length} مصادر مطابقة` : `${searchedSources.length} matching sources found`}
+                      {renderMessageContent(message)}
                     </div>
-                  )}
+                    <div className="mt-1 flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                      <span>{getMessageTime(message.createdAt)}</span>
+                      {message.sources?.length ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveSources(message.sources || []);
+                            setSingleSourceNumber(null);
+                            setHighlightedSourceIndex(null);
+                            setSourceSheetOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 text-[#075e54] hover:text-[#063d31]"
+                        >
+                          <LuPanelRightOpen className="h-3.5 w-3.5" />
+                          {isArabic ? `${message.sources.length} مصادر` : `${message.sources.length} sources`}
+                        </button>
+                      ) : null}
+                      {!message.status && (
+                        <button
+                          type="button"
+                          onClick={() => copyText(message.content)}
+                          className="inline-flex items-center gap-1 hover:text-[#075e54]"
+                          title={isArabic ? 'نسخ' : 'Copy'}
+                        >
+                          <LuCopy className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              );
+            })}
+            <div ref={bottomRef} />
+          </div>
 
-              <aside className="hidden min-h-0 border-l border-blue-100 bg-white lg:flex lg:flex-col rtl:border-l-0 rtl:border-r">
-                <div className="flex items-center justify-between border-b border-blue-100 px-3 py-3">
-                  <div className="inline-flex items-center gap-2 text-xs font-black text-slate-700">
-                    <LuFileText className="h-4 w-4 text-blue-600" />
-                    {isArabic ? 'المصادر المستخدمة' : 'Used Sources'}
-                  </div>
-                  <LuChevronDown className="h-4 w-4 text-slate-300" />
-                </div>
-                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
-                  {activeSources.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-blue-100 bg-blue-50/60 p-4 text-xs font-bold leading-6 text-slate-500">
-                      {isArabic ? 'ستظهر هنا النصوص الرسمية التي استخدمها الشات في الإجابة.' : 'The official source excerpts used by the chat will appear here.'}
-                    </div>
-                  ) : (
-                    activeSources.map((source, index) => (
-                      <details key={`${source.id}-${index}`} className="rounded-2xl border border-blue-100 bg-blue-50/40 p-3" open={index < 2}>
-                        <summary className="cursor-pointer text-xs font-black text-blue-900">
-                          [S{index + 1}] {formatChunkCitation(source, language)}
-                        </summary>
-                        <p className="mt-2 whitespace-pre-wrap text-xs font-semibold leading-6 text-slate-600">
-                          {compactText(source.text, 900)}
-                        </p>
-                      </details>
-                    ))
-                  )}
-                </div>
-                <div className="border-t border-blue-100 bg-blue-50/60 p-3">
-                  <div className="flex items-start gap-2 text-[11px] font-bold leading-5 text-slate-600">
-                    <LuLanguages className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-                    {isArabic
-                      ? 'الإجابة تتبع لغة الصفحة. غيّر اللغة من أعلى صفحة الجايدلاينز.'
-                      : 'Answers follow the page language. Change language from the guidelines page header.'}
-                  </div>
-                </div>
-              </aside>
+          <div className="shrink-0 border-t border-[#d7cec0] bg-[#f0f2f5] px-2 py-2 sm:px-3 sm:py-2.5">
+            <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={toggleVoiceInput}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition ${
+                  isListening
+                    ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                    : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-emerald-50 hover:text-[#075e54]'
+                }`}
+                aria-label={isArabic ? 'إملاء صوتي' : 'Voice dictation'}
+                title={isArabic ? 'إملاء صوتي طبي' : 'Medical voice dictation'}
+              >
+                {isListening ? <LuMicOff className="h-5 w-5" /> : <LuMic className="h-5 w-5" />}
+              </button>
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                dir={isArabic ? 'rtl' : 'ltr'}
+                placeholder={isArabic ? 'اكتب سؤالك أو كمل على آخر إجابة...' : 'Ask a follow-up question...'}
+                rows={1}
+                className={`max-h-28 min-h-11 flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold leading-6 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/20 ${isArabic ? 'text-right' : 'text-left'}`}
+              />
+              <button
+                type="button"
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || isSending}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-[#063d31] shadow-lg shadow-emerald-900/20 transition hover:bg-[#20bd5a] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                aria-label={isArabic ? 'إرسال' : 'Send'}
+              >
+                {isSending ? <LuLoader className="h-5 w-5 animate-spin" /> : <LuSend className="h-5 w-5" />}
+              </button>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
+      {renderSourceSheet()}
     </>
   );
 };

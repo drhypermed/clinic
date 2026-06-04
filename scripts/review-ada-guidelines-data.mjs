@@ -3,11 +3,11 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-const dataDir = process.argv[2] ?? 'components/guidelines/data/ada2025';
+const dataDir = process.argv[2] ?? 'components/guidelines/data/ada2026';
 const guidelinesDataPath = process.argv[3] ?? 'components/guidelines/guidelinesData.ts';
-const structuredDir = process.argv[4] ?? 'guidelines-sources/_structured/ADA/2025';
-const sensitiveReviewPath = process.argv[5] ?? 'guidelines-sources/_review/ADA/2025/sensitive-clinical-review.json';
-const outputDir = process.argv[6] ?? 'guidelines-sources/_review/ADA/2025';
+const structuredDir = process.argv[4] ?? 'guidelines-sources/_structured/ADA/2026';
+const sensitiveReviewPath = process.argv[5] ?? 'guidelines-sources/_review/ADA/2026/sensitive-clinical-review.json';
+const outputDir = process.argv[6] ?? 'guidelines-sources/_review/ADA/2026';
 
 const workspace = process.cwd();
 const resolvedOutput = path.resolve(outputDir);

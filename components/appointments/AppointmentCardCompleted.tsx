@@ -4,7 +4,6 @@ import { isConsultationAppointment } from '../../utils/appointmentType';
 import { formatUserDate, formatUserTime } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
-import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 interface AppointmentCardCompletedProps {
   apt: ClinicAppointment;
@@ -28,11 +27,9 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> = ({
   apt,
   patientFileNumber,
-  doctorSpecialty,
   onRemoveAppointment,
 }) => {
   const isConsultation = isConsultationAppointment(apt);
-  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const typeLabel = isConsultation ? 'استشارة' : 'كشف';
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -119,7 +116,7 @@ export const AppointmentCardCompleted: React.FC<AppointmentCardCompletedProps> =
           </div>
         )}
 
-        {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
+        <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
 
         {/* Delete button */}
         <div className="flex justify-start pt-0.5">

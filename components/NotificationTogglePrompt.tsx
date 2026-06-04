@@ -14,6 +14,11 @@ const NOTIFICATION_PROMPT_HIDE_UNTIL_KEY = 'dh_notification_prompt_hide_until';
 const NOTIFICATION_PROMPT_HIDE_MS = 7 * 24 * 60 * 60 * 1000; // أسبوع
 type MessagingModule = typeof import('../services/messagingService');
 
+const getBrowserNotificationPermission = (): NotificationPermission => {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'default';
+  return Notification.permission;
+};
+
 export const NotificationTogglePrompt: React.FC = () => {
   const { user } = useAuth();
   const [showNotificationCard, setShowNotificationCard] = useState(false);
@@ -68,7 +73,7 @@ export const NotificationTogglePrompt: React.FC = () => {
     }
 
     // التحقق من حالة الإذن الحالي
-    const currentPermission = Notification.permission;
+    const currentPermission = getBrowserNotificationPermission();
     
     // إذا تغيرت الإذن من "granted" إلى شيء آخر، أعد عرض البطاقة وامسح علم الإغلاق
     const storedPermission = localStorage.getItem(NOTIFICATION_PERMISSION_SNAPSHOT_KEY) as NotificationPermission | null;
@@ -158,11 +163,11 @@ export const NotificationTogglePrompt: React.FC = () => {
         setShowNotificationCard(false);
         setDismissedInSession(false);
         setErrorHint(null);
-        localStorage.setItem(NOTIFICATION_PERMISSION_SNAPSHOT_KEY, Notification.permission);
+        localStorage.setItem(NOTIFICATION_PERMISSION_SNAPSHOT_KEY, getBrowserNotificationPermission());
       } else {
         // الطلب لم يكتمل — إما المستخدم رفض، أو الجهاز هنّج، أو الشبكة بطيئة
         // نوضّح للمستخدم ليه عشان ميفضلش يضغط بدون فهم ايه اللي بيحصل
-        const currentPermission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+        const currentPermission = getBrowserNotificationPermission();
         if (currentPermission === 'denied') {
           setErrorHint('الإشعارات مرفوضة من إعدادات المتصفح. افتح إعدادات الموقع وفعّلها يدوياً ثم أعد المحاولة.');
         } else {

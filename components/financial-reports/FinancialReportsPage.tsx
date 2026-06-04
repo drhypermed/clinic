@@ -31,6 +31,7 @@ import { YearlyStatsGrid } from './components/YearlyStatsGrid';
 import { InsuranceCompaniesSection } from './components/InsuranceCompaniesSection';
 import { DiscountReasonsSection } from './components/DiscountReasonsSection';
 import { InsuranceClaimsSection } from './components/InsuranceClaimsSection';
+import { SnapshotRecalculateButton } from './components/SnapshotRecalculateButton';
 
 // الخصائص | Props
 
@@ -57,6 +58,52 @@ interface FinancialReportsPageProps {
     /** قائمة الفروع — تُمرَّر لإدارة overrides نسبة التأمين per-branch. */
     branches?: Branch[];
 }
+
+const MAX_RECORD_RANGE_FETCH = 5000;
+
+const toMonthKeyFromParts = (year: number, monthZeroIndexed: number): string =>
+    `${year}-${String(monthZeroIndexed + 1).padStart(2, '0')}`;
+
+const getCompleteMonthKeysForRange = (startMs: number, endMs: number): string[] => {
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return [];
+    const startDate = new Date(startMs);
+    const endDate = new Date(endMs);
+    const months: string[] = [];
+    const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const last = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+    while (cursor.getTime() <= last.getTime()) {
+        const year = cursor.getFullYear();
+        const month = cursor.getMonth();
+        const monthStart = new Date(year, month, 1, 0, 0, 0, 0).getTime();
+        const monthEnd = new Date(year, month + 1, 1, 0, 0, 0, 0).getTime() - 1;
+        if (startMs <= monthStart && endMs >= monthEnd) {
+            months.push(toMonthKeyFromParts(year, month));
+        }
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return months;
+};
+
+type MonthlyExpensesInput = {
+    rentExpense?: string | number | null;
+    salariesExpense?: string | number | null;
+    toolsExpense?: string | number | null;
+    electricityExpense?: string | number | null;
+    otherExpense?: string | number | null;
+};
+
+const toFinancialNumber = (value: string | number | null | undefined): number => {
+    const parsed = typeof value === 'number' ? value : parseFloat(String(value || '0'));
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const toMonthlyFinancialData = (expenses: MonthlyExpensesInput): MonthlyFinancialData => ({
+    rentExpense: toFinancialNumber(expenses.rentExpense),
+    salariesExpense: toFinancialNumber(expenses.salariesExpense),
+    toolsExpense: toFinancialNumber(expenses.toolsExpense),
+    electricityExpense: toFinancialNumber(expenses.electricityExpense),
+    otherExpense: toFinancialNumber(expenses.otherExpense),
+});
 
 // المكون الرئيسي | Main Component
 
@@ -100,6 +147,18 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
 
     // السنة المحددة | Selected Year
     const [selectedYear, setSelectedYear] = React.useState<number>(new Date().getFullYear());
+    const [completeRecordMonthKeys, setCompleteRecordMonthKeys] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        setCompleteRecordMonthKeys([]);
+    }, [userId, branchId, recordsPagingEnabled]);
+
+    const markCompleteRecordRange = React.useCallback((startMs: number, endMs: number, fetchedCount: number) => {
+        if (!Number.isFinite(fetchedCount) || fetchedCount >= MAX_RECORD_RANGE_FETCH) return;
+        const keys = getCompleteMonthKeysForRange(startMs, endMs);
+        if (keys.length === 0) return;
+        setCompleteRecordMonthKeys((prev) => Array.from(new Set([...prev, ...keys])).sort());
+    }, []);
 
     // ─── تحميل سجلات السنة المعروضة (paginated mode فقط) ───────────────
     // لو الـpagination مفعّل، records محملة 50 سجل فقط — مش كافي لحساب التقارير
@@ -112,14 +171,17 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         if (!userId) return;
         if (!recordsPagingEnabled) return; // legacy = records كاملة بالفعل
         if (onFetchRecordsByDateRange) {
+            let cancelled = false;
             const yearOfMonth = navigation.selectedDate.getFullYear();
             const yearsToFetch = new Set<number>([yearOfMonth, selectedYear]);
             for (const year of yearsToFetch) {
                 const startMs = new Date(year, 0, 1, 0, 0, 0, 0).getTime();
                 const endMs = new Date(year + 1, 0, 1, 0, 0, 0, 0).getTime() - 1;
-                void onFetchRecordsByDateRange(startMs, endMs);
+                void onFetchRecordsByDateRange(startMs, endMs).then((fetchedCount) => {
+                    if (!cancelled) markCompleteRecordRange(startMs, endMs, fetchedCount);
+                }).catch(() => {});
             }
-            return;
+            return () => { cancelled = true; };
         }
         // Fallback لو الـcallback الجديد ما اتمررش — نحمّل كل التاريخ
         if (!recordsFullyLoaded && onEnsureFullRecordsLoaded) {
@@ -133,6 +195,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         selectedYear,
         onFetchRecordsByDateRange,
         onEnsureFullRecordsLoaded,
+        markCompleteRecordRange,
     ]);
 
     // البيانات | Data
@@ -319,6 +382,13 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         const consultPrice = parseFloat(fixedPrices.consultationPrice || '0') || 0;
         const dateYear = navigation.selectedDate.getFullYear();
         const loadedMapYears = Array.from(new Set<number>([dateYear, selectedYear]));
+        const completeRecordMonthKeysForClose = recordsFullyLoaded
+            ? loadedMapYears.flatMap((year) => getCompleteMonthKeysForRange(
+                new Date(year, 0, 1, 0, 0, 0, 0).getTime(),
+                new Date(year + 1, 0, 1, 0, 0, 0, 0).getTime() - 1,
+            ))
+            : completeRecordMonthKeys;
+        if (completeRecordMonthKeysForClose.length === 0) return;
         // ندّي وقت للـmaps يتحمّلوا قبل ما نحسب (3.5s).
         const timer = window.setTimeout(() => {
             void financialDataService.ensureSnapshotsForClosedMonths({
@@ -330,6 +400,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                 examPrice,
                 consultPrice,
                 loadedMapYears,
+                completeRecordMonthKeys: completeRecordMonthKeysForClose,
             }).catch((err) => {
                 console.warn('[FinancialReports] auto-close snapshots failed:', err);
             });
@@ -339,6 +410,8 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         userId,
         branchId,
         records?.length,
+        recordsFullyLoaded,
+        completeRecordMonthKeys,
         // نشغّل لما selectedYear يتغيّر (الطبيب فتح تقارير سنة تانية → maps
         // الإضافية اتحمّلت → الفرصة لإقفال شهور دي السنة).
         selectedYear,
@@ -435,6 +508,38 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                 {/* تبويب: الشهري | Monthly Tab */}
                 {activeTab === 'monthly' && (
                     <>
+                        {/* زر إعادة حساب الشهر المغلق | Recalculate closed-month snapshot */}
+                        {currentMonthSnapshot && (
+                            <SnapshotRecalculateButton
+                                monthLabel={navigation.monthLabel}
+                                onRecalculate={async () => {
+                                    const targetBranch = branchId || 'main';
+                                    const examPrice = parseFloat(fixedPrices.examinationPrice || '0') || 0;
+                                    const consultPrice = parseFloat(fixedPrices.consultationPrice || '0') || 0;
+                                    await financialDataService.forceRecalculateMonthSnapshot({
+                                        userId,
+                                        monthKey: currentMonthKey,
+                                        branchId: targetBranch,
+                                        records,
+                                        yearlyDailyMap: mergedYearlyDailyMap,
+                                        monthlyExpenses: toMonthlyFinancialData(financialData.monthlyExpenses),
+                                        examPrice,
+                                        consultPrice,
+                                    });
+                                    // refresh snapshots state
+                                    const yearOfMonth = navigation.selectedDate.getFullYear();
+                                    const yearsToLoad = new Set<number>([yearOfMonth, selectedYear]);
+                                    const results = await Promise.all(
+                                        Array.from(yearsToLoad).map((y) =>
+                                            financialDataService.getMonthlySnapshotsForYear(userId, y, targetBranch),
+                                        ),
+                                    );
+                                    const merged: Record<string, MonthlySnapshot> = {};
+                                    results.forEach((r) => Object.assign(merged, r));
+                                    setYearlySnapshots(merged);
+                                }}
+                            />
+                        )}
                         <InsuranceClaimsSection
                             userId={userId}
                             currentMonthLabel={navigation.monthLabel}

@@ -14,6 +14,7 @@ import { firestoreService } from '../../../services/firestore';
 import type { Branch, PublicBookingSlot, PublicBranchInfo } from '../../../types';
 import { formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { useCopyFeedback } from '../../../hooks/useCopyFeedback';
+import { appendBranchToPublicBookingUrl, buildPublicBookingUrl } from '../../../utils/publicBookingLinks';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import { getDefaultTimeStr } from './helpers';
 import { DEFAULT_BRANCH_ID } from '../../../services/firestore/branches';
@@ -52,6 +53,10 @@ export const usePublicBookingPublicSection = ({
   const [branchAddressesSaving, setBranchAddressesSaving] = useState(false);
 
   const currentBranchId = activeBranchId || DEFAULT_BRANCH_ID;
+  const currentBranchForLink = useMemo(() => {
+    const matched = branches.find((branch) => branch.id === currentBranchId);
+    return matched || { id: currentBranchId, name: currentBranchId };
+  }, [branches, currentBranchId]);
 
   // فلترة المواعيد: كل فرع يشوف مواعيده فقط.
   // المواعيد القديمة (بدون branchId) تظهر في الفرع الرئيسي.
@@ -64,12 +69,12 @@ export const usePublicBookingPublicSection = ({
 
   const publicBookingLink = useMemo(() => {
     if (!publicSecret) return null;
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     // الـ canonical الجديد: /p/{slug} لو الـslug متاح. fallback للـ legacy لو لأ.
     const slug = String(seededPublicSlug || '').trim();
-    if (slug) return `${origin}/p/${slug}`;
-    return `${origin}/book-public/s/${publicSecret}`;
-  }, [publicSecret, seededPublicSlug]);
+    const baseLink = slug ? buildPublicBookingUrl(slug) : (userId ? buildPublicBookingUrl(userId) : null);
+    if (!baseLink) return null;
+    return appendBranchToPublicBookingUrl(baseLink, currentBranchForLink);
+  }, [publicSecret, seededPublicSlug, userId, currentBranchForLink]);
 
   const publicSlotTodayStr = currentDayStr;
   const publicTimeMin = publicSlotDateStr === publicSlotTodayStr ? currentTimeMin() : undefined;

@@ -220,12 +220,10 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   }, [enabledSecretaryFields, secretaryVitals]);
 
   const shouldShowSecretaryVitalsFields =
-    enabledSpecialtyPack === 'pediatrics' &&
     enabledSecretaryFields.length > 0 &&
     typeof onSecretaryVitalsChange === 'function';
 
   useEffect(() => {
-    if (enabledSpecialtyPack !== 'pediatrics') return;
     if (!onSecretaryVitalsChange) return;
     if (!isSecretaryVitalEnabled(secretaryVitalsVisibility, 'bmi')) return;
 
@@ -247,7 +245,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     secretaryVitals?.height,
     secretaryVitals?.weight,
     secretaryVitalsVisibility,
-    enabledSpecialtyPack,
   ]);
 
   const resolveSecretaryVitalStorageKey = (fieldId: string): string => {

@@ -1,4 +1,5 @@
 import { generateContentWithSecurity, GEMINI_MODEL, tryParseJson } from './geminiUtils';
+import { getLocalRenalDoseAdjustment } from './renalDosingKnowledgeBase';
 
 /**
  * خدمة أدوات الأدوية المعتمدة على الذكاء الاصطناعي (Gemini Drug Tools Service)
@@ -51,6 +52,11 @@ export const calculateRenalDoseAdjustment = async (
   crcl: number,
   patientData: { age: number; weight: number; gender: string; scr: number }
 ): Promise<RenalDoseResult> => {
+  const localResult = getLocalRenalDoseAdjustment(drugName, crcl);
+  if (localResult) {
+    return localResult;
+  }
+
   // ─ البرومبت الجديد: قواعد anti-hallucination صريحة على نمط فحص التداخلات (8.5/10).
   //   ممنوع التخمين. لازم مصدر من الـwhitelist. مسموح يقول "insufficient_data".
   const prompt = `
@@ -141,7 +147,6 @@ RESPONSE (JSON ONLY):
       // thinkingBudget=1500 (كان 0 تلقائياً) — قرارات الجرعات الكلوية محتاجة تفكير عميق.
       thinkingBudget: 1500,
       feature: 'renal_dose',
-      googleSearch: true,
     });
 
     const parsed = tryParseJson(responseText || '{}') || {};

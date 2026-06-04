@@ -2,6 +2,9 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
+import { LegalConsentGate } from '../../auth/legal/LegalConsentGate';
+import { isAudienceLegalConsentComplete } from '../../../services/legalConsentService';
+
 
 interface AuthPromptModalProps {
   open: boolean;
@@ -20,6 +23,14 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
   authWorking,
   onGoogleLogin,
 }) => {
+  const [isLegalReady, setIsLegalReady] = React.useState<boolean>(() =>
+    isAudienceLegalConsentComplete('public'),
+  );
+
+  React.useEffect(() => {
+    if (open) setIsLegalReady(isAudienceLegalConsentComplete('public'));
+  }, [open]);
+
   if (!open) return null;
 
   return createPortal(
@@ -28,7 +39,7 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md clinic-section p-5 shadow-2xl"
+        className="w-full max-w-lg clinic-section p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
@@ -47,6 +58,15 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
           تسجيل الدخول متاح فقط عبر Google.
         </p>
 
+        {!isLegalReady && (
+          <div className="mb-3">
+            <LegalConsentGate
+              audience="public"
+              onValidityChange={setIsLegalReady}
+            />
+          </div>
+        )}
+
         {authError && (
           <div className="rounded-xl border border-danger-200 bg-danger-50 px-3 py-2 mb-3">
             <p className="text-sm font-black text-danger-700">{authError}</p>
@@ -62,7 +82,7 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
         <button
           type="button"
           onClick={onGoogleLogin}
-          disabled={authWorking}
+          disabled={authWorking || !isLegalReady}
           className="w-full h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-black disabled:opacity-60 flex items-center justify-center gap-3"
         >
           <svg viewBox="0 0 48 48" className="w-5 h-5" aria-hidden="true">

@@ -1,4 +1,3 @@
-
 export type AppView =
   | 'home'              // لوحة التحكم الرئيسية
   | 'prescription'      // صفحة الروشتة والكشف
@@ -6,7 +5,8 @@ export type AppView =
   | 'patientFiles'      // ملفات المرضى الموحدة
   | 'appointments'      // المواعيد والحجوزات
   | 'financialReports'  // التقارير المالية والأرباح
-  | 'guidelines'        // مكتبة الجايدلاينز الطبية
+  | 'medicalAssistant'  // المساعد الطبي الذكي
+  | 'guidelinesLibrary' // مكتبة الجايدلاينز الطبية
   | 'drugtools'         // قاعدة بيانات الأدوية
   | 'medicationEdit'    // تعديل بيانات دواء
   | 'settings'          // إعدادات الروشتة والتصميم
@@ -22,7 +22,8 @@ export const VIEW_TO_PATH: Record<AppView, string> = {
   patientFiles: '/patient-files',
   appointments: '/appointments',
   financialReports: '/financial-reports',
-  guidelines: '/guidelines',
+  medicalAssistant: '/medical-assistant',
+  guidelinesLibrary: '/guidelines-library',
   drugtools: '/drug-tools',
   medicationEdit: '/drug-tools/edit',
   settings: '/settings',
@@ -48,15 +49,13 @@ const ARABIC_PATH_MAP: Record<string, AppView> = {
   '/التقارير-المالية': 'financialReports',
   '/التقارير': 'financialReports',
   '/المالية': 'financialReports',
-  '/الجايدلاينز': 'guidelines',
-  '/الدلائل-الطبية': 'guidelines',
-  '/guidelines': 'guidelines',
+  '/المساعد-الطبي': 'medicalAssistant',
+  '/المساعد': 'medicalAssistant',
+  '/مكتبة-الجايدلاينز': 'guidelinesLibrary',
+  '/الجايدلاينز': 'guidelinesLibrary',
+  '/الدلائل-الطبية': 'guidelinesLibrary',
+  '/guidelines': 'guidelinesLibrary',
   '/أدوات-الأدوية': 'drugtools',
-  '/الأدوية': 'drugtools',
-  '/تعديل-الأدوية': 'medicationEdit',
-  '/تعديل-دواء': 'medicationEdit',
-  '/إعدادات-الروشتة': 'settings',
-  '/الإعدادات': 'settings',
   '/تصميم-الروشتة': 'settings',
   '/إعدادات-الفروع': 'branchSettings',
   '/الفروع': 'branchSettings',
@@ -100,9 +99,14 @@ export const resolveViewFromPath = (pathname: string): AppView | null => {
     case '/financial-reports':
     case '/app/financial-reports':
       return 'financialReports';
-    case '/guidelines':
-    case '/app/guidelines':
-      return 'guidelines';
+    case '/medical-assistant':
+    case '/app/medical-assistant':
+      return 'medicalAssistant';
+    case '/guidelines-library':
+    case '/app/guidelines-library':
+    case '/guidelines': // للتوافق مع الروابط القديمة
+    case '/app/guidelines': // للتوافق مع الروابط القديمة
+      return 'guidelinesLibrary';
     case '/drug-tools':
     case '/app/drug-tools':
       return 'drugtools';

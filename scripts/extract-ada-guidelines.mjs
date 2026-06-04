@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-const sourceDir = process.argv[2] ?? 'guidelines-sources/ADA/2025';
-const outputDir = process.argv[3] ?? 'guidelines-sources/_structured/ADA/2025';
-const assetDir = process.argv[4] ?? 'guidelines-sources/_assets/ADA/2025';
+const sourceDir = process.argv[2] ?? 'guidelines-sources/ADA/2026';
+const outputDir = process.argv[3] ?? 'guidelines-sources/_structured/ADA/2026';
+const assetDir = process.argv[4] ?? 'guidelines-sources/_assets/ADA/2026';
 
 const workspace = process.cwd();
 const resolvedSource = path.resolve(sourceDir);

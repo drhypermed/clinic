@@ -100,6 +100,37 @@ const isAppCheckError = (error: unknown): boolean => {
     || (code.includes('failed-precondition') && combined.includes('app'));
 };
 
+const getErrorText = (error: unknown): string => {
+  if (!error) return '';
+  if (typeof error === 'string') return error.toLowerCase();
+  const typed = error as { code?: unknown; message?: unknown; name?: unknown };
+  return [typed.code, typed.name, typed.message]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase())
+    .join(' ');
+};
+
+const isTransientGeminiGatewayError = (error: unknown): boolean => {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+
+  const text = getErrorText(error);
+  return [
+    'aborted',
+    'aborterror',
+    'cancelled',
+    'canceled',
+    'deadline-exceeded',
+    'failed to fetch',
+    'load failed',
+    'network',
+    'network-request-failed',
+    'timeout',
+    'unavailable',
+  ].some((marker) => text.includes(marker));
+};
+
+const wait = (delayMs: number) => new Promise((resolve) => window.setTimeout(resolve, delayMs));
+
 const ensureAuthenticatedGeminiUser = async (): Promise<void> => {
   await authPersistenceReady.catch(() => undefined);
 
@@ -129,7 +160,27 @@ export const generateGeminiContentSecure = async (params: SecureGeminiParams): P
 
   let result: any;
   try {
-    result = await call();
+    const maxAttempts = 3;
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        result = await call();
+        lastError = undefined;
+        break;
+      } catch (error: unknown) {
+        lastError = error;
+        if (
+          attempt >= maxAttempts
+          || isAppCheckError(error)
+          || isUnauthenticatedError(error)
+          || !isTransientGeminiGatewayError(error)
+        ) {
+          throw error;
+        }
+        await wait(450 * attempt);
+      }
+    }
+    if (lastError) throw lastError;
   } catch (error: unknown) {
     if (isAppCheckError(error)) {
       throw new Error('تعذر التحقق من App Check. تحقق من إعدادات App Check/RECAPTCHA ثم أعد المحاولة.');

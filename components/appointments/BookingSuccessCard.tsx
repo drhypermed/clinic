@@ -93,7 +93,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
       <div
         ref={cardRef}
         data-card-root="true"
-        className="w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-3xl relative border border-slate-200"
+        className="w-full max-w-md overflow-hidden bg-white shadow-2xl shadow-slate-200/50 rounded-3xl relative border border-slate-200/80"
         dir="rtl"
       >
         {/* الجزء العلوي - خلفية زرقاء */}
@@ -104,7 +104,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold mb-0 text-white">تم تأكيد الحجز</h2>
+            <h2 className="whitespace-nowrap text-lg font-black leading-tight text-white sm:text-xl">تم تأكيد الحجز</h2>
           </div>
           <div className="absolute bottom-0 left-0 w-full h-8 bg-white rounded-t-[2.5rem]"></div>
         </div>
@@ -112,8 +112,8 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
         {/* محتوى الكارت */}
         <div className="px-8 pb-8 pt-0">
           <div className="text-center mb-8">
-            <h3 className="text-xl font-bold mb-1" style={{ color: theme.primary }}>{clinicName || 'العيادة الطبية'}</h3>
-            <p className="text-sm font-semibold" style={{ color: theme.textGray }}>{clinicContact}</p>
+            <h3 className="mb-1 break-words text-lg font-bold leading-snug" style={{ color: theme.primary }}>{clinicName || 'العيادة الطبية'}</h3>
+            <p className="whitespace-pre-wrap break-words text-xs font-semibold leading-relaxed" style={{ color: theme.textGray }}>{clinicContact}</p>
           </div>
 
           <div className="space-y-4 mb-8">
@@ -131,7 +131,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
                 </div>
                 <div className="mr-5">
                   <p className="text-xs font-bold mb-1 opacity-70">نوع الحجز</p>
-                  <p className="text-lg font-black">{appointmentType === 'exam' ? 'كشف' : 'استشارة'}</p>
+                  <p className="text-base font-black">{appointmentType === 'exam' ? 'كشف' : 'استشارة'}</p>
                 </div>
               </div>
             )}
@@ -145,7 +145,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
               </div>
               <div className="mr-5">
                 <p className="text-xs font-bold mb-1 opacity-70">اسم المريض</p>
-                <p className="text-lg font-black">{patientName}</p>
+                <p className="break-words text-base font-black leading-snug">{patientName}</p>
               </div>
             </div>
 
@@ -158,9 +158,9 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
               </div>
               <div className="mr-5">
                 <p className="text-xs font-bold mb-1 opacity-70">موعد الزيارة</p>
-                <div className="flex gap-2 items-center">
-                  <span className="text-lg font-bold">{formattedDate}</span>
-                  <span className="text-xl font-black text-warning-800" dir="ltr">{formattedTime}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-bold leading-snug">{formattedDate}</span>
+                  <span className="text-base font-black leading-snug text-warning-800" dir="ltr">{formattedTime}</span>
                 </div>
               </div>
             </div>
@@ -189,7 +189,7 @@ export const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({
         <button
           onClick={handleSaveImage}
           disabled={saving}
-          className="w-full py-4 rounded-xl font-bold text-white shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 bg-gradient-to-br from-brand-900 to-slate-900"
+          className="w-full py-4 rounded-xl font-bold text-white shadow-xl shadow-brand-300/30 hover:shadow-2xl transition-all duration-200 flex items-center justify-center gap-3 active:scale-[0.98] bg-gradient-to-br from-brand-700 to-brand-900"
         >
           {saving ? 'جاري الحفظ' : (
             <>
@@ -286,7 +286,7 @@ const CalendarDownloadButton: React.FC<{
   return (
     <button
       onClick={handleDownload}
-      className="w-full py-3 rounded-xl font-bold text-brand-800 border-2 border-brand-300 bg-brand-50 hover:bg-brand-100 transition-all flex items-center justify-center gap-2 active:scale-95"
+      className="w-full py-3 rounded-xl font-bold text-brand-700 border-2 border-brand-200 bg-white hover:bg-brand-50 hover:border-brand-300 hover:shadow-md shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
     >
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

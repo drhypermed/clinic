@@ -14,7 +14,7 @@
 // عشان نتأكد إن الأرقام مطابقة قبل الاعتماد عليها.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { collection, doc, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocsCacheFirst } from '../firestore/cacheFirst';
 import { branchDocKey } from './normalizers';
@@ -37,8 +37,11 @@ const SNAPSHOT_GRACE_DAYS = 28;
  * interventions/other/expenses للشهور اللي سنتها مش في yearlyDailyMap
  * المحمّلة لحظة الإقفال. v3 بيتجاهل كل v2 ويعيد بناءها بقيم صحيحة بعد
  * تحميل maps السنة المعنية.
+ *
+ * v4 (2026-05): لا يكتب snapshot إلا بعد إثبات اكتمال تحميل سجلات الشهر نفسه،
+ * لمنع إقفال شهر بصفر أثناء تحميل pagination في الخلفية.
  */
-const SNAPSHOT_VERSION = 3;
+const SNAPSHOT_VERSION = 4;
 
 /**
  * تفصيل أرقام يوم واحد داخل snapshot — يكفي لـuseFinancialStats عشان
@@ -113,6 +116,12 @@ export interface MonthlySnapshot {
     closedAt: number;              // وقت إنشاء الـsnapshot
     closedAutomatically: boolean;  // true لو تم تلقائياً، false لو يدوياً
     recordsCountAtClose: number;   // عدد السجلات وقت الإقفال (للـvalidation)
+    recordsFetchComplete?: boolean;
+    recordsRangeStart?: number;
+    recordsRangeEnd?: number;
+    sourceRecordsCount?: number;
+    dailyEntriesCount?: number;
+    monthlyEntriesLoaded?: boolean;
     manuallyEdited: boolean;       // true لو الطبيب عدّل الأرقام يدوياً
     lastModifiedAt: number;        // آخر تعديل (تلقائي أو يدوي)
 }
@@ -147,6 +156,12 @@ const formatMonthKey = (date: Date): string => {
     return `${year}-${month}`;
 };
 
+const isAutomaticallyClosedEmptySnapshot = (snapshot: Partial<MonthlySnapshot>): boolean => {
+    if (!snapshot.closedAutomatically) return false;
+    const sourceRecordsCount = Number(snapshot.sourceRecordsCount);
+    return sourceRecordsCount === 0;
+};
+
 /** المعطيات اللازمة لحساب snapshot. كلها مُمرَّرة من الـcaller (مش بنقرأ Firestore هنا). */
 interface ComputeMonthlySnapshotInput {
     monthKey: string;
@@ -161,6 +176,7 @@ interface ComputeMonthlySnapshotInput {
     examPrice: number;
     consultPrice: number;
     closedAutomatically: boolean;
+    recordsFetchComplete: boolean;
 }
 
 /**
@@ -176,6 +192,7 @@ const computeMonthlySnapshot = ({
     examPrice,
     consultPrice,
     closedAutomatically,
+    recordsFetchComplete,
 }: ComputeMonthlySnapshotInput): MonthlySnapshot => {
     // فلترة السجلات لهذا الفرع. السجلات بدون branchId نعتبرها main.
     const branchRecords = records.filter((r) => (r.branchId || 'main') === branchId);
@@ -271,6 +288,13 @@ const computeMonthlySnapshot = ({
     let insuranceExtrasTotal = 0;
     let dailyExpensesTotal = 0;
     const monthEntriesPrefix = monthKey + '-'; // YYYY-MM-
+    const sourceRecordsCount = branchRecords.reduce((count, record) => {
+        const recTs = Date.parse(String(record.date || ''));
+        return Number.isFinite(recTs) && recTs >= startTs && recTs <= endTs ? count + 1 : count;
+    }, 0);
+    const dailyEntriesCount = Object.keys(yearlyDailyMap).filter((dateKey) =>
+        dateKey.startsWith(monthEntriesPrefix)
+    ).length;
     Object.entries(yearlyDailyMap).forEach(([dateKey, entry]) => {
         if (!dateKey.startsWith(monthEntriesPrefix)) return;
         const intervVal = Number(entry.interventionsRevenue) || 0;
@@ -339,6 +363,12 @@ const computeMonthlySnapshot = ({
         closedAt: now,
         closedAutomatically,
         recordsCountAtClose: branchRecords.length,
+        recordsFetchComplete,
+        recordsRangeStart: startTs,
+        recordsRangeEnd: endTs,
+        sourceRecordsCount,
+        dailyEntriesCount,
+        monthlyEntriesLoaded: true,
         manuallyEdited: false,
         lastModifiedAt: now,
     };
@@ -388,6 +418,7 @@ const getExistingSnapshotMonthKeys = async (
             // snapshots قديمة بـversion أقل = نتجاهلها عشان تتعاد كتابتها بـlogic جديد.
             const version = Number(data.version) || 0;
             if (version < SNAPSHOT_VERSION) return;
+            if (isAutomaticallyClosedEmptySnapshot(data)) return;
             keys.add(data.monthKey);
         });
         return keys;
@@ -423,6 +454,7 @@ export const getMonthlySnapshotsForYear = async (
             if (!data?.monthKey || !data.monthKey.startsWith(yearPrefix)) return;
             const version = Number(data.version) || 0;
             if (version < SNAPSHOT_VERSION) return;
+            if (isAutomaticallyClosedEmptySnapshot(data)) return;
             out[data.monthKey] = data;
         });
         return out;
@@ -448,6 +480,8 @@ interface EnsureSnapshotsInput {
      * مرّر السنوات المحمَّلة فعلاً (مثلاً [2026] أو [2025, 2026]).
      */
     loadedMapYears: number[];
+    /** Month keys (YYYY-MM) whose record ranges are known to be fully loaded. */
+    completeRecordMonthKeys: string[];
     /** الآن — للـtesting (قابل للتجاوز). الافتراضي = الوقت الحقيقي. */
     now?: Date;
 }
@@ -473,10 +507,12 @@ export const ensureSnapshotsForClosedMonths = async ({
     examPrice,
     consultPrice,
     loadedMapYears,
+    completeRecordMonthKeys,
     now = new Date(),
 }: EnsureSnapshotsInput): Promise<void> => {
     if (!userId) return;
     if (!Array.isArray(loadedMapYears) || loadedMapYears.length === 0) return;
+    if (!Array.isArray(completeRecordMonthKeys) || completeRecordMonthKeys.length === 0) return;
 
     // نلف على آخر 84 شهر (7 سنين) — يكفي لمعظم الأطباء حتى الأقدم.
     // ملاحظة: snapshots بتتراكم تدريجياً بمرور الوقت — لو الطبيب لسه ما فتحش
@@ -503,6 +539,9 @@ export const ensureSnapshotsForClosedMonths = async ({
         }
     }
     const allowedMapYearsSet = new Set(loadedMapYears);
+    const completeRecordMonthSet = new Set(
+        completeRecordMonthKeys.filter((mk) => /^\d{4}-\d{2}$/.test(mk))
+    );
 
     // اقرأ الـsnapshots الموجودة (بـversion الحالي) عشان ما نكتبش فوقها.
     // snapshots بـversion أقدم بتُتجاهل في getExistingSnapshotMonthKeys فيتعاد
@@ -512,7 +551,9 @@ export const ensureSnapshotsForClosedMonths = async ({
         if (existingKeys.has(mk)) return false;
         const monthYear = parseInt(mk.slice(0, 4), 10);
         // لازم records وmaps الاتنين يغطّوا السنة دي عشان الـsnapshot يطلع كامل.
-        return loadedRecordYears.has(monthYear) && allowedMapYearsSet.has(monthYear);
+        return loadedRecordYears.has(monthYear)
+            && allowedMapYearsSet.has(monthYear)
+            && completeRecordMonthSet.has(mk);
     });
     if (monthsNeedingClose.length === 0) return;
 
@@ -529,10 +570,87 @@ export const ensureSnapshotsForClosedMonths = async ({
                 examPrice,
                 consultPrice,
                 closedAutomatically: true,
+                recordsFetchComplete: true,
             });
+            if (isAutomaticallyClosedEmptySnapshot(snapshot)) continue;
             await saveMonthlySnapshot(userId, snapshot);
         } catch (err) {
             console.warn(`[monthlySnapshots] failed to close month ${monthKey}:`, err);
         }
     }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// حذف + إعادة حساب snapshot (لإصلاح snapshots الخربانة/الصفر)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * يمسح snapshot لشهر معين من Firestore.
+ * الاستخدام: لما snapshot يتحفظ بأصفار غلط — نمسحه فيرجع النظام
+ * يحسب الأرقام من السجلات الحقيقية (live stats).
+ */
+export const deleteMonthlySnapshot = async (
+    userId: string,
+    monthKey: string,
+    branchId?: string,
+): Promise<void> => {
+    if (!userId || !monthKey) return;
+    const targetBranch = branchId || 'main';
+    const docRef = doc(
+        db,
+        'users', userId,
+        'financialData', 'monthlySnapshots',
+        'entries', branchDocKey(monthKey, targetBranch),
+    );
+    await deleteDoc(docRef);
+};
+
+/** المعطيات لـ`forceRecalculateMonthSnapshot`. */
+interface ForceRecalculateInput {
+    userId: string;
+    monthKey: string;
+    branchId: string;
+    records: PatientRecord[];
+    yearlyDailyMap: Record<string, DailyFinancialData>;
+    monthlyExpenses: MonthlyFinancialData;
+    examPrice: number;
+    consultPrice: number;
+}
+
+/**
+ * يمسح الـsnapshot القديم (لو موجود) ويبني واحد جديد من البيانات الخام
+ * ويحفظه. كده الأرقام بترجع صح بناءً على الكشوفات والاستشارات الحقيقية.
+ *
+ * الفرق عن auto-close: ده يدوي بضغطة الطبيب — مش بيشيك على eligibility
+ * أو version، بيمسح القديم ويكتب الجديد مباشرة.
+ */
+export const forceRecalculateMonthSnapshot = async ({
+    userId,
+    monthKey,
+    branchId,
+    records,
+    yearlyDailyMap,
+    monthlyExpenses,
+    examPrice,
+    consultPrice,
+}: ForceRecalculateInput): Promise<MonthlySnapshot> => {
+    // 1. نمسح الـsnapshot القديم لو موجود
+    await deleteMonthlySnapshot(userId, monthKey, branchId);
+
+    // 2. نحسب snapshot جديد من البيانات الخام
+    const snapshot = computeMonthlySnapshot({
+        monthKey,
+        branchId,
+        records,
+        yearlyDailyMap,
+        monthlyExpenses,
+        examPrice,
+        consultPrice,
+        closedAutomatically: false, // يدوي
+        recordsFetchComplete: true,
+    });
+
+    // 3. نحفظ الـsnapshot الجديد
+    await saveMonthlySnapshot(userId, snapshot);
+    return snapshot;
 };

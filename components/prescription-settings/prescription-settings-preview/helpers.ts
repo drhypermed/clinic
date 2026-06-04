@@ -38,39 +38,33 @@ export const PRINT_PREVIEW_RX_ITEMS: PrescriptionItem[] = [
         id: 'p1',
         type: 'medication',
         medication: buildPreviewMed('m1', 'AUGMENTIN 1G TABLETS'),
-        instructions: 'قرص كل 12 ساعة لمدة 7 أيام بعد الأكل',
+        instructions: 'قرص كل 12 ساعة بعد الأكل لمدة 7 أيام',
     },
     {
         id: 'p2',
         type: 'medication',
         medication: buildPreviewMed('m2', 'BRUFEN 400 MG TABLETS'),
-        instructions: 'قرص كل 8 ساعات عند الحاجة بعد الأكل (لخفض الحرارة وتسكين الألم)',
+        instructions: 'قرص كل 8 ساعات عند اللزوم بعد الأكل',
     },
     {
         id: 'p3',
         type: 'medication',
         medication: buildPreviewMed('m3', 'NEXIUM 40 MG CAPSULES'),
-        instructions: 'كبسولة واحدة يومياً قبل الإفطار بنصف ساعة (لحماية المعدة)',
-    },
-    {
-        id: 'p4',
-        type: 'medication',
-        medication: buildPreviewMed('m4', 'STREPSILS LOZENGES'),
-        instructions: 'قرص استحلاب كل 3 ساعات لتسكين ألم الحلق',
+        instructions: 'كبسولة يومياً قبل الإفطار بنصف ساعة',
     },
 ];
 
 /** ٢ فحوصات تتناسب مع حالة التهاب حاد */
 export const PRINT_PREVIEW_LABS: string[] = [
-    'CBC (لتحديد نوع وشدة الالتهاب)',
-    'CRP (لقياس مستوى الالتهاب في الدم)',
+    'CBC - صورة دم كاملة',
+    'CRP - قياس الالتهاب',
 ];
 
 /** ٣ تعليمات هامة لحالة التهاب الحلق */
 export const PRINT_PREVIEW_ADVICE: string[] = [
-    'الإكثار من السوائل الدافئة وخاصة الماء والمشروبات العشبية',
-    'الراحة التامة وتجنب الإجهاد لمدة 3 أيام على الأقل',
-    'الغرغرة بمحلول ملحي دافئ 3 مرات يومياً',
+    'الإكثار من السوائل الدافئة',
+    'الراحة وتجنب الإجهاد لمدة 3 أيام',
+    'المراجعة إذا استمرت الحرارة أو زاد الألم',
 ];
 
 /** بيانات الكشف الإكلينيكية النموذجية (شكوى، تاريخ، فحص، تشخيص) */

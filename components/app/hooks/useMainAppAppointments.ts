@@ -430,6 +430,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   // 3. استقبال إشعارات الـ Push في المقدمة (Foreground)
   useEffect(() => {
     if (!userId) return;
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
     if (Notification.permission === 'granted') {
       const cleanup = onForegroundMessage((payload) => {
         console.log('[App] Foreground push received:', payload);
@@ -509,6 +510,10 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     .map((b) => `${b.secret}|${b.branchId}|${b.branchName}`)
     .sort()
     .join(',');
+  const branchBookingSecrets = useMemo(
+    () => (branchSubscriptions || []).map((b) => b.secret).filter(Boolean),
+    [branchSubscriptionsKey],
+  );
   useEffect(() => {
     // اجمع كل الـsecrets المحتملة (الـactive + كل فروع الطبيب)
     const subs = new Map<string, { branchId: string; branchName: string }>();
@@ -616,6 +621,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   // Hook مستخرج بيتولى بناء المصفوفات الـ 3 + الـ sync effects (~200 سطر).
   useBookingConfigSync({
     bookingSecret,
+    bookingSecrets: branchBookingSecrets,
     allAppointmentsAcrossBranches,
     todayStr,
     branchIds,

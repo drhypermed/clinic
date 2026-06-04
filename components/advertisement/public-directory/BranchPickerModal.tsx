@@ -14,7 +14,7 @@ interface BranchPickerModalProps {
   branches: DoctorAdBranch[];
   onClose: () => void;
   // بيتنادى لما المريض يختار فرع — الكنترولر بيكمّل ويوجّه للفورم.
-  onSelectBranch: (branchId: string) => void;
+  onSelectBranch: (branchId: string, branchName?: string, branchAddress?: string) => void;
 }
 
 export const BranchPickerModal: React.FC<BranchPickerModalProps> = ({
@@ -77,7 +77,7 @@ export const BranchPickerModal: React.FC<BranchPickerModalProps> = ({
               <button
                 key={branch.id}
                 type="button"
-                onClick={() => onSelectBranch(branch.id)}
+                onClick={() => onSelectBranch(branch.id, branch.name, addressText)}
                 className="w-full flex items-start gap-3 p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-400 transition text-right"
               >
                 <div className="w-9 h-9 shrink-0 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center">

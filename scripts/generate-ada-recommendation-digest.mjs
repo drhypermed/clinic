@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-const dataDir = process.argv[2] ?? 'components/guidelines/data/ada2025';
+const dataDir = process.argv[2] ?? 'components/guidelines/data/ada2026';
 const guidelinesDataPath = process.argv[3] ?? 'components/guidelines/guidelinesData.ts';
-const structuredDir = process.argv[4] ?? 'guidelines-sources/_structured/ADA/2025';
-const outputPath = process.argv[5] ?? 'components/guidelines/data/ada2025/recommendationDigest.ts';
+const structuredDir = process.argv[4] ?? 'guidelines-sources/_structured/ADA/2026';
+const outputPath = process.argv[5] ?? 'components/guidelines/data/ada2026/recommendationDigest.ts';
 
 const workspace = process.cwd();
 const read = (filePath) => fs.readFileSync(path.resolve(filePath), 'utf8');
@@ -279,7 +279,7 @@ for (const source of sources) {
   });
 }
 
-const variableName = outputPath.includes('2026') ? 'ADA_2026_RECOMMENDATION_DIGEST' : 'ADA_2025_RECOMMENDATION_DIGEST';
+const variableName = 'ADA_2026_RECOMMENDATION_DIGEST';
 const output = `import type { GuidelineSourceDigest } from '../../guidelinesData';\n\nexport const ${variableName}: GuidelineSourceDigest[] = ${JSON.stringify(digest, null, 2)};\n`;
 
 fs.mkdirSync(path.dirname(path.resolve(outputPath)), { recursive: true });

@@ -225,15 +225,19 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   const showLabsSection = displayLabs.length > 0;
   const showAdviceSection = displayAdvice.length > 0;
+  const hideLabsSectionInPrint = displayLabs.every((lab) => !lab?.trim());
+  const hideAdviceSectionInPrint = displayAdvice.every((advice) =>
+    !advice?.trim() || followUpVariants.has((advice || '').toString().trim())
+  );
 
   return (
     <div
-      className={`shrink-0 flex flex-col p-0 bg-transparent relative z-10 overflow-visible pb-2`}
+      className={`shrink-0 flex flex-col p-0 bg-transparent relative z-[80] overflow-visible pb-2`}
       style={{ gap: '2px' }}
     >
       {/* قسم التحاليل والفحوصات */}
       {showLabsSection && (
-        <div className="w-full" dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
+        <div className={`w-full ${hideLabsSectionInPrint ? 'rx-empty-print-row' : ''}`} dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
           <div className="w-full text-right flex items-center gap-1.5 mb-0">
             <span className={`text-danger-900 font-black ${labSize}`} style={titleStyle}>فحوصات مطلوبة :</span>
           </div>
@@ -241,7 +245,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <div className="pr-1" style={{ display: 'flex', flexDirection: 'column', gap: '0px', minHeight: 'auto' }}>
             {displayLabs.map((lab, i) => (
               /* min-height ثابت لكل صف يضمن تطابق ارتفاع التحرير (textarea) والطباعة (div) — يمنع ضيق المسافة في الطباعة */
-              <div key={i} className="flex items-start gap-2 group overflow-visible" style={{ minHeight: effectiveRowMinHeight }}>
+              <div key={i} className={`flex items-start gap-2 group overflow-visible ${!lab?.trim() ? 'rx-empty-print-row' : ''}`} style={{ minHeight: effectiveRowMinHeight }}>
                 <span className={`text-danger-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
 
                 {/* بنية موحّدة بين التحرير والطباعة: نفس الـ container ونفس className.
@@ -261,8 +265,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                     readyPrescriptions={readyPrescriptions}
                     onChange={(value) => onUpdateLab && onUpdateLab(i, value)}
                     onEnterAdd={onAddLab}
-                    className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-left block`}
-                    style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
+                    className={`rx-print-lab-text w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-left block`}
+                    style={{ lineHeight: '1.1', minHeight: '0px', textAlign: 'left', direction: 'ltr', ...textStyleOverride }}
                     dir="ltr"
                     placeholder="CBC (سبب الطلب وفائدته)"
                     readOnlyMode={isPrintMode}
@@ -272,10 +276,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
                 {!isPrintMode ? (
                   <button onClick={() => onRemoveLab?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-danger-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
-                ) : (
-                  /* spacer فاضي بعرض زر المسح ليحفظ نفس مساحة التحرير في الطباعة (بدون أي نص ظاهر) */
-                  <span className="shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'inline-block' }} />
-                )}
+                ) : null}
+                <span className="rx-print-row-end-spacer shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'none' }} />
               </div>
             ))}
           </div>
@@ -284,7 +286,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
       {/* قسم النصائح والتعليمات العامة */}
       {showAdviceSection && (
-        <div className="w-full" dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
+        <div className={`w-full ${hideAdviceSectionInPrint ? 'rx-empty-print-row' : ''}`} dir="rtl" style={{ backgroundColor: middleBackgroundColor }}>
           <div className="flex items-center gap-1.5 mb-1.5 h-auto">
             <span className={`text-danger-900 font-black ${labSize}`} style={titleStyle}>تعليمات هامة :</span>
           </div>
@@ -292,17 +294,18 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <div className="pr-1" style={{ display: 'flex', flexDirection: 'column', gap: '0px', minHeight: 'auto' }}>
             {displayAdvice.map((advice, i) => (
               /* min-height ثابت لكل صف يضمن تطابق ارتفاع التحرير (textarea) والطباعة (div) — يمنع ضيق المسافة في الطباعة */
-              <div key={i} className="flex items-start gap-2 group overflow-visible" style={{ minHeight: effectiveRowMinHeight }}>
+              <div key={i} className={`flex items-start gap-2 group overflow-visible ${(!advice?.trim() || followUpVariants.has((advice || '').toString().trim())) ? 'rx-empty-print-row' : ''}`} style={{ minHeight: effectiveRowMinHeight }}>
                 <span className={`text-success-700 font-black shrink-0 ${labSize} flex items-center`} style={{ lineHeight: '1.1' }}>•</span>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0" dir="rtl">
                   <ReadyPrescriptionSuggestionTextarea
                     value={advice}
                     field="generalAdvice"
                     readyPrescriptions={readyPrescriptions}
                     onChange={(value) => onUpdateAdvice && onUpdateAdvice(i, value)}
                     onEnterAdd={onAddAdvice}
-                    className={`w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-right block`}
-                    style={{ lineHeight: '1.1', minHeight: '0px', ...textStyleOverride }}
+                    className={`rx-print-advice-text w-full bg-transparent outline-none border-none resize-none text-slate-900 font-bold ${labSize} overflow-visible p-0 text-right block`}
+                    style={{ lineHeight: '1.1', minHeight: '0px', textAlign: 'right', direction: 'rtl', unicodeBidi: 'plaintext', ...textStyleOverride }}
+                    dir="rtl"
                     placeholder="..."
                     readOnlyMode={isPrintMode}
                     autoFocus={advice === ''}
@@ -310,10 +313,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 </div>
                 {!isPrintMode ? (
                   <button onClick={() => onRemoveAdvice?.(i)} className="no-print opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-slate-400 hover:text-danger-500 font-bold px-1 text-xs shrink-0 self-center">×</button>
-                ) : (
-                  /* spacer فاضي بعرض زر المسح ليحفظ نفس مساحة التحرير في الطباعة (بدون أي نص ظاهر) */
-                  <span className="shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'inline-block' }} />
-                )}
+                ) : null}
+                <span className="rx-print-row-end-spacer shrink-0 self-center" aria-hidden="true" style={{ width: '20px', display: 'none' }} />
               </div>
             ))}
           </div>

@@ -123,7 +123,7 @@ export interface Branch {
 export interface PublicBookingSlot {
   id: string;
   dateTime: string; // ISO
-  /** معرّف الفرع. slots قديمة بدون هذا الحقل تظهر في كل الفروع. */
+  /** Branch id. Legacy slots without this value belong to the main branch. */
   branchId?: string;
 }
 
@@ -132,5 +132,7 @@ export interface PublicBranchInfo {
   id: string;
   name: string;
   address?: string;
+  formTitle?: string;
+  contactInfo?: string;
   isActive?: boolean;
 }

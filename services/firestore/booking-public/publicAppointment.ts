@@ -105,7 +105,7 @@ export const createAppointmentFromPublic = async (
   const slotRef = doc(db, 'publicBookingConfig', normalizedPublicSecret, 'slots', normalizedSlotId);
 
   // تجهيز كائن الموعد للعيادة — نستخدم doc ID الفعلي (من Firestore) ليطابق مسار الوثيقة ويمنع أي تناقض عند القراءة
-  const appointment: ClinicAppointment & { publicBookingSecret: string } = {
+  const appointment: ClinicAppointment & { publicBookingSecret: string; publicSlotId: string } = {
     id: appointmentDocRef.id,
     patientName,
     phone,
@@ -121,6 +121,7 @@ export const createAppointmentFromPublic = async (
     consultationSourceCompletedAt: data.consultationSourceCompletedAt,
     consultationSourceRecordId: data.consultationSourceRecordId,
     publicBookingSecret: normalizedPublicSecret,
+    publicSlotId: normalizedSlotId,
     paymentType: data.paymentType,
     insuranceCompanyId: data.insuranceCompanyId,
     insuranceCompanyName: data.insuranceCompanyName,
@@ -185,6 +186,7 @@ export const createAppointmentFromPublic = async (
     // claim الـslot للمريض ده — مفتاح ثابت يمنع أي محاوله تانيه لنفس التوليفه
     transaction.set(claimRef, {
       userId: normalizedUserId,
+      publicBookingSecret: normalizedPublicSecret,
       slotId: normalizedSlotId,
       publicUserId: meta?.publicUserId || null,
       phone: phoneDigits || null,

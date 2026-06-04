@@ -41,8 +41,8 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
     ? 'انتهى اشتراكك برو'
     : 'اشتراك برو سينتهي قريبًا';
   const bodyText = isExpired
-    ? 'يرجى إعادة تجديد الاشتراك للاستمرار في استخدام كل بروات.'
-    : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة بروات.';
+    ? 'يرجى إعادة تجديد الاشتراك للاستمرار في استخدام كل الميزات.'
+    : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة الميزات.';
 
   return (
     <div className={`w-full bg-gradient-to-r ${bannerGradient} text-white shadow-xl`}>

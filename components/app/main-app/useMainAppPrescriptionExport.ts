@@ -19,20 +19,8 @@ interface UseMainAppPrescriptionExportParams {
   patientName: string;
   phone: string;
   userId: string;
-  /**
-   * 🆕 (2026-05): الـ accountType الـ cached من الـ user document.
-   * 'premium' أو 'pro_max' → بنتخطى فحص الكوتا تماماً (التشغيل أسرع).
-   */
-  cachedAccountType?: 'free' | 'premium' | 'pro_max';
   showNotification: (msg: string, type?: any, options?: any) => void;
   setWhatsappGuideOpen: (open: boolean) => void;
-  /** 🆕 يُستدعى لما الكوتا تنتهي لأي إجراء تصدير — لفتح مودال الحد + الواتساب */
-  openQuotaNoticeModal?: (payload: {
-    message: string;
-    whatsappNumber?: string;
-    whatsappUrl?: string;
-    persist?: boolean;
-  }) => void;
 }
 
 export const useMainAppPrescriptionExport = ({
@@ -40,16 +28,12 @@ export const useMainAppPrescriptionExport = ({
   patientName,
   phone,
   userId,
-  cachedAccountType,
   showNotification,
   setWhatsappGuideOpen,
-  openQuotaNoticeModal,
 }: UseMainAppPrescriptionExportParams) => {
   // ─── تثبيت الـ callbacks بـ useCallback ───────────────────────────────────
-  // قبل التثبيت: كانت بتتعرّف inline في كل render، فالـ checkQuota الجوّه في
-  // usePrescriptionExport بتتعمل من جديد، وبالتالي handlePrint/Download/WhatsApp
-  // كلها بتتغير reference في كل render → الأزرار في prescription-actions كانت
-  // بتفقد memoization. التثبيت ده بيخلي onClick handlers ثابتة طول الجلسة.
+  // تثبيت callbacks بيخلي onClick handlers ثابتة طول الجلسة، وبيقلل re-render
+  // غير ضروري في شريط إجراءات الروشتة.
 
   /** تسجيل عملية التصدير في التحليلات — فشل التسجيل غير حرج. */
   const onTrack = useCallback((operation: 'print' | 'download' | 'whatsapp') => {
@@ -86,31 +70,12 @@ export const useMainAppPrescriptionExport = ({
     showNotification(messages[operation], 'error', { id: `prescription-export-${operation}` });
   }, [showNotification]);
 
-  /** 🆕 لما الحد اليومي ينتهي — نفتح المودال الموحّد للكوتا (رسالة الأدمن + واتساب). */
-  const onQuotaLimitReached = useCallback((
-    _operation: 'print' | 'download' | 'whatsapp',
-    details: { message: string; whatsappNumber: string; whatsappUrl: string; limit: number },
-  ) => {
-    if (openQuotaNoticeModal) {
-      openQuotaNoticeModal({
-        message: details.message,
-        whatsappNumber: details.whatsappNumber,
-        whatsappUrl: details.whatsappUrl,
-        persist: true,
-      });
-    } else {
-      showNotification(details.message, 'error', { id: `prescription-export-quota` });
-    }
-  }, [openQuotaNoticeModal, showNotification]);
-
   return usePrescriptionExport({
     paperSize,
     patientName,
     phone,
-    cachedAccountType,
     onTrack,
     onPrompt,
     onError,
-    onQuotaLimitReached,
   });
 };

@@ -222,12 +222,12 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
     <ModalOverlay
       isOpen={isOpen}
       onClose={onClose}
-      zIndex={1100}
+      zIndex={10010}
       backdropClass="bg-slate-950/70 backdrop-blur-md"
       noPrint
       animateIn="both"
-      overlayClassName="p-2 sm:p-4"
-      contentClassName="case-analysis-modal relative bg-white rounded-[1.75rem] shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] ring-1 ring-slate-200/70 w-full max-w-3xl max-h-[92vh] overflow-hidden flex flex-col"
+      overlayClassName="items-start sm:items-center overflow-y-auto p-3 sm:p-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      contentClassName="case-analysis-modal relative isolate bg-white rounded-[1.75rem] shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] ring-1 ring-slate-200/70 w-full max-w-3xl max-h-[calc(100dvh-1.5rem)] sm:max-h-[92dvh] overflow-hidden flex flex-col"
       labelledBy="case-analysis-title"
     >
       {/* حلقة gradient رفيعة حوالين النافذة لمسة بريميوم */}
@@ -239,7 +239,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
       {/* ═══ رأس النافذة (بريميوم: gradient عميق + pattern خفيف) ═══ */}
       {/* زر X مثبّت absolute في الركن — مضمون يبان كامل مهما طال العنوان */}
       <div
-        className="relative px-4 sm:px-6 pt-4 pb-4 sm:pb-5 text-white overflow-hidden"
+        className="relative px-4 sm:px-6 pt-5 pb-4 sm:pb-5 text-white overflow-hidden shrink-0"
         dir="rtl"
         style={{
           background:
@@ -268,7 +268,7 @@ export const CaseAnalysisModal: React.FC<CaseAnalysisModalProps> = ({
           type="button"
           onClick={onClose}
           aria-label="إغلاق"
-          className="absolute top-3 left-3 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-violet-900 hover:bg-white/95 ring-2 ring-white/70 hover:ring-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all active:scale-90"
+          className="absolute top-4 left-4 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-violet-900 hover:bg-white/95 ring-2 ring-white/70 hover:ring-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all active:scale-90"
         >
           <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M6 6l12 12M18 6L6 18" />

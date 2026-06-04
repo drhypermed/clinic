@@ -118,7 +118,7 @@ export const ADA_2026_REMAINING_SOURCES: GuidelineSource[] = [
     title: '17. Diabetes Advocacy',
     citation:
       'American Diabetes Association Professional Practice Committee. 17. Diabetes advocacy: Standards of Care in Diabetes-2026. Diabetes Care 2026;49(Suppl. 1).',
-    url: '',
+    url: 'https://diabetesjournals.org/care/article-pdf/49/Supplement_1/S356/848828/dc26s017.pdf',
     localFile: '17. Diabetes Advocacy.pdf',
   },
 ];

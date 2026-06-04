@@ -30,6 +30,7 @@ export const LABEL_CLASS = 'block text-sm font-bold text-slate-600 mb-2';
 
 /** نسبة التحويل من mm إلى px عند دقة 96 DPI */
 export const MM_TO_PX = 3.7795275591;
+export const PRESCRIPTION_FONT_STACK = '"Cairo", "Arial", "Tahoma", sans-serif';
 
 
 /** إرجاع أبعاد الورقة بالـ mm. الافتراضي: A5 */
@@ -213,6 +214,53 @@ export function injectPrintPageStyle(paperSize?: PaperSizeSettings): void {
     overflow: hidden !important;
     box-sizing: border-box !important;
     ${manualScaleBlock}
+  }
+  #printable-prescription {
+    font-family: ${PRESCRIPTION_FONT_STACK} !important;
+  }
+  #printable-prescription,
+  #printable-prescription * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  #printable-prescription textarea.rx-edit-textarea,
+  #printable-prescription textarea[data-auto-resize].rx-edit-textarea {
+    display: none !important;
+  }
+  #printable-prescription .rx-print-textarea-mirror {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
+  }
+  #printable-prescription .rx-empty-print-row {
+    display: none !important;
+  }
+  #printable-prescription .rx-print-row-end-spacer {
+    display: inline-block !important;
+    width: 20px !important;
+    min-width: 20px !important;
+    flex: 0 0 20px !important;
+  }
+  #printable-prescription .rx-print-advice-text,
+  #printable-prescription .rx-print-advice-text textarea,
+  #printable-prescription textarea.rx-print-advice-text,
+  #printable-prescription [dir="rtl"] textarea[data-auto-resize] {
+    text-align: right !important;
+    direction: rtl !important;
+    unicode-bidi: plaintext !important;
+  }
+  #printable-prescription .rx-print-lab-text,
+  #printable-prescription .rx-print-lab-text textarea,
+  #printable-prescription textarea.rx-print-lab-text {
+    text-align: left !important;
+    direction: ltr !important;
   }
   /*
    * الفوتر في الصف الثالث من الـ grid (auto). خلّيه block عادي يتبع ارتفاعه

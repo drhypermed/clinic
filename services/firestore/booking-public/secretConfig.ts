@@ -57,12 +57,46 @@ interface PublicBookingConfigData {
   userId: string;
   title?: string;
   contactInfo?: string;
+  publicFormSettingsByBranch?: Record<string, PublicBranchFormSettings>;
+  doctorDisplayName?: string;
+  doctorProfileImage?: string;
   // لو true: الفورم يطلب تسجيل دخول بحساب Google قبل تأكيد الحجز.
   // الفائدة: حماية ضد الحجوزات الوهمية لما الطبيب ينشر الرابط على منصات عامة.
   // الإعداد ده موحّد بدلاً من نظام "entry=public-site" القديم اللي كان يتحكّم فيه
   // مصدر الرابط (الديركتوري vs الرابط المباشر) — دلوقتي الطبيب نفسه يقرر.
   requireGoogleSignIn?: boolean;
 }
+
+type PublicBranchFormSettings = {
+  title?: string;
+  contactInfo?: string;
+};
+
+const MAIN_BRANCH_ID = 'main';
+
+const normalizeBranchId = (branchId?: string): string => {
+  const normalized = sanitizeDocSegment(branchId || MAIN_BRANCH_ID);
+  return normalized || MAIN_BRANCH_ID;
+};
+
+const sanitizeBranchFormSettings = (raw: unknown): PublicBranchFormSettings => {
+  if (!raw || typeof raw !== 'object') return {};
+  const item = raw as { title?: unknown; contactInfo?: unknown };
+  return {
+    title: toOptionalText(item.title) || '',
+    contactInfo: toOptionalText(item.contactInfo) || '',
+  };
+};
+
+const sanitizeBranchFormSettingsMap = (raw: unknown): Record<string, PublicBranchFormSettings> => {
+  if (!raw || typeof raw !== 'object') return {};
+  const result: Record<string, PublicBranchFormSettings> = {};
+  Object.entries(raw as Record<string, unknown>).forEach(([key, value]) => {
+    const branchId = normalizeBranchId(key);
+    result[branchId] = sanitizeBranchFormSettings(value);
+  });
+  return result;
+};
 
 export interface PublicBookingLookupData {
   publicBookingSecret?: string;
@@ -139,9 +173,25 @@ export const ensurePublicBookingConfig = async (
   if (!normalizedUserId || !normalizedSecret) return;
 
   const configRef = doc(db, 'publicBookingConfig', normalizedSecret);
+  const payload: Record<string, unknown> = {
+    userId: normalizedUserId,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const userSnap = await getDocCacheFirst(doc(db, 'users', normalizedUserId));
+    const userData = userSnap.exists() ? userSnap.data() : null;
+    const doctorDisplayName = toOptionalText(userData?.doctorName || userData?.displayName || userData?.name);
+    const doctorProfileImage = toOptionalText(userData?.profileImage || userData?.photoURL);
+    if (doctorDisplayName) payload.doctorDisplayName = doctorDisplayName;
+    if (doctorProfileImage) payload.doctorProfileImage = doctorProfileImage;
+  } catch {
+    // Best-effort mirror only. Public readers can still use doctorAds as fallback.
+  }
+
   await setDoc(
     configRef,
-    { userId: normalizedUserId, updatedAt: new Date().toISOString() },
+    payload,
     { merge: true }
   );
   await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: normalizedSecret });
@@ -262,8 +312,11 @@ export const getPublicBookingConfig = async (
     userId: data.userId,
     title: toOptionalText(data?.title),
     contactInfo: toOptionalText(data?.contactInfo),
+    publicFormSettingsByBranch: sanitizeBranchFormSettingsMap(data?.publicFormSettingsByBranch),
+    doctorDisplayName: toOptionalText(data?.doctorDisplayName),
+    doctorProfileImage: toOptionalText(data?.doctorProfileImage),
     // قراءة الـ flag من الـ doc — false default لو مش مسجّل (طبيب قديم/جديد ما عدلش الإعداد)
-    requireGoogleSignIn: data?.requireGoogleSignIn === true,
+    requireGoogleSignIn: true,
   };
 };
 
@@ -343,21 +396,35 @@ export const savePublicFormSettings = async (
   secret: string,
   title: string,
   contactInfo: string,
-  requireGoogleSignIn: boolean
+  requireGoogleSignIn: boolean,
+  branchId?: string
 ): Promise<void> => {
   const normalizedUserId = sanitizeDocSegment(userId);
   const normalizedSecret = normalizePublicSecret(secret);
   if (!normalizedUserId || !normalizedSecret) return;
+
+  const branchKey = normalizeBranchId(branchId);
+  const titleValue = toOptionalText(title) || '';
+  const contactInfoValue = toOptionalText(contactInfo) || '';
+  const legacyTopLevel =
+    branchKey === MAIN_BRANCH_ID
+      ? { title: titleValue, contactInfo: contactInfoValue }
+      : {};
 
   const configRef = doc(db, 'publicBookingConfig', normalizedSecret);
   await setDoc(
     configRef,
     {
       userId: normalizedUserId,
-      title: toOptionalText(title) || '',
-      contactInfo: toOptionalText(contactInfo) || '',
+      ...legacyTopLevel,
+      publicFormSettingsByBranch: {
+        [branchKey]: {
+          title: titleValue,
+          contactInfo: contactInfoValue,
+        },
+      },
       // حماية الحجز بجوجل — flag بسيط يتحكّم فيه الطبيب من لوحته
-      requireGoogleSignIn: Boolean(requireGoogleSignIn),
+      requireGoogleSignIn: true,
       updatedAt: new Date().toISOString(),
     },
     { merge: true }
@@ -365,10 +432,33 @@ export const savePublicFormSettings = async (
   await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: normalizedSecret });
 };
 
+export const syncPublicBookingDoctorProfile = async (
+  userId: string,
+  values: { doctorDisplayName?: string; doctorProfileImage?: string }
+): Promise<void> => {
+  const normalizedUserId = sanitizeDocSegment(userId);
+  if (!normalizedUserId) return;
+
+  const secret = await getPublicSecretByUserId(normalizedUserId);
+  const normalizedSecret = normalizePublicSecret(secret);
+  if (!normalizedSecret) return;
+
+  await setDoc(
+    doc(db, 'publicBookingConfig', normalizedSecret),
+    {
+      userId: normalizedUserId,
+      doctorDisplayName: toOptionalText(values.doctorDisplayName) || '',
+      doctorProfileImage: toOptionalText(values.doctorProfileImage) || '',
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+};
+
 /** الاشتراك اللحظي في إعدادات الحجز لمراقبة أي تغييرات من الطبيب */
 export const subscribeToPublicConfig = (
   secret: string,
-  onUpdate: (config: { userId?: string; title?: string; contactInfo?: string; requireGoogleSignIn?: boolean }) => void
+  onUpdate: (config: { userId?: string; title?: string; contactInfo?: string; publicFormSettingsByBranch?: Record<string, PublicBranchFormSettings>; doctorDisplayName?: string; doctorProfileImage?: string; requireGoogleSignIn?: boolean }) => void
 ) => {
   const normalizedSecret = normalizePublicSecret(secret);
   if (!normalizedSecret) {
@@ -390,7 +480,10 @@ export const subscribeToPublicConfig = (
       userId: typeof data.userId === 'string' ? data.userId : undefined,
       title: toOptionalText(data.title),
       contactInfo: toOptionalText(data.contactInfo),
-      requireGoogleSignIn: data?.requireGoogleSignIn === true,
+      publicFormSettingsByBranch: sanitizeBranchFormSettingsMap(data.publicFormSettingsByBranch),
+      doctorDisplayName: toOptionalText(data.doctorDisplayName),
+      doctorProfileImage: toOptionalText(data.doctorProfileImage),
+      requireGoogleSignIn: true,
     });
   };
 

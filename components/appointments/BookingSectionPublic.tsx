@@ -3,6 +3,8 @@ import { LoadingText } from '../ui/LoadingText';
 import type { Branch, PublicBookingSlot } from '../../types';
 import { formatUserDate, formatUserTime } from '../../utils/cairoTime';
 import { useCopyFeedback } from '../../hooks/useCopyFeedback';
+import { DEFAULT_BRANCH_ID } from '../../services/firestore/branches';
+import { appendBranchToPublicBookingUrl } from '../../utils/publicBookingLinks';
 
 // خدمة QR خارجية مجانية — اختيار مقصود لتوفير bundle size (مكتبة QR محلية ~20KB
 // لكل مستخدم × آلاف الأطباء). الخدمة المستخدمة (qrserver.com) عامة ومجانية وما
@@ -43,11 +45,9 @@ interface BookingSectionPublicProps {
   publicSlots: PublicBookingSlot[];    // قائمة المواعيد المتاحة حالياً
   onRemovePublicSlot: (slotId: string) => void;
   isSaved?: boolean;                    // تأكيد نجاح الحفظ الأخير
+  currentBranchLabel?: string;
   /** قائمة الفروع — لتوليد رابط منفصل لكل فرع لو في أكتر من فرع */
   branches?: Branch[];
-  /** الإعداد الحالي لاشتراط جوجل قبل تأكيد الحجز */
-  requireGoogleSignIn: boolean;
-  onRequireGoogleSignInChange: (value: boolean) => void;
 }
 
 const formatPublicSlotLabel = (dateTime: string) => (
@@ -193,7 +193,7 @@ const BranchLinkRow: React.FC<{
   const { copied, copy } = useCopyFeedback();
   const [qrOpen, setQrOpen] = useState(false);
   // الرابط لفرع معين = الرابط العام + ?branch=branchId (الفورم العام بيتعرّف عليه)
-  const branchLink = `${baseLink}${baseLink.includes('?') ? '&' : '?'}branch=${encodeURIComponent(branch.id)}`;
+  const branchLink = appendBranchToPublicBookingUrl(baseLink, branch);
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-white border border-slate-100">
@@ -238,9 +238,23 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
   publicSlotDateStr, onPublicSlotDateStrChange, publicSlotTimeStr,
   onPublicSlotTimeStrChange, publicSlotTodayStr, publicTimeMin,
   publicSlotAdding, onAddPublicSlot, publicSlots, onRemovePublicSlot, isSaved,
+  currentBranchLabel,
   branches,
-  requireGoogleSignIn, onRequireGoogleSignInChange,
-}) => (
+}) => {
+  const branchNameById = React.useMemo(() => {
+    const map = new Map<string, string>();
+    (branches || []).forEach((branch) => {
+      map.set(branch.id, branch.name || (branch.id === DEFAULT_BRANCH_ID ? 'الفرع الرئيسي' : branch.id));
+    });
+    return map;
+  }, [branches]);
+
+  const getSlotBranchName = (slot: PublicBookingSlot) => {
+    const branchId = slot.branchId || DEFAULT_BRANCH_ID;
+    return branchNameById.get(branchId) || (branchId === DEFAULT_BRANCH_ID ? 'الفرع الرئيسي' : branchId);
+  };
+
+  return (
   <section className="bg-white rounded-2xl shadow-lg border border-warning-200 overflow-hidden">
     {/* زر التحكم في فتح/غلق القسم */}
     <button
@@ -308,21 +322,18 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
               className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-warning-500 outline-none text-slate-800 font-bold text-sm resize-none"
             />
           </div>
-          {/* إعداد حماية الحجز بـ Google — قرار الطبيب نفسه يفعّله أو يقفله */}
-          <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition">
-            <input
-              type="checkbox"
-              checked={requireGoogleSignIn}
-              onChange={(e) => onRequireGoogleSignInChange(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-warning-600 cursor-pointer"
-            />
+          {/* تسجيل Google أصبح شرطاً ثابتاً لكل حجوزات الجمهور. */}
+          <div className="flex items-start gap-2 p-3 rounded-xl border border-brand-200 bg-brand-50/70">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12.75 11.25 15 15 9.75M12 3l7 3v5c0 4.5-2.9 8.5-7 10-4.1-1.5-7-5.5-7-10V6l7-3z" />
+            </svg>
             <div className="flex-1">
-              <p className="text-sm font-black text-slate-800">اشترط تسجيل دخول بـ Google قبل تأكيد الحجز</p>
-              <p className="text-xs text-slate-600 font-bold mt-0.5">
-                لو فعّلت ده، أي مريض يحجز من رابطك (أو من دليل Dr Hyper) لازم يسجّل بحساب Google قبل ما الحجز يتم. بيقلّل الحجوزات الوهميه لكن بيمنع المرضى اللي مش عندهم حساب Google.
+              <p className="text-sm font-black text-brand-900">تسجيل الدخول بـ Google مطلوب لكل حجوزات الجمهور</p>
+              <p className="text-xs text-brand-800 font-bold mt-0.5">
+                أي مريض يحجز من رابط الطبيب أو من دليل Dr Hyper سيوافق على الشروط وسياسة الخصوصية ثم يسجل بحساب Google قبل تأكيد الحجز.
               </p>
             </div>
-          </label>
+          </div>
           <div className="flex items-center gap-2">
             <button type="submit" disabled={publicFormSaving} className="px-3 py-1.5 rounded-lg bg-warning-600 hover:bg-warning-700 text-white font-bold text-sm disabled:opacity-60">
               {publicFormSaving ? 'جاري الحفظ' : 'حفظ إعدادات الفورم'}
@@ -334,6 +345,11 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
         {/* إدارة المواعيد المتاحة (Add Slots) */}
         <div className="border-t border-slate-100 pt-4">
           <p className="text-slate-600 font-bold text-sm mb-2">إضافة ميعاد متاح للجمهور</p>
+          {currentBranchLabel?.trim() && (
+            <p className="mb-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-xs font-black text-brand-800">
+              سيتم حفظ الموعد في: {currentBranchLabel.trim()}
+            </p>
+          )}
           <form onSubmit={onAddPublicSlot} className="flex flex-wrap items-end gap-2">
             <div className="min-w-[120px]">
               <label className="block text-xs font-bold text-slate-500 mb-0.5">التاريخ</label>
@@ -355,9 +371,12 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
             <p className="text-slate-600 font-bold text-sm mb-2">المواعيد المفعّلة ({publicSlots.length})</p>
             <ul className="space-y-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
               {publicSlots.map((slot) => (
-                <li key={slot.id} className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-white border border-slate-100">
-                  <span className="text-sm font-bold text-slate-700">
+                <li key={slot.id} className="flex flex-col gap-2 py-2 px-2 rounded-lg bg-white border border-slate-100 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="min-w-0 text-sm font-bold text-slate-700">
                     {formatPublicSlotLabel(slot.dateTime)}
+                    <span className="mt-1 block text-xs font-black text-brand-700 sm:inline sm:mt-0 sm:mr-2">
+                      {getSlotBranchName(slot)}
+                    </span>
                   </span>
                   <button onClick={() => onRemovePublicSlot(slot.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-danger-50 hover:text-danger-600" title="حذف">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -370,4 +389,5 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
       </div>
     )}
   </section>
-);
+  );
+};

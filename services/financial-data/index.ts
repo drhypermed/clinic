@@ -56,7 +56,9 @@ import {
 // بنحفظ أرقام الشهر الثابتة مرة واحدة فيتجمدوا — التقارير المالية بتقرا منها
 // بدل ما تحسب من records آلاف المرات. توفير ضخم في تكلفة Firestore.
 import {
+    deleteMonthlySnapshot,
     ensureSnapshotsForClosedMonths,
+    forceRecalculateMonthSnapshot,
     getMonthlySnapshotsForYear,
 } from './monthlySnapshots';
 
@@ -113,7 +115,9 @@ export const financialDataService = {
     // Price snapshot migration (للتعويض عن الكشوفات القديمة بدون serviceBasePrice)
     migratePriceSnapshots,
 
-    // Monthly snapshots — إقفال شهري + قراءة لقطات السنة
+    // Monthly snapshots — إقفال شهري + قراءة لقطات السنة + حذف/إعادة حساب
     ensureSnapshotsForClosedMonths,
     getMonthlySnapshotsForYear,
+    deleteMonthlySnapshot,
+    forceRecalculateMonthSnapshot,
 };

@@ -287,7 +287,7 @@ export const useDoctorAdvertisementController = ({
       setCroppedAreaPixels(null);
       setError('');
     } catch (err: unknown) {
-      setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
+      setError(mapDoctorAdActionError(err, 'تعذر قراءة الصورة المختارة. جرّب صورة أخرى.'));
     }
   };
 
@@ -312,14 +312,14 @@ export const useDoctorAdvertisementController = ({
     setUploadingImage(true);
     try {
       const dataUrl = croppedAreaPixels
-        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels)
+        ? await getRectCroppedImg(pendingCropImage, croppedAreaPixels, 1280, 0, 'image/jpeg', 0.86)
         : pendingCropImage;
       const cloudUrl = await uploadDoctorAdImageBase64(safeDoctorId, dataUrl);
       branchesApi.appendBranchImage(activeBranch.id, cloudUrl);
       setError('');
       handleCancelCrop();
     } catch (err: unknown) {
-      setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
+      setError(mapDoctorAdActionError(err, 'تعذر رفع صورة الإعلان. جرّب صورة أصغر أو تحقق من الاتصال.'));
     } finally {
       setUploadingImage(false);
     }
@@ -339,7 +339,7 @@ export const useDoctorAdvertisementController = ({
       branchesApi.removeBranchImage(branchId, imageIndex);
       setError('');
     } catch (err: unknown) {
-      setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
+      setError(mapDoctorAdActionError(err, 'تعذر حذف صورة الإعلان حالياً.'));
     } finally {
       setDeletingImageIndex(null);
     }
@@ -442,7 +442,7 @@ export const useDoctorAdvertisementController = ({
       setIsPublished(publishValue);
       setMessage(publishValue ? '✅ تم تحديث الإعلان المنشور بنجاح.' : '✅ تم حفظ الإعلان كمسودة.');
     } catch (err: unknown) {
-      setError(mapDoctorAdActionError(err, 'تعذر تحميل بيانات الإعلان'));
+      setError(mapDoctorAdActionError(err, 'تعذر حفظ بيانات الإعلان حالياً.'));
     } finally {
       setSaving(false);
     }

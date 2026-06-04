@@ -3,7 +3,7 @@ import type {
   SecretaryVitalFieldDefinition,
   SecretaryVitalsVisibility,
 } from '../../types';
-import { isPediatricSpecialtyForSecretaryVitals, isSecretaryFieldEnabled } from '../../utils/secretaryVitals';
+import { isSecretaryFieldEnabled } from '../../utils/secretaryVitals';
 import { useCopyFeedback } from '../../hooks/useCopyFeedback';
 
 /**
@@ -43,7 +43,6 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
   doctorEmail,
   currentBranchLabel,
   hasMultipleBranches = false,
-  doctorSpecialty,
   bookingFormTitle, onBookingFormTitleChange, secretaryPassword,
   secretaryVitalFields,
   secretaryVitalsVisibility, onSecretaryVitalVisibilityChange,
@@ -52,7 +51,6 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
 }) => {
   const normalizedDoctorEmail = String(doctorEmail || '').trim().toLowerCase();
   const { copied: doctorEmailCopied, copy: copyEmailToClipboard } = useCopyFeedback({ resetMs: 1800 });
-  const canConfigureSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const sortedSecretaryFields = [...(secretaryVitalFields || [])].sort((left, right) => left.order - right.order);
   const enabledVitalsCount = sortedSecretaryFields.filter((field) =>
     isSecretaryFieldEnabled(secretaryVitalsVisibility, field.id, field.key)
@@ -184,7 +182,6 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             )}
           </div>
 
-          {canConfigureSecretaryVitals && (
           <div className="sm:col-span-2 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -243,7 +240,6 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
               </p>
             )}
           </div>
-          )}
 
           <div className="sm:col-span-2 mt-2 flex flex-wrap items-center justify-between gap-3">
             <div

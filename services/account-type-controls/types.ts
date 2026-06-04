@@ -50,6 +50,8 @@ export interface AccountTypeControls {
   premiumRenalToolDailyLimit: number;
   freePregnancyToolDailyLimit: number;
   premiumPregnancyToolDailyLimit: number;
+  freeGuidelinesChatDailyLimit: number;
+  premiumGuidelinesChatDailyLimit: number;
   // رسائل التنبيه عند الوصول للحد الأقصى
   freeAnalysisLimitMessage: string;
   premiumAnalysisLimitMessage: string;
@@ -128,27 +130,13 @@ export interface AccountTypeControls {
   // ─── 🆕 الكلى — اتنقلت لقسم "حدود الميزات" زي التداخلات والحمل (2026-04) ─
   freeRenalToolLimitMessage: string;
   premiumRenalToolLimitMessage: string;
+  freeGuidelinesChatLimitMessage: string;
+  premiumGuidelinesChatLimitMessage: string;
   freeRenalToolWhatsappMessage: string;
   premiumRenalToolWhatsappMessage: string;
+  freeGuidelinesChatWhatsappMessage: string;
+  premiumGuidelinesChatWhatsappMessage: string;
   // ─── 🆕 أزرار تصدير الروشتة (طباعة + تنزيل + واتساب) — حدود يومية 2026-04 ───
-  freePrescriptionPrintDailyLimit: number;
-  premiumPrescriptionPrintDailyLimit: number;
-  freePrescriptionPrintLimitMessage: string;
-  premiumPrescriptionPrintLimitMessage: string;
-  freePrescriptionPrintWhatsappMessage: string;
-  premiumPrescriptionPrintWhatsappMessage: string;
-  freePrescriptionDownloadDailyLimit: number;
-  premiumPrescriptionDownloadDailyLimit: number;
-  freePrescriptionDownloadLimitMessage: string;
-  premiumPrescriptionDownloadLimitMessage: string;
-  freePrescriptionDownloadWhatsappMessage: string;
-  premiumPrescriptionDownloadWhatsappMessage: string;
-  freePrescriptionWhatsappDailyLimit: number;
-  premiumPrescriptionWhatsappDailyLimit: number;
-  freePrescriptionWhatsappLimitMessage: string;
-  premiumPrescriptionWhatsappLimitMessage: string;
-  freePrescriptionWhatsappWhatsappMessage: string;
-  premiumPrescriptionWhatsappWhatsappMessage: string;
   // وسوم وملصقات الترقية
   premiumTagLabel: string;
   whatsappUrl: string;
@@ -171,6 +159,7 @@ export interface AccountTypeControls {
   proMaxInteractionToolDailyLimit?: number;
   proMaxRenalToolDailyLimit?: number;
   proMaxPregnancyToolDailyLimit?: number;
+  proMaxGuidelinesChatDailyLimit?: number;
   // ─── 🆕 برو ماكس: رسائل التداخلات + الحمل/الرضاعة ───
   proMaxInteractionToolLimitMessage?: string;
   proMaxInteractionToolWhatsappMessage?: string;
@@ -179,16 +168,9 @@ export interface AccountTypeControls {
   // ─── 🆕 برو ماكس: رسائل الكلى ─
   proMaxRenalToolLimitMessage?: string;
   proMaxRenalToolWhatsappMessage?: string;
+  proMaxGuidelinesChatLimitMessage?: string;
+  proMaxGuidelinesChatWhatsappMessage?: string;
   // ─── 🆕 برو ماكس: أزرار تصدير الروشتة ─
-  proMaxPrescriptionPrintDailyLimit?: number;
-  proMaxPrescriptionPrintLimitMessage?: string;
-  proMaxPrescriptionPrintWhatsappMessage?: string;
-  proMaxPrescriptionDownloadDailyLimit?: number;
-  proMaxPrescriptionDownloadLimitMessage?: string;
-  proMaxPrescriptionDownloadWhatsappMessage?: string;
-  proMaxPrescriptionWhatsappDailyLimit?: number;
-  proMaxPrescriptionWhatsappLimitMessage?: string;
-  proMaxPrescriptionWhatsappWhatsappMessage?: string;
   proMaxAnalysisLimitMessage?: string;
   proMaxRecordsCapacityMessage?: string;
   proMaxPublicBookingLimitMessage?: string;
@@ -254,13 +236,10 @@ export interface CapacityCheckResult {
 // ✂️ شيلنا TranslationQuotaResult (2026-05) — الترجمة بقت بدون حد منفصل
 
 // ─ recordSave اتشال 2026-04 — السجلات بقت "حد كلي" بفحص client-side ─
-// ─ 🆕 ضفنا تصدير الروشتة (طباعة + تنزيل + واتساب) كـserver-side quotas 2026-04 ─
+// ─ تصدير الروشتة اتشال من الكوتة 2026-06: طباعة/تنزيل/واتساب بدون فحص استخدام ─
 export type StorageQuotaFeature =
   | 'readyPrescriptionSave'
-  | 'medicalReportPrint'
-  | 'prescriptionPrint'
-  | 'prescriptionDownload'
-  | 'prescriptionWhatsapp';
+  | 'medicalReportPrint';
 
 /** نتيجة فحص الكوتة لعمليات التخزين (سجلات/روشتات جاهزة) */
 export interface StorageQuotaResult {

@@ -74,9 +74,6 @@ function getVapidKey(): string | undefined {
   }
   if (invalidKeySource && !warnedInvalidVapidEnv) {
     warnedInvalidVapidEnv = true;
-    console.warn(
-      `[FCM] ignoring invalid VAPID key from env (${invalidKeySource}): unexpected key format/length`
-    );
   }
   return undefined;
 }
@@ -136,14 +133,12 @@ async function ensureMessagingServiceWorkerRegistration(): Promise<ServiceWorker
       registration = await navigator.serviceWorker.ready.catch(() => null);
     }
     if (!registration) {
-      console.warn('[FCM] no service worker registration available for messaging');
       return null;
     }
     await waitForServiceWorkerActivation(registration);
     registration.update().catch(() => { });
     return registration;
-  } catch (e) {
-    console.error('[FCM] ensureMessagingServiceWorkerRegistration:', e);
+  } catch {
     return null;
   }
 }
@@ -152,8 +147,7 @@ async function deleteCurrentBrowserPushToken(): Promise<void> {
   if (!msg) return;
   try {
     await deleteToken(msg);
-  } catch (error) {
-    console.warn('[FCM] deleteToken failed:', error);
+  } catch {
   }
 }
 /**
@@ -188,12 +182,10 @@ async function getAndSaveFcmToken(
   }
   const setupPromise = (async (): Promise<PushSetupResult> => {
     if (!canUsePushMessaging()) {
-      console.warn('[FCM] unsupported environment for push');
       return { ok: false, reason: 'unsupported' };
     }
     const msg = getMessagingInstance();
     if (!msg) {
-      console.warn('[FCM] messaging instance unavailable');
       return { ok: false, reason: 'messaging-unavailable' };
     }
     try {
@@ -202,12 +194,10 @@ async function getAndSaveFcmToken(
         permission = await Notification.requestPermission();
       }
       if (permission !== 'granted') {
-        console.warn('[FCM] notification permission denied by user');
         return { ok: false, reason: 'permission-denied', permission };
       }
       const registration = await ensureMessagingServiceWorkerRegistration();
       if (!registration) {
-        console.warn('[FCM] service worker registration unavailable');
         return { ok: false, reason: 'sw-registration-failed' };
       }
       const vapidKey = getVapidKey();
@@ -232,11 +222,6 @@ async function getAndSaveFcmToken(
       pushRegistrationCandidate(registration);
       const tokenResult = await getFcmTokenWithRetries(msg, registrationCandidates, vapidKey);
       if (!tokenResult.token) {
-        console.warn('[FCM] token extraction failed (empty token):', {
-          code: tokenResult.errorCode,
-          message: tokenResult.errorMessage,
-          scope: tokenResult.errorScope,
-        });
         return {
           ok: false,
           reason: 'token-empty',
@@ -253,20 +238,13 @@ async function getAndSaveFcmToken(
       const callableSaved = await saveTokenViaCallable(role, targetId, token, branchId, secretarySessionToken);
       if (!callableSaved) {
         if (role === 'secretary') {
-          console.warn('[FCM] Secretary token registration failed via callable', {
-            secret: targetId,
-            branchId,
-            hasSessionToken: Boolean(secretarySessionToken),
-            hasFirebaseAuth: Boolean(auth.currentUser),
-          });
           return { ok: false, reason: 'save-failed', permission, token };
         }
         let saveSucceeded = false;
         try {
           await saveFn(targetId, token);
           saveSucceeded = true;
-        } catch (saveError) {
-          console.error('[FCM] save token failed:', saveError);
+        } catch {
         }
         if (!saveSucceeded) {
           return { ok: false, reason: 'save-failed', permission, token };
@@ -274,8 +252,7 @@ async function getAndSaveFcmToken(
       }
       cachePushToken(role, targetId, token);
       return { ok: true, permission, token };
-    } catch (e) {
-      console.error('[FCM] getAndSaveFcmToken:', e);
+    } catch {
       return { ok: false, reason: 'unknown' };
     }
   })();
@@ -284,7 +261,6 @@ async function getAndSaveFcmToken(
   // ويرجع رسالة واضحة للمستخدم بدل ما الزر يفضل "جاري" بدون نهاية.
   const timeoutPromise = new Promise<PushSetupResult>((resolve) => {
     setTimeout(() => {
-      console.warn('[FCM] push setup timed out after', PUSH_SETUP_TIMEOUT_MS, 'ms');
       resolve({ ok: false, reason: 'timeout' });
     }, PUSH_SETUP_TIMEOUT_MS);
   });

@@ -38,6 +38,8 @@ interface CompressOptions {
   maxDimension?: number;
   /** جودة الضغط من 0 إلى 1 للـ JPEG/WebP (default: 0.78) */
   quality?: number;
+  /** احتفظ بالـ PNG للشفافية. صور الإعلان تضبطها false حتى لا يخرج crop بحجم ضخم. */
+  preservePng?: boolean;
 }
 
 /**
@@ -45,9 +47,10 @@ interface CompressOptions {
  * يصغّر الأبعاد عند تخطي maxDimension ويفضّل WebP (أصغر من JPEG بنحو 25–35%)
  * مع fallback لـ JPEG لأي متصفح قديم. يحافظ على الشفافية للـ PNG.
  */
-const compressImage = async (input: Blob, options: CompressOptions = {}): Promise<Blob> => {
+export const compressImage = async (input: Blob, options: CompressOptions = {}): Promise<Blob> => {
   const maxDimension = options.maxDimension ?? MAX_IMAGE_DIMENSION_PROFILE;
   const quality = options.quality ?? IMAGE_QUALITY_PROFILE;
+  const preservePng = options.preservePng ?? true;
 
   // لو مش صورة (مثلاً PDF)، ارجعها زي ما هي
   if (!input.type.startsWith('image/')) return input;
@@ -57,8 +60,8 @@ const compressImage = async (input: Blob, options: CompressOptions = {}): Promis
   if (input.size < 200 * 1024) return input;
 
   // اختيار الصيغة: PNG يحافظ على الشفافية، غير كده نستخدم WebP لو مدعوم وإلا JPEG.
-  const isPng = input.type === 'image/png';
-  const outputType = isPng
+  const shouldKeepPng = preservePng && input.type === 'image/png';
+  const outputType = shouldKeepPng
     ? 'image/png'
     : (supportsWebpEncoding() ? 'image/webp' : 'image/jpeg');
   const outputQuality = outputType === 'image/png' ? undefined : quality;
@@ -151,15 +154,17 @@ const safeDeleteStorageRef = async (target: string): Promise<void> => {
  *  ونستخدم الـ uid من Firebase Auth فقط، عشان منع رفع صورة على حساب مستخدم تاني. */
 export const uploadDoctorProfileImageBase64 = async (_doctorId: string, base64Data: string): Promise<string> => {
     try {
-        const ownerId = auth.currentUser?.uid;
+        const ownerId = auth.currentUser?.uid || _doctorId;
         if (!ownerId) {
             throw new Error('يجب تسجيل الدخول قبل رفع الصورة.');
         }
         const response = await fetch(base64Data);
         const blob = await response.blob();
         const compressed = await compressImage(blob);
-        const storageRef = ref(storage, `profile_images/${ownerId}.jpg`);
-        const snapshot = await uploadBytes(storageRef, compressed);
+        const ext = getExtensionFromBlob(compressed);
+        const contentType = compressed.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        const storageRef = ref(storage, `profile_images/${ownerId}_profile_${Date.now()}.${ext}`);
+        const snapshot = await uploadBytes(storageRef, compressed, { contentType });
         return await getDownloadURL(snapshot.ref);
     } catch (error: any) {
         console.error('[Storage] Error uploading doctor profile image:', error);
@@ -201,7 +206,8 @@ const getExtensionFromBlob = (blob: Blob): string => {
 };
 
 /** إعدادات ضغط مناسبة لصور الإعلان (أكبر وأعلى جودة من البروفايل، بنفس ترتيب التكلفة تقريباً بفضل WebP) */
-const AD_COMPRESSION_OPTIONS = { maxDimension: MAX_IMAGE_DIMENSION_AD, quality: IMAGE_QUALITY_AD } as const;
+const AD_COMPRESSION_OPTIONS = { maxDimension: MAX_IMAGE_DIMENSION_AD, quality: IMAGE_QUALITY_AD, preservePng: false } as const;
+const STORAGE_RULE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 
 /** رفع صور إعلانات الطبيب (Base64) مع توليد اسم فريد للصور المتعددة */
 export const uploadDoctorAdImageBase64 = async (doctorId: string, base64Data: string): Promise<string> => {
@@ -214,10 +220,14 @@ export const uploadDoctorAdImageBase64 = async (doctorId: string, base64Data: st
         const response = await fetch(base64Data);
         const blob = await response.blob();
         const compressed = await compressImage(blob, AD_COMPRESSION_OPTIONS);
+        if (compressed.size >= STORAGE_RULE_IMAGE_MAX_BYTES) {
+            throw new Error('image-too-large-after-compression');
+        }
         const ext = getExtensionFromBlob(compressed);
+        const contentType = compressed.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`;
         const fileName = `${ownerId}_doctor_ad_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const storageRef = ref(storage, `profile_images/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, compressed);
+        const snapshot = await uploadBytes(storageRef, compressed, { contentType });
         return await getDownloadURL(snapshot.ref);
     } catch (error: any) {
         console.error('[Storage] Error uploading doctor ad image base64:', error);

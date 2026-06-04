@@ -44,9 +44,6 @@ const GROUP_ICON: Record<string, React.ReactElement> = {
  * بدل ما الأدمن يدخل أرقام بدون فايدة (الفرونت/السيرفر بيتخطى الفحص أصلاً).
  */
 const GROUPS_OPEN_FOR_PAID = new Set([
-  'prescription_print',
-  'prescription_download',
-  'prescription_whatsapp',
   'records_capacity',
   'ready_daily',
   'ready_capacity',

@@ -17,21 +17,22 @@ import {
 } from '../../services/medicationUsageStatsService';
 
 /** أنواع الصفحات/الواجهات المتاحة في تطبيق DrHyper */
-type DrHyperView =
-  | 'home'             // الصفحة الرئيسية
-  | 'prescription'     // صفحة كتابة الروشتة
-  | 'records'          // أرشيف المرضى
-  | 'patientFiles'     // ملفات المرضى الموحدة
-  | 'appointments'     // المواعيد والحجوزات
-  | 'financialReports' // التقارير المالية
-  | 'guidelines'       // مكتبة الجايدلاينز الطبية
-  | 'drugtools'        // الأدوات الطبية (التفاعلات، إلخ)
-  | 'medicationEdit'   // تعديل قاعدة بيانات الأدوية
-  | 'settings'         // إعدادات الروشتة والحساب
-  | 'branchSettings'   // إعدادات الفروع
-  | 'advertisement'    // إدارة الإعلانات والبروفايل العام
-  | 'permissions'      // صفحة إدارة أذونات الجهاز (الإشعارات وغيرها)
-  | 'secretary';       // صفحة السكرتارية
+export type DrHyperView =
+  | 'home'              // الصفحة الرئيسية
+  | 'prescription'      // صفحة كتابة الروشتة
+  | 'records'           // أرشيف المرضى
+  | 'patientFiles'      // ملفات المرضى الموحدة
+  | 'appointments'      // المواعيد والحجوزات
+  | 'financialReports'  // التقارير المالية
+  | 'medicalAssistant'  // المساعد الطبي الذكي
+  | 'guidelinesLibrary' // مكتبة الجايدلاينز الطبية
+  | 'drugtools'         // الأدوات الطبية (التفاعلات، إلخ)
+  | 'medicationEdit'    // تعديل قاعدة بيانات الأدوية
+  | 'settings'          // إعدادات الروشتة والحساب
+  | 'branchSettings'    // إعدادات الفروع
+  | 'advertisement'     // إدارة الإعلانات والبروفايل العام
+  | 'permissions'       // صفحة إدارة أذونات الجهاز (الإشعارات وغيرها)
+  | 'secretary';        // صفحة السكرتارية
 
 const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
   'home',
@@ -40,7 +41,8 @@ const ALLOWED_VIEWS: ReadonlyArray<DrHyperView> = [
   'patientFiles',
   'appointments',
   'financialReports',
-  'guidelines',
+  'medicalAssistant',
+  'guidelinesLibrary',
   'drugtools',
   'medicationEdit',
   'settings',

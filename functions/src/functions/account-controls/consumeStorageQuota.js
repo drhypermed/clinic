@@ -19,35 +19,14 @@ const FEATURE_KEYS_MAP = {
     wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
     fieldName: 'medicalReportPrintCount',
   },
-  // ─ أزرار تصدير الروشتة ─
-  prescriptionPrint: {
-    limit: { freeKey: 'freePrescriptionPrintDailyLimit', premiumKey: 'premiumPrescriptionPrintDailyLimit', proMaxKey: 'proMaxPrescriptionPrintDailyLimit' },
-    msg: { freeKey: 'freePrescriptionPrintLimitMessage', premiumKey: 'premiumPrescriptionPrintLimitMessage', proMaxKey: 'proMaxPrescriptionPrintLimitMessage' },
-    wa: { freeKey: 'freePrescriptionPrintWhatsappMessage', premiumKey: 'premiumPrescriptionPrintWhatsappMessage', proMaxKey: 'proMaxPrescriptionPrintWhatsappMessage' },
-    fieldName: 'prescriptionPrintCount',
-  },
-  prescriptionDownload: {
-    limit: { freeKey: 'freePrescriptionDownloadDailyLimit', premiumKey: 'premiumPrescriptionDownloadDailyLimit', proMaxKey: 'proMaxPrescriptionDownloadDailyLimit' },
-    msg: { freeKey: 'freePrescriptionDownloadLimitMessage', premiumKey: 'premiumPrescriptionDownloadLimitMessage', proMaxKey: 'proMaxPrescriptionDownloadLimitMessage' },
-    wa: { freeKey: 'freePrescriptionDownloadWhatsappMessage', premiumKey: 'premiumPrescriptionDownloadWhatsappMessage', proMaxKey: 'proMaxPrescriptionDownloadWhatsappMessage' },
-    fieldName: 'prescriptionDownloadCount',
-  },
-  prescriptionWhatsapp: {
-    limit: { freeKey: 'freePrescriptionWhatsappDailyLimit', premiumKey: 'premiumPrescriptionWhatsappDailyLimit', proMaxKey: 'proMaxPrescriptionWhatsappDailyLimit' },
-    msg: { freeKey: 'freePrescriptionWhatsappLimitMessage', premiumKey: 'premiumPrescriptionWhatsappLimitMessage', proMaxKey: 'proMaxPrescriptionWhatsappLimitMessage' },
-    wa: { freeKey: 'freePrescriptionWhatsappWhatsappMessage', premiumKey: 'premiumPrescriptionWhatsappWhatsappMessage', proMaxKey: 'proMaxPrescriptionWhatsappWhatsappMessage' },
-    fieldName: 'prescriptionWhatsappCount',
-  },
 };
 
 const VALID_FEATURES = Object.keys(FEATURE_KEYS_MAP);
 
 // 🆕 (2026-05) — الميزات اللي اتفتحت للـ paid tiers بدون فحص.
 // الـ medicalReportPrint مش هنا (لسه بفحص للجميع).
+// تصدير الروشتة اتشال من الكوتة 2026-06: طباعة/تنزيل/واتساب لا تنادي هذه الدالة.
 const FEATURES_OPEN_FOR_PAID = new Set([
-  'prescriptionPrint',
-  'prescriptionDownload',
-  'prescriptionWhatsapp',
   'readyPrescriptionSave',
 ]);
 

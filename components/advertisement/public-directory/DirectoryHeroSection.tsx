@@ -11,7 +11,7 @@ import { BrandLogo } from '../../common/BrandLogo';
  *   • شيلت كروت الإحصائيّات (أطباء/تخصصات/محافظات) — كانت مكرّره ومش محتاجه.
  */
 export const DirectoryHeroSection: React.FC = () => (
-  <section className="relative overflow-hidden rounded-3xl border border-brand-100/80 bg-gradient-to-b from-brand-50/40 to-white shadow-[0_20px_50px_-24px_rgba(37,99,235,0.25)] p-6 md:p-10">
+  <section className="relative overflow-hidden rounded-3xl border border-brand-100/80 bg-white shadow-[0_20px_50px_-24px_rgba(37,99,235,0.25)] p-4 md:p-6">
     {/* keyframes الـshimmer — اتغيّرت ألوانه لـblue/indigo عشان توحيد الجمهور
         مع هويّة الطبيب (blue) بناءً على طلب المالك. */}
     <style>{`
@@ -19,32 +19,34 @@ export const DirectoryHeroSection: React.FC = () => (
       .dh-sh{background:linear-gradient(110deg,#1d4ed8,#2563eb 30%,#1d4ed8 50%,#4f46e5 75%,#1d4ed8);background-size:400% 100%;animation:dh-shimmer 5s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     `}</style>
 
-    {/* بلوبات الخلفيّه الزخرفيّه — اتوحّدت بـblue/indigo */}
-    <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-brand-300/40 to-brand-300/30 blur-3xl" />
-    <div className="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-brand-300/30 to-brand-300/30 blur-3xl" />
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-brand-700 via-brand-500 to-brand-700" />
 
-    <div className="relative flex flex-col items-center gap-3 text-center">
+    <div className="relative grid grid-cols-1 lg:grid-cols-[auto,1fr] items-center gap-4 lg:gap-6">
       {/* الشعار = نفس BrandLogo اللي في الصفحة التعريفية (مع glow). */}
-      <BrandLogo
-        className="w-32 h-32 sm:w-40 sm:h-40"
-        size={160}
-        fetchPriority="high"
-      />
-
-      {/* "دليل الأطباء وحجز المواعيد" + sparkle */}
-      <div className="flex items-center gap-2">
-        <p className="text-sm sm:text-lg font-bold text-slate-800">دليل الأطباء وحجز المواعيد</p>
-        <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-brand-600 shrink-0" aria-hidden="true" />
+      <div className="mx-auto lg:mx-0 rounded-3xl border border-brand-100 bg-brand-50/60 p-2 shadow-inner">
+        <BrandLogo
+          className="w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48"
+          size={192}
+          fetchPriority="high"
+        />
       </div>
 
-      {/* اسم Dr Hyper بشكله المتأنّق المتحرّك — مطابق للصفحة التعريفية */}
-      <h1 className="dh-sh inline-block text-4xl sm:text-6xl md:text-7xl font-black leading-none tracking-[0.06em]">
-        Dr Hyper
-      </h1>
+      <div className="text-center lg:text-right">
+        {/* "دليل الأطباء وحجز المواعيد" + sparkle */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1">
+          <p className="text-xs sm:text-sm font-black text-brand-800">دليل الأطباء وحجز المواعيد</p>
+          <HiOutlineSparkles className="w-4 h-4 sm:w-5 sm:h-5 text-brand-600 shrink-0" aria-hidden="true" />
+        </div>
 
-      <p className="text-slate-600 text-sm sm:text-base font-semibold max-w-xl leading-relaxed">
-        لاقي دكتورك واحجز موعدك في دقيقتين بدون انتظار ولا تليفونات.
-      </p>
+        {/* اسم Dr Hyper بشكله المتأنّق المتحرّك — مطابق للصفحة التعريفية */}
+        <h1 className="dh-sh mt-3 inline-block text-4xl sm:text-6xl md:text-7xl font-black leading-none tracking-normal">
+          Dr Hyper
+        </h1>
+
+        <p className="mt-3 text-slate-700 text-sm sm:text-base font-bold max-w-2xl leading-relaxed">
+          اوصل لدكتورك واحجز موعدك في دقيقتين بدون انتظار ولا تليفونات.
+        </p>
+      </div>
     </div>
   </section>
 );

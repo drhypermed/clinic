@@ -28,10 +28,7 @@ import type {
 } from '../../../types';
 import { isConsultationAppointment } from '../../../utils/appointmentType';
 import { parseAgeToYearsMonthsDays } from '../../appointments/utils';
-import {
-  isPediatricSpecialtyForSecretaryVitals,
-  sanitizeSecretaryVitalsInput,
-} from '../../../utils/secretaryVitals';
+import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
 import { getReusableWeightForVisit } from '../../../utils/patientMeasurements';
 import { resolveConsultationRecordForAppointment } from '../utils';
 import type { AppView } from '../utils';
@@ -153,7 +150,6 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
     setWeight, setHeight, setVitals,
   } = params;
-  const canUseSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
 
   /**
    * فتح موعد ككشف جديد (أو استشارة جديدة لو الموعد من نوع استشارة).
@@ -177,12 +173,10 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
       : null;
 
     // تطهير العلامات الحيوية اللي أدخلتها السكرتارية
-    const appointmentSecretaryVitals = canUseSecretaryVitals
-      ? sanitizeSecretaryVitalsInput(
-          appointmentMeta.secretaryVitals,
-          { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
-        )
-      : undefined;
+    const appointmentSecretaryVitals = sanitizeSecretaryVitalsInput(
+      appointmentMeta.secretaryVitals,
+      { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
+    );
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
     // ─────────────────────────────────────────────────────────
@@ -250,7 +244,7 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     // سواء فوراً (لو مفيش بيانات غير محفوظة) أو بعد ما المستخدم يأكد المودال.
     handleResetAndClearOpenedAppointment(applyAppointmentData, actionLabel);
   }, [
-    appointments, records, prescriptionSecretaryFieldDefinitions, doctorSpecialty, canUseSecretaryVitals,
+    appointments, records, prescriptionSecretaryFieldDefinitions, doctorSpecialty,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleResetAndClearOpenedAppointment,
     setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
@@ -284,12 +278,10 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     applyPaymentFieldsFromAppointment(apt, params);
 
     // العلامات الحيوية من السكرتارية
-    const appointmentSecretaryVitals = canUseSecretaryVitals
-      ? sanitizeSecretaryVitalsInput(
-          (apt as { secretaryVitals?: unknown }).secretaryVitals,
-          { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
-        )
-      : undefined;
+    const appointmentSecretaryVitals = sanitizeSecretaryVitalsInput(
+      (apt as { secretaryVitals?: unknown }).secretaryVitals,
+      { fieldDefinitions: prescriptionSecretaryFieldDefinitions, doctorSpecialty },
+    );
     const appointmentCustomValues = mapAppointmentSecretaryCustomValues(appointmentSecretaryVitals);
 
     if (!appointmentSecretaryVitals?.weight) {
@@ -304,7 +296,6 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     appointments, records,
     prescriptionSecretaryFieldDefinitions,
     doctorSpecialty,
-    canUseSecretaryVitals,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleOpenConsultation,
     setVisitDate,

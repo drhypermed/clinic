@@ -7,7 +7,6 @@ import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from './FirstVisitBadge';
 import { PatientFileLinkSuggestion } from './PatientFileLinkSuggestion';
-import { isPediatricSpecialtyForSecretaryVitals } from '../../utils/secretaryVitals';
 
 interface AppointmentCardPendingProps {
   apt: ClinicAppointment;
@@ -45,7 +44,7 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 // ─ React.memo: قائمة المواعيد طويلة (10-50 موعد) في صفحة المواعيد، وكل re-render
 //   كان يعيد render كل البطاقات. الـmemo يخفّض ده لـbatches خفيفة.
 const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = ({
-  apt, patientFileNumber, doctorId, doctorSpecialty, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
+  apt, patientFileNumber, doctorId, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
   secretaryApprovedEntryIds, secretaryEntryAlertResponse, entrySendingId,
   onSendEntryRequest, onOpenExam, onOpenConsultation, onEditAppointment, onRemoveAppointment,
 }) => {
@@ -53,7 +52,6 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
   const isPast = aptTime < now;
   const isToday = toLocalDateStr(new Date(apt.dateTime)) === todayStr;
   const isConsultation = isConsultationAppointment(apt);
-  const canShowSecretaryVitals = isPediatricSpecialtyForSecretaryVitals(doctorSpecialty);
   const typeLabel = isConsultation ? 'استشارة' : 'كشف';
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -156,7 +154,7 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
           </div>
         )}
 
-        {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
+        <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />
 
         {/* Row 5: action buttons */}
         <div className="flex items-center gap-1.5 flex-wrap pt-0.5">

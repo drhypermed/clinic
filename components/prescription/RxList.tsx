@@ -185,7 +185,7 @@ const RxListComponent: React.FC<RxListProps> = ({
                   {/* قائمة الاقتراحات المنسدلة (تظهر تحت حفل الكتابة الحالي) */}
                   {!isPrintMode && activeSearchIdx === idx && (
                     <div
-                      className="absolute left-0 top-full mt-1 w-full bg-white border border-brand-100 shadow-xl rounded-xl z-[99999] max-h-[320px] overflow-y-auto ring-2 ring-black/5"
+                      className="no-print absolute left-0 top-full mt-1 w-full bg-white border border-brand-100 shadow-xl rounded-xl z-[99999] max-h-[320px] overflow-y-auto ring-2 ring-black/5"
                     >
                       {suggestions.length > 0 ? (
                         suggestions.map(s => {

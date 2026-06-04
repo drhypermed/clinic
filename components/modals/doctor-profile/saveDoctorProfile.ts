@@ -11,10 +11,7 @@ import {
   deleteDoctorProfileImage,
   uploadDoctorProfileImageBase64,
 } from '../../../services/storageService';
-import {
-  buildDoctorUserProfilePayload,
-  getUserProfileDocRef,
-} from '../../../services/firestore/profileRoles';
+import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
 // مزامنة اسم الطبيب على bookingConfig كل الفروع — السكرتيرة بتقرأ منهم.
 import { firestoreService } from '../../../services/firestore';
 
@@ -61,14 +58,25 @@ export async function saveDoctorProfile({
     const downloadUrl = await uploadDoctorProfileImageBase64(userId, profileImage);
     // cache-buster لضمان تحديث عرض الصورة فوراً بعد الرفع
     finalImageUrl = `${downloadUrl}${downloadUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    if (currentProfileImage) {
+      try {
+        await deleteDoctorProfileImage(userId, currentProfileImage);
+      } catch (err) {
+        console.warn('Failed to delete old profile image', err);
+      }
+    }
   } else if (!profileImage && currentProfileImage) {
-    await deleteDoctorProfileImage(userId, currentProfileImage);
+    try {
+      await deleteDoctorProfileImage(userId, currentProfileImage);
+    } catch (err) {
+      console.warn('Failed to delete old profile image', err);
+    }
   }
 
   // (2) تحديث وثيقة الطبيب (users/{uid})
   await setDoc(
     getUserProfileDocRef(userId),
-    buildDoctorUserProfilePayload({
+    {
       doctorName: name.trim(),
       doctorSpecialty: resolvedSpecialty,
       doctorWhatsApp: whatsapp.trim(),
@@ -76,7 +84,7 @@ export async function saveDoctorProfile({
       updatedAt: new Date().toISOString(),
       // نختم الحساب بـ specialtyEditedOnce لمنع أي تعديل لاحق على التخصص
       ...(markSpecialtyEdited ? { specialtyEditedOnce: true } : {}),
-    }),
+    },
     { merge: true },
   );
 
@@ -104,6 +112,15 @@ export async function saveDoctorProfile({
     await firestoreService.syncDoctorDisplayNameToAllBookingConfigs(userId, name.trim());
   } catch (syncErr) {
     console.warn('[Profile] Failed to sync doctor name to booking configs:', syncErr);
+  }
+
+  try {
+    await firestoreService.syncPublicBookingDoctorProfile(userId, {
+      doctorDisplayName: name.trim(),
+      doctorProfileImage: finalImageUrl || '',
+    });
+  } catch (syncErr) {
+    console.warn('[Profile] Failed to sync doctor profile to public booking config:', syncErr);
   }
 
   // (4) تحديث الواجهة عبر callbacks

@@ -80,8 +80,24 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
     );
   }
 
+  const visibleDoctorsLabel = isFeaturedHomeView ? 'أطباء مميزون في الواجهة' : 'الأطباء الظاهرون الآن';
+
   return (
-    <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5">
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-white px-4 py-3 shadow-[0_12px_32px_-24px_rgba(37,99,235,0.35)]">
+        <div>
+          <p className="text-sm font-black text-slate-900">{visibleDoctorsLabel}</p>
+          <p className="mt-0.5 text-xs font-bold text-slate-500">
+            {hasMore ? 'يمكن عرض المزيد من الأطباء عند الحاجة' : 'كل النتائج المتاحة معروضة'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-2 text-center">
+          <p className="text-2xl font-black text-brand-800 leading-none">{filteredAds.length}</p>
+          <p className="mt-1 text-[11px] font-black text-brand-700">طبيب</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5">
       {filteredAds.map((ad) => {
         const avatarImage = getAvatarImage(ad);
         const isFeaturedDoctor = featuredDoctorIdSet.has(ad.doctorId);
@@ -356,6 +372,7 @@ export const DoctorsResultsSection: React.FC<DoctorsResultsSectionProps> = ({
           </button>
         </div>
       )}
+      </div>
     </section>
   );
 };

@@ -416,10 +416,8 @@ export const MainApp: React.FC = () => {
     patientName,
     phone,
     userId,
-    cachedAccountType: accountType, // 🆕 (2026-05): paid tiers يتخطوا فحص الكوتا — التشغيل أسرع
     showNotification,
     setWhatsappGuideOpen,
-    openQuotaNoticeModal, // 🆕 عشان لما الحد ينتهي يفتح المودال (مع زرار واتساب) بدل toast
   });
 
   // طباعة التقرير الطبي AI — hook مستخرج
@@ -511,7 +509,7 @@ export const MainApp: React.FC = () => {
         {/* hasMultipleBranches = أكتر من فرع — لو فرع واحد بس، اللافتة هتختفي من الـSidebar كله. */}
         <Sidebar key={`sidebar-${profileKey}`} currentView={currentView} setCurrentView={navigateToView} todayAppointmentsCount={todayAppointmentsCount} user={user} onShowProfile={() => setShowProfileModal(true)} onLogout={() => signOut()} doctorName={normalizedDoctorName || undefined} profileImage={profileImage || undefined} breadcrumbs={breadcrumbs} onNavigateView={navigateToView} activeBranchName={branches.find((b) => b.id === activeBranchId)?.name || branches[0]?.name} hasMultipleBranches={branches.length > 1} />
 
-        <main ref={mainContentRef} className={`flex-1 min-w-0 overflow-x-hidden ${currentView === 'prescription' ? 'prescription-main md:mr-60 p-0 pt-20 pb-6 sm:p-0 sm:pt-20 sm:pb-6 md:p-0 md:pt-4 md:pb-6' : currentView === 'home' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' || currentView === 'financialReports' || currentView === 'guidelines' || currentView === 'drugtools' || currentView === 'medicationEdit' || currentView === 'settings' || currentView === 'branchSettings' || currentView === 'advertisement' ? 'md:mr-60 p-0 pt-16 pb-24 sm:p-0 sm:pt-16 sm:pb-8 md:p-0 md:pt-4 md:pb-6' : 'md:mr-60 p-2 pb-24 pt-16 sm:p-4 sm:pb-8 md:p-6 md:pb-8 md:pt-6 space-y-4 sm:space-y-6'}`}>
+        <main ref={mainContentRef} className={`flex-1 min-w-0 overflow-x-hidden ${currentView === 'prescription' ? 'prescription-main md:mr-60 p-0 pt-20 pb-6 sm:p-0 sm:pt-20 sm:pb-6 md:p-0 md:pt-4 md:pb-6' : currentView === 'medicalAssistant' ? 'md:mr-60 p-0 md:p-0 flex flex-col h-[100dvh] pt-16 overflow-hidden' : currentView === 'guidelinesLibrary' ? 'md:mr-60 p-0 md:p-0 pt-16' : currentView === 'home' || currentView === 'records' || currentView === 'patientFiles' || currentView === 'appointments' || currentView === 'secretary' || currentView === 'financialReports' || currentView === 'drugtools' || currentView === 'medicationEdit' || currentView === 'settings' || currentView === 'branchSettings' || currentView === 'advertisement' ? 'md:mr-60 p-0 pt-16 pb-24 sm:p-0 sm:pt-16 sm:pb-8 md:p-0 md:pt-4 md:pb-6' : 'md:mr-60 p-2 pb-24 pt-16 sm:p-4 sm:pb-8 md:p-6 md:pb-8 md:pt-6 space-y-4 sm:space-y-6'}`}>
           {/* Desktop Breadcrumbs */}
           <div className="hidden md:block sticky top-0 z-40">
             <Breadcrumbs segments={breadcrumbs} onNavigateView={navigateToView} variant="desktop" />
@@ -532,6 +530,7 @@ export const MainApp: React.FC = () => {
               activeBranchId={activeBranchId}
               branches={branches}
               branchesLoading={branchesLoading}
+              accountType={accountType}
               normalizedDoctorName={normalizedDoctorName}
               normalizedDoctorSpecialty={normalizedDoctorSpecialty}
               profileImage={profileImage}

@@ -47,7 +47,7 @@ interface CreateReadyPrescriptionActionsParams {
     dismissNotification: (id?: string, manual?: boolean) => void;
     openQuotaNoticeModal: (payload: { message: string; whatsappNumber?: string; whatsappUrl?: string; dayKey?: string; persist?: boolean }) => void;
     buildWhatsAppUrlFromNumber: (number: string, message: string) => string;
-    consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => Promise<any>;
+    consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint') => Promise<any>;
     extractSmartQuotaErrorDetails: (error: any) => SmartQuotaLimitErrorDetails | null;
     getQuotaReachedMessage: (details: SmartQuotaLimitErrorDetails, fallback: string) => string;
     saveHistory: () => void;

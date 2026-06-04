@@ -1,7 +1,8 @@
 import { db, storage } from './firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getDocCacheFirst } from './firestore/cacheFirst';
+import { compressImage } from './storageService';
 import {
     PrescriptionSettings, PrescriptionHeaderSettings, PrescriptionFooterSettings, VitalSignConfig, PaperSizeSettings
 } from '../types';
@@ -31,7 +32,7 @@ const DEFAULT_FOOTER: PrescriptionFooterSettings = {
     consultationPeriod: 'الاستشارة خلال 10 أيام',
     phoneNumber: '01000000000',
     whatsappNumber: '01000000000',
-    socialMediaHandle: 'اسم الصفجة او الينك ',
+    socialMediaHandle: 'اسم الصفحة أو اللينك',
     showSocialMedia: true
 };
 
@@ -86,6 +87,7 @@ export const getDefaultSettings = (): PrescriptionSettings => ({
 });
 
 const DATA_IMAGE_URL_RE = /^data:image\/[a-z0-9.+-]+;base64,/i;
+const STORAGE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 
 const isDataImageUrl = (value: unknown): value is string => {
     return typeof value === 'string' && DATA_IMAGE_URL_RE.test(value.trim());
@@ -144,9 +146,20 @@ const getMimeTypeFromDataUrl = (dataUrl: string): string => {
     return match?.[1] ? match[1].toLowerCase() : 'image/png';
 };
 
+type SettingsImageSlot = 'header-logo' | 'header-bg' | 'footer-logo' | 'footer-bg' | 'middle-bg';
+
+const getSettingsImageCompressionOptions = (slot: SettingsImageSlot) => {
+    const isLogo = slot.endsWith('-logo');
+    return {
+        maxDimension: isLogo ? 800 : 1600,
+        quality: isLogo ? 0.86 : 0.82,
+        preservePng: isLogo,
+    };
+};
+
 const uploadSettingsImageDataUrl = async (
     userId: string,
-    slot: 'header-logo' | 'header-bg' | 'footer-logo' | 'footer-bg' | 'middle-bg',
+    slot: SettingsImageSlot,
     dataUrl: string
 ): Promise<string> => {
     const normalizedDataUrl = normalizeDataImageUrlForStorage(dataUrl);
@@ -154,15 +167,32 @@ const uploadSettingsImageDataUrl = async (
         throw new Error('Invalid image data URL');
     }
 
-    const mimeType = getMimeTypeFromDataUrl(normalizedDataUrl);
+    const originalMimeType = getMimeTypeFromDataUrl(normalizedDataUrl);
+
+    let imageBlob: Blob;
+    try {
+        const response = await fetch(normalizedDataUrl);
+        imageBlob = await response.blob();
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'invalid-data-url';
+        throw new Error(`[PrescriptionSettings] Invalid image data in slot "${slot}": ${message}`);
+    }
+
+    const compressedBlob = await compressImage(imageBlob, getSettingsImageCompressionOptions(slot));
+    if (compressedBlob.size >= STORAGE_IMAGE_MAX_BYTES) {
+        throw new Error(`[PrescriptionSettings] Image in slot "${slot}" is still larger than 5MB after compression`);
+    }
+    const mimeType = compressedBlob.type || originalMimeType;
     const extension = getExtensionFromMimeType(mimeType);
     const fileName = `${slot}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`;
     const objectPath = `users/${userId}/profile/${fileName}`;
     const storageRef = ref(storage, objectPath);
 
     try {
-        // uploadString with data_url هو المسار الأنسب لصور Base64 ويجنب مشاكل ERR_INVALID_URL/atob.
-        const snapshot = await uploadString(storageRef, normalizedDataUrl, 'data_url');
+        const snapshot = await uploadBytes(storageRef, compressedBlob, {
+            contentType: mimeType,
+            cacheControl: 'public,max-age=31536000',
+        });
         return await getDownloadURL(snapshot.ref);
     } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown-upload-error';
@@ -172,7 +202,7 @@ const uploadSettingsImageDataUrl = async (
 
 const persistImageFieldSafely = async (
     userId: string,
-    slot: 'header-logo' | 'header-bg' | 'footer-logo' | 'footer-bg' | 'middle-bg',
+    slot: SettingsImageSlot,
     value?: string
 ): Promise<string | undefined> => {
     if (!value || !isDataImageUrl(value)) return value;

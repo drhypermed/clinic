@@ -2,27 +2,54 @@
   "status": "extracted",
   "sourcePath": "KDIGO/Blood Pressure in CKD/KDIGO 2021 Blood Pressure in CKD Guideline Central Illustration.pdf",
   "sha256": "3304c41e41442d79ba9a0ad9c2a19f8490eec29f2ec0b7b8355d2320b6118c7a",
-  "extractedAt": "2026-05-23T21:07:13.147Z",
+  "extractedAt": "2026-05-29T03:25:55.878Z",
   "extractionMethod": "poppler pdftotext layout+raw",
-  "pdfInfo": {},
-  "pageCount": 1,
-  "textChars": 1008,
+  "pdfInfo": {
+    "Title": "Central illustration fig 2",
+    "Creator": "Adobe Illustrator 24.1 (Macintosh)",
+    "Producer": "Adobe PDF library 15.00",
+    "CreationDate": "Thu May 13 22:48:03 2021 Egypt Daylight Time",
+    "ModDate": "Thu May 13 22:48:03 2021 Egypt Daylight Time",
+    "Custom Metadata": "no",
+    "Metadata Stream": "yes",
+    "Tagged": "no",
+    "UserProperties": "no",
+    "Suspects": "no",
+    "Form": "none",
+    "JavaScript": "no",
+    "Pages": "1",
+    "Encrypted": "no",
+    "Page size": "595.28 x 841.89 pts (A4)",
+    "Page rot": "0",
+    "File size": "0 bytes",
+    "Optimized": "no",
+    "PDF version": "1.5"
+  },
+  "pageCount": 2,
+  "textChars": 1081,
   "pages": [
     {
       "pageNumber": 1,
-      "text": "Central Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting. • Quiet room (no talking by patient\nMid-arm at midpoint of the sternum or observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\n• Empty bladder\nBack supported\n• Relax for >5 min\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically\nFeet flat on floor\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients Adults with CKD with and without diabetes Adult kidney transplant recipients\n24 h MAP by ABPM\nTargets ≤50th percentile for SBP <120 mm Hg <130/<80 mm Hg\nage, sex, and height\nACEi or ARB\nPreferred ACEi • G1–G4, A3 without diabetes (1B) Dihydropyridine\ndrugs or ARB • G1–G4, A2 without diabetes (2C) CCB or ARB\n• G1–G4, A2 or A3 with diabetes (1B)",
-      "layoutText": "Central Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting. • Quiet room (no talking by patient\nMid-arm at midpoint of the sternum or observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\n• Empty bladder\nBack supported\n• Relax for >5 min\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically\nFeet flat on floor\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients Adults with CKD with and without diabetes Adult kidney transplant recipients\n24 h MAP by ABPM\nTargets ≤50th percentile for SBP <120 mm Hg <130/<80 mm Hg\nage, sex, and height\nACEi or ARB\nPreferred ACEi • G1–G4, A3 without diabetes (1B) Dihydropyridine\ndrugs or ARB • G1–G4, A2 without diabetes (2C) CCB or ARB\n• G1–G4, A2 or A3 with diabetes (1B)",
-      "rawText": "Central Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting. • Quiet room (no talking by patient\nMid-arm at midpoint of the sternum or observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\n• Empty bladder\nBack supported\n• Relax for >5 min\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically\nFeet flat on floor\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients Adults with CKD with and without diabetes Adult kidney transplant recipients\n24 h MAP by ABPM\nTargets ≤50th percentile for SBP <120 mm Hg <130/<80 mm Hg\nage, sex, and height\nACEi or ARB\nPreferred ACEi • G1–G4, A3 without diabetes (1B) Dihydropyridine\ndrugs or ARB • G1–G4, A2 without diabetes (2C) CCB or ARB\n• G1–G4, A2 or A3 with diabetes (1B)",
-      "charCount": 1008
+      "text": "Central Illustration for KDIGO 2021 Guideline for the Management\n  of Blood Pressure in Patients with CKD, not receiving dialysis\n\n\n  No talking during rest period\n  and between measurements\n  Cuff to fit arm size (small, usual, large)\n  Arm bare and resting.  • Quiet room (no talking by patient\n  Mid-arm at midpoint of the sternum  or observer)\n  • No smoking, caffeine, or exercise\n  for ≥30 min before measurement\n  Back supported  • Empty bladder\n  • Relax for >5 min\n\n  Validated oscillometric\n  or manual auscultatory\n  device, calibrated\n  periodically\n\n  Feet flat on floor\n\n\n\n  Lifestyle\n  • Salt intake <2 g/d (<90 mmol/d)\n  • Physical activity: 150 min/week moderate-intensity\n\n\n\n  Pediatric patients  Adults with CKD with and without diabetes  Adult kidney transplant recipients\n  24 h MAP by ABPM\nTargets  ≤50th percentile for  SBP <120 mm Hg  <130/<80 mm Hg\n  age, sex, and height\n\n\n\n  ACEi or ARB\nPreferred  ACEi  • G1–G4, A3 without diabetes (1B)  Dihydropyridine\ndrugs  or ARB  • G1–G4, A2 without diabetes (2C)  CCB or ARB\n  • G1–G4, A2 or A3 with diabetes (1B)",
+      "layoutText": "Central Illustration for KDIGO 2021 Guideline for the Management\n  of Blood Pressure in Patients with CKD, not receiving dialysis\n\n\n  No talking during rest period\n  and between measurements\n  Cuff to fit arm size (small, usual, large)\n  Arm bare and resting.  • Quiet room (no talking by patient\n  Mid-arm at midpoint of the sternum  or observer)\n  • No smoking, caffeine, or exercise\n  for ≥30 min before measurement\n  Back supported  • Empty bladder\n  • Relax for >5 min\n\n  Validated oscillometric\n  or manual auscultatory\n  device, calibrated\n  periodically\n\n  Feet flat on floor\n\n\n\n  Lifestyle\n  • Salt intake <2 g/d (<90 mmol/d)\n  • Physical activity: 150 min/week moderate-intensity\n\n\n\n  Pediatric patients  Adults with CKD with and without diabetes  Adult kidney transplant recipients\n  24 h MAP by ABPM\nTargets  ≤50th percentile for  SBP <120 mm Hg  <130/<80 mm Hg\n  age, sex, and height\n\n\n\n  ACEi or ARB\nPreferred  ACEi  • G1–G4, A3 without diabetes (1B)  Dihydropyridine\ndrugs  or ARB  • G1–G4, A2 without diabetes (2C)  CCB or ARB\n  • G1–G4, A2 or A3 with diabetes (1B)",
+      "rawText": "• Quiet room (no talking by patient\nor observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\n• Empty bladder\n• Relax for >5 min\nFeet flat on floor\nBack supported\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting.\nMid-arm at midpoint of the sternum\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients\n24 h MAP by ABPM\n≤50th percentile for\nage, sex, and height\nACEi\nor ARB\nAdults with CKD with and without diabetes\nCentral Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nSBP <120 mm Hg\nACEi or ARB\n• G1–G4, A3 without diabetes (1B)\n• G1–G4, A2 without diabetes (2C)\n• G1–G4, A2 or A3 with diabetes (1B)\nAdult kidney transplant recipients\n<130/<80 mm Hg\nDihydropyridine\nCCB or ARB\nTargets\nPreferred\ndrugs\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically",
+      "charCount": 1081
+    },
+    {
+      "pageNumber": 2,
+      "text": "",
+      "layoutText": "",
+      "rawText": "",
+      "charCount": 0
     }
   ],
   "chunks": [
     {
       "id": "chunk-0001",
       "startPage": 1,
-      "endPage": 1,
-      "text": "Central Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting. • Quiet room (no talking by patient\nMid-arm at midpoint of the sternum or observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\n• Empty bladder\nBack supported\n• Relax for >5 min\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically\nFeet flat on floor\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients Adults with CKD with and without diabetes Adult kidney transplant recipients\n24 h MAP by ABPM\nTargets ≤50th percentile for SBP <120 mm Hg <130/<80 mm Hg\nage, sex, and height\nACEi or ARB\nPreferred ACEi • G1–G4, A3 without diabetes (1B) Dihydropyridine\ndrugs or ARB • G1–G4, A2 without diabetes (2C) CCB or ARB\n• G1–G4, A2 or A3 with diabetes (1B)",
-      "charCount": 1008
+      "endPage": 2,
+      "text": "Central Illustration for KDIGO 2021 Guideline for the Management\nof Blood Pressure in Patients with CKD, not receiving dialysis\nNo talking during rest period\nand between measurements\nCuff to fit arm size (small, usual, large)\nArm bare and resting.  • Quiet room (no talking by patient\nMid-arm at midpoint of the sternum  or observer)\n• No smoking, caffeine, or exercise\nfor ≥30 min before measurement\nBack supported  • Empty bladder\n• Relax for >5 min\nValidated oscillometric\nor manual auscultatory\ndevice, calibrated\nperiodically\nFeet flat on floor\nLifestyle\n• Salt intake <2 g/d (<90 mmol/d)\n• Physical activity: 150 min/week moderate-intensity\nPediatric patients  Adults with CKD with and without diabetes  Adult kidney transplant recipients\n24 h MAP by ABPM\nTargets  ≤50th percentile for  SBP <120 mm Hg  <130/<80 mm Hg\nage, sex, and height\nACEi or ARB\nPreferred  ACEi  • G1–G4, A3 without diabetes (1B)  Dihydropyridine\ndrugs  or ARB  • G1–G4, A2 without diabetes (2C)  CCB or ARB\n• G1–G4, A2 or A3 with diabetes (1B)",
+      "charCount": 1022
     }
   ]
 }

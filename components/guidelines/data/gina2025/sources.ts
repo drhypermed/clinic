@@ -1,70 +1,16 @@
 import type { GuidelineSource } from '../../guidelinesData';
 
-const GINA_2025_SUMMARY_URL = 'https://ginasthma.org/2025-gina-summary-guide/';
-const GINA_2025_SUMMARY_CITATION = 'GINA 2025 Summary Guide for Asthma Management and Prevention';
+const GINA_2026_URL = 'https://ginasthma.org/';
+const GINA_2026_CITATION = 'Global Initiative for Asthma. Global Strategy for Asthma Management and Prevention, 2026. Updated May 2026.';
 
 export const GINA_2025_SOURCES: GuidelineSource[] = [
   {
-    id: 'gina-2025-intro',
-    title: 'Introduction & Facts',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
+    id: 'gina-2026',
+    title: 'GINA 2026.pdf',
+    url: GINA_2026_URL,
+    citation: GINA_2026_CITATION,
+    localFile: 'GINA 2026.pdf',
+    structuredTextPath: 'guidelines-sources/_structured/full-text/GINA/GINA 2026.json',
+    bookId: 'gina-2026',
   },
-  {
-    id: 'gina-2025-diagnosis',
-    title: 'Diagnosing Asthma',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-assessment',
-    title: 'Assessing Asthma',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-general',
-    title: 'General Principles',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-adult',
-    title: 'Treating Adults & Adolescents',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-child',
-    title: 'Treating Children 6-11 Years',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-specific',
-    title: 'Specific Populations',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-exacerbations',
-    title: 'Exacerbations',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  },
-  {
-    id: 'gina-2025-tables',
-    title: 'Reference Tables',
-    url: GINA_2025_SUMMARY_URL,
-    citation: GINA_2025_SUMMARY_CITATION,
-    localFile: 'GINA SUMMARY 2026.pdf'
-  }
 ];

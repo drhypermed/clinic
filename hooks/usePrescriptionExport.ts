@@ -5,9 +5,6 @@ import {
     sharePrescriptionViaWhatsApp,
 } from '../components/prescription/printUtils';
 import type { PaperSizeSettings } from '../types';
-// ─ تشديد أمني 2026-04: نستهلك كوتا قبل أي إجراء تصدير (طباعة/تنزيل/واتساب) ─
-import { consumeStorageQuota } from '../services/accountTypeControlsService';
-import { isQuotaLimitExceededError } from '../services/account-type-controls/quotaErrors';
 
 /**
  * usePrescriptionExport — Hook موحّد لتصدير الروشتة (طباعة/تنزيل PDF/واتساب).
@@ -27,29 +24,10 @@ interface UsePrescriptionExportOptions {
     paperSize?: PaperSizeSettings;
     patientName?: string;
     phone?: string;
-    /**
-     * 🆕 (2026-05): الـ accountType الـ cached من الـ user document.
-     * لو 'premium' أو 'pro_max' بنتخطى فحص الكوتا تماماً → التشغيل أسرع ٢-٥ ثواني.
-     * لو 'free' أو undefined بنفحص بالطريقة العادية.
-     */
-    cachedAccountType?: 'free' | 'premium' | 'pro_max';
     onError?: (operation: PrescriptionExportOperation, error: unknown) => void;
     onTrack?: (operation: PrescriptionExportOperation) => void;
     /** يُستدعى قبل فتح حوار الطباعة — للتنبيهات التوجيهية (مثلاً: اختر حفظ كـ PDF). */
     onPrompt?: (operation: PrescriptionExportOperation) => void;
-    /**
-     * 🆕 يُستدعى لو الكوتا (الحد اليومي) انتهت — الـcaller بيعرض مودال
-     * فيه رسالة الأدمن + رابط واتساب. لو undefined، الإجراء بيمشي بدون فحص.
-     */
-    onQuotaLimitReached?: (
-        operation: PrescriptionExportOperation,
-        details: {
-            message: string;
-            whatsappNumber: string;
-            whatsappUrl: string;
-            limit: number;
-        }
-    ) => void;
 }
 
 interface UsePrescriptionExportReturn {
@@ -70,42 +48,7 @@ const REENTRY_GUARD_MS = 3000;
 export function usePrescriptionExport(
     options: UsePrescriptionExportOptions,
 ): UsePrescriptionExportReturn {
-    const { paperSize, patientName, phone, cachedAccountType, onError, onTrack, onPrompt, onQuotaLimitReached } = options;
-
-    /**
-     * 🆕 فحص الكوتا قبل أي إجراء تصدير. بيرجع true لو نقدر نكمل، false لو الكوتا
-     * انتهت أو في خطأ (في الحالتين الـcaller المسؤول يعرض رسالة).
-     * - quota انتهت → بنستدعي onQuotaLimitReached مع تفاصيل الرسالة
-     * - أي خطأ تاني → نمنع الإجراء + onError (تشديد أمني — مفيش continue-on-transient)
-     */
-    const checkQuota = useCallback(
-        async (
-            op: PrescriptionExportOperation,
-            feature: 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp',
-        ): Promise<boolean> => {
-            try {
-                await consumeStorageQuota(feature, { cachedAccountType });
-                return true;
-            } catch (err: unknown) {
-                if (isQuotaLimitExceededError(err) && onQuotaLimitReached) {
-                    const details = (err as { details?: Record<string, unknown> })?.details || {};
-                    const limit = Number(details.limit || 0);
-                    const message = String(details.limitReachedMessage || '').trim()
-                        .replace(/\{\s*limit\s*\}/gi, String(limit));
-                    onQuotaLimitReached(op, {
-                        message: message || 'تم استهلاك الحد اليومي. للترقية تواصل عبر واتساب.',
-                        whatsappNumber: String(details.whatsappNumber || ''),
-                        whatsappUrl: String(details.whatsappUrl || ''),
-                        limit,
-                    });
-                } else {
-                    onError?.(op, err);
-                }
-                return false;
-            }
-        },
-        [onError, onQuotaLimitReached, cachedAccountType],
-    );
+    const { paperSize, patientName, phone, onError, onTrack, onPrompt } = options;
 
     const [isPrinting, setIsPrinting] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -144,25 +87,14 @@ export function usePrescriptionExport(
         //   ما الـbrowser يرسل أي click event ثاني (iOS bug: double-click).
         setIsPrinting(true);
         try {
-            // 🆕 توازي 2026-05: نبدأ فحص الكوتا (٢-٥ ثواني cloud function call)
-            //   في الخلفية، ونعمل React commit للـ loading state بالتوازي بدل
-            //   تسلسلياً. الكوتا هي الـbottleneck — أي حاجة تانية بنخليها تتم
-            //   جنبها بدل ما تضيف على الانتظار.
-            const quotaPromise = checkQuota('print', 'prescriptionPrint');
-            const prepPromise = new Promise<void>((resolve) =>
-                requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-            );
             onTrack?.('print');
-            // ننتظر الاتنين — الـtotal بيبقى max(quota, prep) بدل sum
-            const [quotaOk] = await Promise.all([quotaPromise, prepPromise]);
-            if (!quotaOk) return;
             await printPrescription(paperSize);
         } catch (err) {
             onError?.('print', err);
         } finally {
             setIsPrinting(false);
         }
-    }, [guard, onError, onTrack, paperSize, checkQuota]);
+    }, [guard, onError, onTrack, paperSize]);
 
     const handleDownload = useCallback(async () => {
         if (!guard('download')) return;
@@ -170,15 +102,7 @@ export function usePrescriptionExport(
         //   على الموبايل (نفس الـpattern في handlePrint).
         setIsDownloading(true);
         try {
-            // 🆕 توازي 2026-05: فحص الكوتا + commit الـloading state في نفس
-            //   الوقت (نفس منطق handlePrint).
-            const quotaPromise = checkQuota('download', 'prescriptionDownload');
-            const prepPromise = new Promise<void>((resolve) =>
-                requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-            );
             onTrack?.('download');
-            const [quotaOk] = await Promise.all([quotaPromise, prepPromise]);
-            if (!quotaOk) return;
             // اسم الملف = اسم المريض كما هو، أو "روشتة" لو مفيش اسم
             const trimmedName = patientName?.trim();
             const fileName = trimmedName && trimmedName.length > 0 ? trimmedName : 'روشتة';
@@ -192,7 +116,7 @@ export function usePrescriptionExport(
         } finally {
             setIsDownloading(false);
         }
-    }, [guard, onError, onPrompt, onTrack, paperSize, patientName, checkQuota]);
+    }, [guard, onError, onPrompt, onTrack, paperSize, patientName]);
 
     const handleShareWhatsApp = useCallback(async () => {
         if (!guard('whatsapp')) return;
@@ -207,9 +131,6 @@ export function usePrescriptionExport(
         // ـ نـset isSharingViaWhatsApp=true فوراً (حماية من double-click) ـ
         setIsSharingViaWhatsApp(true);
         try {
-            // 🆕 فحص الحد اليومي قبل فتح واتساب
-            if (!(await checkQuota('whatsapp', 'prescriptionWhatsapp'))) return;
-
             // خطوة 2: بعد التنزيل، افتح محادثة واتساب مباشرة بالرقم المسجّل.
             onTrack?.('whatsapp');
             sharePrescriptionViaWhatsApp({ patientName, phone });
@@ -221,7 +142,7 @@ export function usePrescriptionExport(
         } finally {
             setIsSharingViaWhatsApp(false);
         }
-    }, [guard, onError, onPrompt, onTrack, patientName, phone, checkQuota]);
+    }, [guard, onError, onPrompt, onTrack, patientName, phone]);
 
     return {
         isPrinting,

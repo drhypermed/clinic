@@ -33,8 +33,8 @@ export function useProfileImageCropper({ onCroppedReady, onError }: HookArgs) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      onError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
+    if (file.size > 20 * 1024 * 1024) {
+      onError('حجم الصورة يجب أن يكون أقل من 20 ميجابايت');
       return;
     }
     if (!file.type.startsWith('image/')) {

@@ -13,6 +13,7 @@ import { PrescriptionFooter } from './PrescriptionFooter';
 import { PrescriptionHeader } from './PrescriptionHeader';
 import { RxList } from './RxList';
 import { VitalsSidebar } from './VitalsSidebar';
+import { PRESCRIPTION_FONT_STACK } from '../prescription-settings/utils';
 
 type VitalConfig = React.ComponentProps<typeof VitalsSidebar>['vitalConfig'];
 
@@ -168,6 +169,7 @@ export const PrescriptionPaper: React.FC<PrescriptionPaperProps> = ({
         paddingLeft: `${paperMargins.left}mm`,
         overflow: 'hidden',
         direction: 'rtl',
+        fontFamily: PRESCRIPTION_FONT_STACK,
         display: 'grid',
         gridTemplateRows: 'auto minmax(0, 1fr) min-content',
         boxSizing: 'border-box',

@@ -89,6 +89,67 @@ service cloud.firestore {
 
     // التحقق من أن الـ branchId الخاص بالموعد تابع فعلاً لفروع الطبيب.
     // نقبل: غياب الحقل، سلسلة فارغة، 'main' (الفرع الافتراضي)، أو فرع موجود في /users/{userId}/branches/.
+    function branchOrMain(data) {
+      return (!('branchId' in data) || !(data.branchId is string) || data.branchId == '')
+        ? 'main'
+        : data.branchId;
+    }
+
+    function publicAppointmentCreateAllowed(userId, aptId) {
+      return request.resource.data.publicBookingSecret is string &&
+        request.resource.data.publicSlotId is string &&
+        request.resource.data.id == aptId &&
+        request.resource.data.source == 'public' &&
+        publicBookingSecretDoctorIsActive(request.resource.data.publicBookingSecret) &&
+        get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == userId &&
+        exists(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)) &&
+        get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data.dateTime is string &&
+        request.resource.data.dateTime == get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data.dateTime &&
+        (
+          !('branchId' in get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data) ||
+          !(get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data.branchId is string) ||
+          get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data.branchId == '' ||
+          branchOrMain(request.resource.data) == get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.publicSlotId)).data.branchId
+        );
+    }
+
+    function publicClaimIdentifier(data) {
+      return (data.publicUserId is string && data.publicUserId != '')
+        ? data.publicUserId
+        : (
+          (data.phone is string && data.phone != '')
+            ? data.phone
+            : 'anonymous'
+        );
+    }
+
+    function publicBookingClaimCreateAllowed(claimKey) {
+      return request.resource.data.keys().hasOnly([
+          'userId',
+          'publicBookingSecret',
+          'slotId',
+          'publicUserId',
+          'phone',
+          'appointmentId',
+          'createdAt'
+        ]) &&
+        request.resource.data.userId is string &&
+        request.resource.data.publicBookingSecret is string &&
+        request.resource.data.slotId is string &&
+        request.resource.data.appointmentId is string &&
+        (!('publicUserId' in request.resource.data) || request.resource.data.publicUserId == null || request.resource.data.publicUserId is string) &&
+        (!('phone' in request.resource.data) || request.resource.data.phone == null || request.resource.data.phone is string) &&
+        request.resource.data.publicBookingSecret + '_' + request.resource.data.slotId + '_' + publicClaimIdentifier(request.resource.data) == claimKey &&
+        publicBookingSecretDoctorIsActive(request.resource.data.publicBookingSecret) &&
+        get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == request.resource.data.userId &&
+        exists(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)/slots/$(request.resource.data.slotId)) &&
+        existsAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)/appointments/$(request.resource.data.appointmentId)) &&
+        getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)/appointments/$(request.resource.data.appointmentId)).data.id == request.resource.data.appointmentId &&
+        getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)/appointments/$(request.resource.data.appointmentId)).data.source == 'public' &&
+        getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)/appointments/$(request.resource.data.appointmentId)).data.publicBookingSecret == request.resource.data.publicBookingSecret &&
+        getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)/appointments/$(request.resource.data.appointmentId)).data.publicSlotId == request.resource.data.slotId;
+    }
+
     function isValidBranchForUser(userId, data) {
       return !('branchId' in data) ||
         !(data.branchId is string) ||
@@ -302,32 +363,22 @@ service cloud.firestore {
         // read/delete: السكرتيرة لازم تكون من نفس الفرع (تشديد 2026-05-10)
         allow read, delete: if
           (request.auth != null && request.auth.uid == userId) ||
-          (
+          (request.auth != null &&
             resource.data.bookingSecret is string &&
             exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
             get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId &&
             appointmentBranchAllowedForSecretary(resource.data)
-          ) ||
-          (
-            resource.data.publicBookingSecret is string &&
-            exists(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)) &&
-            get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
           );
         // update: لازم الـ branchId الموجود + الجديد كلاهما يطابق فرع السكرتيرة
         allow update: if
           isValidBranchForUser(userId, request.resource.data) && (
             (request.auth != null && request.auth.uid == userId) ||
-            (
+            (request.auth != null &&
               resource.data.bookingSecret is string &&
               exists(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)) &&
               get(/databases/$(database)/documents/bookingConfig/$(resource.data.bookingSecret)).data.userId == userId &&
               appointmentBranchAllowedForSecretary(resource.data) &&
               appointmentBranchAllowedForSecretary(request.resource.data)
-            ) ||
-            (
-              resource.data.publicBookingSecret is string &&
-              exists(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)) &&
-              get(/databases/$(database)/documents/publicBookingConfig/$(resource.data.publicBookingSecret)).data.userId == userId
             )
           );
         // create: لازم الـ branchId في الـpayload يطابق فرع السكرتيرة
@@ -335,18 +386,13 @@ service cloud.firestore {
         allow create: if
           isValidBranchForUser(userId, request.resource.data) && (
             (request.auth != null && request.auth.uid == userId) ||
-            (
+            (request.auth != null &&
               request.resource.data.bookingSecret is string &&
               exists(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)) &&
               get(/databases/$(database)/documents/bookingConfig/$(request.resource.data.bookingSecret)).data.userId == userId &&
               appointmentBranchAllowedForSecretary(request.resource.data)
             ) ||
-            (
-              request.resource.data.publicBookingSecret is string &&
-              exists(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)) &&
-              get(/databases/$(database)/documents/publicBookingConfig/$(request.resource.data.publicBookingSecret)).data.userId == userId &&
-              doctorAccountActiveForPublicAccess(userId)
-            )
+            publicAppointmentCreateAllowed(userId, aptId)
           );
       }
       match /publicBookings/{bookingId} {
@@ -753,11 +799,7 @@ service cloud.firestore {
       allow get: if true;
       allow list: if false;
       // create-only: لازم doc جديد، مفيش update يستبدل claim موجود
-      allow create: if
-        request.resource.data.userId is string &&
-        request.resource.data.slotId is string &&
-        request.resource.data.appointmentId is string &&
-        doctorAccountActiveForPublicAccess(request.resource.data.userId);
+      allow create: if publicBookingClaimCreateAllowed(claimKey);
       allow update, delete: if false; // claims immutable
     }
 
@@ -942,5 +984,8 @@ service cloud.firestore {
       allow list: if false;
     }
 
+    match /guidelineChatHistory/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

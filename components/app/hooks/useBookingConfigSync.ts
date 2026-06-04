@@ -20,6 +20,7 @@ import type { ClinicAppointment } from '../../../types';
 interface UseBookingConfigSyncParams {
   /** سر الحجز — المفتاح الرئيسي لـ bookingConfig document */
   bookingSecret: string | null;
+  bookingSecrets?: ReadonlyArray<string | null | undefined>;
   /** كل المواعيد من كل الفروع (subscription منفصلة عن المواعيد المفلترة بالفرع) */
   allAppointmentsAcrossBranches: ClinicAppointment[];
   /** تاريخ اليوم كـ YYYY-MM-DD (يتحدث تلقائياً عند منتصف الليل) */
@@ -103,10 +104,23 @@ const isAppointmentAfterDay = (apt: ClinicAppointment, targetDayStr: string): bo
 
 export const useBookingConfigSync = ({
   bookingSecret,
+  bookingSecrets,
   allAppointmentsAcrossBranches,
   todayStr,
   branchIds,
 }: UseBookingConfigSyncParams) => {
+  const targetSecrets = useMemo(() => {
+    const result: string[] = [];
+    const seen = new Set<string>();
+    [bookingSecret, ...(bookingSecrets || [])].forEach((secret) => {
+      const value = String(secret || '').trim();
+      if (!value || seen.has(value)) return;
+      seen.add(value);
+      result.push(value);
+    });
+    return result;
+  }, [bookingSecret, bookingSecrets]);
+
   // ── 1) مواعيد اليوم مقسمة بالفرع (حقول كاملة) ──
   const todayAppointmentsByBranch = useMemo(() => {
     const result = initEmptyBranchMap<TodayAppointmentItem>(branchIds);
@@ -149,13 +163,15 @@ export const useBookingConfigSync = ({
   }, [allAppointmentsAcrossBranches, todayStr, branchIds]);
 
   useEffect(() => {
-    if (!bookingSecret) return;
-    firestoreService
-      .setBookingConfigTodayAppointmentsByBranch(bookingSecret, todayAppointmentsByBranch)
-      .catch((error) => {
-        console.error('[useBookingConfigSync] Failed syncing today appointments by branch:', error);
-      });
-  }, [bookingSecret, todayAppointmentsByBranch]);
+    if (targetSecrets.length === 0) return;
+    targetSecrets.forEach((secret) => {
+      firestoreService
+        .setBookingConfigTodayAppointmentsByBranch(secret, todayAppointmentsByBranch)
+        .catch((error) => {
+          console.error('[useBookingConfigSync] Failed syncing today appointments by branch:', error);
+        });
+    });
+  }, [targetSecrets, todayAppointmentsByBranch]);
 
   // ── 2) مواعيد قادمة (بعد اليوم) مقسمة بالفرع (حقول أقل) ──
   const upcomingAppointmentsByBranch = useMemo(() => {
@@ -188,13 +204,15 @@ export const useBookingConfigSync = ({
   }, [allAppointmentsAcrossBranches, todayStr, branchIds]);
 
   useEffect(() => {
-    if (!bookingSecret) return;
-    firestoreService
-      .setBookingConfigUpcomingAppointmentsByBranch(bookingSecret, upcomingAppointmentsByBranch)
-      .catch((error) => {
-        console.error('[useBookingConfigSync] Failed syncing upcoming appointments by branch:', error);
-      });
-  }, [bookingSecret, upcomingAppointmentsByBranch]);
+    if (targetSecrets.length === 0) return;
+    targetSecrets.forEach((secret) => {
+      firestoreService
+        .setBookingConfigUpcomingAppointmentsByBranch(secret, upcomingAppointmentsByBranch)
+        .catch((error) => {
+          console.error('[useBookingConfigSync] Failed syncing upcoming appointments by branch:', error);
+        });
+    });
+  }, [targetSecrets, upcomingAppointmentsByBranch]);
 
   // ── 3) مواعيد منفذة (آخر 30 يوم، 20 لكل فرع كحد أقصى) ──
   const completedAppointmentsByBranch = useMemo(() => {
@@ -230,11 +248,13 @@ export const useBookingConfigSync = ({
   }, [allAppointmentsAcrossBranches, branchIds]);
 
   useEffect(() => {
-    if (!bookingSecret) return;
-    firestoreService
-      .setBookingConfigCompletedAppointmentsByBranch(bookingSecret, completedAppointmentsByBranch)
-      .catch((error) => {
-        console.error('[useBookingConfigSync] Failed syncing completed appointments by branch:', error);
-      });
-  }, [bookingSecret, completedAppointmentsByBranch]);
+    if (targetSecrets.length === 0) return;
+    targetSecrets.forEach((secret) => {
+      firestoreService
+        .setBookingConfigCompletedAppointmentsByBranch(secret, completedAppointmentsByBranch)
+        .catch((error) => {
+          console.error('[useBookingConfigSync] Failed syncing completed appointments by branch:', error);
+        });
+    });
+  }, [targetSecrets, completedAppointmentsByBranch]);
 };

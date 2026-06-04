@@ -17,6 +17,26 @@ const PublicBookingFormPage = React.lazy(() => import('../../appointments/public
 // صفحه الطبيب المستقلّه (SEO-first) — URL: /dr/:slug
 // مسار منفصل عن App عشان الـbot يشوف المحتوى بدون الـauth gates.
 const DoctorPublicPage = React.lazy(() => import('../../advertisement/public-directory/DoctorPublicPage').then(m => ({ default: m.DoctorPublicPage })));
+const DEV_SERVICE_WORKER_RESET_KEY = 'drh_dev_service_worker_reset_done';
+
+const cleanupDevelopmentServiceWorkers = () => {
+  if (!import.meta.env.DEV) return;
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+    if (registrations.length === 0 && !navigator.serviceWorker.controller) return;
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+    if ('caches' in window) {
+      const cacheKeys = await window.caches.keys();
+      await Promise.all(cacheKeys.map((key) => window.caches.delete(key)));
+    }
+    if (window.sessionStorage.getItem(DEV_SERVICE_WORKER_RESET_KEY) === '1') return;
+    window.sessionStorage.setItem(DEV_SERVICE_WORKER_RESET_KEY, '1');
+    window.location.reload();
+  }).catch(() => { });
+};
+
+cleanupDevelopmentServiceWorkers();
 
 /**
  * يعمل تمرير للأعلى تلقائياً مع كل تغيير في المسار،
@@ -86,30 +106,32 @@ const observeRegistrationForUpdate = (registration: ServiceWorkerRegistration) =
   });
 };
 
-registerSW({
-  // التسجيل الفوري عشان أي تحديث جديد يلحق المستخدم من أوّل فتح للتطبيق،
-  // مش يتأخّر لـ idle — مهمّ خصوصاً على سفاري آيفون اللي ما بيقفلش التبويب.
-  immediate: true,
-  onNeedRefresh() {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-      emitPwaUpdateAvailable();
-      return;
-    }
-    navigator.serviceWorker.getRegistration('/').then((registration) => {
+if (!import.meta.env.DEV) {
+  registerSW({
+    // التسجيل الفوري عشان أي تحديث جديد يلحق المستخدم من أوّل فتح للتطبيق،
+    // مش يتأخّر لـ idle — مهمّ خصوصاً على سفاري آيفون اللي ما بيقفلش التبويب.
+    immediate: true,
+    onNeedRefresh() {
+      if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        emitPwaUpdateAvailable();
+        return;
+      }
+      navigator.serviceWorker.getRegistration('/').then((registration) => {
+        if (!registration) return;
+        observeRegistrationForUpdate(registration);
+        syncPendingPwaUpdateFromRegistration(registration);
+      }).catch(() => {
+        // Fallback: keep pending update flag for admin auto-apply flow.
+        emitPwaUpdateAvailable();
+      });
+    },
+    onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
       observeRegistrationForUpdate(registration);
       syncPendingPwaUpdateFromRegistration(registration);
-    }).catch(() => {
-      // Fallback: keep pending update flag for admin auto-apply flow.
-      emitPwaUpdateAvailable();
-    });
-  },
-  onRegisteredSW(_swUrl, registration) {
-    if (!registration) return;
-    observeRegistrationForUpdate(registration);
-    syncPendingPwaUpdateFromRegistration(registration);
-  },
-});
+    },
+  });
+}
 
 const RootApp: React.FC = () => {
   const [showOptionalPrompts, setShowOptionalPrompts] = React.useState(false);

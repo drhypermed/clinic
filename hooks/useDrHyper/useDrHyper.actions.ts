@@ -25,7 +25,7 @@ interface UseDrHyperActionsArgs {
   trackMedUsage: DrHyperViewAndUsageState['trackMedUsage'];
   resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
   getAccountTypeControls: () => Promise<any>;
-  consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint' | 'prescriptionPrint' | 'prescriptionDownload' | 'prescriptionWhatsapp') => Promise<unknown>;
+  consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint') => Promise<unknown>;
   consumeSmartPrescriptionQuota: () => Promise<unknown>;
   sanitizeRxItemsForSave: (items: any[]) => any[];
   sanitizeForFirestore: (value: unknown) => unknown;

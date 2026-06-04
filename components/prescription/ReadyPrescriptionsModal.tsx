@@ -141,34 +141,36 @@ export const ReadyPrescriptionsModal: React.FC<ReadyPrescriptionsModalProps> = (
       >
         {/* رأس النافذة — أبيض نظيف مع حد slate (نفس نمط لوحات الأدمن) */}
         <div className="shrink-0 border-b border-slate-200/80 bg-white p-4 sm:p-5">
-          <div className="flex items-center gap-2 justify-between flex-wrap lg:flex-nowrap">
-            <div className="order-1 flex min-w-0 items-center gap-2">
-              <h3 className="flex items-center gap-2 whitespace-nowrap text-lg font-black text-slate-900 sm:text-xl">
-                {/* لمسة brand واحدة — شريط جانبي صلب بدون تدرّج */}
-                <span className="h-6 w-1.5 rounded-full bg-brand-600"></span>
-                الروشتات الجاهزة
-              </h3>
-              {!draft.isEditorOpen && (
-                <Button
-                  onClick={draft.handleStartCreateNew}
-                  variant="info"
-                  size="sm"
-                  className="shrink-0 text-xs sm:text-sm"
-                >
-                  إضافة روشتة
-                </Button>
-              )}
+          <div className="flex flex-col gap-3">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <h3 className="flex items-center gap-2 whitespace-nowrap text-lg font-black text-slate-900 sm:text-xl">
+                  {/* لمسة brand واحدة — شريط جانبي صلب بدون تدرّج */}
+                  <span className="h-6 w-1.5 rounded-full bg-brand-600"></span>
+                  الروشتات الجاهزة
+                </h3>
+                {!draft.isEditorOpen && (
+                  <Button
+                    onClick={draft.handleStartCreateNew}
+                    variant="info"
+                    size="sm"
+                    className="shrink-0 text-xs sm:text-sm"
+                  >
+                    إضافة
+                  </Button>
+                )}
+              </div>
+              <Button
+                onClick={onClose}
+                variant="danger"
+                size="sm"
+                className="flex h-7 min-h-7 w-7 min-w-7 shrink-0 items-center justify-center px-0 text-base leading-none font-black"
+              >
+                ×
+              </Button>
             </div>
-            <Button
-              onClick={onClose}
-              variant="danger"
-              size="sm"
-              className="order-2 lg:order-3 flex h-7 min-h-7 w-7 min-w-7 items-center justify-center px-0 text-base leading-none font-black"
-            >
-              ×
-            </Button>
             {!draft.isEditorOpen && (
-              <div className="order-3 relative w-full lg:order-2 lg:flex-1">
+              <div className="relative w-full">
                 <input
                   type="text"
                   value={searchTerm}

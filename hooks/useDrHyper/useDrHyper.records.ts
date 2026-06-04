@@ -55,7 +55,7 @@ interface CreateRecordActionsParams {
     setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
     setGeneralAdvice: React.Dispatch<React.SetStateAction<string[]>>;
     setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
-    setCurrentView: React.Dispatch<React.SetStateAction<'home' | 'prescription' | 'records' | 'patientFiles' | 'appointments' | 'financialReports' | 'guidelines' | 'drugtools' | 'medicationEdit' | 'settings' | 'branchSettings' | 'advertisement' | 'permissions' | 'secretary'>>;
+    setCurrentView: React.Dispatch<React.SetStateAction<import('./useDrHyper.viewAndUsage').DrHyperView>>;
     setHistoryStack: React.Dispatch<React.SetStateAction<any[]>>;
     setFutureStack: React.Dispatch<React.SetStateAction<any[]>>;
     setLastSavedHash: React.Dispatch<React.SetStateAction<string>>;

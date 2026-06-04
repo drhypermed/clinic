@@ -515,7 +515,7 @@ export const useDrHyperRealtimeData = ({
           const recordDateMs = new Date(record.date).getTime();
           if (now - recordDateMs > SEVEN_YEARS_MS) {
             deleteDoc(doc(db, 'users', user.uid, 'records', record.id))
-              .catch((err) => console.error('Auto-delete failed', err));
+              .catch(() => {});
           }
         });
       }
@@ -705,15 +705,11 @@ export const useDrHyperRealtimeData = ({
       setReadyPrescriptions(loadedPresets);
     };
 
-    // الروشتات الجاهزة بتتغير لما الدكتور يحفظ واحدة جديدة بس — كاش يكفي
-    let cancelled = false;
-    getDocsCacheFirst(q).then((snap) => {
-      if (!cancelled && !snap.empty) handleSnap(snap);
-    }).catch(() => {
-      if (!cancelled) showNotificationRef.current('حدث خطأ في تحميل الروشتات الجاهزة', 'error');
+    const unsubscribe = onSnapshot(q, handleSnap, (error) => {
+      showNotificationRef.current('حدث خطأ في تحميل الروشتات الجاهزة', 'error');
     });
 
-    return () => { cancelled = true; };
+    return () => unsubscribe();
   }, [user]);
 
   // --- 3. مراقبة الإشعارات اللحظية من السيرفر ---

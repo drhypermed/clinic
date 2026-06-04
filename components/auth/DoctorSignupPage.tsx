@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { db, storage, auth, googleProvider } from '../../services/firebaseConfig';
 import { PUBLIC_AUTH_ERROR_KEY } from '../../services/auth-service';
+import { compressImage } from '../../services/storageService';
 import { formatUserDate } from '../../utils/cairoTime';
 import { AuthLayout } from './AuthLayout';
 import { BrandLogo } from '../common/BrandLogo';
@@ -48,7 +49,7 @@ import {
 
 const SESSION_ROLE_STORAGE_KEY = 'dh_auth_role';
 const SIGNUP_DOCTOR_PATH = '/signup/doctor';
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
 
 const inputBase =
   'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 hover:border-slate-400 transition';
@@ -161,18 +162,29 @@ export const DoctorSignupPage: React.FC = () => {
   // كل render. الـlogic معتمد فقط على hasReturnedFromRedirect/loading/user.
   }, [hasReturnedFromRedirect, loading, user]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_IMAGE_SIZE) {
-      setLoginError('حجم الصورة يجب أن لا يتجاوز 5 MB');
+      setLoginError('حجم الصورة يجب ألا يتجاوز 20 ميجابايت');
       return;
     }
-    setLicenseImage(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    
     setLoginError('');
+    setIsChecking(true);
+    try {
+      const compressedBlob = await compressImage(file, { maxDimension: 1600, quality: 0.82 });
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const compressedFile = new File([compressedBlob], safeName, { type: compressedBlob.type || 'image/jpeg' });
+      setLicenseImage(compressedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(compressedFile);
+    } catch {
+      setLoginError('تعذرت معالجة الصورة. يرجى اختيار صورة أخرى.');
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -31,6 +31,10 @@ import type { PublicDoctorsDirectoryPageProps } from '../../../types';
 import { useDirectoryFilters } from './useDirectoryFilters';
 import { usePublicBookingReviews } from './usePublicBookingReviews';
 import { getCachedDirectoryPage, setCachedDirectoryPage } from './directoryCache';
+import {
+  appendBranchToPublicBookingUrl,
+  resolvePublicBookingBranchForLink,
+} from '../../../utils/publicBookingLinks';
 
 // مفتاح sessionStorage لحفظ doctor id اللي المريض كان بيحاول يحجز معاه قبل ما
 // يضغط Google login. لو signInWithGoogle عمل fallback لـsignInWithRedirect،
@@ -145,26 +149,30 @@ export const usePublicDoctorsDirectoryController = ({
   // ده وحّد كل مسارات الحجز العام تحت /p/* بدل /book-public/* legacy.
   // اشتراط جوجل بقى إعداد خاص بكل طبيب (publicBookingConfig.requireGoogleSignIn) بدل
   // ?entry=public-site القديم — مفيش لزوم لـquery params تتحكّم في السلوك دلوقتي.
-  const buildSiteBookingUrl = async (doctorId: string, branchId = ''): Promise<string> => {
-    const params = new URLSearchParams();
-    if (branchId) params.set('branch', branchId);
-    const qs = params.toString();
+  const buildSiteBookingUrl = async (doctorId: string, branchId = '', branchName = '', branchAddress = ''): Promise<string> => {
+    const requestedBranch = { id: branchId, name: branchName, address: branchAddress };
+    const withResolvedBranch = async (basePath: string, publicSecret?: string) => {
+      const secret = String(publicSecret || '').trim();
+      if (!secret || !(requestedBranch.id || requestedBranch.name)) return basePath;
+      const publicBranches = await firestoreService.getPublicBranches(secret);
+      const resolvedBranch = resolvePublicBookingBranchForLink(publicBranches, requestedBranch);
+      return resolvedBranch ? appendBranchToPublicBookingUrl(basePath, resolvedBranch) : basePath;
+    };
 
     try {
       const lookup = await firestoreService.getPublicBookingLookupByUserId(doctorId);
       const publicSlug = String(lookup?.publicUrlSlug || '').trim();
       if (publicSlug) {
-        return `/p/${encodeURIComponent(publicSlug)}${qs ? `?${qs}` : ''}`;
+        return await withResolvedBranch(`/p/${encodeURIComponent(publicSlug)}`, lookup?.publicBookingSecret);
       }
-      const publicSecret = String(lookup?.publicBookingSecret || '').trim();
-      if (publicSecret) {
-        return `/book-public/s/${encodeURIComponent(publicSecret)}${qs ? `?${qs}` : ''}`;
+      if (lookup?.publicBookingSecret) {
+        return await withResolvedBranch(`/p/${encodeURIComponent(doctorId)}`, lookup.publicBookingSecret);
       }
     } catch (err) {
       console.warn('[publicDirectory] failed to resolve canonical booking link:', err);
     }
 
-    return `/p/${encodeURIComponent(doctorId)}${qs ? `?${qs}` : ''}`;
+    return `/p/${encodeURIComponent(doctorId)}`;
   };
 
   // مزامنة الـmodal مع query string في اتجاهين:
@@ -520,11 +528,11 @@ export const usePublicDoctorsDirectoryController = ({
   };
 
   // المريض اختار فرع من المودال → نقفل المودال ونروح للفورم محدّداً الفرع مسبقاً.
-  const selectBranchAndGoToBooking = async (branchId: string) => {
+  const selectBranchAndGoToBooking = async (branchId: string, branchName = '', branchAddress = '') => {
     const targetDoctorId = branchPickerDoctorId;
     setBranchPickerDoctorId('');
     if (targetDoctorId && branchId) {
-      navigate(await buildSiteBookingUrl(targetDoctorId, branchId));
+      navigate(await buildSiteBookingUrl(targetDoctorId, branchId, branchName, branchAddress));
     }
   };
 

@@ -28,6 +28,7 @@ import {
   getPrintScale,
   getPrintOffset,
   MM_TO_PX,
+  PRESCRIPTION_FONT_STACK,
 } from './utils';
 import type { SettingsTabId } from './PrescriptionSettingsTabs';
 import {
@@ -199,7 +200,7 @@ export const PrescriptionSettingsPreview: React.FC<PrescriptionSettingsPreviewPr
               position: 'relative',
               margin: 0,
               padding: 0,
-              fontFamily: '"El Messiri", "Playfair Display", sans-serif',
+              fontFamily: PRESCRIPTION_FONT_STACK,
               display: 'block',
               overflow:
                 activeTab === 'middle' || activeTab === 'vitals' || activeTab === 'print'

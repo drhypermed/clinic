@@ -1,18 +1,34 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
 const workspace = process.cwd();
-const sourceRoot = process.argv[2] ?? 'guidelines-sources';
-const outputRoot = process.argv[3] ?? 'guidelines-sources/_structured/full-text';
-const rawRoot = process.argv[4] ?? 'guidelines-sources/_extracted/full-text';
-const reportRoot = process.argv[5] ?? 'guidelines-sources/_review/full-text-extraction';
+const cliArgs = process.argv.slice(2);
+const onlyFilters = cliArgs
+  .filter((arg) => arg.startsWith('--only='))
+  .flatMap((arg) => arg.slice('--only='.length).split(','))
+  .map((value) => value.trim().replace(/\\/g, '/').toLowerCase())
+  .filter(Boolean);
+
+const matchesOnlyFilter = (relativePath, filter) => {
+  const relative = relativePath.replace(/\\/g, '/').toLowerCase();
+  const normalizedFilter = filter.replace(/\\/g, '/').toLowerCase();
+  if (relative === normalizedFilter || relative.startsWith(`${normalizedFilter}/`)) return true;
+  if (normalizedFilter.includes('/')) return relative.includes(normalizedFilter);
+  return relative.split('/').includes(normalizedFilter);
+};
+const positionalArgs = cliArgs.filter((arg) => !arg.startsWith('--'));
+const sourceRoot = positionalArgs[0] ?? 'guidelines-sources';
+const outputRoot = positionalArgs[1] ?? 'guidelines-sources/_structured/full-text';
+const rawRoot = positionalArgs[2] ?? 'guidelines-sources/_extracted/full-text';
+const reportRoot = positionalArgs[3] ?? 'guidelines-sources/_review/full-text-extraction';
 
 const resolvedSource = path.resolve(sourceRoot);
 const resolvedOutput = path.resolve(outputRoot);
 const resolvedRaw = path.resolve(rawRoot);
 const resolvedReport = path.resolve(reportRoot);
+const resolvedTemp = path.join(resolvedReport, '.tmp-pdf-extraction');
 
 const generatedTopLevelNames = new Set([
   '_assets',
@@ -72,6 +88,7 @@ const resolvePopplerCommand = (name) => {
 const pdftotext = resolvePopplerCommand('pdftotext');
 const pdfinfo = resolvePopplerCommand('pdfinfo');
 const pdfjs = pdftotext ? null : await import('pdfjs-dist/legacy/build/pdf.mjs');
+const extractionMethod = pdftotext ? 'poppler pdftotext layout+raw' : 'pdfjs-dist text extraction';
 
 if (!pdftotext) {
   console.warn('Poppler pdftotext was not found. Falling back to pdfjs-dist text extraction.');
@@ -81,6 +98,9 @@ const normalizeText = (value) =>
   value
     .replace(/\r\n/g, '\n')
     .replace(/\u00a0/g, ' ')
+    .replace(/([A-Za-z])\u00ad\s*\n\s*([a-z])/g, '$1$2')
+    .replace(/([A-Za-z])-\s*\n\s*([a-z])/g, '$1$2')
+    .replace(/\u00ad/g, '')
     .replace(/\ufb01/g, 'fi')
     .replace(/\ufb02/g, 'fl')
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
@@ -126,9 +146,61 @@ const splitPages = (value) =>
     .map(normalizeText)
     .map((page) => page.trim());
 
+const countColumnBleedLines = (value) =>
+  String(value || '')
+    .split('\n')
+    .filter((line) => {
+      const segments = line
+        .split(/ {2,}/)
+        .map((segment) => segment.trim())
+        .filter((segment) => /[A-Za-z]{3,}/.test(segment));
+      const wordCount = (line.match(/[A-Za-z]{3,}/g) || []).length;
+      return line.length >= 95 && segments.length >= 3 && wordCount >= 12;
+    })
+    .length;
+
+const selectReadablePageText = (layoutText, rawText) => {
+  const layout = normalizeText(layoutText || '');
+  const raw = normalizeText(rawText || '');
+  if (!layout) {
+    return { text: raw, selection: 'raw', reason: 'empty-layout' };
+  }
+  if (!raw) {
+    return { text: layout, selection: 'layout', reason: 'empty-raw' };
+  }
+
+  const layoutColumnBleedLines = countColumnBleedLines(layout);
+  const rawColumnBleedLines = countColumnBleedLines(raw);
+  const rawHasEnoughText = raw.length >= layout.length * 0.55;
+  if (rawHasEnoughText && layoutColumnBleedLines >= 4 && rawColumnBleedLines < layoutColumnBleedLines) {
+    return { text: raw, selection: 'raw', reason: 'multi-column-layout' };
+  }
+
+  return layout.length >= raw.length * 0.72
+    ? { text: layout, selection: 'layout', reason: 'layout-preserved' }
+    : { text: raw, selection: 'raw', reason: 'raw-more-complete' };
+};
+
 const extractPages = (pdfPath, mode) => {
   const raw = run(pdftotext, [mode, '-enc', 'UTF-8', pdfPath, '-']);
   return splitPages(raw);
+};
+
+const withShortPdfPath = (pdfPath, fileHash, callback) => {
+  if (process.platform !== 'win32' || !pdftotext) return callback(pdfPath);
+
+  fs.mkdirSync(resolvedTemp, { recursive: true });
+  const tempPath = path.join(resolvedTemp, `${fileHash.slice(0, 20)}-${process.pid}.pdf`);
+  fs.copyFileSync(pdfPath, tempPath);
+  try {
+    return callback(tempPath);
+  } finally {
+    try {
+      fs.rmSync(tempPath, { force: true });
+    } catch {
+      // Best effort cleanup only; a later run can overwrite a stale temp file.
+    }
+  }
 };
 
 const textFromPdfjsItems = (items) => {
@@ -197,6 +269,7 @@ const findPdfFiles = (dir) => {
     const topLevel = relativeFromRoot.split(path.sep)[0];
 
     if (entry.isDirectory()) {
+      if (entry.name.startsWith('_')) continue;
       if (generatedTopLevelNames.has(entry.name) || generatedTopLevelNames.has(topLevel)) continue;
       files.push(...findPdfFiles(fullPath));
       continue;
@@ -216,6 +289,17 @@ const hashFile = (filePath) => {
   return hash.digest('hex');
 };
 
+const isPdfLike = (filePath) => {
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const buffer = Buffer.alloc(5);
+    fs.readSync(fd, buffer, 0, buffer.length, 0);
+    return buffer.toString('ascii') === '%PDF-';
+  } finally {
+    fs.closeSync(fd);
+  }
+};
+
 const outputPathsFor = (sourcePath) => {
   const relative = path.relative(resolvedSource, sourcePath);
   const parsed = path.parse(relative);
@@ -224,6 +308,14 @@ const outputPathsFor = (sourcePath) => {
     structuredPath: path.join(resolvedOutput, parsed.dir, `${parsed.name}.json`),
     textPath: path.join(resolvedRaw, parsed.dir, `${parsed.name}.txt`),
   };
+};
+
+const getOverlapText = (text, overlapChars) => {
+  if (!text || text.length <= overlapChars) return text;
+  const roughStart = Math.max(0, text.length - overlapChars);
+  const nextWhitespace = text.slice(roughStart).search(/\s/);
+  const start = nextWhitespace >= 0 ? roughStart + nextWhitespace + 1 : roughStart;
+  return text.slice(start).trim();
 };
 
 const buildChunks = (pages, maxChars = 2400, overlapChars = 350) => {
@@ -244,7 +336,7 @@ const buildChunks = (pages, maxChars = 2400, overlapChars = 350) => {
       text,
       charCount: text.length,
     });
-    buffer = text.slice(Math.max(0, text.length - overlapChars));
+    buffer = getOverlapText(text, overlapChars);
     startPage = endPage;
   };
 
@@ -263,14 +355,43 @@ const buildChunks = (pages, maxChars = 2400, overlapChars = 350) => {
   return chunks;
 };
 
-const writeJson = (target, value) => {
+const wait = (milliseconds) => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+};
+
+const writeFileWithRetry = (target, value, encoding) => {
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  let lastError = null;
+  for (let attempt = 1; attempt <= 12; attempt += 1) {
+    try {
+      const tempTarget = `${target}.tmp-${process.pid}-${attempt}`;
+      fs.writeFileSync(tempTarget, value, encoding);
+      fs.renameSync(tempTarget, target);
+      return;
+    } catch (error) {
+      lastError = error;
+      wait(150 * attempt);
+    }
+  }
+  throw lastError;
+};
+
+const writeJson = (target, value) => {
+  writeFileWithRetry(target, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 };
 
 const writeText = (target, value) => {
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, `${value.trim()}\n`, 'utf8');
+  writeFileWithRetry(target, `${value.trim()}\n`, 'utf8');
+};
+
+const readExistingExtractedRecord = (target) => {
+  try {
+    if (!fs.existsSync(target)) return null;
+    const existing = JSON.parse(fs.readFileSync(target, 'utf8'));
+    return existing?.status === 'extracted' ? existing : null;
+  } catch {
+    return null;
+  }
 };
 
 fs.mkdirSync(resolvedOutput, { recursive: true });
@@ -278,7 +399,11 @@ fs.mkdirSync(resolvedRaw, { recursive: true });
 fs.mkdirSync(resolvedReport, { recursive: true });
 
 const startedAt = new Date().toISOString();
-const pdfFiles = findPdfFiles(resolvedSource);
+const pdfFiles = findPdfFiles(resolvedSource).filter((pdfPath) => {
+  if (onlyFilters.length === 0) return true;
+  const relative = path.relative(resolvedSource, pdfPath).replace(/\\/g, '/').toLowerCase();
+  return onlyFilters.some((filter) => matchesOnlyFilter(relative, filter));
+});
 const seenByHash = new Map();
 const manifest = {
   generatedAt: startedAt,
@@ -321,20 +446,36 @@ for (const [index, pdfPath] of pdfFiles.entries()) {
       continue;
     }
 
-    const info = parsePdfInfo(pdfPath);
-    const layoutPages = pdftotext ? extractPages(pdfPath, '-layout') : await extractPagesWithPdfjs(pdfPath);
-    const rawPages = pdftotext ? extractPages(pdfPath, '-raw') : layoutPages;
+    if (!isPdfLike(pdfPath)) {
+      throw new Error('File does not start with a PDF header. It may be HTML or a failed download saved as .pdf.');
+    }
+    const extractedPdf = pdftotext
+      ? withShortPdfPath(pdfPath, fileHash, (shortPdfPath) => ({
+          info: parsePdfInfo(shortPdfPath),
+          layoutPages: extractPages(shortPdfPath, '-layout'),
+          rawPages: extractPages(shortPdfPath, '-raw'),
+        }))
+      : {
+          info: parsePdfInfo(pdfPath),
+          layoutPages: await extractPagesWithPdfjs(pdfPath),
+          rawPages: null,
+        };
+    const info = extractedPdf.info;
+    const layoutPages = extractedPdf.layoutPages;
+    const rawPages = extractedPdf.rawPages ?? layoutPages;
     const pageCount = Math.max(layoutPages.length, rawPages.length);
     const pages = Array.from({ length: pageCount }, (_, pageIndex) => {
       const layoutText = normalizeText(layoutPages[pageIndex] ?? '');
       const rawText = normalizeText(rawPages[pageIndex] ?? '');
-      const text = layoutText.length >= rawText.length * 0.72 ? layoutText : rawText;
+      const selected = selectReadablePageText(layoutText, rawText);
       return {
         pageNumber: pageIndex + 1,
-        text,
+        text: selected.text,
         layoutText,
         rawText,
-        charCount: text.length,
+        textSelection: selected.selection,
+        textSelectionReason: selected.reason,
+        charCount: selected.text.length,
       };
     });
     const chunks = buildChunks(pages);
@@ -348,7 +489,7 @@ for (const [index, pdfPath] of pdfFiles.entries()) {
       sourcePath: paths.sourceRelativePath,
       sha256: fileHash,
       extractedAt: new Date().toISOString(),
-      extractionMethod: 'poppler pdftotext layout+raw',
+      extractionMethod,
       pdfInfo: info,
       pageCount,
       textChars,
@@ -380,6 +521,29 @@ for (const [index, pdfPath] of pdfFiles.entries()) {
     manifest.totalTextChars += textChars;
     console.log(`[${displayIndex}] extracted  ${paths.sourceRelativePath}  (${pageCount} pages, ${textChars} chars)`);
   } catch (error) {
+    const existing = readExistingExtractedRecord(paths.structuredPath);
+    if (existing) {
+      const preservedRecord = {
+        status: 'extracted',
+        sourcePath: paths.sourceRelativePath,
+        structuredPath: path.relative(workspace, paths.structuredPath).replace(/\\/g, '/'),
+        textPath: path.relative(workspace, paths.textPath).replace(/\\/g, '/'),
+        sha256: existing.sha256,
+        pageCount: existing.pageCount,
+        textChars: existing.textChars,
+        chunkCount: existing.chunks?.length ?? existing.chunkCount ?? 0,
+        title: existing.pdfInfo?.Title,
+        warning: `Kept previous successful extraction after refresh failure: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+      manifest.files.push(preservedRecord);
+      manifest.extractedCount += 1;
+      manifest.totalTextChars += Number(existing.textChars ?? 0);
+      console.warn(`[${displayIndex}] preserved  ${paths.sourceRelativePath}: ${preservedRecord.warning}`);
+      continue;
+    }
+
     const failedRecord = {
       status: 'failed',
       sourcePath: paths.sourceRelativePath,
@@ -401,3 +565,4 @@ console.log(`Done. Extracted ${manifest.extractedCount}, duplicates ${manifest.d
 console.log(`Structured: ${manifest.structuredRoot}`);
 console.log(`Raw text:   ${manifest.rawTextRoot}`);
 console.log(`Report:     ${path.relative(workspace, path.join(resolvedReport, 'manifest.json')).replace(/\\/g, '/')}`);
+

@@ -13,17 +13,21 @@
  * اتغيَّر (يعني المريض اتنقل لرابط تاني)، نتجاهل الـresponse عشان ميكتبش فوق
  * الحالة الجديدة. ده أنظف من isCancelled flag محلّي لأنه مركزي ويغطّي كل الـeffects.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { firestoreService } from '../../../services/firestore';
 import type { PublicBookingSlot, PublicBranchInfo } from '../../../types';
+import { getAdBranches } from '../../advertisement/public-directory/helpers';
 
-type DoctorSummary = { doctorName: string; doctorSpecialty: string };
+type DoctorSummary = { doctorName: string; doctorSpecialty: string; profileImage: string };
 
 type PublicConfig = {
   userId: string;
   title?: string;
   contactInfo?: string;
+  publicFormSettingsByBranch?: Record<string, { title?: string; contactInfo?: string }>;
+  doctorDisplayName?: string;
+  doctorProfileImage?: string;
   // الإعداد الموحّد لاشتراط جوجل — بديل نظام entry=public-site القديم
   requireGoogleSignIn?: boolean;
 };
@@ -42,9 +46,11 @@ export const usePublicBookingBootstrap = (
   const [slots, setSlots] = useState<PublicBookingSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(true);
   const [branches, setBranches] = useState<PublicBranchInfo[]>([]);
+  const [directoryBranches, setDirectoryBranches] = useState<PublicBranchInfo[]>([]);
   const [doctorSummary, setDoctorSummary] = useState<DoctorSummary>({
     doctorName: '',
     doctorSpecialty: '',
+    profileImage: '',
   });
 
   const userId = config?.userId || userIdParam || null;
@@ -69,11 +75,17 @@ export const usePublicBookingBootstrap = (
     setConfig(null);
     setSlots([]);
     setBranches([]);
-    setDoctorSummary({ doctorName: '', doctorSpecialty: '' });
+    setDirectoryBranches([]);
+    setDoctorSummary({ doctorName: '', doctorSpecialty: '', profileImage: '' });
     setResolvingSecret(!secretParam);
     setConfigLoading(true);
     setSlotsLoading(true);
   }, [slugParam, userIdRouteParam, secretParam]);
+
+  const visibleBranches = useMemo(
+    () => (branches.length > 0 ? branches : directoryBranches),
+    [branches, directoryBranches],
+  );
 
   // ─── Slug → User ID lookup (مع fallback للديركتوري) ───
   // الـ /p/:slug بيقبل دلوقتي قيمتين ممكنين:
@@ -163,18 +175,34 @@ export const usePublicBookingBootstrap = (
         if (contextRequestIdRef.current !== myRequestId) return;
 
         if (!ad) {
-          setDoctorSummary({ doctorName: '', doctorSpecialty: '' });
+          setDoctorSummary({ doctorName: '', doctorSpecialty: '', profileImage: '' });
+          setDirectoryBranches([]);
           return;
         }
+
+        const nextBranches = getAdBranches(ad).map((branch) => {
+          const address = [branch.governorate, branch.city, branch.addressDetails]
+            .filter(Boolean)
+            .join(' - ');
+          return {
+            id: branch.id,
+            name: branch.name || 'فرع',
+            address: address || undefined,
+            isActive: true,
+          };
+        });
 
         setDoctorSummary({
           doctorName: ad.doctorName || '',
           doctorSpecialty: ad.doctorSpecialty || '',
+          profileImage: ad.profileImage || '',
         });
+        setDirectoryBranches(nextBranches);
       })
       .catch(() => {
         if (contextRequestIdRef.current !== myRequestId) return;
-        setDoctorSummary({ doctorName: '', doctorSpecialty: '' });
+        setDoctorSummary({ doctorName: '', doctorSpecialty: '', profileImage: '' });
+        setDirectoryBranches([]);
       });
   }, [userIdParam]);
 
@@ -234,6 +262,6 @@ export const usePublicBookingBootstrap = (
     slots,
     slotsLoading,
     doctorSummary,
-    branches,
+    branches: visibleBranches,
   };
 };

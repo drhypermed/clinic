@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BookingSuccessCard } from '../BookingSuccessCard';
 import type { AppointmentType, PatientSuggestionOption, RecentExamPatientOption } from '../AddAppointmentForm';
-import type { PatientGender } from '../../../types';
+import type { PatientGender, PublicBookingSlot, PublicBranchInfo } from '../../../types';
 import {
   advancedAgeText,
   normalizeGender,
@@ -52,6 +52,38 @@ import {
   clearPendingBooking,
   type PendingBookingFormValues,
 } from './bookingFormPersistence';
+import {
+  filterPublicSlotsForBranch,
+  getPublicSlotBranchIds,
+  reconcilePublicBranchesWithSlots,
+} from '../../../utils/publicBookingBranchResolution';
+import { resolvePublicBookingPresentation } from '../../../utils/publicBookingFormPresentation';
+
+const buildFallbackBranches = (
+  publicBranches: PublicBranchInfo[],
+  slotBranchIds: string[],
+  preselectedBranchId: string,
+): PublicBranchInfo[] => {
+  if (publicBranches.length > 0) return reconcilePublicBranchesWithSlots(publicBranches, slotBranchIds);
+  if (slotBranchIds.length <= 1 && !preselectedBranchId) return [];
+  return slotBranchIds.map((id, index) => ({
+    id,
+    name: id === DEFAULT_BRANCH_ID ? 'Main branch' : `Branch ${index + 1}`,
+    isActive: true,
+  }));
+};
+
+const resolveSelectedPublicBranchId = (
+  selectedBranchId: string,
+  branches: PublicBranchInfo[],
+  slotBranchIds: string[],
+): string => {
+  const rawSelectedId = String(selectedBranchId || '').trim();
+  if (!rawSelectedId) return branches.length === 1 ? branches[0].id : '';
+  if (branches.some((branch) => branch.id === rawSelectedId)) return rawSelectedId;
+  if (slotBranchIds.includes(rawSelectedId)) return rawSelectedId;
+  return '';
+};
 
 export const PublicBookingFormPage: React.FC = () => {
   useHideBootSplash('public-booking-form-mounted');
@@ -89,6 +121,24 @@ export const PublicBookingFormPage: React.FC = () => {
   const [selectedBranchId, setSelectedBranchId] = useState<string>(
     pendingBookingSnapshot?.formValues.selectedBranchId || preselectedBranchId,
   );
+  const slotBranchIds = React.useMemo(() => getPublicSlotBranchIds(slots), [slots]);
+  const effectiveBranches = React.useMemo(
+    () => buildFallbackBranches(branches, slotBranchIds, preselectedBranchId),
+    [branches, slotBranchIds, preselectedBranchId],
+  );
+  const resolvedSelectedBranchId = React.useMemo(
+    () => resolveSelectedPublicBranchId(selectedBranchId, effectiveBranches, slotBranchIds),
+    [selectedBranchId, effectiveBranches, slotBranchIds],
+  );
+  const publicPresentation = React.useMemo(
+    () => resolvePublicBookingPresentation({
+      config,
+      doctorSummary,
+      branches: effectiveBranches,
+      selectedBranchId: resolvedSelectedBranchId,
+    }),
+    [config, doctorSummary, effectiveBranches, resolvedSelectedBranchId],
+  );
 
   // ─── نظام تسجيل الدخول بعد ملء الفورم (بدل قبله) ───
   // لو المريض ضغط "حجز" وهو غير مسجل → نفتح Google popup ثم نُكمل الحجز تلقائياً
@@ -105,19 +155,26 @@ export const PublicBookingFormPage: React.FC = () => {
   // لو في فرع واحد فقط، نثبّته تلقائياً حتى يُحفظ الحجز بـ branchId صحيح وليس undefined.
   // لو المريض جاي من الديركتوري بفرع محدّد مسبّقاً (preselectedBranchId)، بنتأكّد إنه
   // فعلاً موجود في فروع الطبيب — لو مش موجود (لأي سبب) بنفضّيه ونرجّع شاشه الاختيار.
+  // ملاحظة: لو الفرع المطلوب موجود في السلوتس (slotBranchIds) حتى لو مش في
+  // effectiveBranches الرسمية، نحافظ عليه — ده بيحصل لما الـdirectory branches
+  // والـpublic branches عندهم IDs مختلفة.
   useEffect(() => {
-    if (branches.length === 1 && !selectedBranchId) {
-      setSelectedBranchId(branches[0].id);
+    if (resolvedSelectedBranchId && resolvedSelectedBranchId !== selectedBranchId) {
+      setSelectedBranchId(resolvedSelectedBranchId);
       return;
     }
-    if (
-      selectedBranchId &&
-      branches.length > 0 &&
-      !branches.some((b) => b.id === selectedBranchId)
-    ) {
+    if (effectiveBranches.length === 1 && !selectedBranchId) {
+      setSelectedBranchId(effectiveBranches[0].id);
+      return;
+    }
+    if (selectedBranchId && effectiveBranches.length > 0 && !resolvedSelectedBranchId) {
+      // لو الفرع المختار موجود في السلوتس — نخلّيه (رابط فرع مباشر)
+      if (slotBranchIds.includes(selectedBranchId)) return;
+      // لو ده preselectedBranchId ولسه بنحمّل — نستنّى
+      if (preselectedBranchId === selectedBranchId && slotsLoading) return;
       setSelectedBranchId('');
     }
-  }, [branches, selectedBranchId]);
+  }, [effectiveBranches, selectedBranchId, resolvedSelectedBranchId, slotBranchIds, preselectedBranchId, slotsLoading]);
 
   // المواعيد التي حجزها المستخدم الحالي عند هذا الطبيب — لإخفائها من عنده فقط
   // مع إبقائها متاحة لباقي الجمهور.
@@ -160,25 +217,24 @@ export const PublicBookingFormPage: React.FC = () => {
   // تلقائياً للفرع ده، فالفلتر يكمل اشتغاله الصارم بدون شاشة اختيار للمريض.
   const filteredSlots = React.useMemo(() => {
     const effectiveSelectedBranchId =
-      selectedBranchId || (branches.length === 1 ? branches[0].id : '');
+      resolvedSelectedBranchId || selectedBranchId || (effectiveBranches.length === 1 ? effectiveBranches[0].id : '');
     let baseSlots: typeof slots;
-    if (branches.length === 0) {
+    if (effectiveSelectedBranchId) {
+      baseSlots = filterPublicSlotsForBranch(
+        slots,
+        effectiveSelectedBranchId,
+        effectiveBranches.length === 1,
+      );
+    } else if (effectiveBranches.length === 0 && slotBranchIds.length <= 1) {
       // طبيب لسه ما عرّفش أي فروع (حالة قديمة جداً) — نسمح بكل المواعيد
       baseSlots = slots;
-    } else if (!effectiveSelectedBranchId) {
+    } else {
       // فيه فروع لكن المريض لسه ما اختارش (أو الفرع الواحد لسه ما اتثبّتش) — نخفي الكل
       baseSlots = [];
-    } else {
-      // فلترة صارمة دايماً — branchId لازم يطابق الفرع المختار بالضبط
-      const isSingleBranch = branches.length === 1;
-      baseSlots = slots.filter((slot) => {
-        const slotBranchId = slot.branchId || DEFAULT_BRANCH_ID;
-        return slotBranchId === effectiveSelectedBranchId || (!slot.branchId && isSingleBranch);
-      });
     }
     if (myBookedDateTimes.size === 0) return baseSlots;
     return baseSlots.filter((slot) => !myBookedDateTimes.has(slot.dateTime));
-  }, [slots, selectedBranchId, branches, myBookedDateTimes]);
+  }, [slots, selectedBranchId, resolvedSelectedBranchId, effectiveBranches, slotBranchIds, myBookedDateTimes]);
 
   // ـــ initial values مع استرجاع pending booking لو موجود ـــ
   // pendingBookingSnapshot؟.formValues = القيم المحفوظه قبل redirect.
@@ -209,6 +265,13 @@ export const PublicBookingFormPage: React.FC = () => {
   );
   const [success, setSuccess] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!selectedSlotId) return;
+    if (!filteredSlots.some((slot) => slot.id === selectedSlotId)) {
+      setSelectedSlotId('');
+    }
+  }, [filteredSlots, selectedSlotId]);
 
   const handleBackToPreviousPage = React.useCallback(() => {
     const stateFrom = (location.state as { from?: unknown } | null)?.from;
@@ -271,7 +334,7 @@ export const PublicBookingFormPage: React.FC = () => {
     breastfeeding,
     visitReason,
     isFirstVisit,
-    selectedBranchId,
+    selectedBranchId: resolvedSelectedBranchId,
     onSuccess: () => {
       setSuccess(true);
       // الحجز اتسجّل بنجاح — امسح أي pending snapshot عشان ميـauto-fill-ش لو رجع
@@ -375,13 +438,27 @@ export const PublicBookingFormPage: React.FC = () => {
 
   // شاشة اختيار الفرع: تظهر لو عنده أكثر من فرع نشط ولم يتم الاختيار بعد
   // بنبعت slots كلها (قبل الفلترة) عشان الشاشة تعرض عدد المواعيد المتاحة لكل فرع
-  if (branches.length > 1 && !selectedBranchId && !success) {
+  // استثناء: لو المريض جاي من رابط فرع مباشر (preselectedBranchId) نتخطى الشاشة
+  // ونعتمد الفرع المختار حتى لو لسه مش resolved — لأن useEffect هيثبّته أول ما
+  // البيانات تجهز. في الوقت ده بنعرض loading بدل شاشة الاختيار.
+  if (effectiveBranches.length > 1 && !resolvedSelectedBranchId && !success) {
+    // لو المريض جاي من رابط فرع مباشر، منعرضش شاشة اختيار — ننتظر لحد ما
+    // البيانات تجهز والـ useEffect يثبّت الفرع المحدد. لو البيانات جهزت ومطابقش
+    // أي فرع، ساعتها بس نعرض شاشة الاختيار.
+    if (preselectedBranchId) {
+      // لسه بنحمّل بيانات أو الفرع المطلوب موجود في السلوتس (هيتثبّت في الـeffect)
+      if (slotsLoading || !slots.length || slotBranchIds.includes(preselectedBranchId)) {
+        return <PublicBookingLoadingView />;
+      }
+      // الفرع المطلوب مش موجود خالص — نعرض شاشة الاختيار كـfallback
+    }
     return (
       <BranchSelectorScreen
-        branches={branches}
+        branches={effectiveBranches}
         slots={slots}
-        doctorName={doctorSummary.doctorName}
-        clinicTitle={config?.title}
+        doctorName={publicPresentation.doctorName}
+        doctorProfileImage={publicPresentation.doctorProfileImage}
+        clinicTitle={publicPresentation.configTitle || config?.title}
         onBack={handleBackToPreviousPage}
         onSelect={setSelectedBranchId}
       />
@@ -403,13 +480,13 @@ export const PublicBookingFormPage: React.FC = () => {
     };
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4" dir="rtl">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4" dir="rtl">
         <div className="w-full max-w-2xl space-y-4">
           <BookingSuccessCard
-            clinicName={config?.title}
+            clinicName={publicPresentation.configTitle || config?.title}
             patientName={patientName}
             dateTime={bookedSlot ? new Date(bookedSlot.dateTime) : new Date()}
-            clinicContact={config?.contactInfo}
+            clinicContact={publicPresentation.contactInfo || config?.contactInfo}
             appointmentType={appointmentType}
           />
 
@@ -418,7 +495,7 @@ export const PublicBookingFormPage: React.FC = () => {
             <button
               type="button"
               onClick={handleGotoDirectory}
-              className="flex-1 h-12 rounded-xl border-2 border-brand-400 bg-white text-brand-800 font-black text-sm hover:bg-brand-50 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-xl border-2 border-brand-300 bg-white text-brand-700 font-black text-sm hover:bg-brand-50 hover:border-brand-400 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -432,7 +509,7 @@ export const PublicBookingFormPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:py-8" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-6 sm:py-8" dir="rtl">
       <div className="max-w-xl mx-auto">
         <AppUpdateBroadcastBanner
           audience="public"
@@ -443,7 +520,7 @@ export const PublicBookingFormPage: React.FC = () => {
         <PublicBookingTopBar
           showShareMenu={showShareMenu}
           linkCopied={linkCopied}
-          doctorName={doctorSummary.doctorName || config?.title || 'حجز موعد'}
+          doctorName={publicPresentation.doctorName || publicPresentation.configTitle || config?.title || 'حجز موعد'}
           onBack={handleBackToPreviousPage}
           onToggleShareMenu={() => setShowShareMenu(!showShareMenu)}
           onShare={shareToSocialMedia}
@@ -459,8 +536,13 @@ export const PublicBookingFormPage: React.FC = () => {
         )}
 
         <PublicBookingFormCard
-          configTitle={config?.title}
-          contactInfo={config?.contactInfo}
+          doctorName={publicPresentation.doctorName}
+          doctorSpecialty={publicPresentation.doctorSpecialty}
+          doctorProfileImage={publicPresentation.doctorProfileImage}
+          branchName={publicPresentation.branchName}
+          branchAddress={publicPresentation.branchAddress}
+          configTitle={publicPresentation.configTitle || config?.title}
+          contactInfo={publicPresentation.contactInfo || config?.contactInfo}
           appointmentType={appointmentType}
           onSelectExam={() => {
             setAppointmentType('exam');
@@ -537,7 +619,7 @@ export const PublicBookingFormPage: React.FC = () => {
               isFirstVisit,
               appointmentType,
               selectedConsultationCandidateId,
-              selectedBranchId,
+              selectedBranchId: resolvedSelectedBranchId,
             };
             savePendingBooking(
               { slug: slugParam, userIdRouteParam },

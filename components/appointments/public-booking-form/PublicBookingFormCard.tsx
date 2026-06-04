@@ -8,7 +8,7 @@
  * - عرض رسائل الخطأ والتنبيهات (Alerts) بشكل مدمج داخل البطاقة.
  */
 import React from 'react';
-import { FaArrowRight } from 'react-icons/fa6';
+import { FaArrowRight, FaStethoscope, FaCommentMedical } from 'react-icons/fa6';
 
 import type { PatientGender, PublicBookingSlot } from '../../../types';
 import type { AppointmentType } from '../add-appointment-form/types';
@@ -17,10 +17,16 @@ import { PublicBookingSlotSelector } from './PublicBookingSlotSelector';
 import { PublicBookingPatientFields } from './PublicBookingPatientFields';
 import { PublicBookingAlerts } from './PublicBookingAlerts';
 import type { BookingQuotaNotice } from '../../../types';
+import { PublicDoctorAvatar } from './PublicDoctorAvatar';
 
 type PublicBookingFormCardProps = {
   configTitle?: string;
   contactInfo?: string;
+  doctorName?: string;
+  doctorSpecialty?: string;
+  doctorProfileImage?: string;
+  branchName?: string;
+  branchAddress?: string;
   appointmentType: AppointmentType;
   onSelectExam: () => void;
   onSelectConsultation: () => void;
@@ -72,6 +78,11 @@ type PublicBookingFormCardProps = {
 export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   configTitle,
   contactInfo,
+  doctorName,
+  doctorSpecialty,
+  doctorProfileImage,
+  branchName,
+  branchAddress,
   appointmentType,
   onSelectExam,
   onSelectConsultation,
@@ -119,62 +130,100 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
   // الـ Google button يظهر فقط لو الطبيب طالب جوجل والمريض غير مسجّل دخول
   const showGoogleButton = requireGoogleSignIn && !isLoggedIn;
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 bg-white px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-200/40">
+      {/* ─── Hero header with gradient ─── */}
+      <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-l from-emerald-700 via-sky-700 to-brand-700 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="flex items-start gap-3">
           {onBack ? (
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-black text-slate-700 transition-colors hover:bg-slate-100"
+              className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/25 bg-white/10 text-[0px] text-white backdrop-blur-sm transition-all hover:bg-white/20 sm:w-auto sm:gap-2 sm:px-3 sm:text-sm sm:font-black"
               title="العودة للصفحة السابقة"
             >
               <FaArrowRight className="w-4 h-4" aria-hidden="true" />
               عودة
             </button>
           ) : (
-            <span className="w-20 shrink-0" aria-hidden="true" />
+            <span className="w-9 shrink-0 sm:w-20" aria-hidden="true" />
           )}
-          <h1 className="min-w-0 flex-1 text-center text-lg font-black text-slate-900">
-            {configTitle?.trim() || 'حجز موعد - فورم الجمهور'}
-          </h1>
-          <span className="w-20 shrink-0" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-start gap-3">
+              <PublicDoctorAvatar imageUrl={doctorProfileImage} name={doctorName || configTitle} size="lg" />
+              <div className="min-w-0 flex-1 text-right">
+                <h1 className="whitespace-pre-wrap break-words text-base font-black leading-snug text-white sm:text-xl">
+                  {configTitle?.trim() || 'حجز موعد'}
+                </h1>
+                {(doctorName?.trim() || doctorSpecialty?.trim()) && (
+                  <p className="mt-1.5 whitespace-pre-wrap break-words text-xs font-bold leading-relaxed text-white/80 sm:text-sm">
+                    {[doctorName?.trim(), doctorSpecialty?.trim()].filter(Boolean).join(' — ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
         {!configTitle?.trim() && (
-          <p className="mt-0.5 text-center text-sm font-bold text-slate-500">اختر ميعادًا من المواعيد المتاحة وأكمل البيانات</p>
+          <p className="mt-3 text-right text-sm font-bold text-white/70">اختر ميعادًا من المواعيد المتاحة وأكمل البيانات</p>
         )}
       </div>
 
       {contactInfo?.trim() && (
-        <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="whitespace-pre-wrap text-sm font-bold text-slate-700" dir="rtl">
+        <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 sm:px-6">
+          <p className="max-h-24 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-right text-xs font-bold leading-relaxed text-slate-600 shadow-inner sm:text-sm" dir="rtl">
             {contactInfo.trim()}
           </p>
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="p-4 sm:p-5 space-y-4">
+      {branchName?.trim() && (
+        <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-right text-sm font-black text-emerald-900">
+                {branchName.trim()}
+              </p>
+              {branchAddress?.trim() && (
+                <p className="mt-0.5 text-right text-xs font-bold text-emerald-700/80">
+                  {branchAddress.trim()}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={onSubmit} className="p-4 sm:p-6 space-y-5">
+        {/* ─── Appointment type selector ─── */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5">نوع الحجز</label>
-          <div className="grid grid-cols-2 gap-2">
+          <label className="block text-xs font-black text-slate-500 mb-2 tracking-wide">نوع الحجز</label>
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={onSelectExam}
-              className={`rounded-lg border px-3 py-2 text-sm font-black transition-all ${appointmentType === 'exam'
-                ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              className={`group flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-3 text-sm font-black transition-all duration-200 ${appointmentType === 'exam'
+                ? 'border-brand-500 bg-brand-600 text-white shadow-lg shadow-brand-200/50'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700'
                 }`}
             >
+              <FaStethoscope className={`h-4 w-4 transition-transform group-hover:scale-110 ${appointmentType === 'exam' ? 'text-white' : 'text-slate-400 group-hover:text-brand-500'}`} aria-hidden="true" />
               كشف
             </button>
             <button
               type="button"
               onClick={onSelectConsultation}
-              className={`rounded-lg border px-3 py-2 text-sm font-black transition-all ${appointmentType === 'consultation'
-                ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              className={`group flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-3 text-sm font-black transition-all duration-200 ${appointmentType === 'consultation'
+                ? 'border-brand-500 bg-brand-600 text-white shadow-lg shadow-brand-200/50'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700'
                 }`}
             >
+              <FaCommentMedical className={`h-4 w-4 transition-transform group-hover:scale-110 ${appointmentType === 'consultation' ? 'text-white' : 'text-slate-400 group-hover:text-brand-500'}`} aria-hidden="true" />
               استشارة
             </button>
           </div>
@@ -228,7 +277,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
               type="button"
               disabled={submitting}
               onClick={() => onLoginToBook?.(selectedSlotId)}
-              className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-brand-500 bg-white py-3 font-black text-brand-700 shadow-sm transition-all hover:bg-brand-50 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-brand-400 bg-white py-3.5 font-black text-brand-700 shadow-lg shadow-brand-100/50 transition-all duration-200 hover:border-brand-500 hover:bg-brand-50 hover:shadow-xl disabled:opacity-60"
             >
               {submitting ? (
                 <>
@@ -250,7 +299,7 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-lg bg-brand-600 py-3 font-black text-white shadow-sm transition-all hover:bg-brand-700 disabled:opacity-60"
+              className="w-full rounded-lg bg-brand-600 py-3.5 font-black text-white shadow-lg shadow-brand-300/40 transition-all duration-200 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-400/30 disabled:opacity-60 active:scale-[0.98]"
             >
               {submitting ? 'جاري الحجز...' : 'حجز ميعاد عند الطبيب'}
             </button>
@@ -258,10 +307,9 @@ export const PublicBookingFormCard: React.FC<PublicBookingFormCardProps> = ({
         )}
       </form>
 
-      <div className="bg-slate-50 p-3 border-t border-slate-100 text-center">
+      <div className="bg-gradient-to-l from-slate-50 to-slate-100/50 p-3 border-t border-slate-100 text-center">
         <p className="text-[10px] text-slate-400 font-mono" dir="ltr"></p>
       </div>
     </div>
   );
 };
-

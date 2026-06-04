@@ -1,73 +1,39 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// DoctorPublicPage — صفحه الطبيب المستقلّه (URL: /dr/:slug)
-// ─────────────────────────────────────────────────────────────────────────────
-// الغرض: صفحه SEO-friendly لكل دكتور — URL صديق + meta + JSON-LD + محتوى
-// قابل لفهرسه جوجل بدون تسجيل دخول.
-//
-// الـURL بيوصل من:
-//   • الـsitemap.xml الديناميكي (جوجل يشوفها أولاً)
-//   • مشاركه المرضى للينك على واتساب/سوشيال
-//   • دليل الأطباء — لمّا المستخدم يدوس على دكتور
-//
-// الـbot (Googlebot) بيشوف:
-//   1. <title> و <meta description> محدّثين بيانات الدكتور
-//   2. <script type="application/ld+json"> Physician schema
-//   3. HTML نضيف فيه اسم الدكتور والتخصّص والتقييمات والسعر
-// ─────────────────────────────────────────────────────────────────────────────
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import {
-  HiOutlineMapPin,
-  HiOutlineStar,
-  HiOutlineCalendarDays,
-  HiOutlineBanknotes,
-  HiOutlineArrowRight,
-  HiOutlinePhone,
-} from 'react-icons/hi2';
-import type { DoctorAdProfile } from '../../../types';
+import { LuArrowRight, LuSearch } from 'react-icons/lu';
+import type { DoctorAdBranch, DoctorAdProfile } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
 import { useHideBootSplash } from '../../../hooks/useHideBootSplash';
 import { LoadingStateScreen } from '../../app/LoadingStateScreen';
 import { JsonLdTag } from '../../common/JsonLdTag';
 import { buildDoctorPhysicianSchema } from '../../../utils/doctorSchema';
+import { getDoctorRatingStats, getPrimaryBranch } from './helpers';
+import { DoctorPublicProfileView } from './DoctorPublicProfileView';
 import {
-  getAdBranches,
-  getPrimaryBranch,
-  getAvatarImage,
-  getInitials,
-  getDoctorRatingStats,
-  normalizePhoneForTel,
-  sanitizeBioForDisplay,
-} from './helpers';
+  appendBranchToPublicBookingUrl,
+  resolvePublicBookingBranchForLink,
+} from '../../../utils/publicBookingLinks';
 
-// الدومين الرسمي للجمهور — www بالظبط عشان يطابق اللي شغّال في Firebase Hosting
 const PATIENT_ORIGIN = 'https://www.drhypermed.com';
 
-/**
- * تحديث meta tags للصفحه بيانات الدكتور — بيساعد جوجل وفيسبوك يعرضوا
- * معلومات الدكتور في نتايج البحث وروابط السوشيال.
- */
 const applyDoctorMeta = (doctor: DoctorAdProfile): void => {
   if (typeof document === 'undefined') return;
 
   const { count, average } = getDoctorRatingStats(doctor);
-  const primary = getPrimaryBranch(doctor);
-  const location = [primary.governorate, primary.city].filter(Boolean).join(' - ');
-  const ratingText = count > 0 ? `⭐ ${average.toFixed(1)} (${count} تقييم)` : '';
-  const priceText = primary.examinationPrice != null && primary.examinationPrice > 0
-    ? `سعر الكشف ${primary.examinationPrice} جنيه`
+  const primaryBranch = getPrimaryBranch(doctor);
+  const location = [primaryBranch.governorate, primaryBranch.city].filter(Boolean).join(' - ');
+  const ratingText = count > 0 ? `${average.toFixed(1)} من 5 (${count} تقييم)` : '';
+  const priceText = primaryBranch.examinationPrice != null && primaryBranch.examinationPrice > 0
+    ? `سعر الكشف ${primaryBranch.examinationPrice} جنيه`
     : '';
-
-  const title = `${doctor.doctorName} - ${doctor.doctorSpecialty}${location ? ` في ${location}` : ''} | احجز ميعاد اون لاين`;
-  const descParts = [
+  const title = `${doctor.doctorName} - ${doctor.doctorSpecialty}${location ? ` في ${location}` : ''} | احجز ميعاد أونلاين`;
+  const description = [
     `احجز ميعاد عند ${doctor.doctorName} (${doctor.doctorSpecialty})`,
     location ? `في ${location}` : '',
     priceText,
     ratingText,
-    'من Dr Hyper — حجز فوري بدون اتصالات.',
-  ].filter(Boolean);
-  const description = descParts.join('. ').substring(0, 300);
+    'من Dr Hyper لحجز المواعيد بسهولة.',
+  ].filter(Boolean).join('. ').slice(0, 300);
 
   document.title = title;
 
@@ -87,23 +53,38 @@ const applyDoctorMeta = (doctor: DoctorAdProfile): void => {
   setTag('property', 'og:type', 'profile');
   if (doctor.profileImage) setTag('property', 'og:image', doctor.profileImage);
 
-  // canonical للصفحه دي
-  const slug = doctor.publicSlug || '';
-  if (slug) {
-    let link = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!link) {
-      link = document.createElement('link');
-      link.setAttribute('rel', 'canonical');
-      document.head.appendChild(link);
+  if (doctor.publicSlug) {
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
-    link.setAttribute('href', `${PATIENT_ORIGIN}/dr/${slug}`);
+    canonical.setAttribute('href', `${PATIENT_ORIGIN}/dr/${doctor.publicSlug}`);
   }
 };
 
-const formatPrice = (value: number | null | undefined): string | null => {
-  if (value == null || value <= 0) return null;
-  return `${value} جنيه`;
-};
+const NotFoundScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => (
+  <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6" dir="rtl">
+    <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 text-center shadow-lg">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-50 text-cyan-700">
+        <LuSearch className="h-8 w-8" aria-hidden="true" />
+      </div>
+      <h1 className="text-xl font-black text-slate-900">الطبيب غير موجود</h1>
+      <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
+        الصفحة دي لم تعد متاحة، أو الطبيب وقف إعلانه. تقدر تتصفح باقي الأطباء من الدليل.
+      </p>
+      <button
+        type="button"
+        onClick={onBack}
+        className="mt-5 inline-flex h-11 items-center gap-2 rounded-lg bg-cyan-700 px-5 text-sm font-black text-white shadow-md transition-colors hover:bg-cyan-800"
+      >
+        <LuArrowRight className="h-4 w-4" aria-hidden="true" />
+        تصفح دليل الأطباء
+      </button>
+    </div>
+  </div>
+);
 
 export const DoctorPublicPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -112,270 +93,90 @@ export const DoctorPublicPage: React.FC = () => {
   const [doctor, setDoctor] = useState<DoctorAdProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  // الفرع النشط — يتغير لما المريض يضغط تبويب فرع
-  const [activeBranchIdx, setActiveBranchIdx] = useState(0);
+
   useHideBootSplash('doctor-public-page-mounted');
 
-  // تحميل بيانات الدكتور من Firestore حسب الـslug
   useEffect(() => {
     if (!slug) {
       setNotFound(true);
       setLoading(false);
       return;
     }
+
     let active = true;
     setLoading(true);
-    firestoreService.getDoctorByPublicSlug(slug).then((found) => {
-      if (!active) return;
-      if (!found) {
-        setNotFound(true);
-      } else {
-        setDoctor(found);
-        applyDoctorMeta(found);
-      }
-      setLoading(false);
-    }).catch(() => {
-      if (!active) return;
-      setNotFound(true);
-      setLoading(false);
-    });
-    return () => { active = false; };
+    setNotFound(false);
+
+    firestoreService.getDoctorByPublicSlug(slug)
+      .then((found) => {
+        if (!active) return;
+        if (!found) {
+          setNotFound(true);
+        } else {
+          setDoctor(found);
+          applyDoctorMeta(found);
+        }
+      })
+      .catch(() => {
+        if (active) setNotFound(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [slug]);
 
-  if (loading) {
-    return <LoadingStateScreen message="جاري تحميل بيانات الطبيب" />;
-  }
+  const handleBookClick = async (branch: DoctorAdBranch) => {
+    if (!doctor) return;
 
-  if (notFound || !doctor) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6" dir="rtl">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
-          <div className="text-6xl">🔍</div>
-          <h1 className="text-xl font-black text-slate-900">الطبيب غير موجود</h1>
-          <p className="text-sm text-slate-600 font-semibold">
-            الصفحه دي لم تعد متاحه، أو الدكتور وقف إعلانه. تقدر تتصفّح باقي الأطباء من الدليل.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate('/public')}
-            className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-colors"
-          >
-            <HiOutlineArrowRight className="w-4 h-4" />
-            تصفّح دليل الأطباء
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const branches = getAdBranches(doctor);
-  // الفرع النشط — بتبدأ بالفرع الأول وبتتغير لما المريض يضغط التبويب
-  const activeBranch = branches[Math.min(activeBranchIdx, branches.length - 1)] ?? getPrimaryBranch(doctor);
-  const { count: ratingCount, average: ratingAvg } = getDoctorRatingStats(doctor);
-  const avatar = getAvatarImage(doctor);
-  const initials = getInitials(doctor.doctorName);
-  const location = [activeBranch.governorate, activeBranch.city].filter(Boolean).join(' - ');
-  const price = formatPrice(activeBranch.discountedExaminationPrice ?? activeBranch.examinationPrice);
-  const consultationPrice = formatPrice(activeBranch.discountedConsultationPrice ?? activeBranch.consultationPrice);
-  const phoneForTel = normalizePhoneForTel(activeBranch.contactPhone || doctor.contactPhone);
-  const cleanBio = sanitizeBioForDisplay(doctor.bio);
-
-  // الـJSON-LD لجوجل — بيظهر النجوم والسعر في نتايج البحث
-  const physicianSchema = buildDoctorPhysicianSchema(doctor);
-
-  const handleBookClick = async () => {
-    // ندخل المريض مباشره على فورم الحجز /p/{userId} بدل ما نوديه للديركتوري الأول.
-    // الـ Bootstrap يحلّ الـ userId ويعرض شاشة اختيار الفرع تلقائياً لو فيه فروع متعدده،
-    // أو يدخل الفورم مباشره لو فرع واحد. اشتراط جوجل بيتحكّم فيه إعداد الطبيب نفسه.
-    const branchId = activeBranch?.id || '';
-    const branchParam = branchId ? `?branch=${encodeURIComponent(branchId)}` : '';
+    const requestedBranch = {
+      id: branch.id || '',
+      name: branch.name || '',
+      address: [branch.governorate, branch.city, branch.addressDetails].filter(Boolean).join(' - '),
+    };
     const navigationState = { from: `${routeLocation.pathname}${routeLocation.search}` };
+
+    const withResolvedBranch = async (basePath: string, publicSecret?: string) => {
+      const secret = String(publicSecret || '').trim();
+      if (!secret || !(requestedBranch.id || requestedBranch.name || requestedBranch.address)) return basePath;
+      const publicBranches = await firestoreService.getPublicBranches(secret);
+      const resolvedBranch = resolvePublicBookingBranchForLink(publicBranches, requestedBranch);
+      return resolvedBranch ? appendBranchToPublicBookingUrl(basePath, resolvedBranch) : basePath;
+    };
+
     try {
       const lookup = await firestoreService.getPublicBookingLookupByUserId(doctor.doctorId);
       const publicSlug = String(lookup?.publicUrlSlug || '').trim();
       if (publicSlug) {
-        navigate(`/p/${encodeURIComponent(publicSlug)}${branchParam}`, { state: navigationState });
+        navigate(await withResolvedBranch(`/p/${encodeURIComponent(publicSlug)}`, lookup?.publicBookingSecret), { state: navigationState });
         return;
       }
-      const publicSecret = String(lookup?.publicBookingSecret || '').trim();
-      if (publicSecret) {
-        navigate(`/book-public/s/${encodeURIComponent(publicSecret)}${branchParam}`, { state: navigationState });
+      if (lookup?.publicBookingSecret) {
+        navigate(await withResolvedBranch(`/p/${encodeURIComponent(doctor.doctorId)}`, lookup.publicBookingSecret), { state: navigationState });
         return;
       }
-    } catch (err) {
-      console.warn('[DoctorPublicPage] failed to resolve canonical booking link:', err);
+    } catch (error) {
+      console.warn('[DoctorPublicPage] failed to resolve canonical booking link:', error);
     }
-    navigate(`/p/${encodeURIComponent(doctor.doctorId)}${branchParam}`, { state: navigationState });
+
+    navigate(`/p/${encodeURIComponent(doctor.doctorId)}`, { state: navigationState });
   };
 
+  if (loading) return <LoadingStateScreen message="جاري تحميل بيانات الطبيب" />;
+  if (notFound || !doctor) return <NotFoundScreen onBack={() => navigate('/public')} />;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50/40 via-white to-white" dir="rtl">
-      <JsonLdTag id="doctor-physician" json={physicianSchema} />
-
-      {/* شريط تنقّل علوي */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => navigate('/public')}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand-800"
-          >
-            <HiOutlineArrowRight className="w-4 h-4" />
-            دليل الأطباء
-          </button>
-          <span className="text-xs text-slate-500 font-semibold">Dr Hyper</span>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-5">
-        {/* بطاقه الرأس — الصوره + الاسم + التخصّص + التقييم */}
-        <section className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200/70 p-5 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-center gap-5">
-            {avatar ? (
-              <img
-                src={avatar}
-                alt={doctor.doctorName}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover ring-2 ring-brand-100 shadow-md"
-                loading="eager"
-              />
-            ) : (
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-black text-3xl shadow-md">
-                {initials}
-              </div>
-            )}
-            <div className="flex-1 text-center sm:text-right space-y-2">
-              {/* h1 = إشاره قويّه لجوجل إن ده اسم الطبيب (الصفحه كلها عن المحتوى ده) */}
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
-                {doctor.doctorName}
-              </h1>
-              <p className="text-base font-bold text-brand-700">{doctor.doctorSpecialty}</p>
-              {doctor.academicDegree && (
-                <p className="text-sm text-slate-600 font-semibold">{doctor.academicDegree}</p>
-              )}
-              {ratingCount > 0 && (
-                <div className="inline-flex items-center gap-1.5 bg-warning-50 text-warning-700 px-3 py-1 rounded-lg text-sm font-bold">
-                  <HiOutlineStar className="w-4 h-4" />
-                  <span>{ratingAvg.toFixed(1)}</span>
-                  <span className="text-warning-600 font-semibold">({ratingCount} تقييم)</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* تبويبات الفروع — تظهر فقط لو الطبيب عنده أكتر من فرع */}
-          {branches.length > 1 && (
-            <div className="flex gap-2 mt-4 flex-wrap border-t border-slate-100 pt-4">
-              <span className="text-xs text-slate-500 font-bold self-center ml-1">اختر الفرع:</span>
-              {branches.map((branch, idx) => (
-                <button
-                  key={branch.id}
-                  type="button"
-                  onClick={() => setActiveBranchIdx(idx)}
-                  className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-colors ${
-                    activeBranchIdx === idx
-                      ? 'bg-brand-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {branch.name || `فرع ${idx + 1}`}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* الموقع والتواصل والـCTA */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
-            {location && (
-              <div className="bg-slate-50 rounded-xl p-3 flex items-start gap-2">
-                <HiOutlineMapPin className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs text-slate-500 font-bold">المكان</div>
-                  <div className="text-sm text-slate-900 font-bold">{location}</div>
-                </div>
-              </div>
-            )}
-            {price && (
-              <div className="bg-success-50 rounded-xl p-3 flex items-start gap-2">
-                <HiOutlineBanknotes className="w-5 h-5 text-success-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs text-success-700 font-bold">سعر الكشف</div>
-                  <div className="text-sm text-success-900 font-bold">{price}</div>
-                </div>
-              </div>
-            )}
-            {consultationPrice && (
-              <div className="bg-brand-50 rounded-xl p-3 flex items-start gap-2">
-                <HiOutlineBanknotes className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs text-brand-700 font-bold">الاستشاره</div>
-                  <div className="text-sm text-brand-900 font-bold">{consultationPrice}</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-5">
-            <button
-              type="button"
-              onClick={handleBookClick}
-              className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-            >
-              <HiOutlineCalendarDays className="w-5 h-5" />
-              احجز ميعاد
-            </button>
-            {phoneForTel && (
-              <a
-                href={`tel:${phoneForTel}`}
-                className="inline-flex items-center gap-2 bg-white ring-1 ring-slate-300 hover:ring-slate-400 text-slate-800 font-bold px-5 py-3 rounded-xl transition-colors"
-              >
-                <HiOutlinePhone className="w-4 h-4" />
-                اتصل بالعياده
-              </a>
-            )}
-          </div>
-        </section>
-
-        {/* النبذه — فيها النص اللي جوجل هيفهرسه كمحتوى أساسي */}
-        {cleanBio && (
-          <section className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200/70 p-5">
-            <h2 className="text-base font-black text-slate-900 mb-2">نبذه عن الدكتور</h2>
-            <p className="text-sm text-slate-700 font-semibold leading-relaxed whitespace-pre-line">
-              {cleanBio}
-            </p>
-          </section>
-        )}
-
-        {/* العنوان التفصيلي للفرع النشط */}
-        {activeBranch.addressDetails && (
-          <section className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200/70 p-5">
-            <h2 className="text-base font-black text-slate-900 mb-2">
-              عنوان العياده
-              {branches.length > 1 && (
-                <span className="mr-2 text-xs text-brand-600 font-bold">
-                  ({activeBranch.name || `فرع ${activeBranchIdx + 1}`})
-                </span>
-              )}
-            </h2>
-            <p className="text-sm text-slate-700 font-semibold">{activeBranch.addressDetails}</p>
-          </section>
-        )}
-
-        {/* سنوات الخبره */}
-        {doctor.yearsExperience != null && doctor.yearsExperience > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200/70 p-5">
-            <h2 className="text-base font-black text-slate-900 mb-1">الخبره</h2>
-            <p className="text-sm text-slate-700 font-semibold">
-              {doctor.yearsExperience} سنه خبره في {doctor.doctorSpecialty}
-            </p>
-          </section>
-        )}
-      </main>
-
-      <footer className="border-t border-slate-200 mt-8 py-4 px-4 bg-slate-50">
-        <div className="max-w-4xl mx-auto text-center text-xs text-slate-500 font-semibold">
-          Dr Hyper — دليل الأطباء وحجز المواعيد في مصر
-        </div>
-      </footer>
-    </div>
+    <>
+      <JsonLdTag id="doctor-physician" json={buildDoctorPhysicianSchema(doctor)} />
+      <DoctorPublicProfileView
+        doctor={doctor}
+        mode="page"
+        onBack={() => navigate('/public')}
+        onBookDoctor={(branch) => { void handleBookClick(branch); }}
+      />
+    </>
   );
 };

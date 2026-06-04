@@ -1,18 +1,16 @@
 import {
-  GUIDELINE_COLLECTIONS,
   type GuidelineCollection,
   type GuidelineCollectionData,
   type GuidelineLanguage,
   type GuidelineSource,
   type GuidelineTopic,
-  loadGuidelineCollectionData,
 } from './guidelinesData';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebaseConfig';
 
-export type GuidelineChatScope = 'current-section' | 'current-guideline' | 'all-guidelines';
+export type GuidelineChatScope = 'current-guideline' | 'all-guidelines' | 'current-file';
 
-export type GuidelineChatResponseMode = 'concise' | 'detailed' | 'table' | 'official';
+export type GuidelineChatResponseMode = 'clinical' | 'concise' | 'detailed' | 'table' | 'official';
 
 export type GuidelineChatCollectionBundle = {
   collection: GuidelineCollection;
@@ -21,6 +19,7 @@ export type GuidelineChatCollectionBundle = {
 
 export type GuidelineChatSourceChunk = {
   id: string;
+  bookId?: string;
   collectionId: string;
   collectionTitle: string;
   school: string;
@@ -35,12 +34,63 @@ export type GuidelineChatSourceChunk = {
   url?: string;
   page?: number;
   endPage?: number;
+  pageStart?: number;
+  pageEnd?: number;
+  chunkIndex?: number;
+  globalOrder?: number;
   sourcePath?: string;
+  heading?: string;
   label: string;
   text: string;
-  normalizedText: string;
+  normalizedText?: string;
   kind: 'summary' | 'detail' | 'recommendation' | 'table' | 'visual' | 'full-text';
   score?: number;
+  contextOnly?: boolean;
+  concepts?: string[];
+  intentTags?: string[];
+  embeddingModel?: string;
+  publicPdfPath?: string;
+  storagePdfPath?: string;
+  storagePdfUrl?: string;
+  pdfHighlight?: {
+    pageStart: number;
+    pageEnd: number;
+    pageSizes: Record<string, { width: number; height: number }>;
+    rects: Array<{
+      page: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }>;
+    matchStrategy?: string;
+    generatedAt?: string;
+  };
+};
+
+export type GuidelineBookSummary = {
+  id: string;
+  bookId: string;
+  collectionId: string;
+  school: string;
+  year: number;
+  title: string;
+  sourceTitle: string;
+  folderTitle: string;
+  fileTitle: string;
+  sourcePath: string;
+  pageCount: number;
+  chunkCount: number;
+  textChars: number;
+  storagePdfPath?: string;
+  storagePdfUrl?: string;
+};
+
+export type GuidelineBookTextResponse = {
+  book: GuidelineBookSummary | null;
+  chunks: GuidelineChatSourceChunk[];
+  nextAfterChunkIndex: number | null;
+  hasMore: boolean;
 };
 
 export type GuidelineChatSearchContext = {
@@ -48,6 +98,16 @@ export type GuidelineChatSearchContext = {
   selectedGroup?: GuidelineTopic['group'];
   scope: GuidelineChatScope;
 };
+
+export class GuidelineChatSearchError extends Error {
+  originalError: unknown;
+
+  constructor(message: string, originalError: unknown) {
+    super(message);
+    this.name = 'GuidelineChatSearchError';
+    this.originalError = originalError;
+  }
+}
 
 const normalizeSearchText = (value: string) =>
   value
@@ -63,107 +123,7 @@ const normalizeSearchText = (value: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
-const stopWords = new Set([
-  'a',
-  'an',
-  'and',
-  'are',
-  'be',
-  'can',
-  'do',
-  'does',
-  'for',
-  'from',
-  'how',
-  'i',
-  'in',
-  'is',
-  'me',
-  'of',
-  'on',
-  'or',
-  'should',
-  'the',
-  'to',
-  'use',
-  'what',
-  'when',
-  'with',
-  'ابدا',
-  'استخدم',
-  'ايه',
-  'الى',
-  'او',
-  'ال',
-  'انا',
-  'في',
-  'كيف',
-  'ما',
-  'متي',
-  'مع',
-  'من',
-  'ممكن',
-  'هل',
-]);
-
-const clinicalAliasGroups = [
-  ['aki', 'acute kidney injury', 'kidney injury', 'acute renal failure', 'اصابه كلويه حاده', 'فشل كلوي حاد'],
-  ['akd', 'acute kidney disease', 'acute kidney diseases and disorders', 'مرض كلوي حاد'],
-  ['ckd', 'chronic kidney disease', 'chronic renal disease', 'قصور كلوي مزمن', 'مرض كلوي مزمن'],
-  ['rrt', 'krt', 'renal replacement therapy', 'kidney replacement therapy', 'dialysis', 'hemodialysis', 'haemodialysis', 'peritoneal dialysis', 'غسيل كلوي', 'بدء الغسيل'],
-  ['esa', 'erythropoiesis stimulating agent', 'epoetin', 'darbepoetin', 'erythropoietin', 'محفزات تكوين الدم'],
-  ['hb', 'hgb', 'hemoglobin', 'haemoglobin', 'هيموجلوبين'],
-  ['iron', 'ferritin', 'tsat', 'transferrin saturation', 'حديد', 'فيريتين'],
-  ['egfr', 'gfr', 'estimated glomerular filtration rate', 'glomerular filtration rate'],
-  ['scr', 'serum creatinine', 'creatinine', 'كرياتينين'],
-  ['urine output', 'oliguria', 'anuria', 'diuresis', 'بول', 'قلة البول', 'انقطاع البول'],
-  ['hyperkalemia', 'hyperkalaemia', 'potassium', 'k', 'بوتاسيوم'],
-  ['acidosis', 'metabolic acidosis', 'حماض'],
-  ['fluid overload', 'volume overload', 'pulmonary edema', 'oedema', 'وذمه', 'احتقان'],
-  ['uremia', 'uraemia', 'uremic', 'يوريميا'],
-  ['diabetes', 'dm', 't2d', 't2dm', 'type 2 diabetes', 'سكري'],
-  ['a1c', 'hba1c', 'glycated hemoglobin', 'glycaemic', 'glycemic', 'سكر تراكمي'],
-  ['bp', 'blood pressure', 'hypertension', 'ضغط الدم', 'ضغط'],
-  ['sglt2', 'sglt2 inhibitor', 'sodium glucose cotransporter 2'],
-  ['glp1', 'glp 1', 'glp 1 ra', 'glp-1 receptor agonist'],
-  ['ascvd', 'atherosclerotic cardiovascular disease', 'cardiovascular disease', 'cvd'],
-  ['asthma', 'ربو', 'حساسيه صدر'],
-  ['ics', 'inhaled corticosteroid', 'corticosteroid inhaled', 'كورتيزون استنشاق'],
-  ['saba', 'short acting beta agonist', 'salbutamol', 'albuterol'],
-  ['laba', 'long acting beta agonist', 'formoterol', 'salmeterol'],
-  ['mart', 'maintenance and reliever therapy', 'smart', 'anti inflammatory reliever'],
-];
-
-const splitTerms = (value: string) =>
-  value
-    .split(/\s+/)
-    .map((term) => term.trim())
-    .filter((term) => term.length >= 2 && !stopWords.has(term));
-
-const getExpandedTerms = (value: string) => {
-  const normalizedQuery = normalizeSearchText(value);
-  const terms = new Set(splitTerms(normalizedQuery));
-
-  for (const aliases of clinicalAliasGroups) {
-    const normalizedAliases = aliases.map(normalizeSearchText);
-    const matched = normalizedAliases.some((alias) => {
-      if (!alias) return false;
-      if (normalizedQuery.includes(alias)) return true;
-      return splitTerms(alias).some((term) => terms.has(term));
-    });
-
-    if (matched) {
-      normalizedAliases.forEach((alias) => {
-        splitTerms(alias).forEach((term) => terms.add(term));
-      });
-    }
-  }
-
-  return {
-    normalizedQuery,
-    terms: Array.from(terms),
-  };
-};
+// --- Helpers used by buildGuidelineChatIndex (consumed by upload script) ---
 
 const getSourceById = (collection: GuidelineCollection, sourceId?: string): GuidelineSource | undefined =>
   sourceId ? collection.sources.find((source) => source.id === sourceId) : undefined;
@@ -179,29 +139,10 @@ const buildSourceMeta = (collection: GuidelineCollection, sourceId?: string) => 
   };
 };
 
-export const loadAllGuidelineChatCollections = async (): Promise<GuidelineChatCollectionBundle[]> => {
-  const entries = await Promise.all(
-    GUIDELINE_COLLECTIONS.map(async (collection) => {
-      const data = await loadGuidelineCollectionData(collection.id);
-      return data ? { collection, data } : null;
-    }),
-  );
-  return entries.filter((entry): entry is GuidelineChatCollectionBundle => Boolean(entry));
-};
-
-type FullTextGuidelineIndexFile = {
-  generatedAt: string;
-  documentCount: number;
-  chunkCount: number;
-  chunks: Array<Omit<GuidelineChatSourceChunk, 'normalizedText' | 'kind'> & { kind: 'full-text' }>;
-};
-
-export const loadFullTextGuidelineChatIndex = async (): Promise<GuidelineChatSourceChunk[]> => {
-  // Client-side full-text index is disabled in favor of high-performance server-side Firestore search.
-  // This reduces client bandwidth and memory load to virtually zero.
-  return [];
-};
-
+/**
+ * Builds a flat array of searchable chunks from structured guideline data.
+ * Used by the Firestore upload script (upload-guidelines-to-firestore.ts).
+ */
 export const buildGuidelineChatIndex = (bundles: GuidelineChatCollectionBundle[]): GuidelineChatSourceChunk[] => {
   const chunks: GuidelineChatSourceChunk[] = [];
 
@@ -344,120 +285,7 @@ export const buildGuidelineChatIndex = (bundles: GuidelineChatCollectionBundle[]
   return chunks;
 };
 
-const getChunkMetadata = (chunk: GuidelineChatSourceChunk) =>
-  normalizeSearchText([
-    chunk.label,
-    chunk.sourceTitle,
-    chunk.folderTitle,
-    chunk.fileTitle,
-    chunk.collectionTitle,
-    chunk.school,
-    String(chunk.year),
-  ].filter(Boolean).join(' '));
-
-const hasSoftTokenMatch = (chunkTokens: Set<string>, term: string) => {
-  if (term.length < 4) return false;
-  for (const token of chunkTokens) {
-    if (token.length >= 4 && (token.startsWith(term) || term.startsWith(token))) return true;
-  }
-  return false;
-};
-
-const scoreChunk = (
-  chunk: GuidelineChatSourceChunk,
-  queryProfile: ReturnType<typeof getExpandedTerms>,
-) => {
-  const { normalizedQuery, terms } = queryProfile;
-  if (terms.length === 0) return 0;
-  let score = 0;
-  let matchedTerms = 0;
-  const metadata = getChunkMetadata(chunk);
-  const chunkTokens = new Set(splitTerms(chunk.normalizedText));
-
-  if (normalizedQuery.length >= 8 && chunk.normalizedText.includes(normalizedQuery)) {
-    score += 18;
-  }
-
-  for (const term of terms) {
-    let matched = false;
-    if (chunk.normalizedText.includes(term)) {
-      score += term.length <= 2 ? 1.5 : 4;
-      matched = true;
-    } else if (hasSoftTokenMatch(chunkTokens, term)) {
-      score += 1.5;
-      matched = true;
-    }
-    if (metadata.includes(term)) {
-      score += 3;
-      matched = true;
-    }
-    if (matched) matchedTerms += 1;
-  }
-
-  const coverage = matchedTerms / terms.length;
-  score += coverage * 10;
-  if (matchedTerms >= 2) score += 4;
-  if (matchedTerms >= 3) score += 4;
-  if (chunk.kind === 'recommendation') score += 3;
-  if (chunk.kind === 'table') score += 2.5;
-  if (chunk.kind === 'full-text') score += 2;
-  if (chunk.kind === 'summary') score += 1.5;
-  return score;
-};
-
-const filterByScope = (
-  chunk: GuidelineChatSourceChunk,
-  context: GuidelineChatSearchContext,
-  scope: GuidelineChatScope,
-) => {
-  if (scope === 'current-guideline' && context.selectedCollectionId) {
-    return chunk.collectionId === context.selectedCollectionId;
-  }
-  if (scope === 'current-section' && context.selectedCollectionId && context.selectedGroup) {
-    return chunk.collectionId === context.selectedCollectionId && chunk.group === context.selectedGroup;
-  }
-  return true;
-};
-
-const searchInScope = (
-  index: GuidelineChatSourceChunk[],
-  queryProfile: ReturnType<typeof getExpandedTerms>,
-  context: GuidelineChatSearchContext,
-  scope: GuidelineChatScope,
-  limit: number,
-) =>
-  index
-    .filter((chunk) => filterByScope(chunk, context, scope))
-    .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, queryProfile) }))
-    .filter((chunk) => (chunk.score ?? 0) >= 2)
-    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, limit);
-
-export const searchGuidelineChatIndex = (
-  index: GuidelineChatSourceChunk[],
-  query: string,
-  context: GuidelineChatSearchContext,
-  limit = 8,
-): GuidelineChatSourceChunk[] => {
-  const queryProfile = getExpandedTerms(query);
-  if (queryProfile.terms.length === 0) return [];
-
-  const scopesToTry: GuidelineChatScope[] = [context.scope];
-  if (context.scope === 'current-section') scopesToTry.push('current-guideline', 'all-guidelines');
-  if (context.scope === 'current-guideline') scopesToTry.push('all-guidelines');
-
-  const byId = new Map<string, GuidelineChatSourceChunk>();
-  for (const scope of scopesToTry) {
-    searchInScope(index, queryProfile, context, scope, limit).forEach((chunk) => {
-      if (!byId.has(chunk.id)) byId.set(chunk.id, chunk);
-    });
-    if (byId.size >= Math.min(4, limit)) break;
-  }
-
-  return Array.from(byId.values())
-    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, limit);
-};
+// --- Citation formatting ---
 
 export const formatChunkCitation = (chunk: GuidelineChatSourceChunk, language: GuidelineLanguage) => {
   const page = chunk.page ? (chunk.endPage && chunk.endPage !== chunk.page ? `pp. ${chunk.page}-${chunk.endPage}` : `p. ${chunk.page}`) : '';
@@ -469,27 +297,102 @@ export const formatChunkCitation = (chunk: GuidelineChatSourceChunk, language: G
   return `${chunk.school} ${chunk.year} - ${folder}${file}${page ? ` - ${page}` : ''}`;
 };
 
+// --- Cloud function wrappers (active search path) ---
+
 export const searchGuidelineChatIndexCloud = async (
   query: string,
   context: GuidelineChatSearchContext,
-  limit = 12
+  limit = 12,
+  selectedSource?: Pick<GuidelineSource, 'localFile' | 'title' | 'folderTitle'> | null,
 ): Promise<GuidelineChatSourceChunk[]> => {
   try {
     const searchFn = httpsCallable<
-      { query: string; selectedCollectionId?: string | null; selectedGroup?: string | null },
+      {
+        query: string;
+        selectedCollectionId?: string | null;
+        selectedGroup?: string | null;
+        selectedSourceLocalFile?: string | null;
+        selectedSourceTitle?: string | null;
+        sourcePathCandidates?: string[];
+        strictSource?: boolean;
+        limit?: number;
+      },
       { results: GuidelineChatSourceChunk[] }
     >(functions, 'searchGuidelineIndex');
 
     const response = await searchFn({
       query,
       selectedCollectionId: context.scope !== 'all-guidelines' ? (context.selectedCollectionId || null) : null,
-      selectedGroup: context.scope === 'current-section' ? (context.selectedGroup || null) : null,
+      selectedGroup: null,
+      selectedSourceLocalFile: context.scope === 'current-file' ? (selectedSource?.localFile || null) : null,
+      selectedSourceTitle: context.scope === 'current-file' ? (selectedSource?.title || null) : null,
+      sourcePathCandidates: context.scope === 'current-file' && selectedSource?.localFile ? [selectedSource.localFile] : [],
+      strictSource: context.scope === 'current-file',
+      limit,
     });
 
     const results = response.data?.results || [];
+
+    // Client-side fallback strict filtering for 'current-file' scope
+    if (context.scope === 'current-file' && selectedSource?.localFile) {
+      const normalizedLocalFile = selectedSource.localFile.replace(/\\/g, '/').toLowerCase().trim();
+      const filtered = results.filter((chunk) => {
+        const chunkLocalFile = (chunk.localFile || chunk.sourcePath || '').replace(/\\/g, '/').toLowerCase().trim();
+        return chunkLocalFile === normalizedLocalFile ||
+               chunkLocalFile.endsWith('/' + normalizedLocalFile) ||
+               normalizedLocalFile.endsWith('/' + chunkLocalFile);
+      });
+      return filtered.slice(0, limit);
+    }
+
     return results.slice(0, limit);
   } catch (error) {
     console.error('Error calling searchGuidelineIndex cloud function:', error);
+    throw new GuidelineChatSearchError('Guideline source search failed', error);
+  }
+};
+
+export const listGuidelineBooksCloud = async (
+  selectedCollectionId?: string | null,
+): Promise<GuidelineBookSummary[]> => {
+  try {
+    const listFn = httpsCallable<
+      { selectedCollectionId?: string | null },
+      { books: GuidelineBookSummary[] }
+    >(functions, 'listGuidelineBooks');
+    const response = await listFn({ selectedCollectionId: selectedCollectionId || null });
+    return response.data?.books || [];
+  } catch (error) {
+    console.error('Error calling listGuidelineBooks cloud function:', error);
     return [];
+  }
+};
+
+export const getGuidelineBookTextCloud = async (
+  params: {
+    bookId?: string | null;
+    selectedCollectionId?: string | null;
+    selectedSourceLocalFile?: string | null;
+    sourcePathCandidates?: string[];
+    afterChunkIndex?: number | null;
+    limit?: number;
+    samplingMode?: 'summary';
+  },
+): Promise<GuidelineBookTextResponse> => {
+  try {
+    const getFn = httpsCallable<
+      typeof params,
+      GuidelineBookTextResponse
+    >(functions, 'getGuidelineBookText');
+    const response = await getFn(params);
+    return {
+      book: response.data?.book || null,
+      chunks: response.data?.chunks || [],
+      nextAfterChunkIndex: response.data?.nextAfterChunkIndex ?? null,
+      hasMore: Boolean(response.data?.hasMore),
+    };
+  } catch (error) {
+    console.error('Error calling getGuidelineBookText cloud function:', error);
+    return { book: null, chunks: [], nextAfterChunkIndex: null, hasMore: false };
   }
 };

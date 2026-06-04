@@ -90,31 +90,49 @@ export const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
   }
 
   return (
-    <textarea
-      ref={textareaRef}
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKeyDown}
-      onClick={onClick}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      autoFocus={autoFocus}
-      rows={1}
-      maxLength={maxLength}
-      className={className}
-      style={{
-        ...style,
-        width: '100%',
-        maxWidth: '100%',
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'anywhere',
-        wordBreak: 'break-word',
-        boxSizing: 'border-box',
-      }}
-      dir={dir}
-      placeholder={placeholder}
-      wrap="soft"
-      data-auto-resize="true"
-    />
+    <>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onClick={onClick}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        autoFocus={autoFocus}
+        rows={1}
+        maxLength={maxLength}
+        className={`${className} rx-edit-textarea`}
+        style={{
+          ...style,
+          width: '100%',
+          maxWidth: '100%',
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+          boxSizing: 'border-box',
+        }}
+        dir={dir}
+        placeholder={placeholder}
+        wrap="soft"
+        data-auto-resize="true"
+      />
+      <div
+        className={`${className} rx-print-textarea-mirror`}
+        style={{
+          ...style,
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+          minHeight: 'auto',
+          maxWidth: '100%',
+          display: 'none',
+        }}
+        dir={dir}
+        aria-hidden="true"
+      >
+        {value}
+      </div>
+    </>
   );
 };

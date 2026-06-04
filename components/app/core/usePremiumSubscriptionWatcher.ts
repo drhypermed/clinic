@@ -66,7 +66,7 @@ export const usePremiumSubscriptionWatcher = ({ user }: UseProSubscriptionWatche
             await addDoc(getDoctorNotificationsCollectionRef(user.uid), {
               type: 'premium-expiry',
               title: '⏰ اشتراكك برو سينتهي قريبًا',
-              message: `اشتراك برو سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة بروات.`,
+              message: `اشتراك برو سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة الميزات.`,
               actionUrl: '/admin',
               actionLabel: 'تجديد الآن',
               createdAt: new Date(now).toISOString(),

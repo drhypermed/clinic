@@ -39,7 +39,8 @@ const loadMedicationEdit = () => import('../medication/MedicationEditPage').then
 const loadPrescriptionSettings = () => import('../prescription-settings').then(m => ({ default: m.PrescriptionSettingsPage }));
 const loadAdvertisement = () => import('../advertisement/AdvertisementAndPublicPage').then(m => ({ default: m.AdvertisementAndPublicPage }));
 const loadFinancialReports = () => import('../financial-reports/FinancialReportsPage').then(m => ({ default: m.FinancialReportsPage }));
-const loadGuidelines = () => import('../guidelines/GuidelinesPage').then(m => ({ default: m.GuidelinesPage }));
+const loadMedicalAssistant = () => import('../medical-assistant/MedicalAssistantPage').then(m => ({ default: m.MedicalAssistantPage }));
+const loadGuidelinesLibrary = () => import('../guidelines/GuidelinesLibraryPage').then(m => ({ default: m.GuidelinesLibraryPage }));
 const loadBranchSettings = () => import('../branch-settings').then(m => ({ default: m.BranchSettingsPage }));
 const loadPermissions = () => import('../permissions/PermissionsPage').then(m => ({ default: m.PermissionsPage }));
 
@@ -54,7 +55,8 @@ const MedicationEditPage = React.lazy(loadMedicationEdit);
 const PrescriptionSettingsPage = React.lazy(loadPrescriptionSettings);
 const AdvertisementAndPublicPage = React.lazy(loadAdvertisement);
 const FinancialReportsPage = React.lazy(loadFinancialReports);
-const GuidelinesPage = React.lazy(loadGuidelines);
+const MedicalAssistantPage = React.lazy(loadMedicalAssistant);
+const GuidelinesLibraryPage = React.lazy(loadGuidelinesLibrary);
 const BranchSettingsPage = React.lazy(loadBranchSettings);
 const PermissionsPage = React.lazy(loadPermissions);
 
@@ -92,6 +94,7 @@ interface MainAppViewRouterProps {
   activeBranchId: string | null;
   branches: Branch[];
   branchesLoading: boolean;
+  accountType?: 'free' | 'premium' | 'pro_max';
   normalizedDoctorName: string;
   normalizedDoctorSpecialty: string;
   profileImage: string | null;
@@ -358,7 +361,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onMedicationClick={p.setSelectedMed}
           onUpdateAdvice={p.updateAdvice} onRemoveAdvice={p.removeAdvice}
           onUpdateLab={p.updateLab} onRemoveLab={p.removeLab}
-          isPrintMode={p.isExportingPrescription}
+          isPrintMode={false}
           isDataOnlyMode={p.isDataOnlyMode} setIsDataOnlyMode={p.setIsDataOnlyMode}
           prescriptionRef={p.prescriptionRef} usageStats={p.usageStats}
           onPrint={p.handleNativePrint} isPrinting={p.isPrinting}
@@ -476,8 +479,22 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
         />
       )}
 
-      {p.currentView === 'guidelines' && (
-        <GuidelinesPage />
+      {p.currentView === 'medicalAssistant' && (
+        <MedicalAssistantPage
+          onBack={() => p.navigateToView('home')}
+          doctorName={p.normalizedDoctorName}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
+        />
+      )}
+
+      {p.currentView === 'guidelinesLibrary' && (
+        <GuidelinesLibraryPage
+          onBack={() => p.navigateToView('home')}
+          doctorName={p.normalizedDoctorName}
+          doctorSpecialty={p.normalizedDoctorSpecialty}
+          accountType={p.accountType}
+          showNotification={p.showNotification}
+        />
       )}
 
       {p.currentView === 'drugtools' && (

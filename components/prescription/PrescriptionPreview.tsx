@@ -143,8 +143,7 @@ export const PrescriptionPreview = React.memo(forwardRef<HTMLDivElement, Prescri
   const drugBorderWidthPx = typo?.drugBorderWidthPx ?? 1;
   const drugBorderColor = typo?.drugBorderColor ?? '#f1f5f9';
   const sectionTitleColor = typo?.sectionTitleColor ?? '#7f1d1d';
-
-  /** Ø£Ø­Ø¬Ø§Ù… Ø§Ù„Ø®Ø·ÙˆØ· ÙˆØ§Ù„ØªÙ†Ø³ÙŠÙ‚Ø§Øª Ø§Ù„Ù…ÙˆØ­Ø¯Ø© Ù„Ù„Ø±ÙˆØ´ØªØ© */
+  /** أحجام الخطوط والتنسيقات الموحدة للروشتة */
   const theme = {
     medNameSize: `text-[${medNamePx}px]`,
     medInstSize: `text-[${medInstPx}px]`,

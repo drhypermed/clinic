@@ -16,6 +16,10 @@ dist-ssr
 .firebase
 .firebaserc
 
+# Generated guideline assets must not be shipped with Firebase Hosting.
+public/guidelines-sources/
+public/guidelines-search/full-text-index.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -37,6 +41,7 @@ functions/.env.*
 !.env.example
 !functions/.env.example
 service-account.json
+pass.txt
 
 # Agent worktrees and caching
 .claude/
@@ -44,4 +49,15 @@ service-account.json
 
 # E2E and Test outputs
 playwright-report/
+test-results/
 
+# Scratch and Local Temporary Files
+scratch/
+scripts/__pycache__/
+*.pdf
+*.bin
+ts_out*.txt
+tsc_output.txt
+
+# Guidelines Source Files
+guidelines-sources/
