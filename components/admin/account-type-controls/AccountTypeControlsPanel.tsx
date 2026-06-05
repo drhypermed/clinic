@@ -307,7 +307,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
             <button
               type="button"
               onClick={handleResetMessagesToDefaults}
-              className="mr-auto inline-flex items-center gap-1.5 rounded-lg border border-warning-200 bg-warning-50 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-[11px] font-black text-warning-700 hover:bg-warning-100 transition"
+              className="w-full sm:w-auto sm:mr-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-warning-200 bg-warning-50 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-[11px] font-black text-warning-700 hover:bg-warning-100 transition"
               title="استبدال كل رسائل تجاوز الحد ورسائل الواتساب بالقيم الافتراضية الجديدة"
             >
               <FaArrowRotateLeft className="w-3 h-3 shrink-0" />
@@ -334,10 +334,10 @@ export const AccountTypeControlsPanel: React.FC = () => {
 
       {/* ═══ Sticky Save Bar ═══
           min-w-0 على الـmessage box عشان النص الطويل يلف بدل ما يخرج برا الشاشة. */}
-      <div className="sticky bottom-2 z-20 mt-6 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.15)] px-3 sm:px-4 py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3 min-w-0">
+      <div className="sticky bottom-2 z-20 mt-6 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.15)] px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center sm:justify-between gap-2 sm:gap-3 min-w-0">
         {message ? (
           <div
-            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold min-w-0 max-w-full ${
+            className={`flex w-full sm:w-auto items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold min-w-0 max-w-full ${
               messageType === 'success'
                 ? 'border-success-200 bg-success-50 text-success-700'
                 : 'border-danger-200 bg-danger-50 text-danger-700'
@@ -355,7 +355,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saveDisabled}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-4 sm:px-5 py-2.5 text-[13px] sm:text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600 shrink-0"
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-600 to-brand-600 px-4 sm:px-5 py-2.5 text-[13px] sm:text-sm font-black text-white shadow-sm transition hover:from-success-700 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600 shrink-0"
         >
           {saving ? (
             <LoadingText>جاري الحفظ</LoadingText>

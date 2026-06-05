@@ -481,14 +481,17 @@ module.exports = ({
     let response;
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 45000);
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
+      const timer = setTimeout(() => controller.abort(), 75000);
+      try {
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
     } catch (err) {
       await refundQuota();
       throw new HttpsError('unavailable', `Gemini request failed: ${err instanceof Error ? err.message : 'unknown error'}`);

@@ -16,6 +16,7 @@ interface PricingSectionProps {
   tempPrices: SubscriptionPrices;
   tempProMaxPrices: ProMaxSubscriptionPrices;
   editingPrices: boolean;
+  savingPrices: boolean;
   showPriceHistory: boolean;
   allMonthlyPrices: MonthlyPrices[];
   onTogglePriceHistory: () => void;
@@ -53,6 +54,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   tempPrices,
   tempProMaxPrices,
   editingPrices,
+  savingPrices,
   showPriceHistory,
   allMonthlyPrices,
   onTogglePriceHistory,
@@ -85,13 +87,15 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
             <>
               <button
                 onClick={onSavePrices}
-                className="px-3 py-2 bg-gradient-to-r from-success-600 to-brand-600 hover:from-success-700 hover:to-brand-700 text-white font-bold rounded-lg text-sm shadow-sm transition"
+                disabled={savingPrices}
+                className="px-3 py-2 bg-gradient-to-r from-success-600 to-brand-600 hover:from-success-700 hover:to-brand-700 text-white font-bold rounded-lg text-sm shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:from-success-600 disabled:hover:to-brand-600"
               >
-                حفظ
+                {savingPrices ? 'جاري الحفظ' : 'حفظ'}
               </button>
               <button
                 onClick={onCancelEditingPrices}
-                className="px-3 py-2 bg-danger-50 hover:bg-danger-100 text-danger-600 font-bold rounded-lg border border-danger-200 text-sm transition"
+                disabled={savingPrices}
+                className="px-3 py-2 bg-danger-50 hover:bg-danger-100 text-danger-600 font-bold rounded-lg border border-danger-200 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 إلغاء
               </button>

@@ -24,6 +24,10 @@ const AUTO_HIDE_MS = 5000;
  */
 export const OfflineIndicator: React.FC = () => {
   const state = useOnlineStatus();
+  const suppressSyncingForAdminFinancialPanel =
+    typeof window !== 'undefined' &&
+    window.location.pathname === '/admin' &&
+    new URLSearchParams(window.location.search).get('view') === 'financial';
   const [message, setMessage] = useState<Message | null>(null);
   const prevStateRef = useRef<SyncState>(state);
   const hideTimerRef = useRef<number | null>(null);
@@ -32,6 +36,15 @@ export const OfflineIndicator: React.FC = () => {
   useEffect(() => {
     const prev = prevStateRef.current;
     prevStateRef.current = state;
+
+    if (state === 'syncing' && suppressSyncingForAdminFinancialPanel) {
+      setMessage(null);
+      if (hideTimerRef.current != null) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+      return;
+    }
 
     // تحديد نوع الرسالة المناسبة لكل تغيير حالة
     let kind: MessageKind | null = null;
@@ -94,7 +107,7 @@ export const OfflineIndicator: React.FC = () => {
         hideTimerRef.current = null;
       }, AUTO_HIDE_MS);
     }
-  }, [state]);
+  }, [state, suppressSyncingForAdminFinancialPanel]);
 
   useEffect(() => () => {
     if (hideTimerRef.current != null) window.clearTimeout(hideTimerRef.current);

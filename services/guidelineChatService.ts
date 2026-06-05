@@ -53,8 +53,8 @@ const buildSourceBlock = (
 const buildHistoryBlock = (history: GenerateGuidelineChatAnswerParams['history']) => {
   if (!history?.length) return 'No prior conversation.';
   return history
-    .slice(-6)
-    .map((item) => `${item.role.toUpperCase()}: ${item.content.slice(0, 900)}`)
+    .slice(-5)
+    .map((item) => `${item.role.toUpperCase()}: ${item.content.slice(0, item.role === 'assistant' ? 650 : 420)}`)
     .join('\n');
 };
 
@@ -73,20 +73,20 @@ const getAnswerThinkingBudget = (
   answerPlan: ReturnType<typeof inferAnswerPlan>,
   chunks: GuidelineChatSourceChunk[],
 ) => {
-  if (mode === 'concise') return 1024;
-  if (answerPlan.isHighRisk || answerPlan.isComparison || mode === 'detailed' || mode === 'table' || mode === 'official') return 4096;
-  if (chunks.length === 0) return 3072;
-  return 2048;
+  if (mode === 'concise') return 512;
+  if (answerPlan.isHighRisk || answerPlan.isComparison || mode === 'detailed' || mode === 'table' || mode === 'official') return 3072;
+  if (chunks.length === 0) return 2048;
+  return 1536;
 };
 
 const getSourcePromptBudget = (
   answerPlan: ReturnType<typeof inferAnswerPlan>,
   mode: GuidelineChatResponseMode,
 ) => {
-  if (answerPlan.isComparison) return { maxChunks: 10, primaryTextLimit: 2200, contextTextLimit: 900 };
-  if (answerPlan.isHighRisk || mode === 'detailed' || mode === 'official') return { maxChunks: 8, primaryTextLimit: 2200, contextTextLimit: 900 };
-  if (mode === 'concise') return { maxChunks: 6, primaryTextLimit: 1400, contextTextLimit: 600 };
-  return { maxChunks: 8, primaryTextLimit: 1800, contextTextLimit: 700 };
+  if (answerPlan.isComparison) return { maxChunks: 8, primaryTextLimit: 1600, contextTextLimit: 650 };
+  if (answerPlan.isHighRisk || mode === 'detailed' || mode === 'official') return { maxChunks: 6, primaryTextLimit: 1600, contextTextLimit: 600 };
+  if (mode === 'concise') return { maxChunks: 5, primaryTextLimit: 1000, contextTextLimit: 450 };
+  return { maxChunks: 6, primaryTextLimit: 1300, contextTextLimit: 500 };
 };
 
 export const reformulateGuidelineQuery = async (

@@ -87,6 +87,7 @@ const hasTransientMessages = (messages: ChatMessage[]) =>
   messages.some((message) => message.status === 'thinking' || message.status === 'streaming');
 
 const THINKING_STEP_MS = 900;
+const STREAM_REVEAL_TICK_MS = 36;
 
 const waitForThinkingStep = (durationMs = THINKING_STEP_MS) =>
   new Promise<void>((resolve) => {
@@ -100,6 +101,23 @@ const waitForThinkingStep = (durationMs = THINKING_STEP_MS) =>
 const waitUntilThinkingStepElapsed = async (startedAt: number, durationMs = THINKING_STEP_MS) => {
   const remainingMs = durationMs - (Date.now() - startedAt);
   if (remainingMs > 0) await waitForThinkingStep(remainingMs);
+};
+
+const collectSearchGroups = (
+  settled: PromiseSettledResult<GuidelineChatSourceChunk[]>[],
+) => {
+  const groups: GuidelineChatSourceChunk[][] = [];
+  const errors: unknown[] = [];
+
+  settled.forEach((result) => {
+    if (result.status === 'fulfilled') {
+      if (result.value.length > 0) groups.push(result.value);
+    } else {
+      errors.push(result.reason);
+    }
+  });
+
+  return { groups, errors };
 };
 
 export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
@@ -138,6 +156,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   const cloudHistoryReadyRef = useRef(false);
   const applyingCloudHistoryRef = useRef(false);
   const lastCloudSignatureRef = useRef('');
+  const lastLocalSignatureRef = useRef('');
   const clearRequestedRef = useRef(false);
 
   const selectedSource = useMemo(() => {
@@ -199,6 +218,10 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    lastLocalSignatureRef.current = '';
+  }, [uid]);
 
   useEffect(() => {
     if (!uid) {
@@ -284,8 +307,15 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
 
   useEffect(() => {
     const trimmed = trimChatMessages(messages);
-    writeStoredMessages(trimmed, uid);
     const hasTransient = hasTransientMessages(trimmed);
+    const localPersistableMessages = hasTransient
+      ? trimmed.filter((message) => message.status !== 'thinking' && message.status !== 'streaming')
+      : trimmed;
+    const localSignature = getMessagesSignature(localPersistableMessages);
+    if (localSignature !== lastLocalSignatureRef.current) {
+      lastLocalSignatureRef.current = localSignature;
+      writeStoredMessages(localPersistableMessages, uid);
+    }
 
     if (uid && cloudHistoryReadyRef.current && !applyingCloudHistoryRef.current && !hasTransient) {
       const signature = getMessagesSignature(trimmed);
@@ -352,7 +382,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   ) => {
     const tokens = fullText.split(/(\s+)/);
     let index = 0;
-    const step = Math.max(3, Math.ceil(tokens.length / 120));
+    const step = Math.max(6, Math.ceil(tokens.length / 80));
 
     const tick = () => {
       index = Math.min(tokens.length, index + step);
@@ -369,7 +399,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
       )));
       scrollToLatestMessage('auto');
       if (index < tokens.length) {
-        window.setTimeout(tick, 18);
+        window.setTimeout(tick, STREAM_REVEAL_TICK_MS);
       } else {
         scrollToLatestMessage('auto', true);
       }
@@ -517,39 +547,39 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
       const responseMode: GuidelineChatResponseMode = answerStyle === 'concise'
         ? 'concise'
         : inferResponseMode(question);
-      const answerSourceLimit = comparisonQuestion || responseMode === 'table' || responseMode === 'detailed' || responseMode === 'official' ? 10 : 8;
+      const answerSourceLimit = comparisonQuestion || responseMode === 'table' ? 8 : responseMode === 'concise' ? 5 : 6;
       const searchQueries = buildGuidelineSearchQueries({ question: reformulatedQuestion, contextualQuery, followUp })
-        .slice(0, comparisonQuestion ? 4 : 3);
+        .slice(0, comparisonQuestion ? 3 : 2);
       const selectedCollectionScope = effectiveScope === 'current-guideline' ? selectedCollection?.id : undefined;
 
       await updateThinkingMessage(isArabic ? 'جاري البحث في الجايدلاينز وترتيب أفضل المصادر' : 'Searching guidelines and ranking the best sources');
 
-      const currentFileSources = effectiveScope === 'current-file' && selectedSource
-        ? await searchGuidelineChatIndexCloud(contextualQuery, {
-            scope: 'current-file',
-            selectedCollectionId: selectedCollection?.id,
-            selectedGroup,
-          }, 10, selectedSource)
-        : [];
-
-      const broadSourceGroups: GuidelineChatSourceChunk[][] = [];
-      const enoughSources = comparisonQuestion ? 10 : 6;
-      if (currentFileSources.length < enoughSources) {
-        for (const query of searchQueries) {
-          const group = await searchGuidelineChatIndexCloud(query, {
-            scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
-            selectedCollectionId: selectedCollectionScope,
-            selectedGroup: undefined,
-          }, comparisonQuestion ? 18 : 16, null);
-          broadSourceGroups.push(group);
-          const rankedSoFar = mergeRankedSources(answerSourceLimit, ...broadSourceGroups, currentFileSources);
-          if (rankedSoFar.length >= enoughSources) {
-            break;
-          }
-        }
+      const searchTasks: Promise<GuidelineChatSourceChunk[]>[] = [];
+      if (effectiveScope === 'current-file' && selectedSource) {
+        searchTasks.push(searchGuidelineChatIndexCloud(contextualQuery, {
+          scope: 'current-file',
+          selectedCollectionId: selectedCollection?.id,
+          selectedGroup,
+        }, comparisonQuestion ? 8 : 6, selectedSource));
       }
 
-      const foundSources = mergeRankedSources(answerSourceLimit, ...broadSourceGroups, currentFileSources);
+      searchQueries.forEach((query) => {
+        searchTasks.push(searchGuidelineChatIndexCloud(query, {
+          scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
+          selectedCollectionId: selectedCollectionScope,
+          selectedGroup: undefined,
+        }, comparisonQuestion ? 12 : 10, null));
+      });
+
+      const { groups: sourceGroups, errors: searchErrors } = collectSearchGroups(await Promise.allSettled(searchTasks));
+      if (sourceGroups.length === 0 && searchErrors.length > 0) {
+        throw searchErrors[0];
+      }
+      if (searchErrors.length > 0) {
+        console.warn('[GuidelinesChat] Some guideline searches failed; continuing with partial results:', searchErrors);
+      }
+
+      const foundSources = mergeRankedSources(answerSourceLimit, ...sourceGroups);
       const sources = foundSources.length > 0
         ? foundSources
         : (followUp ? previousSources : []);

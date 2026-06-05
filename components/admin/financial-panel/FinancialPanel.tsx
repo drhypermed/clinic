@@ -49,7 +49,7 @@ export const FinancialPanel: React.FC = () => {
   const {
     prices, tempPrices, setTempPrices,
     proMaxPrices, tempProMaxPrices, setTempProMaxPrices,
-    editingPrices, setEditingPrices,
+    editingPrices, setEditingPrices, savingPrices,
     allMonthlyPrices, showPriceHistory, setShowPriceHistory,
     expenses, newExpense, setNewExpense,
     revenueData, currentYearSummary, doctorsMissingExpiry,
@@ -158,6 +158,7 @@ export const FinancialPanel: React.FC = () => {
         tempPrices={tempPrices}
         tempProMaxPrices={tempProMaxPrices}
         editingPrices={editingPrices}
+        savingPrices={savingPrices}
         showPriceHistory={showPriceHistory}
         allMonthlyPrices={allMonthlyPrices}
         onTogglePriceHistory={() => setShowPriceHistory((prev) => !prev)}

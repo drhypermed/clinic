@@ -90,6 +90,7 @@ export const useFinancialData = ({
   const [proMaxPrices, setProMaxPrices] = useState<ProMaxSubscriptionPrices>({ monthly: 0, sixMonths: 0, yearly: 0 });
   const [tempProMaxPrices, setTempProMaxPrices] = useState<ProMaxSubscriptionPrices>(proMaxPrices);
   const [editingPrices, setEditingPrices] = useState(false);
+  const [savingPrices, setSavingPrices] = useState(false);
   const [allMonthlyPrices, setAllMonthlyPrices] = useState<MonthlyPrices[]>([]);
   const [showPriceHistory, setShowPriceHistory] = useState(false);
 
@@ -331,6 +332,7 @@ export const useFinancialData = ({
 
   /** حفظ الأسعار المعدَّلة للشهر المحدد (مع تأكيد). */
   const savePrices = async () => {
+    if (savingPrices) return;
     if (!isAdminUser) {
       alert('غير مصرح لك بتنفيذ هذا الإجراء.');
       return;
@@ -360,6 +362,7 @@ export const useFinancialData = ({
     if (!window.confirm(confirmMessage)) return;
 
     try {
+      setSavingPrices(true);
       // نحفظ في نفس document: أسعار برو في الحقول الأساسية + proMaxPrices كحقل داخلي
       await setDoc(doc(db, 'subscriptionPrices', normalizedMonth), {
         ...safePrices,
@@ -369,9 +372,11 @@ export const useFinancialData = ({
       setProMaxPrices(safeProMaxPrices);
       setEditingPrices(false);
       await loadAllPrices();
+      setSavingPrices(false);
       alert('✅ تم حفظ الأسعار بنجاح');
     } catch (error: unknown) {
       console.error('Error saving prices:', error);
+      setSavingPrices(false);
       alert(`❌ ${mapFinancialActionError(error, 'حدث خطأ في حفظ الأسعار')}`);
     }
   };
@@ -445,6 +450,7 @@ export const useFinancialData = ({
     setTempProMaxPrices,
     editingPrices,
     setEditingPrices,
+    savingPrices,
     allMonthlyPrices,
     showPriceHistory,
     setShowPriceHistory,

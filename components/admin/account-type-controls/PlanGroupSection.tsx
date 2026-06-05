@@ -96,7 +96,7 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
 
       {/* خانات الأرقام — 3 أعمدة: مجاني / برو / برو ماكس
           gap-1.5 على الموبايل عشان نكسب كل بكسل ممكن لكتابة 6 أرقام */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-2.5 sm:mb-3 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-2.5 sm:mb-3 min-w-0">
         {/* Free */}
         <div className="min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
