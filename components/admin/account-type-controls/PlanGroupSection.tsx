@@ -51,12 +51,14 @@ const GROUPS_OPEN_FOR_PAID = new Set([
 ]);
 
 /** بادج "مفتوح بلا حد" — يظهر بدل input في الميزات اللي اتفتحت للـ paid tiers */
-const UnlimitedBadge: React.FC<{ tier: 'pro' | 'pro_max' }> = ({ tier }) => (
+const UnlimitedBadge: React.FC<{ tier: 'pro' | 'plus' | 'pro_max' }> = ({ tier }) => (
   <div
     className={`w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-3 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center gap-1 sm:gap-1.5 ${
       tier === 'pro_max'
         ? 'border-[#FFE082] bg-gradient-to-br from-[#FFFDE7] to-[#FFF59D] text-[#B45309]'
-        : 'border-warning-200 bg-warning-50 text-warning-700'
+        : tier === 'plus'
+          ? 'border-slate-300 bg-slate-50 text-slate-700'
+          : 'border-warning-200 bg-warning-50 text-warning-700'
     }`}
     title="هذه الميزة مفتوحة للحساب المدفوع بلا حد — التشغيل أسرع لأن مفيش فحص كوتا."
   >
@@ -83,20 +85,20 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
   return (
     // ─ min-w-0 ضروري لإن الـarticle جوّه grid/flex يقدر يـshrink (مايخرجش برا الشاشة).
     //   p-2.5 على الموبايل عشان نوسّع المساحة الداخلية لخانات الأرقام (3 أعمدة).
-    <article className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-2.5 sm:p-4">
+    <article className="w-full min-w-0 max-w-full bg-white rounded-2xl border border-slate-200/80 shadow-sm p-2.5 sm:p-4 overflow-hidden">
       {/* Header: أيقونة زرقاء موحّدة + عنوان (truncate لمنع الخروج للأطراف) */}
       <div className="flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 min-w-0">
         <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 sm:p-2 shrink-0 shadow-sm">
           {React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5 text-white' })}
         </div>
-        <h3 className="flex-1 min-w-0 text-[13px] sm:text-base font-black text-slate-800 tracking-tight truncate">
+        <h3 className="flex-1 min-w-0 text-[13px] sm:text-base font-black text-slate-800 tracking-tight break-words">
           {group.title}
         </h3>
       </div>
 
       {/* خانات الأرقام — 3 أعمدة: مجاني / برو / برو ماكس
           gap-1.5 على الموبايل عشان نكسب كل بكسل ممكن لكتابة 6 أرقام */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-2.5 sm:mb-3 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mb-2.5 sm:mb-3 min-w-0">
         {/* Free */}
         <div className="min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
@@ -112,6 +114,28 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
             className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors font-numeric text-center sm:text-start"
           />
         </div>
+
+        {/* Plus */}
+        {group.plus && (
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 px-0.5 sm:px-1 min-w-0">
+              <FaCrown className="w-3 h-3 text-slate-500 shrink-0" />
+              <span className="text-[10px] sm:text-[12px] font-black text-slate-700 truncate">Plus</span>
+            </div>
+            {isOpenForPaid ? (
+              <UnlimitedBadge tier="plus" />
+            ) : (
+              <input
+                type="number"
+                min={0}
+                max={999999}
+                value={(form[group.plus.limitKey] as number | undefined) ?? 0}
+                onChange={(e) => updateLimit(group.plus!.limitKey, e.target.value)}
+                className="w-full min-w-0 h-[40px] sm:h-[44px] px-2 sm:px-4 rounded-xl sm:rounded-2xl border-2 border-slate-300 bg-slate-50 text-[13px] sm:text-sm font-black text-slate-900 placeholder-slate-400 focus:border-slate-400 hover:border-slate-400 focus:outline-none transition-colors font-numeric text-center sm:text-start"
+              />
+            )}
+          </div>
+        )}
 
         {/* Pro (premium) */}
         <div className="min-w-0">
@@ -177,11 +201,14 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
       {/* Inline expansion */}
       {isExpanded && (
         <div className="mt-3 pt-3 border-t border-slate-100">
-          <p className="mb-2 text-[11px] font-bold text-slate-400">
-            رسائل النظام تظهر عند الوصول للحد · رسائل الواتساب تُستخدم للتواصل للترقية.
+          <p className="mb-2 text-[11px] font-bold text-slate-400 break-words">
+            رسائل النظام تظهر عند الوصول للحد · رسائل الواتساب تُستخدم للتواصل حسب الباقة والسبب.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-3 min-w-0">
             <PlanConfigCard plan={group.free} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
+            {group.plus && (
+              <PlanConfigCard plan={group.plus} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
+            )}
             <PlanConfigCard plan={group.premium} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
             {group.proMax && (
               <PlanConfigCard plan={group.proMax} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />

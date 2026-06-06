@@ -12,7 +12,7 @@ import { useImageUploadGate } from '../../../hooks/useImageUploadGate';
 import { ImageUploadUpgradeModal } from '../../common/ImageUploadUpgradeModal';
 
 export const HeaderBackgroundSection: React.FC<HeaderSectionSharedProps> = ({ header, updateHeader, openSection, toggle, showNotification, setHeaderBgToCrop }) => {
-  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
   const imageGate = useImageUploadGate();
   /** معالج تغيير ملف صورة الخلفية */
   const handleBackgroundFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

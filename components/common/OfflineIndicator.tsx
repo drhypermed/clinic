@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useOnlineStatus, type SyncState } from '../../hooks/useOnlineStatus';
 
-type MessageKind = 'offline' | 'unstable' | 'back-online' | 'syncing' | 'synced';
+type MessageKind = 'offline' | 'unstable' | 'back-online' | 'syncing' | 'sync-delayed' | 'synced';
 
 interface Message {
   kind: MessageKind;
@@ -59,6 +59,9 @@ export const OfflineIndicator: React.FC = () => {
     } else if (state === 'syncing') {
       kind = 'syncing';
       persistent = true;
+    } else if (state === 'sync-delayed') {
+      kind = 'sync-delayed';
+      persistent = false;
     } else if (state === 'online') {
       // الانتقال من حالة سيئة لحالة جيدة — نعرض رسالة نجاح مؤقتة
       if (prev === 'offline') {
@@ -146,6 +149,16 @@ export const OfflineIndicator: React.FC = () => {
         </svg>
       ),
       label: 'جاري مزامنة التغييرات مع السيرفر',
+    },
+    'sync-delayed': {
+      bg: 'bg-warning-500/95',
+      text: 'text-white',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      label: 'المزامنة بتاخد وقت أطول من المعتاد، وهتكمل في الخلفية',
     },
     'back-online': {
       bg: 'bg-success-600/95',

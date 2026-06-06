@@ -2,7 +2,7 @@
  * useImageUploadGate — يتحقق هل الطبيب الحالي مسموح له برفع صور.
  *
  * القاعدة (مأخوذة من إعدادات الأدمن في settings/accountTypeControls):
- *   - الـPro و Pro Max: مسموح دائماً.
+ *   - Plus / Pro / Pro Max: مسموح دائماً.
  *   - الـFree: مسموح فقط لو الأدمن فعّل `freeImageUploadsEnabled = true`.
  *
  * استثناء: صورة الترخيص في إنشاء حساب لا تمر بهذا الفحص (الفحص
@@ -73,8 +73,8 @@ export const useImageUploadGate = () => {
         const tier = resolveEffectiveAccountTypeFromData(userData as any, Date.now());
         const settings = settingsSnap.exists() ? (settingsSnap.data() as Record<string, unknown>) : {};
 
-        // ـ Pro / Pro Max → دايماً مسموح، مفيش حاجة تانية محتاجين نفحصها
-        if (tier === 'premium' || tier === 'pro_max') {
+        // ـ Plus / Pro / Pro Max → دايماً مسموح، مفيش حاجة تانية محتاجين نفحصها
+        if (tier === 'premium' || tier === 'plus' || tier === 'pro_max') {
           setState({
             ready: true,
             canUpload: true,

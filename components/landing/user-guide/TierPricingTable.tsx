@@ -22,7 +22,8 @@ import { getCairoDateParts } from '../../../utils/cairoTime';
 
 // شكل الأسعار في Firestore
 type Prices = { monthly: number; sixMonths: number; yearly: number };
-type PricingDoc = Prices & { proMaxPrices?: Prices };
+type PricingDoc = Prices & { plusPrices?: Prices; proMaxPrices?: Prices };
+const DEFAULT_PLUS_PRICES: Prices = { monthly: 500, sixMonths: 2700, yearly: 5000 };
 
 // كم شهر للخلف نبحث لو الشهر الحالي فاضي (1 سنة).
 const MAX_FALLBACK_MONTHS = 12;
@@ -60,14 +61,16 @@ const PriceCell: React.FC<{
   price: number;
   monthlyPrice: number;
   monthsCount: number;
-  variant: 'pro' | 'proMax';
+  variant: 'pro' | 'plus' | 'proMax';
 }> = ({ label, price, monthlyPrice, monthsCount, variant }) => {
   const savings = monthsCount > 1 ? computeSavingsPercent(price, monthlyPrice, monthsCount) : null;
   // لون النص الأساسي للسعر — برتقالي للبرو، ذهبي للبرو ماكس
-  const priceTextColor = variant === 'proMax' ? 'text-[#B45309]' : 'text-warning-700';
+  const priceTextColor = variant === 'proMax' ? 'text-[#B45309]' : variant === 'plus' ? 'text-slate-700' : 'text-warning-700';
   // لون خلفية الكرت الداخلي
   const cellBg = variant === 'proMax'
     ? 'bg-gradient-to-br from-[#FFFDE7] to-[#FFF8E1] border-[#FFE082]'
+    : variant === 'plus'
+      ? 'bg-slate-50 border-slate-200'
     : 'bg-warning-50/60 border-warning-100';
 
   return (
@@ -98,11 +101,13 @@ const TierColumn: React.FC<{
   title: string;
   subtitle: string;
   prices: Prices;
-  variant: 'pro' | 'proMax';
+  variant: 'pro' | 'plus' | 'proMax';
 }> = ({ title, subtitle, prices, variant }) => {
   // ستايل ترويسة العمود — يتغير حسب الباقة
   const headerBg = variant === 'proMax'
     ? 'bg-gradient-to-l from-[#FFE082] via-[#FFD54F] to-[#FFB300] text-[#7A4F01]'
+    : variant === 'plus'
+      ? 'bg-gradient-to-l from-slate-100 via-slate-200 to-slate-300 text-slate-900'
     : 'bg-gradient-to-l from-warning-100 to-warning-200 text-warning-900';
 
   return (
@@ -125,6 +130,7 @@ const TierColumn: React.FC<{
 
 export const TierPricingTable: React.FC = () => {
   const [proPrices, setProPrices] = React.useState<Prices | null>(null);
+  const [plusPrices, setPlusPrices] = React.useState<Prices | null>(null);
   const [proMaxPrices, setProMaxPrices] = React.useState<Prices | null>(null);
   // الشهر اللي ظهرت منه الأسعار (للعرض في تحت الجدول لو مش الشهر الحالي)
   const [pricesMonth, setPricesMonth] = React.useState<string | null>(null);
@@ -150,6 +156,12 @@ export const TierPricingTable: React.FC = () => {
               sixMonths: Number(data.sixMonths) || 0,
               yearly: Number(data.yearly) || 0,
             };
+            const plusRaw = data.plusPrices;
+            const plus: Prices = {
+              monthly: Number(plusRaw?.monthly) || DEFAULT_PLUS_PRICES.monthly,
+              sixMonths: Number(plusRaw?.sixMonths) || DEFAULT_PLUS_PRICES.sixMonths,
+              yearly: Number(plusRaw?.yearly) || DEFAULT_PLUS_PRICES.yearly,
+            };
             const proMaxRaw = data.proMaxPrices;
             const proMax: Prices = {
               monthly: Number(proMaxRaw?.monthly) || 0,
@@ -157,9 +169,10 @@ export const TierPricingTable: React.FC = () => {
               yearly: Number(proMaxRaw?.yearly) || 0,
             };
             // لو الباقة برو فيها أي سعر صالح، اعتمد الشهر ده
-            if (hasValidPrice(pro) || hasValidPrice(proMax)) {
+            if (hasValidPrice(pro) || hasValidPrice(plus) || hasValidPrice(proMax)) {
               if (!mounted) return;
               setProPrices(pro);
+              setPlusPrices(plus);
               setProMaxPrices(proMax);
               setPricesMonth(monthKey);
               return;
@@ -193,7 +206,7 @@ export const TierPricingTable: React.FC = () => {
     );
   }
 
-  if (error || !proPrices || !proMaxPrices) {
+  if (error || !proPrices || !plusPrices || !proMaxPrices) {
     return (
       <div className="my-4 p-4 rounded-xl bg-warning-50 border border-warning-200 flex items-start gap-3">
         <LuTriangleAlert className="w-5 h-5 text-warning-600 shrink-0 mt-0.5" />
@@ -218,8 +231,14 @@ export const TierPricingTable: React.FC = () => {
         أسعار شهر {monthLabel} — بتتحدّث تلقائياً مع آخر إعدادات الإدارة.
       </div>
 
-      {/* عمودين: برو + برو ماكس. على الموبايل عمود واحد تحت التاني */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      {/* الترتيب: Plus ثم برو ثم برو ماكس. على الموبايل عمود واحد تحت التاني */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <TierColumn
+          title="باقة Plus"
+          subtitle="أقل باقة مدفوعة بعد المجاني"
+          prices={plusPrices}
+          variant="plus"
+        />
         <TierColumn
           title="باقة برو"
           subtitle="الفئة المدفوعة الأساسية"

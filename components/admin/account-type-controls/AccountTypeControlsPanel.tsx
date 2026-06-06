@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FaSliders, FaWhatsapp, FaFloppyDisk,
   FaCircleCheck, FaCircleXmark, FaListCheck,
-  FaTriangleExclamation, FaArrowRotateLeft,
+  FaTriangleExclamation, FaArrowRotateLeft, FaImage,
 } from 'react-icons/fa6';
 import { useAuth } from '../../../hooks/useAuth';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
@@ -110,6 +110,8 @@ export const AccountTypeControlsPanel: React.FC = () => {
       WHATSAPP_MESSAGE_KEYS.forEach((key) => {
         next[key] = DEFAULT_FORM[key] || '';
       });
+      next.freeImageUploadsUpgradeMessage = DEFAULT_FORM.freeImageUploadsUpgradeMessage || '';
+      next.freeImageUploadsUpgradeWhatsappMessage = DEFAULT_FORM.freeImageUploadsUpgradeWhatsappMessage || '';
       // ✂️ شيلنا رسائل القفل للأدوات — مش مستخدمة دلوقتي.
       return next;
     });
@@ -164,7 +166,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
   const saveDisabled = saving || !!loadError || !didLoadRef.current;
 
   return (
-    <div className="space-y-4 sm:space-y-5 pb-24">
+    <div className="w-full max-w-full min-w-0 space-y-4 sm:space-y-5 pb-24 overflow-x-hidden">
 
       {/* ═══ Header ═══
           shrink-0 على الأيقونة + min-w-0 flex-1 على كتلة النص = عشان النص يتلف
@@ -238,18 +240,23 @@ export const AccountTypeControlsPanel: React.FC = () => {
         {/* ═══ 🆕 رفع الصور للحساب المجاني — toggle بسيط ═══
             القاعدة: Pro/Pro Max دايماً يقدروا. Free يقدر فقط لو الـtoggle مفعّل هنا.
             المنع بيظهر للطبيب كمودال "ترقية للـPro" بدل ما يفتح متصفح الملفات. */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4 min-w-0">
-          <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-3 sm:p-4 min-w-0 max-w-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2 min-w-0">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm sm:text-base font-black text-slate-800 mb-1">
-                🖼️ السماح برفع الصور للحساب المجاني
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
+              <div className="flex items-center gap-2 min-w-0 mb-1">
+                <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shrink-0 shadow-sm">
+                  <FaImage className="w-3 h-3 text-white" />
+                </div>
+                <h3 className="text-sm sm:text-base font-black text-slate-800 break-words">
+                  السماح برفع الصور للحساب المجاني
+                </h3>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed break-words">
                 لو مغلق: الطبيب المجاني هيشوف مودال "ترقية للـPro" لما يحاول يرفع أي صورة
-                (بروفايل / شعار الروشتة / إعلان العيادة). Pro و Pro Max مش متأثرين.
+                (بروفايل / شعار الروشتة / إعلان العيادة). Plus و Pro و Pro Max مسموح لهم دائماً.
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1 self-start">
               <input
                 type="checkbox"
                 className="sr-only peer"
@@ -272,7 +279,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
                 setFormAndMarkDirty((prev) => ({ ...prev, freeImageUploadsUpgradeMessage: e.target.value }))
               }
               maxLength={500}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
+              className="w-full min-w-0 rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
               placeholder="عزيزي الطبيب، ميزة رفع الصور متاحة للحسابات المدفوعة..."
             />
           </div>
@@ -287,14 +294,14 @@ export const AccountTypeControlsPanel: React.FC = () => {
                 setFormAndMarkDirty((prev) => ({ ...prev, freeImageUploadsUpgradeWhatsappMessage: e.target.value }))
               }
               maxLength={500}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
+              className="w-full min-w-0 rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-400 focus:outline-none transition-colors resize-none"
               placeholder="تحية طيبة، أرغب في تفعيل ميزة رفع الصور..."
             />
           </div>
         </div>
 
         {/* ═══ Features Section ═══ */}
-        <div className="space-y-3">
+        <div className="space-y-3 min-w-0 max-w-full">
           <div className="flex items-center gap-2 px-1 flex-wrap min-w-0">
             <div className="bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg p-1.5 shrink-0 shadow-sm">
               <FaListCheck className="w-3.5 h-3.5 text-white" />
@@ -315,7 +322,7 @@ export const AccountTypeControlsPanel: React.FC = () => {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0 max-w-full">
             {ORDERED_GROUPS.map((group) => (
               <PlanGroupSection
                 key={group.id}

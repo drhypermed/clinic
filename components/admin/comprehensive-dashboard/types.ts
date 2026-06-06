@@ -1,4 +1,4 @@
-/**
+﻿/**
  * الملف: types.ts
  * الوصف: "قاموس هيكل لوحة التحكم". 
  * يحتوي على تعريفات الجداول والأنواع المستخدمة في بناء لوحة الإدارة الشاملة: 
@@ -42,12 +42,15 @@ export interface DashboardStats {
   activeSubscriptions: number;
   freeDocsCount: number;
   premiumDocsCount: number;       // عدد حسابات برو (premium)
+  plusDocsCount: number;          // عدد حسابات Plus
   proMaxDocsCount: number;        // عدد حسابات برو ماكس (جديد)
   totalSmartRxFree: number;
-  totalSmartRxPro: number;        // تحليلات الحسابات المدفوعة (برو + برو ماكس)
+  totalSmartRxPro: number;        // تحليلات حسابات برو
+  totalSmartRxPlus: number;       // تحليلات حسابات Plus
   totalSmartRxProMax: number;     // تحليلات برو ماكس فقط (جديد)
   totalPrintsFree: number;
   totalPrintsPro: number;
+  totalPrintsPlus: number;
   totalPrintsProMax: number;      // طباعات برو ماكس فقط (جديد)
   homeBannerItems: number;
   footerContacts: number;
@@ -60,22 +63,27 @@ export interface DashboardStats {
   // تحليل الحالة (Case Analysis)
   caseAnalysisFreeCount: number;
   caseAnalysisProCount: number;
+  caseAnalysisPlusCount?: number;
   caseAnalysisProMaxCount: number;
   // فحص التداخلات الدوائية
   drugInteractionsFreeCount: number;
   drugInteractionsProCount: number;
+  drugInteractionsPlusCount?: number;
   drugInteractionsProMaxCount: number;
   // أمان الحمل والرضاعة
   pregnancySafetyFreeCount: number;
   pregnancySafetyProCount: number;
+  pregnancySafetyPlusCount?: number;
   pregnancySafetyProMaxCount: number;
   // تعديل جرعات الكلى
   renalDoseFreeCount: number;
   renalDoseProCount: number;
+  renalDosePlusCount?: number;
   renalDoseProMaxCount: number;
   // طباعة تقرير طبي بالـAI
   medicalReportFreeCount: number;
   medicalReportProCount: number;
+  medicalReportPlusCount?: number;
   medicalReportProMaxCount: number;
 
   // ═══ Reports aggregates — السيرفر بيـscan الأطباء كل 6 ساعات ويخزّن النتائج هنا

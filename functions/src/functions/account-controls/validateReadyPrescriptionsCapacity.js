@@ -39,7 +39,7 @@ module.exports = (context) => {
 
     // 🆕 (2026-05): paid tiers بدون فحص حد كلي للروشتات الجاهزة — توفير
     // count aggregation وتسريع الحفظ.
-    if (accountType === 'premium' || accountType === 'pro_max') {
+    if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
       return {
         accountType,
         limit: 0,
@@ -55,6 +55,7 @@ module.exports = (context) => {
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeReadyPrescriptionsMaxCount',
       premiumKey: 'premiumReadyPrescriptionsMaxCount',
+      plusKey: 'plusReadyPrescriptionsMaxCount',
       proMaxKey: 'proMaxReadyPrescriptionsMaxCount',
     });
 
@@ -79,11 +80,13 @@ module.exports = (context) => {
     const limitReachedMessage = pickTierValue(accountType, config, {
       freeKey: 'freeReadyPrescriptionsCapacityMessage',
       premiumKey: 'premiumReadyPrescriptionsCapacityMessage',
+      plusKey: 'plusReadyPrescriptionsCapacityMessage',
       proMaxKey: 'proMaxReadyPrescriptionsCapacityMessage',
     });
     const whatsappMessage = pickTierValue(accountType, config, {
       freeKey: 'freeReadyPrescriptionsCapacityWhatsappMessage',
       premiumKey: 'premiumReadyPrescriptionsCapacityWhatsappMessage',
+      plusKey: 'plusReadyPrescriptionsCapacityWhatsappMessage',
       proMaxKey: 'proMaxReadyPrescriptionsCapacityWhatsappMessage',
     });
     const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);

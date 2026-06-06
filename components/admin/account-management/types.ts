@@ -11,7 +11,7 @@
 type SubscriptionChangeType = 'new' | 'extension' | 'manual_edit' | 'plan_switch';
 
 /** فئات الباقة المسعّرة (لا تشمل free لأن free مفيش له سعر). */
-export type SubscriptionTier = 'premium' | 'pro_max';
+export type SubscriptionTier = 'premium' | 'plus' | 'pro_max';
 
 /** نوع المدة المسعّرة في جدول الأسعار: شهري / ٦ شهور / سنوي. */
 export type SubscriptionPlanType = 'monthly' | 'sixMonths' | 'yearly';
@@ -45,7 +45,7 @@ export interface SubscriptionPeriod {
 // ثلاث فئات: مجاني / برو (كان اسمه premium داخلياً للتوافق العكسي) / برو ماكس
 // ملاحظة: `premium` ما اتغيرش في الـ storage عشان ما نكسرش الحسابات القديمة —
 // بس العرض في الـ UI بقى "برو". برو ماكس فئة جديدة للأدمن يضبط مميزاتها لاحقاً.
-export type AccountType = 'free' | 'premium' | 'pro_max';
+export type AccountType = 'free' | 'premium' | 'plus' | 'pro_max';
 export type SubscriptionUnit = 'day' | 'week' | 'month' | 'year' | 'hour';
 export type EditMode = 'duration' | 'dates';
 
@@ -74,6 +74,8 @@ export interface ApprovedDoctor {
   usageStatsByPlan?: {
     free?: Record<string, number>;
     premium?: Record<string, number>;
+    plus?: Record<string, number>;
+    pro_max?: Record<string, number>;
   };
 }
 

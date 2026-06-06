@@ -124,6 +124,47 @@ const hasAgeOrPopulationRefinement = (question: string) => {
     || /(طفل|اطفال|الأطفال|الاطفال|عمره|سنه|سنة|سنين|شهور|الحمل|حامل|الحوامل|كبار السن|البالغين)/.test(q);
 };
 
+const hasStandaloneClinicalSignal = (question: string) => {
+  const q = normalizeLoose(question);
+  const wordCount = q.split(/\s+/).filter(Boolean).length;
+  const hasEnglishClinicalTopic = /\b(asthma|copd|diabetes|dka|hhs|hypertension|blood pressure|ckd|aki|kidney|renal|liver|cirrhosis|heart failure|afib|atrial fibrillation|acs|stroke|sepsis|pneumonia|gout|thyroid|obesity|pregnancy|anemia|anaemia|infection|antibiotic|vaccine|vaccination)\b/.test(q);
+  const hasEnglishClinicalAction = /\b(treat|treatment|manage|management|diagnosis|diagnose|criteria|dose|dosage|drug|medication|screen|monitor|follow up|contraindication|avoid)\b/.test(q);
+  const arabicClinicalTopics = [
+    '\u0631\u0628\u0648', '\u062d\u0633\u0627\u0633\u064a\u0629 \u0635\u062f\u0631', '\u0633\u0643\u0631', '\u0627\u0644\u0633\u0643\u0631',
+    '\u0636\u063a\u0637', '\u0627\u0644\u0636\u063a\u0637', '\u0636\u063a\u0637 \u0627\u0644\u062f\u0645',
+    '\u0643\u0644\u0649', '\u0627\u0644\u0643\u0644\u0649', '\u0643\u0644\u0648\u064a', '\u0643\u0628\u062f', '\u0627\u0644\u0643\u0628\u062f',
+    '\u0642\u0644\u0628', '\u0627\u0644\u0642\u0644\u0628', '\u062c\u0644\u0637\u0629', '\u062d\u0645\u0644', '\u0627\u0644\u062d\u0645\u0644',
+    '\u062d\u0627\u0645\u0644', '\u0627\u0644\u062d\u0648\u0627\u0645\u0644', '\u0627\u0646\u064a\u0645\u064a\u0627', '\u0627\u0644\u062a\u0647\u0627\u0628',
+    '\u0639\u062f\u0648\u0649', '\u0645\u0636\u0627\u062f \u062d\u064a\u0648\u064a', '\u0644\u0642\u0627\u062d', '\u062a\u0637\u0639\u064a\u0645',
+    '\u063a\u062f\u0629', '\u0633\u0645\u0646\u0629', '\u0646\u0642\u0631\u0633',
+  ];
+  const arabicClinicalActions = [
+    '\u0639\u0644\u0627\u062c', '\u0627\u0639\u0627\u0644\u062c', '\u0627\u062a\u0639\u0627\u0645\u0644', '\u062a\u0639\u0627\u0645\u0644',
+    '\u062a\u0634\u062e\u064a\u0635', '\u0645\u0639\u0627\u064a\u064a\u0631', '\u062c\u0631\u0639\u0629', '\u062c\u0631\u0639\u0647',
+    '\u0627\u062f\u0648\u064a\u0629', '\u0623\u062f\u0648\u064a\u0629', '\u062f\u0648\u0627\u0621', '\u0645\u0648\u0627\u0646\u0639',
+    '\u0645\u0645\u0646\u0648\u0639', '\u0645\u062a\u0627\u0628\u0639\u0629', '\u0627\u0639\u0631\u0627\u0636', '\u0623\u0639\u0631\u0627\u0636',
+  ];
+  const hasArabicTopic = arabicClinicalTopics.some((token) => q.includes(normalizeLoose(token)));
+  const hasArabicAction = arabicClinicalActions.some((token) => q.includes(normalizeLoose(token)));
+  return hasEnglishClinicalTopic
+    || (hasEnglishClinicalAction && wordCount >= 3)
+    || hasArabicTopic
+    || hasArabicAction;
+};
+
+const hasHighValueGuidelineSignal = (question: string) => {
+  const q = normalizeLoose(question);
+  return /\b(dose|dosage|mg|units?|contraindication|avoid|emergency|acute|severe|shock|bleeding|dka|hhs|hyperkalemia|pregnan|child|children|pediatric|paediatric|neonate|infant|elderly|renal|kidney|hepatic|liver|compare|versus|vs)\b/.test(q)
+    || [
+      '\u062c\u0631\u0639\u0629', '\u062c\u0631\u0639\u0647', '\u0645\u0645\u0646\u0648\u0639', '\u0645\u0648\u0627\u0646\u0639',
+      '\u062d\u0627\u062f', '\u0637\u0648\u0627\u0631\u0626', '\u0646\u0632\u064a\u0641', '\u0635\u062f\u0645\u0629',
+      '\u062d\u0645\u0644', '\u062d\u0627\u0645\u0644', '\u0627\u0644\u062d\u0648\u0627\u0645\u0644',
+      '\u0637\u0641\u0644', '\u0627\u0637\u0641\u0627\u0644', '\u0627\u0644\u0623\u0637\u0641\u0627\u0644',
+      '\u0643\u0644\u0649', '\u0643\u0644\u0648\u064a', '\u0643\u0628\u062f', '\u0643\u0628\u062f\u064a',
+      '\u0642\u0627\u0631\u0646', '\u0645\u0642\u0627\u0631\u0646\u0629', '\u0641\u0631\u0642',
+    ].some((token) => q.includes(normalizeLoose(token)));
+};
+
 const hasAnchorInPreviousSources = (anchors: string[], previousSources: GuidelineChatSourceChunk[]) => {
   if (!anchors.length) return true;
   const previousText = normalizeLoose(previousSources
@@ -150,14 +191,22 @@ export const shouldUseConversationContext = ({
 
   const anchors = extractContextAnchors(question);
   const anchorFoundInPreviousSources = hasAnchorInPreviousSources(anchors, previousSources);
+  const standaloneClinicalSignal = hasStandaloneClinicalSignal(question);
 
   if (anchors.length > 0 && !anchorFoundInPreviousSources && !hasContextualWording(question)) {
     return false;
   }
 
-  // Smart Rule: Treat short Arabic sentences with no English medical anchors as follow-ups
+  if (standaloneClinicalSignal && !hasContextualWording(question) && (anchors.length === 0 || !anchorFoundInPreviousSources)) {
+    return false;
+  }
+
+  // Treat short anchorless questions as follow-ups only when they look elliptical.
   if (anchors.length === 0 && question.split(/\s+/).filter(Boolean).length <= 7) {
-    return true;
+    return hasContextualWording(question)
+      || hasDoseEllipsis(question)
+      || isFollowUpQuestion(question)
+      || hasAgeOrPopulationRefinement(question);
   }
 
   if (hasDoseEllipsis(question)) return true;
@@ -166,6 +215,84 @@ export const shouldUseConversationContext = ({
   if (hasAgeOrPopulationRefinement(question) && anchors.length === 0) return true;
 
   return anchors.length > 0 && anchorFoundInPreviousSources;
+};
+
+export const shouldReusePreviousSourcesForAnswer = ({
+  question,
+  previousSources,
+}: {
+  question: string;
+  previousSources: GuidelineChatSourceChunk[];
+}) => {
+  if (previousSources.length === 0) return false;
+  if (!shouldUseConversationContext({ question, previousSources })) return false;
+  if (hasStandaloneClinicalSignal(question) && !hasContextualWording(question)) return false;
+  return hasContextualWording(question)
+    || hasDoseEllipsis(question)
+    || isFollowUpQuestion(question)
+    || hasAgeOrPopulationRefinement(question);
+};
+
+export const shouldUseModelReformulation = ({
+  question,
+  previousSources,
+}: {
+  question: string;
+  previousSources: GuidelineChatSourceChunk[];
+}) => {
+  const anchors = extractContextAnchors(question);
+  const wordCount = question.split(/\s+/).filter(Boolean).length;
+
+  if (hasHighValueGuidelineSignal(question)) {
+    return true;
+  }
+
+  if (previousSources.length === 0) return false;
+
+  const anchorFoundInPreviousSources = hasAnchorInPreviousSources(anchors, previousSources);
+
+  if (anchors.length === 0 && !hasStandaloneClinicalSignal(question) && wordCount <= 7) {
+    return true;
+  }
+
+  if (anchors.length > 0 && !anchorFoundInPreviousSources && hasContextualWording(question)) {
+    return true;
+  }
+
+  return wordCount <= 3 && hasContextualWording(question);
+};
+
+export const shouldRetryGuidelineSearchWithModel = ({
+  question,
+  sources,
+  alreadyReformulated,
+}: {
+  question: string;
+  sources: GuidelineChatSourceChunk[];
+  alreadyReformulated: boolean;
+}) => {
+  if (alreadyReformulated) return false;
+  const primarySources = sources.filter((source) => !source.contextOnly);
+  const topScore = Math.max(0, ...sources.map((source) => Number(source.score || 0)));
+
+  if (sources.length === 0) return true;
+  if (primarySources.length === 0) return true;
+  if (topScore < 55) return true;
+  if (hasHighValueGuidelineSignal(question) && (primarySources.length < 2 || topScore < 110)) return true;
+  return false;
+};
+
+export const shouldPreferSearchRetrySources = (
+  retrySources: GuidelineChatSourceChunk[],
+  currentSources: GuidelineChatSourceChunk[],
+) => {
+  if (retrySources.length === 0) return false;
+  if (currentSources.length === 0) return true;
+  const retryTopScore = Math.max(0, ...retrySources.map((source) => Number(source.score || 0)));
+  const currentTopScore = Math.max(0, ...currentSources.map((source) => Number(source.score || 0)));
+  const retryPrimaryCount = retrySources.filter((source) => !source.contextOnly).length;
+  const currentPrimaryCount = currentSources.filter((source) => !source.contextOnly).length;
+  return retryPrimaryCount > currentPrimaryCount || retryTopScore >= currentTopScore + 15;
 };
 
 const wantsCurrentFileScope = (question: string) => {

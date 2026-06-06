@@ -23,7 +23,7 @@ interface UseDrHyperActionsArgs {
   realtimeData: DrHyperRealtimeData;
   setCurrentView: DrHyperViewAndUsageState['setCurrentView'];
   trackMedUsage: DrHyperViewAndUsageState['trackMedUsage'];
-  resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
+  resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'plus' | 'pro_max'>;
   getAccountTypeControls: () => Promise<any>;
   consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint') => Promise<unknown>;
   consumeSmartPrescriptionQuota: () => Promise<unknown>;

@@ -19,7 +19,7 @@ export interface DoctorVerificationItem {
   doctorEmail?: string;
   verificationDocUrl?: string;
   verificationStatus?: string;
-  accountType?: 'free' | 'premium';
+  accountType?: 'free' | 'premium' | 'plus' | 'pro_max';
   createdAt?: string;
 }
 

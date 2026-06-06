@@ -34,6 +34,8 @@ import {
 } from './doctorVerificationHelpers';
 import { buildApprovalWhatsAppUrl } from './approvalWhatsApp';
 
+type DoctorAccountType = 'free' | 'premium' | 'plus' | 'pro_max';
+
 export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null | undefined) => {
   // ── بيانات الطلبات ──
   const [items, setItems] = useState<DoctorVerificationItem[]>([]);
@@ -44,7 +46,7 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
 
   // ── حالة التعديل على مستوى كل كارد (بدل global) ──
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
-  const [accountTypes, setAccountTypes] = useState<Record<string, 'free' | 'premium' | 'pro_max'>>({});
+  const [accountTypes, setAccountTypes] = useState<Record<string, DoctorAccountType>>({});
   const [subscriptionDurations, setSubscriptionDurations] = useState<Record<string, number>>({});
   const [actionLoading, setActionLoading] = useState<Record<string, 'approving' | 'rejecting' | null>>({});
   const [cardError, setCardError] = useState<Record<string, string>>({});
@@ -116,6 +118,7 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
               verificationDocUrl: item?.verificationDocUrl || '',
               verificationStatus: normalizeDoctorVerificationStatus(item?.verificationStatus),
               accountType: item?.accountType === 'premium' ? 'premium'
+                : item?.accountType === 'plus' ? 'plus'
                 : item?.accountType === 'pro_max' ? 'pro_max'
                 : 'free',
               createdAt: item?.createdAt || '',
@@ -140,7 +143,7 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
         );
 
         // تعيين القيم الافتراضية لكل كارد (نوع الحساب + مدة افتراضية 30 يوم)
-        const types: Record<string, 'free' | 'premium'> = {};
+        const types: Record<string, DoctorAccountType> = {};
         const durations: Record<string, number> = {};
         data.forEach((item) => {
           types[item.id] = item.accountType || 'free';
@@ -177,7 +180,7 @@ export const useDoctorVerification = (isAdmin: boolean, userEmail: string | null
       };
 
       // للحسابات المدفوعة (برو أو برو ماكس): نحسب تاريخ البداية والانتهاء من المدة المختارة
-      if (accountType === 'premium' || accountType === 'pro_max') {
+      if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
         const now = new Date();
         const expiryDate = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
         applyData = {

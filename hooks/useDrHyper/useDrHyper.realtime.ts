@@ -117,6 +117,9 @@ const isFalsyFlag = (value: unknown): boolean => {
   return normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off';
 };
 
+const isDateMsMigrationTrustedByBuild = (): boolean =>
+  isTruthyFlag(import.meta.env.VITE_RECORDS_DATE_MS_MIGRATED);
+
 /**
  * الـpagination مفعّل افتراضياً. لإطفائه:
  *   1) env var: VITE_RECORDS_PAGINATION_ENABLED=false
@@ -399,6 +402,7 @@ export const useDrHyperRealtimeData = ({
     // القديمة تكون جاهزة بدون ضياع.
     const DATE_MS_MIGRATION_KEY = `dh_dateMs_migrated_${user.uid}`;
     const isDateMsMigrated = (() => {
+      if (isDateMsMigrationTrustedByBuild()) return true;
       try {
         return localStorage.getItem(DATE_MS_MIGRATION_KEY) === '1';
       } catch {

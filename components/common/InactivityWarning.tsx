@@ -27,7 +27,7 @@ export const InactivityWarning: React.FC<InactivityWarningProps> = ({
   const handleWhatsAppClick = () => {
     const phoneNumber = '201092805293';
     const message = encodeURIComponent(
-      'مرحباً، حسابي المجاني هينتهي قريباً وعايز أرقّي للبرو',
+      'مرحباً، حسابي المجاني هينتهي قريباً وعايز أرقّي لباقة مدفوعة',
     );
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
@@ -70,7 +70,7 @@ export const InactivityWarning: React.FC<InactivityWarningProps> = ({
                 </h3>
                 <p className="text-sm sm:text-[15px] leading-7 font-bold text-white/95">
                   حسابك المجاني هينتهي خلال <span className="font-black">{daysRemaining} يوم</span> ({dateStr}).
-                  بعد كده الحساب هيتعطل تلقائياً. للاستمرار، **رقّي للبرو** أو تواصل مع الإدارة لتجديد الفترة المجانية.
+                  بعد كده الحساب هيتعطل تلقائياً. للاستمرار، **رقّي لباقة مدفوعة** أو تواصل مع الإدارة لتجديد الفترة المجانية.
                 </p>
               </div>
             </div>
@@ -86,7 +86,7 @@ export const InactivityWarning: React.FC<InactivityWarningProps> = ({
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
               <p className="text-xs sm:text-sm font-bold text-white/90">
-                الترقية للبرو تحمي حسابك من التعطيل التلقائي
+                الترقية لباقة مدفوعة تحمي حسابك من التعطيل التلقائي
               </p>
               <button
                 onClick={handleWhatsAppClick}

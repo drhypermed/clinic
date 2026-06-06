@@ -42,6 +42,7 @@ module.exports = (context) => {
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeInsuranceCompaniesMaxCount',
       premiumKey: 'premiumInsuranceCompaniesMaxCount',
+      plusKey: 'plusInsuranceCompaniesMaxCount',
       proMaxKey: 'proMaxInsuranceCompaniesMaxCount',
     });
 
@@ -87,11 +88,13 @@ module.exports = (context) => {
     const limitReachedMessage = pickTierValue(accountType, config, {
       freeKey: 'freeInsuranceCompaniesCapacityMessage',
       premiumKey: 'premiumInsuranceCompaniesCapacityMessage',
+      plusKey: 'plusInsuranceCompaniesCapacityMessage',
       proMaxKey: 'proMaxInsuranceCompaniesCapacityMessage',
     });
     const whatsappMessage = pickTierValue(accountType, config, {
       freeKey: 'freeInsuranceCompaniesCapacityWhatsappMessage',
       premiumKey: 'premiumInsuranceCompaniesCapacityWhatsappMessage',
+      plusKey: 'plusInsuranceCompaniesCapacityWhatsappMessage',
       proMaxKey: 'proMaxInsuranceCompaniesCapacityWhatsappMessage',
     });
     const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);

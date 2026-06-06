@@ -1,4 +1,4 @@
-type EffectiveAccountType = 'free' | 'premium' | 'pro_max';
+type EffectiveAccountType = 'free' | 'premium' | 'plus' | 'pro_max';
 
 import { parseIsoTimeMs } from './expiryTime';
 
@@ -16,8 +16,11 @@ export const resolveEffectiveAccountTypeFromData = (
   // نقبل premium (= برو) و pro_max كفئات مدفوعة، أي قيمة أخرى = free.
   // Expiry بيطبق على الاتنين بنفس الطريقة — لسه ما فيش حقل expiry منفصل لبرو ماكس.
   const raw = data?.accountType;
-  const paidType: 'premium' | 'pro_max' | null =
-    raw === 'premium' ? 'premium' : raw === 'pro_max' ? 'pro_max' : null;
+  const paidType: 'premium' | 'plus' | 'pro_max' | null =
+    raw === 'premium' ? 'premium'
+      : raw === 'plus' ? 'plus'
+      : raw === 'pro_max' ? 'pro_max'
+      : null;
   if (!paidType) return 'free';
 
   const expiryMs = parseIsoTimeMs(data?.premiumExpiryDate);

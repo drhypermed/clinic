@@ -27,13 +27,13 @@ import {
 
 interface DoctorVerificationCardProps {
   item: DoctorVerificationItem;
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   subscriptionDuration: number;
   rejectNote: string;
   actionLoading: 'approving' | 'rejecting' | null;
   cardError: string;
   cardSuccess: string;
-  onAccountTypeChange: (type: 'free' | 'premium' | 'pro_max') => void;
+  onAccountTypeChange: (type: 'free' | 'premium' | 'plus' | 'pro_max') => void;
   onDurationChange: (duration: number) => void;
   onRejectNoteChange: (note: string) => void;
   onApprove: () => void;
@@ -138,20 +138,32 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
           </div>
         )}
 
-        {/* اختيار نوع الحساب (مجاني/برو/برو ماكس) — 3 أزرار */}
+        {/* اختيار نوع الحساب: مجاني / Plus / برو / برو ماكس */}
         <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
           <label className="mb-2 block text-xs font-black text-slate-600">نوع الحساب</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button
               type="button"
               onClick={() => onAccountTypeChange('free')}
               className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-bold transition ${
-                accountType !== 'premium' && accountType !== 'pro_max'
+                accountType !== 'premium' && accountType !== 'plus' && accountType !== 'pro_max'
                   ? 'border-2 border-slate-600 bg-slate-600 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
               مجاني
+            </button>
+            <button
+              type="button"
+              onClick={() => onAccountTypeChange('plus')}
+              className={`flex items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[11px] sm:text-xs font-black transition ${
+                accountType === 'plus'
+                  ? 'border-2 border-slate-400 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 text-slate-800 shadow-sm'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+              }`}
+            >
+              <FaCrown className="w-3 h-3 text-slate-500" />
+              Plus
             </button>
             <button
               type="button"
@@ -181,16 +193,18 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
         </div>
 
         {/* مدة الاشتراك (تظهر لو برو أو برو ماكس) — الاتنين ذهبي، ماكس أعمق */}
-        {(accountType === 'premium' || accountType === 'pro_max') && (
+        {(accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') && (
           <div className={`rounded-xl border p-3 ${
             accountType === 'pro_max'
               ? 'border-[#FFB300] bg-gradient-to-r from-[#FFF8E1] via-[#FFF3C4] to-[#FFF8E1]'
+              : accountType === 'plus'
+                ? 'border-slate-200 bg-slate-50'
               : 'border-warning-100 bg-warning-50/60'
           }`}>
             <label className={`mb-2 block text-xs font-black ${
-              accountType === 'pro_max' ? 'text-[#B45309]' : 'text-warning-700'
+              accountType === 'pro_max' ? 'text-[#B45309]' : accountType === 'plus' ? 'text-slate-700' : 'text-warning-700'
             }`}>
-              مدة اشتراك {accountType === 'pro_max' ? 'برو ماكس' : 'برو'}
+              مدة اشتراك {accountType === 'pro_max' ? 'برو ماكس' : accountType === 'plus' ? 'Plus' : 'برو'}
             </label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {DURATION_OPTIONS.map((opt) => {
@@ -198,9 +212,13 @@ export const DoctorVerificationCard: React.FC<DoctorVerificationCardProps> = ({
                 // برو ماكس ذهبي لامع، برو ذهبي هادئ
                 const activeClass = accountType === 'pro_max'
                   ? 'border-2 border-[#FF8F00] bg-gradient-to-r from-[#FFD54F] to-[#FFB300] text-[#B45309] shadow-[0_2px_6px_rgba(255,193,7,0.45)]'
+                  : accountType === 'plus'
+                    ? 'border-2 border-slate-400 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 text-slate-800 shadow-sm'
                   : 'border-2 border-warning-500 bg-warning-500 text-white shadow-sm';
                 const inactiveClass = accountType === 'pro_max'
                   ? 'border border-[#FFE082] bg-white text-[#B45309] hover:bg-[#FFF8E1]'
+                  : accountType === 'plus'
+                    ? 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                   : 'border border-warning-200 bg-white text-warning-700 hover:bg-warning-50';
                 return (
                   <button

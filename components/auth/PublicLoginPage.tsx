@@ -14,6 +14,7 @@ import { BrandLogo } from '../common/BrandLogo';
 import { PUBLIC_AUTH_ERROR_KEY, ROLE_RESOLUTION_ERROR_KEY } from '../../services/auth-service';
 import { LegalConsentGate } from './legal/LegalConsentGate';
 import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
+import { navigateToDoctorLogin } from './authPortalNavigation';
 
 const LOGIN_PUBLIC_PATH = '/login/public';
 
@@ -205,7 +206,7 @@ export const PublicLoginPage: React.FC = () => {
                     type="button"
                     onClick={() => {
                       clearPublicAuthError();
-                      navigate('/login/doctor', { replace: true });
+                      navigateToDoctorLogin(navigate, { replace: true });
                     }}
                     className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >

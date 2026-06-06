@@ -45,7 +45,7 @@ module.exports = (context) => {
 
     // 🆕 (2026-05): paid tiers بدون فحص حد كلي للسجلات — نوفر count aggregation
     // وتخطي قراءة الـrecord. التشغيل أسرع وتكلفة Firebase أقل.
-    if (accountType === 'premium' || accountType === 'pro_max') {
+    if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
       return {
         accountType,
         limit: 0, // 0 = unlimited
@@ -62,6 +62,7 @@ module.exports = (context) => {
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeRecordsMaxCount',
       premiumKey: 'premiumRecordsMaxCount',
+      plusKey: 'plusRecordsMaxCount',
       proMaxKey: 'proMaxRecordsMaxCount',
     });
 
@@ -114,11 +115,13 @@ module.exports = (context) => {
     const limitReachedMessage = pickTierValue(accountType, config, {
       freeKey: 'freeRecordsCapacityMessage',
       premiumKey: 'premiumRecordsCapacityMessage',
+      plusKey: 'plusRecordsCapacityMessage',
       proMaxKey: 'proMaxRecordsCapacityMessage',
     });
     const whatsappMessage = pickTierValue(accountType, config, {
       freeKey: 'freeRecordsCapacityWhatsappMessage',
       premiumKey: 'premiumRecordsCapacityWhatsappMessage',
+      plusKey: 'plusRecordsCapacityWhatsappMessage',
       proMaxKey: 'proMaxRecordsCapacityWhatsappMessage',
     });
     const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);

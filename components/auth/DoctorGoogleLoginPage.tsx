@@ -12,6 +12,7 @@ import { BrandLogo } from '../common/BrandLogo';
 import { LegalConsentGate } from './legal/LegalConsentGate';
 import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
+import { navigateToPublicLogin } from './authPortalNavigation';
 
 const LOGIN_DOCTOR_PATH = '/login/doctor';
 
@@ -128,7 +129,7 @@ export const DoctorGoogleLoginPage: React.FC = () => {
             {mergedError?.includes('حساب جمهور') && (
               <button
                 type="button"
-                onClick={() => navigate('/login/public', { replace: true })}
+                onClick={() => navigateToPublicLogin(navigate, { replace: true })}
                 className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
               >
                 الذهاب لتسجيل دخول الجمهور

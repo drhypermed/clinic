@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // تحليل استهلاك الباقات في نظرة الأدمن (OverviewUsageAnalysis)
 // ─────────────────────────────────────────────────────────────────────────────
 // جدول موحد يعرض كل أنشطة المنصة في مكان واحد (إجمالي طوال العمر):
@@ -28,6 +28,7 @@ interface UsageRow {
   emoji?: string;
   free: number;
   premium: number;
+  plus: number;
   proMax: number;
   total: number;
 }
@@ -40,6 +41,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
     title: string,
     free: number,
     premium: number,
+    plus: number,
     proMax: number,
     emoji?: string,
   ): UsageRow => ({
@@ -48,18 +50,19 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
     emoji,
     free,
     premium,
+    plus,
     proMax,
-    total: free + premium + proMax,
+    total: free + premium + plus + proMax,
   });
 
   // 5 ميزات الـAI (cumulative lifetime من stats)
   // ✂️ شيلنا الترجمة (2026-05) — بقت بدون حد منفصل (جزء من الزرّين)
   const aiFeatureRows: UsageRow[] = [
-    buildRow('ai', 'تحليل الحالة',                    stats.caseAnalysisFreeCount,    stats.caseAnalysisProCount,    stats.caseAnalysisProMaxCount,    '🩺'),
-    buildRow('ai', 'فحص التداخلات الدوائية',           stats.drugInteractionsFreeCount, stats.drugInteractionsProCount, stats.drugInteractionsProMaxCount, '💊'),
-    buildRow('ai', 'أمان الحمل والرضاعة',              stats.pregnancySafetyFreeCount, stats.pregnancySafetyProCount, stats.pregnancySafetyProMaxCount, '🤰'),
-    buildRow('ai', 'تعديل جرعات الكلى',                stats.renalDoseFreeCount,        stats.renalDoseProCount,        stats.renalDoseProMaxCount,        '🧪'),
-    buildRow('ai', 'طباعة تقرير طبي',                   stats.medicalReportFreeCount,    stats.medicalReportProCount,    stats.medicalReportProMaxCount,    '📄'),
+    buildRow('ai', 'تحليل الحالة',                    stats.caseAnalysisFreeCount,    stats.caseAnalysisProCount,    stats.caseAnalysisPlusCount || 0,    stats.caseAnalysisProMaxCount,    '🩺'),
+    buildRow('ai', 'فحص التداخلات الدوائية',           stats.drugInteractionsFreeCount, stats.drugInteractionsProCount, stats.drugInteractionsPlusCount || 0, stats.drugInteractionsProMaxCount, '💊'),
+    buildRow('ai', 'أمان الحمل والرضاعة',              stats.pregnancySafetyFreeCount, stats.pregnancySafetyProCount, stats.pregnancySafetyPlusCount || 0, stats.pregnancySafetyProMaxCount, '🤰'),
+    buildRow('ai', 'تعديل جرعات الكلى',                stats.renalDoseFreeCount,        stats.renalDoseProCount,        stats.renalDosePlusCount || 0,        stats.renalDoseProMaxCount,        '🧪'),
+    buildRow('ai', 'طباعة تقرير طبي',                   stats.medicalReportFreeCount,    stats.medicalReportProCount,    stats.medicalReportPlusCount || 0,    stats.medicalReportProMaxCount,    '📄'),
   ];
 
   const aiTotalRow: UsageRow = buildRow(
@@ -67,15 +70,16 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
     'الإجمالي الكلي لميزات الـAI',
     aiFeatureRows.reduce((s, r) => s + r.free, 0),
     aiFeatureRows.reduce((s, r) => s + r.premium, 0),
+    aiFeatureRows.reduce((s, r) => s + r.plus, 0),
     aiFeatureRows.reduce((s, r) => s + r.proMax, 0),
     '📊',
   );
 
   // الترتيب النهائي: عام → فاصل → ميزات AI → إجمالي AI
   const allRows: UsageRow[] = [
-    buildRow('general', 'عدد الأطباء النشطين',     stats.freeDocsCount,    stats.premiumDocsCount,  stats.proMaxDocsCount || 0),
-    buildRow('general', 'إجمالي الروشتات المطبوعة', stats.totalPrintsFree,  stats.totalPrintsPro,    stats.totalPrintsProMax || 0),
-    { kind: 'separator', title: '🤖 ميزات الذكاء الاصطناعي', free: 0, premium: 0, proMax: 0, total: 0 },
+    buildRow('general', 'عدد الأطباء النشطين',     stats.freeDocsCount,    stats.premiumDocsCount,  stats.plusDocsCount || 0, stats.proMaxDocsCount || 0),
+    buildRow('general', 'إجمالي الروشتات المطبوعة', stats.totalPrintsFree,  stats.totalPrintsPro,    stats.totalPrintsPlus || 0, stats.totalPrintsProMax || 0),
+    { kind: 'separator', title: '🤖 ميزات الذكاء الاصطناعي', free: 0, premium: 0, plus: 0, proMax: 0, total: 0 },
     ...aiFeatureRows,
     aiTotalRow,
   ];
@@ -88,7 +92,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
           <h2 className="text-xs sm:text-sm font-black text-slate-800">تحليل استهلاك الباقات</h2>
         </div>
         <span className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[10px] sm:text-[11px] font-bold text-brand-700">
-          مجاني / برو / برو ماكس
+          مجاني / Plus / برو / برو ماكس
         </span>
       </div>
 
@@ -99,6 +103,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
             <tr className="bg-slate-50 text-xs font-bold tracking-wide text-slate-500">
               <th className="px-4 py-3">النشاط</th>
               <th className="px-4 py-3">المجاني</th>
+              <th className="px-4 py-3">Plus</th>
               <th className="px-4 py-3">برو</th>
               <th className="px-4 py-3">برو ماكس</th>
               <th className="px-4 py-3">الإجمالي</th>
@@ -109,7 +114,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
               if (row.kind === 'separator') {
                 return (
                   <tr key={`sep-${idx}`} className="bg-gradient-to-l from-brand-50/50 to-slate-50/30">
-                    <td colSpan={5} className="px-4 py-2 text-xs font-black text-brand-700 border-r-4 border-brand-400">
+                    <td colSpan={6} className="px-4 py-2 text-xs font-black text-brand-700 border-r-4 border-brand-400">
                       {row.title}
                     </td>
                   </tr>
@@ -122,6 +127,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
                       {row.emoji && <span className="ml-1.5">{row.emoji}</span>}{row.title}
                     </td>
                     <td className="px-4 py-3 font-numeric text-slate-800">{fmtNum(row.free)}</td>
+                    <td className="px-4 py-3 font-numeric text-slate-700">{fmtNum(row.plus)}</td>
                     <td className="px-4 py-3 font-numeric text-warning-700">{fmtNum(row.premium)}</td>
                     <td className="px-4 py-3 font-numeric text-[#B45309]">{fmtNum(row.proMax)}</td>
                     <td className="px-4 py-3 font-numeric text-brand-700">{fmtNum(row.total)}</td>
@@ -134,6 +140,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
                     {row.emoji && <span className="ml-1.5">{row.emoji}</span>}{row.title}
                   </td>
                   <td className="px-4 py-3 font-black font-numeric text-slate-800">{fmtNum(row.free)}</td>
+                  <td className="px-4 py-3 font-black font-numeric text-slate-700">{fmtNum(row.plus)}</td>
                   <td className="px-4 py-3 font-black font-numeric text-warning-700">{fmtNum(row.premium)}</td>
                   <td className="px-4 py-3 font-black font-numeric text-[#B45309]">{fmtNum(row.proMax)}</td>
                   <td className="px-4 py-3 font-black font-numeric text-brand-700">{fmtNum(row.total)}</td>
@@ -166,10 +173,14 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
               <h4 className="text-xs sm:text-sm font-black text-slate-800 mb-2">
                 {row.emoji && <span className="ml-1.5">{row.emoji}</span>}{row.title}
               </h4>
-              <div className="grid grid-cols-4 gap-2 text-center text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
                 <div className="rounded-lg bg-white px-1.5 py-2 border border-slate-100">
                   <p className="text-[9px] font-bold text-slate-400">مجاني</p>
                   <p className="mt-1 font-black font-numeric text-slate-800">{fmtNum(row.free)}</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 px-1.5 py-2 border border-slate-200">
+                  <p className="text-[9px] font-bold text-slate-600">Plus</p>
+                  <p className="mt-1 font-black font-numeric text-slate-700">{fmtNum(row.plus)}</p>
                 </div>
                 <div className="rounded-lg bg-warning-50/60 px-1.5 py-2 border border-warning-100/60">
                   <p className="text-[9px] font-bold text-warning-600">برو</p>
@@ -190,7 +201,7 @@ export const OverviewUsageAnalysis: React.FC<OverviewUsageAnalysisProps> = ({ st
       </div>
 
       <div className="border-t border-slate-100 bg-slate-50/40 px-4 py-2.5 text-center text-[10px] sm:text-[11px] font-bold text-slate-400">
-        كل الأرقام إجمالي طوال العمر من بداية الإطلاق — مفصول حسب نوع الباقة (مجاني/برو/برو ماكس).
+        كل الأرقام إجمالي طوال العمر من بداية الإطلاق — مفصول حسب نوع الباقة (مجاني/Plus/برو/برو ماكس).
       </div>
     </div>
   );

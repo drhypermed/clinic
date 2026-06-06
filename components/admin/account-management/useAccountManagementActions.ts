@@ -86,6 +86,7 @@ export const useAccountManagementActions = ({
       doctorEmail: normalizeEmail(target.doctorEmail),
       doctorWhatsApp: target.doctorWhatsApp || '',
       accountType: target.accountType === 'premium' ? 'premium'
+        : target.accountType === 'plus' ? 'plus'
         : target.accountType === 'pro_max' ? 'pro_max'
         : 'free',
       premiumStartDate: target.premiumStartDate || '',
@@ -163,6 +164,7 @@ export const useAccountManagementActions = ({
       // 3 فئات: مجاني / برو (premium داخلياً) / برو ماكس (pro_max)
       const currentPlan: UsagePlan =
         doctor?.accountType === 'premium' ? 'premium'
+        : doctor?.accountType === 'plus' ? 'plus'
         : doctor?.accountType === 'pro_max' ? 'pro_max'
         : 'free';
       const updateData: any = { accountType: newType };
@@ -188,7 +190,7 @@ export const useAccountManagementActions = ({
         const freeExpiry = new Date(now.getTime() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
         updateData.freeAccountExpiryDate = freeExpiry.toISOString();
         updateData.freeAccountStartDate = now.toISOString();
-      } else if (newType === 'premium' || newType === 'pro_max') {
+      } else if (newType === 'premium' || newType === 'plus' || newType === 'pro_max') {
         // برو وبرو ماكس بيشاركوا نفس حقول الـ expiry (premiumStartDate/premiumExpiryDate)
         // — الفرق بس في accountType. الأدمن بيضبط مميزات برو ماكس من AccountTypeControls.
         const days = durationDays || 30;
@@ -199,7 +201,7 @@ export const useAccountManagementActions = ({
         const currentHistory = doctor?.subscriptionHistory || [];
         // نحسب السعر لحظة العملية ونحفظه مع entry السجل — بحيث الإيراد التاريخي
         // يفضل ثابت حتى لو الأسعار اتغيرت بعدين.
-        const tier: SubscriptionTier = newType === 'pro_max' ? 'pro_max' : 'premium';
+        const tier: SubscriptionTier = newType === 'pro_max' ? 'pro_max' : newType === 'plus' ? 'plus' : 'premium';
         const pricing = await computePeriodPricing({
           startDate: now,
           endDate: expiryDate,
@@ -228,6 +230,7 @@ export const useAccountManagementActions = ({
           if (d.id !== doctorId) return d;
           const stateCurrentPlan: UsagePlan =
             d.accountType === 'premium' ? 'premium'
+              : d.accountType === 'plus' ? 'plus'
               : d.accountType === 'pro_max' ? 'pro_max'
               : 'free';
           const switchUsageResult =
@@ -246,7 +249,7 @@ export const useAccountManagementActions = ({
             usageStatsByPlan: switchUsageResult?.usageStatsByPlan || d.usageStatsByPlan,
             usageStats: switchUsageResult?.resetUsageStats || d.usageStats,
             ...(newType === 'free' && { premiumExpiryDate: null, premiumStartDate: null }),
-            ...(newType === 'premium' && {
+            ...((newType === 'premium' || newType === 'plus' || newType === 'pro_max') && {
               premiumStartDate: updateData.premiumStartDate,
               premiumExpiryDate: updateData.premiumExpiryDate,
               subscriptionHistory: updateData.subscriptionHistory,
@@ -320,7 +323,7 @@ export const useAccountManagementActions = ({
       // الـ entry الجديد للتمديد بيمثل **فترة التمديد فقط** (من anchor لـ expiryDate)،
       // مش الفترة الكلية من بداية الاشتراك. ده ضروري عشان الإيراد يتحسب على
       // مدة التمديد الحقيقية بسعر اللحظة الحالية.
-      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : 'premium';
+      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : doctor.accountType === 'plus' ? 'plus' : 'premium';
       const extensionPricing = await computePeriodPricing({
         startDate: anchor,
         endDate: expiryDate,
@@ -342,7 +345,7 @@ export const useAccountManagementActions = ({
       const updatedHistory = [...currentHistory, newPeriod];
 
       await writeDoctorProfile(doctorId, {
-        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : 'premium',
+        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : doctor.accountType === 'plus' ? 'plus' : 'premium',
         premiumStartDate: startDate.toISOString(),
         premiumExpiryDate: expiryDate.toISOString(),
         subscriptionHistory: updatedHistory,
@@ -354,7 +357,7 @@ export const useAccountManagementActions = ({
           d.id === doctorId
             ? {
                 ...d,
-                accountType: d.accountType === 'pro_max' ? 'pro_max' : 'premium',
+                accountType: d.accountType === 'pro_max' ? 'pro_max' : d.accountType === 'plus' ? 'plus' : 'premium',
                 premiumStartDate: startDate.toISOString(),
                 premiumExpiryDate: expiryDate.toISOString(),
                 subscriptionHistory: updatedHistory,
@@ -393,7 +396,7 @@ export const useAccountManagementActions = ({
       await ensureDoctorDocumentExists(doctorId);
       const currentHistory = doctor.subscriptionHistory || [];
       // التعديل اليدوي بيكتب فترة كلية جديدة. نحسب السعر بناءً على الفترة الجديدة.
-      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : 'premium';
+      const tier: SubscriptionTier = doctor.accountType === 'pro_max' ? 'pro_max' : doctor.accountType === 'plus' ? 'plus' : 'premium';
       const manualPricing = await computePeriodPricing({
         startDate,
         endDate,
@@ -415,7 +418,7 @@ export const useAccountManagementActions = ({
       const updatedHistory = [...currentHistory, newPeriod];
 
       await writeDoctorProfile(doctorId, {
-        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : 'premium',
+        accountType: doctor.accountType === 'pro_max' ? 'pro_max' : doctor.accountType === 'plus' ? 'plus' : 'premium',
         premiumStartDate: startDate.toISOString(),
         premiumExpiryDate: endDate.toISOString(),
         subscriptionHistory: updatedHistory,
@@ -427,7 +430,7 @@ export const useAccountManagementActions = ({
           d.id === doctorId
             ? {
                 ...d,
-                accountType: d.accountType === 'pro_max' ? 'pro_max' : 'premium',
+                accountType: d.accountType === 'pro_max' ? 'pro_max' : d.accountType === 'plus' ? 'plus' : 'premium',
                 premiumStartDate: startDate.toISOString(),
                 premiumExpiryDate: endDate.toISOString(),
                 subscriptionHistory: updatedHistory,

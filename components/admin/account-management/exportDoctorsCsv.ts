@@ -23,6 +23,7 @@ const escapeCsvCell = (value: unknown): string => {
 /** ترجمة accountType للعربي للعرض في الملف */
 const translateAccountType = (type?: string): string => {
   if (type === 'premium') return 'برو';
+  if (type === 'plus') return 'Plus';
   if (type === 'pro_max') return 'برو ماكس';
   return 'مجاني';
 };

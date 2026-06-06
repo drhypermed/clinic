@@ -2,10 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { waitForPendingWrites } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
-export type SyncState = 'online' | 'offline' | 'unstable' | 'syncing';
+export type SyncState = 'online' | 'offline' | 'unstable' | 'syncing' | 'sync-delayed';
 
 const SYNCING_SHOW_DELAY_MS = 700;
 const SYNCING_MIN_VISIBLE_MS = 1400;
+const SYNCING_MAX_VISIBLE_MS = 25000;
+const SYNCING_DELAYED_NOTICE_MS = 5000;
+
+type SyncPhase = 'idle' | 'syncing' | 'delayed';
 
 /**
  * حالة اتصال التطبيق بخادم Firestore:
@@ -54,7 +58,7 @@ export const useOnlineStatus = (): SyncState => {
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
   const [isUnstable, setIsUnstable] = useState<boolean>(() => computeIsUnstable(getConnection()));
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [syncPhase, setSyncPhase] = useState<SyncPhase>('idle');
   const syncTokenRef = useRef(0);
 
   // مراقبة navigator.onLine (online/offline events)
@@ -63,7 +67,7 @@ export const useOnlineStatus = (): SyncState => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => {
       setIsOnline(false);
-      setIsSyncing(false);
+      setSyncPhase('idle');
     };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -94,9 +98,10 @@ export const useOnlineStatus = (): SyncState => {
       if (cancelled || token !== syncTokenRef.current) return;
       didShowSyncing = true;
       syncingShownAt = Date.now();
-      setIsSyncing(true);
+      setSyncPhase('syncing');
     }, SYNCING_SHOW_DELAY_MS);
     let hideTimer: number | null = null;
+    let maxVisibleTimer: number | null = null;
 
     const clearShowTimer = () => {
       if (showTimer == null) return;
@@ -106,9 +111,13 @@ export const useOnlineStatus = (): SyncState => {
 
     const hideSyncing = () => {
       if (cancelled || token !== syncTokenRef.current) return;
+      if (maxVisibleTimer != null) {
+        window.clearTimeout(maxVisibleTimer);
+        maxVisibleTimer = null;
+      }
 
       if (!didShowSyncing) {
-        setIsSyncing(false);
+        setSyncPhase('idle');
         return;
       }
 
@@ -116,15 +125,26 @@ export const useOnlineStatus = (): SyncState => {
       const remainingVisibleMs = Math.max(0, SYNCING_MIN_VISIBLE_MS - visibleForMs);
 
       if (remainingVisibleMs <= 0) {
-        setIsSyncing(false);
+        setSyncPhase('idle');
         return;
       }
 
       hideTimer = window.setTimeout(() => {
         if (cancelled || token !== syncTokenRef.current) return;
-        setIsSyncing(false);
+        setSyncPhase('idle');
       }, remainingVisibleMs);
     };
+
+    maxVisibleTimer = window.setTimeout(() => {
+      if (cancelled || token !== syncTokenRef.current) return;
+      clearShowTimer();
+      didShowSyncing = true;
+      setSyncPhase('delayed');
+      hideTimer = window.setTimeout(() => {
+        if (cancelled || token !== syncTokenRef.current) return;
+        setSyncPhase('idle');
+      }, SYNCING_DELAYED_NOTICE_MS);
+    }, SYNCING_SHOW_DELAY_MS + SYNCING_MAX_VISIBLE_MS);
 
     waitForPendingWrites(db)
       .catch(() => { /* ignore */ })
@@ -137,13 +157,15 @@ export const useOnlineStatus = (): SyncState => {
       cancelled = true;
       clearShowTimer();
       if (hideTimer != null) window.clearTimeout(hideTimer);
+      if (maxVisibleTimer != null) window.clearTimeout(maxVisibleTimer);
     };
   }, [isOnline]);
 
   // الأولوية: offline > syncing > unstable > online
   // (offline أكبر مشكلة، syncing مهم للأدمن يعرف إن في كتابات معلقة، unstable تحذير عام)
   if (!isOnline) return 'offline';
-  if (isSyncing) return 'syncing';
+  if (syncPhase === 'syncing') return 'syncing';
+  if (syncPhase === 'delayed') return 'sync-delayed';
   if (isUnstable) return 'unstable';
   return 'online';
 };

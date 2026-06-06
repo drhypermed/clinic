@@ -20,7 +20,7 @@ export const FooterLogoSection: React.FC<FooterLogoSectionProps> = ({
   showNotification,
   setFooterLogoToCrop,
 }) => {
-  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
   const imageGate = useImageUploadGate();
   /** 
    * معالجة رفع ملف الشعار 

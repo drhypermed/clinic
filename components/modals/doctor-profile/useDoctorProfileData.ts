@@ -15,7 +15,7 @@ import { getDocCacheFirst } from '../../../services/firestore/cacheFirst';
 import { getUserProfileDocRef } from '../../../services/firestore/profileRoles';
 import { ROOT_ADMIN_UID } from '../../../app/drug-catalog/admin';
 
-type DoctorAccountType = 'free' | 'premium' | 'pro_max';
+type DoctorAccountType = 'free' | 'premium' | 'plus' | 'pro_max';
 
 // نفس PERMANENT_EXPIRY المستخدمة في useDoctorsPagination — الأدمن تيره "مدى الحياة"
 const ADMIN_PERMANENT_EXPIRY = '9999-12-31T23:59:59.000Z';
@@ -110,6 +110,7 @@ export function useDoctorProfileData({
       // الـ tier الأصلي من Firestore — نستخدمه لو المستخدم عادي
       const firestoreAccountType: DoctorAccountType =
         data.accountType === 'premium' ? 'premium'
+          : data.accountType === 'plus' ? 'plus'
           : data.accountType === 'pro_max' ? 'pro_max'
           : 'free';
       const firestoreProStartDate =

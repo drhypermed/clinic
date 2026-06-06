@@ -85,15 +85,16 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
 }) => {
   // state محلي: أي duration picker مفتوح لهذا الكارد
   //   new = اشتراك برو جديد | new-max = اشتراك برو ماكس جديد | extend = تمديد الاشتراك الحالي
-  const [durationPicker, setDurationPicker] = useState<'new' | 'new-max' | 'extend' | null>(null);
+  const [durationPicker, setDurationPicker] = useState<'new' | 'new-plus' | 'new-max' | 'extend' | null>(null);
   const { nowMs } = useTrustedNow();
 
   const statusCfg = getStatusConfig(doctor.verificationStatus);
   // Pro = premium (القيمة الداخلية ما تغيرتش — الـ label بقى "برو" في الـ UI)
   const isPro = doctor.accountType === 'premium';
+  const isPlus = doctor.accountType === 'plus';
   const isProMax = doctor.accountType === 'pro_max';
   // حساب مدفوع = برو أو برو ماكس (الاتنين لهم expiry وتحذيرات)
-  const isPaid = isPro || isProMax;
+  const isPaid = isPro || isPlus || isProMax;
 
   // ── حسابات اشتراك برو (تاريخ البداية، النهاية، المتبقي) ──
   const premiumStartMs = parseIsoTimeMs(doctor.premiumStartDate);
@@ -112,7 +113,7 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
   const isEditingThis = editingDurationId === doctor.id;
   // حساب الأدمن بيكون له premium ينتهي في 9999 (فعلياً مدى الحياة)
   const isAdminAccount = isAdmin && doctor.premiumExpiryDate?.startsWith('9999');
-  const isExpiringSoon = isPro && !isAdminAccount && !isExpired && premiumExpiryMs !== null
+  const isExpiringSoon = isPaid && !isAdminAccount && !isExpired && premiumExpiryMs !== null
     && (premiumExpiryMs - nowMs) < SEVEN_DAYS_MS;
 
   // ── دالة تنظيف: تفرغ كل state التعديل عند الإلغاء ──
@@ -170,6 +171,17 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
                 {/* الأدمن دايماً نشط — لغير الأدمن نعرض الصح بس لو مش منتهي */}
                 {(isAdmin || !isExpired) && (
                   <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white" aria-label="مفعّل">
+                    <svg className="w-2 h-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  </span>
+                )}
+              </span>
+            ) : isPlus ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-gradient-to-r from-slate-50 via-slate-100 to-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-700">
+                <FaCrown className="w-2 h-2 text-slate-500" /> Plus
+                {!isExpired && (
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white" aria-label="Ù…ÙØ¹Ù‘Ù„">
                     <svg className="w-2 h-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12l5 5L20 7" />
                     </svg>
@@ -269,7 +281,7 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
           ) : (
             <div className="rounded-xl border border-slate-100 bg-white p-3 space-y-2">
               <label className="block text-[11px] font-black text-slate-500">نوع الحساب</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <button
                   type="button"
                   onClick={() => { onUpdateAccountType(doctor.id, 'free'); setDurationPicker(null); }}
@@ -280,6 +292,16 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
                       : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >مجاني</button>
+                <button
+                  type="button"
+                  onClick={() => { if (!isPlus) setDurationPicker('new-plus'); }}
+                  disabled={isPlus}
+                  className={`flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-black transition ${
+                    isPlus
+                      ? 'border-2 border-slate-400 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 text-slate-800 shadow-sm'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
+                ><FaCrown className="w-3 h-3 text-slate-500" /> Plus</button>
                 <button
                   type="button"
                   onClick={() => { if (!isPro) setDurationPicker('new'); }}
@@ -303,16 +325,18 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
               </div>
 
               {/* اختيار مدة للاشتراك الجديد (بعد ما يختار "برو" أو "برو ماكس") — الاتنين ذهبي */}
-              {(durationPicker === 'new' || durationPicker === 'new-max') && (
+              {(durationPicker === 'new' || durationPicker === 'new-plus' || durationPicker === 'new-max') && (
                 <div className={`rounded-xl border p-3 space-y-2 ${
                   durationPicker === 'new-max'
                     ? 'border-[#FFB300] bg-gradient-to-r from-[#FFF8E1] via-[#FFF3C4] to-[#FFF8E1]'
+                    : durationPicker === 'new-plus'
+                    ? 'border-slate-200 bg-slate-50'
                     : 'border-warning-200 bg-warning-50/60'
                 }`}>
                   <p className={`text-[11px] font-black ${
-                    durationPicker === 'new-max' ? 'text-[#B45309]' : 'text-warning-700'
+                    durationPicker === 'new-max' ? 'text-[#B45309]' : durationPicker === 'new-plus' ? 'text-slate-700' : 'text-warning-700'
                   }`}>
-                    اختر مدة الاشتراك {durationPicker === 'new-max' ? 'برو ماكس' : 'برو'}
+                    اختر مدة الاشتراك {durationPicker === 'new-max' ? 'برو ماكس' : durationPicker === 'new-plus' ? 'Plus' : 'برو'}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATION_PRESETS.map((opt) => (
@@ -320,13 +344,15 @@ export const DoctorAccountCard: React.FC<DoctorAccountCardProps> = ({
                         key={opt.days}
                         type="button"
                         onClick={() => {
-                          const targetType = durationPicker === 'new-max' ? 'pro_max' : 'premium';
+                          const targetType = durationPicker === 'new-max' ? 'pro_max' : durationPicker === 'new-plus' ? 'plus' : 'premium';
                           onUpdateAccountType(doctor.id, targetType, opt.days);
                           setDurationPicker(null);
                         }}
                         disabled={actionInProgress}
                         className={`rounded-xl border bg-white px-3 py-2.5 text-xs font-bold transition disabled:opacity-50 ${
                           durationPicker === 'new-max'
+                            ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                            : durationPicker === 'new-plus'
                             ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
                             : 'border-warning-300 text-warning-700 hover:bg-warning-100'
                         }`}

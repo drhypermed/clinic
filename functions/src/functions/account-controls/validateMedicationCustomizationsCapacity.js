@@ -37,7 +37,7 @@ module.exports = (context) => {
     const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
     // 🆕 (2026-05): paid tiers بدون فحص حد كلي للأدوية المعدّلة
-    if (accountType === 'premium' || accountType === 'pro_max') {
+    if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
       return {
         accountType,
         limit: 0,
@@ -53,6 +53,7 @@ module.exports = (context) => {
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeMedicationCustomizationsMaxCount',
       premiumKey: 'premiumMedicationCustomizationsMaxCount',
+      plusKey: 'plusMedicationCustomizationsMaxCount',
       proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
     });
 
@@ -79,11 +80,13 @@ module.exports = (context) => {
     const limitReachedMessage = pickTierValue(accountType, config, {
       freeKey: 'freeMedicationCustomizationsCapacityMessage',
       premiumKey: 'premiumMedicationCustomizationsCapacityMessage',
+      plusKey: 'plusMedicationCustomizationsCapacityMessage',
       proMaxKey: 'proMaxMedicationCustomizationsCapacityMessage',
     });
     const whatsappMessage = pickTierValue(accountType, config, {
       freeKey: 'freeMedicationCustomizationsCapacityWhatsappMessage',
       premiumKey: 'premiumMedicationCustomizationsCapacityWhatsappMessage',
+      plusKey: 'plusMedicationCustomizationsCapacityWhatsappMessage',
       proMaxKey: 'proMaxMedicationCustomizationsCapacityWhatsappMessage',
     });
     const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);

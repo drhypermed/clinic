@@ -181,9 +181,13 @@ export const PublicBookingPage: React.FC = () => {
     setPublicSlotTimeStr,
     branches,
     currentBranchId,
-    branchAddresses,
-    branchAddressesSaving,
-    saveBranchAddress,
+    publicFormTitle,
+    setPublicFormTitle,
+    publicFormContactInfo,
+    setPublicFormContactInfo,
+    publicFormSaving,
+    publicSettingsSaved,
+    savePublicFormSettings,
     addPublicSlot,
     publicSecret,
     publicSlotAdding,
@@ -191,6 +195,15 @@ export const PublicBookingPage: React.FC = () => {
     publicSlotsLoading,
     publicSlots,
     removePublicSlot,
+    editingPublicSlotId,
+    editingPublicSlotDateStr,
+    setEditingPublicSlotDateStr,
+    editingPublicSlotTimeStr,
+    setEditingPublicSlotTimeStr,
+    publicSlotUpdating,
+    startEditPublicSlot,
+    cancelEditPublicSlot,
+    saveEditedPublicSlot,
     formatSlotLabel,
     paymentType,
     setPaymentType,
@@ -219,6 +232,10 @@ export const PublicBookingPage: React.FC = () => {
     currentBranchName,
     hasMultipleBranches,
   } = usePublicBookingPageLogic();
+
+  useEffect(() => {
+    setPublicSectionOpen(currentView === 'publicForm');
+  }, [currentView, setPublicSectionOpen]);
 
   // عرض شاشة التحميل في حال كانت البيانات لا تزال قادمة من السيرفر
   if (configLoading || resolvingSecret || (secret ? authChecking : false)) {
@@ -498,9 +515,13 @@ export const PublicBookingPage: React.FC = () => {
                 onPublicSlotTimeChange={setPublicSlotTimeStr}
                 branches={branches}
                 currentBranchId={currentBranchId}
-                branchAddresses={branchAddresses}
-                branchAddressesSaving={branchAddressesSaving}
-                onSaveBranchAddress={saveBranchAddress}
+                publicFormTitle={publicFormTitle}
+                onPublicFormTitleChange={setPublicFormTitle}
+                publicFormContactInfo={publicFormContactInfo}
+                onPublicFormContactInfoChange={setPublicFormContactInfo}
+                publicFormSaving={publicFormSaving}
+                publicSettingsSaved={publicSettingsSaved}
+                onSavePublicFormSettings={savePublicFormSettings}
                 onAddPublicSlot={addPublicSlot}
                 publicSecret={publicSecret}
                 publicSlotAdding={publicSlotAdding}
@@ -508,6 +529,15 @@ export const PublicBookingPage: React.FC = () => {
                 publicSlotsLoading={publicSlotsLoading}
                 publicSlots={publicSlots}
                 onRemovePublicSlot={removePublicSlot}
+                editingPublicSlotId={editingPublicSlotId}
+                editingPublicSlotDateStr={editingPublicSlotDateStr}
+                onEditingPublicSlotDateChange={setEditingPublicSlotDateStr}
+                editingPublicSlotTimeStr={editingPublicSlotTimeStr}
+                onEditingPublicSlotTimeChange={setEditingPublicSlotTimeStr}
+                publicSlotUpdating={publicSlotUpdating}
+                onStartEditPublicSlot={startEditPublicSlot}
+                onCancelEditPublicSlot={cancelEditPublicSlot}
+                onSaveEditedPublicSlot={saveEditedPublicSlot}
                 formatSlotLabel={formatSlotLabel}
               />
             </div>

@@ -10,7 +10,7 @@
 
 import React from 'react';
 
-type SubscriptionTier = 'free' | 'pro' | 'pro_max';
+type SubscriptionTier = 'free' | 'pro' | 'plus' | 'pro_max';
 
 interface SubscriptionStatusCardProps {
     isProAccount: boolean;
@@ -37,26 +37,30 @@ export const SubscriptionStatusCard: React.FC<SubscriptionStatusCardProps> = ({
     // نحدد الفئة — لو tier مش معطى، نستخدم isProAccount كـ fallback (backward compat)
     const effectiveTier: SubscriptionTier =
         tier === 'pro_max' ? 'pro_max'
+        : tier === 'plus' ? 'plus'
         : tier === 'pro' ? 'pro'
         : isProAccount ? 'pro'
         : 'free';
 
     const isProMax = effectiveTier === 'pro_max';
+    const isPlus = effectiveTier === 'plus';
     const isPro = effectiveTier === 'pro';
-    const isPaid = isPro || isProMax;
+    const isPaid = isPro || isPlus || isProMax;
 
     // لون بطاقة الخلفية
     // برو/برو ماكس = ذهبي (استثناء دلالي للـpremium tier — هوية ثابتة)
     // مجاني = أزرق متدرج فقط (blue-only) بدل brand اللي مش معرف
     const cardBg = isProMax
         ? 'bg-gradient-to-r from-[#FFF176] via-[#FFD54F] to-[#FFB300] border-[#FF8F00] shadow-[0_4px_16px_-2px_rgba(255,193,7,0.5)]'
+        : isPlus
+            ? 'bg-gradient-to-r from-slate-50 via-slate-100 to-slate-200 border-slate-300'
         : isPro
             ? 'bg-gradient-to-r from-[#FFF9C4] via-[#FFF59D] to-[#FFE082] border-[#FFD54F]'
             : 'bg-gradient-to-l from-blue-50 via-blue-50 to-blue-100 border-blue-300';
 
-    const titleColor = isProMax ? 'text-[#E65100]' : isPro ? 'text-[#FF6F00]' : 'text-blue-800';
-    const crownColor = isProMax ? 'text-[#E65100]' : isPro ? 'text-[#FF8F00]' : 'text-blue-700';
-    const tierLabel = isProMax ? 'برو ماكس' : isPro ? 'برو' : 'حساب مجاني';
+    const titleColor = isProMax ? 'text-[#E65100]' : isPlus ? 'text-slate-700' : isPro ? 'text-[#FF6F00]' : 'text-blue-800';
+    const crownColor = isProMax ? 'text-[#E65100]' : isPlus ? 'text-slate-500' : isPro ? 'text-[#FF8F00]' : 'text-blue-700';
+    const tierLabel = isProMax ? 'برو ماكس' : isPlus ? 'Plus' : isPro ? 'برو' : 'حساب مجاني';
 
     return (
         <div className={`relative w-full max-w-md mt-2 mb-4 rounded-2xl border-2 px-4 py-3 overflow-hidden ${cardBg}`}>
@@ -101,7 +105,7 @@ export const SubscriptionStatusCard: React.FC<SubscriptionStatusCardProps> = ({
                     )}
                 </div>
                 {/* بادج نوع الحساب — خلفية بيضاء صلبة بدل /70 الشفافة */}
-                <span className={`text-[11px] font-extrabold px-2 py-1 rounded-full bg-white shadow-sm ${isPaid ? 'text-amber-900' : 'text-blue-800'}`}>
+                <span className={`text-[11px] font-extrabold px-2 py-1 rounded-full bg-white shadow-sm ${isProMax || isPro ? 'text-amber-900' : isPlus ? 'text-slate-700' : 'text-blue-800'}`}>
                     نوع الحساب
                 </span>
             </div>

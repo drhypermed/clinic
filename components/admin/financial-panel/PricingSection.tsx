@@ -6,14 +6,16 @@
  */
 
 import React from 'react';
-import { MonthlyPrices, ProMaxSubscriptionPrices, SubscriptionPrices } from './types';
+import { MonthlyPrices, PlusSubscriptionPrices, ProMaxSubscriptionPrices, SubscriptionPrices } from './types';
 import { buildCairoDateTime, formatUserDate } from '../../../utils/cairoTime';
 
 interface PricingSectionProps {
   selectedPriceMonth: string;
   prices: SubscriptionPrices;
+  plusPrices: PlusSubscriptionPrices;
   proMaxPrices: ProMaxSubscriptionPrices;
   tempPrices: SubscriptionPrices;
+  tempPlusPrices: PlusSubscriptionPrices;
   tempProMaxPrices: ProMaxSubscriptionPrices;
   editingPrices: boolean;
   savingPrices: boolean;
@@ -25,6 +27,7 @@ interface PricingSectionProps {
   onSavePrices: () => void;
   onChangeSelectedPriceMonth: (value: string) => void;
   onChangeTempPrices: (value: SubscriptionPrices) => void;
+  onChangeTempPlusPrices: (value: PlusSubscriptionPrices) => void;
   onChangeTempProMaxPrices: (value: ProMaxSubscriptionPrices) => void;
 }
 
@@ -32,10 +35,12 @@ interface PricingSectionProps {
 const PriceInput: React.FC<{
   value: number;
   onChange: (next: number) => void;
-  tone?: 'amber' | 'gold';
+  tone?: 'amber' | 'silver' | 'gold';
 }> = ({ value, onChange, tone = 'amber' }) => {
   const focusClass = tone === 'gold'
     ? 'focus:border-[#FFB300] focus:ring-[#FFE082]'
+    : tone === 'silver'
+      ? 'focus:border-slate-400 focus:ring-slate-200'
     : 'focus:border-warning-400 focus:ring-warning-100';
   return (
     <input
@@ -50,8 +55,10 @@ const PriceInput: React.FC<{
 export const PricingSection: React.FC<PricingSectionProps> = ({
   selectedPriceMonth,
   prices,
+  plusPrices,
   proMaxPrices,
   tempPrices,
+  tempPlusPrices,
   tempProMaxPrices,
   editingPrices,
   savingPrices,
@@ -63,6 +70,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   onSavePrices,
   onChangeSelectedPriceMonth,
   onChangeTempPrices,
+  onChangeTempPlusPrices,
   onChangeTempProMaxPrices,
 }) => {
   return (
@@ -118,6 +126,41 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
             month: 'long',
           }, 'ar-EG')}
         </span>
+      </div>
+
+      <div className="mb-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 border border-slate-400 text-slate-800 text-xs font-black">
+            <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z" /></svg>
+            Plus
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+            <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك شهري</label>
+            {editingPrices ? (
+              <PriceInput tone="silver" value={tempPlusPrices.monthly} onChange={(v) => onChangeTempPlusPrices({ ...tempPlusPrices, monthly: v })} />
+            ) : (
+              <p className="text-2xl font-black text-slate-700">{plusPrices.monthly} ج.م</p>
+            )}
+          </div>
+          <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+            <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك 6 شهور</label>
+            {editingPrices ? (
+              <PriceInput tone="silver" value={tempPlusPrices.sixMonths} onChange={(v) => onChangeTempPlusPrices({ ...tempPlusPrices, sixMonths: v })} />
+            ) : (
+              <p className="text-2xl font-black text-slate-700">{plusPrices.sixMonths} ج.م</p>
+            )}
+          </div>
+          <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+            <label className="text-slate-600 text-sm font-bold mb-2 block">اشتراك سنوي</label>
+            {editingPrices ? (
+              <PriceInput tone="silver" value={tempPlusPrices.yearly} onChange={(v) => onChangeTempPlusPrices({ ...tempPlusPrices, yearly: v })} />
+            ) : (
+              <p className="text-2xl font-black text-slate-700">{plusPrices.yearly} ج.م</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ═══ أسعار باقة برو ═══ */}
@@ -200,6 +243,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               <thead className="bg-slate-50">
                 <tr>
                   <th rowSpan={2} className="px-3 py-2 text-right text-slate-700 font-bold align-middle">الشهر</th>
+                  <th colSpan={3} className="px-3 py-1.5 text-center text-slate-700 font-black border-b border-slate-100 bg-slate-100">Plus</th>
                   <th colSpan={3} className="px-3 py-1.5 text-center text-warning-700 font-black border-b border-slate-100 bg-warning-50/40">باقة برو</th>
                   <th colSpan={3} className="px-3 py-1.5 text-center text-[#B45309] font-black bg-gradient-to-r from-[#FFFDE7] to-[#FFF8E1]">باقة برو ماكس</th>
                 </tr>
@@ -210,10 +254,13 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   <th className="px-3 py-1.5 text-right text-slate-600 font-bold">شهري</th>
                   <th className="px-3 py-1.5 text-right text-slate-600 font-bold">6 شهور</th>
                   <th className="px-3 py-1.5 text-right text-slate-600 font-bold">سنوي</th>
+                  <th className="px-3 py-1.5 text-right text-slate-600 font-bold">شهري</th>
+                  <th className="px-3 py-1.5 text-right text-slate-600 font-bold">6 شهور</th>
+                  <th className="px-3 py-1.5 text-right text-slate-600 font-bold">سنوي</th>
                 </tr>
               </thead>
               <tbody>
-                {allMonthlyPrices.map(({ month, prices: p, proMaxPrices: pm }) => (
+                {allMonthlyPrices.map(({ month, prices: p, plusPrices: pp, proMaxPrices: pm }) => (
                   <tr key={month} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="px-3 py-2 text-slate-800 font-bold">
                       {formatUserDate(buildCairoDateTime(`${month}-01`, '12:00'), {
@@ -221,6 +268,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                         month: 'long',
                       }, 'ar-EG')}
                     </td>
+                    <td className="px-3 py-2 text-slate-700">{pp?.monthly ?? 500}</td>
+                    <td className="px-3 py-2 text-slate-700">{pp?.sixMonths ?? 2700}</td>
+                    <td className="px-3 py-2 text-slate-700">{pp?.yearly ?? 5000}</td>
                     <td className="px-3 py-2 text-warning-700">{p.monthly}</td>
                     <td className="px-3 py-2 text-warning-700">{p.sixMonths}</td>
                     <td className="px-3 py-2 text-warning-700">{p.yearly}</td>

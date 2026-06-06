@@ -10,10 +10,9 @@
  * 🗑️ (2026-05) شيلنا جروب الترجمة — كانت بتقفل الزرّين، الترجمة دلوقتي جزء من الزر
  */
 
-import type { LimitKey, MessageKey, WhatsappMessageKey } from './types';
+import type { GroupConfig, LimitKey, MessageKey, WhatsappMessageKey } from './types';
 import type { AccountTypeControls } from '../../../services/accountTypeControlsService';
 import { DEFAULT_CONTROLS } from '../../../services/account-type-controls/defaults';
-import { GroupConfig } from '../../../types';
 
 // ─ DEFAULT_FORM = نفس DEFAULT_CONTROLS من services (المصدر الوحيد للحقيقة).
 // ─ كان فيه تكرار قديم (~100 سطر) كان بيخلق bug: لو الأدمن غيّر رسالة في مكان،
@@ -23,41 +22,71 @@ export const DEFAULT_FORM: AccountTypeControls = DEFAULT_CONTROLS;
 export const LIMIT_KEYS: LimitKey[] = [
   'freeDailyLimit',
   'premiumDailyLimit',
+
+  'plusDailyLimit',
   // 🆕 الزر السريع "إضافة بدون تحليل" (2026-05) — عداد منفصل عن التحليل العميق
   'freeQuickAddDailyLimit',
   'premiumQuickAddDailyLimit',
+
+  'plusQuickAddDailyLimit',
   'proMaxQuickAddDailyLimit',
   // ─ السجلات بقت سعة كلية مش يومية ─
   'freeRecordsMaxCount',
   'premiumRecordsMaxCount',
+
+  'plusRecordsMaxCount',
   'freePublicBookingDailyLimit',
   'premiumPublicBookingDailyLimit',
+
+  'plusPublicBookingDailyLimit',
   'freeSecretaryEntryRequestDailyLimit',
   'premiumSecretaryEntryRequestDailyLimit',
+
+  'plusSecretaryEntryRequestDailyLimit',
   'freeReadyPrescriptionDailyLimit',
   'premiumReadyPrescriptionDailyLimit',
+
+  'plusReadyPrescriptionDailyLimit',
   'freeMedicalReportDailyLimit',
   'premiumMedicalReportDailyLimit',
+
+  'plusMedicalReportDailyLimit',
   // ✂️ شيلنا حد الترجمة (2026-05) — الترجمة بقت جزء طبيعي من شغل الزرّين، مفيش حد منفصل
   // ─── الأزرار الذهبية + الكلى تحت "حدود الميزات" 🆕 ───
   'freeInteractionToolDailyLimit',
   'premiumInteractionToolDailyLimit',
+
+  'plusInteractionToolDailyLimit',
   'freePregnancyToolDailyLimit',
   'premiumPregnancyToolDailyLimit',
+
+  'plusPregnancyToolDailyLimit',
   'freeRenalToolDailyLimit',
   'premiumRenalToolDailyLimit',
+
+  'plusRenalToolDailyLimit',
   'freeGuidelinesChatDailyLimit',
   'premiumGuidelinesChatDailyLimit',
+
+  'plusGuidelinesChatDailyLimit',
   'freeReadyPrescriptionsMaxCount',
   'premiumReadyPrescriptionsMaxCount',
+
+  'plusReadyPrescriptionsMaxCount',
   'freeMedicationCustomizationsMaxCount',
   'premiumMedicationCustomizationsMaxCount',
+
+  'plusMedicationCustomizationsMaxCount',
   // ─── سعة الفروع 🆕 ───
   'freeBranchesMaxCount',
   'premiumBranchesMaxCount',
+
+  'plusBranchesMaxCount',
   // ─── 🆕 سعة شركات التأمين ───
   'freeInsuranceCompaniesMaxCount',
   'premiumInsuranceCompaniesMaxCount',
+
+  'plusInsuranceCompaniesMaxCount',
   // ─── برو ماكس ───
   'proMaxDailyLimit',
   'proMaxRecordsMaxCount',
@@ -78,62 +107,104 @@ export const LIMIT_KEYS: LimitKey[] = [
 export const DRUG_TOOLS_LIMIT_KEYS: Array<
   | 'freeInteractionToolDailyLimit'
   | 'premiumInteractionToolDailyLimit'
+
+  | 'plusInteractionToolDailyLimit'
   | 'proMaxInteractionToolDailyLimit'
   | 'freeRenalToolDailyLimit'
   | 'premiumRenalToolDailyLimit'
+
+  | 'plusRenalToolDailyLimit'
   | 'proMaxRenalToolDailyLimit'
   | 'freePregnancyToolDailyLimit'
   | 'premiumPregnancyToolDailyLimit'
+
+  | 'plusPregnancyToolDailyLimit'
   | 'proMaxPregnancyToolDailyLimit'
 > = [
     'freeInteractionToolDailyLimit',
     'premiumInteractionToolDailyLimit',
+
+    'plusInteractionToolDailyLimit',
     'proMaxInteractionToolDailyLimit',
     'freeRenalToolDailyLimit',
     'premiumRenalToolDailyLimit',
+
+    'plusRenalToolDailyLimit',
     'proMaxRenalToolDailyLimit',
     'freePregnancyToolDailyLimit',
     'premiumPregnancyToolDailyLimit',
+
+    'plusPregnancyToolDailyLimit',
     'proMaxPregnancyToolDailyLimit',
   ];
 
 export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
   'freeAnalysisLimitMessage',
   'premiumAnalysisLimitMessage',
+
+  'plusAnalysisLimitMessage',
   // 🆕 رسائل الزر السريع "إضافة بدون تحليل"
   'freeQuickAddLimitMessage',
   'premiumQuickAddLimitMessage',
+
+  'plusQuickAddLimitMessage',
   'proMaxQuickAddLimitMessage',
   'freeRecordsCapacityMessage',
   'premiumRecordsCapacityMessage',
+
+  'plusRecordsCapacityMessage',
   'freePublicBookingLimitMessage',
   'premiumPublicBookingLimitMessage',
+
+  'plusPublicBookingLimitMessage',
   'freeSecretaryEntryRequestLimitMessage',
   'premiumSecretaryEntryRequestLimitMessage',
+
+  'plusSecretaryEntryRequestLimitMessage',
   'freeReadyPrescriptionDailyLimitMessage',
   'premiumReadyPrescriptionDailyLimitMessage',
+
+  'plusReadyPrescriptionDailyLimitMessage',
   'freeMedicalReportLimitMessage',
   'premiumMedicalReportLimitMessage',
+
+  'plusMedicalReportLimitMessage',
   // ✂️ شيلنا رسائل الترجمة (2026-05) — الترجمة بقت جزء من الزرّين
   // ─── 🆕 الأزرار الذهبية (التداخلات + الحمل/الرضاعة) + الكلى ───
   'freeInteractionToolLimitMessage',
   'premiumInteractionToolLimitMessage',
+
+  'plusInteractionToolLimitMessage',
   'freePregnancyToolLimitMessage',
   'premiumPregnancyToolLimitMessage',
+
+  'plusPregnancyToolLimitMessage',
   'freeRenalToolLimitMessage',
   'premiumRenalToolLimitMessage',
+
+  'plusRenalToolLimitMessage',
   'freeGuidelinesChatLimitMessage',
   'premiumGuidelinesChatLimitMessage',
+
+  'plusGuidelinesChatLimitMessage',
   'freeReadyPrescriptionsCapacityMessage',
   'premiumReadyPrescriptionsCapacityMessage',
+
+  'plusReadyPrescriptionsCapacityMessage',
   'freeMedicationCustomizationsCapacityMessage',
   'premiumMedicationCustomizationsCapacityMessage',
+
+  'plusMedicationCustomizationsCapacityMessage',
   // ─── سعة الفروع 🆕 ───
   'freeBranchesCapacityMessage',
   'premiumBranchesCapacityMessage',
+
+  'plusBranchesCapacityMessage',
   // ─── 🆕 سعة شركات التأمين ───
   'freeInsuranceCompaniesCapacityMessage',
   'premiumInsuranceCompaniesCapacityMessage',
+
+  'plusInsuranceCompaniesCapacityMessage',
   // ─── برو ماكس ───
   'proMaxAnalysisLimitMessage',
   'proMaxRecordsCapacityMessage',
@@ -154,40 +225,70 @@ export const LIMIT_MESSAGE_KEYS: MessageKey[] = [
 export const WHATSAPP_MESSAGE_KEYS: WhatsappMessageKey[] = [
   'freeAnalysisWhatsappMessage',
   'premiumAnalysisWhatsappMessage',
+
+  'plusAnalysisWhatsappMessage',
   // 🆕 رسائل واتساب الزر السريع "إضافة بدون تحليل"
   'freeQuickAddWhatsappMessage',
   'premiumQuickAddWhatsappMessage',
+
+  'plusQuickAddWhatsappMessage',
   'proMaxQuickAddWhatsappMessage',
   'freeRecordsCapacityWhatsappMessage',
   'premiumRecordsCapacityWhatsappMessage',
+
+  'plusRecordsCapacityWhatsappMessage',
   'freePublicBookingWhatsappMessage',
   'premiumPublicBookingWhatsappMessage',
+
+  'plusPublicBookingWhatsappMessage',
   'freeSecretaryEntryRequestWhatsappMessage',
   'premiumSecretaryEntryRequestWhatsappMessage',
+
+  'plusSecretaryEntryRequestWhatsappMessage',
   'freeReadyPrescriptionWhatsappMessage',
   'premiumReadyPrescriptionWhatsappMessage',
+
+  'plusReadyPrescriptionWhatsappMessage',
   'freeMedicalReportWhatsappMessage',
   'premiumMedicalReportWhatsappMessage',
+
+  'plusMedicalReportWhatsappMessage',
   // ✂️ شيلنا رسائل واتساب الترجمة (2026-05)
   // ─── 🆕 الأزرار الذهبية + الكلى ───
   'freeInteractionToolWhatsappMessage',
   'premiumInteractionToolWhatsappMessage',
+
+  'plusInteractionToolWhatsappMessage',
   'freePregnancyToolWhatsappMessage',
   'premiumPregnancyToolWhatsappMessage',
+
+  'plusPregnancyToolWhatsappMessage',
   'freeRenalToolWhatsappMessage',
   'premiumRenalToolWhatsappMessage',
+
+  'plusRenalToolWhatsappMessage',
   'freeGuidelinesChatWhatsappMessage',
   'premiumGuidelinesChatWhatsappMessage',
+
+  'plusGuidelinesChatWhatsappMessage',
   'freeReadyPrescriptionsCapacityWhatsappMessage',
   'premiumReadyPrescriptionsCapacityWhatsappMessage',
+
+  'plusReadyPrescriptionsCapacityWhatsappMessage',
   'freeMedicationCustomizationsCapacityWhatsappMessage',
   'premiumMedicationCustomizationsCapacityWhatsappMessage',
+
+  'plusMedicationCustomizationsCapacityWhatsappMessage',
   // ─── سعة الفروع 🆕 ───
   'freeBranchesCapacityWhatsappMessage',
   'premiumBranchesCapacityWhatsappMessage',
+
+  'plusBranchesCapacityWhatsappMessage',
   // ─── 🆕 سعة شركات التأمين ───
   'freeInsuranceCompaniesCapacityWhatsappMessage',
   'premiumInsuranceCompaniesCapacityWhatsappMessage',
+
+  'plusInsuranceCompaniesCapacityWhatsappMessage',
   // ─── برو ماكس ───
   'proMaxAnalysisWhatsappMessage',
   'proMaxRecordsCapacityWhatsappMessage',
@@ -833,9 +934,24 @@ const GROUPS: GroupConfig[] = [
   },
 ];
 
+const withPlusPlan = (group: GroupConfig): GroupConfig => {
+  if (group.plus) return group;
+  return {
+    ...group,
+    plus: {
+      ...group.premium,
+      name: 'Plus',
+      limitKey: group.premium.limitKey.replace(/^premium/, 'plus') as LimitKey,
+      messageKey: group.premium.messageKey.replace(/^premium/, 'plus') as MessageKey,
+      whatsappMessageKey: group.premium.whatsappMessageKey.replace(/^premium/, 'plus') as WhatsappMessageKey,
+      whatsappPreviewLabel: `${group.premium.whatsappPreviewLabel} - Plus`,
+      whatsappPlaceholder: `${group.premium.whatsappPlaceholder || ''} - Plus`.trim(),
+    },
+  };
+};
+
 const END_GROUP_IDS = new Set(['public_booking', 'secretary_request']);
 export const ORDERED_GROUPS = [
   ...GROUPS.filter((group) => !END_GROUP_IDS.has(group.id)),
   ...GROUPS.filter((group) => END_GROUP_IDS.has(group.id)),
-];
-
+].map(withPlusPlan);

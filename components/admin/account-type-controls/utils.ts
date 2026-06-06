@@ -79,8 +79,13 @@ export const buildPayloadForSave = (form: AccountTypeControls): Partial<AccountT
 
   // معالجة الحقول الفردية الأخرى
   payload.whatsappNumber = digitsOnly(form.whatsappNumber);
+  payload.freeImageUploadsEnabled = Boolean(form.freeImageUploadsEnabled);
+  payload.freeImageUploadsUpgradeMessage = trimTo(form.freeImageUploadsUpgradeMessage);
+  payload.freeImageUploadsUpgradeWhatsappMessage = trimTo(form.freeImageUploadsUpgradeWhatsappMessage);
   // ✂️ شيلنا premiumOnly + lockedMessage — مش مكتوبين في الفورم ولا الـ UI بعد التبسيط.
   payload.premiumTagLabel = trimTo(form.premiumTagLabel, 40);
+  payload.plusTagLabel = trimTo(form.plusTagLabel, 40);
+  payload.proMaxTagLabel = trimTo(form.proMaxTagLabel, 40);
 
   return payload;
 };

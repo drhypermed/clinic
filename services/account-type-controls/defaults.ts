@@ -102,7 +102,7 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   freeInsuranceCompaniesCapacityMessage:
     'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} شركة) لـ«شركات التأمين» ضمن الباقة المجانية. لإضافة شركات إضافية، يُمكنك ترقية الباقة عبر واتساب.',
 
-  // ─── 🆕 رفع الصور — مغلق افتراضياً للحساب المجاني، الـPro/ProMax مفتوح دائماً ───
+  // ─── 🆕 رفع الصور — مغلق افتراضياً للحساب المجاني، Plus/Pro/ProMax مفتوح دائماً ───
   freeImageUploadsEnabled: false,
   freeImageUploadsUpgradeMessage:
     'عزيزي الطبيب، ميزة «رفع الصور» (مثل صورة البروفايل، شعار الروشتة، خلفياتها، صور إعلان العيادة) متاحة للحسابات المدفوعة فقط. لتفعيلها، يُرجى ترقية الباقة عبر واتساب.',
@@ -238,6 +238,54 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   // ═══════════════════════════════════════════════════════════════════════
 
   // ── الأرقام ──
+  plusDailyLimit: 0,
+  plusQuickAddDailyLimit: 0,
+  plusInteractionToolDailyLimit: 0,
+  plusPregnancyToolDailyLimit: 0,
+  plusMedicalReportDailyLimit: 0,
+  plusPublicBookingDailyLimit: 200,
+  plusSecretaryEntryRequestDailyLimit: 300,
+  plusReadyPrescriptionDailyLimit: 50,
+  plusRenalToolDailyLimit: 0,
+  plusGuidelinesChatDailyLimit: 15,
+  plusRecordsMaxCount: 1000,
+  plusReadyPrescriptionsMaxCount: 100,
+  plusMedicationCustomizationsMaxCount: 500,
+  plusBranchesMaxCount: 2,
+  plusInsuranceCompaniesMaxCount: 10,
+
+  plusAnalysisLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «إضافة إلى الروشتة والسجلات مع تحليل الحالة» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusQuickAddLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «إضافة إلى الروشتة والسجلات بدون تحليل الحالة» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusInteractionToolLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «فحص التداخلات الدوائية» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusPregnancyToolLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «فحص الدواء أثناء الحمل والرضاعة» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusRenalToolLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} مرة) لميزة «حاسبة جرعات الكلى» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusGuidelinesChatLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} رسالة) لميزة «شات الجايدلاينز» ضمن باقة Plus. قراءة ملخصات الجايدلاينز مفتوحة لباقة Plus، ولرفع حد الشات تواصل معنا عبر واتساب.',
+  plusMedicalReportLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} تقرير) لميزة «طباعة تقرير طبي للحالة» ضمن باقة Plus. لرفع الحد، تواصل معنا عبر واتساب.',
+  plusPublicBookingLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} موعد) لميزة «إضافة الموعد» ضمن باقة Plus. للتواصل معنا، اضغط زر واتساب.',
+  plusSecretaryEntryRequestLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} طلب) لميزة «إرسال إلى الطبيب من السكرتارية» ضمن باقة Plus. للتواصل معنا، اضغط زر واتساب.',
+  plusReadyPrescriptionDailyLimitMessage: 'عزيزي الطبيب، تم بلوغ الحد اليومي ({limit} روشتة) لميزة «حفظ روشتة جاهزة» ضمن باقة Plus. للتواصل معنا، اضغط زر واتساب.',
+  plusRecordsCapacityMessage: 'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} سجل) لـ«حفظ السجلات» ضمن باقة Plus. يمكنك حذف سجل سابق قبل الإضافة، أو التواصل لزيادة السعة عبر واتساب.',
+  plusReadyPrescriptionsCapacityMessage: 'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} روشتة) لـ«تخزين الروشتات الجاهزة» ضمن باقة Plus. يمكنك حذف روشتة سابقة أو التواصل لزيادة السعة عبر واتساب.',
+  plusMedicationCustomizationsCapacityMessage: 'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} دواء) لـ«تخزين الأدوية المعدلة» ضمن باقة Plus. يمكنك حذف دواء سابق أو التواصل لزيادة السعة عبر واتساب.',
+  plusBranchesCapacityMessage: 'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} فرع) لـ«إضافة الفروع» ضمن باقة Plus. لزيادة عدد الفروع، تواصل معنا عبر واتساب.',
+  plusInsuranceCompaniesCapacityMessage: 'عزيزي الطبيب، تم بلوغ السعة القصوى ({limit} شركة) لـ«شركات التأمين» ضمن باقة Plus. لإضافة شركات إضافية، تواصل معنا عبر واتساب.',
+
+  plusAnalysisWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي لتحليل الحالة ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusQuickAddWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي للإضافة بدون تحليل ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusInteractionToolWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي لفحص التداخلات الدوائية ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusPregnancyToolWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي لفحص أمان الحمل والرضاعة ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusRenalToolWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي لحاسبة جرعات الكلى ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusGuidelinesChatWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي لشات الجايدلاينز ضمن باقة Plus وأرغب في رفع حد الشات. قراءة ملخصات الجايدلاينز تعمل لدي ضمن باقة Plus. شاكراً لكم تعاونكم.',
+  plusMedicalReportWhatsappMessage: 'تحية طيبة، وصلت للحد اليومي للتقرير الطبي الذكي ضمن باقة Plus وأرغب في رفع الحد أو معرفة خيارات الترقية.',
+  plusPublicBookingWhatsappMessage: 'تحية طيبة، وصلت لحد إضافة المواعيد اليومي في باقة Plus وأرغب في التواصل.',
+  plusSecretaryEntryRequestWhatsappMessage: 'تحية طيبة، وصلت لحد إرسال الموعد للطبيب من السكرتارية في باقة Plus وأرغب في التواصل.',
+  plusReadyPrescriptionWhatsappMessage: 'تحية طيبة، وصلت لحد حفظ الروشتات الجاهزة في باقة Plus وأرغب في التواصل.',
+  plusRecordsCapacityWhatsappMessage: 'تحية طيبة، وصلت للسعة القصوى لحفظ السجلات ضمن باقة Plus وأرغب في زيادة السعة.',
+  plusReadyPrescriptionsCapacityWhatsappMessage: 'تحية طيبة، وصلت للسعة القصوى للروشتات الجاهزة ضمن باقة Plus وأرغب في زيادة السعة.',
+  plusMedicationCustomizationsCapacityWhatsappMessage: 'تحية طيبة، وصلت للسعة القصوى للأدوية المعدلة ضمن باقة Plus وأرغب في زيادة السعة.',
+  plusBranchesCapacityWhatsappMessage: 'تحية طيبة، وصلت للسعة القصوى للفروع ضمن باقة Plus وأرغب في زيادة عدد الفروع.',
+  plusInsuranceCompaniesCapacityWhatsappMessage: 'تحية طيبة، وصلت للسعة القصوى لشركات التأمين ضمن باقة Plus وأرغب في زيادة العدد.',
+
   proMaxDailyLimit: 50,
   // 🆕 إضافة بدون تحليل (الزر السريع) — برو ماكس
   proMaxQuickAddDailyLimit: 200,
@@ -328,6 +376,7 @@ export const DEFAULT_CONTROLS: AccountTypeControls = {
   freeImageUploadsUpgradeWhatsappMessage:
     'تحية طيبة، أتواصل معكم لرغبتي في تفعيل ميزة «رفع الصور» (صورة البروفايل وشعارات الروشتة وإعلان العيادة)، وأرغب في ترقية باقتي. شاكراً لكم تعاونكم.',
 
+  plusTagLabel: 'Plus',
   proMaxTagLabel: 'Pro Max',
 };
 

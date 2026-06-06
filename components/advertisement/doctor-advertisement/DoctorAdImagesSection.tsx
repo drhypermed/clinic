@@ -11,7 +11,7 @@ export const DoctorAdImagesSection: React.FC<DoctorAdImagesSectionProps> = ({
   onAddImageFromFile,
   onRemoveImage,
 }) => {
-  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
   const imageGate = useImageUploadGate();
 
   return (

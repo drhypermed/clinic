@@ -51,7 +51,7 @@ interface DoctorSubscriptionDetailsProps {
   editingEndDate: Record<string, string>;
   editingStartTime: Record<string, string>;
   editingEndTime: Record<string, string>;
-  durationPicker: 'new' | 'new-max' | 'extend' | null;
+  durationPicker: 'new' | 'new-plus' | 'new-max' | 'extend' | null;
 
   // setters
   setEditingDurationId: React.Dispatch<React.SetStateAction<string>>;
@@ -60,7 +60,7 @@ interface DoctorSubscriptionDetailsProps {
   setEditingStartTime: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setEditingEndTime: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setEditMode: React.Dispatch<React.SetStateAction<Record<string, EditMode>>>;
-  setDurationPicker: (value: 'new' | 'new-max' | 'extend' | null) => void;
+  setDurationPicker: (value: 'new' | 'new-plus' | 'new-max' | 'extend' | null) => void;
   clearEditor: () => void;
 
   // الإجراءات

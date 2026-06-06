@@ -188,7 +188,7 @@ module.exports = (context) => {
   // طبيب نشط في باقة مدفوعة (برو أو برو ماكس) — الاتنين يحسبوا "Pro Active"
   const isProActiveDoctor = (doctorData, nowMs) => {
     const accountType = normalizeText(doctorData?.accountType).toLowerCase();
-    if (accountType !== 'premium' && accountType !== 'pro_max') return false;
+    if (accountType !== 'premium' && accountType !== 'plus' && accountType !== 'pro_max') return false;
     const expiryMs = parseDateMs(doctorData?.premiumExpiryDate);
     if (!Number.isFinite(expiryMs)) return true;
     return expiryMs >= nowMs;
@@ -233,7 +233,7 @@ module.exports = (context) => {
     const db = getDb();
     const nowMs = Date.now();
     const accountTypeFilter =
-      normalizedAudience === 'doctors_premium_active' ? 'premium' : 'free';
+      normalizedAudience === 'doctors_premium_active' ? ['premium', 'plus', 'pro_max'] : ['free'];
 
     const matchedUserIds = [];
     const tokenSet = new Set();
@@ -243,7 +243,7 @@ module.exports = (context) => {
       let doctorsQuery = db
         .collection('users')
         .where('authRole', '==', 'doctor')
-        .where('accountType', '==', accountTypeFilter)
+        .where('accountType', 'in', accountTypeFilter)
         .orderBy(admin.firestore.FieldPath.documentId())
         .limit(QUERY_PAGE_SIZE);
 

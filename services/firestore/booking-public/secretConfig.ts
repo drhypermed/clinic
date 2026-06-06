@@ -17,6 +17,7 @@ import {
   orderBy,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
@@ -452,23 +453,25 @@ export const savePublicFormSettings = async (
       : {};
 
   const configRef = doc(db, 'publicBookingConfig', normalizedSecret);
+  const updatedAt = new Date().toISOString();
   await setDoc(
     configRef,
     {
       userId: normalizedUserId,
       ...legacyTopLevel,
-      publicFormSettingsByBranch: {
-        [branchKey]: {
-          title: titleValue,
-          contactInfo: contactInfoValue,
-        },
-      },
       // حماية الحجز بجوجل — flag بسيط يتحكّم فيه الطبيب من لوحته
       requireGoogleSignIn: true,
-      updatedAt: new Date().toISOString(),
+      updatedAt,
     },
     { merge: true }
   );
+  await updateDoc(configRef, {
+    [`publicFormSettingsByBranch.${branchKey}`]: {
+      title: titleValue,
+      contactInfo: contactInfoValue,
+    },
+    updatedAt,
+  });
   await persistPublicBookingLookup(normalizedUserId, { publicBookingSecret: normalizedSecret });
 };
 

@@ -22,7 +22,7 @@ export const MiddleSettingsTab: React.FC<MiddleSettingsTabProps> = ({
     setMiddleBgToCrop,
 }) => {
     const toggle = (id: string) => setOpenSection(openSection === id ? '' : id);
-    // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+    // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
     const imageGate = useImageUploadGate();
 
     return (

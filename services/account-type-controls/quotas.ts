@@ -26,11 +26,12 @@ const resolveWhatsappUrl = (data: Record<string, unknown>, fallback: string): st
   return resolveSafeQuotaWhatsappUrl(data.whatsappUrl, fallback);
 };
 
-type TierValue = 'free' | 'premium' | 'pro_max';
+type TierValue = 'free' | 'premium' | 'plus' | 'pro_max';
 
 /** تطبيع accountType القادم من الـ function — يقبل 3 قيم */
 const toTier = (value: unknown): TierValue => {
   if (value === 'premium') return 'premium';
+  if (value === 'plus') return 'plus';
   if (value === 'pro_max') return 'pro_max';
   return 'free';
 };
@@ -47,7 +48,7 @@ const toTier = (value: unknown): TierValue => {
  * الأمان: الـ Cloud Function نفسها فيها نفس الفحص (لو حد عمل bypass على الـ frontend).
  */
 const isPaidTier = (cachedAccountType?: TierValue): boolean =>
-  cachedAccountType === 'premium' || cachedAccountType === 'pro_max';
+  cachedAccountType === 'premium' || cachedAccountType === 'plus' || cachedAccountType === 'pro_max';
 
 /**
  * يقرأ الـ accountType من localStorage (الـ key متطابق مع `getAccountTypeCacheKey`).
@@ -61,7 +62,7 @@ export const readCachedAccountType = (uid?: string | null): TierValue | undefine
   if (!uid || typeof window === 'undefined') return undefined;
   try {
     const cached = window.localStorage.getItem(`account_type_${uid}`);
-    if (cached === 'premium' || cached === 'pro_max' || cached === 'free') {
+    if (cached === 'premium' || cached === 'plus' || cached === 'pro_max' || cached === 'free') {
       return cached as TierValue;
     }
   } catch {
@@ -126,9 +127,12 @@ const buildUnlimitedRecordsResult = (tier: TierValue): RecordsCapacityResult => 
 });
 
 /** اختيار القيمة من الـ controls حسب الفئة — pro_max يقع على premium لو مش محدد */
-const pickByTier = <T>(tier: TierValue, freeVal: T, premiumVal: T, proMaxVal: T | undefined): T => {
+const pickByTier = <T>(tier: TierValue, freeVal: T, premiumVal: T, plusVal: T | undefined, proMaxVal: T | undefined): T => {
   if (tier === 'pro_max') {
     return (proMaxVal !== undefined && proMaxVal !== null ? proMaxVal : premiumVal);
+  }
+  if (tier === 'plus') {
+    return (plusVal !== undefined && plusVal !== null ? plusVal : premiumVal);
   }
   if (tier === 'premium') return premiumVal;
   return freeVal;
@@ -160,10 +164,12 @@ export const consumeSmartPrescriptionQuota = async (
       ? pickByTier(tier,
           normalizedControls.freeQuickAddDailyLimit,
           normalizedControls.premiumQuickAddDailyLimit,
+          normalizedControls.plusQuickAddDailyLimit,
           normalizedControls.proMaxQuickAddDailyLimit)
       : pickByTier(tier,
           normalizedControls.freeDailyLimit,
           normalizedControls.premiumDailyLimit,
+          normalizedControls.plusDailyLimit,
           normalizedControls.proMaxDailyLimit);
     return {
       accountType: tier,
@@ -213,8 +219,8 @@ export const consumeStorageQuota = async (
     // تصدير الروشتة اتشال من الكوتة: طباعة/تنزيل/واتساب تنفذ مباشرة.
     const fallbackLimit =
       feature === 'readyPrescriptionSave'
-        ? pickByTier(tier, normalizedControls.freeReadyPrescriptionDailyLimit, normalizedControls.premiumReadyPrescriptionDailyLimit, normalizedControls.proMaxReadyPrescriptionDailyLimit)
-        : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
+        ? pickByTier(tier, normalizedControls.freeReadyPrescriptionDailyLimit, normalizedControls.premiumReadyPrescriptionDailyLimit, normalizedControls.plusReadyPrescriptionDailyLimit, normalizedControls.proMaxReadyPrescriptionDailyLimit)
+        : pickByTier(tier, normalizedControls.freeMedicalReportDailyLimit, normalizedControls.premiumMedicalReportDailyLimit, normalizedControls.plusMedicalReportDailyLimit, normalizedControls.proMaxMedicalReportDailyLimit);
 
     return {
       accountType: tier,
@@ -258,8 +264,8 @@ export const consumeBookingQuota = async (
     const tier = toTier(data.accountType);
 
     const fallbackLimit = feature === 'publicBooking'
-      ? pickByTier(tier, normalizedControls.freePublicBookingDailyLimit, normalizedControls.premiumPublicBookingDailyLimit, normalizedControls.proMaxPublicBookingDailyLimit)
-      : pickByTier(tier, normalizedControls.freeSecretaryEntryRequestDailyLimit, normalizedControls.premiumSecretaryEntryRequestDailyLimit, normalizedControls.proMaxSecretaryEntryRequestDailyLimit);
+      ? pickByTier(tier, normalizedControls.freePublicBookingDailyLimit, normalizedControls.premiumPublicBookingDailyLimit, normalizedControls.plusPublicBookingDailyLimit, normalizedControls.proMaxPublicBookingDailyLimit)
+      : pickByTier(tier, normalizedControls.freeSecretaryEntryRequestDailyLimit, normalizedControls.premiumSecretaryEntryRequestDailyLimit, normalizedControls.plusSecretaryEntryRequestDailyLimit, normalizedControls.proMaxSecretaryEntryRequestDailyLimit);
 
     return {
       accountType: tier,
@@ -310,6 +316,7 @@ export const validateRecordsCapacity = async (
     const fallbackLimit = pickByTier(tier,
       normalizedControls.freeRecordsMaxCount,
       normalizedControls.premiumRecordsMaxCount,
+      normalizedControls.plusRecordsMaxCount,
       normalizedControls.proMaxRecordsMaxCount);
     const finalResult: RecordsCapacityResult = {
       accountType: tier,
@@ -389,6 +396,7 @@ export const validateReadyPrescriptionsCapacity = async (
     const fallbackLimit = pickByTier(tier,
       normalizedControls.freeReadyPrescriptionsMaxCount,
       normalizedControls.premiumReadyPrescriptionsMaxCount,
+      normalizedControls.plusReadyPrescriptionsMaxCount,
       normalizedControls.proMaxReadyPrescriptionsMaxCount);
     const finalResult: CapacityCheckResult = {
       accountType: tier,
@@ -454,6 +462,7 @@ export const validateInsuranceCompaniesCapacity = async (
     const fallbackLimit = pickByTier(tier,
       normalizedControls.freeInsuranceCompaniesMaxCount,
       normalizedControls.premiumInsuranceCompaniesMaxCount,
+      normalizedControls.plusInsuranceCompaniesMaxCount,
       normalizedControls.proMaxInsuranceCompaniesMaxCount);
     return {
       accountType: tier,
@@ -566,6 +575,7 @@ export const validateMedicationCustomizationsCapacity = async (
     const fallbackLimit = pickByTier(tier,
       normalizedControls.freeMedicationCustomizationsMaxCount,
       normalizedControls.premiumMedicationCustomizationsMaxCount,
+      normalizedControls.plusMedicationCustomizationsMaxCount,
       normalizedControls.proMaxMedicationCustomizationsMaxCount);
     return {
       accountType: tier,
@@ -598,10 +608,10 @@ export const consumeDrugToolQuota = async (
     const tier = toTier(data.accountType);
 
     const fallbackLimit = feature === 'interactionTool'
-      ? pickByTier(tier, normalizedControls.freeInteractionToolDailyLimit, normalizedControls.premiumInteractionToolDailyLimit, normalizedControls.proMaxInteractionToolDailyLimit)
+      ? pickByTier(tier, normalizedControls.freeInteractionToolDailyLimit, normalizedControls.premiumInteractionToolDailyLimit, normalizedControls.plusInteractionToolDailyLimit, normalizedControls.proMaxInteractionToolDailyLimit)
       : feature === 'renalTool'
-        ? pickByTier(tier, normalizedControls.freeRenalToolDailyLimit, normalizedControls.premiumRenalToolDailyLimit, normalizedControls.proMaxRenalToolDailyLimit)
-        : pickByTier(tier, normalizedControls.freePregnancyToolDailyLimit, normalizedControls.premiumPregnancyToolDailyLimit, normalizedControls.proMaxPregnancyToolDailyLimit);
+        ? pickByTier(tier, normalizedControls.freeRenalToolDailyLimit, normalizedControls.premiumRenalToolDailyLimit, normalizedControls.plusRenalToolDailyLimit, normalizedControls.proMaxRenalToolDailyLimit)
+        : pickByTier(tier, normalizedControls.freePregnancyToolDailyLimit, normalizedControls.premiumPregnancyToolDailyLimit, normalizedControls.plusPregnancyToolDailyLimit, normalizedControls.proMaxPregnancyToolDailyLimit);
 
     return {
       accountType: tier,

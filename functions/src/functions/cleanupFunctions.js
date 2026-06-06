@@ -142,6 +142,7 @@ module.exports = ({
     const RETENTION_BY_TIER = {
       free: 5 * YEAR_MS,        // 🆕 (2026-05) 5 سنين للمجاني — متساوية مع البرو لحفظ بيانات الطبيب
       premium: 5 * YEAR_MS,
+      plus: 5 * YEAR_MS,
       pro_max: 7 * YEAR_MS,
     };
 
@@ -149,6 +150,7 @@ module.exports = ({
     const resolveTierKey = (accountTypeRaw) => {
       const tier = String(accountTypeRaw || 'free').trim().toLowerCase();
       if (tier === 'pro_max') return 'pro_max';
+      if (tier === 'plus') return 'plus';
       if (tier === 'premium') return 'premium';
       return 'free';
     };
@@ -157,6 +159,7 @@ module.exports = ({
     const cutoffsByTier = {
       free: new Date(nowMs - RETENTION_BY_TIER.free).toISOString(),
       premium: new Date(nowMs - RETENTION_BY_TIER.premium).toISOString(),
+      plus: new Date(nowMs - RETENTION_BY_TIER.plus).toISOString(),
       pro_max: new Date(nowMs - RETENTION_BY_TIER.pro_max).toISOString(),
     };
 
@@ -400,7 +403,7 @@ module.exports = ({
       `${totalDeletedDailyFinancials} daily financial entries, ` +
       `${totalDeletedMonthlyFinancials} monthly financial entries, ` +
       `${totalDeletedPriceHistory} priceHistory entries. ` +
-      `Cutoffs: free=${cutoffsByTier.free}, premium=${cutoffsByTier.premium}, pro_max=${cutoffsByTier.pro_max}`
+      `Cutoffs: free=${cutoffsByTier.free}, premium=${cutoffsByTier.premium}, plus=${cutoffsByTier.plus}, pro_max=${cutoffsByTier.pro_max}`
     );
     return {
       deletedRecords: totalDeletedRecords,
@@ -562,7 +565,7 @@ module.exports = ({
 
         const disabledReasonMessage =
           'انتهت مدة حسابك المجاني (3 شهور). الحساب المجاني محدود بمدة تجريبية، وبعدها يتم التعطيل التلقائي. ' +
-          'لاستعادة حسابك: تواصل مع الإدارة عبر الواتساب — هتلاقي خيارين: (1) تجديد الفترة المجانية، (2) الترقية لباقة برو/برو ماكس بدون انتهاء تلقائي. ' +
+          'لاستعادة حسابك: تواصل مع الإدارة عبر الواتساب — هتلاقي خيارين: (1) تجديد الفترة المجانية، (2) الترقية لباقة Plus/برو/برو ماكس بدون انتهاء تلقائي. ' +
           '⚠️ تنبيه: لو فضل الحساب متعطل سنة كاملة، البيانات ستُحذف نهائياً.';
 
         await db.collection('users').doc(userId).set({

@@ -6,17 +6,23 @@ const COUNTER_FIELDS = [
   'totalPatients',
   'freeDocsCount',
   'premiumDocsCount',
+  'plusDocsCount',
   'proMaxDocsCount',
   'totalSmartRxFree',
   'totalSmartRxPro',
+  'totalSmartRxPlus',
   'totalSmartRxProMax',
   'totalPrintsFree',
   'totalPrintsPro',
+  'totalPrintsPlus',
   'totalPrintsProMax',
   'totalRevenue',
   'monthlyPlansCount',
   'sixMonthsPlansCount',
   'yearlyPlansCount',
+  'plusMonthlyPlansCount',
+  'plusSixMonthsPlansCount',
+  'plusYearlyPlansCount',
   'proMaxMonthlyPlansCount',
   'proMaxSixMonthsPlansCount',
   'proMaxYearlyPlansCount',
@@ -47,17 +53,23 @@ const createZeroCounters = () => ({
   totalPatients: 0,
   freeDocsCount: 0,
   premiumDocsCount: 0,
+  plusDocsCount: 0,
   proMaxDocsCount: 0,
   totalSmartRxFree: 0,
   totalSmartRxPro: 0,
+  totalSmartRxPlus: 0,
   totalSmartRxProMax: 0,
   totalPrintsFree: 0,
   totalPrintsPro: 0,
+  totalPrintsPlus: 0,
   totalPrintsProMax: 0,
   totalRevenue: 0,
   monthlyPlansCount: 0,
   sixMonthsPlansCount: 0,
   yearlyPlansCount: 0,
+  plusMonthlyPlansCount: 0,
+  plusSixMonthsPlansCount: 0,
+  plusYearlyPlansCount: 0,
   proMaxMonthlyPlansCount: 0,
   proMaxSixMonthsPlansCount: 0,
   proMaxYearlyPlansCount: 0,
@@ -101,6 +113,7 @@ const getUsageByPlan = (userData) => {
 
   let freeUsage = normalizeUsageCounters(usageStatsByPlan?.free);
   let premiumUsage = normalizeUsageCounters(usageStatsByPlan?.premium);
+  let plusUsage = normalizeUsageCounters(usageStatsByPlan?.plus);
   let proMaxUsage = normalizeUsageCounters(usageStatsByPlan?.pro_max);
 
   const hasPlanUsage =
@@ -108,6 +121,8 @@ const getUsageByPlan = (userData) => {
     freeUsage.printCount > 0 ||
     premiumUsage.smartPrescriptionCount > 0 ||
     premiumUsage.printCount > 0 ||
+    plusUsage.smartPrescriptionCount > 0 ||
+    plusUsage.printCount > 0 ||
     proMaxUsage.smartPrescriptionCount > 0 ||
     proMaxUsage.printCount > 0;
 
@@ -117,6 +132,8 @@ const getUsageByPlan = (userData) => {
     // كل فئة لها bucket منفصل: free / premium / pro_max
     if (accountType === 'pro_max') {
       proMaxUsage = fallbackUsage;
+    } else if (accountType === 'plus') {
+      plusUsage = fallbackUsage;
     } else if (accountType === 'premium') {
       premiumUsage = fallbackUsage;
     } else {
@@ -124,7 +141,7 @@ const getUsageByPlan = (userData) => {
     }
   }
 
-  return { freeUsage, premiumUsage, proMaxUsage };
+  return { freeUsage, premiumUsage, plusUsage, proMaxUsage };
 };
 
 const normalizeVerificationStatus = (value) => {
@@ -147,20 +164,27 @@ const getSubscriptionPlanRevenue = ({ monthPrices, startDate, endDate, tier }) =
     startDate.getMonth();
   const diffMonths = endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
 
+  const isPlus = tier === 'plus';
   const isProMax = tier === 'pro_max';
 
   if (diffMonths >= 12) {
     return isProMax
       ? toNumber(monthPrices?.proMaxYearly ?? monthPrices?.yearly)
+      : isPlus
+        ? toNumber(monthPrices?.plusPrices?.yearly ?? monthPrices?.plusYearly ?? monthPrices?.yearly)
       : toNumber(monthPrices?.yearly);
   }
   if (diffMonths >= 6) {
     return isProMax
       ? toNumber(monthPrices?.proMaxSixMonths ?? monthPrices?.sixMonths)
+      : isPlus
+        ? toNumber(monthPrices?.plusPrices?.sixMonths ?? monthPrices?.plusSixMonths ?? monthPrices?.sixMonths)
       : toNumber(monthPrices?.sixMonths);
   }
   return isProMax
     ? toNumber(monthPrices?.proMaxMonthly ?? monthPrices?.monthly)
+    : isPlus
+      ? toNumber(monthPrices?.plusPrices?.monthly ?? monthPrices?.plusMonthly ?? monthPrices?.monthly)
     : toNumber(monthPrices?.monthly);
 };
 
@@ -202,13 +226,14 @@ const buildDoctorRevenueContribution = async ({ userData, currentYear, getMonthP
   // حتى لو رجع free، اشتراكاته القديمة في السنة الحالية تتحسب
   if (
     accountType !== 'premium' &&
+    accountType !== 'plus' &&
     accountType !== 'pro_max' &&
     !hasHistoricalEntries
   ) {
     return empty;
   }
 
-  const doctorTier = accountType === 'pro_max' ? 'pro_max' : 'premium';
+  const doctorTier = accountType === 'pro_max' ? 'pro_max' : accountType === 'plus' ? 'plus' : 'premium';
 
   // المسار الجديد: subscriptionHistory مع pricePaid
   if (hasHistoricalEntries) {
@@ -309,6 +334,8 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
   // كل فئة في bucket منفصل
   if (accountType === 'pro_max') {
     counters.proMaxDocsCount = 1;
+  } else if (accountType === 'plus') {
+    counters.plusDocsCount = 1;
   } else if (accountType === 'premium') {
     counters.premiumDocsCount = 1;
   } else {
@@ -318,9 +345,11 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
   const usage = getUsageByPlan(userData);
   counters.totalSmartRxFree = usage.freeUsage.smartPrescriptionCount;
   counters.totalSmartRxPro = usage.premiumUsage.smartPrescriptionCount;
+  counters.totalSmartRxPlus = usage.plusUsage.smartPrescriptionCount;
   counters.totalSmartRxProMax = usage.proMaxUsage.smartPrescriptionCount;
   counters.totalPrintsFree = usage.freeUsage.printCount;
   counters.totalPrintsPro = usage.premiumUsage.printCount;
+  counters.totalPrintsPlus = usage.plusUsage.printCount;
   counters.totalPrintsProMax = usage.proMaxUsage.printCount;
   const revenueContribution = await buildDoctorRevenueContribution({ userData, currentYear, getMonthPrices });
   counters.totalRevenue = revenueContribution.revenue;
@@ -331,6 +360,10 @@ const buildContributionFromUser = async ({ userData, currentYear, getMonthPrices
     counters.proMaxYearlyPlansCount = bc.yearly || 0;
     counters.proMaxSixMonthsPlansCount = bc.sixMonths || 0;
     counters.proMaxMonthlyPlansCount = bc.monthly || 0;
+  } else if (accountType === 'plus') {
+    counters.plusYearlyPlansCount = bc.yearly || 0;
+    counters.plusSixMonthsPlansCount = bc.sixMonths || 0;
+    counters.plusMonthlyPlansCount = bc.monthly || 0;
   } else {
     counters.yearlyPlansCount = bc.yearly || 0;
     counters.sixMonthsPlansCount = bc.sixMonths || 0;
@@ -603,7 +636,7 @@ module.exports = ({ HttpsError, admin, assertAdminRequest, getDb }) => {
 
     await summaryRef.set({
       ...mergedCounters,
-      activeSubscriptions: mergedCounters.premiumDocsCount,
+      activeSubscriptions: mergedCounters.premiumDocsCount + mergedCounters.plusDocsCount + mergedCounters.proMaxDocsCount,
       totalExpenses,
       netProfit,
       countersGeneratedAt: now.toISOString(),

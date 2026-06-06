@@ -16,7 +16,7 @@ interface ExpiryWarning {
   remainingPercentage: number;   // النسبة المئوية المتبقية من الاشتراك
   isPro: boolean;                // هل الحساب مدفوع (برو أو برو ماكس) حالياً؟
   /** الفئة الفعلية النشطة دلوقتي — null لو الحساب مجاني/منتهي */
-  tier: 'pro' | 'pro_max' | null;
+  tier: 'pro' | 'plus' | 'pro_max' | null;
   isExpired: boolean;            // هل انتهى الاشتراك بالفعل؟
 }
 
@@ -116,15 +116,16 @@ export const usePremiumExpiryCheck = (user: { uid?: string; email?: string | nul
 
     // برو وبرو ماكس الاتنين يحسبوا Pro لأغراض تنبيه الانتهاء
     const rawAccountType: 'paid' | 'free' =
-      accountData.accountType === 'premium' || accountData.accountType === 'pro_max'
+      accountData.accountType === 'premium' || accountData.accountType === 'plus' || accountData.accountType === 'pro_max'
         ? 'paid'
         : 'free';
     const snapshot = getPremiumTimingSnapshot(accountData, nowMs);
     const knownExpiryDate = snapshot.knownExpiryMs !== null ? new Date(snapshot.knownExpiryMs) : null;
 
     // الفئة الفعلية من raw accountType (قبل فحص الانتهاء) — للحالة المؤقتة قبل sync
-    const rawTier: 'pro' | 'pro_max' | null =
+    const rawTier: 'pro' | 'plus' | 'pro_max' | null =
       accountData.accountType === 'pro_max' ? 'pro_max'
+      : accountData.accountType === 'plus' ? 'plus'
       : accountData.accountType === 'premium' ? 'pro'
       : null;
 
@@ -140,8 +141,9 @@ export const usePremiumExpiryCheck = (user: { uid?: string; email?: string | nul
     }
 
     // effectiveAccountType ممكن يكون premium أو pro_max (الاتنين مدفوع). free = مجاني.
-    const effectiveTier: 'pro' | 'pro_max' | null =
+    const effectiveTier: 'pro' | 'plus' | 'pro_max' | null =
       snapshot.effectiveAccountType === 'pro_max' ? 'pro_max'
+      : snapshot.effectiveAccountType === 'plus' ? 'plus'
       : snapshot.effectiveAccountType === 'premium' ? 'pro'
       : null;
     if (!effectiveTier) {

@@ -21,6 +21,7 @@ export type {
   MonthlyExpense,
   MonthlyPrices,
   NewExpenseInput,
+  PlusSubscriptionPrices,
   ProMaxSubscriptionPrices,
   RevenueData,
   SubscriptionPrices,

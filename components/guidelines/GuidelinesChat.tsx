@@ -31,7 +31,7 @@ import {
 } from './guidelineChatSearch';
 import { generateGuidelineChatAnswer, reformulateGuidelineQuery } from '../../services/guidelineChatService';
 import { useAuth } from '../../hooks/useAuth';
-import { deleteCloudChatHistory, saveCloudChatHistory, subscribeCloudChatHistory, trimChatMessages } from '../../services/guidelineChatHistoryService';
+import { deleteCloudChatHistory, loadCloudChatHistory, saveCloudChatHistory, trimChatMessages } from '../../services/guidelineChatHistoryService';
 import { ChatToolbar, type AnswerStyle } from './GuidelinesChatToolbar';
 import {
   buildAssistantFailureMessage,
@@ -62,7 +62,11 @@ import {
   inferSearchScope,
   isComparisonQuestion,
   isSmallTalk,
+  shouldPreferSearchRetrySources,
+  shouldRetryGuidelineSearchWithModel,
+  shouldReusePreviousSourcesForAnswer,
   shouldUseConversationContext,
+  shouldUseModelReformulation,
   type BrowserSpeechRecognition,
   type ChatMessage,
 } from './guidelinesChatUtils';
@@ -158,6 +162,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   const lastCloudSignatureRef = useRef('');
   const lastLocalSignatureRef = useRef('');
   const clearRequestedRef = useRef(false);
+  const cloudSaveTimerRef = useRef<number | null>(null);
 
   const selectedSource = useMemo(() => {
     if (!selectedCollection || !selectedSourceId) return null;
@@ -234,34 +239,9 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     cloudHistoryReadyRef.current = false;
     lastCloudSignatureRef.current = '';
 
-    const unsubscribe = subscribeCloudChatHistory(
-      uid,
-      (cloudMessages) => {
+    loadCloudChatHistory(uid)
+      .then((cloudMessages) => {
         if (!active) return;
-
-        if (cloudMessages && cloudMessages.length > 0) {
-          if (clearRequestedRef.current) {
-            void deleteCloudChatHistory(uid);
-            return;
-          }
-
-          const trimmed = trimChatMessages(cloudMessages);
-          const signature = getMessagesSignature(trimmed);
-          cloudHistoryReadyRef.current = true;
-
-          if (hasTransientMessages(messagesRef.current)) {
-            return;
-          }
-
-          clearRequestedRef.current = false;
-          lastCloudSignatureRef.current = signature;
-
-          if (signature !== getMessagesSignature(messagesRef.current)) {
-            applyingCloudHistoryRef.current = true;
-            setMessages(trimmed);
-          }
-          return;
-        }
 
         if (clearRequestedRef.current) {
           const clearedMessages = [welcomeMessage(language, doctorName, doctorSpecialty)];
@@ -275,8 +255,17 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
           return;
         }
 
-        if (hasTransientMessages(messagesRef.current)) {
+        if (cloudMessages && cloudMessages.length > 0 && !hasTransientMessages(messagesRef.current)) {
+          const trimmed = trimChatMessages(cloudMessages);
+          const signature = getMessagesSignature(trimmed);
           cloudHistoryReadyRef.current = true;
+          clearRequestedRef.current = false;
+          lastCloudSignatureRef.current = signature;
+
+          if (signature !== getMessagesSignature(messagesRef.current)) {
+            applyingCloudHistoryRef.current = true;
+            setMessages(trimmed);
+          }
           return;
         }
 
@@ -292,16 +281,16 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
         if (getMessagesSignature(messagesRef.current) !== signature) {
           setMessages(trimmed);
         }
-        void saveCloudChatHistory(uid, trimmed);
-      },
-      () => {
-        cloudHistoryReadyRef.current = true;
-      },
-    );
+        if (!isOnlyWelcomeMessage(trimmed)) {
+          void saveCloudChatHistory(uid, trimmed);
+        }
+      })
+      .catch(() => {
+        if (active) cloudHistoryReadyRef.current = true;
+      });
 
     return () => {
       active = false;
-      unsubscribe();
     };
   }, [doctorName, doctorSpecialty, language, uid]);
 
@@ -321,7 +310,13 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
       const signature = getMessagesSignature(trimmed);
       if (signature !== lastCloudSignatureRef.current) {
         lastCloudSignatureRef.current = signature;
-        void saveCloudChatHistory(uid, trimmed);
+        if (cloudSaveTimerRef.current !== null) {
+          window.clearTimeout(cloudSaveTimerRef.current);
+        }
+        cloudSaveTimerRef.current = window.setTimeout(() => {
+          cloudSaveTimerRef.current = null;
+          void saveCloudChatHistory(uid, trimmed);
+        }, 1200);
       }
     }
     applyingCloudHistoryRef.current = false;
@@ -341,6 +336,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     speechRef.current?.stop();
     speechRef.current = null;
     if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+    if (cloudSaveTimerRef.current !== null) window.clearTimeout(cloudSaveTimerRef.current);
   }, []);
 
   const panelClass = isEmbedded
@@ -518,8 +514,15 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     });
     const historyForModel = buildCompactHistory([...messages, userMessage]);
 
-    const intentAnalysis = shouldAnalyzeFollowUp
-      ? await reformulateGuidelineQuery(question, historyForModel)
+    const needsModelReformulation = shouldUseModelReformulation({
+      question,
+      previousSources: candidatePreviousSources,
+    });
+    const shouldAnalyzeWithModel = shouldAnalyzeFollowUp || needsModelReformulation;
+    const intentAnalysis = shouldAnalyzeWithModel
+      ? (needsModelReformulation
+        ? await reformulateGuidelineQuery(question, historyForModel)
+        : { isFollowUp: true, reformulatedQuery: question, shouldClearSources: false })
       : { isFollowUp: false, reformulatedQuery: question, shouldClearSources: true };
 
     const followUp = !intentAnalysis.shouldClearSources;
@@ -541,48 +544,115 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     }
 
     try {
-      const comparisonQuestion = isComparisonQuestion(reformulatedQuestion);
-      const effectiveScope = inferSearchScope({ question: reformulatedQuestion, preferredScope: scope, selectedSource, selectedCollection });
-      const contextualQuery = followUp ? buildContextualSearchQuery({ question: reformulatedQuestion, messages, previousSources }) : reformulatedQuestion;
       const responseMode: GuidelineChatResponseMode = answerStyle === 'concise'
         ? 'concise'
         : inferResponseMode(question);
-      const answerSourceLimit = comparisonQuestion || responseMode === 'table' ? 8 : responseMode === 'concise' ? 5 : 6;
-      const searchQueries = buildGuidelineSearchQueries({ question: reformulatedQuestion, contextualQuery, followUp })
-        .slice(0, comparisonQuestion ? 3 : 2);
-      const selectedCollectionScope = effectiveScope === 'current-guideline' ? selectedCollection?.id : undefined;
+
+      const runGuidelineSearch = async ({
+        searchQuestion,
+        searchFollowUp,
+        searchPreviousSources,
+      }: {
+        searchQuestion: string;
+        searchFollowUp: boolean;
+        searchPreviousSources: GuidelineChatSourceChunk[];
+      }) => {
+        const comparisonQuestion = isComparisonQuestion(searchQuestion);
+        const effectiveScope = inferSearchScope({ question: searchQuestion, preferredScope: scope, selectedSource, selectedCollection });
+        const contextualQuery = searchFollowUp
+          ? buildContextualSearchQuery({ question: searchQuestion, messages, previousSources: searchPreviousSources })
+          : searchQuestion;
+        const answerSourceLimit = comparisonQuestion || responseMode === 'table' ? 8 : responseMode === 'concise' ? 5 : 6;
+        const searchQueries = buildGuidelineSearchQueries({ question: searchQuestion, contextualQuery, followUp: searchFollowUp })
+          .slice(0, comparisonQuestion || searchFollowUp ? 2 : 1);
+        const selectedCollectionScope = effectiveScope === 'current-guideline' ? selectedCollection?.id : undefined;
+
+        const searchTasks: Promise<GuidelineChatSourceChunk[]>[] = [];
+        if (effectiveScope === 'current-file' && selectedSource) {
+          searchTasks.push(searchGuidelineChatIndexCloud(contextualQuery, {
+            scope: 'current-file',
+            selectedCollectionId: selectedCollection?.id,
+            selectedGroup,
+          }, comparisonQuestion ? 8 : 6, selectedSource));
+        }
+
+        searchQueries.forEach((query) => {
+          searchTasks.push(searchGuidelineChatIndexCloud(query, {
+            scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
+            selectedCollectionId: selectedCollectionScope,
+            selectedGroup: undefined,
+          }, comparisonQuestion ? 12 : 10, null));
+        });
+
+        const { groups: sourceGroups, errors: searchErrors } = collectSearchGroups(await Promise.allSettled(searchTasks));
+        if (sourceGroups.length === 0 && searchErrors.length > 0) {
+          throw searchErrors[0];
+        }
+        if (searchErrors.length > 0) {
+          console.warn('[GuidelinesChat] Some guideline searches failed; continuing with partial results:', searchErrors);
+        }
+
+        return {
+          foundSources: mergeRankedSources(answerSourceLimit, ...sourceGroups),
+          comparisonQuestion,
+        };
+      };
 
       await updateThinkingMessage(isArabic ? 'جاري البحث في الجايدلاينز وترتيب أفضل المصادر' : 'Searching guidelines and ranking the best sources');
 
-      const searchTasks: Promise<GuidelineChatSourceChunk[]>[] = [];
-      if (effectiveScope === 'current-file' && selectedSource) {
-        searchTasks.push(searchGuidelineChatIndexCloud(contextualQuery, {
-          scope: 'current-file',
-          selectedCollectionId: selectedCollection?.id,
-          selectedGroup,
-        }, comparisonQuestion ? 8 : 6, selectedSource));
-      }
-
-      searchQueries.forEach((query) => {
-        searchTasks.push(searchGuidelineChatIndexCloud(query, {
-          scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
-          selectedCollectionId: selectedCollectionScope,
-          selectedGroup: undefined,
-        }, comparisonQuestion ? 12 : 10, null));
+      let activeSearchQuestion = reformulatedQuestion;
+      let activeFollowUp = followUp;
+      let activePreviousSources = previousSources;
+      let searchRun = await runGuidelineSearch({
+        searchQuestion: activeSearchQuestion,
+        searchFollowUp: activeFollowUp,
+        searchPreviousSources: activePreviousSources,
       });
 
-      const { groups: sourceGroups, errors: searchErrors } = collectSearchGroups(await Promise.allSettled(searchTasks));
-      if (sourceGroups.length === 0 && searchErrors.length > 0) {
-        throw searchErrors[0];
-      }
-      if (searchErrors.length > 0) {
-        console.warn('[GuidelinesChat] Some guideline searches failed; continuing with partial results:', searchErrors);
+      if (shouldRetryGuidelineSearchWithModel({
+        question: activeSearchQuestion,
+        sources: searchRun.foundSources,
+        alreadyReformulated: needsModelReformulation,
+      })) {
+        await updateThinkingMessage(
+          isArabic ? 'براجع صياغة السؤال عشان أوصل لمصادر أدق' : 'Refining the question to find more accurate sources',
+        );
+
+        const retryAnalysis = await reformulateGuidelineQuery(question, historyForModel);
+        const retryQuestion = retryAnalysis.reformulatedQuery || question;
+        const retryFollowUp = !retryAnalysis.shouldClearSources;
+        const retryPreviousSources = retryFollowUp ? candidatePreviousSources : [];
+        const retryQuestionChanged = retryQuestion.trim().toLowerCase() !== activeSearchQuestion.trim().toLowerCase()
+          || retryFollowUp !== activeFollowUp;
+
+        if (retryQuestionChanged) {
+          const retryRun = await runGuidelineSearch({
+            searchQuestion: retryQuestion,
+            searchFollowUp: retryFollowUp,
+            searchPreviousSources: retryPreviousSources,
+          });
+
+          if (shouldPreferSearchRetrySources(retryRun.foundSources, searchRun.foundSources)) {
+            activeSearchQuestion = retryQuestion;
+            activeFollowUp = retryFollowUp;
+            activePreviousSources = retryPreviousSources;
+            searchRun = retryRun;
+            if (!activeFollowUp) {
+              setSingleSourceNumber(null);
+              setHighlightedSourceIndex(null);
+            }
+          }
+        }
       }
 
-      const foundSources = mergeRankedSources(answerSourceLimit, ...sourceGroups);
+      const foundSources = searchRun.foundSources;
+      const canReusePreviousSources = shouldReusePreviousSourcesForAnswer({
+        question: activeSearchQuestion,
+        previousSources: activePreviousSources,
+      });
       const sources = foundSources.length > 0
         ? foundSources
-        : (followUp ? previousSources : []);
+        : (canReusePreviousSources ? activePreviousSources : []);
       setActiveSources(sources);
       setSingleSourceNumber(null);
 

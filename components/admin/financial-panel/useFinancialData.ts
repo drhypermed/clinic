@@ -28,6 +28,7 @@ import type {
   MonthlyExpense,
   MonthlyPrices,
   NewExpenseInput,
+  PlusSubscriptionPrices,
   ProMaxSubscriptionPrices,
   RevenueData,
   SubscriptionPrices,
@@ -37,6 +38,7 @@ import {
   mapFinancialActionError,
   normalizeMonthDocId,
   sanitizeExpenseDescription,
+  sanitizePlusPrices,
   sanitizePrices,
   sanitizeProMaxPrices,
 } from './securityUtils';
@@ -61,6 +63,10 @@ interface CurrentYearSummarySnapshot {
   proMaxSixMonthsCount: number;
   proMaxYearlyCount: number;
   proMaxRevenue: number;
+  plusMonthlyCount: number;
+  plusSixMonthsCount: number;
+  plusYearlyCount: number;
+  plusRevenue: number;
 }
 
 interface UseFinancialDataParams {
@@ -87,6 +93,8 @@ export const useFinancialData = ({
   // ── حالة الأسعار: برو + برو ماكس بشكل منفصل ──
   const [prices, setPrices] = useState<SubscriptionPrices>({ monthly: 0, sixMonths: 0, yearly: 0 });
   const [tempPrices, setTempPrices] = useState<SubscriptionPrices>(prices);
+  const [plusPrices, setPlusPrices] = useState<PlusSubscriptionPrices>({ monthly: 500, sixMonths: 2700, yearly: 5000 });
+  const [tempPlusPrices, setTempPlusPrices] = useState<PlusSubscriptionPrices>(plusPrices);
   const [proMaxPrices, setProMaxPrices] = useState<ProMaxSubscriptionPrices>({ monthly: 0, sixMonths: 0, yearly: 0 });
   const [tempProMaxPrices, setTempProMaxPrices] = useState<ProMaxSubscriptionPrices>(proMaxPrices);
   const [editingPrices, setEditingPrices] = useState(false);
@@ -149,6 +157,10 @@ export const useFinancialData = ({
         proMaxSixMonthsCount: toSafeCount(raw?.proMaxSixMonthsPlansCount),
         proMaxYearlyCount: toSafeCount(raw?.proMaxYearlyPlansCount),
         proMaxRevenue: toSafeCount(raw?.proMaxRevenue),
+        plusMonthlyCount: toSafeCount(raw?.plusMonthlyPlansCount),
+        plusSixMonthsCount: toSafeCount(raw?.plusSixMonthsPlansCount),
+        plusYearlyCount: toSafeCount(raw?.plusYearlyPlansCount),
+        plusRevenue: toSafeCount(raw?.plusRevenue),
       };
 
       setCurrentYearSummary(nextSummary);
@@ -166,9 +178,12 @@ export const useFinancialData = ({
 
     const normalizedMonth = normalizeMonthDocId(month);
     const zero = { monthly: 0, sixMonths: 0, yearly: 0 };
+    const defaultPlus = { monthly: 500, sixMonths: 2700, yearly: 5000 };
     if (!isValidMonthDocId(normalizedMonth)) {
       setPrices(zero);
       setTempPrices(zero);
+      setPlusPrices(defaultPlus);
+      setTempPlusPrices(defaultPlus);
       setProMaxPrices(zero);
       setTempProMaxPrices(zero);
       return;
@@ -177,16 +192,21 @@ export const useFinancialData = ({
     try {
       const pricesDoc = await getDocCacheFirst(doc(db, 'subscriptionPrices', normalizedMonth));
       if (pricesDoc.exists()) {
-        const raw = pricesDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
+        const raw = pricesDoc.data() as SubscriptionPrices & { plusPrices?: PlusSubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices };
         const data = sanitizePrices(raw);
+        const plusData = sanitizePlusPrices(raw.plusPrices);
         const proMaxData = sanitizeProMaxPrices(raw.proMaxPrices);
         setPrices(data);
         setTempPrices(data);
+        setPlusPrices(plusData);
+        setTempPlusPrices(plusData);
         setProMaxPrices(proMaxData);
         setTempProMaxPrices(proMaxData);
       } else {
         setPrices(zero);
         setTempPrices(zero);
+        setPlusPrices(defaultPlus);
+        setTempPlusPrices(defaultPlus);
         setProMaxPrices(zero);
         setTempProMaxPrices(zero);
       }
@@ -204,10 +224,11 @@ export const useFinancialData = ({
       const allPrices: MonthlyPrices[] = [];
       pricesSnap.forEach((snapshotDoc) => {
         if (!isValidMonthDocId(snapshotDoc.id)) return;
-        const raw = snapshotDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
+        const raw = snapshotDoc.data() as SubscriptionPrices & { plusPrices?: PlusSubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices };
         allPrices.push({
           month: snapshotDoc.id,
           prices: sanitizePrices(raw),
+          plusPrices: raw.plusPrices ? sanitizePlusPrices(raw.plusPrices) : sanitizePlusPrices(undefined),
           proMaxPrices: raw.proMaxPrices ? sanitizeProMaxPrices(raw.proMaxPrices) : undefined,
         });
       });
@@ -276,7 +297,7 @@ export const useFinancialData = ({
       const isHistorical = selectedYear < currentCalendarYear;
       const doctorsQuery = isHistorical
         ? getDoctorUsersQuery()
-        : getDoctorUsersQuery(where('accountType', 'in', ['premium', 'pro_max']));
+        : getDoctorUsersQuery(where('accountType', 'in', ['premium', 'plus', 'pro_max']));
       const doctorUsersSnap = await getDocsCacheFirst(doctorsQuery);
       const doctors = doctorUsersSnap.docs.map(
         (snapshotDoc) => snapshotDoc.data() as Record<string, any>
@@ -284,12 +305,13 @@ export const useFinancialData = ({
 
       const pricesSnap = await getDocsCacheFirst(query(collection(db, 'subscriptionPrices')));
       // خريطة مركبة: لكل شهر { prices: برو, proMaxPrices: برو ماكس }
-      const pricesByMonth: Record<string, { prices: SubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices }> = {};
+      const pricesByMonth: Record<string, { prices: SubscriptionPrices; plusPrices?: PlusSubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices }> = {};
       pricesSnap.forEach((snapshotDoc) => {
         if (!isValidMonthDocId(snapshotDoc.id)) return;
-        const raw = snapshotDoc.data() as SubscriptionPrices & { proMaxPrices?: ProMaxSubscriptionPrices };
+        const raw = snapshotDoc.data() as SubscriptionPrices & { plusPrices?: PlusSubscriptionPrices; proMaxPrices?: ProMaxSubscriptionPrices };
         pricesByMonth[snapshotDoc.id] = {
           prices: sanitizePrices(raw),
+          plusPrices: raw.plusPrices ? sanitizePlusPrices(raw.plusPrices) : sanitizePlusPrices(undefined),
           proMaxPrices: raw.proMaxPrices ? sanitizeProMaxPrices(raw.proMaxPrices) : undefined,
         };
       });
@@ -345,6 +367,7 @@ export const useFinancialData = ({
     }
 
     const safePrices = sanitizePrices(tempPrices);
+    const safePlusPrices = sanitizePlusPrices(tempPlusPrices);
     const safeProMaxPrices = sanitizeProMaxPrices(tempProMaxPrices);
 
     // تأكيد قبل الكتابة فوق الأسعار الحالية — يعرض الأسعار الجديدة للفئتين.
@@ -366,9 +389,11 @@ export const useFinancialData = ({
       // نحفظ في نفس document: أسعار برو في الحقول الأساسية + proMaxPrices كحقل داخلي
       await setDoc(doc(db, 'subscriptionPrices', normalizedMonth), {
         ...safePrices,
+        plusPrices: safePlusPrices,
         proMaxPrices: safeProMaxPrices,
       });
       setPrices(safePrices);
+      setPlusPrices(safePlusPrices);
       setProMaxPrices(safeProMaxPrices);
       setEditingPrices(false);
       await loadAllPrices();
@@ -444,6 +469,9 @@ export const useFinancialData = ({
     prices,
     tempPrices,
     setTempPrices,
+    plusPrices,
+    tempPlusPrices,
+    setTempPlusPrices,
     // بيانات أسعار برو ماكس
     proMaxPrices,
     tempProMaxPrices,

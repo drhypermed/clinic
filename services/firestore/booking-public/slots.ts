@@ -6,7 +6,7 @@
  * 3. حذف المواعيد (يدوياً أو تلقائياً عند انتهاء صلاحيتها).
  */
 
-import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
 
 /**
  * الحد الأقصى لعدد المواعيد المتاحة للعرض في صفحة الحجز العامة.
@@ -141,6 +141,25 @@ export const addPublicSlot = async (
   const slotsRef = collection(db, 'publicBookingConfig', normalizedSecret, 'slots');
   const docRef = await addDoc(slotsRef, payload);
   return docRef.id;
+};
+
+/** تعديل فترة زمنية متاحة للحجز العام */
+export const updatePublicSlot = async (
+  secret: string,
+  slotId: string,
+  dateTime: string,
+  branchId?: string
+): Promise<void> => {
+  const normalizedSecret = normalizePublicSecret(secret);
+  const normalizedSlotId = sanitizeDocSegment(slotId);
+  if (!normalizedSecret || !normalizedSlotId) return;
+
+  const payload: { dateTime: string; branchId?: string } = { dateTime };
+  const trimmedBranch = typeof branchId === 'string' ? branchId.trim() : '';
+  if (trimmedBranch) payload.branchId = trimmedBranch;
+
+  const slotRef = doc(db, 'publicBookingConfig', normalizedSecret, 'slots', normalizedSlotId);
+  await updateDoc(slotRef, payload);
 };
 
 /** حذف موعد متاح (إلغاء الفترة الزمنية من قبل الطبيب) */

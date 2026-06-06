@@ -21,6 +21,7 @@ export const extractQuotaErrorDetails = (error: unknown): SmartQuotaLimitErrorDe
 
   const raw = details as Record<string, unknown>;
   const accountType = raw.accountType === 'premium' ? 'premium'
+    : raw.accountType === 'plus' ? 'plus'
     : raw.accountType === 'pro_max' ? 'pro_max'
     : raw.accountType === 'free' ? 'free'
     : null;

@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // TierComparisonTable — جدول مقارنة حي بين الباقات
 // ─────────────────────────────────────────────────────────────────────────────
 // بيقرأ القيم الفعلية لكل ميزة من إعدادات الأدمن لحظياً، ويعرضها كجدول
@@ -17,13 +17,14 @@ import {
   type AccountTypeControls,
 } from '../../../services/accountTypeControlsService';
 
-type TierKey = 'free' | 'premium' | 'proMax';
+type TierKey = 'free' | 'premium' | 'plus' | 'proMax';
 
 type FeatureRow = {
   label: string;
   unit: string; // مثلاً "مرة/يوم" أو "سجل"
   freeKey: keyof AccountTypeControls;
   premiumKey: keyof AccountTypeControls;
+  plusKey: keyof AccountTypeControls;
   proMaxKey: keyof AccountTypeControls;
   /**
    * 🆕 (2026-05): الميزات المفتوحة للـ paid tiers بلا حد —
@@ -47,19 +48,19 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuStar className="w-4 h-4" />,
     rows: [
       { label: 'إضافة للروشتة مع تحليل الحالة', unit: 'مرة/يوم',
-        freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', proMaxKey: 'proMaxDailyLimit' },
+        freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', plusKey: 'plusDailyLimit', proMaxKey: 'proMaxDailyLimit' },
       { label: 'إضافة للروشتة بدون تحليل', unit: 'مرة/يوم',
-        freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' },
+        freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', plusKey: 'plusQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' },
       { label: 'فحص التداخلات الدوائية', unit: 'مرة/يوم',
-        freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' },
+        freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', plusKey: 'plusInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' },
       { label: 'فحص الدواء أثناء الحمل والرضاعة', unit: 'مرة/يوم',
-        freeKey: 'freePregnancyToolDailyLimit', premiumKey: 'premiumPregnancyToolDailyLimit', proMaxKey: 'proMaxPregnancyToolDailyLimit' },
+        freeKey: 'freePregnancyToolDailyLimit', premiumKey: 'premiumPregnancyToolDailyLimit', plusKey: 'plusPregnancyToolDailyLimit', proMaxKey: 'proMaxPregnancyToolDailyLimit' },
       { label: 'حاسبة جرعات الكلى', unit: 'مرة/يوم',
-        freeKey: 'freeRenalToolDailyLimit', premiumKey: 'premiumRenalToolDailyLimit', proMaxKey: 'proMaxRenalToolDailyLimit' },
+        freeKey: 'freeRenalToolDailyLimit', premiumKey: 'premiumRenalToolDailyLimit', plusKey: 'plusRenalToolDailyLimit', proMaxKey: 'proMaxRenalToolDailyLimit' },
       { label: 'شات الجايدلاينز / المساعد الطبي', unit: 'رسالة/يوم',
-        freeKey: 'freeGuidelinesChatDailyLimit', premiumKey: 'premiumGuidelinesChatDailyLimit', proMaxKey: 'proMaxGuidelinesChatDailyLimit' },
+        freeKey: 'freeGuidelinesChatDailyLimit', premiumKey: 'premiumGuidelinesChatDailyLimit', plusKey: 'plusGuidelinesChatDailyLimit', proMaxKey: 'proMaxGuidelinesChatDailyLimit' },
       { label: 'طباعة تقرير طبي للحالة', unit: 'تقرير/يوم',
-        freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
+        freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', plusKey: 'plusMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
     ],
   },
   {
@@ -68,18 +69,18 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuDatabase className="w-4 h-4" />,
     rows: [
       { label: 'حفظ السجلات الطبية', unit: 'سجل',
-        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount',
+        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', plusKey: 'plusRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount',
         unlimitedForPaid: true },
       { label: 'تخزين الروشتات الجاهزة', unit: 'روشتة',
-        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount',
+        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', plusKey: 'plusReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount',
         unlimitedForPaid: true },
       { label: 'تخزين الأدوية المعدّلة', unit: 'دواء',
-        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
+        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', plusKey: 'plusMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
         unlimitedForPaid: true },
       { label: 'عدد الفروع', unit: 'فرع',
-        freeKey: 'freeBranchesMaxCount', premiumKey: 'premiumBranchesMaxCount', proMaxKey: 'proMaxBranchesMaxCount' },
+        freeKey: 'freeBranchesMaxCount', premiumKey: 'premiumBranchesMaxCount', plusKey: 'plusBranchesMaxCount', proMaxKey: 'proMaxBranchesMaxCount' },
       { label: 'شركات التأمين', unit: 'شركة',
-        freeKey: 'freeInsuranceCompaniesMaxCount', premiumKey: 'premiumInsuranceCompaniesMaxCount', proMaxKey: 'proMaxInsuranceCompaniesMaxCount' },
+        freeKey: 'freeInsuranceCompaniesMaxCount', premiumKey: 'premiumInsuranceCompaniesMaxCount', plusKey: 'plusInsuranceCompaniesMaxCount', proMaxKey: 'proMaxInsuranceCompaniesMaxCount' },
     ],
   },
   {
@@ -88,7 +89,7 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuFileText className="w-4 h-4" />,
     rows: [
       { label: 'حفظ روشتة جاهزة', unit: 'روشتة/يوم',
-        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit',
+        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', plusKey: 'plusReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit',
         unlimitedForPaid: true },
     ],
   },
@@ -98,9 +99,9 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuCalendar className="w-4 h-4" />,
     rows: [
       { label: 'إضافة الموعد (صفحة المواعيد)', unit: 'موعد/يوم',
-        freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
+        freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', plusKey: 'plusPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
       { label: 'إرسال إلى الطبيب من السكرتارية', unit: 'طلب/يوم',
-        freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
+        freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', plusKey: 'plusSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
     ],
   },
 ];
@@ -119,6 +120,7 @@ const TierColumnHeader: React.FC<{ tier: TierKey; label: string }> = ({ tier, la
   const colorByTier: Record<TierKey, string> = {
     free: 'bg-slate-100 text-slate-700 border-slate-200',
     premium: 'bg-warning-50 text-warning-800 border-warning-200',
+    plus: 'bg-slate-50 text-slate-700 border-slate-300',
     proMax: 'bg-gradient-to-br from-[#FFF8E1] to-[#FFE0B2] text-[#B45309] border-[#FFCC80]',
   };
   return (
@@ -127,7 +129,6 @@ const TierColumnHeader: React.FC<{ tier: TierKey; label: string }> = ({ tier, la
     </th>
   );
 };
-
 export const TierComparisonTable: React.FC = () => {
   const [controls, setControls] = React.useState<AccountTypeControls | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -190,6 +191,7 @@ export const TierComparisonTable: React.FC = () => {
                     الميزة
                   </th>
                   <TierColumnHeader tier="free" label="مجاني" />
+                  <TierColumnHeader tier="plus" label="Plus" />
                   <TierColumnHeader tier="premium" label="برو" />
                   <TierColumnHeader tier="proMax" label="برو ماكس" />
                 </tr>
@@ -205,6 +207,16 @@ export const TierComparisonTable: React.FC = () => {
                       <span className="text-[10px] font-bold text-slate-400 mr-1">{row.unit}</span>
                     </td>
                     {/* 🆕 (2026-05): الميزات المفتوحة للـ paid → "∞ مفتوح" بدل رقم */}
+                    <td className="text-center text-[12px] sm:text-sm font-black text-slate-700 px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-slate-50">
+                      {row.unlimitedForPaid ? (
+                        <span className="font-black text-slate-700">∞ مفتوح</span>
+                      ) : (
+                        <>
+                          {getValue(controls, row.plusKey)}
+                          <span className="text-[10px] font-bold text-slate-500 mr-1">{row.unit}</span>
+                        </>
+                      )}
+                    </td>
                     <td className="text-center text-[12px] sm:text-sm font-black text-warning-800 px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-warning-50/30">
                       {row.unlimitedForPaid ? (
                         <span className="font-black text-warning-700">∞ مفتوح</span>

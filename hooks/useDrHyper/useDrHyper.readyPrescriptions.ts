@@ -42,7 +42,7 @@ interface CreateReadyPrescriptionActionsParams {
     sanitizeForFirestore: (value: unknown) => unknown;
     showNotification: ShowNotification;
     getAccountTypeControls: () => Promise<any>;
-    resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'pro_max'>;
+    resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'plus' | 'pro_max'>;
     applyLimitPlaceholder: (template: string, limit: number, fallback: string) => string;
     dismissNotification: (id?: string, manual?: boolean) => void;
     openQuotaNoticeModal: (payload: { message: string; whatsappNumber?: string; whatsappUrl?: string; dayKey?: string; persist?: boolean }) => void;
@@ -181,7 +181,7 @@ export const createReadyPrescriptionActions = ({
     const ensureReadyPrescriptionDailyQuota = async (): Promise<boolean> => {
         // 🆕 (2026-05): paid tiers بدون فحص يومي لحفظ الروشتة الجاهزة
         const cachedAccountType = readCachedAccountType(user?.uid);
-        if (cachedAccountType === 'premium' || cachedAccountType === 'pro_max') {
+        if (cachedAccountType === 'premium' || cachedAccountType === 'plus' || cachedAccountType === 'pro_max') {
             return true; // skip Cloud Function call
         }
         try {

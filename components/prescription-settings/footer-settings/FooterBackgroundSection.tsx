@@ -21,7 +21,7 @@ export const FooterBackgroundSection: React.FC<FooterBackgroundSectionProps> = (
   showNotification,
   setFooterBgToCrop,
 }) => {
-  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
   const imageGate = useImageUploadGate();
 
   /**

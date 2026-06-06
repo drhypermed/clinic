@@ -140,7 +140,7 @@ ${currentQuestion}
       shouldClearSources: Boolean(parsed.shouldClearSources),
     };
   } catch {
-    return { isFollowUp: false, reformulatedQuery: currentQuestion, shouldClearSources: false };
+    return { isFollowUp: false, reformulatedQuery: currentQuestion, shouldClearSources: true };
   }
 };
 

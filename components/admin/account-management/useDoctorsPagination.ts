@@ -55,6 +55,7 @@ const mapDoctorSnapshot = (snapshotDoc: DoctorDocSnapshot): ApprovedDoctor => {
     // رابط مستند التحقق — لازم يتنقل من الـdoc حتى يظهر في كارت الإدارة
     verificationDocUrl: userData?.verificationDocUrl || '',
     accountType: userData?.accountType === 'premium' ? 'premium'
+      : userData?.accountType === 'plus' ? 'plus'
       : userData?.accountType === 'pro_max' ? 'pro_max'
       : 'free',
     premiumExpiryDate: userData?.premiumExpiryDate || '',

@@ -755,16 +755,50 @@ service cloud.firestore {
       allow delete: if isBookingOwner(secret) || isAdmin();
       allow list: if false;
     }
+    function isSecretaryForPublicBooking(secret) {
+      return request.auth != null &&
+        request.auth.uid.matches('^secretary:.+:.+$') &&
+        exists(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])) &&
+        get(/databases/$(database)/documents/bookingConfig/$(request.auth.uid.split(':')[1])).data.publicBookingSecret == secret;
+    }
+
+    function publicBookingSecretaryFormUpdateAllowed(secret) {
+      return isSecretaryForPublicBooking(secret) &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'title',
+          'contactInfo',
+          'publicFormSettingsByBranch',
+          'requireGoogleSignIn',
+          'updatedAt'
+        ]) &&
+        secretaryChangedOnlyOwnBranchKey('publicFormSettingsByBranch');
+    }
+
+    function publicSlotBranchForSecretary(data) {
+      return (!('branchId' in data) || !(data.branchId is string) || data.branchId == '')
+        ? 'main'
+        : data.branchId;
+    }
+
+    function publicSlotSecretaryWriteAllowed(secret, data) {
+      return isSecretaryForPublicBooking(secret) &&
+        publicSlotBranchForSecretary(data) == getSecretaryBranchIdFromUid();
+    }
+
     match /publicBookingConfig/{secret} {
       allow get: if
         resource.data.userId is string &&
         doctorAccountActiveForPublicAccess(resource.data.userId);
       allow list: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.publicBookingSecret == secret;
+      allow create, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.publicBookingSecret == secret;
+      allow update: if
+        isPublicBookingOwner(secret) ||
+        publicBookingSecretaryFormUpdateAllowed(secret);
       match /slots/{slotId} {
         allow get, list: if publicBookingSecretDoctorIsActive(secret);
         allow create, update: if
-          isPublicBookingOwner(secret) &&
+          (isPublicBookingOwner(secret) || publicSlotSecretaryWriteAllowed(secret, request.resource.data)) &&
           request.resource.data.keys().hasOnly(['dateTime', 'branchId']) &&
           request.resource.data.dateTime is string &&
           (!('branchId' in request.resource.data) || request.resource.data.branchId is string) &&
@@ -772,7 +806,7 @@ service cloud.firestore {
             get(/databases/$(database)/documents/publicBookingConfig/$(secret)).data.userId,
             request.resource.data
           );
-        allow delete: if isPublicBookingOwner(secret);
+        allow delete: if isPublicBookingOwner(secret) || publicSlotSecretaryWriteAllowed(secret, resource.data);
       }
     }
 

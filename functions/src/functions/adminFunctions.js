@@ -239,11 +239,13 @@ module.exports = ({
     const limitReachedMessage = applyLimitPlaceholder(pickTierValue(accountType, config, {
       freeKey: 'freeGuidelinesChatLimitMessage',
       premiumKey: 'premiumGuidelinesChatLimitMessage',
+      plusKey: 'plusGuidelinesChatLimitMessage',
       proMaxKey: 'proMaxGuidelinesChatLimitMessage',
     }), limit);
     const whatsappMessage = pickTierValue(accountType, config, {
       freeKey: 'freeGuidelinesChatWhatsappMessage',
       premiumKey: 'premiumGuidelinesChatWhatsappMessage',
+      plusKey: 'plusGuidelinesChatWhatsappMessage',
       proMaxKey: 'proMaxGuidelinesChatWhatsappMessage',
     });
 
@@ -343,6 +345,8 @@ module.exports = ({
       // برو وبرو ماكس نفس سقف الـ AI proxy (backstop) — الـ pro_max بيستخدم قيمة خاصة لو متوفرة
       const globalLimit = accountType === 'pro_max'
         ? (DEFAULT_AI_PROXY_LIMITS.proMaxDailyLimit ?? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit)
+        : accountType === 'plus'
+          ? DEFAULT_AI_PROXY_LIMITS.plusDailyLimit
         : accountType === 'premium'
           ? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit
           : DEFAULT_AI_PROXY_LIMITS.freeDailyLimit;
@@ -383,6 +387,7 @@ module.exports = ({
         guidelinesLimit = Number(pickTierValue(accountType, guidelinesChatConfig, {
           freeKey: 'freeGuidelinesChatDailyLimit',
           premiumKey: 'premiumGuidelinesChatDailyLimit',
+          plusKey: 'plusGuidelinesChatDailyLimit',
           proMaxKey: 'proMaxGuidelinesChatDailyLimit',
         }) || 0);
         guidelinesUsed = Number(usageDoc.mergedUsageData?.guidelinesChatCount || 0);

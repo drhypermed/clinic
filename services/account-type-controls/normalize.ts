@@ -51,6 +51,11 @@ export const toSafeLimit = (value: unknown, fallback: number): number => {
   return Math.min(MAX_LIMIT_VALUE, Math.max(0, Math.floor(n)));
 };
 
+const normalizeOpenPlusGuidelinesChatLimit = (value: unknown, fallback: number): number => {
+  const normalized = toSafeLimit(value, fallback);
+  return normalized > 0 ? normalized : fallback;
+};
+
 const toBoolean = (value: unknown, fallback: boolean): boolean => {
   if (typeof value === 'boolean') return value;
   return fallback;
@@ -410,6 +415,60 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     : normalizeMessageAllowEmpty(rawTagLabel, DEFAULT_CONTROLS.premiumTagLabel);
 
   // ═══ برو ماكس — القيم المحفوظة من الأدمن (مع fallback لـ DEFAULT_CONTROLS) ═══
+  const plusDefaults = DEFAULT_CONTROLS as Required<AccountTypeControls>;
+  const plusDailyLimit = toSafeLimit(raw?.plusDailyLimit, plusDefaults.plusDailyLimit);
+  const plusQuickAddDailyLimit = toSafeLimit(raw?.plusQuickAddDailyLimit, plusDefaults.plusQuickAddDailyLimit);
+  const plusRecordsMaxCount = toSafeLimit(raw?.plusRecordsMaxCount, plusDefaults.plusRecordsMaxCount);
+  const plusPublicBookingDailyLimit = toSafeLimit(raw?.plusPublicBookingDailyLimit, plusDefaults.plusPublicBookingDailyLimit);
+  const plusSecretaryEntryRequestDailyLimit = toSafeLimit(raw?.plusSecretaryEntryRequestDailyLimit, plusDefaults.plusSecretaryEntryRequestDailyLimit);
+  const plusReadyPrescriptionDailyLimit = toSafeLimit(raw?.plusReadyPrescriptionDailyLimit, plusDefaults.plusReadyPrescriptionDailyLimit);
+  const plusMedicalReportDailyLimit = toSafeLimit(raw?.plusMedicalReportDailyLimit, plusDefaults.plusMedicalReportDailyLimit);
+  const plusReadyPrescriptionsMaxCount = toSafeLimit(raw?.plusReadyPrescriptionsMaxCount, plusDefaults.plusReadyPrescriptionsMaxCount);
+  const plusMedicationCustomizationsMaxCount = toSafeLimit(raw?.plusMedicationCustomizationsMaxCount, plusDefaults.plusMedicationCustomizationsMaxCount);
+  const plusBranchesMaxCount = toSafeLimit(raw?.plusBranchesMaxCount, plusDefaults.plusBranchesMaxCount);
+  const plusInsuranceCompaniesMaxCount = toSafeLimit(raw?.plusInsuranceCompaniesMaxCount, plusDefaults.plusInsuranceCompaniesMaxCount);
+  const plusInteractionToolDailyLimit = toSafeLimit(raw?.plusInteractionToolDailyLimit, plusDefaults.plusInteractionToolDailyLimit);
+  const plusRenalToolDailyLimit = toSafeLimit(raw?.plusRenalToolDailyLimit, plusDefaults.plusRenalToolDailyLimit);
+  const plusGuidelinesChatDailyLimit = normalizeOpenPlusGuidelinesChatLimit(
+    raw?.plusGuidelinesChatDailyLimit,
+    plusDefaults.plusGuidelinesChatDailyLimit,
+  );
+  const plusPregnancyToolDailyLimit = toSafeLimit(raw?.plusPregnancyToolDailyLimit, plusDefaults.plusPregnancyToolDailyLimit);
+  const plusAnalysisLimitMessage = normalizeMessageAllowEmpty(raw?.plusAnalysisLimitMessage, plusDefaults.plusAnalysisLimitMessage);
+  const plusQuickAddLimitMessage = normalizeMessageAllowEmpty(raw?.plusQuickAddLimitMessage, plusDefaults.plusQuickAddLimitMessage);
+  const plusRecordsCapacityMessage = normalizeMessageAllowEmpty(raw?.plusRecordsCapacityMessage, plusDefaults.plusRecordsCapacityMessage);
+  const plusPublicBookingLimitMessage = normalizeMessageAllowEmpty(raw?.plusPublicBookingLimitMessage, plusDefaults.plusPublicBookingLimitMessage);
+  const plusSecretaryEntryRequestLimitMessage = normalizeMessageAllowEmpty(raw?.plusSecretaryEntryRequestLimitMessage, plusDefaults.plusSecretaryEntryRequestLimitMessage);
+  const plusReadyPrescriptionDailyLimitMessage = normalizeMessageAllowEmpty(raw?.plusReadyPrescriptionDailyLimitMessage, plusDefaults.plusReadyPrescriptionDailyLimitMessage);
+  const plusMedicalReportLimitMessage = normalizeMessageAllowEmpty(raw?.plusMedicalReportLimitMessage, plusDefaults.plusMedicalReportLimitMessage);
+  const plusReadyPrescriptionsCapacityMessage = normalizeMessageAllowEmpty(raw?.plusReadyPrescriptionsCapacityMessage, plusDefaults.plusReadyPrescriptionsCapacityMessage);
+  const plusMedicationCustomizationsCapacityMessage = normalizeMessageAllowEmpty(raw?.plusMedicationCustomizationsCapacityMessage, plusDefaults.plusMedicationCustomizationsCapacityMessage);
+  const plusBranchesCapacityMessage = normalizeMessageAllowEmpty(raw?.plusBranchesCapacityMessage, plusDefaults.plusBranchesCapacityMessage);
+  const plusInsuranceCompaniesCapacityMessage = normalizeMessageAllowEmpty(raw?.plusInsuranceCompaniesCapacityMessage, plusDefaults.plusInsuranceCompaniesCapacityMessage);
+  const plusInteractionToolLimitMessage = normalizeMessageAllowEmpty(raw?.plusInteractionToolLimitMessage, plusDefaults.plusInteractionToolLimitMessage);
+  const plusPregnancyToolLimitMessage = normalizeMessageAllowEmpty(raw?.plusPregnancyToolLimitMessage, plusDefaults.plusPregnancyToolLimitMessage);
+  const plusRenalToolLimitMessage = normalizeMessageAllowEmpty(raw?.plusRenalToolLimitMessage, plusDefaults.plusRenalToolLimitMessage);
+  const plusGuidelinesChatLimitMessage = normalizeMessageAllowEmpty(raw?.plusGuidelinesChatLimitMessage, plusDefaults.plusGuidelinesChatLimitMessage);
+  const plusAnalysisWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusAnalysisWhatsappMessage, plusDefaults.plusAnalysisWhatsappMessage);
+  const plusQuickAddWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusQuickAddWhatsappMessage, plusDefaults.plusQuickAddWhatsappMessage);
+  const plusRecordsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusRecordsCapacityWhatsappMessage, plusDefaults.plusRecordsCapacityWhatsappMessage);
+  const plusPublicBookingWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusPublicBookingWhatsappMessage, plusDefaults.plusPublicBookingWhatsappMessage);
+  const plusSecretaryEntryRequestWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusSecretaryEntryRequestWhatsappMessage, plusDefaults.plusSecretaryEntryRequestWhatsappMessage);
+  const plusReadyPrescriptionWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusReadyPrescriptionWhatsappMessage, plusDefaults.plusReadyPrescriptionWhatsappMessage);
+  const plusMedicalReportWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusMedicalReportWhatsappMessage, plusDefaults.plusMedicalReportWhatsappMessage);
+  const plusReadyPrescriptionsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusReadyPrescriptionsCapacityWhatsappMessage, plusDefaults.plusReadyPrescriptionsCapacityWhatsappMessage);
+  const plusMedicationCustomizationsCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusMedicationCustomizationsCapacityWhatsappMessage, plusDefaults.plusMedicationCustomizationsCapacityWhatsappMessage);
+  const plusBranchesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusBranchesCapacityWhatsappMessage, plusDefaults.plusBranchesCapacityWhatsappMessage);
+  const plusInsuranceCompaniesCapacityWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusInsuranceCompaniesCapacityWhatsappMessage, plusDefaults.plusInsuranceCompaniesCapacityWhatsappMessage);
+  const plusInteractionToolWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusInteractionToolWhatsappMessage, plusDefaults.plusInteractionToolWhatsappMessage);
+  const plusPregnancyToolWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusPregnancyToolWhatsappMessage, plusDefaults.plusPregnancyToolWhatsappMessage);
+  const plusRenalToolWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusRenalToolWhatsappMessage, plusDefaults.plusRenalToolWhatsappMessage);
+  const plusGuidelinesChatWhatsappMessage = normalizeMessageAllowEmpty(raw?.plusGuidelinesChatWhatsappMessage, plusDefaults.plusGuidelinesChatWhatsappMessage);
+  const rawPlusTagLabel = String(raw?.plusTagLabel || '').trim();
+  const plusTagLabel = rawPlusTagLabel
+    ? normalizeMessageAllowEmpty(rawPlusTagLabel, plusDefaults.plusTagLabel)
+    : plusDefaults.plusTagLabel;
+
   const proMaxDefaults = DEFAULT_CONTROLS as Required<AccountTypeControls>;
   const proMaxDailyLimit = toSafeLimit(raw?.proMaxDailyLimit, proMaxDefaults.proMaxDailyLimit);
   // 🆕 برو ماكس: حد + رسائل الزر السريع "إضافة بدون تحليل"
@@ -607,6 +666,52 @@ export const normalizeControls = (raw: any): AccountTypeControls => {
     premiumTagLabel,
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
     // برو ماكس
+    plusDailyLimit,
+    plusQuickAddDailyLimit,
+    plusQuickAddLimitMessage,
+    plusQuickAddWhatsappMessage,
+    plusRecordsMaxCount,
+    plusPublicBookingDailyLimit,
+    plusSecretaryEntryRequestDailyLimit,
+    plusReadyPrescriptionDailyLimit,
+    plusMedicalReportDailyLimit,
+    plusReadyPrescriptionsMaxCount,
+    plusMedicationCustomizationsMaxCount,
+    plusBranchesMaxCount,
+    plusInsuranceCompaniesMaxCount,
+    plusInteractionToolDailyLimit,
+    plusRenalToolDailyLimit,
+    plusPregnancyToolDailyLimit,
+    plusGuidelinesChatDailyLimit,
+    plusAnalysisLimitMessage,
+    plusRecordsCapacityMessage,
+    plusPublicBookingLimitMessage,
+    plusSecretaryEntryRequestLimitMessage,
+    plusReadyPrescriptionDailyLimitMessage,
+    plusMedicalReportLimitMessage,
+    plusReadyPrescriptionsCapacityMessage,
+    plusMedicationCustomizationsCapacityMessage,
+    plusBranchesCapacityMessage,
+    plusInsuranceCompaniesCapacityMessage,
+    plusInteractionToolLimitMessage,
+    plusPregnancyToolLimitMessage,
+    plusRenalToolLimitMessage,
+    plusGuidelinesChatLimitMessage,
+    plusAnalysisWhatsappMessage,
+    plusRecordsCapacityWhatsappMessage,
+    plusPublicBookingWhatsappMessage,
+    plusSecretaryEntryRequestWhatsappMessage,
+    plusReadyPrescriptionWhatsappMessage,
+    plusMedicalReportWhatsappMessage,
+    plusReadyPrescriptionsCapacityWhatsappMessage,
+    plusMedicationCustomizationsCapacityWhatsappMessage,
+    plusBranchesCapacityWhatsappMessage,
+    plusInsuranceCompaniesCapacityWhatsappMessage,
+    plusInteractionToolWhatsappMessage,
+    plusPregnancyToolWhatsappMessage,
+    plusRenalToolWhatsappMessage,
+    plusGuidelinesChatWhatsappMessage,
+    plusTagLabel,
     proMaxDailyLimit,
     // 🆕 برو ماكس: الزر السريع
     proMaxQuickAddDailyLimit,

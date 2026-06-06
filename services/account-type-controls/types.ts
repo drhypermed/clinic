@@ -81,7 +81,7 @@ export interface AccountTypeControls {
   freeInsuranceCompaniesCapacityMessage: string;
   premiumInsuranceCompaniesCapacityMessage: string;
   // ─── 🆕 رفع الصور: لو false (الافتراضي) → الحساب المجاني يشوف مودال
-  //     "ترقية للـPro" بدل ما يقدر يرفع صورة. الـPro/ProMax مش متأثرين.
+  //     "ترقية للـPro" بدل ما يقدر يرفع صورة. Plus/Pro/ProMax مش متأثرين.
   //     الاستثناء الوحيد: صورة الترخيص في إنشاء حساب (مش بتمر بهذا الفحص).
   freeImageUploadsEnabled: boolean;
   freeImageUploadsUpgradeMessage: string;
@@ -142,6 +142,53 @@ export interface AccountTypeControls {
   whatsappUrl: string;
 
   // ═══ فئة "برو ماكس" الجديدة — كل الحقول optional لأن الأدمن بيضبطها لاحقاً ═══
+  plusDailyLimit?: number;
+  plusQuickAddDailyLimit?: number;
+  plusQuickAddLimitMessage?: string;
+  plusQuickAddWhatsappMessage?: string;
+  plusRecordsMaxCount?: number;
+  plusPublicBookingDailyLimit?: number;
+  plusSecretaryEntryRequestDailyLimit?: number;
+  plusReadyPrescriptionDailyLimit?: number;
+  plusMedicalReportDailyLimit?: number;
+  plusReadyPrescriptionsMaxCount?: number;
+  plusMedicationCustomizationsMaxCount?: number;
+  plusBranchesMaxCount?: number;
+  plusInsuranceCompaniesMaxCount?: number;
+  plusInteractionToolDailyLimit?: number;
+  plusRenalToolDailyLimit?: number;
+  plusPregnancyToolDailyLimit?: number;
+  plusGuidelinesChatDailyLimit?: number;
+  plusInteractionToolLimitMessage?: string;
+  plusInteractionToolWhatsappMessage?: string;
+  plusPregnancyToolLimitMessage?: string;
+  plusPregnancyToolWhatsappMessage?: string;
+  plusRenalToolLimitMessage?: string;
+  plusRenalToolWhatsappMessage?: string;
+  plusGuidelinesChatLimitMessage?: string;
+  plusGuidelinesChatWhatsappMessage?: string;
+  plusAnalysisLimitMessage?: string;
+  plusRecordsCapacityMessage?: string;
+  plusPublicBookingLimitMessage?: string;
+  plusSecretaryEntryRequestLimitMessage?: string;
+  plusReadyPrescriptionDailyLimitMessage?: string;
+  plusMedicalReportLimitMessage?: string;
+  plusReadyPrescriptionsCapacityMessage?: string;
+  plusMedicationCustomizationsCapacityMessage?: string;
+  plusBranchesCapacityMessage?: string;
+  plusInsuranceCompaniesCapacityMessage?: string;
+  plusAnalysisWhatsappMessage?: string;
+  plusRecordsCapacityWhatsappMessage?: string;
+  plusPublicBookingWhatsappMessage?: string;
+  plusSecretaryEntryRequestWhatsappMessage?: string;
+  plusReadyPrescriptionWhatsappMessage?: string;
+  plusMedicalReportWhatsappMessage?: string;
+  plusReadyPrescriptionsCapacityWhatsappMessage?: string;
+  plusMedicationCustomizationsCapacityWhatsappMessage?: string;
+  plusBranchesCapacityWhatsappMessage?: string;
+  plusInsuranceCompaniesCapacityWhatsappMessage?: string;
+  plusTagLabel?: string;
+
   proMaxDailyLimit?: number;
   // 🆕 برو ماكس: حد + رسائل الزر السريع "إضافة بدون تحليل"
   proMaxQuickAddDailyLimit?: number;
@@ -196,7 +243,7 @@ export interface AccountTypeControls {
 
 /** نتيجة فحص الكوتة للتحليل الذكي للروشتة */
 export interface SmartPrescriptionQuotaResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   // 🆕 الـmode اللي اتفحص عليه: 'analyze' (الزر العميق) أو 'quickAdd' (الزر السريع)
   mode?: 'analyze' | 'quickAdd';
   limit: number;
@@ -211,7 +258,7 @@ export interface SmartPrescriptionQuotaResult {
 
 /** نتيجة فحص سعة السجلات (Records Capacity) — server-side بدلاً من client-side */
 export interface RecordsCapacityResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   limit: number;
   used: number;
   remaining: number;
@@ -223,7 +270,7 @@ export interface RecordsCapacityResult {
 
 /** نفس شكل النتيجة لباقي فحوصات السعة (روشتات جاهزة + أدوية معدّلة) */
 export interface CapacityCheckResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   limit: number;
   used: number;
   remaining: number;
@@ -243,7 +290,7 @@ export type StorageQuotaFeature =
 
 /** نتيجة فحص الكوتة لعمليات التخزين (سجلات/روشتات جاهزة) */
 export interface StorageQuotaResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   feature: StorageQuotaFeature;
   limit: number;
   used: number;
@@ -259,7 +306,7 @@ export type BookingQuotaFeature = 'publicBooking' | 'secretaryEntryRequest';
 
 /** نتيجة فحص الكوتة لعمليات الحجز والمواعيد */
 export interface BookingQuotaResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   feature: BookingQuotaFeature;
   limit: number;
   used: number;
@@ -275,7 +322,7 @@ export type DrugToolQuotaFeature = 'interactionTool' | 'renalTool' | 'pregnancyT
 
 /** نتيجة فحص الكوتة للأدوات الدوائية */
 export interface DrugToolQuotaResult {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   feature: DrugToolQuotaFeature;
   limit: number;
   used: number;
@@ -289,7 +336,7 @@ export interface DrugToolQuotaResult {
 
 /** هيكل تفاصيل خطأ تجاوز الحد (Quota Limit Error) */
 export interface SmartQuotaLimitErrorDetails {
-  accountType: 'free' | 'premium' | 'pro_max';
+  accountType: 'free' | 'premium' | 'plus' | 'pro_max';
   limit: number;
   used: number;
   remaining: number;

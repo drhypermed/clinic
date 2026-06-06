@@ -27,16 +27,22 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
   const previewUrl = buildWhatsAppUrl(whatsappNumber, form[plan.whatsappMessageKey]);
   // نعرف لو الخطة "برو" أو "برو ماكس" (الاتنين مدفوعين)
   // ملاحظة: `name` بقى 'برو' أو 'برو ماكس' بعد التحويل من 'مميز'
+  const isPlus = plan.name === 'Plus';
   const isPro = plan.name === 'برو' || plan.name === 'برو ماكس';
-  const messageValue = form[plan.messageKey] as string;
-  const whatsappMessageValue = form[plan.whatsappMessageKey] as string;
+  const messageValue = String(form[plan.messageKey] || '');
+  const whatsappMessageValue = String(form[plan.whatsappMessageKey] || '');
 
   return (
     // ─ min-w-0 ضروري عشان البطاقة تـshrink داخل الـgrid على الموبايل ─
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden min-w-0">
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden min-w-0 max-w-full">
       {/* Mini-header — subtle */}
       <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 bg-slate-50/60 min-w-0">
-        {isPro ? (
+        {isPlus ? (
+          <>
+            <FaCrown className="w-3 h-3 text-slate-500 shrink-0" />
+            <h4 className="text-xs font-black text-slate-700 truncate">{plan.name}</h4>
+          </>
+        ) : isPro ? (
           <>
             <FaCrown className="w-3 h-3 text-warning-500 shrink-0" />
             <h4 className="text-xs font-black text-warning-700 truncate">{plan.name}</h4>
@@ -52,7 +58,7 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
       <div className="p-3 space-y-3">
         {/* System message */}
         <div>
-          <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1">{plan.messageLabel}</label>
+          <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1 break-words">{plan.messageLabel}</label>
           <textarea
             value={messageValue}
             onChange={(e) =>
@@ -64,7 +70,7 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
             placeholder={plan.messagePlaceholder}
             rows={3}
             maxLength={500}
-            className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors resize-none"
+            className="w-full min-w-0 rounded-2xl border-2 border-slate-200 bg-white px-3 sm:px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors resize-none"
           />
           <p className="mt-1 text-[10px] text-slate-400 text-left" dir="ltr">
             {(messageValue || '').length}/500
@@ -73,7 +79,7 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
 
         {/* WhatsApp message */}
         <div>
-          <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1">{plan.whatsappLabel}</label>
+          <label className="block mb-1.5 text-[12px] font-black text-slate-700 px-1 break-words">{plan.whatsappLabel}</label>
           <textarea
             value={whatsappMessageValue}
             onChange={(e) =>
@@ -85,7 +91,7 @@ export const PlanConfigCard: React.FC<PlanConfigCardProps> = ({
             placeholder={plan.whatsappPlaceholder}
             rows={3}
             maxLength={500}
-            className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors resize-none"
+            className="w-full min-w-0 rounded-2xl border-2 border-slate-200 bg-white px-3 sm:px-4 py-2.5 text-sm font-bold text-slate-900 placeholder-slate-400 focus:border-brand-400 hover:border-brand-300 focus:outline-none transition-colors resize-none"
           />
           <p className="mt-1 text-[10px] text-slate-400 text-left" dir="ltr">
             {(whatsappMessageValue || '').length}/500

@@ -23,9 +23,16 @@ export interface ProMaxSubscriptionPrices {
   yearly: number;
 }
 
+export interface PlusSubscriptionPrices {
+  monthly: number;
+  sixMonths: number;
+  yearly: number;
+}
+
 export interface MonthlyPrices {
   month: string;
   prices: SubscriptionPrices;
+  plusPrices?: PlusSubscriptionPrices;
   /** أسعار برو ماكس — optional عشان الشهور القديمة ما تكسرش */
   proMaxPrices?: ProMaxSubscriptionPrices;
 }
@@ -42,6 +49,10 @@ export interface RevenueData {
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  plusMonthlyCount?: number;
+  plusSixMonthsCount?: number;
+  plusYearlyCount?: number;
+  plusRevenue?: number;
   // عدادات برو ماكس منفصلة — لكل مدة
   proMaxMonthlyCount?: number;
   proMaxSixMonthsCount?: number;
@@ -68,6 +79,10 @@ export interface YearlyStats extends Totals {
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  plusMonthlyCount?: number;
+  plusSixMonthsCount?: number;
+  plusYearlyCount?: number;
+  plusRevenue?: number;
   // عدادات برو ماكس منفصلة
   proMaxMonthlyCount?: number;
   proMaxSixMonthsCount?: number;

@@ -95,7 +95,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
     onError: (msg) => setError(msg),
   });
 
-  // ─ gate رفع الصور: Pro/ProMax مسموح، Free حسب إعدادات الأدمن
+  // ─ gate رفع الصور: Plus/Pro/ProMax مسموح، Free حسب إعدادات الأدمن
   const imageGate = useImageUploadGate();
 
   // فحص حالة اشتراك برو لعرض شارة التميز
@@ -104,7 +104,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
   const premiumEndStatus = getExpiryStatus(premiumEndDate, nowMs);
   const isProExpired = premiumEndStatus.isExpired;
   // برو وبرو ماكس الاتنين يحسبوا Pro لعرض حالة الاشتراك
-  const isProAccount = (accountType === 'premium' || accountType === 'pro_max' || isPro) && !isProExpired;
+  const isProAccount = (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max' || isPro) && !isProExpired;
 
   // ─── مساعدات تنسيق تواريخ الاشتراك ──────────────────────────────────
   const formatSubscriptionDate = (dateValue: string) => {
@@ -128,7 +128,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
   // فتح واتساب الدعم لتجديد الاشتراك
   const handleContactRenewalWhatsApp = () => {
     const phoneNumber = '201092805293';
-    const message = encodeURIComponent('مرحبًا، انتهى اشتراكي برو وأرغب في تجديد الاشتراك.');
+    const message = encodeURIComponent('مرحبًا، انتهى اشتراكي المدفوع وأرغب في تجديد الاشتراك.');
     if (typeof window !== 'undefined') {
       window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank', 'noopener,noreferrer');
     }
@@ -381,6 +381,7 @@ export const DoctorProfileModal: React.FC<DoctorProfileModalProps> = ({
                   // نمرّر الفئة الفعلية عشان البطاقة تعرف إذا كانت برو ولا برو ماكس
                   tier={
                     accountType === 'pro_max' ? 'pro_max'
+                    : accountType === 'plus' ? 'plus'
                     : accountType === 'premium' ? 'pro'
                     : 'free'
                   }

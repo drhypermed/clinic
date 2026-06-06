@@ -49,12 +49,23 @@ interface MonthPricesRaw {
   monthly?: number;
   sixMonths?: number;
   yearly?: number;
+  plusPrices?: {
+    monthly?: number;
+    sixMonths?: number;
+    yearly?: number;
+  };
   proMaxPrices?: {
     monthly?: number;
     sixMonths?: number;
     yearly?: number;
   };
 }
+
+const DEFAULT_PLUS_PRICES: Record<SubscriptionPlanType, number> = {
+  monthly: 500,
+  sixMonths: 2700,
+  yearly: 5000,
+};
 
 const toSafePrice = (value: unknown): number => {
   const numeric = Number(value);
@@ -78,9 +89,19 @@ const fetchSubscriptionPrice = async (params: {
 
   try {
     const snap = await getDoc(doc(db, 'subscriptionPrices', monthDocId));
-    if (!snap.exists()) return { price: 0, source: 'unknown' };
+    if (!snap.exists()) {
+      return params.tier === 'plus'
+        ? { price: DEFAULT_PLUS_PRICES[params.planType], source: 'pricing_table' }
+        : { price: 0, source: 'unknown' };
+    }
 
     const raw = snap.data() as MonthPricesRaw;
+
+    if (params.tier === 'plus') {
+      const plusPrice = toSafePrice(raw.plusPrices?.[params.planType]);
+      if (plusPrice > 0) return { price: plusPrice, source: 'pricing_table' };
+      return { price: DEFAULT_PLUS_PRICES[params.planType], source: 'pricing_table' };
+    }
 
     // برو ماكس: نحاول من proMaxPrices الأول، fallback على أسعار برو لو ما اتحطتش.
     if (params.tier === 'pro_max') {

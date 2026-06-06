@@ -5,25 +5,60 @@ module.exports = ({ getDb }) => {
   const EMBEDDING_DIMENSIONS = 768;
   const VECTOR_FIELD = 'embeddingVector';
   const VECTOR_DISTANCE_FIELD = '_vectorDistance';
+  const SEARCH_RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+  const SEARCH_RESULT_CACHE_MAX_ENTRIES = 300;
+  const searchResultCache = new Map();
   const RETRIEVAL_LIMITS = {
-    vector: 70,
-    vectorComparison: 100,
-    prefixDefault: 320,
-    selectedKeyword: 260,
-    focusedKeyword: 180,
-    schoolKeyword: 30,
-    broadKeyword: 260,
-    sourceScoped: 320,
-    collectionScan: 360,
-    collectionScanComparison: 520,
-    broadComparisonScan: 420,
-    hydrateExtra: 10,
-    neighborRoots: 4,
-    neighborDocReads: 24,
-    bookPageRead: 90,
+    vector: 45,
+    vectorComparison: 70,
+    prefixDefault: 160,
+    selectedKeyword: 90,
+    focusedKeyword: 60,
+    schoolKeyword: 8,
+    broadKeyword: 80,
+    sourceScoped: 90,
+    collectionScan: 90,
+    collectionScanComparison: 140,
+    broadComparisonScan: 120,
+    hydrateExtra: 6,
+    neighborRoots: 3,
+    neighborDocReads: 12,
+    bookPageRead: 45,
   };
+  const ALL_GUIDELINE_SCHOOLS = [
+    'NICE', 'GINA', 'KDIGO', 'ADA', 'EASL', 'Endocrine', 'ESC', 'ACC', 'ACP', 'ACG', 'AGA', 'GOLD', 'EASD', 'AAD',
+    'AAOS', 'AAP', 'AAPMR', 'ACOG', 'ACR', 'AUA', 'EAU', 'Audiology', 'ASHA', 'ASH', 'ASA', 'ESPEN', 'ADA_Dental',
+    'CDC_ACIP',
+  ];
 
   const normalizePathCandidate = (value) => String(value || '').replace(/\\/g, '/').trim();
+
+  const makeSearchCacheKey = ({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource }) =>
+    JSON.stringify({
+      q: normalizeSearchText(query).slice(0, 500),
+      c: selectedCollectionId || '',
+      s: sourcePathCandidates.slice(0, 10),
+      l: limit,
+      strict: Boolean(strictSource),
+    });
+
+  const getCachedSearchResult = (key) => {
+    const cached = searchResultCache.get(key);
+    if (!cached) return null;
+    if (Date.now() - cached.createdAt > SEARCH_RESULT_CACHE_TTL_MS) {
+      searchResultCache.delete(key);
+      return null;
+    }
+    return cached.value;
+  };
+
+  const setCachedSearchResult = (key, value) => {
+    searchResultCache.set(key, { createdAt: Date.now(), value });
+    if (searchResultCache.size > SEARCH_RESULT_CACHE_MAX_ENTRIES) {
+      const oldestKey = searchResultCache.keys().next().value;
+      if (oldestKey) searchResultCache.delete(oldestKey);
+    }
+  };
 
   const buildSourcePathCandidates = (data) => {
     const candidates = new Set();
@@ -379,7 +414,7 @@ module.exports = ({ getDb }) => {
     }
   };
 
-  const fetchKeywordCandidates = async ({ db, profile, selectedCollectionId, focusCollections }) => {
+  const fetchKeywordCandidates = async ({ db, profile, selectedCollectionId, focusCollections, vectorCandidateCount = 0 }) => {
     const chunksRef = db.collection('guideline_chunk_search');
     const candidates = new Map();
     const terms = Array.from(new Set([
@@ -465,13 +500,10 @@ module.exports = ({ getDb }) => {
         );
       }
 
-      const shouldQueryEverySchool = focusCollections.length === 0 || profile.plan.needsComparison;
+      const vectorCoveredGeneralSearch = vectorCandidateCount >= 24 && !profile.plan.needsComparison;
+      const shouldQueryEverySchool = !vectorCoveredGeneralSearch && (focusCollections.length === 0 || profile.plan.needsComparison);
       if (shouldQueryEverySchool) {
-        const schools = [
-          'NICE', 'GINA', 'KDIGO', 'ADA', 'EASL', 'Endocrine', 'ESC', 'ACC', 'ACP', 'ACG', 'AGA', 'GOLD', 'EASD', 'AAD',
-          'AAOS', 'AAP', 'AAPMR', 'ACOG', 'ACR', 'AUA', 'EAU', 'Audiology', 'ASHA', 'ASH', 'ASA', 'ESPEN', 'ADA_Dental',
-        ];
-        for (const school of schools) {
+        for (const school of ALL_GUIDELINE_SCHOOLS) {
           jobs.push(
             chunksRef.where('keywords', 'array-contains-any', terms)
               .where('school', '==', school)
@@ -483,9 +515,11 @@ module.exports = ({ getDb }) => {
         }
       }
 
-      jobs.push(chunksRef.where('keywords', 'array-contains-any', terms).limit(RETRIEVAL_LIMITS.broadKeyword).get().then(collect).catch((error) => {
-        console.warn('[searchGuidelineIndex] broad keyword query failed', { message: error.message });
-      }));
+      if (!vectorCoveredGeneralSearch) {
+        jobs.push(chunksRef.where('keywords', 'array-contains-any', terms).limit(RETRIEVAL_LIMITS.broadKeyword).get().then(collect).catch((error) => {
+          console.warn('[searchGuidelineIndex] broad keyword query failed', { message: error.message });
+        }));
+      }
     }
 
     await Promise.all(jobs);
@@ -725,7 +759,15 @@ module.exports = ({ getDb }) => {
       })
       .slice(0, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra));
 
-    const hydrated = await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra));
+    const shouldHydrateFullText = Boolean(
+      options.strictSource
+      || profile.plan?.needsComparison
+      || profile.plan?.isHighRisk
+      || profile.plan?.needsSourceTrace
+    );
+    const hydrated = shouldHydrateFullText
+      ? await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra))
+      : prelim;
     const ranked = hydrated
       .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, profile, options) }))
       .filter((chunk) => chunk.score >= 8)
@@ -739,7 +781,9 @@ module.exports = ({ getDb }) => {
     const roots = profile.plan?.needsComparison
       ? diversifyForComparison(reranked, Math.max(10, limit))
       : diversifyByBook(reranked, Math.max(8, limit));
-    const withContext = await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots });
+    const withContext = shouldHydrateFullText
+      ? await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots })
+      : roots;
     return withContext
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
@@ -754,6 +798,7 @@ module.exports = ({ getDb }) => {
     const query = String(data.query || '').trim();
     const selectedCollectionId = data.selectedCollectionId ? String(data.selectedCollectionId) : '';
     const limit = Math.min(24, Math.max(8, Number(data.limit || 24) || 24));
+    const strictSource = Boolean(data.strictSource);
 
     if (!query) return { results: [] };
 
@@ -762,6 +807,15 @@ module.exports = ({ getDb }) => {
 
     const db = getDb();
     const sourcePathCandidates = buildSourcePathCandidates(data);
+    const cacheKey = makeSearchCacheKey({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource });
+    const cachedResult = getCachedSearchResult(cacheKey);
+    if (cachedResult) return {
+      ...cachedResult,
+      meta: {
+        ...(cachedResult.meta || {}),
+        cacheHit: true,
+      },
+    };
     const focusCollections = inferFocusCollections(profile);
     const queryEmbedding = await embedQuery(query);
     const options = {
@@ -769,6 +823,7 @@ module.exports = ({ getDb }) => {
       sourcePathCandidates,
       focusCollections,
       queryEmbedding,
+      strictSource,
     };
 
     let candidates = [];
@@ -787,19 +842,29 @@ module.exports = ({ getDb }) => {
       candidates = Array.from(byId.values());
     }
 
-    if (candidates.length === 0 || sourcePathCandidates.length === 0) {
+    const vectorCoversRoutineSearch = Boolean(
+      vectorCandidates.length >= 36
+      && sourcePathCandidates.length === 0
+      && !selectedCollectionId
+      && !profile.plan.needsComparison
+      && !profile.plan.isHighRisk
+      && !profile.plan.needsSourceTrace
+    );
+
+    if (!vectorCoversRoutineSearch && (candidates.length === 0 || sourcePathCandidates.length === 0)) {
       const keywordCandidates = await fetchKeywordCandidates({
         db,
         profile,
         selectedCollectionId,
         focusCollections,
+        vectorCandidateCount: vectorCandidates.length,
       });
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       keywordCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'keyword'));
       candidates = Array.from(byId.values());
     }
 
-    if ((candidates.length < 24 || profile.plan.needsComparison) && !hasHighConfidenceSourceCandidates(profile, candidates)) {
+    if ((candidates.length < 18 || profile.plan.needsComparison) && !hasHighConfidenceSourceCandidates(profile, candidates)) {
       const scanCandidates = await fetchCollectionScanCandidates({
         db,
         selectedCollectionId,
@@ -812,7 +877,7 @@ module.exports = ({ getDb }) => {
     }
 
     const results = await rankAndShapeResults({ db, candidates, profile, options, limit });
-    return {
+    const response = {
       results,
       meta: {
         intentTags: profile.intentTags,
@@ -825,8 +890,12 @@ module.exports = ({ getDb }) => {
             : (profile.plan.needsComparison ? 'comparison-hybrid-vector-fallback' : 'hybrid-vector-fallback-rerank'))
           : (profile.plan.needsComparison ? 'comparison-hybrid' : 'hybrid-keyword-semantic-rerank'),
         vectorCandidateCount: vectorCandidates.length,
+        fullTextHydrated: Boolean(options.strictSource || profile.plan?.needsComparison || profile.plan?.isHighRisk || profile.plan?.needsSourceTrace),
+        cacheHit: false,
       },
     };
+    setCachedSearchResult(cacheKey, response);
+    return response;
   };
 
   const listGuidelineBooks = async (request) => {

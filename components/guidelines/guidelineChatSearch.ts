@@ -8,6 +8,15 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebaseConfig';
 import { hasReliablePdfPageNumbers } from './guidelineSourceUtils';
+import {
+  cacheGuidelineBookList,
+  cacheGuidelineBookText,
+  getCachedGuidelineBookList,
+  getCachedGuidelineBookText,
+  makeGuidelineBookListCacheKey,
+  makeGuidelineBookTextCacheKey,
+} from './guidelineBookLocalCache';
+import { getGuidelineBookTextStatic } from './guidelineStaticBookService';
 
 export type GuidelineChatScope = 'current-guideline' | 'all-guidelines' | 'current-file';
 
@@ -109,6 +118,41 @@ export class GuidelineChatSearchError extends Error {
     this.originalError = originalError;
   }
 }
+
+const SEARCH_CACHE_TTL_MS = 30 * 60 * 1000;
+const SEARCH_CACHE_MAX_ENTRIES = 80;
+const guidelineSearchCache = new Map<string, { createdAt: number; results: GuidelineChatSourceChunk[] }>();
+
+const getGuidelineSearchCacheKey = (
+  query: string,
+  context: GuidelineChatSearchContext,
+  limit: number,
+  selectedSource?: Pick<GuidelineSource, 'localFile' | 'title' | 'folderTitle'> | null,
+) => JSON.stringify({
+  q: query.replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 500),
+  scope: context.scope,
+  collection: context.scope !== 'all-guidelines' ? (context.selectedCollectionId || '') : '',
+  source: context.scope === 'current-file' ? (selectedSource?.localFile || selectedSource?.title || '') : '',
+  limit,
+});
+
+const getCachedGuidelineSearch = (key: string) => {
+  const cached = guidelineSearchCache.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.createdAt > SEARCH_CACHE_TTL_MS) {
+    guidelineSearchCache.delete(key);
+    return null;
+  }
+  return cached.results;
+};
+
+const setCachedGuidelineSearch = (key: string, results: GuidelineChatSourceChunk[]) => {
+  guidelineSearchCache.set(key, { createdAt: Date.now(), results });
+  if (guidelineSearchCache.size > SEARCH_CACHE_MAX_ENTRIES) {
+    const oldestKey = guidelineSearchCache.keys().next().value;
+    if (oldestKey) guidelineSearchCache.delete(oldestKey);
+  }
+};
 
 const normalizeSearchText = (value: string) =>
   value
@@ -308,6 +352,10 @@ export const searchGuidelineChatIndexCloud = async (
   limit = 12,
   selectedSource?: Pick<GuidelineSource, 'localFile' | 'title' | 'folderTitle'> | null,
 ): Promise<GuidelineChatSourceChunk[]> => {
+  const cacheKey = getGuidelineSearchCacheKey(query, context, limit, selectedSource);
+  const cached = getCachedGuidelineSearch(cacheKey);
+  if (cached) return cached;
+
   try {
     const searchFn = httpsCallable<
       {
@@ -345,10 +393,14 @@ export const searchGuidelineChatIndexCloud = async (
                chunkLocalFile.endsWith('/' + normalizedLocalFile) ||
                normalizedLocalFile.endsWith('/' + chunkLocalFile);
       });
-      return filtered.slice(0, limit);
+      const scopedResults = filtered.slice(0, limit);
+      setCachedGuidelineSearch(cacheKey, scopedResults);
+      return scopedResults;
     }
 
-    return results.slice(0, limit);
+    const limitedResults = results.slice(0, limit);
+    setCachedGuidelineSearch(cacheKey, limitedResults);
+    return limitedResults;
   } catch (error) {
     console.error('Error calling searchGuidelineIndex cloud function:', error);
     throw new GuidelineChatSearchError('Guideline source search failed', error);
@@ -358,16 +410,22 @@ export const searchGuidelineChatIndexCloud = async (
 export const listGuidelineBooksCloud = async (
   selectedCollectionId?: string | null,
 ): Promise<GuidelineBookSummary[]> => {
+  const cacheKey = makeGuidelineBookListCacheKey(selectedCollectionId);
+  const cached = await getCachedGuidelineBookList(cacheKey);
+  if (cached) return cached;
+
   try {
     const listFn = httpsCallable<
       { selectedCollectionId?: string | null },
       { books: GuidelineBookSummary[] }
     >(functions, 'listGuidelineBooks');
     const response = await listFn({ selectedCollectionId: selectedCollectionId || null });
-    return response.data?.books || [];
+    const books = response.data?.books || [];
+    void cacheGuidelineBookList(cacheKey, books);
+    return books;
   } catch (error) {
     console.error('Error calling listGuidelineBooks cloud function:', error);
-    return [];
+    return cached || [];
   }
 };
 
@@ -382,20 +440,32 @@ export const getGuidelineBookTextCloud = async (
     samplingMode?: 'summary';
   },
 ): Promise<GuidelineBookTextResponse> => {
+  const cacheKey = makeGuidelineBookTextCacheKey(params);
+  const cached = await getCachedGuidelineBookText(cacheKey);
+  if (cached) return cached;
+
+  const staticResult = await getGuidelineBookTextStatic(params);
+  if (staticResult) {
+    void cacheGuidelineBookText(cacheKey, staticResult);
+    return staticResult;
+  }
+
   try {
     const getFn = httpsCallable<
       typeof params,
       GuidelineBookTextResponse
     >(functions, 'getGuidelineBookText');
     const response = await getFn(params);
-    return {
+    const result = {
       book: response.data?.book || null,
       chunks: response.data?.chunks || [],
       nextAfterChunkIndex: response.data?.nextAfterChunkIndex ?? null,
       hasMore: Boolean(response.data?.hasMore),
     };
+    void cacheGuidelineBookText(cacheKey, result);
+    return result;
   } catch (error) {
     console.error('Error calling getGuidelineBookText cloud function:', error);
-    return { book: null, chunks: [], nextAfterChunkIndex: null, hasMore: false };
+    return cached || { book: null, chunks: [], nextAfterChunkIndex: null, hasMore: false };
   }
 };

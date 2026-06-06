@@ -20,7 +20,7 @@ import {
 import { ADA_2026_EXPLANATIONS } from './data/ada2026/adaExplanations';
 import { GuidelineSourceTree, localizeNumber, renderHighlightedText } from './GuidelineSourceTree';
 
-type GuidelinesAccountType = 'free' | 'premium' | 'pro_max';
+type GuidelinesAccountType = 'free' | 'premium' | 'plus' | 'pro_max';
 
 const getLanguageDirection = (language: GuidelineLanguage) => (language === 'ar' ? 'rtl' : 'ltr');
 
@@ -190,7 +190,7 @@ export const GuidelinesLibraryPage: React.FC<{
   }, [collectionData?.topics, selectedSource]);
 
   const isArabic = language === 'ar';
-  const isFreeGuidelinesPlan = accountType !== 'premium' && accountType !== 'pro_max';
+  const isFreeGuidelinesPlan = accountType !== 'premium' && accountType !== 'plus' && accountType !== 'pro_max';
   const localizedDirection = getLanguageDirection(language);
   const localizedTextAlign = getLanguageTextAlign(language);
   const englishTextClass = 'text-left [unicode-bidi:plaintext]';
@@ -342,8 +342,8 @@ export const GuidelinesLibraryPage: React.FC<{
               isFreeGuidelinesPlan={isFreeGuidelinesPlan}
               onLockedGuidelineClick={() => {
                 const message = isArabic
-                  ? 'هذا الجايدلاين يحتاج اشتراك في باقة برو أو برو ماكس لفتحه.'
-                  : 'This guideline requires a Pro or Pro Max subscription to open.';
+                  ? 'هذا الجايدلاين مفتوح للحسابات المدفوعة: Plus أو برو أو برو ماكس.'
+                  : 'This guideline is open for paid plans: Plus, Pro, or Pro Max.';
                 if (showNotification) {
                   showNotification(message, 'warning');
                 } else {

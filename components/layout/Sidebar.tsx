@@ -90,6 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }, [currentView]);
     const { isPro, tier } = usePremiumExpiryCheck(user);
     const isProMax = tier === 'pro_max';
+    const isPlus = tier === 'plus';
     const pendingDoctorsCount = usePendingDoctorsCount();
     const isAdminUser = useIsAdmin(user);
     const verificationStatus = (user as any)?.verificationStatus;
@@ -263,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <p className={`text-base font-black text-slate-800 truncate max-w-[160px]`}>
                         {displayName}
                     </p>
-                    {/* شارة التحقق: تاج ذهبي (برو) أو تاج برو ماكس مع Pro Max label + علامة صح */}
+                    {/* شارة التحقق: تاج فضي (Plus) أو تاج ذهبي (برو) أو تاج برو ماكس + علامة صح */}
                     {isAdminVerified && (
                         isProMax ? (
                             // برو ماكس: تاج ذهبي + علامة صح زرقاء — استثناء دلالي (gold premium)
@@ -275,6 +276,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     Pro Max
                                 </span>
                                 {/* علامة صح زرقاء فقط (text-blue-500 بدل brand-500 اللي مش معرف) */}
+                                <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                                    <path fill="white" d="M10 15l-3.5-3.5 1.5-1.5L10 12l6-6 1.5 1.5L10 15z" />
+                                </svg>
+                            </span>
+                        ) : isPlus ? (
+                            <span className="inline-flex items-center gap-1 shrink-0">
+                                <svg className="w-5 h-5 text-slate-400 drop-shadow-[0_1px_3px_rgba(100,116,139,0.45)] transition-all duration-300" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+                                </svg>
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 border border-slate-400 text-slate-700 text-[8.5px] font-black tracking-wider uppercase">
+                                    Plus
+                                </span>
                                 <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
                                     <path fill="white" d="M10 15l-3.5-3.5 1.5-1.5L10 12l6-6 1.5 1.5L10 15z" />

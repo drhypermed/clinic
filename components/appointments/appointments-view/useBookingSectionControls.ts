@@ -21,6 +21,17 @@ import {
   normalizeSecretaryVitalFieldDefinitions,
   normalizeSecretaryVitalsVisibility,
 } from '../../../utils/secretaryVitals';
+
+const pad2 = (value: number) => String(value).padStart(2, '0');
+
+const toPublicSlotInputParts = (dateTime: string) => {
+  const date = new Date(dateTime);
+  if (Number.isNaN(date.getTime())) return { dateStr: toLocalDateStr(new Date()), timeStr: '' };
+  return {
+    dateStr: toLocalDateStr(date),
+    timeStr: `${pad2(date.getHours())}:${pad2(date.getMinutes())}`,
+  };
+};
 /**
  * الملف: useBookingSectionControls.ts (Hook)
  * الوصف: هذا الـ Hook مسؤول عن "إدارة روابط الحجز" بمختلف أنواعها. 
@@ -124,6 +135,10 @@ export const useBookingSectionControls = ({
   const [publicFormContactInfo, setPublicFormContactInfo] = useState('');
   const [publicFormSaving, setPublicFormSaving] = useState(false);
   const [isPublicSettingsSaved, setIsPublicSettingsSaved] = useState(false);
+  const [editingPublicSlotId, setEditingPublicSlotId] = useState<string | null>(null);
+  const [editingPublicSlotDateStr, setEditingPublicSlotDateStr] = useState('');
+  const [editingPublicSlotTimeStr, setEditingPublicSlotTimeStr] = useState('');
+  const [publicSlotUpdating, setPublicSlotUpdating] = useState(false);
 
   // 1. جلب أو توليد المعرف السري لروابط حجز السكرتارية
   useEffect(() => {
@@ -250,40 +265,22 @@ export const useBookingSectionControls = ({
     return firestoreService.subscribeToPublicSlots(publicBookingSecret, setPublicSlots);
   }, [publicSectionOpen, publicBookingSecret]);
 
-  // Counter لحماية بيانات نموذج الجمهور من stale responses عند تغيُّر الـsecret.
-  const publicFormRequestIdRef = useRef(0);
-
   // 5. جلب إعدادات نموذج حجز الجمهور
   useEffect(() => {
     if (!publicSectionOpen || !publicBookingSecret) return;
-
-    publicFormRequestIdRef.current += 1;
-    const myRequestId = publicFormRequestIdRef.current;
 
     // مسح الحقول القديمه فوراً عند تغيُّر الـsecret — قبل الإصلاح، لو الـconfig
     // رجع null أو الـpromise رفض، الحقول كانت تفضل بقيم دكتور سابق وممكن
     // تتحفظ بالغلط على السياق الحالي.
     setPublicFormTitle('');
     setPublicFormContactInfo('');
-    firestoreService.getPublicBookingConfig(publicBookingSecret)
-      .then((config) => {
-        if (publicFormRequestIdRef.current !== myRequestId) return;
-        // null = الدكتور ما عملش publish لإعدادات بعد — نسيب الحقول فاضيه
-        // (المسح اللي عملناه فوق) عشان السكرتيره تكتب من الصفر للسياق الحالي.
-        if (config) {
-          const branchSettings = config.publicFormSettingsByBranch?.[effectivePublicBranchId];
-          const legacyTitle = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.title : '';
-          const legacyContactInfo = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.contactInfo : '';
-          setPublicFormTitle(branchSettings?.title ?? legacyTitle ?? '');
-          setPublicFormContactInfo(branchSettings?.contactInfo ?? legacyContactInfo ?? '');
-        }
-      })
-      .catch((err) => {
-        if (publicFormRequestIdRef.current !== myRequestId) return;
-        console.warn('[Secretary] Failed to load public booking config:', err);
-        // الحقول اتمسحت فوق فعلاً — مفيش لازم نعمل setState تاني، بس لو رجع
-        // الاتصال هي تظهر فاضيه بدل قيم قديمه ضلّاله.
-      });
+    return firestoreService.subscribeToPublicConfig(publicBookingSecret, (config) => {
+      const branchSettings = config.publicFormSettingsByBranch?.[effectivePublicBranchId];
+      const legacyTitle = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.title : '';
+      const legacyContactInfo = effectivePublicBranchId === DEFAULT_BRANCH_ID ? config.contactInfo : '';
+      setPublicFormTitle(branchSettings?.title ?? legacyTitle ?? '');
+      setPublicFormContactInfo(branchSettings?.contactInfo ?? legacyContactInfo ?? '');
+    });
   }, [publicSectionOpen, publicBookingSecret, effectivePublicBranchId]);
 
   // Counter يزيد مع كل تغيُّر context للسكرتارية (secret/branch/user) — يحمي من
@@ -558,6 +555,39 @@ export const useBookingSectionControls = ({
     if (publicBookingSecret) firestoreService.deletePublicSlot(publicBookingSecret, slotId).catch(() => {});
   };
 
+  const startEditPublicSlot = (slot: PublicBookingSlot) => {
+    const { dateStr, timeStr } = toPublicSlotInputParts(slot.dateTime);
+    setEditingPublicSlotId(slot.id);
+    setEditingPublicSlotDateStr(dateStr);
+    setEditingPublicSlotTimeStr(timeStr);
+  };
+
+  const cancelEditPublicSlot = () => {
+    setEditingPublicSlotId(null);
+    setEditingPublicSlotDateStr('');
+    setEditingPublicSlotTimeStr('');
+  };
+
+  const saveEditedPublicSlot = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!publicBookingSecret || !editingPublicSlotId) return;
+    const dt = buildLocalDateTime(editingPublicSlotDateStr, editingPublicSlotTimeStr);
+    if (Number.isNaN(dt.getTime()) || dt.getTime() < Date.now()) return;
+
+    setPublicSlotUpdating(true);
+    try {
+      await firestoreService.updatePublicSlot(
+        publicBookingSecret,
+        editingPublicSlotId,
+        dt.toISOString(),
+        effectivePublicBranchId,
+      );
+      cancelEditPublicSlot();
+    } finally {
+      setPublicSlotUpdating(false);
+    }
+  };
+
   const visiblePublicSlots = useMemo(() => {
     if (!hasMultipleBranches) return publicSlots;
     return publicSlots.filter((slot) => (slot.branchId || DEFAULT_BRANCH_ID) === effectivePublicBranchId);
@@ -598,6 +628,9 @@ export const useBookingSectionControls = ({
     publicBookingLink, publicBookingSecret, publicSectionOpen, togglePublicSection: () => setPublicSectionOpen(!publicSectionOpen),
     publicSlots: visiblePublicSlots, publicSlotDateStr, setPublicSlotDateStr, publicSlotTimeStr, setPublicSlotTimeStr,
     publicLinkCopied, copyPublicLink, publicSlotAdding, addPublicSlot, removePublicSlot,
+    editingPublicSlotId, editingPublicSlotDateStr, setEditingPublicSlotDateStr,
+    editingPublicSlotTimeStr, setEditingPublicSlotTimeStr, publicSlotUpdating,
+    startEditPublicSlot, cancelEditPublicSlot, saveEditedPublicSlot,
     publicFormTitle, setPublicFormTitle, publicFormContactInfo, setPublicFormContactInfo,
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr: toLocalDateStr(new Date()), publicTimeMin: publicSlotDateStr === toLocalDateStr(new Date()) ? currentTimeMin() : undefined,

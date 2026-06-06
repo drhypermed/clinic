@@ -11,13 +11,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { FormEvent } from 'react';
 import { firestoreService } from '../../../services/firestore';
-import type { Branch, PublicBookingSlot, PublicBranchInfo } from '../../../types';
+import type { Branch, PublicBookingSlot } from '../../../types';
 import { formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { useCopyFeedback } from '../../../hooks/useCopyFeedback';
 import { appendBranchToPublicBookingUrl, buildPublicBookingUrl } from '../../../utils/publicBookingLinks';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
 import { getDefaultTimeStr } from './helpers';
 import { DEFAULT_BRANCH_ID } from '../../../services/firestore/branches';
+
+const pad2 = (value: number) => String(value).padStart(2, '0');
+
+const toSlotInputParts = (dateTime: string) => {
+  const date = new Date(dateTime);
+  if (Number.isNaN(date.getTime())) return { dateStr: toLocalDateStr(new Date()), timeStr: getDefaultTimeStr() };
+  return {
+    dateStr: toLocalDateStr(date),
+    timeStr: `${pad2(date.getHours())}:${pad2(date.getMinutes())}`,
+  };
+};
 
 type UsePublicBookingPublicSectionParams = {
   userId: string;
@@ -49,8 +60,14 @@ export const usePublicBookingPublicSection = ({
   const [publicSlotAdding, setPublicSlotAdding] = useState(false);
   const [publicSlotError, setPublicSlotError] = useState<string | null>(null);
   const { copied: publicLinkCopied, copy: copyPublicBookingLinkToClipboard } = useCopyFeedback();
-  const [branchAddresses, setBranchAddresses] = useState<Record<string, string>>({});
-  const [branchAddressesSaving, setBranchAddressesSaving] = useState(false);
+  const [publicFormTitle, setPublicFormTitle] = useState('');
+  const [publicFormContactInfo, setPublicFormContactInfo] = useState('');
+  const [publicFormSaving, setPublicFormSaving] = useState(false);
+  const [publicSettingsSaved, setPublicSettingsSaved] = useState(false);
+  const [editingPublicSlotId, setEditingPublicSlotId] = useState<string | null>(null);
+  const [editingPublicSlotDateStr, setEditingPublicSlotDateStr] = useState('');
+  const [editingPublicSlotTimeStr, setEditingPublicSlotTimeStr] = useState('');
+  const [publicSlotUpdating, setPublicSlotUpdating] = useState(false);
 
   const currentBranchId = activeBranchId || DEFAULT_BRANCH_ID;
   const currentBranchForLink = useMemo(() => {
@@ -129,65 +146,51 @@ export const usePublicBookingPublicSection = ({
     setPublicSlotTimeStr(getDefaultTimeStr());
   }, [publicSectionOpen]);
 
-  // sync الفروع إلى publicBookingConfig + تحميل العناوين المخزنة
   useEffect(() => {
-    if (!publicSectionOpen || !publicSecret || branches.length === 0) return;
-    let cancelled = false;
+    if (!publicSectionOpen || !publicSecret) return;
 
-    (async () => {
-      try {
-        // 1. اقرأ العناوين الموجودة حالياً في publicBookingConfig
-        const existing = await firestoreService.getPublicBranches(publicSecret);
-        if (cancelled) return;
-        const addressMap: Record<string, string> = {};
-        existing.forEach((b) => { if (b.address) addressMap[b.id] = b.address; });
-        setBranchAddresses(addressMap);
+    setPublicFormTitle('');
+    setPublicFormContactInfo('');
+    const unsub = firestoreService.subscribeToPublicConfig(publicSecret, (config) => {
+      const branchSettings = config.publicFormSettingsByBranch?.[currentBranchId];
+      const legacyTitle = currentBranchId === DEFAULT_BRANCH_ID ? config.title : '';
+      const legacyContactInfo = currentBranchId === DEFAULT_BRANCH_ID ? config.contactInfo : '';
+      setPublicFormTitle(branchSettings?.title ?? legacyTitle ?? '');
+      setPublicFormContactInfo(branchSettings?.contactInfo ?? legacyContactInfo ?? '');
+    });
 
-        // 2. إذا الأسماء في publicBookingConfig تختلف عن useBranches → حدّثها (بدون مسح العناوين)
-        const toPublish: PublicBranchInfo[] = branches.map((b) => ({
-          id: b.id,
-          name: b.name,
-          address: addressMap[b.id] || undefined,
-          isActive: true,
-        }));
-        const existingJson = JSON.stringify(existing.map((b) => ({ id: b.id, name: b.name, address: b.address || '' })));
-        const newJson = JSON.stringify(toPublish.map((b) => ({ id: b.id, name: b.name, address: b.address || '' })));
-        if (existingJson !== newJson) {
-          await firestoreService.savePublicBranches(publicSecret, toPublish);
-        }
-      } catch (err) {
-        if (!cancelled) console.warn('[PublicBooking] branches sync failed:', err);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [publicSectionOpen, publicSecret, branches]);
-
-  const saveBranchAddress = async (branchId: string, address: string) => {
-    if (!publicSecret || branches.length === 0) return;
-    setBranchAddressesSaving(true);
-    try {
-      const trimmed = address.trim();
-      const nextMap = { ...branchAddresses };
-      if (trimmed) nextMap[branchId] = trimmed; else delete nextMap[branchId];
-      setBranchAddresses(nextMap);
-      const toPublish: PublicBranchInfo[] = branches.map((b) => ({
-        id: b.id,
-        name: b.name,
-        address: nextMap[b.id] || undefined,
-        isActive: true,
-      }));
-      await firestoreService.savePublicBranches(publicSecret, toPublish);
-    } finally {
-      setBranchAddressesSaving(false);
-    }
-  };
+    return () => unsub();
+  }, [publicSectionOpen, publicSecret, currentBranchId]);
 
   const branchNameMap = useMemo(() => {
     const map: Record<string, string> = {};
     branches.forEach((b) => { map[b.id] = b.name; });
     return map;
   }, [branches]);
+
+  const savePublicFormSettings = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!userId || !publicSecret) return;
+    setPublicFormSaving(true);
+    setPublicSettingsSaved(false);
+    try {
+      await firestoreService.savePublicFormSettings(
+        userId,
+        publicSecret,
+        publicFormTitle,
+        publicFormContactInfo,
+        true,
+        currentBranchId,
+      );
+      setPublicSettingsSaved(true);
+      setTimeout(() => setPublicSettingsSaved(false), 2500);
+    } catch (err) {
+      console.warn('[PublicBooking] failed to save public form settings:', err);
+      setPublicSlotError('تعذر حفظ بيانات الفورم. حاول مرة أخرى.');
+    } finally {
+      setPublicFormSaving(false);
+    }
+  };
 
   const addPublicSlot = async (e: FormEvent) => {
     e.preventDefault();
@@ -229,6 +232,49 @@ export const usePublicBookingPublicSection = ({
     }
   };
 
+  const startEditPublicSlot = (slot: PublicBookingSlot) => {
+    const parts = toSlotInputParts(slot.dateTime);
+    setEditingPublicSlotId(slot.id);
+    setEditingPublicSlotDateStr(parts.dateStr);
+    setEditingPublicSlotTimeStr(parts.timeStr);
+    setPublicSlotError(null);
+  };
+
+  const cancelEditPublicSlot = () => {
+    setEditingPublicSlotId(null);
+    setEditingPublicSlotDateStr('');
+    setEditingPublicSlotTimeStr('');
+    setPublicSlotUpdating(false);
+  };
+
+  const saveEditedPublicSlot = async (e: FormEvent) => {
+    e.preventDefault();
+    setPublicSlotError(null);
+    if (!publicSecret || !editingPublicSlotId) return;
+    if (!editingPublicSlotDateStr || !editingPublicSlotTimeStr) {
+      setPublicSlotError('يرجى اختيار التاريخ والوقت.');
+      return;
+    }
+    const dt = buildLocalDateTime(editingPublicSlotDateStr, editingPublicSlotTimeStr);
+    if (Number.isNaN(dt.getTime())) {
+      setPublicSlotError('تاريخ أو وقت غير صالح.');
+      return;
+    }
+    if (dt.getTime() < Date.now()) {
+      setPublicSlotError('لا يمكن حفظ موعد في الماضي.');
+      return;
+    }
+    setPublicSlotUpdating(true);
+    try {
+      await firestoreService.updatePublicSlot(publicSecret, editingPublicSlotId, dt.toISOString(), currentBranchId);
+      cancelEditPublicSlot();
+    } catch (err) {
+      console.warn('[PublicBooking] failed to update public slot:', err);
+      setPublicSlotError('تعذر تعديل الموعد. حاول مرة أخرى.');
+      setPublicSlotUpdating(false);
+    }
+  };
+
   const copyPublicBookingLink = () => {
     if (!publicBookingLink) return;
     copyPublicBookingLinkToClipboard(publicBookingLink, {
@@ -261,13 +307,26 @@ export const usePublicBookingPublicSection = ({
     publicBookingLink,
     publicSlotTodayStr,
     publicTimeMin,
+    publicFormTitle,
+    setPublicFormTitle,
+    publicFormContactInfo,
+    setPublicFormContactInfo,
+    publicFormSaving,
+    publicSettingsSaved,
+    savePublicFormSettings,
     addPublicSlot,
     removePublicSlot,
+    editingPublicSlotId,
+    editingPublicSlotDateStr,
+    setEditingPublicSlotDateStr,
+    editingPublicSlotTimeStr,
+    setEditingPublicSlotTimeStr,
+    publicSlotUpdating,
+    startEditPublicSlot,
+    cancelEditPublicSlot,
+    saveEditedPublicSlot,
     copyPublicBookingLink,
     formatSlotLabel,
-    branchAddresses,
-    branchAddressesSaving,
-    saveBranchAddress,
     currentBranchId,
   };
 };

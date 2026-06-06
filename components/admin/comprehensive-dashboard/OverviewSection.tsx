@@ -101,10 +101,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         </button>
       )}
 
-      {/* ═══ 4) بطاقات الـ KPI الرئيسية (أطباء، جمهور، برو، برو ماكس، أرباح) ═══ */}
-      {/* فصلنا "اشتراكات برو" لبطاقتين (برو + برو ماكس) عشان الأدمن يشوف التفصيل */}
-      {/* grid-cols-5 على الديسكتوب لاستيعاب 5 بطاقات. الموبايل يفضل 2 → 3 صفوف */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 dh-stagger-3">
+      {/* ═══ 4) بطاقات الـ KPI الرئيسية (أطباء، جمهور، Plus، برو، برو ماكس، أرباح) ═══ */}
+      {/* فصلنا الاشتراكات لثلاث بطاقات (Plus + برو + برو ماكس) عشان الأدمن يشوف التفصيل */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 dh-stagger-3">
         <StatCard
           title="إجمالي الأطباء"
           value={stats.totalDoctors}
@@ -120,6 +119,16 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           iconBg="bg-brand-50"
           iconColor="text-brand-600"
           valueColor="text-brand-700"
+        />
+        {/* اشتراكات Plus — أقل باقة مدفوعة (فضي) */}
+        <StatCard
+          title="اشتراكات Plus"
+          value={stats.plusDocsCount || 0}
+          unit="اشتراك نشط"
+          icon={<FaCrown />}
+          iconBg="bg-slate-100"
+          iconColor="text-slate-500"
+          valueColor="text-slate-700"
         />
         {/* اشتراكات برو — العدد المحدد للبريميوم فقط (ذهبي فاتح) */}
         <StatCard

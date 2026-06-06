@@ -50,6 +50,7 @@ const hasSummaryDoctorCounters = (summaryRaw: RawDoc): boolean =>
     'totalPatients',
     'freeDocsCount',
     'premiumDocsCount',
+    'plusDocsCount',
     // proMaxDocsCount لازم يكون موجود في الـ summary عشان نعتبره كافٍ.
     // لو الـ summary قديم (قبل ما تضاف برو ماكس) الحقل ده هيكون ناقص،
     // فنرجع live-counters تلقائياً عشان نجيب القيمة الصحيحة من Firestore.
@@ -233,6 +234,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
         let approvedDoctors = asNumber(summaryRaw.approvedDoctors);
         let rejectedDoctors = asNumber(summaryRaw.rejectedDoctors);
         let premiumDocsCount = asNumber(summaryRaw.premiumDocsCount);
+        let plusDocsCount = asNumber(summaryRaw.plusDocsCount);
         let proMaxDocsCount = asNumber(summaryRaw.proMaxDocsCount);
         let freeDocsCount = asNumber(summaryRaw.freeDocsCount);
         let totalPatients = asNumber(summaryRaw.totalPatients);
@@ -244,6 +246,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
             pendingLegacySnap,
             approvedDoctorsSnap,
             premiumDoctorsSnap,
+            plusDoctorsSnap,
             proMaxDoctorsSnap,
             totalPatientsSnap,
           ] = await Promise.all([
@@ -252,6 +255,7 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('verificationStatus', '==', 'pending'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('verificationStatus', '==', 'approved'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('accountType', '==', 'premium'))),
+            getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('accountType', '==', 'plus'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'doctor'), where('accountType', '==', 'pro_max'))),
             getCountFromServer(query(usersRef, where('authRole', '==', 'public'))),
           ]);
@@ -260,10 +264,11 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           pendingDoctors = asNumber(pendingSubmittedSnap.data().count) + asNumber(pendingLegacySnap.data().count);
           approvedDoctors = asNumber(approvedDoctorsSnap.data().count);
           premiumDocsCount = asNumber(premiumDoctorsSnap.data().count);
+          plusDocsCount = asNumber(plusDoctorsSnap.data().count);
           proMaxDocsCount = asNumber(proMaxDoctorsSnap.data().count);
           totalPatients = asNumber(totalPatientsSnap.data().count);
           rejectedDoctors = Math.max(0, totalDoctors - approvedDoctors - pendingDoctors);
-          freeDocsCount = Math.max(0, totalDoctors - premiumDocsCount - proMaxDocsCount);
+          freeDocsCount = Math.max(0, totalDoctors - premiumDocsCount - plusDocsCount - proMaxDocsCount);
         }
 
         const doctorBlacklisted = blacklistCounts.doctorCount;
@@ -291,9 +296,10 @@ export const useDashboardStats = (isAdminUser: boolean, user: User) => {
           publicBlacklisted,
           totalBlacklisted,
           // الاشتراكات النشطة = برو + برو ماكس (كلاهما مدفوع)
-          activeSubscriptions: premiumDocsCount + proMaxDocsCount,
+          activeSubscriptions: premiumDocsCount + plusDocsCount + proMaxDocsCount,
           freeDocsCount,
           premiumDocsCount,
+          plusDocsCount,
           proMaxDocsCount,
           totalSmartRxFree: 0,
           totalSmartRxPro: 0,

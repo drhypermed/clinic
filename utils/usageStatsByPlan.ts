@@ -1,5 +1,5 @@
 // 3 فئات: free = مجاني | premium = برو | pro_max = برو ماكس
-export type UsagePlan = 'free' | 'premium' | 'pro_max';
+export type UsagePlan = 'free' | 'premium' | 'plus' | 'pro_max';
 
 type UsageCounterKey =
   | 'smartPrescriptionCount'
@@ -14,6 +14,7 @@ type UsageStatsRecord = Partial<Record<UsageCounterKey, number>>;
 interface UsageStatsByPlanRecord {
   free?: UsageStatsRecord;
   premium?: UsageStatsRecord;
+  plus?: UsageStatsRecord;
   pro_max?: UsageStatsRecord;
 }
 
@@ -54,6 +55,7 @@ export const normalizeUsageStatsByPlan = (raw: unknown): UsageStatsByPlanRecord 
   return {
     free: normalizeUsageStatsRecord(source.free),
     premium: normalizeUsageStatsRecord(source.premium),
+    plus: normalizeUsageStatsRecord(source.plus),
     pro_max: normalizeUsageStatsRecord(source.pro_max),
   };
 };
@@ -100,6 +102,7 @@ export const buildUsageStatsForPlanSwitch = (params: {
   const nextByPlan: UsageStatsByPlanRecord = {
     free: normalizeUsageStatsRecord(normalizedByPlan.free),
     premium: normalizeUsageStatsRecord(normalizedByPlan.premium),
+    plus: normalizeUsageStatsRecord(normalizedByPlan.plus),
     pro_max: normalizeUsageStatsRecord(normalizedByPlan.pro_max),
   };
 

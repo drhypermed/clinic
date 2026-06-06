@@ -55,15 +55,15 @@ module.exports = (context) => {
       }
 
       const messageKeys = feature === 'interactionTool'
-        ? { freeKey: 'freeInteractionToolLimitMessage', premiumKey: 'premiumInteractionToolLimitMessage', proMaxKey: 'proMaxInteractionToolLimitMessage' }
+        ? { freeKey: 'freeInteractionToolLimitMessage', premiumKey: 'premiumInteractionToolLimitMessage', plusKey: 'plusInteractionToolLimitMessage', proMaxKey: 'proMaxInteractionToolLimitMessage' }
         : feature === 'renalTool'
-          ? { freeKey: 'freeRenalToolLimitMessage', premiumKey: 'premiumRenalToolLimitMessage', proMaxKey: 'proMaxRenalToolLimitMessage' }
-          : { freeKey: 'freePregnancyToolLimitMessage', premiumKey: 'premiumPregnancyToolLimitMessage', proMaxKey: 'proMaxPregnancyToolLimitMessage' };
+          ? { freeKey: 'freeRenalToolLimitMessage', premiumKey: 'premiumRenalToolLimitMessage', plusKey: 'plusRenalToolLimitMessage', proMaxKey: 'proMaxRenalToolLimitMessage' }
+          : { freeKey: 'freePregnancyToolLimitMessage', premiumKey: 'premiumPregnancyToolLimitMessage', plusKey: 'plusPregnancyToolLimitMessage', proMaxKey: 'proMaxPregnancyToolLimitMessage' };
       const whatsappKeys = feature === 'interactionTool'
-        ? { freeKey: 'freeInteractionToolWhatsappMessage', premiumKey: 'premiumInteractionToolWhatsappMessage', proMaxKey: 'proMaxInteractionToolWhatsappMessage' }
+        ? { freeKey: 'freeInteractionToolWhatsappMessage', premiumKey: 'premiumInteractionToolWhatsappMessage', plusKey: 'plusInteractionToolWhatsappMessage', proMaxKey: 'proMaxInteractionToolWhatsappMessage' }
         : feature === 'renalTool'
-          ? { freeKey: 'freeRenalToolWhatsappMessage', premiumKey: 'premiumRenalToolWhatsappMessage', proMaxKey: 'proMaxRenalToolWhatsappMessage' }
-          : { freeKey: 'freePregnancyToolWhatsappMessage', premiumKey: 'premiumPregnancyToolWhatsappMessage', proMaxKey: 'proMaxPregnancyToolWhatsappMessage' };
+          ? { freeKey: 'freeRenalToolWhatsappMessage', premiumKey: 'premiumRenalToolWhatsappMessage', plusKey: 'plusRenalToolWhatsappMessage', proMaxKey: 'proMaxRenalToolWhatsappMessage' }
+          : { freeKey: 'freePregnancyToolWhatsappMessage', premiumKey: 'premiumPregnancyToolWhatsappMessage', plusKey: 'plusPregnancyToolWhatsappMessage', proMaxKey: 'proMaxPregnancyToolWhatsappMessage' };
       const limitReachedMessage = pickTierValue(accountType, config, messageKeys);
       const whatsappMessage = pickTierValue(accountType, config, whatsappKeys);
       const whatsappUrl = buildWhatsAppUrl(config.whatsappNumber, whatsappMessage);
@@ -73,10 +73,10 @@ module.exports = (context) => {
       // ✂️ شيلنا block premiumOnly القديم (كان بيتحقق من flag منفصل).
 
       const limit = feature === 'interactionTool'
-        ? pickTierValue(accountType, config, { freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' })
+        ? pickTierValue(accountType, config, { freeKey: 'freeInteractionToolDailyLimit', premiumKey: 'premiumInteractionToolDailyLimit', plusKey: 'plusInteractionToolDailyLimit', proMaxKey: 'proMaxInteractionToolDailyLimit' })
         : feature === 'renalTool'
-          ? pickTierValue(accountType, config, { freeKey: 'freeRenalToolDailyLimit', premiumKey: 'premiumRenalToolDailyLimit', proMaxKey: 'proMaxRenalToolDailyLimit' })
-          : pickTierValue(accountType, config, { freeKey: 'freePregnancyToolDailyLimit', premiumKey: 'premiumPregnancyToolDailyLimit', proMaxKey: 'proMaxPregnancyToolDailyLimit' });
+          ? pickTierValue(accountType, config, { freeKey: 'freeRenalToolDailyLimit', premiumKey: 'premiumRenalToolDailyLimit', plusKey: 'plusRenalToolDailyLimit', proMaxKey: 'proMaxRenalToolDailyLimit' })
+          : pickTierValue(accountType, config, { freeKey: 'freePregnancyToolDailyLimit', premiumKey: 'premiumPregnancyToolDailyLimit', plusKey: 'plusPregnancyToolDailyLimit', proMaxKey: 'proMaxPregnancyToolDailyLimit' });
       const fieldName = feature === 'interactionTool'
         ? 'interactionToolCount'
         : feature === 'renalTool'

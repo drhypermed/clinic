@@ -94,6 +94,15 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     publicSlotTimeStr, setPublicSlotTimeStr,
     publicLinkCopied, copyPublicLink,
     publicSlotAdding, addPublicSlot, removePublicSlot,
+    editingPublicSlotId,
+    editingPublicSlotDateStr,
+    setEditingPublicSlotDateStr,
+    editingPublicSlotTimeStr,
+    setEditingPublicSlotTimeStr,
+    publicSlotUpdating,
+    startEditPublicSlot,
+    cancelEditPublicSlot,
+    saveEditedPublicSlot,
     publicFormTitle, setPublicFormTitle,
     publicFormContactInfo, setPublicFormContactInfo,
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
@@ -242,6 +251,15 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             onAddPublicSlot={addPublicSlot}
             publicSlots={publicSlots}
             onRemovePublicSlot={removePublicSlot}
+            editingPublicSlotId={editingPublicSlotId}
+            editingPublicSlotDateStr={editingPublicSlotDateStr}
+            onEditingPublicSlotDateChange={setEditingPublicSlotDateStr}
+            editingPublicSlotTimeStr={editingPublicSlotTimeStr}
+            onEditingPublicSlotTimeChange={setEditingPublicSlotTimeStr}
+            publicSlotUpdating={publicSlotUpdating}
+            onStartEditPublicSlot={startEditPublicSlot}
+            onCancelEditPublicSlot={cancelEditPublicSlot}
+            onSaveEditedPublicSlot={saveEditedPublicSlot}
             currentBranchLabel={currentBranchLabel}
             branches={doctorBranches}
           /></div>

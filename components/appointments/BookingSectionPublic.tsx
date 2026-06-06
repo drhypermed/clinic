@@ -44,6 +44,15 @@ interface BookingSectionPublicProps {
   onAddPublicSlot: (e: React.FormEvent) => void;
   publicSlots: PublicBookingSlot[];    // قائمة المواعيد المتاحة حالياً
   onRemovePublicSlot: (slotId: string) => void;
+  editingPublicSlotId?: string | null;
+  editingPublicSlotDateStr?: string;
+  onEditingPublicSlotDateChange?: (value: string) => void;
+  editingPublicSlotTimeStr?: string;
+  onEditingPublicSlotTimeChange?: (value: string) => void;
+  publicSlotUpdating?: boolean;
+  onStartEditPublicSlot?: (slot: PublicBookingSlot) => void;
+  onCancelEditPublicSlot?: () => void;
+  onSaveEditedPublicSlot?: (e: React.FormEvent) => void;
   isSaved?: boolean;                    // تأكيد نجاح الحفظ الأخير
   currentBranchLabel?: string;
   /** قائمة الفروع — لتوليد رابط منفصل لكل فرع لو في أكتر من فرع */
@@ -238,6 +247,15 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
   publicSlotDateStr, onPublicSlotDateStrChange, publicSlotTimeStr,
   onPublicSlotTimeStrChange, publicSlotTodayStr, publicTimeMin,
   publicSlotAdding, onAddPublicSlot, publicSlots, onRemovePublicSlot, isSaved,
+  editingPublicSlotId,
+  editingPublicSlotDateStr,
+  onEditingPublicSlotDateChange,
+  editingPublicSlotTimeStr,
+  onEditingPublicSlotTimeChange,
+  publicSlotUpdating,
+  onStartEditPublicSlot,
+  onCancelEditPublicSlot,
+  onSaveEditedPublicSlot,
   currentBranchLabel,
   branches,
 }) => {
@@ -370,19 +388,56 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
           <div className="pt-2">
             <p className="text-slate-600 font-bold text-sm mb-2">المواعيد المفعّلة ({publicSlots.length})</p>
             <ul className="space-y-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
-              {publicSlots.map((slot) => (
-                <li key={slot.id} className="flex flex-col gap-2 py-2 px-2 rounded-lg bg-white border border-slate-100 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="min-w-0 text-sm font-bold text-slate-700">
-                    {formatPublicSlotLabel(slot.dateTime)}
-                    <span className="mt-1 block text-xs font-black text-brand-700 sm:inline sm:mt-0 sm:mr-2">
-                      {getSlotBranchName(slot)}
-                    </span>
-                  </span>
-                  <button onClick={() => onRemovePublicSlot(slot.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-danger-50 hover:text-danger-600" title="حذف">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
-                </li>
-              ))}
+              {publicSlots.map((slot) => {
+                const isEditing = editingPublicSlotId === slot.id;
+                return (
+                  <li key={slot.id} className="py-2 px-2 rounded-lg bg-white border border-slate-100">
+                    {isEditing && onSaveEditedPublicSlot ? (
+                      <form onSubmit={onSaveEditedPublicSlot} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] sm:items-center">
+                        <input
+                          type="date"
+                          value={editingPublicSlotDateStr || ''}
+                          min={publicSlotTodayStr}
+                          onChange={(e) => onEditingPublicSlotDateChange?.(e.target.value)}
+                          className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm font-bold outline-none focus:ring-2 focus:ring-warning-500"
+                        />
+                        <input
+                          type="time"
+                          value={editingPublicSlotTimeStr || ''}
+                          min={editingPublicSlotDateStr === publicSlotTodayStr ? publicTimeMin : undefined}
+                          onChange={(e) => onEditingPublicSlotTimeChange?.(e.target.value)}
+                          className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm font-bold outline-none focus:ring-2 focus:ring-warning-500"
+                        />
+                        <button type="submit" disabled={publicSlotUpdating} className="h-9 rounded-lg bg-brand-600 px-3 text-xs font-black text-white disabled:opacity-60">
+                          {publicSlotUpdating ? 'حفظ...' : 'حفظ'}
+                        </button>
+                        <button type="button" onClick={onCancelEditPublicSlot} disabled={publicSlotUpdating} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 disabled:opacity-60">
+                          إلغاء
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="min-w-0 text-sm font-bold text-slate-700">
+                          {formatPublicSlotLabel(slot.dateTime)}
+                          <span className="mt-1 block text-xs font-black text-brand-700 sm:inline sm:mt-0 sm:mr-2">
+                            {getSlotBranchName(slot)}
+                          </span>
+                        </span>
+                        <div className="flex shrink-0 items-center gap-1">
+                          {onStartEditPublicSlot && (
+                            <button onClick={() => onStartEditPublicSlot(slot)} className="p-1.5 rounded-lg text-slate-500 hover:bg-brand-50 hover:text-brand-700" title="تعديل">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                            </button>
+                          )}
+                          <button onClick={() => onRemovePublicSlot(slot.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-danger-50 hover:text-danger-600" title="حذف">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}

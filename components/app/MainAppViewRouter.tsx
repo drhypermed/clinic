@@ -94,7 +94,7 @@ interface MainAppViewRouterProps {
   activeBranchId: string | null;
   branches: Branch[];
   branchesLoading: boolean;
-  accountType?: 'free' | 'premium' | 'pro_max';
+  accountType?: 'free' | 'premium' | 'plus' | 'pro_max';
   normalizedDoctorName: string;
   normalizedDoctorSpecialty: string;
   profileImage: string | null;

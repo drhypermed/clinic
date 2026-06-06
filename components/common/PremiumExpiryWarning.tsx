@@ -27,8 +27,8 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
     const phoneNumber = '201092805293'; // مع كود الدولة
     const message = encodeURIComponent(
       isExpired
-        ? 'مرحباً، اشتراكي برو انتهى وأرغب في التجديد'
-        : 'مرحباً، أريد تجديد اشتراكي برو'
+        ? 'مرحباً، اشتراكي المدفوع انتهى وأرغب في التجديد'
+        : 'مرحباً، أريد تجديد اشتراكي المدفوع'
     );
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
@@ -38,8 +38,8 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
     ? 'from-danger-600 via-danger-600 to-warning-500'
     : 'from-warning-500 via-warning-500 to-danger-500';
   const title = isExpired
-    ? 'انتهى اشتراكك برو'
-    : 'اشتراك برو سينتهي قريبًا';
+    ? 'انتهى اشتراكك المدفوع'
+    : 'اشتراكك المدفوع سينتهي قريبًا';
   const bodyText = isExpired
     ? 'يرجى إعادة تجديد الاشتراك للاستمرار في استخدام كل الميزات.'
     : 'الرجاء تجديد اشتراكك للاستمرار في استخدام كافة الميزات.';
@@ -74,7 +74,7 @@ export const PremiumExpiryWarning: React.FC<PremiumExpiryWarningProps> = ({ expi
                 </span>
                 <h3 className="text-base sm:text-lg font-black leading-tight mb-1.5">{title}</h3>
                 <p className="text-sm sm:text-[15px] leading-7 font-bold text-white/95">
-                  {isExpired ? 'انتهى اشتراكك برو' : 'اشتراك برو سينتهي'} في <span className="font-black">{dateStr}</span> الساعة <span className="font-black">{timeStr}</span>. {bodyText}
+                  {isExpired ? 'انتهى اشتراكك المدفوع' : 'اشتراكك المدفوع سينتهي'} في <span className="font-black">{dateStr}</span> الساعة <span className="font-black">{timeStr}</span>. {bodyText}
                 </p>
               </div>
             </div>

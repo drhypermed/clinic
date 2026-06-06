@@ -36,6 +36,7 @@ import {
   isPublicLikeUserData,
 } from '../../services/firestore/profileRoles';
 import { clearAuthFlowGuard, clearAuthFlowGuardSoon, setAuthFlowGuard } from './authFlowGuard';
+import { navigateToDoctorLogin, navigateToPublicLogin } from './authPortalNavigation';
 // حفظ بيانات الـsignup قبل الـredirect — عشان لما الطبيب يرجع من Google نكمل تلقائياً
 import {
   saveSignupForm,
@@ -576,7 +577,7 @@ export const DoctorSignupPage: React.FC = () => {
                 {mergedError.includes('مسجل كطبيب بالفعل') && (
                   <button
                     type="button"
-                    onClick={() => navigate('/login/doctor', { replace: true })}
+                    onClick={() => navigateToDoctorLogin(navigate, { replace: true })}
                     className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >
                     اذهب لصفحة تسجيل الدخول
@@ -586,7 +587,7 @@ export const DoctorSignupPage: React.FC = () => {
                 {mergedError.includes('حساب جمهور') && (
                   <button
                     type="button"
-                    onClick={() => navigate('/login/public', { replace: true })}
+                    onClick={() => navigateToPublicLogin(navigate, { replace: true })}
                     className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-md transition"
                   >
                     اذهب لتسجيل دخول الجمهور
@@ -650,7 +651,7 @@ export const DoctorSignupPage: React.FC = () => {
             <div className="pt-3 border-t border-slate-200 text-center space-y-2">
               <button
                 type="button"
-                onClick={() => navigate('/login/doctor', { replace: true })}
+                onClick={() => navigateToDoctorLogin(navigate, { replace: true })}
                 className="text-sm font-bold text-brand-700 hover:underline"
               >
                 لديك حساب بالفعل؟ تسجيل الدخول

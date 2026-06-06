@@ -1,6 +1,11 @@
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { loadLocalGuidelineCollectionData } from './guidelineLocalData';
+import {
+  cacheGuidelineCollectionData,
+  getCachedGuidelineCollectionData,
+  makeGuidelineCollectionDataCacheKey,
+} from './guidelineBookLocalCache';
 
 export type GuidelineLanguage = 'ar' | 'en';
 
@@ -155,9 +160,16 @@ export const loadGuidelineCollectionData = async (
 ): Promise<GuidelineCollectionData | null> => {
   if (localOnly) return loadLocalGuidelineCollectionData(id);
 
+  const cacheKey = makeGuidelineCollectionDataCacheKey(id);
+  const cached = await getCachedGuidelineCollectionData(cacheKey);
+  if (cached) return cached;
+
   try {
     const firestoreData = await fetchFirestoreCollectionData(id);
-    if (firestoreData.topics.length > 0) return firestoreData;
+    if (firestoreData.topics.length > 0) {
+      void cacheGuidelineCollectionData(cacheKey, firestoreData);
+      return firestoreData;
+    }
     return loadLocalGuidelineCollectionData(id);
   } catch (error) {
     console.error(`Error loading guideline collection data from Firestore for ${id}:`, error);

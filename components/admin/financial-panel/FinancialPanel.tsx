@@ -48,6 +48,7 @@ export const FinancialPanel: React.FC = () => {
   // ── استيراد كل البيانات والعمليات من الـ hook ──
   const {
     prices, tempPrices, setTempPrices,
+    plusPrices, tempPlusPrices, setTempPlusPrices,
     proMaxPrices, tempProMaxPrices, setTempProMaxPrices,
     editingPrices, setEditingPrices, savingPrices,
     allMonthlyPrices, showPriceHistory, setShowPriceHistory,
@@ -103,6 +104,18 @@ export const FinancialPanel: React.FC = () => {
     const proMaxRevenue = canUseSummaryTotals
       ? currentYearSummary?.proMaxRevenue || 0
       : revenueData.reduce((sum, item) => sum + (item.proMaxRevenue || 0), 0);
+    const plusMonthlyCount = canUseSummaryTotals
+      ? currentYearSummary?.plusMonthlyCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.plusMonthlyCount || 0), 0);
+    const plusSixMonthsCount = canUseSummaryTotals
+      ? currentYearSummary?.plusSixMonthsCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.plusSixMonthsCount || 0), 0);
+    const plusYearlyCount = canUseSummaryTotals
+      ? currentYearSummary?.plusYearlyCount || 0
+      : revenueData.reduce((sum, item) => sum + (item.plusYearlyCount || 0), 0);
+    const plusRevenue = canUseSummaryTotals
+      ? currentYearSummary?.plusRevenue || 0
+      : revenueData.reduce((sum, item) => sum + (item.plusRevenue || 0), 0);
     const totalRevenue = canUseSummaryTotals
       ? currentYearSummary?.totalRevenue || 0
       : revenueData.reduce((sum, item) => sum + item.revenue, 0);
@@ -113,6 +126,7 @@ export const FinancialPanel: React.FC = () => {
 
     return {
       monthlyCount, sixMonthsCount, yearlyCount,
+      plusMonthlyCount, plusSixMonthsCount, plusYearlyCount, plusRevenue,
       proMaxMonthlyCount, proMaxSixMonthsCount, proMaxYearlyCount, proMaxRevenue,
       totalRevenue, totalExpenses, netProfit,
     };
@@ -154,8 +168,10 @@ export const FinancialPanel: React.FC = () => {
       <div className="dh-stagger-2"><PricingSection
         selectedPriceMonth={selectedPriceMonth}
         prices={prices}
+        plusPrices={plusPrices}
         proMaxPrices={proMaxPrices}
         tempPrices={tempPrices}
+        tempPlusPrices={tempPlusPrices}
         tempProMaxPrices={tempProMaxPrices}
         editingPrices={editingPrices}
         savingPrices={savingPrices}
@@ -166,11 +182,13 @@ export const FinancialPanel: React.FC = () => {
         onCancelEditingPrices={() => {
           setEditingPrices(false);
           setTempPrices(prices);
+          setTempPlusPrices(plusPrices);
           setTempProMaxPrices(proMaxPrices);
         }}
         onSavePrices={savePrices}
         onChangeSelectedPriceMonth={setSelectedPriceMonth}
         onChangeTempPrices={setTempPrices}
+        onChangeTempPlusPrices={setTempPlusPrices}
         onChangeTempProMaxPrices={setTempProMaxPrices}
       /></div>
 

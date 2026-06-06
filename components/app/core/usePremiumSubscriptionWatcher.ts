@@ -46,7 +46,7 @@ export const usePremiumSubscriptionWatcher = ({ user }: UseProSubscriptionWatche
         const premiumNotificationSent = data?.premiumNotificationSent; // هل تم إرسال تنبيه سابقاً؟
 
         // إذا كان الحساب "برو" أو "برو ماكس" وله تاريخ انتهاء — نتابع تنبيهات الانتهاء
-        if ((accountType === 'premium' || accountType === 'pro_max') && premiumExpiryDate) {
+        if ((accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') && premiumExpiryDate) {
           await syncTrustedTime();
           const expiryTime = parseIsoTimeMs(premiumExpiryDate);
           if (expiryTime === null) return;
@@ -65,8 +65,8 @@ export const usePremiumSubscriptionWatcher = ({ user }: UseProSubscriptionWatche
             // أ. إضافة إشعار جديد في مجموعة الإشعارات الخاصة بالطبيب
             await addDoc(getDoctorNotificationsCollectionRef(user.uid), {
               type: 'premium-expiry',
-              title: '⏰ اشتراكك برو سينتهي قريبًا',
-              message: `اشتراك برو سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة الميزات.`,
+              title: '⏰ اشتراكك المدفوع سينتهي قريبًا',
+              message: `اشتراكك المدفوع سينتهي في ${formatUserDate(premiumExpiryDate, undefined, 'ar-EG')}. الرجاء تجديد اشتراكك للاستمرار في استخدام كافة الميزات.`,
               actionUrl: '/admin',
               actionLabel: 'تجديد الآن',
               createdAt: new Date(now).toISOString(),

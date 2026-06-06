@@ -72,7 +72,7 @@ module.exports = ({
 
       const expiredDoctorsSnap = await db.collection('users')
         .where('authRole', '==', 'doctor')
-        .where('accountType', '==', 'premium')
+        .where('accountType', 'in', ['premium', 'plus', 'pro_max'])
         .where('premiumExpiryDate', '<', nowIso)
         .get();
 
@@ -106,7 +106,7 @@ module.exports = ({
 
       const expiredDoctorsSnap = await db.collection('users')
         .where('authRole', '==', 'doctor')
-        .where('accountType', '==', 'premium')
+        .where('accountType', 'in', ['premium', 'plus', 'pro_max'])
         .where('premiumExpiryDate', '<', nowIso)
         .get();
 

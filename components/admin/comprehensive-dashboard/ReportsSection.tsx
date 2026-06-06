@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ReportsSection — تقارير إدارية مع رسوم بيانية وتصدير CSV.
  *
  * يعرض:
@@ -98,17 +98,19 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
     () => [
       { label: 'إجمالي الأطباء', value: stats.totalDoctors, color: 'text-brand-700' },
       { label: 'مقبولون', value: stats.approvedDoctors, color: 'text-success-700' },
-      // برو لوحده + برو ماكس لوحده — بطاقات منفصلة
+      // Plus ثم برو ثم برو ماكس — بطاقات منفصلة
+      { label: 'Plus', value: stats.plusDocsCount || 0, color: 'text-slate-700' },
       { label: 'برو', value: stats.premiumDocsCount || 0, color: 'text-warning-700' },
       { label: 'برو ماكس', value: stats.proMaxDocsCount || 0, color: 'text-[#B45309]' },
     ],
     [stats],
   );
 
-  // الـ pie chart — 3 شرائح: مجاني / برو / برو ماكس
+  // الـ pie chart — مجاني / Plus / برو / برو ماكس
   const accountTypeData = useMemo(
     () => [
       { name: 'مجاني', value: stats.freeDocsCount || 0 },
+      { name: 'Plus', value: stats.plusDocsCount || 0 },
       { name: 'برو', value: stats.premiumDocsCount || 0 },
       { name: 'برو ماكس', value: stats.proMaxDocsCount || 0 },
     ],
@@ -209,6 +211,7 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({ stats }) => {
                   {/* ألوان مخصصة: مجاني=أزرق، برو=ذهبي، برو ماكس=ذهبي لامع */}
                   {accountTypeData.map((entry, i) => {
                     const color = entry.name === 'برو ماكس' ? '#FFB300'
+                      : entry.name === 'Plus' ? '#94A3B8'
                       : entry.name === 'برو' ? '#F59E0B'
                       : entry.name === 'مجاني' ? '#06B6D4'
                       : CHART_COLORS[i % CHART_COLORS.length];

@@ -58,6 +58,7 @@ const getUsageByPlan = (doctorData) => {
 
   let freeUsage = normalizeUsageCounters(usageByPlan?.free);
   let premiumUsage = normalizeUsageCounters(usageByPlan?.premium);
+  let plusUsage = normalizeUsageCounters(usageByPlan?.plus);
   let proMaxUsage = normalizeUsageCounters(usageByPlan?.pro_max);
 
   // ─ نتحقق من أي عداد (روشتات/طباعات/AI) عشان نعرف لو الدكتور عنده usageStatsByPlan فعلاً.
@@ -66,6 +67,7 @@ const getUsageByPlan = (doctorData) => {
   const hasAnyAiUsage = AI_FEATURE_NAMES.some((feature) =>
     (freeUsage.aiFeatures?.[feature] || 0) > 0 ||
     (premiumUsage.aiFeatures?.[feature] || 0) > 0 ||
+    (plusUsage.aiFeatures?.[feature] || 0) > 0 ||
     (proMaxUsage.aiFeatures?.[feature] || 0) > 0
   );
   const hasUsageByPlan =
@@ -73,6 +75,8 @@ const getUsageByPlan = (doctorData) => {
     freeUsage.printCount > 0 ||
     premiumUsage.smartPrescriptionCount > 0 ||
     premiumUsage.printCount > 0 ||
+    plusUsage.smartPrescriptionCount > 0 ||
+    plusUsage.printCount > 0 ||
     proMaxUsage.smartPrescriptionCount > 0 ||
     proMaxUsage.printCount > 0 ||
     hasAnyAiUsage;
@@ -82,6 +86,8 @@ const getUsageByPlan = (doctorData) => {
     const accType = String(doctorData?.accountType || '').trim().toLowerCase();
     if (accType === 'pro_max') {
       proMaxUsage = fallbackUsage;
+    } else if (accType === 'plus') {
+      plusUsage = fallbackUsage;
     } else if (accType === 'premium') {
       premiumUsage = fallbackUsage;
     } else {
@@ -89,7 +95,7 @@ const getUsageByPlan = (doctorData) => {
     }
   }
 
-  return { freeUsage, premiumUsage, proMaxUsage };
+  return { freeUsage, premiumUsage, plusUsage, proMaxUsage };
 };
 
 const countBannerItems = (raw) => {
@@ -136,7 +142,7 @@ const loadSubscriptionPricesByMonth = async (db) => {
 const computeDoctorRevenueForCurrentYear = ({ doctorData, currentYear, pricesByMonth }) => {
   const accountType = String(doctorData?.accountType || '').trim().toLowerCase();
   // برو وبرو ماكس بيدخلوا في الإيرادات (كل فئة بسعرها)
-  if (accountType !== 'premium' && accountType !== 'pro_max') {
+  if (accountType !== 'premium' && accountType !== 'plus' && accountType !== 'pro_max') {
     return { revenue: 0, planBucket: null };
   }
   if (!doctorData?.premiumStartDate || !doctorData?.premiumExpiryDate) {
@@ -162,17 +168,30 @@ const computeDoctorRevenueForCurrentYear = ({ doctorData, currentYear, pricesByM
     startDate.getMonth();
   const diffMonths = endDate.getDate() >= startDate.getDate() ? rawMonths : rawMonths - 1;
 
+  const isPlus = accountType === 'plus';
   const isProMax = accountType === 'pro_max';
   // pro_max يستخدم أسعاره الخاصة (proMaxYearly, proMaxSixMonths, proMaxMonthly) مع fallback لأسعار برو
   if (diffMonths >= 12) {
-    const price = isProMax ? (monthPrices?.proMaxYearly ?? monthPrices?.yearly) : monthPrices?.yearly;
+    const price = isProMax
+      ? (monthPrices?.proMaxYearly ?? monthPrices?.yearly)
+      : isPlus
+        ? (monthPrices?.plusPrices?.yearly ?? monthPrices?.plusYearly ?? monthPrices?.yearly)
+        : monthPrices?.yearly;
     return { revenue: toNumber(price), planBucket: 'yearly' };
   }
   if (diffMonths >= 6) {
-    const price = isProMax ? (monthPrices?.proMaxSixMonths ?? monthPrices?.sixMonths) : monthPrices?.sixMonths;
+    const price = isProMax
+      ? (monthPrices?.proMaxSixMonths ?? monthPrices?.sixMonths)
+      : isPlus
+        ? (monthPrices?.plusPrices?.sixMonths ?? monthPrices?.plusSixMonths ?? monthPrices?.sixMonths)
+        : monthPrices?.sixMonths;
     return { revenue: toNumber(price), planBucket: 'sixMonths' };
   }
-  const price = isProMax ? (monthPrices?.proMaxMonthly ?? monthPrices?.monthly) : monthPrices?.monthly;
+  const price = isProMax
+    ? (monthPrices?.proMaxMonthly ?? monthPrices?.monthly)
+    : isPlus
+      ? (monthPrices?.plusPrices?.monthly ?? monthPrices?.plusMonthly ?? monthPrices?.monthly)
+      : monthPrices?.monthly;
   return { revenue: toNumber(price), planBucket: 'monthly' };
 };
 
@@ -193,7 +212,7 @@ const buildEmptyAiFeaturesBucket = () => {
   const bucket = {};
   AI_FEATURE_NAMES.forEach((feature) => {
     const camel = FEATURE_CAMEL_MAP[feature];
-    ['Free', 'Pro', 'ProMax'].forEach((tierLabel) => {
+    ['Free', 'Pro', 'Plus', 'ProMax'].forEach((tierLabel) => {
       bucket[`${camel}${tierLabel}Count`] = 0;
     });
   });
@@ -261,17 +280,23 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
     rejectedDoctors: 0,
     freeDocsCount: 0,
     premiumDocsCount: 0,
+    plusDocsCount: 0,
     proMaxDocsCount: 0,
     totalSmartRxFree: 0,
     totalSmartRxPro: 0,
+    totalSmartRxPlus: 0,
     totalSmartRxProMax: 0,
     totalPrintsFree: 0,
     totalPrintsPro: 0,
+    totalPrintsPlus: 0,
     totalPrintsProMax: 0,
     totalRevenue: 0,
     monthlyPlansCount: 0,
     sixMonthsPlansCount: 0,
     yearlyPlansCount: 0,
+    plusMonthlyPlansCount: 0,
+    plusSixMonthsPlansCount: 0,
+    plusYearlyPlansCount: 0,
     proMaxMonthlyPlansCount: 0,
     proMaxSixMonthsPlansCount: 0,
     proMaxYearlyPlansCount: 0,
@@ -314,10 +339,13 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
       // كل فئة في bucket منفصل
       const rawAccountType = String(doctorData?.accountType || '').trim().toLowerCase();
       const isProMax = rawAccountType === 'pro_max';
+      const isPlus = rawAccountType === 'plus';
       const isPremium = rawAccountType === 'premium';
 
       if (isProMax) {
         aggregate.proMaxDocsCount += 1;
+      } else if (isPlus) {
+        aggregate.plusDocsCount += 1;
       } else if (isPremium) {
         aggregate.premiumDocsCount += 1;
       } else {
@@ -327,15 +355,18 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
       const usage = getUsageByPlan(doctorData);
       aggregate.totalSmartRxFree += usage.freeUsage.smartPrescriptionCount;
       aggregate.totalSmartRxPro += usage.premiumUsage.smartPrescriptionCount;
+      aggregate.totalSmartRxPlus += (usage.plusUsage?.smartPrescriptionCount || 0);
       aggregate.totalSmartRxProMax += (usage.proMaxUsage?.smartPrescriptionCount || 0);
       aggregate.totalPrintsFree += usage.freeUsage.printCount;
       aggregate.totalPrintsPro += usage.premiumUsage.printCount;
+      aggregate.totalPrintsPlus += (usage.plusUsage?.printCount || 0);
       aggregate.totalPrintsProMax += (usage.proMaxUsage?.printCount || 0);
 
       // ─ تجميع per-feature counts (6 ميزات × 3 فئات)
       const tierMappings = [
         { tierLabel: 'Free',   tierUsage: usage.freeUsage },
         { tierLabel: 'Pro',    tierUsage: usage.premiumUsage },
+        { tierLabel: 'Plus',   tierUsage: usage.plusUsage },
         { tierLabel: 'ProMax', tierUsage: usage.proMaxUsage },
       ];
       tierMappings.forEach(({ tierLabel, tierUsage }) => {
@@ -374,6 +405,10 @@ const scanDoctorsAndAggregate = async ({ db, currentYear, pricesByMonth }) => {
         if (revenueContribution.planBucket === 'yearly') aggregate.proMaxYearlyPlansCount += 1;
         else if (revenueContribution.planBucket === 'sixMonths') aggregate.proMaxSixMonthsPlansCount += 1;
         else if (revenueContribution.planBucket === 'monthly') aggregate.proMaxMonthlyPlansCount += 1;
+      } else if (isPlus) {
+        if (revenueContribution.planBucket === 'yearly') aggregate.plusYearlyPlansCount += 1;
+        else if (revenueContribution.planBucket === 'sixMonths') aggregate.plusSixMonthsPlansCount += 1;
+        else if (revenueContribution.planBucket === 'monthly') aggregate.plusMonthlyPlansCount += 1;
       } else {
         if (revenueContribution.planBucket === 'yearly') aggregate.yearlyPlansCount += 1;
         else if (revenueContribution.planBucket === 'sixMonths') aggregate.sixMonthsPlansCount += 1;
@@ -447,7 +482,7 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
     const aiFeaturesPayload = {};
     AI_FEATURE_NAMES.forEach((feature) => {
       const camel = FEATURE_CAMEL_MAP[feature];
-      ['Free', 'Pro', 'ProMax'].forEach((tierLabel) => {
+      ['Free', 'Pro', 'Plus', 'ProMax'].forEach((tierLabel) => {
         aiFeaturesPayload[`${camel}${tierLabel}Count`] = doctorAggregate[`${camel}${tierLabel}Count`];
       });
     });
@@ -462,21 +497,27 @@ module.exports = ({ HttpsError, assertAdminRequest, getDb }) => {
       publicBlacklisted,
       totalBlacklisted: doctorBlacklisted + publicBlacklisted,
       // الاشتراكات النشطة = برو + برو ماكس
-      activeSubscriptions: doctorAggregate.premiumDocsCount + doctorAggregate.proMaxDocsCount,
+      activeSubscriptions: doctorAggregate.premiumDocsCount + doctorAggregate.plusDocsCount + doctorAggregate.proMaxDocsCount,
       freeDocsCount: doctorAggregate.freeDocsCount,
       premiumDocsCount: doctorAggregate.premiumDocsCount,
+      plusDocsCount: doctorAggregate.plusDocsCount,
       proMaxDocsCount: doctorAggregate.proMaxDocsCount,
       totalSmartRxFree: doctorAggregate.totalSmartRxFree,
       totalSmartRxPro: doctorAggregate.totalSmartRxPro,
+      totalSmartRxPlus: doctorAggregate.totalSmartRxPlus,
       totalSmartRxProMax: doctorAggregate.totalSmartRxProMax,
       totalPrintsFree: doctorAggregate.totalPrintsFree,
       totalPrintsPro: doctorAggregate.totalPrintsPro,
+      totalPrintsPlus: doctorAggregate.totalPrintsPlus,
       totalPrintsProMax: doctorAggregate.totalPrintsProMax,
       // عدادات per-feature لكل tier (6 ميزات × 3 فئات = 18 حقل)
       ...aiFeaturesPayload,
       monthlyPlansCount: doctorAggregate.monthlyPlansCount,
       sixMonthsPlansCount: doctorAggregate.sixMonthsPlansCount,
       yearlyPlansCount: doctorAggregate.yearlyPlansCount,
+      plusMonthlyPlansCount: doctorAggregate.plusMonthlyPlansCount,
+      plusSixMonthsPlansCount: doctorAggregate.plusSixMonthsPlansCount,
+      plusYearlyPlansCount: doctorAggregate.plusYearlyPlansCount,
       proMaxMonthlyPlansCount: doctorAggregate.proMaxMonthlyPlansCount,
       proMaxSixMonthsPlansCount: doctorAggregate.proMaxSixMonthsPlansCount,
       proMaxYearlyPlansCount: doctorAggregate.proMaxYearlyPlansCount,

@@ -21,7 +21,7 @@ interface UserProfileData {
     doctorSpecialty?: string;
     profileImage?: string;
     doctorWhatsApp?: string;
-    accountType?: 'free' | 'premium' | 'pro_max';
+    accountType?: 'free' | 'premium' | 'plus' | 'pro_max';
     premiumExpiryDate?: string;
 }
 
@@ -84,6 +84,7 @@ export const userProfileService = {
                     doctorWhatsApp: normalizeOptionalString(data.doctorWhatsApp),
                     accountType:
                         data.accountType === 'premium' ? 'premium'
+                        : data.accountType === 'plus' ? 'plus'
                         : data.accountType === 'pro_max' ? 'pro_max'
                         : data.accountType === 'free' ? 'free'
                         : undefined,

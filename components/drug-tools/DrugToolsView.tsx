@@ -58,13 +58,14 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
     'tool', toolAsString, setToolAsString, '',
     ['', 'renal'] as const,
   );
-  const [accountType, setAccountType] = useState<'free' | 'premium' | 'pro_max'>('free');
+  const [accountType, setAccountType] = useState<'free' | 'premium' | 'plus' | 'pro_max'>('free');
   const [lockedNotice, setLockedNotice] = useState<{ title: string; message: string } | null>(null);
   const [accessControls, setAccessControls] = useState({
     // المنطق الموحّد: الحد اليومي للمجاني هو الحاكم — لو = 0 يعني الأداه مقفولة عليه.
     // مفيش toggle منفصل لـ premiumOnly، الأدمن بيحط رقم لكل باقة وبس.
     freeRenalToolDailyLimit: 5000,
     premiumRenalToolDailyLimit: 5000,
+    plusRenalToolDailyLimit: 0,
     proMaxRenalToolDailyLimit: 5000,
     premiumTagLabel: 'Pro',
     whatsappNumber: '',
@@ -81,6 +82,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
         setAccessControls({
           freeRenalToolDailyLimit: Number(controls.freeRenalToolDailyLimit || 0),
           premiumRenalToolDailyLimit: Number(controls.premiumRenalToolDailyLimit || 0),
+          plusRenalToolDailyLimit: Number(controls.plusRenalToolDailyLimit || 0),
           proMaxRenalToolDailyLimit: Number(controls.proMaxRenalToolDailyLimit || controls.premiumRenalToolDailyLimit || 0),
           premiumTagLabel: String(controls.premiumTagLabel || '').trim() || 'Pro',
           whatsappNumber: String(controls.whatsappNumber || '').replace(/\D/g, ''),
@@ -124,7 +126,7 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
   }, [userId]);
 
   // برو وبرو ماكس الاتنين "Pro" لأغراض الحدود (الـ Cloud Function بيستخدم نفس التصنيف)
-  const isPro = accountType === 'premium' || accountType === 'pro_max';
+  const isPro = accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max';
   // الأداه "مقفولة على المجاني" لو الأدمن خلى الحد اليومي للمجاني = 0.
   // ده الحاكم الوحيد دلوقتي — مفيش toggle منفصل.
   const toolRules = useMemo(
@@ -142,6 +144,8 @@ export const DrugToolsView: React.FC<DrugToolsViewProps> = ({ onOpenMedicationEd
     const feature = 'renalTool';
     const configuredLimit = accountType === 'pro_max'
       ? accessControls.proMaxRenalToolDailyLimit
+      : accountType === 'plus'
+      ? accessControls.plusRenalToolDailyLimit
       : isPro
       ? accessControls.premiumRenalToolDailyLimit
       : accessControls.freeRenalToolDailyLimit;

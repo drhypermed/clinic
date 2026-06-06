@@ -62,14 +62,14 @@ module.exports = (context) => {
 
       // مفاتيح الرسالة + الحد + اسم الحقل بناءً على الـmode (analyze vs quickAdd)
       const messageKeys = mode === 'quickAdd'
-        ? { freeKey: 'freeQuickAddLimitMessage', premiumKey: 'premiumQuickAddLimitMessage', proMaxKey: 'proMaxQuickAddLimitMessage' }
-        : { freeKey: 'freeAnalysisLimitMessage', premiumKey: 'premiumAnalysisLimitMessage', proMaxKey: 'proMaxAnalysisLimitMessage' };
+        ? { freeKey: 'freeQuickAddLimitMessage', premiumKey: 'premiumQuickAddLimitMessage', plusKey: 'plusQuickAddLimitMessage', proMaxKey: 'proMaxQuickAddLimitMessage' }
+        : { freeKey: 'freeAnalysisLimitMessage', premiumKey: 'premiumAnalysisLimitMessage', plusKey: 'plusAnalysisLimitMessage', proMaxKey: 'proMaxAnalysisLimitMessage' };
       const whatsappKeys = mode === 'quickAdd'
-        ? { freeKey: 'freeQuickAddWhatsappMessage', premiumKey: 'premiumQuickAddWhatsappMessage', proMaxKey: 'proMaxQuickAddWhatsappMessage' }
-        : { freeKey: 'freeAnalysisWhatsappMessage', premiumKey: 'premiumAnalysisWhatsappMessage', proMaxKey: 'proMaxAnalysisWhatsappMessage' };
+        ? { freeKey: 'freeQuickAddWhatsappMessage', premiumKey: 'premiumQuickAddWhatsappMessage', plusKey: 'plusQuickAddWhatsappMessage', proMaxKey: 'proMaxQuickAddWhatsappMessage' }
+        : { freeKey: 'freeAnalysisWhatsappMessage', premiumKey: 'premiumAnalysisWhatsappMessage', plusKey: 'plusAnalysisWhatsappMessage', proMaxKey: 'proMaxAnalysisWhatsappMessage' };
       const limitKeys = mode === 'quickAdd'
-        ? { freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' }
-        : { freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', proMaxKey: 'proMaxDailyLimit' };
+        ? { freeKey: 'freeQuickAddDailyLimit', premiumKey: 'premiumQuickAddDailyLimit', plusKey: 'plusQuickAddDailyLimit', proMaxKey: 'proMaxQuickAddDailyLimit' }
+        : { freeKey: 'freeDailyLimit', premiumKey: 'premiumDailyLimit', plusKey: 'plusDailyLimit', proMaxKey: 'proMaxDailyLimit' };
       // اسم الحقل في usage doc — منفصل لكل mode
       const fieldName = mode === 'quickAdd' ? 'quickAddCount' : 'smartPrescriptionCount';
 

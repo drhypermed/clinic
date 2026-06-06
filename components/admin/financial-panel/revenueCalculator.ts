@@ -21,10 +21,11 @@
 //   - Backward-compatible مع الـ entries القديمة
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { ProMaxSubscriptionPrices, RevenueData, SubscriptionPrices } from './types';
+import type { PlusSubscriptionPrices, ProMaxSubscriptionPrices, RevenueData, SubscriptionPrices } from './types';
 
 interface CombinedMonthPrices {
   prices: SubscriptionPrices;
+  plusPrices?: PlusSubscriptionPrices;
   proMaxPrices?: ProMaxSubscriptionPrices;
 }
 
@@ -32,7 +33,7 @@ interface CombinedMonthPrices {
 interface SubscriptionPeriodLike {
   startDate?: string;
   endDate?: string;
-  tier?: 'premium' | 'pro_max';
+  tier?: 'premium' | 'plus' | 'pro_max';
   planType?: 'monthly' | 'sixMonths' | 'yearly';
   durationMonths?: number;
   pricePaid?: number;
@@ -62,26 +63,33 @@ interface RevenueCalculationResult {
 const normalizePriceEntry = (
   raw: SubscriptionPrices | CombinedMonthPrices | undefined,
 ):
-  | { prices: SubscriptionPrices; proMaxPrices: ProMaxSubscriptionPrices | null }
+  | { prices: SubscriptionPrices; plusPrices: PlusSubscriptionPrices | null; proMaxPrices: ProMaxSubscriptionPrices | null }
   | null => {
   if (!raw) return null;
   if ('monthly' in raw && 'sixMonths' in raw && 'yearly' in raw && !('prices' in raw)) {
-    return { prices: raw as SubscriptionPrices, proMaxPrices: null };
+    return { prices: raw as SubscriptionPrices, plusPrices: null, proMaxPrices: null };
   }
   const combined = raw as CombinedMonthPrices;
   return {
     prices: combined.prices,
+    plusPrices: combined.plusPrices || null,
     proMaxPrices: combined.proMaxPrices || null,
   };
 };
 
 /** يختار السعر الصحيح حسب الفئة + المدة (مع fallback من pro_max لـ premium). */
 const pickFallbackPrice = (
-  tier: 'premium' | 'pro_max',
+  tier: 'premium' | 'plus' | 'pro_max',
   duration: 'monthly' | 'sixMonths' | 'yearly',
   prices: SubscriptionPrices,
+  plusPrices: PlusSubscriptionPrices | null,
   proMaxPrices: ProMaxSubscriptionPrices | null,
 ): number => {
+  if (tier === 'plus') {
+    const v = plusPrices?.[duration];
+    if (typeof v === 'number' && v > 0) return v;
+    return ({ monthly: 500, sixMonths: 2700, yearly: 5000 } as const)[duration];
+  }
   if (tier === 'pro_max' && proMaxPrices) {
     const v = proMaxPrices[duration];
     if (typeof v === 'number' && v > 0) return v;
@@ -113,11 +121,11 @@ const derivePlanType = (
  */
 const resolveEntryPrice = (params: {
   entry: SubscriptionPeriodLike;
-  doctorTier: 'premium' | 'pro_max';
+  doctorTier: 'premium' | 'plus' | 'pro_max';
   startDate: Date;
   pricesByMonth: Record<string, SubscriptionPrices | CombinedMonthPrices>;
-}): { price: number; planType: 'monthly' | 'sixMonths' | 'yearly'; tier: 'premium' | 'pro_max' } => {
-  const tier: 'premium' | 'pro_max' = params.entry.tier || params.doctorTier;
+}): { price: number; planType: 'monthly' | 'sixMonths' | 'yearly'; tier: 'premium' | 'plus' | 'pro_max' } => {
+  const tier: 'premium' | 'plus' | 'pro_max' = params.entry.tier || params.doctorTier;
 
   // أولوية ١: pricePaid محفوظ في الـ entry (الإصلاح الجديد)
   if (
@@ -153,16 +161,20 @@ const resolveEntryPrice = (params: {
     return { price: 0, planType, tier };
   }
 
-  const price = pickFallbackPrice(tier, planType, priceEntry.prices, priceEntry.proMaxPrices);
+  const price = pickFallbackPrice(tier, planType, priceEntry.prices, priceEntry.plusPrices, priceEntry.proMaxPrices);
   return { price, planType, tier };
 };
 
 interface MonthlyBucket {
   revenue: number;
+  plusRevenue: number;
   proMaxRevenue: number;
   monthlyCount: number;
   sixMonthsCount: number;
   yearlyCount: number;
+  plusMonthlyCount: number;
+  plusSixMonthsCount: number;
+  plusYearlyCount: number;
   proMaxMonthlyCount: number;
   proMaxSixMonthsCount: number;
   proMaxYearlyCount: number;
@@ -170,10 +182,14 @@ interface MonthlyBucket {
 
 const emptyBucket = (): MonthlyBucket => ({
   revenue: 0,
+  plusRevenue: 0,
   proMaxRevenue: 0,
   monthlyCount: 0,
   sixMonthsCount: 0,
   yearlyCount: 0,
+  plusMonthlyCount: 0,
+  plusSixMonthsCount: 0,
+  plusYearlyCount: 0,
   proMaxMonthlyCount: 0,
   proMaxSixMonthsCount: 0,
   proMaxYearlyCount: 0,
@@ -194,6 +210,7 @@ export const computeRevenueFromDoctors = (
     const hasHistory = Array.isArray(item?.subscriptionHistory) && item.subscriptionHistory.length > 0;
     return (
       accountType === 'premium' ||
+      accountType === 'plus' ||
       accountType === 'pro_max' ||
       hasHistory // حتى لو رجع free، اشتراكاته القديمة تتحسب
     );
@@ -203,8 +220,8 @@ export const computeRevenueFromDoctors = (
   let missingStartDateInYear = 0;
 
   candidateDoctors.forEach((data) => {
-    const doctorTier: 'premium' | 'pro_max' =
-      data?.accountType === 'pro_max' ? 'pro_max' : 'premium';
+    const doctorTier: 'premium' | 'plus' | 'pro_max' =
+      data?.accountType === 'pro_max' ? 'pro_max' : data?.accountType === 'plus' ? 'plus' : 'premium';
     const history: SubscriptionPeriodLike[] = Array.isArray(data?.subscriptionHistory)
       ? data.subscriptionHistory
       : [];
@@ -237,8 +254,14 @@ export const computeRevenueFromDoctors = (
         const bucket = monthlyRevenue[yearMonth];
         bucket.revenue += price;
 
+        const isPlus = tier === 'plus';
         const isProMax = tier === 'pro_max';
-        if (isProMax) {
+        if (isPlus) {
+          bucket.plusRevenue += price;
+          if (planType === 'yearly') bucket.plusYearlyCount += 1;
+          else if (planType === 'sixMonths') bucket.plusSixMonthsCount += 1;
+          else bucket.plusMonthlyCount += 1;
+        } else if (isProMax) {
           bucket.proMaxRevenue += price;
           if (planType === 'yearly') bucket.proMaxYearlyCount += 1;
           else if (planType === 'sixMonths') bucket.proMaxSixMonthsCount += 1;
@@ -284,8 +307,14 @@ export const computeRevenueFromDoctors = (
 
     const bucket = monthlyRevenue[yearMonth];
     bucket.revenue += price;
+    const isPlus = tier === 'plus';
     const isProMax = tier === 'pro_max';
-    if (isProMax) {
+    if (isPlus) {
+      bucket.plusRevenue += price;
+      if (planType === 'yearly') bucket.plusYearlyCount += 1;
+      else if (planType === 'sixMonths') bucket.plusSixMonthsCount += 1;
+      else bucket.plusMonthlyCount += 1;
+    } else if (isProMax) {
       bucket.proMaxRevenue += price;
       if (planType === 'yearly') bucket.proMaxYearlyCount += 1;
       else if (planType === 'sixMonths') bucket.proMaxSixMonthsCount += 1;
@@ -308,6 +337,10 @@ export const computeRevenueFromDoctors = (
       monthlyCount: bucket?.monthlyCount || 0,
       sixMonthsCount: bucket?.sixMonthsCount || 0,
       yearlyCount: bucket?.yearlyCount || 0,
+      plusMonthlyCount: bucket?.plusMonthlyCount || 0,
+      plusSixMonthsCount: bucket?.plusSixMonthsCount || 0,
+      plusYearlyCount: bucket?.plusYearlyCount || 0,
+      plusRevenue: bucket?.plusRevenue || 0,
       proMaxMonthlyCount: bucket?.proMaxMonthlyCount || 0,
       proMaxSixMonthsCount: bucket?.proMaxSixMonthsCount || 0,
       proMaxYearlyCount: bucket?.proMaxYearlyCount || 0,

@@ -10,7 +10,7 @@
  * وتطهير البيانات قبل حفظها في سجلات الإيرادات والمصروفات.
  */
 
-import { ProMaxSubscriptionPrices, SubscriptionPrices } from './types';
+import { PlusSubscriptionPrices, ProMaxSubscriptionPrices, SubscriptionPrices } from './types';
 import { mapFirebaseActionError } from '../../../utils/firebaseErrorMap';
 import { CONTROL_CHARS_REGEX } from '../../../utils/controlChars';
 
@@ -35,6 +35,12 @@ export const sanitizeProMaxPrices = (input: ProMaxSubscriptionPrices | undefined
   yearly: input && Number.isFinite(input.yearly) && input.yearly >= 0 ? input.yearly : 0,
 });
 
+export const sanitizePlusPrices = (input: PlusSubscriptionPrices | undefined): PlusSubscriptionPrices => ({
+  monthly: input && Number.isFinite(input.monthly) && input.monthly >= 0 ? input.monthly : 500,
+  sixMonths: input && Number.isFinite(input.sixMonths) && input.sixMonths >= 0 ? input.sixMonths : 2700,
+  yearly: input && Number.isFinite(input.yearly) && input.yearly >= 0 ? input.yearly : 5000,
+});
+
 /** تنظيف وصف المصروفات من الرموز غير المرغوب فيها وتقييد الطول */
 export const sanitizeExpenseDescription = (value: string) =>
   String(value || '')
@@ -44,4 +50,3 @@ export const sanitizeExpenseDescription = (value: string) =>
 
 /** تحويل أخطاء العمليات المالية إلى رسائل عربية مفهومة (يعيد تصدير الدالة المشتركة). */
 export const mapFinancialActionError = mapFirebaseActionError;
-

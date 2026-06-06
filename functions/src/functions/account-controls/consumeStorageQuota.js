@@ -8,15 +8,15 @@ const {
 // مستوى الموديول بدل ما نـallocate object جديد كل استدعاء (وكل retry للمعاملة).
 const FEATURE_KEYS_MAP = {
   readyPrescriptionSave: {
-    limit: { freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
-    msg: { freeKey: 'freeReadyPrescriptionDailyLimitMessage', premiumKey: 'premiumReadyPrescriptionDailyLimitMessage', proMaxKey: 'proMaxReadyPrescriptionDailyLimitMessage' },
-    wa: { freeKey: 'freeReadyPrescriptionWhatsappMessage', premiumKey: 'premiumReadyPrescriptionWhatsappMessage', proMaxKey: 'proMaxReadyPrescriptionWhatsappMessage' },
+    limit: { freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', plusKey: 'plusReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit' },
+    msg: { freeKey: 'freeReadyPrescriptionDailyLimitMessage', premiumKey: 'premiumReadyPrescriptionDailyLimitMessage', plusKey: 'plusReadyPrescriptionDailyLimitMessage', proMaxKey: 'proMaxReadyPrescriptionDailyLimitMessage' },
+    wa: { freeKey: 'freeReadyPrescriptionWhatsappMessage', premiumKey: 'premiumReadyPrescriptionWhatsappMessage', plusKey: 'plusReadyPrescriptionWhatsappMessage', proMaxKey: 'proMaxReadyPrescriptionWhatsappMessage' },
     fieldName: 'readyPrescriptionSaveCount',
   },
   medicalReportPrint: {
-    limit: { freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
-    msg: { freeKey: 'freeMedicalReportLimitMessage', premiumKey: 'premiumMedicalReportLimitMessage', proMaxKey: 'proMaxMedicalReportLimitMessage' },
-    wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
+    limit: { freeKey: 'freeMedicalReportDailyLimit', premiumKey: 'premiumMedicalReportDailyLimit', plusKey: 'plusMedicalReportDailyLimit', proMaxKey: 'proMaxMedicalReportDailyLimit' },
+    msg: { freeKey: 'freeMedicalReportLimitMessage', premiumKey: 'premiumMedicalReportLimitMessage', plusKey: 'plusMedicalReportLimitMessage', proMaxKey: 'proMaxMedicalReportLimitMessage' },
+    wa: { freeKey: 'freeMedicalReportWhatsappMessage', premiumKey: 'premiumMedicalReportWhatsappMessage', plusKey: 'plusMedicalReportWhatsappMessage', proMaxKey: 'proMaxMedicalReportWhatsappMessage' },
     fieldName: 'medicalReportPrintCount',
   },
 };
@@ -83,7 +83,7 @@ module.exports = (context) => {
 
     // 🆕 (2026-05): paid tiers بدون فحص للميزات المدفوعة. نرجع فوراً بدون
     // كتابة عداد ولا فتح transaction → توفير ٢-٥ ثواني وكتابات Firestore.
-    if (FEATURES_OPEN_FOR_PAID.has(feature) && (accountType === 'premium' || accountType === 'pro_max')) {
+    if (FEATURES_OPEN_FOR_PAID.has(feature) && (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max')) {
       return {
         accountType,
         feature,

@@ -126,7 +126,7 @@ export const AccountManagementPanel: React.FC = () => {
       // الأدمن (premiumExpiryDate يبدأ بـ9999) معفي من الـexpiry check.
       const nowMs = Date.now();
       result = result.filter((d) => {
-        const declared = (d.accountType || 'free') as 'free' | 'premium' | 'pro_max';
+        const declared = (d.accountType || 'free') as 'free' | 'premium' | 'plus' | 'pro_max';
         // المجاني ما عندوش expiry — يفضل مجاني
         if (declared === 'free') return filters.subscriptionType === 'free';
         // الأدمن (premiumExpiryDate سنة 9999) دائماً paid

@@ -11,6 +11,11 @@ const toSafeLimit = (value, fallback) => {
   return Math.min(MAX_LIMIT_VALUE, Math.max(0, Math.floor(n)));
 };
 
+const normalizeOpenPlusGuidelinesChatLimit = (value, fallback) => {
+  const normalized = toSafeLimit(value, fallback);
+  return normalized > 0 ? normalized : fallback;
+};
+
 const toBoolean = (value, fallback) => (typeof value === 'boolean' ? value : fallback);
 
 const normalizeMessageAllowEmpty = (value, fallback) => {
@@ -31,6 +36,20 @@ const buildWhatsAppUrl = (digits, message) => {
   if (!digits) return '';
   const text = encodeURIComponent(String(message || '').trim());
   return `https://wa.me/${digits}${text ? `?text=${text}` : ''}`;
+};
+
+const normalizePlusFields = (raw) => {
+  const result = {};
+  Object.keys(DEFAULT_SMART_RX_CONFIG).forEach((key) => {
+    if (!key.startsWith('plus')) return;
+    const fallback = DEFAULT_SMART_RX_CONFIG[key];
+    result[key] = key === 'plusGuidelinesChatDailyLimit'
+      ? normalizeOpenPlusGuidelinesChatLimit(raw?.[key], fallback)
+      : typeof fallback === 'number'
+      ? toSafeLimit(raw?.[key], fallback)
+      : normalizeMessageAllowEmpty(raw?.[key], fallback);
+  });
+  return result;
 };
 
 
@@ -416,6 +435,7 @@ const normalizeSmartRxConfig = (raw) => {
     premiumMedicationCustomizationsCapacityWhatsappMessage,
     // ✂️ شيلنا premiumOnly + lockedMessage للأدوات — الحد اليومي وحده يحدد دلوقتي.
     premiumTagLabel,
+    ...normalizePlusFields(raw),
     whatsappUrl: buildWhatsAppUrl(whatsappNumber, freeAnalysisWhatsappMessage),
     // ═══ حقول الفئة الجديدة "برو ماكس" — pass-through مع fallback للـ defaults ═══
     proMaxDailyLimit: toSafeLimit(raw?.proMaxDailyLimit, DEFAULT_SMART_RX_CONFIG.proMaxDailyLimit),
@@ -530,9 +550,9 @@ const resolveDoctorAccountType = (doctorData) => {
   const raw = doctorData?.accountType;
   // 3 فئات مدعومة: free | premium (برو) | pro_max (برو ماكس).
   // برو وبرو ماكس بيشاركوا نفس حقل premiumExpiryDate للانتهاء.
-  let accountType = raw === 'premium' ? 'premium' : raw === 'pro_max' ? 'pro_max' : 'free';
+  let accountType = raw === 'premium' ? 'premium' : raw === 'plus' ? 'plus' : raw === 'pro_max' ? 'pro_max' : 'free';
   const premiumExpiryDate = typeof doctorData?.premiumExpiryDate === 'string' ? doctorData.premiumExpiryDate : '';
-  if ((accountType === 'premium' || accountType === 'pro_max') && premiumExpiryDate) {
+  if ((accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') && premiumExpiryDate) {
     const expiryMs = new Date(premiumExpiryDate).getTime();
     if (Number.isFinite(expiryMs) && Date.now() >= expiryMs) {
       accountType = 'free';
@@ -548,9 +568,14 @@ const resolveDoctorAccountType = (doctorData) => {
  * free: قيمة المجاني.
  * ملاحظة: proMax بيرث من premium كـ default لحد ما الأدمن يضبط حدود مختلفة.
  */
-const pickTierValue = (accountType, config, { freeKey, premiumKey, proMaxKey }) => {
+const pickTierValue = (accountType, config, { freeKey, premiumKey, plusKey, proMaxKey }) => {
   if (accountType === 'pro_max') {
     const v = config[proMaxKey];
+    if (v !== undefined && v !== null && v !== '') return v;
+    return config[premiumKey];
+  }
+  if (accountType === 'plus') {
+    const v = plusKey ? config[plusKey] : undefined;
     if (v !== undefined && v !== null && v !== '') return v;
     return config[premiumKey];
   }

@@ -23,6 +23,7 @@ import {
   deletePublicSlot,
   getPublicSlots,
   subscribeToPublicSlots,
+  updatePublicSlot,
 } from './booking-public/slots';
 import {
   deletePublicUserBookingReview,
@@ -50,6 +51,7 @@ export const bookingPublicService = {
   subscribeToPublicConfig,
   subscribeToPublicSlots,
   addPublicSlot,
+  updatePublicSlot,
   deletePublicSlot,
   savePublicUserBooking,
   subscribeToPublicUserBookings,

@@ -185,14 +185,14 @@ module.exports = (context) => {
       // 3 features × 3 tiers — pickTierValue يختار القيمة المناسبة مع fallback من pro_max إلى premium
       const tierKeys = feature === 'publicBooking'
         ? {
-          msg: { freeKey: 'freePublicBookingLimitMessage', premiumKey: 'premiumPublicBookingLimitMessage', proMaxKey: 'proMaxPublicBookingLimitMessage' },
-          wa: { freeKey: 'freePublicBookingWhatsappMessage', premiumKey: 'premiumPublicBookingWhatsappMessage', proMaxKey: 'proMaxPublicBookingWhatsappMessage' },
-          limit: { freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
+          msg: { freeKey: 'freePublicBookingLimitMessage', premiumKey: 'premiumPublicBookingLimitMessage', plusKey: 'plusPublicBookingLimitMessage', proMaxKey: 'proMaxPublicBookingLimitMessage' },
+          wa: { freeKey: 'freePublicBookingWhatsappMessage', premiumKey: 'premiumPublicBookingWhatsappMessage', plusKey: 'plusPublicBookingWhatsappMessage', proMaxKey: 'proMaxPublicBookingWhatsappMessage' },
+          limit: { freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', plusKey: 'plusPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
         }
         : {
-          msg: { freeKey: 'freeSecretaryEntryRequestLimitMessage', premiumKey: 'premiumSecretaryEntryRequestLimitMessage', proMaxKey: 'proMaxSecretaryEntryRequestLimitMessage' },
-          wa: { freeKey: 'freeSecretaryEntryRequestWhatsappMessage', premiumKey: 'premiumSecretaryEntryRequestWhatsappMessage', proMaxKey: 'proMaxSecretaryEntryRequestWhatsappMessage' },
-          limit: { freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
+          msg: { freeKey: 'freeSecretaryEntryRequestLimitMessage', premiumKey: 'premiumSecretaryEntryRequestLimitMessage', plusKey: 'plusSecretaryEntryRequestLimitMessage', proMaxKey: 'proMaxSecretaryEntryRequestLimitMessage' },
+          wa: { freeKey: 'freeSecretaryEntryRequestWhatsappMessage', premiumKey: 'premiumSecretaryEntryRequestWhatsappMessage', plusKey: 'plusSecretaryEntryRequestWhatsappMessage', proMaxKey: 'proMaxSecretaryEntryRequestWhatsappMessage' },
+          limit: { freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', plusKey: 'plusSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
         };
 
       const limitReachedMessage = pickTierValue(accountType, config, tierKeys.msg);
