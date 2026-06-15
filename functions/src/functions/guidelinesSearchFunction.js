@@ -1,12 +1,14 @@
+const crypto = require('crypto');
 const { normalizeSearchText, highValueTerms, getQueryProfile, inferFocusCollections } = require('./guidelinesSearchQueryProfile');
 
-module.exports = ({ getDb }) => {
+module.exports = ({ getDb, assertAdminRequest }) => {
   const EMBEDDING_MODEL = 'gemini-embedding-001';
   const EMBEDDING_DIMENSIONS = 768;
   const VECTOR_FIELD = 'embeddingVector';
   const VECTOR_DISTANCE_FIELD = '_vectorDistance';
   const SEARCH_RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
   const SEARCH_RESULT_CACHE_MAX_ENTRIES = 300;
+  const SEARCH_DIAGNOSTIC_LOGS_ENABLED = String(process.env.GUIDELINE_SEARCH_DIAGNOSTIC_LOGS || 'false').toLowerCase() === 'true';
   const searchResultCache = new Map();
   const RETRIEVAL_LIMITS = {
     vector: 45,
@@ -58,6 +60,35 @@ module.exports = ({ getDb }) => {
       const oldestKey = searchResultCache.keys().next().value;
       if (oldestKey) searchResultCache.delete(oldestKey);
     }
+  };
+
+  const hashDiagnosticValue = (value) =>
+    crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 16);
+
+  const getCallerHash = (request) =>
+    hashDiagnosticValue(request?.auth?.uid || request?.auth?.token?.email || 'anonymous');
+
+  const maybeLogSearchDiagnostic = (entry) => {
+    if (!SEARCH_DIAGNOSTIC_LOGS_ENABLED) return;
+    console.info('[guidelineSearchDiagnostics]', {
+      at: new Date().toISOString(),
+      ...entry,
+    });
+  };
+
+  const finalizeSearchResponse = ({ response, diagnostics, includeAdminDiagnostics, adminEmail }) => {
+    maybeLogSearchDiagnostic(diagnostics);
+    if (!includeAdminDiagnostics) return response;
+    return {
+      ...response,
+      meta: {
+        ...(response.meta || {}),
+        adminDiagnostics: {
+          ...diagnostics,
+          adminHash: hashDiagnosticValue(adminEmail),
+        },
+      },
+    };
   };
 
   const buildSourcePathCandidates = (data) => {
@@ -748,7 +779,7 @@ module.exports = ({ getDb }) => {
       });
   };
 
-  const rankAndShapeResults = async ({ db, candidates, profile, options, limit }) => {
+  const rankAndShapeResults = async ({ db, candidates, profile, options, limit, diagnostics }) => {
     const prelim = candidates
       .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, profile, options) }))
       .filter((chunk) => chunk.score >= 8)
@@ -765,6 +796,13 @@ module.exports = ({ getDb }) => {
       || profile.plan?.isHighRisk
       || profile.plan?.needsSourceTrace
     );
+    if (diagnostics) {
+      diagnostics.prelimCandidateCount = prelim.length;
+      diagnostics.fullTextHydrated = shouldHydrateFullText;
+      diagnostics.estimatedHydrateDocReads = shouldHydrateFullText
+        ? Math.min(prelim.length, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra))
+        : 0;
+    }
     const hydrated = shouldHydrateFullText
       ? await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra))
       : prelim;
@@ -781,6 +819,12 @@ module.exports = ({ getDb }) => {
     const roots = profile.plan?.needsComparison
       ? diversifyForComparison(reranked, Math.max(10, limit))
       : diversifyByBook(reranked, Math.max(8, limit));
+    if (diagnostics) {
+      diagnostics.rootCandidateCount = roots.length;
+      diagnostics.estimatedNeighborDocReads = shouldHydrateFullText
+        ? Math.min(RETRIEVAL_LIMITS.neighborDocReads, Math.max(0, roots.slice(0, RETRIEVAL_LIMITS.neighborRoots).length * 4))
+        : 0;
+    }
     const withContext = shouldHydrateFullText
       ? await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots })
       : roots;
@@ -794,29 +838,72 @@ module.exports = ({ getDb }) => {
   };
 
   const searchGuidelineIndex = async (request) => {
+    const startedAt = Date.now();
     const data = request.data || {};
     const query = String(data.query || '').trim();
     const selectedCollectionId = data.selectedCollectionId ? String(data.selectedCollectionId) : '';
     const limit = Math.min(24, Math.max(8, Number(data.limit || 24) || 24));
     const strictSource = Boolean(data.strictSource);
+    const includeAdminDiagnostics = Boolean(data.includeAdminDiagnostics || data.debugDiagnostics);
 
     if (!query) return { results: [] };
 
     const profile = getQueryProfile(query);
     if (profile.terms.length === 0) return { results: [] };
 
+    let adminEmailForDiagnostics = '';
+    if (includeAdminDiagnostics) {
+      if (typeof assertAdminRequest !== 'function') {
+        throw new Error('Admin guard is not available for guideline search diagnostics');
+      }
+      adminEmailForDiagnostics = await assertAdminRequest(request);
+    }
+
     const db = getDb();
     const sourcePathCandidates = buildSourcePathCandidates(data);
+    const focusCollections = inferFocusCollections(profile);
+    const diagnostics = {
+      callerHash: getCallerHash(request),
+      queryHash: hashDiagnosticValue(profile.normalizedQuery || query),
+      queryLength: query.length,
+      selectedCollectionId,
+      limit,
+      strictSource,
+      sourcePathCandidateCount: sourcePathCandidates.length,
+      focusCollections,
+      plan: {
+        needsComparison: Boolean(profile.plan?.needsComparison),
+        isHighRisk: Boolean(profile.plan?.isHighRisk),
+        needsSourceTrace: Boolean(profile.plan?.needsSourceTrace),
+      },
+      sourceScopedCandidateCount: 0,
+      vectorCandidateCount: 0,
+      keywordCandidateCount: 0,
+      scanCandidateCount: 0,
+    };
     const cacheKey = makeSearchCacheKey({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource });
     const cachedResult = getCachedSearchResult(cacheKey);
-    if (cachedResult) return {
-      ...cachedResult,
-      meta: {
-        ...(cachedResult.meta || {}),
-        cacheHit: true,
-      },
-    };
-    const focusCollections = inferFocusCollections(profile);
+    if (cachedResult) {
+      return finalizeSearchResponse({
+        response: {
+          ...cachedResult,
+          meta: {
+            ...(cachedResult.meta || {}),
+            cacheHit: true,
+          },
+        },
+        diagnostics: {
+          ...diagnostics,
+          cacheHit: true,
+          retrievalMode: cachedResult.meta?.retrievalMode || 'cache',
+          resultCount: Array.isArray(cachedResult.results) ? cachedResult.results.length : 0,
+          estimatedDocsReturned: 0,
+          durationMs: Date.now() - startedAt,
+        },
+        includeAdminDiagnostics,
+        adminEmail: adminEmailForDiagnostics,
+      });
+    }
     const queryEmbedding = await embedQuery(query);
     const options = {
       selectedCollectionId,
@@ -829,6 +916,7 @@ module.exports = ({ getDb }) => {
     let candidates = [];
     if (sourcePathCandidates.length > 0) {
       candidates = await fetchSourceScopedCandidates({ db, sourcePathCandidates });
+      diagnostics.sourceScopedCandidateCount = candidates.length;
     }
 
     const vectorCandidates = await fetchVectorCandidates({
@@ -836,6 +924,7 @@ module.exports = ({ getDb }) => {
       queryEmbedding,
       limit: profile.plan.needsComparison ? RETRIEVAL_LIMITS.vectorComparison : RETRIEVAL_LIMITS.vector,
     });
+    diagnostics.vectorCandidateCount = vectorCandidates.length;
     if (vectorCandidates.length > 0) {
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       vectorCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'vector'));
@@ -859,6 +948,7 @@ module.exports = ({ getDb }) => {
         focusCollections,
         vectorCandidateCount: vectorCandidates.length,
       });
+      diagnostics.keywordCandidateCount = keywordCandidates.length;
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       keywordCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'keyword'));
       candidates = Array.from(byId.values());
@@ -871,12 +961,14 @@ module.exports = ({ getDb }) => {
         focusCollections,
         needsComparison: profile.plan.needsComparison,
       });
+      diagnostics.scanCandidateCount = scanCandidates.length;
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       scanCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'collection-scan'));
       candidates = Array.from(byId.values());
     }
 
-    const results = await rankAndShapeResults({ db, candidates, profile, options, limit });
+    diagnostics.candidateCount = candidates.length;
+    const results = await rankAndShapeResults({ db, candidates, profile, options, limit, diagnostics });
     const response = {
       results,
       meta: {
@@ -894,8 +986,24 @@ module.exports = ({ getDb }) => {
         cacheHit: false,
       },
     };
+    diagnostics.cacheHit = false;
+    diagnostics.retrievalMode = response.meta.retrievalMode;
+    diagnostics.resultCount = results.length;
+    diagnostics.estimatedDocsReturned =
+      diagnostics.sourceScopedCandidateCount
+      + diagnostics.vectorCandidateCount
+      + diagnostics.keywordCandidateCount
+      + diagnostics.scanCandidateCount
+      + Number(diagnostics.estimatedHydrateDocReads || 0)
+      + Number(diagnostics.estimatedNeighborDocReads || 0);
+    diagnostics.durationMs = Date.now() - startedAt;
     setCachedSearchResult(cacheKey, response);
-    return response;
+    return finalizeSearchResponse({
+      response,
+      diagnostics,
+      includeAdminDiagnostics,
+      adminEmail: adminEmailForDiagnostics,
+    });
   };
 
   const listGuidelineBooks = async (request) => {
