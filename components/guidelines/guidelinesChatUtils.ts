@@ -2,6 +2,7 @@ import type { GuidelineCollection, GuidelineLanguage } from './guidelinesData';
 import type {
   GuidelineChatResponseMode,
   GuidelineChatScope,
+  GuidelineSearchAdminDiagnostics,
   GuidelineChatSourceChunk,
 } from './guidelineChatSearch';
 
@@ -32,6 +33,7 @@ export type ChatMessage = {
   content: string;
   createdAt: number;
   sources?: GuidelineChatSourceChunk[];
+  adminDiagnostics?: GuidelineSearchAdminDiagnostics[];
   confidence?: EvidenceConfidence;
   confidenceSummary?: string;
   status?: 'thinking' | 'streaming' | 'error';

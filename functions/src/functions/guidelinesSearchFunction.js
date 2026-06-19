@@ -6,25 +6,31 @@ module.exports = ({ getDb, assertAdminRequest }) => {
   const EMBEDDING_DIMENSIONS = 768;
   const VECTOR_FIELD = 'embeddingVector';
   const VECTOR_DISTANCE_FIELD = '_vectorDistance';
-  const SEARCH_RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-  const SEARCH_RESULT_CACHE_MAX_ENTRIES = 300;
+  const SEARCH_RESULT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const SEARCH_RESULT_CACHE_MAX_ENTRIES = 900;
+  const EMBEDDING_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const EMBEDDING_CACHE_MAX_ENTRIES = 800;
+  const SEARCH_CACHE_VERSION = String(process.env.GUIDELINE_SEARCH_CACHE_VERSION || process.env.GUIDELINE_STATIC_VERSION || 'v1').trim() || 'v1';
   const SEARCH_DIAGNOSTIC_LOGS_ENABLED = String(process.env.GUIDELINE_SEARCH_DIAGNOSTIC_LOGS || 'false').toLowerCase() === 'true';
   const searchResultCache = new Map();
+  const embeddingCache = new Map();
   const RETRIEVAL_LIMITS = {
-    vector: 45,
-    vectorComparison: 70,
-    prefixDefault: 160,
-    selectedKeyword: 90,
-    focusedKeyword: 60,
+    vector: 30,
+    vectorHighRisk: 40,
+    vectorComparison: 56,
+    vectorStrictSource: 24,
+    prefixDefault: 120,
+    selectedKeyword: 70,
+    focusedKeyword: 45,
     schoolKeyword: 8,
-    broadKeyword: 80,
-    sourceScoped: 90,
-    collectionScan: 90,
-    collectionScanComparison: 140,
-    broadComparisonScan: 120,
-    hydrateExtra: 6,
-    neighborRoots: 3,
-    neighborDocReads: 12,
+    broadKeyword: 60,
+    sourceScoped: 60,
+    collectionScan: 70,
+    collectionScanComparison: 110,
+    broadComparisonScan: 90,
+    hydrateExtra: 4,
+    neighborRoots: 2,
+    neighborDocReads: 8,
     bookPageRead: 45,
   };
   const ALL_GUIDELINE_SCHOOLS = [
@@ -37,6 +43,7 @@ module.exports = ({ getDb, assertAdminRequest }) => {
 
   const makeSearchCacheKey = ({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource }) =>
     JSON.stringify({
+      v: SEARCH_CACHE_VERSION,
       q: normalizeSearchText(query).slice(0, 500),
       c: selectedCollectionId || '',
       s: sourcePathCandidates.slice(0, 10),
@@ -59,6 +66,25 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     if (searchResultCache.size > SEARCH_RESULT_CACHE_MAX_ENTRIES) {
       const oldestKey = searchResultCache.keys().next().value;
       if (oldestKey) searchResultCache.delete(oldestKey);
+    }
+  };
+
+  const getCachedEmbedding = (key) => {
+    const cached = embeddingCache.get(key);
+    if (!cached) return null;
+    if (Date.now() - cached.createdAt > EMBEDDING_CACHE_TTL_MS) {
+      embeddingCache.delete(key);
+      return null;
+    }
+    return cached.value;
+  };
+
+  const setCachedEmbedding = (key, value) => {
+    if (!Array.isArray(value) || value.length !== EMBEDDING_DIMENSIONS) return;
+    embeddingCache.set(key, { createdAt: Date.now(), value });
+    if (embeddingCache.size > EMBEDDING_CACHE_MAX_ENTRIES) {
+      const oldestKey = embeddingCache.keys().next().value;
+      if (oldestKey) embeddingCache.delete(oldestKey);
     }
   };
 
@@ -116,6 +142,21 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     return Array.from(candidates).slice(0, 10);
   };
 
+  const getAdaptiveVectorLimit = ({ profile, selectedCollectionId, sourcePathCandidates, strictSource }) => {
+    if (profile.plan?.needsComparison) return RETRIEVAL_LIMITS.vectorComparison;
+    if (profile.plan?.isHighRisk || profile.plan?.needsSourceTrace) return RETRIEVAL_LIMITS.vectorHighRisk;
+    if (strictSource && sourcePathCandidates.length > 0) return RETRIEVAL_LIMITS.vectorStrictSource;
+    if (selectedCollectionId) return Math.max(RETRIEVAL_LIMITS.vector, 32);
+    if (sourcePathCandidates.length > 0) return RETRIEVAL_LIMITS.vectorStrictSource;
+    return RETRIEVAL_LIMITS.vector;
+  };
+
+  const getVectorCoverageThreshold = (vectorLimit, profile) => {
+    if (profile.plan?.needsComparison) return Math.max(34, Math.floor(vectorLimit * 0.7));
+    if (profile.plan?.isHighRisk || profile.plan?.needsSourceTrace) return Math.max(24, Math.floor(vectorLimit * 0.65));
+    return Math.max(20, Math.floor(vectorLimit * 0.72));
+  };
+
   const chunkMetadataText = (chunk) =>
     normalizeSearchText([
       chunk.label,
@@ -162,6 +203,13 @@ module.exports = ({ getDb, assertAdminRequest }) => {
   const embedQuery = async (query) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || typeof fetch !== 'function') return null;
+    const cacheKey = JSON.stringify({
+      v: SEARCH_CACHE_VERSION,
+      model: EMBEDDING_MODEL,
+      q: normalizeSearchText(query).slice(0, 500),
+    });
+    const cached = getCachedEmbedding(cacheKey);
+    if (cached) return cached;
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${encodeURIComponent(apiKey)}`, {
         method: 'POST',
@@ -176,7 +224,9 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       if (!response.ok) return null;
       const data = await response.json();
       const values = data?.embedding?.values;
-      return Array.isArray(values) ? values.map(Number).filter((value) => Number.isFinite(value)) : null;
+      const embedding = Array.isArray(values) ? values.map(Number).filter((value) => Number.isFinite(value)) : null;
+      if (embedding?.length === EMBEDDING_DIMENSIONS) setCachedEmbedding(cacheKey, embedding);
+      return embedding;
     } catch (error) {
       console.warn('[searchGuidelineIndex] query embedding failed', { message: error.message });
       return null;
@@ -485,23 +535,23 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     const hasCkdAnemiaIntent = profile.terms.includes('ckd')
       && (profile.terms.includes('iron') || profile.terms.includes('anemia') || profile.terms.includes('anaemia') || profile.terms.includes('tsat') || profile.terms.includes('ferritin'));
     if (hasCkdAnemiaIntent) {
-      collectBookIdPrefix('kdigo-anemia-in-ckd', 'kdigo-2026', 360);
+      collectBookIdPrefix('kdigo-anemia-in-ckd', 'kdigo-2026', 240);
     }
     if (/\b(hepatitis b|hbv)\b/i.test(queryText)) {
-      collectBookIdPrefix('easl-2025-easl-clinical-practice-guidelines-on-the-management-of-', 'easl-2026', 320);
+      collectBookIdPrefix('easl-2025-easl-clinical-practice-guidelines-on-the-management-of-', 'easl-2026', 220);
     }
     if (profile.terms.includes('dka') || profile.terms.includes('ketoacidosis')) {
-      collectBookIdPrefix('ada-2026-16-diabetes-care-in-the-hospital', 'ada-2026', 240);
-      collectBookIdPrefix('ada-2026-6-glycemic-goals-hypoglycemia-and-hyperglycemic-crises', 'ada-2026', 180);
+      collectBookIdPrefix('ada-2026-16-diabetes-care-in-the-hospital', 'ada-2026', 170);
+      collectBookIdPrefix('ada-2026-6-glycemic-goals-hypoglycemia-and-hyperglycemic-crises', 'ada-2026', 130);
       if (profile.populationTags.includes('child')) {
-        collectBookIdPrefix('ada-2026-14-children-and-adolescents', 'ada-2026', 160);
+        collectBookIdPrefix('ada-2026-14-children-and-adolescents', 'ada-2026', 110);
       }
     }
     if (profile.terms.includes('asthma') || profile.terms.includes('mart') || profile.terms.includes('formoterol') || profile.terms.includes('saba') || profile.terms.includes('ics')) {
-      collectBookIdPrefix('gina-gina-2026', 'gina-2026', 320);
+      collectBookIdPrefix('gina-gina-2026', 'gina-2026', 220);
     }
     if (profile.terms.includes('gout') || profile.terms.includes('urate') || profile.terms.includes('allopurinol') || profile.terms.includes('febuxostat') || profile.terms.includes('colchicine')) {
-      collectBookIdPrefix('acr-gout-clinical-practice-guidelines-american-college-of-rheumatology-2020-guideline-for-the-management-of-gout', 'acr-2026', 260);
+      collectBookIdPrefix('acr-gout-clinical-practice-guidelines-american-college-of-rheumatology-2020-guideline-for-the-management-of-gout', 'acr-2026', 180);
     }
 
     if (prefixJobs.length > 0) {
@@ -862,12 +912,16 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     const db = getDb();
     const sourcePathCandidates = buildSourcePathCandidates(data);
     const focusCollections = inferFocusCollections(profile);
+    const vectorLimit = getAdaptiveVectorLimit({ profile, selectedCollectionId, sourcePathCandidates, strictSource });
+    const vectorCoverageThreshold = getVectorCoverageThreshold(vectorLimit, profile);
     const diagnostics = {
       callerHash: getCallerHash(request),
       queryHash: hashDiagnosticValue(profile.normalizedQuery || query),
       queryLength: query.length,
       selectedCollectionId,
       limit,
+      vectorLimit,
+      vectorCoverageThreshold,
       strictSource,
       sourcePathCandidateCount: sourcePathCandidates.length,
       focusCollections,
@@ -922,7 +976,7 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     const vectorCandidates = await fetchVectorCandidates({
       db,
       queryEmbedding,
-      limit: profile.plan.needsComparison ? RETRIEVAL_LIMITS.vectorComparison : RETRIEVAL_LIMITS.vector,
+      limit: vectorLimit,
     });
     diagnostics.vectorCandidateCount = vectorCandidates.length;
     if (vectorCandidates.length > 0) {
@@ -932,7 +986,7 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     }
 
     const vectorCoversRoutineSearch = Boolean(
-      vectorCandidates.length >= 36
+      vectorCandidates.length >= vectorCoverageThreshold
       && sourcePathCandidates.length === 0
       && !selectedCollectionId
       && !profile.plan.needsComparison

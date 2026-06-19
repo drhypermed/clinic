@@ -210,6 +210,8 @@ export interface PatientRecord {
   consultationHistoryServiceBasePrices?: number[];
   /** معرّف الفرع الذي تم فيه الكشف */
   branchId?: string;
+  /** رقم الموعد المحدد الذي أُنشئ/حُفظ منه هذا السجل، وليس مجرد مطابقة بالاسم. */
+  sourceAppointmentId?: string;
 }
 
 /**

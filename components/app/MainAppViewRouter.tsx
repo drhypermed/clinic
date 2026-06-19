@@ -87,6 +87,7 @@ interface MainAppViewRouterProps {
   // ── توجيه عام ──
   currentView: AppView;
   navigateToView: (view: AppView) => void;
+  isAdminUser?: boolean;
 
   // ── بيانات المستخدم والفرع ──
   user: import('firebase/auth').User | null;
@@ -484,6 +485,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onBack={() => p.navigateToView('home')}
           doctorName={p.normalizedDoctorName}
           doctorSpecialty={p.normalizedDoctorSpecialty}
+          isAdminUser={Boolean(p.isAdminUser)}
         />
       )}
 

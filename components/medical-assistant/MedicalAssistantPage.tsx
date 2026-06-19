@@ -13,7 +13,8 @@ export const MedicalAssistantPage: React.FC<{
   onBack?: () => void;
   doctorName?: string | null;
   doctorSpecialty?: string | null;
-}> = ({ doctorName, doctorSpecialty }) => {
+  isAdminUser?: boolean;
+}> = ({ doctorName, doctorSpecialty, isAdminUser = false }) => {
   const [language, setLanguage] = useState<GuidelineLanguage>('ar');
 
   // Book picker state — managed here so the chat component can search within a specific book
@@ -73,6 +74,7 @@ export const MedicalAssistantPage: React.FC<{
         isEmbedded={true}
         showBookPicker={true}
         onSelectSource={handleSelectSource}
+        isAdminUser={isAdminUser}
       />
     </div>
   );

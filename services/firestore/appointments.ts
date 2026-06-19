@@ -57,6 +57,8 @@ export const appointmentsService = {
                 return {
                     ...raw,
                     appointmentType: resolveAppointmentType(raw), // تحديد نوع الموعد (كشف/استشارة)
+                    appointmentStatus: raw.appointmentStatus
+                        || (raw.examCompletedAt ? 'completed' : 'pending'),
                 } as ClinicAppointment;
             });
 
@@ -154,7 +156,12 @@ export const appointmentsService = {
     saveAppointment: async (userId: string, appointment: ClinicAppointment) => {
         try {
             const ref = doc(db, 'users', userId, 'appointments', appointment.id);
-            await setDoc(ref, omitUndefined(appointment as unknown as Record<string, unknown>));
+            const normalizedAppointment: ClinicAppointment = {
+                ...appointment,
+                appointmentStatus: appointment.appointmentStatus
+                    || (appointment.examCompletedAt ? 'completed' : 'pending'),
+            };
+            await setDoc(ref, omitUndefined(normalizedAppointment as unknown as Record<string, unknown>));
         } catch (error) {
             console.error("[Firestore] Error saving appointment:", error);
             throw error;

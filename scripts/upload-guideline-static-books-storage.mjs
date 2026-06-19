@@ -11,6 +11,7 @@ const destinationRoot = 'guidelines-static';
 const dryRun = process.argv.includes('--dry-run');
 const forceUpload = process.argv.includes('--force');
 const quiet = process.argv.includes('--quiet');
+const metadataOnly = process.argv.includes('--metadata-only');
 const onlyFilters = process.argv
   .filter((arg) => arg.startsWith('--only='))
   .flatMap((arg) => arg.slice('--only='.length).split(','))
@@ -52,8 +53,20 @@ if (!admin.apps.length) {
   admin.initializeApp(appOptions);
 }
 
+const readExistingDownloadToken = () => {
+  for (const envPath of ['.env.local', '.env.production', '.env']) {
+    if (!fs.existsSync(envPath)) continue;
+    const text = fs.readFileSync(envPath, 'utf8');
+    const match = text.match(/^VITE_GUIDELINE_STATIC_BASE_URL=(.+)$/m);
+    if (!match) continue;
+    const tokenMatch = match[1].match(/[?&]token=([^&\s]+)/);
+    if (tokenMatch?.[1]) return decodeURIComponent(tokenMatch[1]);
+  }
+  return '';
+};
+
 const bucket = admin.storage().bucket();
-const uploadToken = process.env.GUIDELINE_STATIC_DOWNLOAD_TOKEN || crypto.randomUUID();
+const uploadToken = process.env.GUIDELINE_STATIC_DOWNLOAD_TOKEN || readExistingDownloadToken() || crypto.randomUUID();
 
 const walkFiles = (dir) => {
   if (!fs.existsSync(dir)) return [];
@@ -74,9 +87,13 @@ const contentTypeFor = (relativePath) => {
   return 'application/octet-stream';
 };
 
-const files = walkFiles(sourceRoot).filter((filePath) =>
-  matchesOnlyFilter(path.relative(sourceRoot, filePath).replace(/\\/g, '/')),
-);
+const files = walkFiles(sourceRoot).filter((filePath) => {
+  const relativePath = path.relative(sourceRoot, filePath).replace(/\\/g, '/');
+  if (metadataOnly && !relativePath.endsWith('/collection-data.json') && !relativePath.endsWith('/collection-data.json.gz')) {
+    return false;
+  }
+  return matchesOnlyFilter(relativePath);
+});
 
 let uploaded = 0;
 let skipped = 0;

@@ -112,6 +112,9 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
           {isPast && (
             <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-black text-warning-700">فات الموعد</span>
           )}
+          {apt.appointmentStatus === 'in_progress' && (
+            <span className="rounded-full border border-success-200 bg-success-50 px-2 py-0.5 text-[10px] font-black text-success-700">جاري الكشف</span>
+          )}
           <FirstVisitBadge isFirstVisit={apt.isFirstVisit} />
           {/* الجنس + الحمل + الرضاعة — تظهر لو السكرتاريه دخلتها عشان الطبيب يعرفها من الكارت مباشرة */}
           {apt.gender === 'male' && (

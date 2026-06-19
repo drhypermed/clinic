@@ -273,5 +273,5 @@ const AppCoreContentInner: React.FC<AppCoreContentProps> = ({
   if (!userRole) return <LoadingStateScreen />;
 
   // 9. التطبيق الرئيسي للطبيب أو السكرتير
-  return <MainApp />;
+  return <MainApp isAdminUser={isAdminUser} />;
 };

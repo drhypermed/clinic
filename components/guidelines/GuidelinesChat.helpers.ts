@@ -96,7 +96,10 @@ export const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2,
 export const writeStoredMessages = (messages: ChatMessage[], uid?: string | null) => {
   try {
     const persistableMessages = trimChatMessages(
-      messages.filter(isStoredChatMessage).filter(isLocalPersistableChatMessage),
+      messages
+        .filter(isStoredChatMessage)
+        .filter(isLocalPersistableChatMessage)
+        .map(stripTransientChatFields),
     );
 
     if (persistableMessages.length === 0) {
@@ -142,6 +145,11 @@ const isLocalPersistableChatMessage = (message: ChatMessage) =>
   && message.status !== 'thinking'
   && message.status !== 'streaming'
   && !isLegacyCorruptedWelcomeMessage(message);
+
+const stripTransientChatFields = (message: ChatMessage): ChatMessage => {
+  const { adminDiagnostics, ...persisted } = message;
+  return persisted;
+};
 
 export const getContentDirection = (value: string) => {
   const arabicChars = (value.match(/[\u0600-\u06FF]/g) || []).length;
@@ -204,7 +212,10 @@ export const readStoredMessages = (
       if (!raw) continue;
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed) || parsed.length === 0) continue;
-      const cleaned = parsed.filter(isStoredChatMessage).filter(isLocalPersistableChatMessage);
+      const cleaned = parsed
+        .filter(isStoredChatMessage)
+        .filter(isLocalPersistableChatMessage)
+        .map(stripTransientChatFields);
       if (cleaned.length === 0) {
         window.localStorage.removeItem(key);
         continue;

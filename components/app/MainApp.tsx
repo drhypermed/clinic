@@ -68,7 +68,7 @@ import { WhatsAppDownloadGuideModal } from '../prescription/WhatsAppDownloadGuid
 import { useBranches } from '../../hooks/useBranches';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
 
-export const MainApp: React.FC = () => {
+export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = false }) => {
   // إخفاء السبلاش الأوّلي فور ما MainApp تعمل mount — ده بيضمن إن المستخدم
   // يشوف سبلاش → لوحة التحكم مباشرة، بدون شاشة بيضاء وسطانية.
   useHideBootSplash('main-app-mounted');
@@ -523,6 +523,7 @@ export const MainApp: React.FC = () => {
           ) : (
           <React.Suspense fallback={<div className="flex items-center justify-center py-32"><div className="w-8 h-8 border-[3px] border-slate-200 border-t-blue-600 rounded-full animate-spin" /></div>}>
             <MainAppViewRouter
+              isAdminUser={isAdminUser}
               currentView={currentView}
               navigateToView={navigateToView}
               user={user}

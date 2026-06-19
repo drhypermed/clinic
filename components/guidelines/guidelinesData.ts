@@ -6,6 +6,7 @@ import {
   getCachedGuidelineCollectionData,
   makeGuidelineCollectionDataCacheKey,
 } from './guidelineBookLocalCache';
+import { getGuidelineCollectionDataStatic } from './guidelineStaticMetadataService';
 
 export type GuidelineLanguage = 'ar' | 'en';
 
@@ -164,16 +165,28 @@ export const loadGuidelineCollectionData = async (
   const cached = await getCachedGuidelineCollectionData(cacheKey);
   if (cached) return cached;
 
+  const localData = await loadLocalGuidelineCollectionData(id);
+  if (localData?.topics.length) {
+    void cacheGuidelineCollectionData(cacheKey, localData);
+    return localData;
+  }
+
+  const staticData = await getGuidelineCollectionDataStatic(id);
+  if (staticData) {
+    void cacheGuidelineCollectionData(cacheKey, staticData);
+    return staticData;
+  }
+
   try {
     const firestoreData = await fetchFirestoreCollectionData(id);
     if (firestoreData.topics.length > 0) {
       void cacheGuidelineCollectionData(cacheKey, firestoreData);
       return firestoreData;
     }
-    return loadLocalGuidelineCollectionData(id);
+    return localData;
   } catch (error) {
     console.error(`Error loading guideline collection data from Firestore for ${id}:`, error);
-    return loadLocalGuidelineCollectionData(id);
+    return localData;
   }
 };
 

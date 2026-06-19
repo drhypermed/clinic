@@ -16,7 +16,8 @@ import {
   makeGuidelineBookListCacheKey,
   makeGuidelineBookTextCacheKey,
 } from './guidelineBookLocalCache';
-import { getGuidelineBookTextStatic } from './guidelineStaticBookService';
+import { getGuidelineBookTextStatic, listGuidelineBooksStatic } from './guidelineStaticBookService';
+import { getGuidelineStaticVersion } from './guidelineStaticConfig';
 
 export type GuidelineChatScope = 'current-guideline' | 'all-guidelines' | 'current-file';
 
@@ -103,6 +104,28 @@ export type GuidelineBookTextResponse = {
   hasMore: boolean;
 };
 
+export type GuidelineSearchAdminDiagnostics = {
+  cacheHit?: boolean;
+  retrievalMode?: string;
+  estimatedDocsReturned?: number;
+  durationMs?: number;
+  sourceScopedCandidateCount?: number;
+  vectorCandidateCount?: number;
+  keywordCandidateCount?: number;
+  scanCandidateCount?: number;
+  candidateCount?: number;
+  resultCount?: number;
+  fullTextHydrated?: boolean;
+  estimatedHydrateDocReads?: number;
+  estimatedNeighborDocReads?: number;
+  [key: string]: unknown;
+};
+
+export type GuidelineChatSearchResult = {
+  chunks: GuidelineChatSourceChunk[];
+  diagnostics?: GuidelineSearchAdminDiagnostics | null;
+};
+
 export type GuidelineChatSearchContext = {
   selectedCollectionId?: string;
   selectedGroup?: GuidelineTopic['group'];
@@ -119,7 +142,7 @@ export class GuidelineChatSearchError extends Error {
   }
 }
 
-const SEARCH_CACHE_TTL_MS = 30 * 60 * 1000;
+const SEARCH_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const SEARCH_CACHE_MAX_ENTRIES = 80;
 const guidelineSearchCache = new Map<string, { createdAt: number; results: GuidelineChatSourceChunk[] }>();
 
@@ -129,6 +152,7 @@ const getGuidelineSearchCacheKey = (
   limit: number,
   selectedSource?: Pick<GuidelineSource, 'localFile' | 'title' | 'folderTitle'> | null,
 ) => JSON.stringify({
+  v: getGuidelineStaticVersion(),
   q: query.replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 500),
   scope: context.scope,
   collection: context.scope !== 'all-guidelines' ? (context.selectedCollectionId || '') : '',
@@ -152,6 +176,12 @@ const setCachedGuidelineSearch = (key: string, results: GuidelineChatSourceChunk
     const oldestKey = guidelineSearchCache.keys().next().value;
     if (oldestKey) guidelineSearchCache.delete(oldestKey);
   }
+};
+
+const shouldUseFirestoreBookFallback = () => {
+  const env = import.meta as unknown as { env?: { VITE_GUIDELINE_FIRESTORE_BOOK_FALLBACK?: string } };
+  const value = String(env.env?.VITE_GUIDELINE_FIRESTORE_BOOK_FALLBACK || 'true').trim().toLowerCase();
+  return !['0', 'false', 'no', 'off'].includes(value);
 };
 
 const normalizeSearchText = (value: string) =>
@@ -351,10 +381,24 @@ export const searchGuidelineChatIndexCloud = async (
   context: GuidelineChatSearchContext,
   limit = 12,
   selectedSource?: Pick<GuidelineSource, 'localFile' | 'title' | 'folderTitle'> | null,
-): Promise<GuidelineChatSourceChunk[]> => {
+  options: { includeAdminDiagnostics?: boolean } = {},
+): Promise<GuidelineChatSearchResult> => {
   const cacheKey = getGuidelineSearchCacheKey(query, context, limit, selectedSource);
   const cached = getCachedGuidelineSearch(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    return {
+      chunks: cached,
+      diagnostics: options.includeAdminDiagnostics
+        ? {
+          cacheHit: true,
+          retrievalMode: 'client-cache',
+          estimatedDocsReturned: 0,
+          durationMs: 0,
+          resultCount: cached.length,
+        }
+        : null,
+    };
+  }
 
   try {
     const searchFn = httpsCallable<
@@ -367,8 +411,12 @@ export const searchGuidelineChatIndexCloud = async (
         sourcePathCandidates?: string[];
         strictSource?: boolean;
         limit?: number;
+        includeAdminDiagnostics?: boolean;
       },
-      { results: GuidelineChatSourceChunk[] }
+      {
+        results: GuidelineChatSourceChunk[];
+        meta?: { adminDiagnostics?: GuidelineSearchAdminDiagnostics };
+      }
     >(functions, 'searchGuidelineIndex');
 
     const response = await searchFn({
@@ -380,9 +428,11 @@ export const searchGuidelineChatIndexCloud = async (
       sourcePathCandidates: context.scope === 'current-file' && selectedSource?.localFile ? [selectedSource.localFile] : [],
       strictSource: context.scope === 'current-file',
       limit,
+      includeAdminDiagnostics: options.includeAdminDiagnostics || undefined,
     });
 
     const results = response.data?.results || [];
+    const diagnostics = response.data?.meta?.adminDiagnostics || null;
 
     // Client-side fallback strict filtering for 'current-file' scope
     if (context.scope === 'current-file' && selectedSource?.localFile) {
@@ -395,14 +445,19 @@ export const searchGuidelineChatIndexCloud = async (
       });
       const scopedResults = filtered.slice(0, limit);
       setCachedGuidelineSearch(cacheKey, scopedResults);
-      return scopedResults;
+      return { chunks: scopedResults, diagnostics };
     }
 
     const limitedResults = results.slice(0, limit);
     setCachedGuidelineSearch(cacheKey, limitedResults);
-    return limitedResults;
+    return { chunks: limitedResults, diagnostics };
   } catch (error) {
     console.error('Error calling searchGuidelineIndex cloud function:', error);
+    if (options.includeAdminDiagnostics) {
+      console.warn('Retrying guideline search without admin diagnostics.');
+      return searchGuidelineChatIndexCloud(query, context, limit, selectedSource, { includeAdminDiagnostics: false });
+    }
+    if (cached) return { chunks: cached, diagnostics: null };
     throw new GuidelineChatSearchError('Guideline source search failed', error);
   }
 };
@@ -413,6 +468,12 @@ export const listGuidelineBooksCloud = async (
   const cacheKey = makeGuidelineBookListCacheKey(selectedCollectionId);
   const cached = await getCachedGuidelineBookList(cacheKey);
   if (cached) return cached;
+
+  const staticBooks = await listGuidelineBooksStatic(selectedCollectionId);
+  if (staticBooks?.length) {
+    void cacheGuidelineBookList(cacheKey, staticBooks);
+    return staticBooks;
+  }
 
   try {
     const listFn = httpsCallable<
@@ -448,6 +509,10 @@ export const getGuidelineBookTextCloud = async (
   if (staticResult) {
     void cacheGuidelineBookText(cacheKey, staticResult);
     return staticResult;
+  }
+
+  if (!shouldUseFirestoreBookFallback()) {
+    return cached || { book: null, chunks: [], nextAfterChunkIndex: null, hasMore: false };
   }
 
   try {

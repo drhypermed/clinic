@@ -21,6 +21,10 @@ export interface ClinicAppointment {
   phone: string;
   dateTime: string; // ISO string — تاريخ ووقت الموعد
   createdAt?: string; // ISO — وقت إنشاء الحجز
+  /** حالة تنفيذ الموعد. الحقول الزمنية القديمة تظل مدعومة للتوافق الرجعي. */
+  appointmentStatus?: 'pending' | 'in_progress' | 'completed';
+  /** وقت بدء الطبيب للكشف/الاستشارة من كارت الموعد. */
+  examStartedAt?: string;
   /** وقت تنفيذ فتح الكشف (تم الكشف) - ISO */
   examCompletedAt?: string;
   /** وقت تنفيذ الاستشارة - ISO */

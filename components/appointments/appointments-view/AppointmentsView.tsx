@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { firestoreService } from '../../../services/firestore';
@@ -14,6 +14,11 @@ import { useBookingSectionControls } from './useBookingSectionControls';
 import { useAppointmentFormState } from './useAppointmentFormState';
 import { useAppointmentExecutionActions } from './useAppointmentExecutionActions';
 import { LoadingText } from '../../ui/LoadingText';
+import {
+  flushAppointmentSyncQueue,
+  getAppointmentSyncQueue,
+  subscribeToAppointmentSyncQueue,
+} from '../../../services/appointmentRecordSyncService';
 
 /**
  * الملف: AppointmentsView.tsx
@@ -52,6 +57,29 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
   const { user } = useAuth();
   const userId = user?.uid ?? '';
   const bookingSecret = bookingSecretProp;
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const [retryingSync, setRetryingSync] = useState(false);
+
+  useEffect(() => {
+    const refresh = () => setPendingSyncCount(getAppointmentSyncQueue(userId).length);
+    refresh();
+    return subscribeToAppointmentSyncQueue(refresh);
+  }, [userId]);
+
+  const retryPendingAppointmentSync = async () => {
+    if (!userId || retryingSync) return;
+    setRetryingSync(true);
+    try {
+      const result = await flushAppointmentSyncQueue(userId);
+      if (result.remaining === 0) {
+        showNotification('تمت مزامنة المواعيد المنفذة بنجاح', 'success');
+      } else {
+        showNotification(`تعذرت مزامنة ${result.remaining} موعد. سيتم تكرار المحاولة تلقائياً.`, 'info');
+      }
+    } finally {
+      setRetryingSync(false);
+    }
+  };
 
   /** 
    * إدارة حالة النموذج (Form Management). 
@@ -220,6 +248,22 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     <div data-no-reveal className="px-3 py-3 sm:px-5 sm:py-4 space-y-3" dir="rtl">
       {secretaryResponseToastPortal}
       {addSuccessToastPortal}
+
+      {pendingSyncCount > 0 && (
+        <div className="rounded-2xl border border-warning-200 bg-warning-50 px-4 py-3 flex items-center justify-between gap-3">
+          <p className="text-xs font-black text-warning-800">
+            يوجد {pendingSyncCount} موعد منفذ في انتظار المزامنة. لن يتم إغلاق أي موعد آخر للمريض.
+          </p>
+          <button
+            type="button"
+            onClick={retryPendingAppointmentSync}
+            disabled={retryingSync}
+            className="shrink-0 rounded-xl bg-warning-600 px-3 py-2 text-xs font-black text-white disabled:opacity-60"
+          >
+            {retryingSync ? 'جاري المحاولة...' : 'إعادة المزامنة'}
+          </button>
+        </div>
+      )}
 
       {/* ملخص الإحصائيات */}
         <div className="dh-stagger-1">

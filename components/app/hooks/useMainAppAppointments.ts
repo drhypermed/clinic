@@ -19,6 +19,12 @@ import {
 import type { ClinicAppointment, PatientRecord } from '../../../types';
 import { useBookingConfigSync } from './useBookingConfigSync';
 import { usePushNotificationDeepLink } from './usePushNotificationDeepLink';
+import {
+  APPOINTMENT_OPTIMISTIC_UPDATE_EVENT,
+  flushAppointmentSyncQueue,
+  getAppointmentSyncQueue,
+} from '../../../services/appointmentRecordSyncService';
+import { isAppointmentPending } from '../../../utils/appointmentStatus';
 
 /**
  * Hook إدارة المواعيد والتنبيهات (useMainAppAppointments)
@@ -315,9 +321,55 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   // 1. الاشتراك في تحديثات المواعيد من Firestore (مع فلترة حسب الفرع النشط)
   useEffect(() => {
     if (!userId) return;
-    const unsub = firestoreService.subscribeToAppointments(userId, setAppointments, activeBranchId);
+    const applyQueuedCompletions = (items: ClinicAppointment[]) => {
+      const queuedById = new Map(
+        getAppointmentSyncQueue(userId).map((task) => [task.appointmentId, task.appointmentPatch]),
+      );
+      return items.map((appointment) => {
+        const patch = queuedById.get(appointment.id);
+        return patch ? { ...appointment, ...patch } : appointment;
+      });
+    };
+    const unsub = firestoreService.subscribeToAppointments(
+      userId,
+      (items) => setAppointments(applyQueuedCompletions(items)),
+      activeBranchId,
+    );
     return () => unsub();
   }, [userId, activeBranchId]);
+
+  // تحديث فوري للموعد المحدد فقط، ثم إعادة محاولة أي مزامنة مؤجلة عند رجوع الاتصال.
+  useEffect(() => {
+    if (!userId || typeof window === 'undefined') return;
+
+    const handleOptimisticUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        userId?: string;
+        appointment?: ClinicAppointment;
+      }>).detail;
+      if (detail?.userId !== userId || !detail.appointment) return;
+      setAppointments((current) => current.map((appointment) =>
+        appointment.id === detail.appointment?.id ? detail.appointment : appointment
+      ));
+      setAllAppointmentsAcrossBranches((current) => current.map((appointment) =>
+        appointment.id === detail.appointment?.id ? detail.appointment : appointment
+      ));
+    };
+
+    const retryPendingSync = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      void flushAppointmentSyncQueue(userId);
+    };
+
+    window.addEventListener(APPOINTMENT_OPTIMISTIC_UPDATE_EVENT, handleOptimisticUpdate);
+    window.addEventListener('online', retryPendingSync);
+    retryPendingSync();
+
+    return () => {
+      window.removeEventListener(APPOINTMENT_OPTIMISTIC_UPDATE_EVENT, handleOptimisticUpdate);
+      window.removeEventListener('online', retryPendingSync);
+    };
+  }, [userId]);
 
   // 1.ب — الاشتراك في كل المواعيد (من كل الفروع) لأغراض مزامنة bookingConfig per-branch
   //        دي subscription منفصلة عشان السكرتيرات في كل فرع يشوفوا بياناتهم فقط.
@@ -613,7 +665,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     return appointments.filter((apt) => {
       const dt = new Date(apt.dateTime);
       const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-      return dayStr === todayStr && !apt.examCompletedAt;
+      return dayStr === todayStr && isAppointmentPending(apt);
     }).length;
   }, [appointments, todayStr]);
 

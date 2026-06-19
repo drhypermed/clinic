@@ -25,8 +25,10 @@ import {
   formatChunkCitation,
   GuidelineChatSearchError,
   searchGuidelineChatIndexCloud,
+  type GuidelineChatSearchResult,
   type GuidelineChatScope,
   type GuidelineChatResponseMode,
+  type GuidelineSearchAdminDiagnostics,
   type GuidelineChatSourceChunk,
 } from './guidelineChatSearch';
 import { generateGuidelineChatAnswer, reformulateGuidelineQuery } from '../../services/guidelineChatService';
@@ -83,6 +85,7 @@ type GuidelinesChatProps = {
   /** When true, show a built-in book picker in the toolbar instead of relying on external selection */
   showBookPicker?: boolean;
   onSelectSource?: (collectionId: string, sourceId: string) => void;
+  isAdminUser?: boolean;
 };
 
 import { renderMessageContent } from './GuidelinesChat.renderers';
@@ -107,21 +110,32 @@ const waitUntilThinkingStepElapsed = async (startedAt: number, durationMs = THIN
   if (remainingMs > 0) await waitForThinkingStep(remainingMs);
 };
 
+const sumDiagnosticNumber = (
+  diagnostics: GuidelineSearchAdminDiagnostics[] | undefined,
+  key: keyof GuidelineSearchAdminDiagnostics,
+) =>
+  (diagnostics || []).reduce((total, item) => {
+    const value = item[key];
+    return total + (typeof value === 'number' && Number.isFinite(value) ? value : 0);
+  }, 0);
+
 const collectSearchGroups = (
-  settled: PromiseSettledResult<GuidelineChatSourceChunk[]>[],
+  settled: PromiseSettledResult<GuidelineChatSearchResult>[],
 ) => {
   const groups: GuidelineChatSourceChunk[][] = [];
+  const diagnostics: GuidelineSearchAdminDiagnostics[] = [];
   const errors: unknown[] = [];
 
   settled.forEach((result) => {
     if (result.status === 'fulfilled') {
-      if (result.value.length > 0) groups.push(result.value);
+      if (result.value.chunks.length > 0) groups.push(result.value.chunks);
+      if (result.value.diagnostics) diagnostics.push(result.value.diagnostics);
     } else {
       errors.push(result.reason);
     }
   });
 
-  return { groups, errors };
+  return { groups, diagnostics, errors };
 };
 
 export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
@@ -135,6 +149,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
   isEmbedded = false,
   showBookPicker = false,
   onSelectSource,
+  isAdminUser = false,
 }) => {
   const { user } = useAuth();
   const uid = user?.uid;
@@ -375,6 +390,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     messageId: string,
     fullText: string,
     sources: GuidelineChatSourceChunk[],
+    adminDiagnostics?: GuidelineSearchAdminDiagnostics[],
   ) => {
     const tokens = fullText.split(/(\s+)/);
     let index = 0;
@@ -389,6 +405,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
             ...message,
             status: index < tokens.length ? 'streaming' : undefined,
             sources,
+            adminDiagnostics,
             content: partial || fullText,
           }
           : message
@@ -419,6 +436,45 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
       setHighlightedSourceIndex(sourceIndex);
     }
     setSourceSheetOpen(true);
+  };
+
+  const renderAdminDiagnostics = (diagnostics?: GuidelineSearchAdminDiagnostics[]) => {
+    if (!isAdminUser || !diagnostics?.length) return null;
+
+    const totalDocs = sumDiagnosticNumber(diagnostics, 'estimatedDocsReturned');
+    const totalDuration = sumDiagnosticNumber(diagnostics, 'durationMs');
+    const cacheHits = diagnostics.filter((item) => item.cacheHit).length;
+    const modes = Array.from(new Set(
+      diagnostics
+        .map((item) => String(item.retrievalMode || '').trim())
+        .filter(Boolean),
+    )).slice(0, 3);
+    const vector = sumDiagnosticNumber(diagnostics, 'vectorCandidateCount');
+    const keyword = sumDiagnosticNumber(diagnostics, 'keywordCandidateCount');
+    const scan = sumDiagnosticNumber(diagnostics, 'scanCandidateCount');
+    const hydrate = sumDiagnosticNumber(diagnostics, 'estimatedHydrateDocReads')
+      + sumDiagnosticNumber(diagnostics, 'estimatedNeighborDocReads');
+
+    return (
+      <div className="mt-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-[10px] font-bold leading-5 text-sky-950">
+        <div className="mb-1 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-sky-700">
+          <LuSearch className="h-3.5 w-3.5" />
+          Admin diagnostics
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">calls {diagnostics.length}</span>
+          <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">est docs {totalDocs}</span>
+          <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">cache {cacheHits}/{diagnostics.length}</span>
+          <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">time {totalDuration}ms</span>
+          {modes.length ? (
+            <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">{modes.join(' + ')}</span>
+          ) : null}
+        </div>
+        <div className="mt-1 text-[10px] text-sky-800">
+          vector {vector} | keyword {keyword} | scan {scan} | hydrate {hydrate}
+        </div>
+      </div>
+    );
   };
 
 
@@ -567,13 +623,13 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
           .slice(0, comparisonQuestion || searchFollowUp ? 2 : 1);
         const selectedCollectionScope = effectiveScope === 'current-guideline' ? selectedCollection?.id : undefined;
 
-        const searchTasks: Promise<GuidelineChatSourceChunk[]>[] = [];
+        const searchTasks: Promise<GuidelineChatSearchResult>[] = [];
         if (effectiveScope === 'current-file' && selectedSource) {
           searchTasks.push(searchGuidelineChatIndexCloud(contextualQuery, {
             scope: 'current-file',
             selectedCollectionId: selectedCollection?.id,
             selectedGroup,
-          }, comparisonQuestion ? 8 : 6, selectedSource));
+          }, comparisonQuestion ? 8 : 6, selectedSource, { includeAdminDiagnostics: isAdminUser }));
         }
 
         searchQueries.forEach((query) => {
@@ -581,10 +637,10 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
             scope: selectedCollectionScope ? 'current-guideline' : 'all-guidelines',
             selectedCollectionId: selectedCollectionScope,
             selectedGroup: undefined,
-          }, comparisonQuestion ? 12 : 10, null));
+          }, comparisonQuestion ? 12 : 10, null, { includeAdminDiagnostics: isAdminUser }));
         });
 
-        const { groups: sourceGroups, errors: searchErrors } = collectSearchGroups(await Promise.allSettled(searchTasks));
+        const { groups: sourceGroups, diagnostics, errors: searchErrors } = collectSearchGroups(await Promise.allSettled(searchTasks));
         if (sourceGroups.length === 0 && searchErrors.length > 0) {
           throw searchErrors[0];
         }
@@ -595,6 +651,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
         return {
           foundSources: mergeRankedSources(answerSourceLimit, ...sourceGroups),
           comparisonQuestion,
+          diagnostics,
         };
       };
 
@@ -608,6 +665,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
         searchFollowUp: activeFollowUp,
         searchPreviousSources: activePreviousSources,
       });
+      let adminDiagnostics = [...searchRun.diagnostics];
 
       if (shouldRetryGuidelineSearchWithModel({
         question: activeSearchQuestion,
@@ -631,6 +689,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
             searchFollowUp: retryFollowUp,
             searchPreviousSources: retryPreviousSources,
           });
+          adminDiagnostics = [...adminDiagnostics, ...retryRun.diagnostics];
 
           if (shouldPreferSearchRetrySources(retryRun.foundSources, searchRun.foundSources)) {
             activeSearchQuestion = retryQuestion;
@@ -677,6 +736,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
         intentThinkingId,
         answer || (isArabic ? 'النموذج مرجعش إجابة واضحة. جرب تعيد السؤال بصياغة تانية.' : 'The model did not return a clear answer. Try rephrasing the question.'),
         sources,
+        adminDiagnostics,
       );
     } catch (err: any) {
       const details = (err as { details?: { limitReachedMessage?: string; limit?: number } })?.details;
@@ -1026,6 +1086,7 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
                       }`}
                     >
                       {renderMessageContent(message, jumpToSource, isArabic)}
+                      {!mine ? renderAdminDiagnostics(message.adminDiagnostics) : null}
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-[10px] font-bold text-slate-500">
                       <span>{getMessageTime(message.createdAt)}</span>

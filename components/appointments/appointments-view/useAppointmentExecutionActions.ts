@@ -2,6 +2,7 @@ import type { ClinicAppointment, PatientRecord } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
 import { entryConversations } from '../../../services/firestore/entryConversations';
 import { playNotificationCue } from '../../../utils/notificationSound';
+import { emitOptimisticAppointmentUpdate } from '../../../services/appointmentRecordSyncService';
 import {
   resolveLatestRecordIdByName,
   resolveLatestRecordIdByPhone,
@@ -82,33 +83,42 @@ export const useAppointmentExecutionActions = ({
   /** بدء الكشف (تحويل الموعد إلى كشف فعلي) */
   const openExam = async (apt: ClinicAppointment) => {
     if (!userId) return;
+    const startedAppointment: ClinicAppointment = {
+      ...apt,
+      appointmentStatus: 'in_progress',
+      examStartedAt: apt.examStartedAt || new Date().toISOString(),
+    };
+    emitOptimisticAppointmentUpdate(userId, startedAppointment);
+    void firestoreService.saveAppointment(userId, startedAppointment).catch(() => {});
 
     // إشعار السكرتارية بقبول دخول المريض
     if (bookingSecret) {
       entryConversations.markExamOpened({ secret: bookingSecret, appointmentId: apt.id, branchId: apt.branchId }).catch(() => { });
     }
     // تمرير كامل بيانات الموعد (بما فيها بيانات التأمين) لفتح شاشة الكشف
-    onOpenExam(apt);
+    onOpenExam(startedAppointment);
   };
 
   /** بدء الاستشارة */
   const openConsultation = async (apt: ClinicAppointment) => {
     if (!userId) return;
     const consultationSourceRecordId = resolveConsultationRecordId(apt);
-    
     const resolvedForOpen: ClinicAppointment = consultationSourceRecordId
       ? { ...apt, consultationSourceRecordId }
       : apt;
 
-    // تحديث بيانات الموعد لربطه بالسجل المكتشف (Backfill)
-    if (consultationSourceRecordId && !apt.consultationSourceRecordId) {
-      firestoreService.saveAppointment(userId, resolvedForOpen).catch(() => {});
-    }
-
-    // تنفيذ عملية فتح شاشة الاستشارة في المكون الرئيسي
     const opened = onOpenConsultation(resolvedForOpen);
     if (!opened) return;
-    
+
+    const startedAppointment: ClinicAppointment = {
+      ...resolvedForOpen,
+      appointmentStatus: 'in_progress',
+      examStartedAt: resolvedForOpen.examStartedAt || new Date().toISOString(),
+    };
+    emitOptimisticAppointmentUpdate(userId, startedAppointment);
+    void firestoreService.saveAppointment(userId, startedAppointment).catch(() => {});
+
+    // تنفيذ عملية فتح شاشة الاستشارة في المكون الرئيسي
     if (bookingSecret) {
       entryConversations.markExamOpened({ secret: bookingSecret, appointmentId: apt.id, branchId: apt.branchId }).catch(() => { });
     }

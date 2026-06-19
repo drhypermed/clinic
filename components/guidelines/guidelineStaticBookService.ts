@@ -1,4 +1,10 @@
 import type { GuidelineBookSummary, GuidelineBookTextResponse, GuidelineChatSourceChunk } from './guidelineChatSearch';
+import {
+  buildGuidelineStaticUrl,
+  fetchGuidelineStaticJson,
+  getGuidelineStaticBaseUrl,
+  getGuidelineStaticVersion,
+} from './guidelineStaticConfig';
 
 type StaticBookManifest = {
   collectionId: string;
@@ -17,53 +23,28 @@ type StaticBookPayload = {
 const manifestCache = new Map<string, Promise<StaticBookManifest | null>>();
 const bookPayloadCache = new Map<string, Promise<StaticBookPayload | null>>();
 
-const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, '');
 const normalizePath = (value: string) => String(value || '').replace(/\\/g, '/').toLowerCase().trim();
 
-const getStaticBaseUrl = () => {
-  const env = import.meta as unknown as { env?: { VITE_GUIDELINE_STATIC_BASE_URL?: string } };
-  return String(env.env?.VITE_GUIDELINE_STATIC_BASE_URL || '').trim();
-};
-
-const buildStaticUrl = (baseUrl: string, relativePath: string) => {
-  const path = relativePath.replace(/^\/+/, '');
-  if (baseUrl.includes('{path}')) {
-    return baseUrl.replace('{path}', encodeURIComponent(path));
-  }
-  return `${normalizeBaseUrl(baseUrl)}/${path}`;
-};
-
-const fetchJson = async <T>(url: string): Promise<T | null> => {
-  try {
-    const response = await fetch(url, {
-      credentials: 'omit',
-      cache: 'force-cache',
-    });
-    if (!response.ok) return null;
-    return await response.json() as T;
-  } catch {
-    return null;
-  }
-};
-
 const loadManifest = (collectionId: string) => {
-  const baseUrl = getStaticBaseUrl();
+  const baseUrl = getGuidelineStaticBaseUrl();
   if (!baseUrl || !collectionId) return Promise.resolve(null);
-  const key = `${baseUrl}/${collectionId}`;
+  const key = `${baseUrl}/${getGuidelineStaticVersion()}/${collectionId}`;
   const existing = manifestCache.get(key);
   if (existing) return existing;
 
-  const promise = fetchJson<StaticBookManifest>(buildStaticUrl(baseUrl, `${collectionId}/manifest.json`));
+  const promise = fetchGuidelineStaticJson<StaticBookManifest>(
+    buildGuidelineStaticUrl(baseUrl, `${collectionId}/manifest.json`),
+  );
   manifestCache.set(key, promise);
   return promise;
 };
 
 const loadBookPayload = (baseUrl: string, staticJsonPath: string) => {
-  const url = buildStaticUrl(baseUrl, staticJsonPath);
+  const url = buildGuidelineStaticUrl(baseUrl, staticJsonPath);
   const existing = bookPayloadCache.get(url);
   if (existing) return existing;
 
-  const promise = fetchJson<StaticBookPayload>(url);
+  const promise = fetchGuidelineStaticJson<StaticBookPayload>(url);
   bookPayloadCache.set(url, promise);
   return promise;
 };
@@ -134,7 +115,7 @@ export const getGuidelineBookTextStatic = async (
     samplingMode?: 'summary';
   },
 ): Promise<GuidelineBookTextResponse | null> => {
-  const baseUrl = getStaticBaseUrl();
+  const baseUrl = getGuidelineStaticBaseUrl();
   const collectionId = params.selectedCollectionId || '';
   if (!baseUrl || !collectionId) return null;
 
@@ -171,4 +152,38 @@ export const getGuidelineBookTextStatic = async (
     nextAfterChunkIndex: last ? last.chunkIndex || null : null,
     hasMore: filtered.length > page.length,
   };
+};
+
+export const listGuidelineBooksStatic = async (
+  selectedCollectionId?: string | null,
+): Promise<GuidelineBookSummary[] | null> => {
+  const collectionId = selectedCollectionId || '';
+  if (!collectionId || !getGuidelineStaticBaseUrl()) return null;
+
+  const manifest = await loadManifest(collectionId);
+  if (!manifest?.books?.length) return null;
+
+  return manifest.books
+    .map((book) => ({
+      id: book.id,
+      bookId: book.bookId,
+      collectionId: book.collectionId,
+      school: book.school,
+      year: book.year,
+      title: book.title,
+      sourceTitle: book.sourceTitle,
+      folderTitle: book.folderTitle,
+      fileTitle: book.fileTitle,
+      sourcePath: book.sourcePath,
+      pageCount: Number(book.pageCount || 0),
+      chunkCount: Number(book.chunkCount || 0),
+      textChars: Number(book.textChars || 0),
+      storagePdfPath: book.storagePdfPath,
+      storagePdfUrl: book.storagePdfUrl,
+    }))
+    .sort((a, b) =>
+      a.school.localeCompare(b.school)
+      || b.year - a.year
+      || a.title.localeCompare(b.title),
+    );
 };

@@ -339,7 +339,11 @@ export const createSaveRecordAction = ({
     const currentHash = JSON.stringify({ ...currentData, __visitType: visitType });
     if (currentHash === lastSavedHash) {
       showNotification('لا توجد تغييرات جديدة ليتم حفظها في سجلات المرضى', 'info', e);
-      return { ok: false, reason: 'no-changes' };
+      return {
+        ok: false,
+        reason: 'no-changes',
+        recordId: String(activeRecordId || '').trim() || undefined,
+      };
     }
 
     // ─── فحص "السعة الكلية" للسجلات قبل الحفظ ──────────────────────

@@ -6,6 +6,7 @@ import {
   groupCompletedAppointments,
   groupPendingAppointments,
 } from './helpers';
+import { isAppointmentCompleted, isAppointmentPending } from '../../../utils/appointmentStatus';
 
 /**
  * الملف: useAppointmentsDerivedData.ts (Hook)
@@ -35,7 +36,7 @@ export const useAppointmentsDerivedData = ({
   );
 
   // الفلترة: المنتظرة (التي لم يتم الكشف عليها) والمكتملة (تم الكشف عليها)
-  const pendingList = useMemo(() => sortedList.filter((a) => !a.examCompletedAt), [sortedList]);
+  const pendingList = useMemo(() => sortedList.filter(isAppointmentPending), [sortedList]);
   
   /** 
    * المواعيد المكتملة (Completed List). 
@@ -48,7 +49,7 @@ export const useAppointmentsDerivedData = ({
       const threeMonthsAgo = new Date();
       threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
       return [...sortedList]
-        .filter((a) => !!a.examCompletedAt && new Date(a.examCompletedAt) >= threeMonthsAgo)
+        .filter((a) => isAppointmentCompleted(a) && new Date(a.examCompletedAt || a.dateTime) >= threeMonthsAgo)
         .sort((a, b) => (b.examCompletedAt || '').localeCompare(a.examCompletedAt || ''));
     },
     [sortedList]
@@ -93,7 +94,7 @@ export const useAppointmentsDerivedData = ({
   , [sortedList, now]);
 
   const todayCount = useMemo(() =>
-    sortedList.filter(a => !a.examCompletedAt && toLocalDateStr(new Date(a.dateTime)) === todayStr).length
+    sortedList.filter(a => isAppointmentPending(a) && toLocalDateStr(new Date(a.dateTime)) === todayStr).length
   , [sortedList, todayStr]);
 
   const upcomingCount = useMemo(() => 

@@ -18,7 +18,6 @@
  */
 
 import React from 'react';
-import { firestoreService } from '../../../services/firestore';
 import type {
     ClinicAppointment,
     PaymentType,
@@ -30,6 +29,12 @@ import {
     toSecretaryCustomFieldId,
 } from '../../../utils/secretaryVitals';
 import { isConsultationAppointment } from '../../../utils/appointmentType';
+import {
+    emitOptimisticAppointmentUpdate,
+    enqueueAppointmentRecordSync,
+    removeAppointmentRecordSync,
+    syncAppointmentRecordTask,
+} from '../../../services/appointmentRecordSyncService';
 import { buildAgeTextFromParts } from './helpers';
 
 interface UseAppointmentSyncOnSaveArgs {
@@ -65,7 +70,7 @@ interface UseAppointmentSyncOnSaveArgs {
     prescriptionSecretaryFieldDefinitions: SecretaryVitalFieldDefinition[];
     doctorSpecialty?: string | null;
     // Save handler
-    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean; reason?: string } | undefined | void> | any;
+    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean; reason?: string; recordId?: string } | undefined | void> | any;
     showNotification: (msg: string, type?: 'success' | 'error' | 'info', opts?: any) => void;
 }
 
@@ -102,7 +107,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
         showNotification,
     } = args;
 
-    const syncOpenedAppointmentAfterRecordSave = React.useCallback(async () => {
+    const syncOpenedAppointmentAfterRecordSave = React.useCallback(async (recordId?: string) => {
         if (!userId || !openedAppointmentContext) return;
 
         const completedAt = new Date().toISOString();
@@ -148,6 +153,7 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
 
         const updatedAppointment: ClinicAppointment = {
             ...openedAppointmentContext,
+            appointmentStatus: 'completed',
             patientName: normalizedPatientName,
             phone: normalizedPhone,
             age: normalizedAge,
@@ -171,17 +177,40 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
             discountReasonLabel: normalizedPaymentType === 'discount' ? (discountReasonLabel || undefined) : undefined,
         };
 
-        await firestoreService.saveAppointment(userId, updatedAppointment);
+        emitOptimisticAppointmentUpdate(userId, updatedAppointment);
+        setOpenedAppointmentContext(null);
 
-        if (openedAppointmentContext.source === 'public' && openedAppointmentContext.publicUserId) {
-            await firestoreService.markPublicUserBookingCompleted(
-                openedAppointmentContext.publicUserId,
-                openedAppointmentContext.id,
-                completedAt
-            );
+        const task = {
+            userId,
+            appointmentId: updatedAppointment.id,
+            appointmentPatch: {
+                appointmentStatus: updatedAppointment.appointmentStatus,
+                examStartedAt: updatedAppointment.examStartedAt,
+                examCompletedAt: updatedAppointment.examCompletedAt,
+                consultationCompletedAt: updatedAppointment.consultationCompletedAt,
+            },
+            recordId,
+            publicUserId: updatedAppointment.source === 'public'
+                ? updatedAppointment.publicUserId
+                : undefined,
+        };
+
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            enqueueAppointmentRecordSync(task);
+            return;
         }
 
-        setOpenedAppointmentContext(null);
+        try {
+            await syncAppointmentRecordTask({
+                ...task,
+                queuedAt: new Date().toISOString(),
+                attempts: 0,
+            }, updatedAppointment);
+            removeAppointmentRecordSync(userId, updatedAppointment.id);
+        } catch (error) {
+            enqueueAppointmentRecordSync(task);
+            throw error;
+        }
     }, [
         userId,
         openedAppointmentContext,
@@ -217,10 +246,10 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
         if (!saveResult?.ok && saveResult?.reason !== 'no-changes') return;
 
         try {
-            await syncOpenedAppointmentAfterRecordSave();
+            await syncOpenedAppointmentAfterRecordSave(saveResult?.recordId);
         } catch (error) {
             console.error('Record saved but appointment sync failed:', error);
-            showNotification('تم حفظ السجل لكن تعذر مزامنة بيانات الموعد المنفذ.', 'error', { id: 'appointment-sync-after-save' });
+            showNotification('تم حفظ السجل، وسيُعاد مزامنة الموعد المنفذ تلقائياً عند توفر الاتصال.', 'info', { id: 'appointment-sync-after-save' });
         }
     }, [handleSaveRecord, openedAppointmentContext, showNotification, syncOpenedAppointmentAfterRecordSave]);
 

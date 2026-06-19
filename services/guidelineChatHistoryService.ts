@@ -1,9 +1,12 @@
 import { deleteDoc, doc, getDoc, onSnapshot, setDoc, type Unsubscribe } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import type { ChatMessage } from '../components/guidelines/guidelinesChatUtils';
+import type { GuidelineChatSourceChunk } from '../components/guidelines/guidelineChatSearch';
 import { normalizeText } from '../utils/textEncoding';
 
-export const MAX_STORED_CHAT_MESSAGES = 50;
+export const MAX_STORED_CHAT_MESSAGES = 30;
+const MAX_STORED_SOURCES_PER_MESSAGE = 8;
+const MAX_STORED_SOURCE_TEXT_CHARS = 700;
 
 /**
  * Trims the chat history to the maximum allowed limit.
@@ -30,6 +33,52 @@ const isPersistableChatMessage = (message: ChatMessage) =>
   && message.status !== 'streaming'
   && !isLegacyCorruptedWelcomeMessage(message);
 
+const compactHistoryText = (value: string | undefined, maxChars: number) => {
+  const text = String(value || '').trim();
+  return text.length > maxChars ? `${text.slice(0, maxChars).trim()}...` : text;
+};
+
+const stripSourceForHistory = (source: GuidelineChatSourceChunk): GuidelineChatSourceChunk => ({
+  id: source.id,
+  bookId: source.bookId,
+  collectionId: source.collectionId,
+  collectionTitle: source.collectionTitle,
+  school: source.school,
+  year: source.year,
+  group: source.group,
+  topicId: source.topicId,
+  sourceId: source.sourceId,
+  sourceTitle: source.sourceTitle,
+  folderTitle: source.folderTitle,
+  fileTitle: source.fileTitle,
+  localFile: source.localFile,
+  url: source.url,
+  page: source.page,
+  endPage: source.endPage,
+  pageStart: source.pageStart,
+  pageEnd: source.pageEnd,
+  chunkIndex: source.chunkIndex,
+  globalOrder: source.globalOrder,
+  sourcePath: source.sourcePath,
+  heading: compactHistoryText(source.heading, 180),
+  label: source.label,
+  text: compactHistoryText(source.text, MAX_STORED_SOURCE_TEXT_CHARS),
+  kind: source.kind,
+  score: source.score,
+  contextOnly: source.contextOnly,
+  storagePdfPath: source.storagePdfPath,
+  storagePdfUrl: source.storagePdfUrl,
+});
+
+const stripTransientChatFields = (message: ChatMessage): ChatMessage => {
+  const { adminDiagnostics, ...persisted } = message;
+  if (!persisted.sources?.length) return persisted;
+  return {
+    ...persisted,
+    sources: persisted.sources.slice(0, MAX_STORED_SOURCES_PER_MESSAGE).map(stripSourceForHistory),
+  };
+};
+
 const toStoredChatMessages = (value: unknown): ChatMessage[] | null => {
   if (!Array.isArray(value)) return null;
   const messages = value
@@ -42,7 +91,8 @@ const toStoredChatMessages = (value: unknown): ChatMessage[] | null => {
         typeof item.createdAt === 'number'
       );
     })
-    .filter(isPersistableChatMessage);
+    .filter(isPersistableChatMessage)
+    .map(stripTransientChatFields);
   return trimChatMessages(messages);
 };
 
@@ -127,7 +177,7 @@ export const saveCloudChatHistory = async (uid: string, messages: ChatMessage[])
       return;
     }
 
-    const trimmed = toFirestoreSafeValue(trimChatMessages(persistableMessages)) as ChatMessage[];
+    const trimmed = toFirestoreSafeValue(trimChatMessages(persistableMessages.map(stripTransientChatFields))) as ChatMessage[];
     await setDoc(getChatDocRef(uid), {
       messages: trimmed,
       updatedAt: Date.now(),

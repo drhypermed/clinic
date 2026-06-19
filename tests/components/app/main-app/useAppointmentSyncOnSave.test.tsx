@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppointmentSyncOnSave } from '../../../../components/app/main-app/useAppointmentSyncOnSave';
 import type { ClinicAppointment, VitalSigns } from '../../../../types';
+import { getAppointmentSyncQueue } from '../../../../services/appointmentRecordSyncService';
 
 const firestoreMock = vi.hoisted(() => ({
   saveAppointment: vi.fn(),
@@ -66,6 +67,7 @@ const buildArgs = (overrides: Partial<Parameters<typeof useAppointmentSyncOnSave
 
 describe('useAppointmentSyncOnSave', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     firestoreMock.saveAppointment.mockReset();
     firestoreMock.markPublicUserBookingCompleted.mockReset();
     firestoreMock.saveAppointment.mockResolvedValue(undefined);
@@ -100,5 +102,35 @@ describe('useAppointmentSyncOnSave', () => {
     await result.current.handleSaveRecordWithAppointmentSync();
 
     expect(firestoreMock.saveAppointment).not.toHaveBeenCalled();
+  });
+
+  it('queues only the selected appointment completion when appointment sync fails', async () => {
+    const setOpenedAppointmentContext = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    firestoreMock.saveAppointment.mockRejectedValueOnce(new Error('offline'));
+    const args = buildArgs({
+      setOpenedAppointmentContext,
+      handleSaveRecord: vi.fn(async () => ({ ok: true, recordId: 'record-1' })),
+    });
+
+    try {
+      const { result } = renderHook(() => useAppointmentSyncOnSave(args));
+      await result.current.handleSaveRecordWithAppointmentSync();
+
+      const queue = getAppointmentSyncQueue('doctor-1');
+      expect(queue).toHaveLength(1);
+      expect(queue[0]).toMatchObject({
+        userId: 'doctor-1',
+        appointmentId: 'apt-1',
+        appointmentPatch: {
+          appointmentStatus: 'completed',
+        },
+        recordId: 'record-1',
+      });
+      expect(JSON.stringify(queue[0])).not.toContain('Patient');
+      expect(setOpenedAppointmentContext).toHaveBeenCalledWith(null);
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
   });
 });

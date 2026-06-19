@@ -1,5 +1,6 @@
 import type { GuidelineBookSummary, GuidelineBookTextResponse } from './guidelineChatSearch';
 import type { GuidelineCollectionData } from './guidelinesData';
+import { getGuidelineStaticVersion } from './guidelineStaticConfig';
 
 type CacheStoreName = 'bookLists' | 'bookText' | 'collectionData';
 
@@ -15,7 +16,7 @@ type CacheEntry<T> = {
 const DB_NAME = 'drhyper-guidelines-cache';
 const DB_VERSION = 2;
 const MAX_CACHE_BYTES = 200 * 1024 * 1024;
-const COLLECTION_DATA_TTL_MS = 24 * 60 * 60 * 1000;
+const COLLECTION_DATA_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const BOOK_LIST_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const BOOK_TEXT_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 
@@ -169,10 +170,16 @@ const stableStringify = (value: unknown): string => {
 };
 
 export const makeGuidelineBookListCacheKey = (selectedCollectionId?: string | null) =>
-  stableStringify({ selectedCollectionId: selectedCollectionId || null });
+  stableStringify({
+    version: getGuidelineStaticVersion(),
+    selectedCollectionId: selectedCollectionId || null,
+  });
 
 export const makeGuidelineCollectionDataCacheKey = (collectionId: string) =>
-  stableStringify({ collectionId });
+  stableStringify({
+    version: getGuidelineStaticVersion(),
+    collectionId,
+  });
 
 export const makeGuidelineBookTextCacheKey = (params: {
   bookId?: string | null;
@@ -184,6 +191,7 @@ export const makeGuidelineBookTextCacheKey = (params: {
   samplingMode?: 'summary';
 }) =>
   stableStringify({
+    version: getGuidelineStaticVersion(),
     bookId: params.bookId || null,
     selectedCollectionId: params.selectedCollectionId || null,
     selectedSourceLocalFile: params.selectedSourceLocalFile || null,

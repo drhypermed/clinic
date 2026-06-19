@@ -108,7 +108,11 @@ const RxListComponent: React.FC<RxListProps> = ({
   }, [activeSearchIdx, rxItems, search, usageStats]);
 
   return (
-    <div className={`flex-1 flex flex-col ${listGap} pl-2 pr-1 relative z-40 min-h-0 overflow-visible`}>
+    <div
+      className={`flex-1 flex flex-col ${listGap} pl-2 pr-1 relative ${
+        activeSearchIdx !== null ? 'z-[100]' : 'z-40'
+      } min-h-0 overflow-visible`}
+    >
       {rxItems.map((item, idx) => (
         <div
           key={item.id || idx}
