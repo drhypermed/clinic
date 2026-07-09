@@ -199,10 +199,7 @@ export const consumeStorageQuota = async (
   options?: { cachedAccountType?: TierValue },
 ): Promise<StorageQuotaResult> => {
   // التخطي: الميزات اللي اتفتحت للـ paid في 2026-05 فقط
-  const SKIP_FOR_PAID: ReadonlySet<StorageQuotaFeature> = new Set([
-    'readyPrescriptionSave',
-  ] as StorageQuotaFeature[]);
-  if (SKIP_FOR_PAID.has(feature) && isPaidTier(options?.cachedAccountType)) {
+  if (feature === 'readyPrescriptionSave' && isPaidTier(options?.cachedAccountType)) {
     return buildUnlimitedStorageResult(feature, options!.cachedAccountType as TierValue);
   }
 

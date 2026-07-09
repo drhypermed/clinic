@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { DEFAULT_BRANCH_ID } from '../../services/firestore/branches';
 import { usageTrackingService } from '../../services/usageTrackingService';
@@ -52,12 +52,15 @@ const findLatestExamForPatient = (
   records: PatientRecord[],
   patientName: string,
   phone: string,
+  excludeRecordId?: string,
 ): PatientRecord | undefined => {
   const normalizedPhone = (phone || '').replace(/\D/g, '');
   const normalizedName = (patientName || '').trim().toLowerCase();
+  const excludedId = String(excludeRecordId || '').trim();
   if (!normalizedPhone && !normalizedName) return undefined;
 
   const exams = records.filter((r) => {
+    if (excludedId && r.id === excludedId) return false;
     if (r.isConsultationOnly) return false;
     if (normalizedPhone && (r.phone || '').replace(/\D/g, '') === normalizedPhone) return true;
     if (normalizedName && (r.patientName || '').trim().toLowerCase() === normalizedName) return true;
@@ -359,7 +362,14 @@ export const createSaveRecordAction = ({
       // تعديل استشارة: الـid بيبدأ بالـconsultation prefix
       if (isConsultationMode && activeId.startsWith(CONSULTATION_RECORD_PREFIX)) return activeId;
       // تعديل كشف: activeRecordId موجود وما اتحوّلش لاستشارة جديدة مستقلة
-      if (!isConsultationMode && visitType !== 'consultation') return activeId;
+      if (isConsultationMode && visitType === 'consultation') {
+        const sourceId = String(consultationSourceRecordId || '').trim();
+        if (activeId.startsWith(CONSULTATION_RECORD_PREFIX) || sourceId !== activeId) {
+          return activeId;
+        }
+        return undefined;
+      }
+      if (!isConsultationMode) return activeId;
       // غير كده (مثلاً consultation جديدة) → إنشاء جديد، نفحص الحد
       return undefined;
     })();
@@ -423,7 +433,7 @@ export const createSaveRecordAction = ({
       // المطلوب: تحويل الاستشارة إلى كشف — نحذف المستند القديم ونحفظ مستند كشف جديد
       // علشان ما يفضلش `isConsultationOnly: true` أو ID بـ prefix الاستشارة.
       const isConvertingConsultationToExam =
-        isConsultationMode && visitType === 'exam' && Boolean(activeRecordId);
+        isConsultationMode && !shouldSaveAsConsultation && Boolean(activeRecordId);
 
       if (isConvertingConsultationToExam) {
         const oldConsultationRecordId = String(activeRecordId || '').trim();
@@ -459,15 +469,34 @@ export const createSaveRecordAction = ({
         );
 
         trackSavedRecord('consultation_converted_to_exam', docRef.id);
-      } else if (isConsultationMode) {
+      } else if (shouldSaveAsConsultation) {
         // حفظ/تحديث استشارة (مرتبطة بكشف أو مستقلة)
         const activeRecordIdText = String(activeRecordId || '').trim();
-        const isEditingExistingConsultationRecord = activeRecordIdText.startsWith(
-          CONSULTATION_RECORD_PREFIX,
-        );
+        const sourceRecordIdText = String(consultationSourceRecordId || '').trim();
+        const isOpeningNewConsultationFromExam =
+          isConsultationMode &&
+          Boolean(activeRecordIdText) &&
+          sourceRecordIdText === activeRecordIdText &&
+          !activeRecordIdText.startsWith(CONSULTATION_RECORD_PREFIX);
+        const isConvertingExamToConsultation =
+          !isConsultationMode && Boolean(activeRecordIdText);
+        const isEditingExistingConsultationRecord =
+          Boolean(activeRecordIdText) &&
+          !isOpeningNewConsultationFromExam &&
+          (isConsultationMode || isConvertingExamToConsultation);
+        const latestExamForConvertedConsultation = isConvertingExamToConsultation
+          ? findLatestExamForPatient(records, patientName, phone, activeRecordIdText)
+          : undefined;
+        const latestExamForNewConsultation = !activeRecordIdText
+          ? findLatestExamForPatient(records, patientName, phone)
+          : undefined;
         const sourceExamRecordId =
-          String(consultationSourceRecordId || '').trim() ||
-          (!isEditingExistingConsultationRecord ? activeRecordIdText : '');
+          (isConvertingExamToConsultation
+            ? latestExamForConvertedConsultation?.id || ''
+            : sourceRecordIdText) ||
+          (!isEditingExistingConsultationRecord ? activeRecordIdText : '') ||
+          latestExamForNewConsultation?.id ||
+          '';
 
         const consultationDocId = isEditingExistingConsultationRecord
           ? activeRecordIdText
@@ -481,7 +510,8 @@ export const createSaveRecordAction = ({
           return { ok: false, reason: 'error' };
         }
 
-        const persistedConsultationServiceBasePrice = isEditingExistingConsultationRecord
+        const persistedConsultationServiceBasePrice =
+          isEditingExistingConsultationRecord && !isConvertingExamToConsultation
           ? await getPersistedServiceBasePrice(user.uid, consultationDocId)
           : undefined;
         // حماية branchId للاستشارات الموجودة (نفس منطق الكشف)
@@ -521,12 +551,27 @@ export const createSaveRecordAction = ({
               ? Number(resolvedConsultServicePrice)
               : undefined,
         }) as Record<string, unknown>;
+        const consultationWritePayload = {
+          ...consultationUpdate,
+          ...(isConvertingExamToConsultation
+            ? {
+                consultation: deleteField(),
+                consultationRecordId: deleteField(),
+                consultationHistoryDates: deleteField(),
+                consultationHistoryRecordIds: deleteField(),
+                consultationHistoryServiceBasePrices: deleteField(),
+                consultationServiceBasePrice: deleteField(),
+                ...(!sourceExamRecordId ? { sourceExamRecordId: deleteField() } : {}),
+                ...(!resolvedSourceExamDate ? { sourceExamDate: deleteField() } : {}),
+              }
+            : {}),
+        };
 
         await commitFirestoreWrite(
           () => setDoc(
             doc(db, 'users', user.uid, 'records', consultationDocId),
             {
-              ...consultationUpdate,
+              ...consultationWritePayload,
               ...(isEditingExistingConsultationRecord ? {} : { createdAt: serverTimestamp() }),
               updatedAt: serverTimestamp(),
             },
@@ -535,16 +580,24 @@ export const createSaveRecordAction = ({
         );
         savedRecordId = consultationDocId;
 
-        if (!isEditingExistingConsultationRecord) {
-          setActiveRecordId(consultationDocId);
-        }
+        setActiveRecordId(consultationDocId);
+        setIsConsultationMode(true);
+        setConsultationSourceRecordId(sourceExamRecordId || null);
+        setIsPastConsultationMode(false);
 
         notifySaveResult(
           'تم حفظ الاستشارة محليا بدون إنترنت، وستتم المزامنة تلقائيا عند عودة الاتصال',
           'تم حفظ الاستشارة بنجاح',
         );
 
-        trackSavedRecord('consultation', consultationDocId);
+        trackSavedRecord(
+          isConvertingExamToConsultation
+            ? 'exam_converted_to_consultation'
+            : isEditingExistingConsultationRecord
+              ? 'consultation'
+              : 'new_consultation',
+          consultationDocId,
+        );
       } else if (activeRecordId) {
         // تحديث كشف موجود — نحمي السعر و branchId الأصليين من الكتابة
         const persistedExamServiceBasePrice = await getPersistedServiceBasePrice(
@@ -577,60 +630,6 @@ export const createSaveRecordAction = ({
           'تم تحديث السجل محليا بدون إنترنت، وستتم المزامنة تلقائيا عند عودة الاتصال',
           'تم تحديث السجل بنجاح',
         );
-      } else if (shouldSaveAsConsultation) {
-        // استشارة جديدة مستقلة — نحاول نربطها بآخر كشف للمريض تلقائياً
-        const latestExam = findLatestExamForPatient(records, patientName, phone);
-        const standaloneSourceExamId = latestExam?.id || undefined;
-        const standaloneSourceExamDate = latestExam?.date || undefined;
-
-        const minimalRecordRaw = {
-          patientName,
-          phone: phone || undefined,
-          age: { years: ageYears, months: ageMonths, days: ageDays },
-          dateOfBirth: dateOfBirth.trim() || undefined,
-          gender: genderForSave,
-          pregnant: pregnantForSave,
-          gestationalAgeWeeks: gestationalAgeWeeksForSave,
-          pregnancyTracking: pregnancyTrackingForSave,
-          breastfeeding: breastfeedingForSave,
-          weight,
-          height: height || undefined,
-          bmi: bmi || undefined,
-          vitals,
-          date: visitIso,
-          dateMs: visitDateMs,
-          ...clinicalPayload,
-          isConsultationOnly: true,
-          branchId: activeBranchId || DEFAULT_BRANCH_ID,
-          sourceExamRecordId: standaloneSourceExamId,
-          sourceExamDate: standaloneSourceExamDate,
-          ...patientFilePayload,
-          ...paymentPayload,
-          serviceBasePrice: Number.isFinite(Number(resolvedConsultServicePrice))
-            ? Number(resolvedConsultServicePrice)
-            : undefined,
-        };
-
-        const sanitizedRecord = sanitizeForFirestore(minimalRecordRaw) as Record<string, unknown>;
-        const finalRecord = {
-          ...sanitizedRecord,
-          createdAt: serverTimestamp(),
-        };
-
-        const docRef = doc(collection(db, 'users', user.uid, 'records'));
-        await commitFirestoreWrite(
-          () => setDoc(docRef, finalRecord),
-        );
-        setActiveRecordId(docRef.id);
-        savedRecordId = docRef.id;
-        setIsPastConsultationMode(false);
-
-        notifySaveResult(
-          'تم حفظ الاستشارة كسجل جديد محليا بدون إنترنت، وستتم المزامنة تلقائيا عند عودة الاتصال',
-          'تم حفظ الاستشارة كسجل جديد بنجاح',
-        );
-
-        trackSavedRecord('new_consultation', docRef.id);
       } else {
         // سجل كشف جديد تماماً
         const docRef = doc(collection(db, 'users', user.uid, 'records'));

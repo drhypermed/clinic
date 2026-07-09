@@ -71,7 +71,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد بعد الأكل مرة إلى مرتين يومياً لمدة ٥–٧ أيام.'),
+    calculationRule: fixed('كيس واحد بعد الأكل مرة إلى مرتين يومياً لمدة ٥–٧ أيام'),
     warnings: [...HERBAL_WARNINGS, 'إذا كان لديك ربو/قرحة معدة نشطة استخدمه بحذر.'],
   },
 
@@ -111,7 +111,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -131,7 +131,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, ...ZINC_WARNINGS, 'غير مناسب لحساسية بروتين اللبن.'],
   },
 
@@ -171,7 +171,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -191,7 +191,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: BONE_SUPPORT_WARNINGS,
   },
 
@@ -211,7 +211,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: ZINC_WARNINGS,
   },
 
@@ -231,7 +231,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة صباحاً بعد الإفطار.'),
+    calculationRule: fixed('كبسولة واحدة صباحاً بعد الإفطار'),
     warnings: [...HERBAL_WARNINGS, ...ZINC_WARNINGS, 'قد يزيد النزف مع مسيلات الدم (جينكو). قد يسبب أرق/خفقان.'],
   },
 
@@ -291,7 +291,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -311,7 +311,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: BONE_SUPPORT_WARNINGS,
   },
 
@@ -331,7 +331,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -371,7 +371,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -391,7 +391,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -411,7 +411,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -431,7 +431,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -451,7 +451,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('شريط واحد يومياً يوضع على اللسان حتى يذوب.'),
+    calculationRule: fixed('شريط واحد يومياً يوضع على اللسان حتى يذوب'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -511,7 +511,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('٠.٥ مل يومياً بعد الأكل.'),
+    calculationRule: fixed('يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -531,7 +531,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: IRON_SUPPLEMENT_WARNINGS,
   },
 
@@ -551,7 +551,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...BONE_SUPPORT_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -591,7 +591,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...BONE_SUPPORT_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS, 'فيتامين K قد يتداخل مع الوارفارين.'],
   },
 
@@ -611,7 +611,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل لمدة ١٠–١٤ يوم.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل لمدة ١٠–١٤ يوم'),
     warnings: [...ZINC_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS, ...HERBAL_WARNINGS],
   },
 
@@ -631,7 +631,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -671,7 +671,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -691,7 +691,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...BONE_SUPPORT_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS, 'فيتامين K2 قد يتداخل مع الوارفارين.'],
   },
 
@@ -731,7 +731,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -771,7 +771,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, ...ZINC_WARNINGS, 'غير مناسب لحساسية بروتين اللبن.'],
   },
 
@@ -791,7 +791,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 24,
     minWeight: 2,
     maxWeight: 15,
-    calculationRule: fixed('٠.٥ مل يومياً بعد الرضاعة.'),
+    calculationRule: fixed('يومياً بعد الرضاعة'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -831,7 +831,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -851,7 +851,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً يُترك ليذوب تحت اللسان'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -871,7 +871,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل لمدة ٨–١٢ أسبوعاً.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل لمدة ٨–١٢ أسبوعاً'),
     warnings: [...HERBAL_WARNINGS, 'يُستخدم بحذر مع حساسية القشريات/المأكولات البحرية (جلوكوزامين).'],
   },
 
@@ -891,7 +891,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -911,7 +911,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة جيلاتينية واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة جيلاتينية واحدة يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -931,7 +931,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الإفطار.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الإفطار'),
     warnings: [...HERBAL_WARNINGS, 'قد يزيد النزف مع مسيلات الدم (جينكو).'],
   },
 
@@ -951,7 +951,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...IRON_SUPPLEMENT_WARNINGS, ...ZINC_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -971,7 +971,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد يومياً يُذاب في ماء بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً يُذاب في ماء بعد الأكل'),
     warnings: BONE_SUPPORT_WARNINGS,
   },
 
@@ -991,7 +991,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قطعة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('قطعة واحدة يومياً بعد الأكل'),
     warnings: [...IRON_SUPPLEMENT_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -1031,7 +1031,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...ZINC_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1051,7 +1051,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...IRON_SUPPLEMENT_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -1071,7 +1071,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -1091,7 +1091,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: IRON_SUPPLEMENT_WARNINGS,
   },
 
@@ -1111,7 +1111,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة صباحاً بعد الإفطار.'),
+    calculationRule: fixed('كبسولة واحدة صباحاً بعد الإفطار'),
     warnings: [...HERBAL_WARNINGS, 'قد تسبب حساسية شديدة لدى بعض الأشخاص.'],
   },
 
@@ -1131,7 +1131,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قطعة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('قطعة واحدة يومياً بعد الأكل'),
     warnings: [...IRON_SUPPLEMENT_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -1151,7 +1151,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد لتحلية مشروب/وجبة عند الحاجة.'),
+    calculationRule: fixed('كيس واحد لتحلية مشروب/وجبة عند الحاجة'),
     warnings: ['قد يسبب انتفاخ/إسهال إذا زادت الكمية (بسبب السوربيتول).', 'غير مناسب للأطفال الصغار.'],
   },
 
@@ -1191,7 +1191,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
     warnings: IRON_SUPPLEMENT_WARNINGS,
   },
 
@@ -1211,7 +1211,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1231,7 +1231,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة جيلاتينية واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة جيلاتينية واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1251,7 +1251,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -1271,7 +1271,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FAT_SOLUBLE_VIT_WARNINGS, 'فيتامين K قد يتداخل مع الوارفارين.'],
   },
 
@@ -1291,7 +1291,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كيس واحد يومياً يُذاب في ٢٠٠–٢٥٠ مل ماء/لبن بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً يُذاب في ٢٠٠–٢٥٠ مل ماء/لبن بعد الأكل'),
     warnings: [...BONE_SUPPORT_WARNINGS, 'غير مناسب لحساسية بروتين اللبن/اللاكتوز.'],
   },
 
@@ -1311,7 +1311,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -1331,7 +1331,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: IRON_SUPPLEMENT_WARNINGS,
   },
 
@@ -1351,7 +1351,7 @@ export const MULTIVITAMINS_SUPPLEMENTS_3: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 ];

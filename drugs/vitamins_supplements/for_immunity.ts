@@ -41,7 +41,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل لمدة ١٤ يوم.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل لمدة ١٤ يوم'),
     warnings: PROBIOTIC_WARNINGS,
   },
 
@@ -81,7 +81,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -101,7 +101,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 8,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام'),
     warnings: PROBIOTIC_WARNINGS,
   },
 
@@ -121,7 +121,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 8,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ٧ أيام.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ٧ أيام'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -141,7 +141,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة ٣ مرات يومياً بعد الأكل لمدة ١٠ أيام.'),
+    calculationRule: fixed('كبسولة واحدة ٣ مرات يومياً بعد الأكل لمدة ١٠ أيام'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -161,7 +161,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل لمدة ١٤ يوم.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل لمدة ١٤ يوم'),
     warnings: PROBIOTIC_WARNINGS,
   },
 
@@ -181,7 +181,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 8,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٤ يوم.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٤ يوم'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -201,7 +201,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -261,7 +261,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: PROBIOTIC_WARNINGS,
   },
 
@@ -281,7 +281,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام'),
     warnings: HERBAL_IMMUNITY_WARNINGS,
   },
 
@@ -301,7 +301,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 24,
     minWeight: 2,
     maxWeight: 12,
-    calculationRule: fixed('٦ نقط مرة يومياً بعد الرضاعة.'),
+    calculationRule: fixed('٦ نقط مرة يومياً بعد الرضاعة'),
     warnings: PROBIOTIC_WARNINGS,
   },
 
@@ -361,7 +361,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: GENERAL_IMMUNITY_WARNINGS,
   },
 
@@ -401,7 +401,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_IMMUNITY_WARNINGS,
   },
 
@@ -421,7 +421,7 @@ export const IMMUNITY_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 8,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل لمدة ١٠ أيام'),
     warnings: PROBIOTIC_WARNINGS,
   },
 ];

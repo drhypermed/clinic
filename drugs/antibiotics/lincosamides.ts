@@ -21,7 +21,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة (٣٠٠ مجم) كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
+		calculationRule: fixed('كبسولة كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
 		warnings: ['قد يسبب إسهال شديد (Pseudomembranous colitis). توقف واستشر فوراً عند الإسهال الحاد.', 'ممنوع مع التهاب القولون.']
 	},
 	{
@@ -63,7 +63,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة (٣٠٠ مجم) كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
+		calculationRule: fixed('كبسولة كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
 		warnings: ['قد يسبب إسهال شديد (Pseudomembranous colitis). توقف واستشر فوراً عند الإسهال الحاد.', 'ممنوع مع التهاب القولون.']
 	},
 	{
@@ -81,7 +81,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة (٣٠٠ مجم) كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
+		calculationRule: fixed('كبسولة كل ٦–٨ ساعات مع كوب ماء لمدة ٧–١٤ يوم'),
 		warnings: ['قد يسبب إسهال شديد (Pseudomembranous colitis). توقف واستشر فوراً عند الإسهال الحاد.', 'ممنوع مع التهاب القولون.']
 	},
 	// ==========================================
@@ -102,7 +102,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 200,
-		calculationRule: fixed('١٠ مجم/كجم/جرعة كل ٨ ساعات (أو ٦٠٠ مجم للبالغين) تسريب وريدي ٢٠–٣٠ دقيقة لمدة ٧–١٠ أيام'),
+		calculationRule: fixed('/كجم/جرعة كل ٨ ساعات تسريب وريدي ٢٠–٣٠ دقيقة لمدة ٧–١٠ أيام'),
 		warnings: ['لا يُحقن وريدي مباشر—يُخفف ويُعطى تسريب.', 'قد يسبب إسهال شديد (Pseudomembranous colitis). توقف واستشر فوراً.', 'ممنوع مع التهاب القولون.']
 	},
 	{
@@ -120,7 +120,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 200,
-		calculationRule: fixed('١٠ مجم/كجم/جرعة كل ٨ ساعات (أو ٦٠٠ مجم للبالغين) تسريب وريدي ٢٠–٣٠ دقيقة لمدة ٧–١٠ أيام'),
+		calculationRule: fixed('/كجم/جرعة كل ٨ ساعات تسريب وريدي ٢٠–٣٠ دقيقة لمدة ٧–١٠ أيام'),
 		warnings: ['لا يُحقن وريدي مباشر—يُخفف ويُعطى تسريب.', 'قد يسبب إسهال شديد (Pseudomembranous colitis). توقف واستشر فوراً.', 'ممنوع مع التهاب القولون.']
 	},
 	// ==========================================
@@ -198,7 +198,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 720,
 		minWeight: 40,
 		maxWeight: 200,
-		calculationRule: fixed('أداة واحدة (٥ جم) داخل المهبل مرة يومياً قبل النوم لمدة ٣–٧ أيام'),
+		calculationRule: fixed('أداة واحدة داخل المهبل مرة يومياً قبل النوم لمدة ٣–٧ أيام'),
 		warnings: ['يُضعف الواقي الذكري المطاطي.', 'تُجنب العلاقة أثناء العلاج.']
 	},
 	{
@@ -216,7 +216,7 @@ export const LINCOSAMIDES_GROUP: Medication[] = [
 		maxAgeMonths: 720,
 		minWeight: 40,
 		maxWeight: 200,
-		calculationRule: fixed('أداة واحدة (٥ جم) داخل المهبل مرة يومياً قبل النوم لمدة ٧ أيام'),
+		calculationRule: fixed('أداة واحدة داخل المهبل مرة يومياً قبل النوم لمدة ٧ أيام'),
 		warnings: ['يُضعف الواقي الذكري المطاطي.', 'تُجنب العلاقة أثناء العلاج.']
 	},
 ];

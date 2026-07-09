@@ -56,7 +56,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة للبالغين: ١٠٠–٢٠٠ مجم صباحاً. يمكن الزيادة حتى ٤٠٠ مجم/يوم حسب الاستجابة والتحمل. تجنب الجرعة المتأخرة لتقليل الأرق.'),
+		calculationRule: fixed('١٠٠–٢٠٠ مجم صباحاً. يمكن الزيادة حتى ٤٠٠ مجم/يوم حسب الاستجابة والتحمل. تجنب الجرعة المتأخرة لتقليل الأرق'),
 		warnings: ['قد يسبب أرق/صداع/قلق.', 'يُحذر مع اضطرابات القلب/ارتفاع ضغط غير منضبط.', 'نادر: طفح جلدي شديد—أوقفه واطلب رعاية عاجلة عند طفح واسع/تورم/ضيق تنفس.'],
 	},
 
@@ -106,7 +106,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: قرص واحد يومياً بعد الأكل. يمكن قرصين/يوم حسب التحمل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل. يمكن قرصين/يوم حسب التحمل'),
 		warnings: ['قد يزيد سيولة الدم (جينكو)؛ يُحذر مع الأسبرين/وارفارين/كلوبيدوجريل أو قبل العمليات.', 'قد يسبب اضطراب معدة/صداع.'],
 	},
 
@@ -131,7 +131,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٢٠٠ مجم مرة إلى مرتين يومياً. تجنب أخذه متأخراً لتقليل الأرق.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً. تجنب أخذه متأخراً لتقليل الأرق'),
 		warnings: ['قد يسبب أرق/عصبية عند بعض الأشخاص.', 'يُحذر مع اضطرابات القلق الشديدة.'],
 	},
 
@@ -231,7 +231,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: كبسولة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
 		warnings: ['قد يسبب اضطراب معدة/حرقة عند بعض الأشخاص.', 'يُحذر عند وجود حساسية لأي مكوّن.'],
 	},
 
@@ -251,7 +251,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة إلى مرتين يومياً بعد الأكل.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً بعد الأكل'),
 		warnings: ['يُحذر مع أدوية السيولة (بسبب الجينكو).', 'قد يسبب اضطراب معدة.'],
 	},
 
@@ -271,7 +271,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠٠–٢٠٠ مجم صباحاً. يمكن الزيادة حتى ٤٠٠ مجم/يوم حسب التحمل. تجنب الجرعة المتأخرة.'),
+		calculationRule: fixed('١٠٠–٢٠٠ مجم صباحاً. يمكن الزيادة حتى ٤٠٠ مجم/يوم حسب التحمل. تجنب الجرعة المتأخرة'),
 		warnings: ['قد يسبب أرق/صداع/قلق.', 'يُحذر مع أمراض القلب/الضغط.', 'قد يتداخل مع وسائل منع الحمل الهرمونية.'],
 	},
 
@@ -291,7 +291,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة إلى مرتين يومياً بعد الأكل.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً بعد الأكل'),
 		warnings: ['يُحذر مع أدوية السيولة (بسبب الجينكو).', 'قد يسبب اضطراب معدة/طعم سمكي (بسبب الأوميجا).'],
 	},
 
@@ -351,7 +351,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة يومياً بعد الأكل. يمكن ٥ مل مرتين يومياً عند البالغين.'),
+		calculationRule: fixed('مرة يومياً بعد الأكل. يمكن ٥ مل مرتين يومياً عند البالغين'),
 		warnings: ['قد يسبب ارتجاع/طعم سمكي.', 'يُحذر مع أدوية السيولة بجرعات أوميجا عالية.'],
 	},
 
@@ -371,7 +371,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة إلى مرتين يومياً بعد الأكل.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً بعد الأكل'),
 		warnings: ['قد يسبب اضطراب معدة.', 'يُحذر عند وجود حساسية لأي مكوّن.'],
 	},
 
@@ -391,7 +391,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة إلى مرتين يومياً بعد الأكل.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً بعد الأكل'),
 		warnings: ['يُحذر مع أدوية السيولة (جينكو).', 'قد يسبب اضطراب معدة/طعم سمكي.'],
 	},
 
@@ -411,7 +411,7 @@ export const ADHD_NOOTROPICS_DRUGS: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥ مل مرة إلى مرتين يومياً بعد الأكل.'),
+		calculationRule: fixed('مرة إلى مرتين يومياً بعد الأكل'),
 		warnings: ['قد يسبب اضطراب معدة.', 'يُحذر عند وجود حساسية لأي مكوّن.'],
 	},
 ];

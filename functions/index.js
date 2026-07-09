@@ -1,11 +1,20 @@
-const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 
 if (admin.apps.length === 0) {
-  admin.initializeApp();
+  let adminConfig = {};
+  if (process.env.FIREBASE_CONFIG) {
+    try { adminConfig = JSON.parse(process.env.FIREBASE_CONFIG); } catch (e) {}
+  }
+  // If we are deploying/running locally and projectId is missing, provide a fallback 
+  // to prevent Admin SDK from hanging while waiting for GCP metadata server.
+  if (!adminConfig.projectId) {
+    adminConfig.projectId = process.env.GCLOUD_PROJECT || 'gen-lang-client-0444130146';
+  }
+  admin.initializeApp(adminConfig);
 }
 
 // Define Secrets
@@ -197,7 +206,7 @@ exports.notifyDevicesToDismissAppointmentNotification = onDocumentCreated(
   lazy('./src/functions/pushFunctions', 'notifyDevicesToDismissAppointmentNotification')
 );
 exports.cleanupExternalNotificationBroadcastLogs = onSchedule({ schedule: 'every day 03:30', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'cleanupExternalNotificationBroadcastLogs'));
-exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 30 minutes', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
+exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 2 hours', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
 exports.onDoctorAdReviewWrite = onDocumentWritten({ document: 'doctorAdReviews/{doctorId}/items/{reviewId}', region: REGION }, lazy('./src/functions/reviewFunctions', 'onDoctorAdReviewWrite'));
 // ─────────────────────────────────────────────────────────────────────
 // محفّزات حماية طول النص — استبدلت 3 wildcards كانت تشتغل على كل كتابة

@@ -34,7 +34,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٢٥ مجم مساءً. يمكن زيادة ٢٥ مجم كل ٣–٧ أيام حسب التحمل. جرعة شائعة: ٧٥–١٥٠ مجم/يوم مقسمة. الحد الأقصى: ٢٥٠ مجم/يوم.'),
+		calculationRule: fixed('مساءً. يمكن زيادة ٢٥ مجم كل ٣–٧ أيام حسب التحمل. ٧٥–١٥٠ مجم/يوم مقسمة'),
 		warnings: [...TCA_WARNINGS, 'يُحذر مع الجلوكوما/احتباس البول.', 'قد يتداخل مع أدوية كثيرة (خاصة مثبطات/محفزات إنزيمات).'],
 	},
 
@@ -59,7 +59,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('للأرق: ٥٠–١٠٠ مجم قبل النوم. للاكتئاب: يبدأ ٥٠ مجم مرتين يومياً ثم الزيادة تدريجياً حتى ١٥٠–٣٠٠ مجم/يوم مقسمة. الحد الأقصى: ٤٠٠ مجم/يوم (للخارج) أو ٦٠٠ مجم/يوم (داخل المستشفى).'),
+		calculationRule: fixed('للأرق: ٥٠–١٠٠ مجم قبل النوم. للاكتئاب: يبدأ ٥٠ مجم مرتين يومياً ثم الزيادة تدريجياً حتى ١٥٠–٣٠٠ مجم/يوم مقسمة'),
 		warnings: ['قد يسبب نعاس شديد/دوخة.', 'قد يسبب هبوط ضغط عند الوقوف.', 'نادر: انتصاب مؤلم مطول (Priapism) يستدعي طوارئ.'],
 	},
 
@@ -79,7 +79,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('للأرق: قرص ٥٠ مجم قبل النوم (يمكن ١–٢ قرص). للاكتئاب: ٥٠ مجم مرتين يومياً ثم زيادة تدريجية. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('للأرق: قرص ٥٠ مجم قبل النوم (يمكن ١–٢ قرص). للاكتئاب: ٥٠ مجم مرتين يومياً ثم زيادة تدريجية'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يسبب هبوط ضغط عند الوقوف.', 'نادر: Priapism.'],
 	},
 
@@ -104,7 +104,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٣٠ مجم يومياً لمدة أسبوع ثم ٦٠ مجم يومياً. الحد الأقصى: ١٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً لمدة أسبوع ثم ٦٠ مجم يومياً'),
 		warnings: [...SNRI_WARNINGS, 'يُحذر في أمراض الكبد الشديدة/إدمان كحول.', 'قد يزيد التعرق أو جفاف الفم.'],
 	},
 
@@ -124,7 +124,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥٠ مجم مرة يومياً. يمكن الزيادة إلى ١٠٠ مجم مرة يومياً حسب الاستجابة. لا تُكسر/تُسحق.'),
+		calculationRule: fixed('مرة يومياً. يمكن الزيادة إلى ١٠٠ مجم مرة يومياً حسب الاستجابة. لا تُكسر/تُسحق'),
 		warnings: [...SNRI_WARNINGS, 'قد يزيد الغثيان/الأرق.'],
 	},
 
@@ -144,7 +144,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ١٠ مجم مرة يومياً. يمكن خفضها إلى ٥ مجم عند عدم التحمل أو زيادتها إلى ٢٠ مجم/يوم. الحد الأقصى: ٢٠ مجم/يوم.'),
+		calculationRule: fixed('مرة يومياً. يمكن خفضها إلى ٥ مجم عند عدم التحمل أو زيادتها إلى ٢٠ مجم/يوم'),
 		warnings: ['قد يسبب غثيان (شائع).', 'احذر متلازمة السيروتونين عند الجمع مع أدوية سيروتونين.', 'لا يوقف فجأة.'],
 	},
 
@@ -164,7 +164,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٢٠ مجم) مرة يومياً. الحد الأقصى: ٢٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد مرة يومياً'),
 		warnings: ['قد يسبب غثيان.', 'احذر متلازمة السيروتونين عند الجمع مع أدوية سيروتونين.'],
 	},
 
@@ -184,7 +184,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٢٠ مجم يومياً. يمكن الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم بسبب خطر QT.'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم بسبب خطر QT'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT خصوصاً مع الجرعات العالية أو أدوية أخرى.'],
 	},
 
@@ -204,7 +204,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٥–١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة.'),
+		calculationRule: fixed('٥–١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة'),
 		warnings: [...SSRI_WARNINGS, 'قد يسبب قلق/أرق في الأسبوع الأول ثم يتحسن.'],
 	},
 
@@ -224,7 +224,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم (الحد الأقصى).'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم ('),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -244,7 +244,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم (الحد الأقصى).'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم ('),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -264,7 +264,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -284,7 +284,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٦٠ مجم مرة يومياً. يمكن البدء بـ٣٠ مجم لمدة أسبوع ثم ٦٠ مجم. الحد الأقصى: ١٢٠ مجم/يوم.'),
+		calculationRule: fixed('مرة يومياً. يمكن البدء بـ٣٠ مجم لمدة أسبوع ثم ٦٠ مجم'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -304,7 +304,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٢٠ مجم يومياً ثم الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً ثم الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT.'],
 	},
 
@@ -324,7 +324,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('CR: بداية شائعة ١٢٫٥–٢٥ مجم مرة يومياً ثم الزيادة تدريجياً. جرعة شائعة: ٢٥–٣٧٫٥ مجم/يوم. الحد الأقصى: ٦٢٫٥ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('بداية ١٢٫٥–٢٥ مجم مرة يومياً ثم الزيادة تدريجياً. ٢٥–٣٧٫٥ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يسبب أعراض انسحاب أوضح عند الإيقاف المفاجئ.'],
 	},
 
@@ -344,7 +344,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('CR: جرعة شائعة ٢٥–٣٧٫٥ مجم مرة يومياً. الحد الأقصى: ٦٢٫٥ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('جرعة شائعة ٢٥–٣٧٫٥ مجم مرة يومياً'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -364,7 +364,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥٠ مجم مرة يومياً. يمكن الزيادة إلى ١٠٠ مجم مرة يومياً حسب الاستجابة. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('مرة يومياً. يمكن الزيادة إلى ١٠٠ مجم مرة يومياً حسب الاستجابة. لا يُكسر/يُسحق'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -384,7 +384,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠ مجم) مرة يومياً. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. لا يُكسر/يُسحق'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -404,7 +404,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٢٠ مجم يومياً. يمكن الزيادة تدريجياً كل أسبوع حتى ٤٠–٥٠ مجم/يوم حسب التشخيص. الحد الأقصى: ٥٠ مجم/يوم (للأقراص العادية).'),
+		calculationRule: fixed('يومياً. يمكن الزيادة تدريجياً كل أسبوع حتى ٤٠–٥٠ مجم/يوم حسب التشخيص'),
 		warnings: [...SSRI_WARNINGS, 'قد يسبب أعراض انسحاب أوضح عند الإيقاف المفاجئ.'],
 	},
 
@@ -424,7 +424,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('XR: بداية شائعة ٣٧٫٥–٧٥ مجم مرة يومياً ثم الزيادة تدريجياً. جرعة شائعة: ٧٥–٢٢٥ مجم/يوم. الحد الأقصى المعتاد: ٢٢٥ مجم/يوم.'),
+		calculationRule: fixed('بداية ٣٧٫٥–٧٥ مجم مرة يومياً ثم الزيادة تدريجياً. ٧٥–٢٢٥ مجم/يوم'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -444,7 +444,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٥–١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('٥–١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -464,7 +464,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('تدرج شائع: ١٠ مجم يومياً مع الطعام لمدة ٧ أيام، ثم ٢٠ مجم يومياً لمدة ٧ أيام، ثم ٤٠ مجم/يوم. (تركيز ٢٠ مجم: قرص يومياً بالمرحلة الثانية).'),
+		calculationRule: fixed('تدرج شائع: ١٠ مجم يومياً مع الطعام لمدة ٧ أيام، ثم ٢٠ مجم يومياً لمدة ٧ أيام، ثم ٤٠ مجم/يوم'),
 		warnings: ['قد يسبب إسهال/غثيان.', 'احذر متلازمة السيروتونين عند الجمع مع أدوية سيروتونين.', 'لا يوقف فجأة.'],
 	},
 
@@ -484,7 +484,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بعد التدرج: قرص واحد (٤٠ مجم) مرة يومياً مع الأكل.'),
+		calculationRule: fixed('بعد التدرج: قرص واحد مرة يومياً مع الأكل'),
 		warnings: ['قد يسبب إسهال/غثيان.', 'احذر متلازمة السيروتونين.'],
 	},
 
@@ -504,7 +504,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('XR: ٧٥ مجم مرة يومياً (بداية شائعة) ثم الزيادة تدريجياً حتى ٢٢٥ مجم/يوم حسب الاستجابة.'),
+		calculationRule: fixed('مرة يومياً (بداية ) ثم الزيادة تدريجياً حتى ٢٢٥ مجم/يوم حسب الاستجابة'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -524,7 +524,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ١٥ مجم قبل النوم ثم ٣٠ مجم بعد ١–٢ أسبوع. نطاق الجرعة: ١٥–٤٥ مجم/يوم.'),
+		calculationRule: fixed('قبل النوم ثم ٣٠ مجم بعد ١–٢ أسبوع. نطاق الجرعة: ١٥–٤٥ مجم/يوم'),
 		warnings: ['قد يسبب نعاس وزيادة وزن.', 'قد يسبب زيادة الشهية.', 'نادر: نقص كريات بيضاء—أوقف وأعد التقييم عند التهاب حلق/سخونية غير مفسرة.'],
 	},
 
@@ -544,7 +544,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('بداية ٢٥ مجم مساءً ثم زيادة تدريجية. جرعة شائعة ٧٥–١٥٠ مجم/يوم. الحد الأقصى ٢٥٠ مجم/يوم.'),
+		calculationRule: fixed('بداية ٢٥ مجم مساءً ثم زيادة تدريجية. جرعة شائعة ٧٥–١٥٠ مجم/يوم'),
 		warnings: [...TCA_WARNINGS],
 	},
 
@@ -564,7 +564,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً، ويمكن تعديلها إلى ٥–٢٠ مجم/يوم. تركيز ١٥ مجم: قرص واحد يومياً كجرعة وسطية.'),
+		calculationRule: fixed('يومياً، ويمكن تعديلها إلى ٥–٢٠ مجم/يوم. تركيز ١٥ مجم: قرص واحد يومياً كجرعة وسطية'),
 		warnings: ['قد يسبب غثيان.', 'احذر متلازمة السيروتونين عند الجمع مع أدوية سيروتونين.'],
 	},
 
@@ -584,7 +584,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT.'],
 	},
 
@@ -604,7 +604,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية ٢٠ مجم/يوم ثم الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('بداية ٢٠ مجم/يوم ثم الزيادة إلى ٤٠ مجم/يوم حسب الاستجابة. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT.'],
 	},
 
@@ -624,7 +624,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -644,7 +644,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠ مجم) مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الحاجة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الحاجة'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -664,7 +664,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ١٠ مجم مرة يومياً. يمكن تعديلها إلى ٥–٢٠ مجم/يوم حسب الاستجابة.'),
+		calculationRule: fixed('مرة يومياً. يمكن تعديلها إلى ٥–٢٠ مجم/يوم حسب الاستجابة'),
 		warnings: ['قد يسبب غثيان.', 'احذر متلازمة السيروتونين عند الجمع مع أدوية سيروتونين.'],
 	},
 
@@ -684,7 +684,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٢٠ مجم) مرة يومياً. الحد الأقصى: ٢٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد مرة يومياً'),
 		warnings: ['قد يسبب غثيان.', 'احذر متلازمة السيروتونين.'],
 	},
 
@@ -704,7 +704,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('CR: قرص ١٢٫٥ مجم مرة يومياً كبداية، ثم الزيادة إلى ٢٥–٣٧٫٥ مجم/يوم حسب الاستجابة. الحد الأقصى: ٦٢٫٥ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص ١٢٫٥ مجم مرة يومياً كبداية، ثم الزيادة إلى ٢٥–٣٧٫٥ مجم/يوم حسب الاستجابة'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -724,7 +724,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('SR: يبدأ ١٥٠ مجم صباحاً لمدة ٣ أيام، ثم ١٥٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم (SR). لا يُكسر/يُسحق.'),
+		calculationRule: fixed('يبدأ ١٥٠ مجم صباحاً لمدة ٣ أيام، ثم ١٥٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب أرق/عصبية.', 'يزيد خطر التشنجات مع الجرعات العالية أو اضطرابات الأكل.', 'يُحذر مع ارتفاع ضغط غير منضبط.'],
 	},
 
@@ -744,7 +744,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT.'],
 	},
 
@@ -764,7 +764,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. جرعة شائعة: ٣٠ مجم قبل النوم.'),
+		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. ٣٠ مجم قبل النوم'),
 		warnings: ['قد يسبب نعاس وزيادة وزن.'],
 	},
 
@@ -784,7 +784,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٢٥ مجم قبل النوم. يمكن الزيادة إلى ٥٠ مجم بعد ٢ أسبوع إذا لم يتحسن. الحد الأقصى: ٥٠ مجم/يوم.'),
+		calculationRule: fixed('قبل النوم. يمكن الزيادة إلى ٥٠ مجم بعد ٢ أسبوع إذا لم يتحسن'),
 		warnings: ['خطر ارتفاع إنزيمات كبد/التهاب كبد (يلزم متابعة).', 'ممنوع في مرضى الكبد.', 'قد يسبب دوخة/نعاس.'],
 	},
 
@@ -804,7 +804,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠ مجم) مرة يومياً. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. لا يُكسر/يُسحق'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -824,7 +824,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٣٠ مجم يومياً لمدة أسبوع ثم ٦٠ مجم يومياً. الحد الأقصى: ١٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً لمدة أسبوع ثم ٦٠ مجم يومياً'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -844,7 +844,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('XR: كبسولة ١٥٠ مجم مرة يومياً. جرعة شائعة: ٧٥–٢٢٥ مجم/يوم. الحد الأقصى المعتاد: ٢٢٥ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ١٥٠ مجم مرة يومياً. ٧٥–٢٢٥ مجم/يوم'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -864,7 +864,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠ مجم) مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -884,7 +884,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠ مجم) مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -904,7 +904,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠ مجم) مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم حسب الاستجابة'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -924,7 +924,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٢٠ مجم) مرة يومياً (الحد الأقصى المعتاد).'),
+		calculationRule: fixed('قرص واحد مرة يومياً ('),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -944,7 +944,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. جرعة شائعة: ٣٠ مجم قبل النوم.'),
+		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. ٣٠ مجم قبل النوم'),
 		warnings: ['قد يسبب نعاس وزيادة وزن.'],
 	},
 
@@ -964,7 +964,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة ٣٠ مجم/يوم ثم ٦٠ مجم/يوم. جرعة ٦٠ مجم: كبسولة مرة يومياً.'),
+		calculationRule: fixed('بداية ٣٠ مجم/يوم ثم ٦٠ مجم/يوم. جرعة ٦٠ مجم: كبسولة مرة يومياً'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -984,7 +984,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('CR: قرص ٢٥ مجم مرة يومياً. يمكن الزيادة تدريجياً حتى ٣٧٫٥–٦٢٫٥ مجم/يوم حسب الاستجابة. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص ٢٥ مجم مرة يومياً. يمكن الزيادة تدريجياً حتى ٣٧٫٥–٦٢٫٥ مجم/يوم حسب الاستجابة. لا يُكسر/يُسحق'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -1004,7 +1004,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 25,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ١٠–٢٠ مجم صباحاً. يمكن الزيادة تدريجياً حتى ٤٠–٦٠ مجم/يوم حسب الحالة.'),
+		calculationRule: fixed('١٠–٢٠ مجم صباحاً. يمكن الزيادة تدريجياً حتى ٤٠–٦٠ مجم/يوم حسب الحالة'),
 		warnings: [...SSRI_WARNINGS, 'له نصف عمر طويل؛ التحسن/الآثار قد تتأخر.'],
 	},
 
@@ -1024,7 +1024,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٥٠ مجم مرة يومياً. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('مرة يومياً. لا يُكسر/يُسحق'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -1044,7 +1044,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ١٠ مجم يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('يومياً. يمكن الزيادة إلى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -1064,7 +1064,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بعد التدرج: ٤٠ مجم مرة يومياً مع الطعام.'),
+		calculationRule: fixed('بعد التدرج: ٤٠ مجم مرة يومياً مع الطعام'),
 		warnings: ['قد يسبب إسهال/غثيان.', 'احذر متلازمة السيروتونين.'],
 	},
 
@@ -1084,7 +1084,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. جرعة شائعة: ٣٠ مجم قبل النوم.'),
+		calculationRule: fixed('نطاق الجرعة: ١٥–٤٥ مجم/يوم. ٣٠ مجم قبل النوم'),
 		warnings: ['قد يسبب نعاس وزيادة وزن.'],
 	},
 
@@ -1104,7 +1104,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٢٥–٥٠ مجم يومياً. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم/يوم حسب التشخيص.'),
+		calculationRule: fixed('٢٥–٥٠ مجم يومياً. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم/يوم حسب التشخيص'),
 		warnings: [...SSRI_WARNINGS],
 	},
 
@@ -1124,7 +1124,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('بداية شائعة: ٣٠ مجم مرة يومياً لمدة أسبوع ثم ٦٠ مجم/يوم حسب الاستجابة. الحد الأقصى: ١٢٠ مجم/يوم.'),
+		calculationRule: fixed('مرة يومياً لمدة أسبوع ثم ٦٠ مجم/يوم حسب الاستجابة'),
 		warnings: [...SNRI_WARNINGS],
 	},
 
@@ -1144,7 +1144,7 @@ export const ANTIDEPRESSANTS_2: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة: ٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم.'),
+		calculationRule: fixed('٢٠–٤٠ مجم/يوم. كبار السن/مشاكل كبد: حد أقصى ٢٠ مجم/يوم'),
 		warnings: [...SSRI_WARNINGS, 'قد يطيل QT.'],
 	},
 ];

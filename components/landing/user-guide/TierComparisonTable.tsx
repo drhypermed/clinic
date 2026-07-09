@@ -2,12 +2,12 @@
 // TierComparisonTable — جدول مقارنة حي بين الباقات
 // ─────────────────────────────────────────────────────────────────────────────
 // بيقرأ القيم الفعلية لكل ميزة من إعدادات الأدمن لحظياً، ويعرضها كجدول
-// مقارن بين 3 باقات (مجاني / برو / برو ماكس).
+// مقارن بين 4 باقات (مجاني / Plus / برو / برو ماكس).
 //
 // لو الأدمن غيّر أي رقم في صفحة "التحكم في أنواع الحساب"، الجدول هنا
 // بيتحدّث تلقائياً مع تحديث الصفحة (مفيش hardcoded numbers).
 //
-// الترتيب: AI features → سعات تخزين → حدود يومية للحفظ → حجوزات.
+// الترتيب: AI features -> سعات تخزين -> حدود يومية للحفظ -> حجوزات.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React from 'react';
@@ -26,11 +26,7 @@ type FeatureRow = {
   premiumKey: keyof AccountTypeControls;
   plusKey: keyof AccountTypeControls;
   proMaxKey: keyof AccountTypeControls;
-  /**
-   * 🆕 (2026-05): الميزات المفتوحة للـ paid tiers بلا حد —
-   * الجدول يعرض "∞ مفتوح" بدل رقم للـ برو والبرو ماكس.
-   */
-  unlimitedForPaid?: boolean;
+  paidOpen?: boolean;
 };
 
 type FeatureGroup = {
@@ -69,18 +65,15 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuDatabase className="w-4 h-4" />,
     rows: [
       { label: 'حفظ السجلات الطبية', unit: 'سجل',
-        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', plusKey: 'plusRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount',
-        unlimitedForPaid: true },
+        freeKey: 'freeRecordsMaxCount', premiumKey: 'premiumRecordsMaxCount', plusKey: 'plusRecordsMaxCount', proMaxKey: 'proMaxRecordsMaxCount', paidOpen: true },
       { label: 'تخزين الروشتات الجاهزة', unit: 'روشتة',
-        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', plusKey: 'plusReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount',
-        unlimitedForPaid: true },
+        freeKey: 'freeReadyPrescriptionsMaxCount', premiumKey: 'premiumReadyPrescriptionsMaxCount', plusKey: 'plusReadyPrescriptionsMaxCount', proMaxKey: 'proMaxReadyPrescriptionsMaxCount', paidOpen: true },
       { label: 'تخزين الأدوية المعدّلة', unit: 'دواء',
-        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', plusKey: 'plusMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount',
-        unlimitedForPaid: true },
+        freeKey: 'freeMedicationCustomizationsMaxCount', premiumKey: 'premiumMedicationCustomizationsMaxCount', plusKey: 'plusMedicationCustomizationsMaxCount', proMaxKey: 'proMaxMedicationCustomizationsMaxCount', paidOpen: true },
       { label: 'عدد الفروع', unit: 'فرع',
         freeKey: 'freeBranchesMaxCount', premiumKey: 'premiumBranchesMaxCount', plusKey: 'plusBranchesMaxCount', proMaxKey: 'proMaxBranchesMaxCount' },
       { label: 'شركات التأمين', unit: 'شركة',
-        freeKey: 'freeInsuranceCompaniesMaxCount', premiumKey: 'premiumInsuranceCompaniesMaxCount', plusKey: 'plusInsuranceCompaniesMaxCount', proMaxKey: 'proMaxInsuranceCompaniesMaxCount' },
+        freeKey: 'freeInsuranceCompaniesMaxCount', premiumKey: 'premiumInsuranceCompaniesMaxCount', plusKey: 'plusInsuranceCompaniesMaxCount', proMaxKey: 'proMaxInsuranceCompaniesMaxCount', paidOpen: true },
     ],
   },
   {
@@ -89,8 +82,7 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuFileText className="w-4 h-4" />,
     rows: [
       { label: 'حفظ روشتة جاهزة', unit: 'روشتة/يوم',
-        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', plusKey: 'plusReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit',
-        unlimitedForPaid: true },
+        freeKey: 'freeReadyPrescriptionDailyLimit', premiumKey: 'premiumReadyPrescriptionDailyLimit', plusKey: 'plusReadyPrescriptionDailyLimit', proMaxKey: 'proMaxReadyPrescriptionDailyLimit', paidOpen: true },
     ],
   },
   {
@@ -99,9 +91,9 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     icon: <LuCalendar className="w-4 h-4" />,
     rows: [
       { label: 'إضافة الموعد (صفحة المواعيد)', unit: 'موعد/يوم',
-        freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', plusKey: 'plusPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit' },
+        freeKey: 'freePublicBookingDailyLimit', premiumKey: 'premiumPublicBookingDailyLimit', plusKey: 'plusPublicBookingDailyLimit', proMaxKey: 'proMaxPublicBookingDailyLimit', paidOpen: true },
       { label: 'إرسال إلى الطبيب من السكرتارية', unit: 'طلب/يوم',
-        freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', plusKey: 'plusSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit' },
+        freeKey: 'freeSecretaryEntryRequestDailyLimit', premiumKey: 'premiumSecretaryEntryRequestDailyLimit', plusKey: 'plusSecretaryEntryRequestDailyLimit', proMaxKey: 'proMaxSecretaryEntryRequestDailyLimit', paidOpen: true },
     ],
   },
 ];
@@ -129,6 +121,28 @@ const TierColumnHeader: React.FC<{ tier: TierKey; label: string }> = ({ tier, la
     </th>
   );
 };
+
+type FeatureValueKey = 'freeKey' | 'premiumKey' | 'plusKey' | 'proMaxKey';
+
+const FeatureValue: React.FC<{
+  controls: AccountTypeControls | null;
+  row: FeatureRow;
+  valueKey: FeatureValueKey;
+  unitClassName: string;
+  paid?: boolean;
+}> = ({ controls, row, valueKey, unitClassName, paid = false }) => {
+  if (paid && row.paidOpen) {
+    return <span className="text-[11px] sm:text-sm font-black">{'\u221e \u0645\u0641\u062a\u0648\u062d'}</span>;
+  }
+
+  return (
+    <>
+      {getValue(controls, row[valueKey])}
+      <span className={`text-[10px] font-bold mr-1 ${unitClassName}`}>{row.unit}</span>
+    </>
+  );
+};
+
 export const TierComparisonTable: React.FC = () => {
   const [controls, setControls] = React.useState<AccountTypeControls | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -203,39 +217,39 @@ export const TierComparisonTable: React.FC = () => {
                       {row.label}
                     </td>
                     <td className="text-center text-[12px] sm:text-sm font-black text-slate-800 px-2 sm:px-3 py-2.5 border-b border-slate-100">
-                      {getValue(controls, row.freeKey)}
-                      <span className="text-[10px] font-bold text-slate-400 mr-1">{row.unit}</span>
+                      <FeatureValue
+                        controls={controls}
+                        row={row}
+                        valueKey="freeKey"
+                        unitClassName="text-slate-400"
+                      />
                     </td>
-                    {/* 🆕 (2026-05): الميزات المفتوحة للـ paid → "∞ مفتوح" بدل رقم */}
                     <td className="text-center text-[12px] sm:text-sm font-black text-slate-700 px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-slate-50">
-                      {row.unlimitedForPaid ? (
-                        <span className="font-black text-slate-700">∞ مفتوح</span>
-                      ) : (
-                        <>
-                          {getValue(controls, row.plusKey)}
-                          <span className="text-[10px] font-bold text-slate-500 mr-1">{row.unit}</span>
-                        </>
-                      )}
+                      <FeatureValue
+                        controls={controls}
+                        row={row}
+                        valueKey="plusKey"
+                        unitClassName="text-slate-500"
+                        paid
+                      />
                     </td>
                     <td className="text-center text-[12px] sm:text-sm font-black text-warning-800 px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-warning-50/30">
-                      {row.unlimitedForPaid ? (
-                        <span className="font-black text-warning-700">∞ مفتوح</span>
-                      ) : (
-                        <>
-                          {getValue(controls, row.premiumKey)}
-                          <span className="text-[10px] font-bold text-warning-600 mr-1">{row.unit}</span>
-                        </>
-                      )}
+                      <FeatureValue
+                        controls={controls}
+                        row={row}
+                        valueKey="premiumKey"
+                        unitClassName="text-warning-600"
+                        paid
+                      />
                     </td>
                     <td className="text-center text-[12px] sm:text-sm font-black text-[#B45309] px-2 sm:px-3 py-2.5 border-b border-slate-100 bg-gradient-to-br from-[#FFF8E1]/40 to-[#FFE0B2]/40">
-                      {row.unlimitedForPaid ? (
-                        <span className="font-black text-[#B45309]">∞ مفتوح</span>
-                      ) : (
-                        <>
-                          {getValue(controls, row.proMaxKey)}
-                          <span className="text-[10px] font-bold text-[#B45309]/70 mr-1">{row.unit}</span>
-                        </>
-                      )}
+                      <FeatureValue
+                        controls={controls}
+                        row={row}
+                        valueKey="proMaxKey"
+                        unitClassName="text-[#B45309]/70"
+                        paid
+                      />
                     </td>
                   </tr>
                 ))}

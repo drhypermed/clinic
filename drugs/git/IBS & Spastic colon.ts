@@ -97,7 +97,7 @@ const IBS_SPASTIC_COLON_MEDS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 250,
 
-    calculationRule: fixed('١ قرص ٣–٤ مرات يومياً قبل الأكل بـ ٣٠–٦٠ دقيقة (مع جرعة قبل النوم عند الحاجة) لمدة ٢–٤ أسابيع (استخدام قصير المدى).'),
+    calculationRule: fixed('١ قرص ٣–٤ مرات يومياً قبل الأكل بـ ٣٠–٦٠ دقيقة (مع جرعة قبل النوم عند الحاجة) لمدة ٢–٤ أسابيع (استخدام قصير المدى)'),
 
     warnings: LIBRAX_WARNINGS
   },
@@ -123,7 +123,7 @@ const IBS_SPASTIC_COLON_MEDS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 250,
 
-    calculationRule: fixed('١ قرص ٣ مرات يومياً قبل الأكل بـ ٢٠ دقيقة لمدة ٢–٤ أسابيع.'),
+    calculationRule: fixed('١ قرص ٣ مرات يومياً قبل الأكل بـ ٢٠ دقيقة لمدة ٢–٤ أسابيع'),
     
     warnings: MEBEVERINE_WARNINGS
   },

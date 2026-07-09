@@ -393,7 +393,106 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "embeddingVector",
+          "vectorConfig": {
+            "dimension": 768,
+            "flat": {}
+          }
+        }
+      ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "text",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "embedding",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "keywords",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "concepts",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "intentTags",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "storagePdfUrl",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "label",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_book_chunks",
+      "fieldPath": "heading",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "embedding",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "textPreview",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "concepts",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "intentTags",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "storagePdfUrl",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "label",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "heading",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guideline_chunk_search",
+      "fieldPath": "keywords",
+      "indexes": [
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        }
+      ]
+    }
+  ]
 }

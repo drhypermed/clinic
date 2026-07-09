@@ -39,6 +39,19 @@ module.exports = (context) => {
     }
     const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
+    if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
+      return {
+        accountType,
+        limit: 0,
+        used: 0,
+        remaining: Number.MAX_SAFE_INTEGER,
+        whatsappNumber: '',
+        whatsappUrl: '',
+        limitReachedMessage: '',
+        whatsappMessage: '',
+      };
+    }
+
     const limit = pickTierValue(accountType, config, {
       freeKey: 'freeInsuranceCompaniesMaxCount',
       premiumKey: 'premiumInsuranceCompaniesMaxCount',

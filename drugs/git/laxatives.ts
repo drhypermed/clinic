@@ -720,7 +720,7 @@ const LAXATIVE_MEDS_RAW: Medication[] = [
     minWeight: 40,
     maxWeight: 250,
     
-    calculationRule: fixed('كيس واحد بعد العشاء.\n(حالات شديدة: كيس صباحاً + كيس مساءً).\nالمفعول خلال ٨-١٢ ساعة.'),
+    calculationRule: fixed('كيس واحد بعد العشاء.\n(حالات شديدة: كيس صباحاً + كيس مساءً).\nالمفعول خلال ٨-١٢ ساعة'),
     
     warnings: [
         'اشرب سوائل كافية لتجنب انسداد الأمعاء.',

@@ -25,7 +25,7 @@ const HMG_GROUP_RAW: Medication[] = [
     maxAgeMonths: 720,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('١٥٠ وحدة دولية حقنة تحت الجلد أو عضل يومياً – في الأيام المحددة من الدورة – تُعدّل حسب السونار'),
+    calculationRule: fixed('دولية حقنة تحت الجلد أو عضل يومياً – في الأيام المحددة من الدورة – تُعدّل حسب السونار'),
     warnings: INFERTILITY_INJECTABLE_WARNINGS,
     matchKeywords: ['meriofert', 'ميريوفيرت', 'menotropins', 'hmg', 'infertility'],
   },

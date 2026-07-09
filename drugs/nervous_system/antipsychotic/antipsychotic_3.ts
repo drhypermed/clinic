@@ -106,7 +106,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: CHLORPROMAZINE_WARNINGS,
 	},
 
@@ -126,7 +126,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -146,7 +146,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 30,
 		maxWeight: 250,
-		calculationRule: fixed('٢ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: PIMOZIDE_WARNINGS,
 	},
 
@@ -166,7 +166,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -186,7 +186,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('١ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: RISPERIDONE_WARNINGS,
 	},
 
@@ -206,7 +206,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٦ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: RISPERIDONE_WARNINGS,
 	},
 
@@ -226,7 +226,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٦ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: RISPERIDONE_WARNINGS,
 	},
 
@@ -246,7 +246,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٦ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: RISPERIDONE_WARNINGS,
 	},
 
@@ -266,7 +266,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٦ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: RISPERIDONE_WARNINGS,
 	},
 
@@ -286,7 +286,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٨٠٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -306,7 +306,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٨٠٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -326,7 +326,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('12/25mg (كبسولة) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_FLUOXETINE_WARNINGS,
 	},
 
@@ -346,7 +346,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('6/50mg (كبسولة) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_FLUOXETINE_WARNINGS,
 	},
 
@@ -366,7 +366,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 30,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: ARIPIPRAZOLE_WARNINGS,
 	},
 
@@ -386,7 +386,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: SULPIRIDE_WARNINGS,
 	},
 
@@ -406,7 +406,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -426,7 +426,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -446,7 +446,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('١٢٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -466,7 +466,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('12/50mg (كبسولة) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_FLUOXETINE_WARNINGS,
 	},
 
@@ -486,7 +486,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -506,7 +506,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 30,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: ARIPIPRAZOLE_WARNINGS,
 	},
 
@@ -526,7 +526,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 30,
 		maxWeight: 250,
-		calculationRule: fixed('١ مجم (جرعة) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('جرعة مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: ARIPIPRAZOLE_WARNINGS,
 	},
 
@@ -546,7 +546,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٨٠٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -566,7 +566,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -586,7 +586,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -606,7 +606,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص حسب التعليمات بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -626,7 +626,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٢ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: TRIFLUOPERAZINE_WARNINGS,
 	},
 
@@ -646,7 +646,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -666,7 +666,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('١٥٠ مجم (كبسولة) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة حسب التعليمات بدون اعتبار للأكل'),
 		warnings: SULPIRIDE_WARNINGS,
 	},
 
@@ -686,7 +686,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مجم (حقنة) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('حقنة حسب التعليمات بدون اعتبار للأكل'),
 		warnings: HALOPERIDOL_WARNINGS,
 	},
 
@@ -706,7 +706,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مجم (حقنة) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('حقنة حسب التعليمات بدون اعتبار للأكل'),
 		warnings: HALOPERIDOL_WARNINGS,
 	},
 
@@ -726,7 +726,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: [
 			...BASE_ANTIPSYCHOTIC_WARNINGS,
 			'قد يسبب تململ/أكاثيزيا أو أرق.',
@@ -751,7 +751,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص حسب التعليمات بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -771,7 +771,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('١٢٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -791,7 +791,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('١٢٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -811,7 +811,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('١٢٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: LURASIDONE_WARNINGS,
 	},
 
@@ -831,7 +831,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — حسب التعليمات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص حسب التعليمات بدون اعتبار للأكل'),
 		warnings: QUETIAPINE_WARNINGS,
 	},
 
@@ -851,7 +851,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١٫٥ مجم (كبسولة) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: CARIPRAZINE_WARNINGS,
 	},
 
@@ -871,7 +871,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('١٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 
@@ -891,7 +891,7 @@ const ANTIPSYCHOTIC_DRUGS_PART_3_RAW: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: OLANZAPINE_WARNINGS,
 	},
 ];

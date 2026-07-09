@@ -135,7 +135,7 @@ export const VITAMIN_K_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 20,
     maxWeight: 200,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: ['إذا كنت تستخدم وارفارين/مضادات التجلط: فيتامين ك قد يقلل تأثيرها.'],
   },
 

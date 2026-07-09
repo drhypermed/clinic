@@ -673,7 +673,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (١٠ مجم) فموياً مرة يومياً – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
     
     
     warnings: LORATADINE_WARNINGS
@@ -751,7 +751,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 15,
     maxWeight: 250,
     
-    calculationRule: fixed('أمبول واحد (٢ مل) عضلياً للبالغين، أو ٠.٥–١ مل للأطفال ٣–١١ سنة، كل ٨–١٢ ساعة عند الحاجة (حد أقصى ٣ أمبولات/يوم)'),
+    calculationRule: fixed('أمبول واحد عضلياً للبالغين، أو ٠.٥–١ مل للأطفال ٣–١١ سنة، كل ٨–١٢ ساعة عند الحاجة (حد أقصى ٣ أمبولات/يوم)'),
     
     
     warnings: SEDATING_ANTIHISTAMINE_WARNINGS
@@ -803,7 +803,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 12,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص–٢ قرص كل ٤–٦ ساعات للبالغين (حد أقصى ٤٠٠ مجم/يوم) – بدون اعتبار للأكل – عند الحاجة'),
+    calculationRule: fixed('قرص–٢ قرص كل ٤–٦ ساعات للبالغين – بدون اعتبار للأكل – عند الحاجة'),
     
     
     warnings: SEDATING_ANTIHISTAMINE_WARNINGS
@@ -891,7 +891,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('بختين في كل فتحة أنف مرتين يومياً (إجمالي ٨ بخات/يوم) – بدون اعتبار للأكل – علاج مستمر للسيطرة'),
+    calculationRule: fixed('بختين في كل فتحة أنف مرتين يومياً – بدون اعتبار للأكل – علاج مستمر للسيطرة'),
     
     
     warnings: FEXOFENADINE_WARNINGS
@@ -917,7 +917,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('بختين في كل فتحة أنف مرتين يومياً (إجمالي ٨ بخات/يوم) – بدون اعتبار للأكل – علاج مستمر للسيطرة'),
+    calculationRule: fixed('بختين في كل فتحة أنف مرتين يومياً – بدون اعتبار للأكل – علاج مستمر للسيطرة'),
     
     
     warnings: FEXOFENADINE_WARNINGS
@@ -1102,7 +1102,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('فيلم واحد (٢٥ مجم) كل ٤–٦ ساعات (حد أقصى فيلمان/يوم) – بدون اعتبار للأكل – عند الحاجة'),
+    calculationRule: fixed('فيلم واحد كل ٤–٦ ساعات (حد أقصى فيلمان/يوم) – بدون اعتبار للأكل – عند الحاجة'),
     
     
     warnings: SEDATING_ANTIHISTAMINE_WARNINGS
@@ -1206,7 +1206,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 15,
     maxWeight: 250,
     
-    calculationRule: fixed('نصف–١ قرص (١–٢ مجم) فموياً مرة–مرتين يومياً (تدريجياً، حد أقصى ٦ مجم/يوم) – بدون اعتبار للأكل – علاج مستمر'),
+    calculationRule: fixed('نصف–١ قرص فموياً مرة–مرتين يومياً – بدون اعتبار للأكل – علاج مستمر'),
     
     
     warnings: [
@@ -1265,7 +1265,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 21.4,
     maxWeight: 100,
     
-    calculationRule: fixed('١٠ مل شراب فموي كل ٦–٨ ساعات للبالغين (حد أقصى ٥ جرعات/يوم) – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('شراب فموي كل ٦–٨ ساعات للبالغين (حد أقصى ٥ جرعات/يوم) – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
     
     
     warnings: [
@@ -1323,7 +1323,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢٠ مجم) فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
     
     
     warnings: FEXOFENADINE_WARNINGS
@@ -1427,7 +1427,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 50,
     maxWeight: 250,
     
-    calculationRule: fixed('٢٥–٥٠ مجم فموياً تدريجياً (الذهان: ٢٠٠–٨٠٠ مجم/يوم مقسمة) – بدون اعتبار للأكل – علاج مستمر تحت إشراف'),
+    calculationRule: fixed('٢٥–٥٠ مجم فموياً تدريجياً – بدون اعتبار للأكل – علاج مستمر تحت إشراف'),
     
     
     warnings: [
@@ -1462,7 +1462,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢ مجم) فموياً مرة يومياً مساءً – بدون اعتبار للأكل – علاج وقائي مستمر'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً مساءً – بدون اعتبار للأكل – علاج وقائي مستمر'),
     
     
     warnings: SEDATING_ANTIHISTAMINE_WARNINGS
@@ -1577,7 +1577,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (١٠ مجم) فموياً مرة يومياً – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً – بدون اعتبار للأكل – لمدة ٥–٧ أيام'),
     
     
     warnings: LORATADINE_WARNINGS
@@ -1603,7 +1603,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢٠ مجم) مرة واحدة يومياً.\n(للبالغين ≥١٢ سنة)'),
+    calculationRule: fixed('قرص واحد مرة واحدة يومياً.\n(للبالغين ≥١٢ سنة)'),
     
     
     warnings: LORATADINE_WARNINGS
@@ -1796,7 +1796,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢٠ مجم) فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
     
     
     warnings: FEXOFENADINE_WARNINGS
@@ -1848,7 +1848,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢٠ مجم) فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
+    calculationRule: fixed('قرص واحد فموياً مرة يومياً – على معدة فارغة (ساعة قبل/ساعتين بعد الأكل) – لمدة ٥–٧ أيام'),
     
     
     warnings: FEXOFENADINE_WARNINGS
@@ -1953,7 +1953,7 @@ const ANTIHISTAMINIC_MEDICATIONS_RAW: Medication[] = [
     minWeight: 35,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢٠ مجم) مرة واحدة يومياً.\n(للبالغين ≥١٢ سنة)'),
+    calculationRule: fixed('قرص واحد مرة واحدة يومياً.\n(للبالغين ≥١٢ سنة)'),
     
     
     warnings: LORATADINE_WARNINGS

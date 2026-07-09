@@ -36,7 +36,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -56,7 +56,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -76,7 +76,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -96,7 +96,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -116,7 +116,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -136,7 +136,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -156,7 +156,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -176,7 +176,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -196,7 +196,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -216,7 +216,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -236,7 +236,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -256,7 +256,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -276,7 +276,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -296,7 +296,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -316,7 +316,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -336,7 +336,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -356,7 +356,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 
@@ -376,7 +376,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -396,7 +396,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -416,7 +416,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -436,7 +436,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة).'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً (كل ١٢ ساعة)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -456,7 +456,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً (كل ٦ ساعات).'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً (كل ٦ ساعات)'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -476,7 +476,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -496,7 +496,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرتين يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -516,7 +516,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 12,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مرة يومياً'),
 		warnings: [...COMMON_EYE_WARNINGS],
 	},
 
@@ -536,7 +536,7 @@ export const OPHTHALMIC_ANTIHISTAMINIC_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في العين المصابة ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [...VASOCONSTRICTOR_WARNINGS],
 	},
 ];

@@ -30,7 +30,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('شريط جل صغير (حوالي ٠.٥–١ سم) داخل الجفن السفلي ٢–٣ مرات يومياً، وآخر جرعة قبل النوم.'),
+		calculationRule: fixed('شريط جل صغير (حوالي ٠.٥–١ سم) داخل الجفن السفلي ٢–٣ مرات يومياً، وآخر جرعة قبل النوم'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS, 'قد يسبب زغللة مؤقتة: تجنب القيادة حتى تزول.'],
 	},
 
@@ -50,7 +50,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً (صباح/عصر/مساء).'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً (صباح/عصر/مساء)'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -70,7 +70,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات).'),
+		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات)'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -90,7 +90,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -110,7 +110,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -130,7 +130,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات).'),
+		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات)'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -150,7 +150,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين مساءً، ويمكن إضافة جرعة صباحاً وعصراً عند الحاجة.'),
+		calculationRule: fixed('نقطة واحدة في كل عين مساءً، ويمكن إضافة جرعة صباحاً وعصراً عند الحاجة'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS, 'قد يسبب زغللة مؤقتة بعد الجرعة.'],
 	},
 
@@ -170,7 +170,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات).'),
+		calculationRule: fixed('نقطة إلى نقطتين في كل عين ٤ مرات يومياً (كل ٦ ساعات)'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -190,7 +190,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -210,7 +210,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -230,7 +230,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -250,7 +250,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -270,7 +270,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -290,7 +290,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -310,7 +310,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -330,7 +330,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٢–٣ مرات يومياً. لا تستخدمه أكثر من ٣ أيام متتالية'),
 		warnings: [
 			...COMMON_EYE_LUBRICANT_WARNINGS,
 			'يحتوي على مزيل احتقان: قد يسبب ارتداد الاحمرار مع الإفراط في الاستخدام.',
@@ -354,7 +354,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً، وآخر جرعة قبل النوم.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً، وآخر جرعة قبل النوم'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS, 'قد يسبب زغللة مؤقتة بعد الجرعة.'],
 	},
 
@@ -374,7 +374,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -394,7 +394,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -414,7 +414,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -434,7 +434,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -454,7 +454,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -474,7 +474,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -494,7 +494,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٣ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -514,7 +514,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -534,7 +534,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...COMMON_EYE_LUBRICANT_WARNINGS],
 	},
 
@@ -554,7 +554,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 
@@ -574,7 +574,7 @@ export const EYE_LUBRICANTS_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 2,
 		maxWeight: 250,
-		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً.'),
+		calculationRule: fixed('نقطة واحدة في كل عين ٤ مرات يومياً'),
 		warnings: [...SDU_WARNINGS],
 	},
 ];

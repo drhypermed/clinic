@@ -106,7 +106,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص فوار واحد يومياً.'),
+    calculationRule: fixed('قرص فوار واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 
@@ -126,7 +126,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 20,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 
@@ -146,7 +146,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 
@@ -166,7 +166,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: VITAMIN_C_WARNINGS,
   },
 
@@ -186,7 +186,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص فوار واحد يومياً.'),
+    calculationRule: fixed('قرص فوار واحد يومياً'),
     warnings: [...EFFERVESCENT_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -230,7 +230,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 2,
     maxWeight: 250,
-    calculationRule: fixed('الجرعة تعتمد على تركيز العبوة: شائع ٠.٥–١ مل يومياً بعد الأكل.'),
+    calculationRule: fixed('الجرعة تعتمد على تركيز العبوة: شائع ٠.٥–١ مل يومياً بعد الأكل'),
     warnings: VITAMIN_C_WARNINGS,
   },
 
@@ -250,7 +250,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...ZINC_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -270,7 +270,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: [...EFFERVESCENT_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -290,7 +290,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 
@@ -310,7 +310,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 2,
     maxWeight: 250,
-    calculationRule: fixed('الجرعة تعتمد على تركيز العبوة: شائع ٠.٥–١ مل يومياً بعد الأكل.'),
+    calculationRule: fixed('الجرعة تعتمد على تركيز العبوة: شائع ٠.٥–١ مل يومياً بعد الأكل'),
     warnings: VITAMIN_C_WARNINGS,
   },
 
@@ -330,7 +330,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 
@@ -350,7 +350,7 @@ const VITAMINS_C_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص فوار واحد يومياً.'),
+    calculationRule: fixed('قرص فوار واحد يومياً'),
     warnings: EFFERVESCENT_WARNINGS,
   },
 ];

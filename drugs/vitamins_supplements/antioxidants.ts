@@ -274,7 +274,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -294,7 +294,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً، ويمكن مرتين يومياً حسب الحاجة.'),
+    calculationRule: fixed('كبسولة واحدة يومياً، ويمكن مرتين يومياً حسب الحاجة'),
     warnings: COQ10_WARNINGS,
   },
 
@@ -314,7 +314,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: COQ10_WARNINGS,
   },
 
@@ -334,7 +334,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -354,7 +354,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -374,7 +374,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -394,7 +394,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: CARNITINE_WARNINGS,
   },
 
@@ -414,7 +414,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -434,7 +434,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة مرتين يومياً.'),
+    calculationRule: fixed('كبسولة مرتين يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -454,7 +454,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -474,7 +474,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: [...ALA_WARNINGS, ...GINKGO_WARNINGS],
   },
 
@@ -515,7 +515,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: [...CARNITINE_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -535,7 +535,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -555,7 +555,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -575,7 +575,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -615,7 +615,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA3_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -635,7 +635,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...CARNITINE_WARNINGS, ...COQ10_WARNINGS],
   },
 
@@ -675,7 +675,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: [...CARNITINE_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -695,7 +695,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -715,7 +715,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة مرتين يومياً بعد الأكل'),
     warnings: CARNITINE_WARNINGS,
   },
 
@@ -735,7 +735,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة مرتين يومياً.'),
+    calculationRule: fixed('كبسولة مرتين يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -755,7 +755,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA3_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -816,7 +816,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: CARNITINE_WARNINGS,
   },
 
@@ -856,7 +856,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('وريدي: أمبول (٣٠٠ مجم) يومياً وقد تُستخدم ٢ أمبول (٦٠٠ مجم) حسب الحالة.'),
+    calculationRule: fixed('وريدي: أمبول يومياً وقد تُستخدم ٢ أمبول حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...ALA_WARNINGS],
   },
 
@@ -876,7 +876,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...ZINC_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -896,7 +896,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: ALA_WARNINGS,
   },
 
@@ -916,7 +916,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...CARNITINE_WARNINGS, ...COQ10_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -936,7 +936,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة مرتين يومياً بعد الأكل'),
     warnings: CARNITINE_WARNINGS,
   },
 
@@ -956,7 +956,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -976,7 +976,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل (تحقق من تركيز القرص على العبوة).'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل (تحقق من تركيز القرص على العبوة)'),
     warnings: COQ10_WARNINGS,
   },
 
@@ -996,7 +996,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: [...ALA_WARNINGS, ...GINKGO_WARNINGS],
   },
 
@@ -1016,7 +1016,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: FAT_SOLUBLE_VIT_WARNINGS,
   },
 
@@ -1036,7 +1036,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: COQ10_WARNINGS,
   },
 
@@ -1056,7 +1056,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...CARNITINE_WARNINGS, ...ZINC_WARNINGS],
   },
 
@@ -1076,7 +1076,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -1096,7 +1096,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1116,7 +1116,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -1136,7 +1136,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1156,7 +1156,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...FAT_SOLUBLE_VIT_WARNINGS],
   },
 
@@ -1176,7 +1176,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 
@@ -1196,7 +1196,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد يومياً.'),
+    calculationRule: fixed('ساشيه واحد يومياً'),
     warnings: CAFFEINE_WARNINGS,
   },
 
@@ -1216,7 +1216,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...COQ10_WARNINGS],
   },
 
@@ -1236,7 +1236,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد قبل النوم بـ ٣٠–٦٠ دقيقة.'),
+    calculationRule: fixed('ساشيه واحد قبل النوم بـ ٣٠–٦٠ دقيقة'),
     warnings: MELATONIN_WARNINGS,
   },
 
@@ -1256,7 +1256,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 10,
     maxWeight: 250,
-    calculationRule: fixed('تُوضع طبقة رقيقة ٢–٣ مرات يومياً.'),
+    calculationRule: fixed('تُوضع طبقة رقيقة ٢–٣ مرات يومياً'),
     warnings: TOPICAL_WARNINGS,
   },
 
@@ -1276,7 +1276,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 2,
     maxWeight: 250,
-    calculationRule: fixed('نقطة إلى نقطتين بكل عين ٣–٤ مرات يومياً أو عند اللزوم.'),
+    calculationRule: fixed('نقطة إلى نقطتين بكل عين ٣–٤ مرات يومياً أو عند اللزوم'),
     warnings: EYE_DROP_WARNINGS,
   },
 
@@ -1296,7 +1296,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 20,
     maxWeight: 250,
-    calculationRule: fixed('ساشيه واحد مرة إلى مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('ساشيه واحد مرة إلى مرتين يومياً بعد الأكل'),
     warnings: NAC_WARNINGS,
   },
 
@@ -1316,7 +1316,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA3_WARNINGS, ...ALA_WARNINGS],
   },
 
@@ -1336,7 +1336,7 @@ const ANTIOXIDANTS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد مرتين يومياً.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً'),
     warnings: ALA_EMPTY_STOMACH_WARNINGS,
   },
 ];

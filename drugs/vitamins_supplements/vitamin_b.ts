@@ -168,7 +168,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('حقنة عضل عميق: ١ مجم (عادة أسبوعياً ثم صيانة شهرياً حسب الحالة).'),
+    calculationRule: fixed('حقنة عضل عميق: ١ مجم (عادة أسبوعياً ثم صيانة شهرياً حسب الحالة)'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -188,7 +188,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول عضل عميق: ١ مجم (عادة أسبوعياً ثم صيانة).'),
+    calculationRule: fixed('أمبول عضل عميق: ١ مجم (عادة أسبوعياً ثم صيانة)'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -208,7 +208,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١–٢ مرة يومياً بعد الأكل حسب شدة الأعراض.'),
+    calculationRule: fixed('قرص ١–٢ مرة يومياً بعد الأكل حسب شدة الأعراض'),
     warnings: B6_WARNINGS,
   },
 
@@ -228,7 +228,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -248,7 +248,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ (١٠٠٠ ميكروجرام) أسبوعياً ٤ أسابيع ثم شهرياً حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ أسبوعياً ٤ أسابيع ثم شهرياً حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -268,7 +268,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ أسبوعياً ٤ أسابيع ثم شهرياً حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ أسبوعياً ٤ أسابيع ثم شهرياً حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -288,7 +288,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('فيلم واحد يومياً.'),
+    calculationRule: fixed('فيلم واحد يومياً'),
     warnings: B12_WARNINGS,
   },
 
@@ -308,7 +308,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -328,7 +328,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -348,7 +348,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض والبروتوكول.'),
+    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض والبروتوكول'),
     warnings: B6_WARNINGS,
   },
 
@@ -368,7 +368,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -388,7 +388,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب البروتوكول.'),
+    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب البروتوكول'),
     warnings: B6_WARNINGS,
   },
 
@@ -408,7 +408,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ كل ٣ أيام (جرعة شائعة).'),
+    calculationRule: fixed('أمبول ١ كل ٣ أيام'),
     warnings: INJECTION_WARNINGS,
   },
 
@@ -428,7 +428,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ عضل أسبوعياً (شائع) ثم صيانة حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ عضل أسبوعياً ثم صيانة حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...FOLATE_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -448,7 +448,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص استحلاب واحد يومياً.'),
+    calculationRule: fixed('قرص استحلاب واحد يومياً'),
     warnings: FOLATE_WARNINGS,
   },
 
@@ -468,7 +468,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام (شائع).'),
+    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -488,7 +488,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -508,7 +508,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام (شائع).'),
+    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -528,7 +528,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...FOLATE_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -548,7 +548,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ كل ٣ أيام (جرعة شائعة).'),
+    calculationRule: fixed('أمبول ١ كل ٣ أيام'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -568,7 +568,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -588,7 +588,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -608,7 +608,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة بعد الأكل مرة إلى مرتين يومياً حسب الألم (لفترة قصيرة).'),
+    calculationRule: fixed('كبسولة بعد الأكل مرة إلى مرتين يومياً حسب الألم (لفترة قصيرة)'),
     warnings: NSAID_WARNINGS,
   },
 
@@ -628,7 +628,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...GINKGO_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -648,7 +648,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة بعد الأكل مرة إلى مرتين يومياً حسب الألم (لفترة قصيرة).'),
+    calculationRule: fixed('كبسولة بعد الأكل مرة إلى مرتين يومياً حسب الألم (لفترة قصيرة)'),
     warnings: NSAID_WARNINGS,
   },
 
@@ -668,7 +668,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: B12_WARNINGS,
   },
 
@@ -688,7 +688,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ عضل أسبوعياً ثم صيانة حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ عضل أسبوعياً ثم صيانة حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -708,7 +708,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص قابل للمضغ يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص قابل للمضغ يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -728,7 +728,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -748,7 +748,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة.'),
+    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة'),
     warnings: B6_WARNINGS,
   },
 
@@ -768,7 +768,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ مرة إلى مرتين أسبوعياً حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...FOLATE_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -788,7 +788,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -808,7 +808,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...ALA_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -828,7 +828,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ كل ٣ أيام (شائع).'),
+    calculationRule: fixed('أمبول ١ كل ٣ أيام'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -848,7 +848,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('فيلم واحد يومياً.'),
+    calculationRule: fixed('فيلم واحد يومياً'),
     warnings: B12_WARNINGS,
   },
 
@@ -868,7 +868,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة.'),
+    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة'),
     warnings: B6_WARNINGS,
   },
 
@@ -888,7 +888,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -908,7 +908,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -928,7 +928,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة.'),
+    calculationRule: fixed('أمبول ١ أسبوعياً ثم صيانة حسب الحالة'),
     warnings: [...INJECTION_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -948,7 +948,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة.'),
+    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة'),
     warnings: B6_WARNINGS,
   },
 
@@ -968,7 +968,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام.'),
+    calculationRule: fixed('أمبول ١ عضل كل ٣ أيام'),
     warnings: [...INJECTION_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -988,7 +988,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -1008,7 +1008,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1028,7 +1028,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_SUPPLEMENT_WARNINGS,
   },
 
@@ -1048,7 +1048,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1068,7 +1068,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة.'),
+    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة'),
     warnings: B6_WARNINGS,
   },
 
@@ -1088,7 +1088,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة.'),
+    calculationRule: fixed('قرص بعد الأكل مرة إلى مرتين يومياً حسب الحالة'),
     warnings: B6_WARNINGS,
   },
 
@@ -1108,7 +1108,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: B6_WARNINGS,
   },
 
@@ -1128,7 +1128,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1148,7 +1148,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1168,7 +1168,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -1188,7 +1188,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض.'),
+    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض'),
     warnings: B6_WARNINGS,
   },
 
@@ -1208,7 +1208,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1228,7 +1228,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: B12_WARNINGS,
   },
 
@@ -1248,7 +1248,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض.'),
+    calculationRule: fixed('قرص بعد الأكل ١–٣ مرات يومياً حسب شدة الأعراض'),
     warnings: B6_WARNINGS,
   },
 
@@ -1268,7 +1268,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً تحت اللسان.'),
+    calculationRule: fixed('قرص واحد يومياً تحت اللسان'),
     warnings: [...FOLATE_WARNINGS, ...B6_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -1288,7 +1288,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: B6_WARNINGS,
   },
 
@@ -1328,7 +1328,7 @@ const VITAMIN_B_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 25,
     maxWeight: 250,
-    calculationRule: fixed('أمبول فموي واحد يومياً بعد الأكل؛ المدة حسب التحاليل.'),
+    calculationRule: fixed('أمبول فموي واحد يومياً بعد الأكل؛ المدة حسب التحاليل'),
     warnings: B12_WARNINGS,
   },
 ];

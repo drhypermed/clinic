@@ -212,7 +212,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 150,
     
-    calculationRule: fixed('قرص واحد قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\nالحد الأقصى: ٣ أقراص/يوم.'),
+    calculationRule: fixed('قرص واحد قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\n'),
     
     warnings: PREGNANCY_NAUSEA_WARNINGS
   },
@@ -569,7 +569,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 150,
     
-    calculationRule: fixed('قرصان قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\nالحد الأقصى: ٤ أقراص/يوم.'),
+    calculationRule: fixed('قرصان قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\n'),
     
     warnings: PREGNANCY_NAUSEA_WARNINGS
   },
@@ -712,7 +712,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
     minWeight: 45,
     maxWeight: 150,
     
-    calculationRule: fixed('قرصان قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\nالحد الأقصى: ٤ أقراص/يوم.'),
+    calculationRule: fixed('قرصان قبل النوم.\nإذا استمرت الأعراض: يمكن إضافة قرص صباحاً + قرص مساءً.\n'),
     
     warnings: PREGNANCY_NAUSEA_WARNINGS
     },
@@ -741,7 +741,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
     minWeight: 61, 
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (١٠ مجم) — ٣ مرات يومياً قبل الأكل بـ ٣٠ دقيقة.\nالحد الأقصى: ٣٠ مجم/يوم ولمدة ٥ أيام فقط.'),
+    calculationRule: fixed('٣ مرات يوميا قبل الأكل بـ ٣٠ دقيقة.\n'),
     
     warnings: METOCLOPRAMIDE_WARNINGS
   },
@@ -844,7 +844,7 @@ const ANTIEMETIC_MEDS_RAW: Medication[] = [
     minWeight: 40,
     maxWeight: 250,
     
-    calculationRule: fixed('قرص واحد (٢ مجم) مرة واحدة يومياً — قبل الكيماوي/الإشعاع بساعة.'),
+    calculationRule: fixed('قبل الكيماوي أو الإشعاع بساعة'),
     
     warnings: GRANISETRON_WARNINGS
   },

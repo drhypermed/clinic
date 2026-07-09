@@ -2,8 +2,8 @@
  * retryFailedAudienceBroadcasts — إعادة محاولة واحدة لـ tokens فشلت عبوراً.
  *
  * كيف تعمل:
- *   1. كل 5 دقائق: تبحث عن broadcasts فيها `retryAttempted == false` و `retryScheduledAtMs <= now`.
- *   2. تشترط أن البثّ حديث (آخر ساعتين) — تفادي إعادة محاولات قديمة جداً.
+ *   1. دورياً: تبحث عن broadcasts فيها `retryAttempted == false` و `retryScheduledAtMs <= now`.
+ *   2. تشترط أن البثّ حديث (آخر 6 ساعات) — تفادي إعادة محاولات قديمة جداً.
  *   3. ترسل الـ tokens مرة واحدة فقط، تحدّث stats البثّ، وتضع `retryAttempted = true`.
  *
  * ملاحظة: تعالج أقصى 5 broadcasts لكل تشغيل حتى لا تتجاوز حد مدة الدالة (540s).
@@ -11,7 +11,7 @@
 
 const MULTICAST_BATCH_SIZE = 450;
 const MAX_BROADCASTS_PER_RUN = 5;
-const MAX_BROADCAST_AGE_MS = 2 * 60 * 60 * 1000; // ساعتان
+const MAX_BROADCAST_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const chunkArray = (items, size) => {
   const chunks = [];

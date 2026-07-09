@@ -32,7 +32,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -52,7 +52,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: URSO_WARNINGS,
   },
 
@@ -72,7 +72,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -92,7 +92,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -112,7 +112,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('أمبول واحد يومياً (استخدام داخل منشأة صحية).'),
+    calculationRule: fixed('أمبول واحد يومياً (استخدام داخل منشأة صحية)'),
     warnings: [...GENERAL_LIVER_WARNINGS, 'مخصص للاستخدام الطبي (حقن/تسريب) وليس للاستخدام المنزلي.'],
   },
 
@@ -132,7 +132,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -152,7 +152,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -172,7 +172,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...GENERAL_LIVER_WARNINGS, 'يحتوي على فيتامين A: تجنب الجمع مع مصادر عالية من فيتامين A.'],
   },
 
@@ -192,7 +192,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -212,7 +212,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...GENERAL_LIVER_WARNINGS, 'يحتوي على فيتامين A: تجنب الجمع مع مصادر عالية من فيتامين A.'],
   },
 
@@ -232,7 +232,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -252,7 +252,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -272,7 +272,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...GENERAL_LIVER_WARNINGS, 'يحتوي على فيتامين A: تجنب الجمع مع مصادر عالية من فيتامين A.'],
   },
 
@@ -292,7 +292,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -312,7 +312,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('سوفت جل واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('سوفت جل واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -352,7 +352,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -372,7 +372,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -392,7 +392,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('فيال واحد يومياً بالتسريب الوريدي (استخدام داخل منشأة صحية).'),
+    calculationRule: fixed('فيال واحد يومياً بالتسريب الوريدي (استخدام داخل منشأة صحية)'),
     warnings: [...GENERAL_LIVER_WARNINGS, 'مخصص للاستخدام الطبي (تسريب وريدي).'],
   },
 
@@ -412,7 +412,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً مع الأكل.'),
+    calculationRule: fixed('كبسولة واحدة 3 مرات يومياً مع الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -432,7 +432,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: URSO_WARNINGS,
   },
 
@@ -452,7 +452,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -472,7 +472,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -492,7 +492,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -512,7 +512,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -532,7 +532,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 
@@ -552,7 +552,7 @@ export const LIVER_SUPPORT_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد مرتين يومياً بعد الأكل'),
     warnings: GENERAL_LIVER_WARNINGS,
   },
 ];

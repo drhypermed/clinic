@@ -16,6 +16,57 @@ module.exports = (context) => {
     const after = event.data?.after?.exists ? event.data.after.data() : {};
     const secret = event.params.secret;
 
+    const hasTimestampChange = (afterMap, beforeMap, fieldName) => {
+      const aMap = afterMap && typeof afterMap === 'object' ? afterMap : {};
+      const bMap = beforeMap && typeof beforeMap === 'object' ? beforeMap : {};
+      const branchIds = new Set([...Object.keys(aMap), ...Object.keys(bMap)]);
+      for (const branchId of branchIds) {
+        const a = aMap[branchId];
+        const b = bMap[branchId];
+        const aValue = a && typeof a === 'object' ? String(a[fieldName] || '') : '';
+        const bValue = b && typeof b === 'object' ? String(b[fieldName] || '') : '';
+        if (aValue && aValue !== bValue) return true;
+      }
+      return false;
+    };
+
+    const hasEntryAlertChange = hasTimestampChange(after.entryAlertByBranch, before.entryAlertByBranch, 'createdAt')
+      || (
+        after.entryAlert
+        && after.entryAlert.caseName
+        && after.entryAlert.appointmentId
+        && after.entryAlert.createdAt
+        && before.entryAlert?.createdAt !== after.entryAlert.createdAt
+      );
+    const hasDoctorResponseChange = hasTimestampChange(
+      after.doctorEntryResponseByBranch,
+      before.doctorEntryResponseByBranch,
+      'respondedAt',
+    ) || (
+      after.doctorEntryResponse
+      && after.doctorEntryResponse.respondedAt
+      && before.doctorEntryResponse?.respondedAt !== after.doctorEntryResponse.respondedAt
+    );
+    const hasExamOpenedChange = (() => {
+      const aMap = after.lastExamOpenedAt && typeof after.lastExamOpenedAt === 'object'
+        ? after.lastExamOpenedAt
+        : {};
+      const bMap = before.lastExamOpenedAt && typeof before.lastExamOpenedAt === 'object'
+        ? before.lastExamOpenedAt
+        : {};
+      const branchIds = new Set([...Object.keys(aMap), ...Object.keys(bMap)]);
+      for (const branchId of branchIds) {
+        const a = String(aMap[branchId] || '');
+        const b = String(bMap[branchId] || '');
+        if (a && a !== b) return true;
+      }
+      return false;
+    })();
+
+    if (!hasEntryAlertChange && !hasDoctorResponseChange && !hasExamOpenedChange) {
+      return;
+    }
+
     const db = getDb();
 
     // ─── Telemetry — متابعة الإشعارات بدون كلفة فايربيز ───

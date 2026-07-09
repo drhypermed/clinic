@@ -169,6 +169,21 @@ module.exports = (context) => {
 
       const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
+      if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
+        return {
+          accountType,
+          feature,
+          limit: 0,
+          used: 0,
+          remaining: Number.MAX_SAFE_INTEGER,
+          dayKey,
+          whatsappNumber: '',
+          whatsappUrl: '',
+          limitReachedMessage: '',
+          whatsappMessage: '',
+        };
+      }
+
       if (!doctorProfile.userSnap.exists) {
         tx.set(doctorProfile.userRef, buildDoctorUserProfilePayload({
           uid: doctorId,

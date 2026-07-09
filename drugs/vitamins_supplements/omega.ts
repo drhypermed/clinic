@@ -30,7 +30,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -90,7 +90,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -150,7 +150,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -170,7 +170,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 216,
     minWeight: 20,
     maxWeight: 80,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -190,7 +190,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, 'زيت كبد الحوت غني بفيتامين A: لا تجمعه مع مصادر عالية من فيتامين A.'],
   },
 
@@ -210,7 +210,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -230,7 +230,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -250,7 +250,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة مرتين يومياً مع الأكل.'),
+    calculationRule: fixed('كبسولة واحدة مرتين يومياً مع الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -290,7 +290,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -330,7 +330,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -350,7 +350,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -370,7 +370,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -390,7 +390,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -410,7 +410,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -470,7 +470,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, 'زيت كبد الحوت غني بفيتامين A: لا تجمعه مع مصادر عالية من فيتامين A.'],
   },
 
@@ -490,7 +490,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...OMEGA_WARNINGS, 'زيت كبد الحوت غني بفيتامين A: لا تجمعه مع مصادر عالية من فيتامين A.'],
   },
 
@@ -510,7 +510,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولتان مرتين يومياً مع الأكل.'),
+    calculationRule: fixed('كبسولتان مرتين يومياً مع الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -530,7 +530,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -550,7 +550,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -590,7 +590,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -630,7 +630,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('سوفت جل واحدة يومياً بعد الأكل (يمكن سوفت جل مرتين يومياً عند الحاجة).'),
+    calculationRule: fixed('سوفت جل واحدة يومياً بعد الأكل (يمكن سوفت جل مرتين يومياً عند الحاجة)'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -690,7 +690,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 
@@ -710,7 +710,7 @@ export const OMEGA_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: OMEGA_WARNINGS,
   },
 ];

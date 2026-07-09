@@ -40,7 +40,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -80,7 +80,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -140,7 +140,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: HAIR_WARNINGS,
 	},
 
@@ -160,7 +160,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -220,7 +220,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 18,
 		maxWeight: 200,
-		calculationRule: fixed('حبة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('حبة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -240,7 +240,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -260,7 +260,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قطعة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('قطعة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -280,7 +280,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 8,
 		maxWeight: 200,
-		calculationRule: fixed('كيس واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('كيس واحد يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -320,7 +320,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: GENERAL_VITAMIN_WARNINGS,
 	},
 
@@ -340,7 +340,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 200,
-		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 
@@ -360,7 +360,7 @@ export const VITAMIN_IRON_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+		calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
 		warnings: IRON_WARNINGS,
 	},
 ];

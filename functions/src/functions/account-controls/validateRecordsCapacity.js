@@ -43,12 +43,10 @@ module.exports = (context) => {
     }
     const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
-    // 🆕 (2026-05): paid tiers بدون فحص حد كلي للسجلات — نوفر count aggregation
-    // وتخطي قراءة الـrecord. التشغيل أسرع وتكلفة Firebase أقل.
     if (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max') {
       return {
         accountType,
-        limit: 0, // 0 = unlimited
+        limit: 0,
         used: 0,
         remaining: Number.MAX_SAFE_INTEGER,
         whatsappNumber: '',

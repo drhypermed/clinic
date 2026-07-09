@@ -121,7 +121,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٣٠٠ مجم) مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'لا يوقف فجأة.'],
 	},
 
@@ -141,7 +141,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٦٠٠ مجم) مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'لا يوقف فجأة.'],
 	},
 
@@ -161,7 +161,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة للكبار: ٥٠ مجم كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم/يوم.'),
+		calculationRule: fixed('٥٠ مجم كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -225,7 +225,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٣٠٠ مجم) مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'لا يوقف فجأة.'],
 	},
 
@@ -245,7 +245,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة شائعة للكبار: ٢٠٠–٤٠٠ مجم ٢–٣ مرات يومياً مع الطعام. الحد الأقصى: ٦٠ مجم/كجم/يوم.'),
+		calculationRule: fixed('٢٠٠–٤٠٠ مجم ٢–٣ مرات يومياً مع الطعام'),
 		warnings: ['ممنوع في الحمل إلا للضرورة القصوى وبأقل جرعة مع متابعة (خطر تشوهات).', 'يلزم متابعة وظائف الكبد/الصفائح.'],
 	},
 
@@ -265,7 +265,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -307,7 +307,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -327,7 +327,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات = ١٢٠٠ مجم/يوم. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات = ١٢٠٠ مجم/يوم'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -347,7 +347,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -389,7 +389,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -409,7 +409,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة إرشادية للكبار: ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ١٢٠٠ مجم كل ١٢ ساعة (٢٤٠٠ مجم/يوم).'),
+		calculationRule: fixed('ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب نقص صوديوم الدم خصوصاً كبار السن/مع مدرات.'],
 	},
 
@@ -429,7 +429,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠ مجم) كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -449,7 +449,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة إرشادية للكبار: ابدأ ٢٠٠ مجم مرتين يومياً. يمكن زيادة ٢٠٠ مجم/يوم أسبوعياً حتى ٤٠٠ مجم مرتين يومياً. الجرعة المعتادة: ٨٠٠–١٢٠٠ مجم/يوم مقسمة. الحد الأقصى: ١٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٢٠٠ مجم مرتين يومياً. يمكن زيادة ٢٠٠ مجم/يوم أسبوعياً حتى ٤٠٠ مجم مرتين يومياً. الجرعة المعتادة: ٨٠٠–١٢٠٠ مجم/يوم مقسمة'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'نادرًا: اضطرابات دم/طفح جلدي شديد (اطلب رعاية إذا ظهر طفح شديد).'],
 	},
 
@@ -469,7 +469,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة إرشادية للكبار (CR): ابدأ ٢٠٠ مجم كل ١٢ ساعة، ويمكن الزيادة تدريجياً حتى ٤٠٠–٦٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ١٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٢٠٠ مجم كل ١٢ ساعة، ويمكن الزيادة تدريجياً حتى ٤٠٠–٦٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يتداخل مع أدوية كثيرة.'],
 	},
 
@@ -489,7 +489,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة إرشادية للكبار (CR): قرص ٢٠٠ مجم كل ١٢ ساعة كبداية. يمكن الزيادة تدريجياً حتى ٤٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ١٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص ٢٠٠ مجم كل ١٢ ساعة كبداية. يمكن الزيادة تدريجياً حتى ٤٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يتداخل مع أدوية كثيرة.'],
 	},
 
@@ -529,7 +529,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً. الحد الأقصى: ٣٠٠٠ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -549,7 +549,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٤٠٠ مجم: كبسولة ٤٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -611,7 +611,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٣٠٠ مجم: قرص واحد كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٣٠٠ مجم: قرص واحد كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -631,7 +631,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -651,7 +651,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -671,7 +671,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -691,7 +691,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠ مجم) كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -711,7 +711,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -731,7 +731,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -751,7 +751,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٧٥٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -771,7 +771,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 10,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم وريدياً كل ١٢ ساعة (بديل للفموي). نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم/يوم.'),
+		calculationRule: fixed('وريدياً كل ١٢ ساعة (بديل للفموي). نطاق الجرعة: ٢٥–١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['للاستخدام بواسطة مختص فقط.', 'راقب النعاس/الدوخة وتغيرات المزاج.'],
 	},
 
@@ -791,7 +791,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -811,7 +811,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٧٥٠ مجم) مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً. الحد الأقصى: ٣٠٠٠ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -831,7 +831,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('جرعة إرشادية للكبار: ابدأ ٠٫٥ مجم مرتين يومياً (يعادل ¼ قرص ٢ مجم). يمكن الزيادة ٠٫٥–١ مجم كل ٣ أيام حتى السيطرة. الحد الأقصى: ٢٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٠٫٥ مجم مرتين يومياً. يمكن الزيادة ٠٫٥–١ مجم كل ٣ أيام حتى السيطرة'),
 		warnings: ['يسبب نعاس/دوخة.', 'قد يسبب اعتماد/أعراض انسحاب إذا أوقف فجأة.'],
 	},
 
@@ -851,7 +851,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -871,7 +871,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٦٠٠ مجم) مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة.'),
+		calculationRule: fixed('قرص واحد مرة يومياً مع وجبة. لا يُكسر/يُمضغ. لا يوقف فجأة'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'لا يوقف فجأة.'],
 	},
 
@@ -891,7 +891,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٢٥ مجم ليلاً لمدة أسبوع، ثم ٢٥ مجم مرتين يومياً. زِد ٢٥–٥٠ مجم/الأسبوع حتى ٥٠–١٠٠ مجم مرتين يومياً. الحد الأقصى المعتاد للصرع: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٢٥ مجم ليلاً لمدة أسبوع، ثم ٢٥ مجم مرتين يومياً. زِد ٢٥–٥٠ مجم/الأسبوع حتى ٥٠–١٠٠ مجم مرتين يومياً'),
 		warnings: ['قد يسبب بطء تركيز/تنميل.', 'قد يزيد خطر حصوات الكلى (اشرب ماء كفاية).'],
 	},
 
@@ -911,7 +911,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -931,7 +931,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -951,7 +951,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -993,7 +993,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('تدرج (بدون فالبروات): ٢٥ مجم يومياً لمدة أسبوعين، ثم ٥٠ مجم يومياً لمدة أسبوعين، ثم ١٠٠ مجم/يوم. مع فالبروات: يلزم جرعات أقل وتدرج أبطأ. أوقف فوراً عند ظهور طفح جلدي.'),
+		calculationRule: fixed('تدرج (بدون فالبروات): ٢٥ مجم يومياً لمدة أسبوعين، ثم ٥٠ مجم يومياً لمدة أسبوعين، ثم ١٠٠ مجم/يوم. مع فالبروات: يلزم جرعات أقل وتدرج أبطأ. أوقف فوراً عند ظهور طفح جلدي'),
 		warnings: ['خطر طفح جلدي شديد خصوصاً مع الزيادة السريعة.', 'يجب الالتزام بالتدرج.'],
 	},
 
@@ -1013,7 +1013,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('بعد إتمام التدرج: ٥٠ مجم مرة إلى مرتين يومياً وفق الجرعة اليومية المستهدفة. راقب الطفح الجلدي. مع فالبروات: يلزم جرعات أقل وتدرج أبطأ.'),
+		calculationRule: fixed('بعد إتمام التدرج: ٥٠ مجم مرة إلى مرتين يومياً وفق الجرعة اليومية المستهدفة. راقب الطفح الجلدي. مع فالبروات: يلزم جرعات أقل وتدرج أبطأ'),
 		warnings: ['خطر طفح جلدي شديد خصوصاً مع الزيادة السريعة.', 'يجب الالتزام بالتدرج.'],
 	},
 
@@ -1053,7 +1053,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1073,7 +1073,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1093,7 +1093,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ١٢٠٠ مجم كل ١٢ ساعة (٢٤٠٠ مجم/يوم).'),
+		calculationRule: fixed('ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب نقص صوديوم الدم.'],
 	},
 
@@ -1113,7 +1113,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة. (قد يلزم تقسيم القرص إذا أمكن). الحد الأقصى: ١٢٠٠ مجم كل ١٢ ساعة (٢٤٠٠ مجم/يوم).'),
+		calculationRule: fixed('ابدأ ٣٠٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ٦٠٠ مجم كل ١٢ ساعة. (قد يلزم تقسيم القرص إذا أمكن)'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب نقص صوديوم الدم.'],
 	},
 
@@ -1133,7 +1133,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً. الحد الأقصى: ٣٠٠٠ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1153,7 +1153,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1173,7 +1173,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠ مجم) كل ١٢ ساعة لمدة أسبوع كبداية، ثم يمكن الزيادة إلى ١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم كل ١٢ ساعة (٤٠٠ مجم/يوم).'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة لمدة أسبوع كبداية، ثم يمكن الزيادة إلى ١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1193,7 +1193,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1213,7 +1213,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('الجرعة المعتادة: ٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('٣٠٠–٦٠٠ مجم كل ٨ ساعات. مع تركيز ٨٠٠ مجم: قرص واحد كل ٨ ساعات = ٢٤٠٠ مجم/يوم'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -1233,7 +1233,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات. الحد الأقصى: ٣٦٠٠ مجم/يوم.'),
+		calculationRule: fixed('كبسولة ٣٠٠ مجم كل ٨ ساعات. يمكن الزيادة إلى ٦٠٠ مجم كل ٨ ساعات'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -1253,7 +1253,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1273,7 +1273,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٤٠٠ مجم/يوم.'),
+		calculationRule: fixed('ابدأ ٥٠ مجم كل ١٢ ساعة لمدة أسبوع ثم ١٠٠ مجم كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ٢٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1293,7 +1293,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠ مجم) كل ١٢ ساعة لمدة أسبوع كبداية، ثم يمكن الزيادة إلى ١٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٢٠٠ مجم كل ١٢ ساعة (٤٠٠ مجم/يوم).'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة لمدة أسبوع كبداية، ثم يمكن الزيادة إلى ١٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'يُستخدم بحذر مع اضطرابات التوصيل القلبي.'],
 	},
 
@@ -1333,7 +1333,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1353,7 +1353,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (١٠٠٠ مجم) كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن الزيادة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1393,7 +1393,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة. الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('قرص واحد كل ١٢ ساعة. يمكن زيادة ٥٠٠ مجم/جرعة تدريجياً حتى ١٥٠٠ مجم كل ١٢ ساعة'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1413,7 +1413,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٥٠٠ مجم) مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً. الحد الأقصى: ٣٠٠٠ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1433,7 +1433,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('قرص واحد (٧٥٠ مجم) مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً. الحد الأقصى: ٣٠٠٠ مجم/يوم. لا يُكسر/يُسحق.'),
+		calculationRule: fixed('قرص واحد مرة يومياً (XR). يمكن زيادة الجرعة تدريجياً حتى ١٥٠٠ مجم مرة يومياً'),
 		warnings: ['قد يسبب عصبية/تغير مزاج أو نعاس.'],
 	},
 
@@ -1453,7 +1453,7 @@ export const ANTIEPILEPTIC_1: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 5,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠٠–١٥٠٠ مجم وريدياً كل ١٢ ساعة (نفس إجمالي الجرعة اليومية للفموي). الحد الأقصى: ٣٠٠٠ مجم/يوم.'),
+		calculationRule: fixed('٥٠٠–١٥٠٠ مجم وريدياً كل ١٢ ساعة'),
 		warnings: ['للاستخدام بواسطة مختص فقط.', 'راقب النعاس/الدوخة وتغيرات المزاج.'],
 	},
 ];

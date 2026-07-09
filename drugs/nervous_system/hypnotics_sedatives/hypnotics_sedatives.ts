@@ -48,7 +48,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل (١–٢ مجم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -68,7 +68,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل (١–٢ مجم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -88,7 +88,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ١ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٢–٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ١ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٢–٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -108,7 +108,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل كبداية، ثم تدرج إلى جرعة شائعة ١٥–٣٠ مجم/يوم مقسمة (حد أقصى ٦٠ مجم/يوم) – لمدة ٤–٨ أسابيع أو أطول حسب الاستجابة.'),
+    calculationRule: fixed('قرص ٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل كبداية، ثم تدرج إلى جرعة شائعة ١٥–٣٠ مجم/يوم مقسمة – لمدة ٤–٨ أسابيع أو أطول حسب الاستجابة'),
     warnings: BUSPIRONE_WARNINGS,
   },
 
@@ -128,7 +128,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٢ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٢ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -148,7 +148,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ١ مجم على معدة فارغة قبل النوم مباشرة (جرعة بداية) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ١ مجم على معدة فارغة قبل النوم مباشرة (جرعة بداية) – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -168,7 +168,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل (١–٢ مجم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٣ مجم على معدة فارغة قبل النوم مباشرة، وإذا حدث نعاس صباحي استخدم تركيز أقل – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -188,7 +188,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل بداية، يُزاد تدريجياً (حد أقصى معتاد ٤ مجم/يوم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل بداية، يُزاد تدريجياً – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -208,7 +208,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('نصف إلى قرص كامل (٣٫٧٥–٧٫٥ مجم) على معدة فارغة قبل النوم، وكبار السن يبدأون بنصف قرص – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('نصف إلى قرص كامل على معدة فارغة قبل النوم، وكبار السن يبدأون بنصف قرص – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -228,7 +228,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥٠ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل (حد أقصى ٣٠٠ مجم/يوم) – لمدة ٤–٨ أسابيع حسب الاستجابة.'),
+    calculationRule: fixed('قرص ٥٠ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل – لمدة ٤–٨ أسابيع حسب الاستجابة'),
     warnings: TOFISOPAM_WARNINGS,
   },
 
@@ -248,7 +248,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل، ثم التدرج حسب الاستجابة – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل، ثم التدرج حسب الاستجابة – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -268,7 +268,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل، يُزاد تدريجياً (حد أقصى معتاد ٤ مجم/يوم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل، يُزاد تدريجياً – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -288,7 +288,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل، يُزاد تدريجياً (حد أقصى معتاد ٤ مجم/يوم) – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص ٠٫٢٥–٠٫٥ مجم ٣ مرات يومياً بدون اعتبار للأكل، يُزاد تدريجياً – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -308,7 +308,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٠٫٢٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل حسب الاستجابة – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص ٠٫٢٥ مجم ٢–٣ مرات يومياً بدون اعتبار للأكل حسب الاستجابة – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -328,7 +328,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٢ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٢ مجم على معدة فارغة قبل النوم مباشرة، ويمكن رفع الجرعة إلى ٣ مجم بتركيز مناسب إذا استمر الأرق – لمدة قصيرة لا تتجاوز ٤ أسابيع'),
     warnings: Z_DRUG_WARNINGS,
   },
 
@@ -348,7 +348,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('جرعات شائعة: ٠٫٢٥ مجم ٢–٣ مرات يومياً حسب الاستجابة.'),
+    calculationRule: fixed('جرعات شائعة: ٠٫٢٥ مجم ٢–٣ مرات يومياً حسب الاستجابة'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -368,7 +368,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('جرعات شائعة: ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً حسب الاستجابة.'),
+    calculationRule: fixed('جرعات شائعة: ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً حسب الاستجابة'),
     warnings: BENZO_WARNINGS,
   },
 
@@ -388,7 +388,7 @@ export const HYPNOTICS_SEDATIVES_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('جرعات شائعة: ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً حسب الاستجابة.'),
+    calculationRule: fixed('جرعات شائعة: ٠٫٢٥–٠٫٥ مجم ٢–٣ مرات يومياً حسب الاستجابة'),
     warnings: BENZO_WARNINGS,
   },
 ];

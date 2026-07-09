@@ -223,9 +223,8 @@ const getQueryProfile = (query) => {
     const normalizedAliases = aliases.map(normalizeSearchText);
     const matched = normalizedAliases.some((alias) => {
       if (!alias) return false;
-      if (normalizedQuery.includes(alias)) return true;
       if (!alias.includes(' ')) return terms.has(alias);
-      return false;
+      return normalizedQuery.includes(alias);
     });
     if (matched) {
       normalizedAliases.forEach((alias) => splitTerms(alias).forEach((term) => terms.add(term)));
@@ -284,11 +283,17 @@ const inferFocusCollections = (profile) => {
   if (hasAny(['af', 'afib', 'atrial', 'fibrillation', 'atrial fibrillation'])) focus.push('acc-2023', 'esc-2024');
   if (hasAny(['heart', 'cardiac', 'cardiovascular', 'hf', 'heart failure'])) focus.push('acc-2022', 'esc-2021', 'esc-2023', 'esc-2026');
   if (hasAny(['acs', 'mi', 'myocardial', 'coronary'])) focus.push('acc-2025', 'esc-2023');
+  if (hasAny(['hypertension', 'blood pressure', 'bp'])) focus.push('acc-2025', 'esc-2024', 'nice-2023', 'nice-2024');
   if (hasAny(['stroke'])) focus.push('nice-2022', 'nice-2023', 'nice-2024');
+  if (hasAny(['sepsis', 'septic shock'])) focus.push('nice-2024', 'nice-2025');
   if (hasAny(['liver', 'cirrhosis', 'hepatitis', 'portal', 'variceal', 'varices', 'ascites', 'tips', 'cholestasis'])) focus.push('easl-2026');
   if (hasAny(['thyroid', 'endocrine', 'hormone', 'pituitary', 'adrenal', 'obesity'])) focus.push('endocrine-2026');
   if (hasAny(['gastrointestinal', 'stomach', 'colon', 'gerd', 'ibd', 'crohn'])) focus.push('acg-2026', 'aga-2026');
-  if (hasAny(['gout', 'urate', 'uric acid', 'allopurinol', 'febuxostat', 'colchicine', 'rheumatoid', 'arthritis', 'spondyloarthritis', 'osteoporosis'])) focus.push('acr-2026');
+  if (hasAny(['gout', 'urate', 'uric acid', 'allopurinol', 'febuxostat', 'colchicine', 'rheumatoid', 'arthritis', 'spondyloarthritis'])) focus.push('acr-2026');
+  if (hasAny(['osteoporosis'])) {
+    if (hasAny(['glucocorticoid', 'steroid'])) focus.push('acr-2026');
+    else focus.push('acp-2023', 'endocrine-2026', 'nice-2022');
+  }
   if (hasAny(['nutrition', 'nutritional', 'enteral', 'parenteral', 'protein', 'calories', 'icu nutrition', 'clinical nutrition'])) focus.push('espen-2026');
   if (hasAny(['psoriasis', 'biologic', 'phototherapy', 'dermatitis', 'eczema', 'dermatology'])) focus.push('aad-2023');
 

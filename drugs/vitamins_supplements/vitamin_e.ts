@@ -27,7 +27,7 @@ export const VITAMIN_E_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: VITAMIN_E_WARNINGS,
   },
 
@@ -47,7 +47,7 @@ export const VITAMIN_E_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 35,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: VITAMIN_E_WARNINGS,
   },
 
@@ -67,7 +67,7 @@ export const VITAMIN_E_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...VITAMIN_E_WARNINGS, 'التركيز عالي (١٠٠٠ مجم): لا يُستخدم لفترات طويلة بدون متابعة.'],
   },
 
@@ -87,7 +87,7 @@ export const VITAMIN_E_GROUP: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 200,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...VITAMIN_E_WARNINGS, 'التركيز عالي (١٠٠٠ مجم): لا يُستخدم لفترات طويلة بدون متابعة.'],
   },
 ];

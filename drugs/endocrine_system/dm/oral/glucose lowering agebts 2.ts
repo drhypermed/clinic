@@ -153,7 +153,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -173,7 +173,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('25mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -193,7 +193,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -213,7 +213,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -233,7 +233,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SITAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -253,7 +253,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SITAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -273,7 +273,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SITAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -293,7 +293,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -313,7 +313,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -333,7 +333,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('1000/5mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SULFONYLUREA_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -353,7 +353,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('500/5mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SULFONYLUREA_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -373,7 +373,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SULFONYLUREA_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -393,7 +393,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SULFONYLUREA_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -413,7 +413,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('50mg (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
     warnings: VILDAGLIPTIN_WARNINGS,
   },
 
@@ -433,7 +433,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -453,7 +453,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -473,7 +473,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('25mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -493,7 +493,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('25/5mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, DPP4_WARNINGS),
   },
 
@@ -513,7 +513,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('1000mg (XR) (قرص) — مرة يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('مرة واحدة يوميا مع أو بعد الأكل'),
     warnings: METFORMIN_WARNINGS,
   },
 
@@ -533,7 +533,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -553,7 +553,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('12.5/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -573,7 +573,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('12.5/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -593,7 +593,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -613,7 +613,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -633,7 +633,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('5mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: DPP4_WARNINGS,
   },
 
@@ -653,7 +653,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('12.5/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -673,7 +673,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('12.5/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -693,7 +693,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -713,7 +713,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('5mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: DPP4_WARNINGS,
   },
 
@@ -733,7 +733,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('50mg (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
     warnings: VILDAGLIPTIN_WARNINGS,
   },
 
@@ -753,7 +753,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -773,7 +773,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('12.5/1000mg (XR) (قرص) — مرة يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('مرة واحدة يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -793,7 +793,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('25/1000mg (XR) (قرص) — مرة يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('مرة واحدة يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -813,7 +813,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -833,7 +833,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('5mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -853,7 +853,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('10/5mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, DPP4_WARNINGS),
   },
 
@@ -873,7 +873,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('10/1000mg (XR) (قرص) — مرة يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('مرة واحدة يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -893,7 +893,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -913,7 +913,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -933,7 +933,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('10/5/1000mg (قرص) — مرة يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SGLT2_WARNINGS, DPP4_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -953,7 +953,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -973,7 +973,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -993,7 +993,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(VILDAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -1013,7 +1013,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('15/850mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(METFORMIN_WARNINGS, PIOGLITAZONE_WARNINGS),
   },
 
@@ -1033,7 +1033,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('15/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(METFORMIN_WARNINGS, PIOGLITAZONE_WARNINGS),
   },
 
@@ -1053,7 +1053,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('10mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SGLT2_WARNINGS,
   },
 
@@ -1073,7 +1073,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('50/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SITAGLIPTIN_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -1093,7 +1093,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('1000mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: METFORMIN_WARNINGS,
   },
 
@@ -1113,7 +1113,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 30,
     maxWeight: 250,
-    calculationRule: fixed('500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: METFORMIN_WARNINGS,
   },
 
@@ -1133,7 +1133,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('2mg (قرص) — مرة يومياً — قبل الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا قبل الأكل'),
     warnings: SULFONYLUREA_WARNINGS,
   },
 
@@ -1153,7 +1153,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('45mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: PIOGLITAZONE_WARNINGS,
   },
 
@@ -1173,7 +1173,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 50,
     maxWeight: 250,
-    calculationRule: fixed('5/500mg (قرص) — مرتين يومياً — مع/بعد الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا مع أو بعد الأكل'),
     warnings: mergeWarnings(SULFONYLUREA_WARNINGS, METFORMIN_WARNINGS),
   },
 
@@ -1193,7 +1193,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('2mg (قرص) — مرة يومياً — قبل الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا قبل الأكل'),
     warnings: SULFONYLUREA_WARNINGS,
   },
 
@@ -1213,7 +1213,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('4mg (قرص) — مرة يومياً — قبل الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا قبل الأكل'),
     warnings: SULFONYLUREA_WARNINGS,
   },
 
@@ -1233,7 +1233,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('6mg (قرص) — مرة يومياً — قبل الأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا قبل الأكل'),
     warnings: SULFONYLUREA_WARNINGS,
   },
 
@@ -1253,7 +1253,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('50mg (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
     warnings: VILDAGLIPTIN_WARNINGS,
   },
 
@@ -1273,7 +1273,7 @@ const GLUCOSE_LOWERING_AGENTS_2_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('100mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: SITAGLIPTIN_WARNINGS,
   },
 ];

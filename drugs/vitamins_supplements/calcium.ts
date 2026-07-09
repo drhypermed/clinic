@@ -55,7 +55,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -75,7 +75,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -95,7 +95,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -135,7 +135,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -195,7 +195,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -215,7 +215,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -255,7 +255,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 
@@ -275,7 +275,7 @@ export const CALCIUM_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 35,
 		maxWeight: 200,
-		calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+		calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
 		warnings: CALCIUM_WARNINGS,
 	},
 ];

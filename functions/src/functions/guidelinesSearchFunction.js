@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const { normalizeSearchText, highValueTerms, getQueryProfile, inferFocusCollections } = require('./guidelinesSearchQueryProfile');
+const createGuidelineStaticSearchIndex = require('./guidelinesStaticSearchIndex');
 
-module.exports = ({ getDb, assertAdminRequest }) => {
+module.exports = ({ getDb, assertAdminRequest, admin }) => {
   const EMBEDDING_MODEL = 'gemini-embedding-001';
   const EMBEDDING_DIMENSIONS = 768;
   const VECTOR_FIELD = 'embeddingVector';
@@ -11,9 +12,16 @@ module.exports = ({ getDb, assertAdminRequest }) => {
   const EMBEDDING_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   const EMBEDDING_CACHE_MAX_ENTRIES = 800;
   const SEARCH_CACHE_VERSION = String(process.env.GUIDELINE_SEARCH_CACHE_VERSION || process.env.GUIDELINE_STATIC_VERSION || 'v1').trim() || 'v1';
+  const SEARCH_BACKEND = ['firestore', 'shadow', 'static'].includes(String(process.env.GUIDELINE_SEARCH_BACKEND || '').toLowerCase())
+    ? String(process.env.GUIDELINE_SEARCH_BACKEND).toLowerCase()
+    : 'firestore';
+  const STATIC_SHADOW_PERCENT = Math.max(0, Math.min(100, Number(process.env.GUIDELINE_STATIC_SEARCH_SHADOW_PERCENT || 100)));
   const SEARCH_DIAGNOSTIC_LOGS_ENABLED = String(process.env.GUIDELINE_SEARCH_DIAGNOSTIC_LOGS || 'false').toLowerCase() === 'true';
   const searchResultCache = new Map();
   const embeddingCache = new Map();
+  const staticSearchIndex = admin
+    ? createGuidelineStaticSearchIndex({ admin, normalizeSearchText })
+    : null;
   const RETRIEVAL_LIMITS = {
     vector: 30,
     vectorHighRisk: 40,
@@ -41,9 +49,10 @@ module.exports = ({ getDb, assertAdminRequest }) => {
 
   const normalizePathCandidate = (value) => String(value || '').replace(/\\/g, '/').trim();
 
-  const makeSearchCacheKey = ({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource }) =>
+  const makeSearchCacheKey = ({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource, backend = SEARCH_BACKEND }) =>
     JSON.stringify({
       v: SEARCH_CACHE_VERSION,
+      backend,
       q: normalizeSearchText(query).slice(0, 500),
       c: selectedCollectionId || '',
       s: sourcePathCandidates.slice(0, 10),
@@ -90,6 +99,12 @@ module.exports = ({ getDb, assertAdminRequest }) => {
 
   const hashDiagnosticValue = (value) =>
     crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 16);
+
+  const shouldRunStaticShadow = (query) => {
+    if (SEARCH_BACKEND !== 'shadow' || !staticSearchIndex || STATIC_SHADOW_PERCENT <= 0) return false;
+    const bucket = Number.parseInt(hashDiagnosticValue(query).slice(0, 8), 16) % 100;
+    return bucket < STATIC_SHADOW_PERCENT;
+  };
 
   const getCallerHash = (request) =>
     hashDiagnosticValue(request?.auth?.uid || request?.auth?.token?.email || 'anonymous');
@@ -184,6 +199,34 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     return matches ? matches.length : 0;
   };
 
+  const keywordBloomSeeds = [2166136261, 2166136261 ^ 0x9e3779b9, 2166136261 ^ 0x85ebca6b, 2166136261 ^ 0xc2b2ae35];
+  const bloomHash = (value, seed) => {
+    let hash = seed >>> 0;
+    for (const character of String(value || '')) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    hash ^= hash >>> 16;
+    return hash >>> 0;
+  };
+  const keywordBloomHas = (encoded, term) => {
+    if (!encoded || !term) return false;
+    const bytes = Buffer.from(encoded, 'base64');
+    const bitCount = bytes.length * 8;
+    if (bitCount === 0) return false;
+    return keywordBloomSeeds.every((seed) => {
+      const bit = bloomHash(term, seed) % bitCount;
+      return (bytes[bit >> 3] & (1 << (bit & 7))) !== 0;
+    });
+  };
+
+  const chunkHasKeyword = (chunk, term) => {
+    if (!term) return false;
+    if (Array.isArray(chunk.keywords) && chunk.keywords.includes(term)) return true;
+    if (keywordBloomHas(chunk.keywordBloom, term)) return true;
+    return String(chunk.keywordText || '').includes(`\n${term}\n`);
+  };
+
   const cosineSimilarity = (a, b) => {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length === 0 || a.length !== b.length) return 0;
     let dot = 0;
@@ -254,7 +297,7 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       const isImportant = highValueTerms.has(term) || profile.importantTerms.includes(term);
       const metaHit = meta.includes(term);
       const textHits = countOccurrences(text, term);
-      const keywordHit = Array.isArray(chunk.keywords) && chunk.keywords.includes(term);
+      const keywordHit = chunkHasKeyword(chunk, term);
       const conceptHit = Array.isArray(chunk.concepts) && chunk.concepts.includes(term);
       if (metaHit || textHits > 0 || keywordHit || conceptHit) {
         matchedTerms += 1;
@@ -317,14 +360,14 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     );
     if (requestedAnchors.length > 0) {
       const anchorHits = requestedAnchors.filter((anchor) =>
-        text.includes(anchor) || meta.includes(anchor) || normalizedConcepts.has(anchor) || normalizedKeywords.has(anchor)
+        text.includes(anchor) || meta.includes(anchor) || normalizedConcepts.has(anchor) || normalizedKeywords.has(anchor) || chunkHasKeyword(chunk, anchor)
       ).length;
       if (anchorHits === 0) score -= 85;
       else score += Math.min(anchorHits, 4) * 34;
     }
     if (strictAnchors.length > 0) {
       const strictHits = strictAnchors.filter((anchor) =>
-        text.includes(anchor) || meta.includes(anchor) || normalizedConcepts.has(anchor) || normalizedKeywords.has(anchor)
+        text.includes(anchor) || meta.includes(anchor) || normalizedConcepts.has(anchor) || normalizedKeywords.has(anchor) || chunkHasKeyword(chunk, anchor)
       ).length;
       if (strictHits === 0) score -= 120;
     }
@@ -382,6 +425,10 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     if (profile.populationTags.includes('child')) {
       if (/child|children|pediatric|paediatric|adolescent|youth/i.test(rawText)) score += 42;
       if (/(adult|adults)\b/i.test(rawText) && !/child|children|pediatric|paediatric|adolescent/i.test(rawText)) score -= 24;
+    }
+    if (profile.populationTags.includes('adult') && !profile.populationTags.includes('pregnancy')) {
+      if (/pregnan|gestational|maternal|postpartum|recently pregnant/i.test(rawText + ' ' + meta)) score -= 150;
+      if (/people aged 16 or over|adults?\b/i.test(rawText + ' ' + meta)) score += 24;
     }
     if (profile.populationTags.includes('criticalCare')) {
       if (/intensive care|critical care|critically ill|ICU|high dependency/i.test(rawText)) score += 38;
@@ -829,7 +876,7 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       });
   };
 
-  const rankAndShapeResults = async ({ db, candidates, profile, options, limit, diagnostics }) => {
+  const rankAndShapeResults = async ({ db, candidates, profile, options, limit, diagnostics, useStaticStorage = false }) => {
     const prelim = candidates
       .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, profile, options) }))
       .filter((chunk) => chunk.score >= 8)
@@ -854,7 +901,9 @@ module.exports = ({ getDb, assertAdminRequest }) => {
         : 0;
     }
     const hydrated = shouldHydrateFullText
-      ? await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra))
+      ? (useStaticStorage && staticSearchIndex
+        ? await staticSearchIndex.hydrateChunks(prelim.slice(0, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra)))
+        : await hydrateFullChunks(db, prelim, Math.max(18, limit + RETRIEVAL_LIMITS.hydrateExtra)))
       : prelim;
     const ranked = hydrated
       .map((chunk) => ({ ...chunk, score: scoreChunk(chunk, profile, options) }))
@@ -876,7 +925,9 @@ module.exports = ({ getDb, assertAdminRequest }) => {
         : 0;
     }
     const withContext = shouldHydrateFullText
-      ? await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots })
+      ? (useStaticStorage && staticSearchIndex
+        ? await staticSearchIndex.getNeighborChunks(roots, RETRIEVAL_LIMITS.neighborRoots, RETRIEVAL_LIMITS.neighborDocReads)
+        : await expandNeighborContext({ db, ranked: roots, maxRoots: RETRIEVAL_LIMITS.neighborRoots }))
       : roots;
     return withContext
       .sort((a, b) => {
@@ -908,10 +959,25 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       }
       adminEmailForDiagnostics = await assertAdminRequest(request);
     }
+    const effectiveBackend = data.forceStaticBackend && includeAdminDiagnostics
+      ? 'static'
+      : SEARCH_BACKEND;
 
     const db = getDb();
     const sourcePathCandidates = buildSourcePathCandidates(data);
     const focusCollections = inferFocusCollections(profile);
+    const staticFocusCollections = Array.from(new Set([
+      ...focusCollections,
+      ...(profile.populationTags.includes('child')
+        && (profile.terms.includes('dka') || profile.terms.includes('ketoacidosis'))
+        ? ['nice-2023']
+        : []),
+    ]));
+    const staticPrimaryEligible = Boolean(
+      selectedCollectionId
+      || sourcePathCandidates.length > 0
+      || staticFocusCollections.length > 0
+    );
     const vectorLimit = getAdaptiveVectorLimit({ profile, selectedCollectionId, sourcePathCandidates, strictSource });
     const vectorCoverageThreshold = getVectorCoverageThreshold(vectorLimit, profile);
     const diagnostics = {
@@ -925,6 +991,10 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       strictSource,
       sourcePathCandidateCount: sourcePathCandidates.length,
       focusCollections,
+      staticFocusCollections,
+      configuredBackend: SEARCH_BACKEND,
+      effectiveBackend,
+      staticPrimaryEligible,
       plan: {
         needsComparison: Boolean(profile.plan?.needsComparison),
         isHighRisk: Boolean(profile.plan?.isHighRisk),
@@ -935,7 +1005,14 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       keywordCandidateCount: 0,
       scanCandidateCount: 0,
     };
-    const cacheKey = makeSearchCacheKey({ query, selectedCollectionId, sourcePathCandidates, limit, strictSource });
+    const cacheKey = makeSearchCacheKey({
+      query,
+      selectedCollectionId,
+      sourcePathCandidates,
+      limit,
+      strictSource,
+      backend: effectiveBackend,
+    });
     const cachedResult = getCachedSearchResult(cacheKey);
     if (cachedResult) {
       return finalizeSearchResponse({
@@ -967,18 +1044,54 @@ module.exports = ({ getDb, assertAdminRequest }) => {
       strictSource,
     };
 
+    const runStaticSearch = (effectiveBackend === 'static' && staticPrimaryEligible)
+      || (includeAdminDiagnostics && shouldRunStaticShadow(profile.normalizedQuery || query));
+    const firestoreVectorPromise = effectiveBackend === 'static' && staticPrimaryEligible
+      ? null
+      : fetchVectorCandidates({ db, queryEmbedding, limit: vectorLimit });
+    let staticVectorResult = null;
+    if (runStaticSearch && staticSearchIndex) {
+      try {
+        staticVectorResult = await staticSearchIndex.searchVectors({
+          queryEmbedding,
+          selectedCollectionId,
+          focusCollections: staticFocusCollections,
+          sourcePathCandidates,
+          limit: profile.plan.needsComparison
+            ? Math.max(220, vectorLimit)
+            : (profile.plan.isHighRisk || profile.plan.needsSourceTrace ? Math.max(140, vectorLimit) : Math.max(80, vectorLimit)),
+        });
+        diagnostics.staticVectorCandidateCount = staticVectorResult.candidates.length;
+        diagnostics.staticLoadedShards = staticVectorResult.loadedShards;
+        diagnostics.staticVectorDurationMs = staticVectorResult.durationMs;
+      } catch (error) {
+        diagnostics.staticSearchError = String(error?.message || error).slice(0, 240);
+        console.warn('[searchGuidelineIndex] static search failed; using Firestore fallback', {
+          message: error?.message || String(error),
+        });
+      }
+    }
+
+    const useStaticPrimary = effectiveBackend === 'static'
+      && staticPrimaryEligible
+      && Boolean(staticVectorResult);
     let candidates = [];
-    if (sourcePathCandidates.length > 0) {
+    if (!useStaticPrimary && sourcePathCandidates.length > 0) {
       candidates = await fetchSourceScopedCandidates({ db, sourcePathCandidates });
       diagnostics.sourceScopedCandidateCount = candidates.length;
     }
 
-    const vectorCandidates = await fetchVectorCandidates({
-      db,
-      queryEmbedding,
-      limit: vectorLimit,
-    });
+    const vectorCandidates = useStaticPrimary
+      ? staticVectorResult.candidates
+      : await (firestoreVectorPromise || fetchVectorCandidates({ db, queryEmbedding, limit: vectorLimit }));
     diagnostics.vectorCandidateCount = vectorCandidates.length;
+    diagnostics.activeBackend = useStaticPrimary ? 'static' : 'firestore';
+    if (effectiveBackend === 'shadow' && staticVectorResult) {
+      const firestoreIds = new Set(vectorCandidates.map((chunk) => makeQueryKey(chunk)));
+      const staticIds = staticVectorResult.candidates.map((chunk) => makeQueryKey(chunk));
+      diagnostics.staticShadowTopOverlap = staticIds.filter((id) => firestoreIds.has(id)).length;
+      diagnostics.staticShadowCompared = Math.min(vectorCandidates.length, staticIds.length);
+    }
     if (vectorCandidates.length > 0) {
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       vectorCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'vector'));
@@ -995,13 +1108,30 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     );
 
     if (!vectorCoversRoutineSearch && (candidates.length === 0 || sourcePathCandidates.length === 0)) {
-      const keywordCandidates = await fetchKeywordCandidates({
-        db,
-        profile,
-        selectedCollectionId,
-        focusCollections,
-        vectorCandidateCount: vectorCandidates.length,
-      });
+      const keywordResult = useStaticPrimary
+        ? await staticSearchIndex.searchLexical({
+          terms: [
+            ...profile.importantTerms,
+            ...profile.concepts,
+            ...profile.intentTags,
+            ...profile.populationTags,
+          ],
+          selectedCollectionId,
+          focusCollections: staticFocusCollections,
+          sourcePathCandidates,
+          limit: profile.plan.needsComparison ? 700 : 400,
+        })
+        : null;
+      const keywordCandidates = useStaticPrimary
+        ? keywordResult.candidates
+        : await fetchKeywordCandidates({
+          db,
+          profile,
+          selectedCollectionId,
+          focusCollections,
+          vectorCandidateCount: vectorCandidates.length,
+        });
+      if (keywordResult) diagnostics.staticLexicalDurationMs = keywordResult.durationMs;
       diagnostics.keywordCandidateCount = keywordCandidates.length;
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       keywordCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'keyword'));
@@ -1009,12 +1139,20 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     }
 
     if ((candidates.length < 18 || profile.plan.needsComparison) && !hasHighConfidenceSourceCandidates(profile, candidates)) {
-      const scanCandidates = await fetchCollectionScanCandidates({
-        db,
-        selectedCollectionId,
-        focusCollections,
-        needsComparison: profile.plan.needsComparison,
-      });
+      const scanCandidates = useStaticPrimary
+        ? (await staticSearchIndex.searchLexical({
+          terms: profile.terms,
+          selectedCollectionId,
+          focusCollections: staticFocusCollections,
+          sourcePathCandidates,
+          limit: profile.plan.needsComparison ? 700 : 400,
+        })).candidates
+        : await fetchCollectionScanCandidates({
+          db,
+          selectedCollectionId,
+          focusCollections,
+          needsComparison: profile.plan.needsComparison,
+        });
       diagnostics.scanCandidateCount = scanCandidates.length;
       const byId = new Map(candidates.map((chunk) => [makeQueryKey(chunk), chunk]));
       scanCandidates.forEach((chunk) => mergeCandidate(byId, chunk, 'collection-scan'));
@@ -1022,7 +1160,18 @@ module.exports = ({ getDb, assertAdminRequest }) => {
     }
 
     diagnostics.candidateCount = candidates.length;
-    const results = await rankAndShapeResults({ db, candidates, profile, options, limit, diagnostics });
+    const activeOptions = useStaticPrimary
+      ? { ...options, focusCollections: staticFocusCollections }
+      : options;
+    const results = await rankAndShapeResults({
+      db,
+      candidates,
+      profile,
+      options: activeOptions,
+      limit,
+      diagnostics,
+      useStaticStorage: Boolean(staticSearchIndex),
+    });
     const response = {
       results,
       meta: {
@@ -1032,24 +1181,28 @@ module.exports = ({ getDb, assertAdminRequest }) => {
         plan: profile.plan,
         retrievalMode: queryEmbedding
           ? (vectorCandidates.length > 0
-            ? (profile.plan.needsComparison ? 'comparison-firestore-vector-hybrid-rerank' : 'firestore-vector-hybrid-rerank')
+            ? (useStaticPrimary
+              ? (profile.plan.needsComparison ? 'comparison-storage-vector-hybrid-rerank' : 'storage-vector-hybrid-rerank')
+              : (profile.plan.needsComparison ? 'comparison-firestore-vector-hybrid-rerank' : 'firestore-vector-hybrid-rerank'))
             : (profile.plan.needsComparison ? 'comparison-hybrid-vector-fallback' : 'hybrid-vector-fallback-rerank'))
           : (profile.plan.needsComparison ? 'comparison-hybrid' : 'hybrid-keyword-semantic-rerank'),
         vectorCandidateCount: vectorCandidates.length,
-        fullTextHydrated: Boolean(options.strictSource || profile.plan?.needsComparison || profile.plan?.isHighRisk || profile.plan?.needsSourceTrace),
+        searchBackend: useStaticPrimary ? 'static' : 'firestore',
+        fullTextHydrated: Boolean(activeOptions.strictSource || profile.plan?.needsComparison || profile.plan?.isHighRisk || profile.plan?.needsSourceTrace),
         cacheHit: false,
       },
     };
     diagnostics.cacheHit = false;
     diagnostics.retrievalMode = response.meta.retrievalMode;
     diagnostics.resultCount = results.length;
-    diagnostics.estimatedDocsReturned =
-      diagnostics.sourceScopedCandidateCount
-      + diagnostics.vectorCandidateCount
-      + diagnostics.keywordCandidateCount
-      + diagnostics.scanCandidateCount
-      + Number(diagnostics.estimatedHydrateDocReads || 0)
-      + Number(diagnostics.estimatedNeighborDocReads || 0);
+    diagnostics.estimatedDocsReturned = useStaticPrimary
+      ? 0
+      : diagnostics.sourceScopedCandidateCount
+        + diagnostics.vectorCandidateCount
+        + diagnostics.keywordCandidateCount
+        + diagnostics.scanCandidateCount
+        + Number(diagnostics.estimatedHydrateDocReads || 0)
+        + Number(diagnostics.estimatedNeighborDocReads || 0);
     diagnostics.durationMs = Date.now() - startedAt;
     setCachedSearchResult(cacheKey, response);
     return finalizeSearchResponse({

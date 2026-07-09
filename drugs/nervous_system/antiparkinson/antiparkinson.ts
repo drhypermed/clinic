@@ -27,7 +27,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٠٫٥ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
     warnings: ['قد يسبب جفاف الفم/إمساك/زغللة.', 'يُحذر في الجلوكوما ضيقة الزاوية واحتباس البول/تضخم البروستاتا.', 'قد يزيد الارتباك لدى كبار السن.']
   },
 
@@ -52,7 +52,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('١ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: ['تداخلات دوائية مهمة (مضادات اكتئاب، ترامادول، ديكستروميثورفان).', 'قد يسبب صداع/دوخة.', 'يلزم حذر مع أمراض الكبد.']
   },
 
@@ -77,7 +77,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٥/٢٥٠ مجم (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['قد يسبب غثيان/دوخة/هبوط ضغط عند الوقوف.', 'قد يسبب حركات لا إرادية (Dyskinesia) مع الجرعات العالية.', 'الإيقاف المفاجئ خطر (تيبس شديد/حرارة).']
   },
 
@@ -102,7 +102,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٫٥ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['جفاف فم/إمساك/زغللة.', 'يُحذر في الجلوكوما واحتباس البول.', 'قد يسبب دوخة/نعاس.']
   },
 
@@ -126,7 +126,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٥ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['جفاف فم/إمساك/زغللة.', 'يُحذر في الجلوكوما واحتباس البول.']
   },
 
@@ -151,7 +151,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['جفاف فم/زغللة/إمساك.', 'يُحذر في الجلوكوما واحتباس البول.', 'قد يسبب دوخة/نعاس.']
   },
 
@@ -176,7 +176,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['جفاف فم/زغللة/إمساك.', 'يُحذر في الجلوكوما واحتباس البول.']
   },
 
@@ -200,7 +200,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['جفاف فم/زغللة/إمساك.', 'يُحذر في الجلوكوما واحتباس البول.']
   },
 
@@ -225,7 +225,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('25/250mg (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط عند الوقوف.', 'حركات لا إرادية مع الجرعات العالية.', 'الإيقاف المفاجئ خطر.']
   },
 
@@ -250,7 +250,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٥/٢٥٠ مجم (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط عند الوقوف.', 'حركات لا إرادية مع الجرعات العالية.', 'الإيقاف المفاجئ خطر.']
   },
 
@@ -275,7 +275,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['قد يسبب دوخة/نعاس.', 'جفاف فم/زغللة/إمساك.', 'يُحذر في الجلوكوما واحتباس البول.']
   },
 
@@ -300,7 +300,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٥/٢٥٠ مجم (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط.', 'حركات لا إرادية مع الجرعات العالية.', 'الإيقاف المفاجئ خطر.']
   },
 
@@ -325,7 +325,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('١٦٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
     warnings: ['قد يسبب دوخة/هبوط ضغط.', 'قد يسبب حركات لا إرادية مع الجرعات العالية.', 'البروتين يقلل الامتصاص.']
   },
 
@@ -350,7 +350,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٥/٢٥٠ مجم (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط.', 'حركات لا إرادية مع الجرعات العالية.', 'الإيقاف المفاجئ خطر.']
   },
 
@@ -375,7 +375,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('١٠٠/٢٥ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط.', 'قد يسبب أحلام مزعجة/هلوسة عند بعض المرضى.']
   },
 
@@ -400,7 +400,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('100/25/200mg (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
     warnings: ['قد يسبب إسهال/مغص.', 'قد يزيد حركات لا إرادية مع زيادة تأثير ليفودوبا.', 'تداخلات دوائية: مثبطات MAO غير الانتقائية ممنوعة.']
   },
 
@@ -426,7 +426,7 @@ export const ANTI_PARKINSON_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('٢٥/٢٥٠ مجم (قرص) — كل ٦ ساعات — بدون اعتبار للأكل — مزمن.'),
+    calculationRule: fixed('قرص كل ٦ ساعات بدون اعتبار للأكل'),
     warnings: ['غثيان/دوخة/هبوط ضغط.', 'حركات لا إرادية مع الجرعات العالية.', 'الإيقاف المفاجئ خطر.']
   },
 ];

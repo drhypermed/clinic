@@ -142,7 +142,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مل (٤٠٠ مجم) ٥ مرات يومياً لمدة ٥–٧ أيام'),
+		calculationRule: fixed('٥ مرات يومياً لمدة ٥–٧ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT, W_KIDNEY, W_HYDRATION),
 	},
 	{
@@ -219,7 +219,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مل (٢٠٠ مجم) ٥ مرات يومياً لمدة ٥–٧ أيام'),
+		calculationRule: fixed('٥ مرات يومياً لمدة ٥–٧ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT, W_KIDNEY, W_HYDRATION),
 	},
 	{
@@ -499,7 +499,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مل (٤٠٠ مجم) ٥ مرات يومياً لمدة ٥–٧ أيام'),
+		calculationRule: fixed('٥ مرات يومياً لمدة ٥–٧ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT, W_KIDNEY, W_HYDRATION),
 	},
 	{
@@ -517,7 +517,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 3,
 		maxWeight: 250,
-		calculationRule: fixed('٥ مل (٢٠٠ مجم) ٥ مرات يومياً لمدة ٥–٧ أيام'),
+		calculationRule: fixed('٥ مرات يومياً لمدة ٥–٧ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT, W_KIDNEY, W_HYDRATION),
 	},
 	{
@@ -625,7 +625,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٤ كبسولات (٨٠٠ مجم) كل ١٢ ساعة لمدة ٥ أيام'),
+		calculationRule: fixed('كبسولة كل ١٢ ساعة لمدة ٥ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT, W_IV_ONLY),
 	},
 	{
@@ -643,7 +643,7 @@ const RAW_ANTIVIRAL_GROUP: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 45,
 		maxWeight: 250,
-		calculationRule: fixed('٤ كبسولات (٨٠٠ مجم) كل ١٢ ساعة لمدة ٥ أيام'),
+		calculationRule: fixed('كبسولة كل ١٢ ساعة لمدة ٥ أيام'),
 		warnings: buildWarnings(W_ALLERGY, W_PREG_LACT),
 	},
 ];

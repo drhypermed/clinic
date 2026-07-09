@@ -140,7 +140,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: FOLATE_WARNINGS,
   },
 
@@ -160,7 +160,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: FOLATE_WARNINGS,
   },
 
@@ -180,7 +180,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً (أو حسب التشخيص والحالة).'),
+    calculationRule: fixed('كبسولة واحدة يومياً (أو حسب التشخيص والحالة)'),
     warnings: FOLATE_WARNINGS,
   },
 
@@ -200,7 +200,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً.'),
+    calculationRule: fixed('كبسولة واحدة يومياً'),
     warnings: ACTIVE_FOLATE_WARNINGS,
   },
 
@@ -220,7 +220,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ACTIVE_FOLATE_WARNINGS,
   },
 
@@ -240,7 +240,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً (٥ مجم) أو حسب التشخيص والحالة.'),
+    calculationRule: fixed('قرص واحد يومياً أو حسب التشخيص والحالة'),
     warnings: HIGH_DOSE_FOLATE_WARNINGS,
   },
 
@@ -260,7 +260,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: ACTIVE_FOLATE_WARNINGS,
   },
 
@@ -280,7 +280,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS, ...B6_WARNINGS],
   },
 
@@ -300,7 +300,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً (٥ مجم) أو حسب التشخيص والحالة.'),
+    calculationRule: fixed('قرص واحد يومياً أو حسب التشخيص والحالة'),
     warnings: HIGH_DOSE_FOLATE_WARNINGS,
   },
 
@@ -320,7 +320,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً (٥ مجم) أو حسب التشخيص والحالة.'),
+    calculationRule: fixed('قرص واحد يومياً أو حسب التشخيص والحالة'),
     warnings: HIGH_DOSE_FOLATE_WARNINGS,
   },
 
@@ -340,7 +340,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: [...ACTIVE_FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -360,7 +360,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً بعد الأكل.'),
+    calculationRule: fixed('قرص واحد يومياً بعد الأكل'),
     warnings: [...FOLATE_WARNINGS, ...B12_WARNINGS],
   },
 
@@ -380,7 +380,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل.'),
+    calculationRule: fixed('كبسولة واحدة يومياً بعد الأكل'),
     warnings: ACTIVE_FOLATE_WARNINGS,
   },
 
@@ -400,7 +400,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: [...FOLATE_WARNINGS, 'منتج غير مسجل/استيراد: تأكد من المصدر والجودة قبل الاستخدام.'],
   },
 
@@ -420,7 +420,7 @@ const FOLIC_GROUP_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد يومياً.'),
+    calculationRule: fixed('قرص واحد يومياً'),
     warnings: FOLATE_WARNINGS,
   },
 ];

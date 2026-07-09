@@ -507,7 +507,6 @@ const main = async () => {
       };
 
       if (!dryRun) {
-        writer.set(db.collection('guideline_book_chunks').doc(chunkId), payload, { merge: true });
         writer.set(db.collection('guideline_chunk_search').doc(chunkId), searchPayload, { merge: true });
       }
       chunkCount += 1;

@@ -23,13 +23,8 @@ const FEATURE_KEYS_MAP = {
 
 const VALID_FEATURES = Object.keys(FEATURE_KEYS_MAP);
 
-// 🆕 (2026-05) — الميزات اللي اتفتحت للـ paid tiers بدون فحص.
-// الـ medicalReportPrint مش هنا (لسه بفحص للجميع).
+// كل الميزات هنا تخضع للحدود الرقمية المخزنة في إعدادات نوع الحساب.
 // تصدير الروشتة اتشال من الكوتة 2026-06: طباعة/تنزيل/واتساب لا تنادي هذه الدالة.
-const FEATURES_OPEN_FOR_PAID = new Set([
-  'readyPrescriptionSave',
-]);
-
 module.exports = (context) => {
   const {
     HttpsError,
@@ -81,13 +76,11 @@ module.exports = (context) => {
 
     const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
 
-    // 🆕 (2026-05): paid tiers بدون فحص للميزات المدفوعة. نرجع فوراً بدون
-    // كتابة عداد ولا فتح transaction → توفير ٢-٥ ثواني وكتابات Firestore.
-    if (FEATURES_OPEN_FOR_PAID.has(feature) && (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max')) {
+    if (feature === 'readyPrescriptionSave' && (accountType === 'premium' || accountType === 'plus' || accountType === 'pro_max')) {
       return {
         accountType,
         feature,
-        limit: 0, // 0 = unlimited
+        limit: 0,
         used: 0,
         remaining: Number.MAX_SAFE_INTEGER,
         dayKey,
@@ -98,6 +91,7 @@ module.exports = (context) => {
       };
     }
 
+    // باقي المسارات تكمل لحساب الحد والعداد، ومنها التقارير الطبية.
     // backfill ملف الطبيب (مسار نادر — أول مرة بعد ترحيل قديم) — fire-and-forget
     // علشان ما يأخّرش الطباعة. أي فشل بيتسجل في الـlogs بدون ما يقطع المسار.
     if (!doctorProfile.userSnap.exists) {

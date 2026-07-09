@@ -24,7 +24,7 @@ const MENSTRUAL_PAIN_RELIEF_GROUP_RAW: Medication[] = [
     maxAgeMonths: 720,
     minWeight: 40,
     maxWeight: 200,
-    calculationRule: fixed('قرص واحد كل ٦–٨ ساعات بعد الأكل عند اللزوم – حد أقصى ٨ أقراص يومياً – لمدة ٢–٣ أيام خلال الدورة'),
+    calculationRule: fixed('قرص واحد كل ٦–٨ ساعات بعد الأكل عند اللزوم – حد أقصى قرص يومياً – لمدة ٢–٣ أيام خلال الدورة'),
     warnings: MENSTRUAL_PAIN_WARNINGS,
     matchKeywords: ['jakmeston', 'جاكمستون', 'paracetamol', 'pamabrom'],
   },

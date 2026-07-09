@@ -107,10 +107,19 @@ export type GuidelineBookTextResponse = {
 export type GuidelineSearchAdminDiagnostics = {
   cacheHit?: boolean;
   retrievalMode?: string;
+  configuredBackend?: string;
+  activeBackend?: string;
   estimatedDocsReturned?: number;
   durationMs?: number;
   sourceScopedCandidateCount?: number;
   vectorCandidateCount?: number;
+  staticVectorCandidateCount?: number;
+  staticLoadedShards?: number;
+  staticVectorDurationMs?: number;
+  staticLexicalDurationMs?: number;
+  staticShadowTopOverlap?: number;
+  staticShadowCompared?: number;
+  staticSearchError?: string;
   keywordCandidateCount?: number;
   scanCandidateCount?: number;
   candidateCount?: number;

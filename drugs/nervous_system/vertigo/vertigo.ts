@@ -38,7 +38,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد ٣ مرات يومياً بعد الأكل (حد أقصى ٣ أقراص/يوم) – لمدة قصيرة حتى ٤ أسابيع.'),
+    calculationRule: fixed('قرص واحد ٣ مرات يومياً بعد الأكل (حد أقصى ٣ أقراص/يوم) – لمدة قصيرة حتى ٤ أسابيع'),
     warnings: SEDATING_WARNINGS,
   },
 
@@ -58,7 +58,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) أو ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر مع تقييم الاستجابة.'),
+    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام أو ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر مع تقييم الاستجابة'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -100,7 +100,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٥ مجم ٣ مرات يومياً قبل الأكل. في الحالات الخفيفة: ٢٥ مجم مرتين يومياً قبل الأكل – لمدة ٢–٤ أسابيع.'),
+    calculationRule: fixed('قرص ٢٥ مجم ٣ مرات يومياً قبل الأكل. في الحالات الخفيفة: ٢٥ مجم مرتين يومياً قبل الأكل – لمدة ٢–٤ أسابيع'),
     warnings: ['قد يسبب ارتفاع هرمون اللبن (hyperprolactinemia).', 'قد يسبب أعراضاً خارج هرمية نادرة.'],
   },
 
@@ -120,7 +120,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر مع تقييم الاستجابة.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر مع تقييم الاستجابة'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -140,7 +140,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -160,7 +160,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -180,7 +180,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -200,7 +200,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -220,7 +220,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -240,7 +240,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ٥٠ مجم مرتين يومياً بدون اعتبار للأكل، ويمكن زيادتها إلى ٥٠ مجم ٣ مرات يومياً (حد أقصى ١٥٠ مجم/يوم) – لمدة ٢–٤ أسابيع.'),
+    calculationRule: fixed('كبسولة ٥٠ مجم مرتين يومياً بدون اعتبار للأكل، ويمكن زيادتها إلى ٥٠ مجم ٣ مرات يومياً – لمدة ٢–٤ أسابيع'),
     warnings: ['قد يسبب ارتفاع هرمون اللبن.', 'قد يسبب نعاساً لدى بعض المرضى.'],
   },
 
@@ -260,7 +260,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام (إجمالي ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -280,7 +280,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٨ مجم ٣ مرات يومياً مع الطعام، ويمكن الزيادة إلى ١٦ مجم ٣ مرات يومياً (حد أقصى ٤٨ مجم/يوم) – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٨ مجم ٣ مرات يومياً مع الطعام، ويمكن الزيادة إلى ١٦ مجم ٣ مرات يومياً – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -300,7 +300,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٢٤ مجم مرتين يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -320,7 +320,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -340,7 +340,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ١٦ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 
@@ -360,7 +360,7 @@ export const VERTIGO_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٨ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر.'),
+    calculationRule: fixed('قرص ٨ مجم ٣ مرات يومياً مع الطعام – لمدة ٢–٣ أشهر'),
     warnings: BETAHISTINE_WARNINGS,
   },
 ];

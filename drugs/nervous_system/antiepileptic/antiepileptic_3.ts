@@ -160,7 +160,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة أو عصبية.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -180,7 +180,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة أو عصبية.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -200,7 +200,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('١٠٠٠ مجم (قرص) — مرة يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة واحدة يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة أو عصبية.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -220,7 +220,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -240,7 +240,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب تنميل/دوخة/نقص شهية.', 'قد يسبب حصوات كلى.', 'قد يقلل التعرق/يرفع الحرارة خاصة الأطفال.'],
 	},
 
@@ -280,7 +280,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب تنميل/دوخة/نقص شهية.', 'قد يسبب حصوات كلى.', 'قد يقلل التعرق/يرفع الحرارة خاصة الأطفال.'],
 	},
 
@@ -300,7 +300,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -320,7 +320,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('٢ مجم (قرص) — مرة ليلاً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرة ليلاً بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب تهيج/عدوانية أو تغيرات مزاج.'],
 	},
 
@@ -380,7 +380,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -400,7 +400,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -420,7 +420,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -440,7 +440,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة أو عصبية.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -460,7 +460,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب نقص صوديوم أو اضطرابات دم (نادر).', 'يتداخل مع أدوية كثيرة (محفز إنزيمات).'],
 	},
 
@@ -480,7 +480,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٥ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['خطر طفح جلدي شديد خصوصاً مع الزيادة السريعة.', 'يلزم الالتزام بالتدرج.'],
 	},
 
@@ -500,7 +500,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'قد يطيل PR ويزيد خطر اضطراب نظم عند بعض المرضى.'],
 	},
 
@@ -520,7 +520,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 50,
 		maxWeight: 250,
-		calculationRule: fixed('٧٥ مجم (كبسولة) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يسبب وذمة/زيادة وزن.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -540,7 +540,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'قد يطيل PR ويزيد خطر اضطراب نظم عند بعض المرضى.'],
 	},
 
@@ -560,7 +560,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('١٠٠ مجم (كبسولة) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يسبب حصوات كلى.', 'يُستخدم بحذر في حساسية السلفا.'],
 	},
 
@@ -580,7 +580,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٦٠٠ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -620,7 +620,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠٠ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -640,7 +640,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة أو عصبية.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -680,7 +680,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'قد يطيل PR ويزيد خطر اضطراب نظم عند بعض المرضى.'],
 	},
 
@@ -700,7 +700,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -720,7 +720,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['خطر طفح جلدي شديد خصوصاً مع الزيادة السريعة.', 'يلزم الالتزام بالتدرج.'],
 	},
 
@@ -740,7 +740,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/نعاس.', 'قد يسبب نقص صوديوم بالدم (Hyponatremia).', 'قد يتداخل مع موانع الحمل الهرمونية.'],
 	},
 
@@ -780,7 +780,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٦٠٠ مجم (قرص) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -820,7 +820,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -860,7 +860,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٢٠٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب تنميل/دوخة/نقص شهية.', 'قد يسبب حصوات كلى.', 'قد يقلل التعرق/يرفع الحرارة خاصة الأطفال.'],
 	},
 
@@ -880,7 +880,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 40,
 		maxWeight: 250,
-		calculationRule: fixed('١٠٠ مجم (كبسولة) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يسبب حصوات كلى.', 'يُستخدم بحذر في حساسية السلفا.'],
 	},
 
@@ -900,7 +900,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'قد يطيل PR ويزيد خطر اضطراب نظم عند بعض المرضى.'],
 	},
 
@@ -920,7 +920,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب دوخة/عدم اتزان.', 'قد يطيل PR ويزيد خطر اضطراب نظم عند بعض المرضى.'],
 	},
 
@@ -940,7 +940,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٣٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 
@@ -960,7 +960,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -980,7 +980,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 15,
 		maxWeight: 250,
-		calculationRule: fixed('٥٠ مجم (قرص) — مرتين يومياً — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('قرص مرتين يوميا بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'راقب تغيرات المزاج.'],
 	},
 
@@ -1020,7 +1020,7 @@ export const ANTIEPILEPTIC_3: Medication[] = [
 		maxAgeMonths: 1200,
 		minWeight: 20,
 		maxWeight: 250,
-		calculationRule: fixed('٤٠٠ مجم (كبسولة) — كل ٨ ساعات — بدون اعتبار للأكل — مزمن.'),
+		calculationRule: fixed('كبسولة كل ٨ ساعات بدون اعتبار للأكل'),
 		warnings: ['قد يسبب نعاس/دوخة.', 'قد يحتاج ضبط جرعة في قصور الكلى.'],
 	},
 

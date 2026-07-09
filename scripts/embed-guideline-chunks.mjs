@@ -183,7 +183,6 @@ for (let i = 0; i < targets.length; i += batchSize) {
       embeddingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     batch.update(db.collection('guideline_chunk_search').doc(item.id), payload);
-    batch.update(db.collection('guideline_book_chunks').doc(item.id), payload);
     written += 1;
   });
   await batch.commit();

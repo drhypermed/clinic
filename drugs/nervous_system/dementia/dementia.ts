@@ -35,7 +35,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ٥ مل حقن وريدي/عضلي يومياً بدون اعتبار للأكل – لمدة ٥ أيام (كورس قصير).'),
+    calculationRule: fixed('أمبول ٥ مل حقن وريدي/عضلي يومياً بدون اعتبار للأكل – لمدة ٥ أيام (كورس قصير)'),
     warnings: ['قد يسبب ألم موضعي بالحقن أو حساسية نادرة.'],
   },
 
@@ -55,7 +55,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٠ مجم بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: ٥ مجم صباحاً (نصف قرص). أسبوع ٢: ١٠ مجم صباحاً. أسبوع ٣: ١٠ مجم صباحاً + ٥ مجم مساءً. أسبوع ٤+: ١٠ مجم مرتين يومياً (٢٠ مجم/يوم) – علاج مزمن.'),
+    calculationRule: fixed('قرص ١٠ مجم بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: ٥ مجم صباحاً (نصف قرص). أسبوع ٢: ١٠ مجم صباحاً. أسبوع ٣: ١٠ مجم صباحاً + ٥ مجم مساءً. أسبوع ٤+: ١٠ مجم مرتين يومياً – علاج مزمن'),
     warnings: MEMANTINE_WARNINGS,
   },
 
@@ -75,7 +75,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('نقط فموية بنفس تدرج الميمانتين بدون اعتبار للأكل: أسبوع ١: ٥ مجم يومياً. أسبوع ٢: ١٠ مجم يومياً. أسبوع ٣: ١٥ مجم/يوم. أسبوع ٤+: ٢٠ مجم/يوم – علاج مزمن.'),
+    calculationRule: fixed('نقط فموية بنفس تدرج الميمانتين بدون اعتبار للأكل: أسبوع ١: ٥ مجم يومياً. أسبوع ٢: ١٠ مجم يومياً. أسبوع ٣: ١٥ مجم/يوم. أسبوع ٤+: ٢٠ مجم/يوم – علاج مزمن'),
     warnings: MEMANTINE_WARNINGS,
   },
 
@@ -95,7 +95,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('أمبول ١ مل حقن وريدي/عضلي يومياً بدون اعتبار للأكل – لمدة ١٠ أيام (كورس قصير).'),
+    calculationRule: fixed('أمبول ١ مل حقن وريدي/عضلي يومياً بدون اعتبار للأكل – لمدة ١٠ أيام (كورس قصير)'),
     warnings: ['قد يسبب ألم موضعي أو حساسية نادرة.'],
   },
 
@@ -115,7 +115,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص يتفتت بالفم ٥ مجم مساءً قبل النوم لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً قبل النوم – علاج مزمن.'),
+    calculationRule: fixed('قرص يتفتت بالفم ٥ مجم مساءً قبل النوم لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً قبل النوم – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -135,7 +135,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('للبالغين: ٤–٨ مل شراب ٣ مرات يومياً بدون اعتبار للأكل (٢٫٤–٤٫٨ جم/يوم بتركيز ٢٠٠ مجم/مل) – علاج مزمن مع تقييم دوري.'),
+    calculationRule: fixed('٤–٨ مل شراب ٣ مرات يومياً بدون اعتبار للأكل – علاج مزمن مع تقييم دوري'),
     warnings: ['قد يسبب غثيان أو صداع. يُستخدم بحذر مع اضطرابات النزف أو مرضى الكلى.'],
   },
 
@@ -155,7 +155,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ممتدة المفعول واحدة يومياً مساءً بدون اعتبار للأكل – علاج مزمن.'),
+    calculationRule: fixed('كبسولة ممتدة المفعول واحدة يومياً مساءً بدون اعتبار للأكل – علاج مزمن'),
     warnings: [...CHOLINESTERASE_WARNINGS, ...MEMANTINE_WARNINGS],
   },
 
@@ -175,7 +175,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ممتدة المفعول واحدة يومياً مساءً بدون اعتبار للأكل – علاج مزمن.'),
+    calculationRule: fixed('كبسولة ممتدة المفعول واحدة يومياً مساءً بدون اعتبار للأكل – علاج مزمن'),
     warnings: [...CHOLINESTERASE_WARNINGS, ...MEMANTINE_WARNINGS],
   },
 
@@ -195,7 +195,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن.'),
+    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -215,7 +215,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل (جرعة البداية) – علاج مزمن مع التدرج.'),
+    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل (جرعة البداية) – علاج مزمن مع التدرج'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -235,7 +235,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن.'),
+    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -255,7 +255,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('نقط فموية بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: ٠٫٥ مل صباحاً (٥ مجم). أسبوع ٢: ١ مل صباحاً (١٠ مجم). أسبوع ٣: ١ مل صباحاً + ٠٫٥ مل مساءً (١٥ مجم/يوم). أسبوع ٤+: ١ مل مرتين يومياً (٢٠ مجم/يوم) – علاج مزمن.'),
+    calculationRule: fixed('نقط فموية بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: ٠٫٥ مل صباحاً. أسبوع ٢: ١ مل صباحاً. أسبوع ٣: ١ مل صباحاً + ٠٫٥ مل مساءً. أسبوع ٤+: ١ مل مرتين يومياً – علاج مزمن'),
     warnings: MEMANTINE_WARNINGS,
   },
 
@@ -275,7 +275,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('شراب بتركيز ٢٠٪ ≈ ٢٠٠ مجم/مل: ٤–٨ مل ٣ مرات يومياً بدون اعتبار للأكل (٢٫٤–٤٫٨ جم/يوم) – علاج مزمن مع تقييم دوري.'),
+    calculationRule: fixed('شراب بتركيز ٢٠٪ ≈ ٢٠٠ مجم/مل: ٤–٨ مل ٣ مرات يومياً بدون اعتبار للأكل – علاج مزمن مع تقييم دوري'),
     warnings: ['قد يسبب غثيان أو صداع. يُستخدم بحذر مع مرضى الكلى.'],
   },
 
@@ -295,7 +295,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص يتفتت بالفم ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن.'),
+    calculationRule: fixed('قرص يتفتت بالفم ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -315,7 +315,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص يتفتت بالفم ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن.'),
+    calculationRule: fixed('قرص يتفتت بالفم ٥ مجم مساءً قبل النوم بدون اعتبار للأكل لمدة ٤–٦ أسابيع، ثم ١٠ مجم مساءً – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -335,7 +335,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن.'),
+    calculationRule: fixed('قرص ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -355,7 +355,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل (جرعة البداية) – علاج مزمن مع التدرج.'),
+    calculationRule: fixed('قرص ٥ مجم مساءً قبل النوم بدون اعتبار للأكل (جرعة البداية) – علاج مزمن مع التدرج'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -375,7 +375,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ٤٫٥ مجم مرتين يومياً مع الطعام (إجمالي ٩ مجم/يوم) – علاج مزمن.'),
+    calculationRule: fixed('كبسولة ٤٫٥ مجم مرتين يومياً مع الطعام – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -395,7 +395,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ٤٫٥ مجم مرتين يومياً مع الطعام (إجمالي ٩ مجم/يوم) – علاج مزمن.'),
+    calculationRule: fixed('كبسولة ٤٫٥ مجم مرتين يومياً مع الطعام – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 
@@ -415,7 +415,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('كبسولة ممتدة المفعول ٧ مجم بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: كبسولة (٧ مجم) يومياً. أسبوع ٢: كبسولتان (١٤ مجم) يومياً. أسبوع ٣: ٣ كبسولات (٢١ مجم) يومياً. أسبوع ٤+: ٤ كبسولات (٢٨ مجم) يومياً – علاج مزمن.'),
+    calculationRule: fixed('كبسولة ممتدة المفعول ٧ مجم بتدرج أسبوعي بدون اعتبار للأكل: أسبوع ١: كبسولة يومياً. أسبوع ٢: كبسولتان يومياً. أسبوع ٣: كبسولة يومياً. أسبوع ٤+: كبسولة يومياً – علاج مزمن'),
     warnings: MEMANTINE_WARNINGS,
   },
 
@@ -435,7 +435,7 @@ export const DEMENTIA_DRUGS: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن.'),
+    calculationRule: fixed('قرص ١٠ مجم مساءً قبل النوم بدون اعتبار للأكل – علاج مزمن'),
     warnings: CHOLINESTERASE_WARNINGS,
   },
 ];

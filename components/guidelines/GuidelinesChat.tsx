@@ -454,6 +454,18 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
     const scan = sumDiagnosticNumber(diagnostics, 'scanCandidateCount');
     const hydrate = sumDiagnosticNumber(diagnostics, 'estimatedHydrateDocReads')
       + sumDiagnosticNumber(diagnostics, 'estimatedNeighborDocReads');
+    const staticCandidates = sumDiagnosticNumber(diagnostics, 'staticVectorCandidateCount');
+    const staticShards = sumDiagnosticNumber(diagnostics, 'staticLoadedShards');
+    const shadowOverlap = sumDiagnosticNumber(diagnostics, 'staticShadowTopOverlap');
+    const shadowCompared = sumDiagnosticNumber(diagnostics, 'staticShadowCompared');
+    const backends = Array.from(new Set(
+      diagnostics
+        .map((item) => String(item.activeBackend || item.configuredBackend || '').trim())
+        .filter(Boolean),
+    )).slice(0, 3);
+    const staticErrors = diagnostics
+      .map((item) => String(item.staticSearchError || '').trim())
+      .filter(Boolean);
 
     return (
       <div className="mt-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-[10px] font-bold leading-5 text-sky-950">
@@ -469,10 +481,19 @@ export const GuidelinesChat: React.FC<GuidelinesChatProps> = ({
           {modes.length ? (
             <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">{modes.join(' + ')}</span>
           ) : null}
+          {backends.length ? (
+            <span className="rounded-md bg-white px-2 py-0.5 ring-1 ring-sky-100">backend {backends.join(' + ')}</span>
+          ) : null}
         </div>
         <div className="mt-1 text-[10px] text-sky-800">
           vector {vector} | keyword {keyword} | scan {scan} | hydrate {hydrate}
         </div>
+        {staticCandidates > 0 || shadowCompared > 0 || staticErrors.length > 0 ? (
+          <div className="mt-1 text-[10px] text-sky-800">
+            storage vector {staticCandidates} | shards {staticShards} | overlap {shadowOverlap}/{shadowCompared}
+            {staticErrors.length > 0 ? ` | error ${staticErrors[0]}` : ''}
+          </div>
+        ) : null}
       </div>
     );
   };

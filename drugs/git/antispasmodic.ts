@@ -143,7 +143,7 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('أمبول واحد (٥ مجم) بالعضل أو بالوريد ببطء شديد — كل ٨-١٢ ساعة عند اللزوم (حد أقصى ٣ أمبولات/يوم).'),
+    calculationRule: fixed('كل ٨-١٢ ساعة عند اللزوم (حد أقصى ٣ أمبولات أو يوم)'),
     warnings: TIEMONIUM_WARNINGS
   },
 
@@ -166,7 +166,7 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 45,
     maxWeight: 250,
-    calculationRule: fixed('أمبول واحد (٥ مجم) بالعضل أو بالوريد ببطء شديد — كل ٨-١٢ ساعة عند اللزوم (حد أقصى ٣ أمبولات/يوم).'),
+    calculationRule: fixed('كل ٨-١٢ ساعة عند اللزوم (حد أقصى ٣ أمبولات أو يوم)'),
     warnings: TIEMONIUM_WARNINGS
   },
 
@@ -189,7 +189,7 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد (٥٠ مجم) كل ٨ ساعات قبل الأكل — ٣ مرات يومياً.'),
+    calculationRule: fixed('٣ مرات يوميا'),
     warnings: ANTICHOLINERGIC_WARNINGS
   },
 
@@ -258,7 +258,7 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('لبوسة واحدة كل ٨-١٢ ساعة عند اللزوم — حد أقصى ٣ مرات يومياً.'),
+    calculationRule: fixed('لبوسةواحدةكل٨-١٢ساعةعنداللزوم حد أقصى ٣ مرات يوميا'),
     warnings: ANTICHOLINERGIC_WARNINGS
   },
 
@@ -281,7 +281,7 @@ const ANTISPASMODIC_MEDS_RAW: Medication[] = [
     maxAgeMonths: 1200,
     minWeight: 40,
     maxWeight: 250,
-    calculationRule: fixed('قرص واحد (٥٠ مجم) كل ٨ ساعات قبل الأكل — ٣ مرات يومياً.'),
+    calculationRule: fixed('٣ مرات يوميا'),
     warnings: ANTICHOLINERGIC_WARNINGS
   },
 

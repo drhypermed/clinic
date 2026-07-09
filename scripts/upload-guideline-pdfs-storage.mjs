@@ -157,12 +157,6 @@ for (const [index, pdfPath] of files.entries()) {
       updatedBooks += 1;
     });
 
-    const chunkSnap = await db.collection('guideline_book_chunks').where('sourcePath', '==', sourcePath).get();
-    chunkSnap.forEach((doc) => {
-      writer.set(doc.ref, { storagePdfPath: destination, storagePdfUrl }, { merge: true });
-      updatedChunks += 1;
-    });
-
     const searchSnap = await db.collection('guideline_chunk_search').where('sourcePath', '==', sourcePath).get();
     searchSnap.forEach((doc) => {
       writer.set(doc.ref, { storagePdfPath: destination, storagePdfUrl }, { merge: true });

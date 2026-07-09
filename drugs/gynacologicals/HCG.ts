@@ -25,7 +25,7 @@ const HCG_GROUP_RAW: Medication[] = [
     maxAgeMonths: 720,
     minWeight: 45,
     maxWeight: 200,
-    calculationRule: fixed('٥٠٠٠ وحدة دولية حقنة عضل – جرعة واحدة للتفجير في اليوم المحدد من الدورة حسب السونار'),
+    calculationRule: fixed('دولية حقنة عضل – جرعة واحدة للتفجير في اليوم المحدد من الدورة حسب السونار'),
     warnings: HCG_WARNINGS,
     matchKeywords: ['epifasi', 'ايبيفاسي', 'hcg', 'human chorionic gonadotropin', 'trigger'],
   },
