@@ -94,10 +94,11 @@ module.exports = ({
   /**
    * تنظيف ذكي شامل للبيانات القديمة — حسب الباقة (Tier-Based Retention).
    *
-   * ─── سياسة الاحتفاظ (2026-05) ───
-   *   • مجاني (free)         → 5 سنين
-   *   • برو (premium)        → 5 سنين
-   *   • برو ماكس (pro_max)   → 7 سنين ← مزية إضافية للباقة الأعلى
+   * ─── سياسة الاحتفاظ (2026-07) ───
+   *   • مجاني (free)         → سنة واحدة
+   *   • بلس (plus)           → سنتين
+   *   • برو (premium)        → 3 سنين
+   *   • برو ماكس (pro_max)   → 5 سنين ← مزية إضافية للباقة الأعلى
    *
    * ─── سياسة موازية: تعطيل + حذف الحسابات الخاملة ───
    *   • مجاني خامل > 3 شهور → الحساب يتعطل تلقائياً (disableInactiveFreeAccounts)
@@ -140,10 +141,10 @@ module.exports = ({
     const DAY_MS = 24 * 60 * 60 * 1000;
     const YEAR_MS = 365.25 * DAY_MS;
     const RETENTION_BY_TIER = {
-      free: 5 * YEAR_MS,        // 🆕 (2026-05) 5 سنين للمجاني — متساوية مع البرو لحفظ بيانات الطبيب
-      premium: 5 * YEAR_MS,
-      plus: 5 * YEAR_MS,
-      pro_max: 7 * YEAR_MS,
+      free: 1 * YEAR_MS,        // 🆕 (2026-07) سنة واحدة للمجاني
+      premium: 3 * YEAR_MS,     // 3 سنين للبرو
+      plus: 2 * YEAR_MS,        // سنتين لـ Plus
+      pro_max: 5 * YEAR_MS,     // 5 سنين للبرو ماكس
     };
 
     // accountType بيتحدد من ملف الطبيب — مع تطبيع آمن (default: free)

@@ -57,6 +57,10 @@ interface BookingSectionPublicProps {
   currentBranchLabel?: string;
   /** قائمة الفروع — لتوليد رابط منفصل لكل فرع لو في أكتر من فرع */
   branches?: Branch[];
+  /** هل فشل تحميل الرابط العام */
+  publicLinkError?: boolean;
+  /** إعادة محاولة تحميل الرابط العام بعد الفشل */
+  onRetryPublicLink?: () => void;
 }
 
 const formatPublicSlotLabel = (dateTime: string) => (
@@ -146,7 +150,9 @@ const MainLinkRow: React.FC<{
   publicLinkCopied: boolean;
   onCopyPublicLink: () => void;
   isMultiBranch: boolean;
-}> = ({ publicBookingLink, publicLinkCopied, onCopyPublicLink, isMultiBranch }) => {
+  publicLinkError?: boolean;
+  onRetryPublicLink?: () => void;
+}> = ({ publicBookingLink, publicLinkCopied, onCopyPublicLink, isMultiBranch, publicLinkError, onRetryPublicLink }) => {
   const [qrOpen, setQrOpen] = useState(false);
   return (
     <div className="space-y-2">
@@ -157,29 +163,44 @@ const MainLinkRow: React.FC<{
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-slate-400 font-bold text-xs break-all dir-ltr text-left flex-1 min-w-0">
-          {publicBookingLink ?? <LoadingText>جاري تحميل الرابط</LoadingText>}
+          {publicLinkError
+            ? <span className="text-danger-600 font-bold">⚠️ فشل تحميل الرابط. تأكد من اتصالك بالإنترنت وأعد المحاولة.</span>
+            : (publicBookingLink ?? <LoadingText>جاري تحميل الرابط</LoadingText>)}
         </p>
-        <button
-          type="button"
-          onClick={onCopyPublicLink}
-          disabled={!publicBookingLink}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning-100 hover:bg-warning-200 text-warning-800 text-sm font-bold shrink-0 disabled:opacity-50"
-        >
-          {publicLinkCopied ? 'تم النسخ' : 'نسخ الرابط'}
-        </button>
+        {publicLinkError && onRetryPublicLink && (
+          <button
+            type="button"
+            onClick={onRetryPublicLink}
+            className="px-3 py-1.5 rounded-lg bg-danger-100 hover:bg-danger-200 text-danger-800 text-sm font-bold shrink-0 flex items-center gap-1"
+          >
+            🔄 إعادة المحاولة
+          </button>
+        )}
+        {!publicLinkError && (
+          <button
+            type="button"
+            onClick={onCopyPublicLink}
+            disabled={!publicBookingLink}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning-100 hover:bg-warning-200 text-warning-800 text-sm font-bold shrink-0 disabled:opacity-50"
+          >
+            {publicLinkCopied ? 'تم النسخ' : 'نسخ الرابط'}
+          </button>
+        )}
         {/* زرار QR للرابط الشامل — يفتح مودال يعرض QR قابل للتحميل */}
-        <button
-          type="button"
-          onClick={() => setQrOpen(true)}
-          disabled={!publicBookingLink}
-          className="px-3 py-1.5 rounded-lg bg-brand-100 hover:bg-brand-200 text-brand-800 text-sm font-bold shrink-0 disabled:opacity-50 flex items-center gap-1"
-          title="عرض رمز QR لطباعته"
-        >
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v2h-2v-2z" />
-          </svg>
-          QR
-        </button>
+        {!publicLinkError && (
+          <button
+            type="button"
+            onClick={() => setQrOpen(true)}
+            disabled={!publicBookingLink}
+            className="px-3 py-1.5 rounded-lg bg-brand-100 hover:bg-brand-200 text-brand-800 text-sm font-bold shrink-0 disabled:opacity-50 flex items-center gap-1"
+            title="عرض رمز QR لطباعته"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm0 4h2v2h-2v-2z" />
+            </svg>
+            QR
+          </button>
+        )}
       </div>
       {publicBookingLink && (
         <QrModal
@@ -258,6 +279,8 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
   onSaveEditedPublicSlot,
   currentBranchLabel,
   branches,
+  publicLinkError,
+  onRetryPublicLink,
 }) => {
   const branchNameById = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -297,6 +320,8 @@ export const BookingSectionPublic: React.FC<BookingSectionPublicProps> = ({
           publicLinkCopied={publicLinkCopied}
           onCopyPublicLink={onCopyPublicLink}
           isMultiBranch={Boolean(branches && branches.length > 1)}
+          publicLinkError={publicLinkError}
+          onRetryPublicLink={onRetryPublicLink}
         />
 
         {/* روابط منفصلة لكل فرع — تظهر فقط لو في أكثر من فرع نشط */}

@@ -98,3 +98,32 @@ export const subscribeDocCacheFirst = <T extends DocumentData>(
   );
 };
 
+/**
+ * اشتراك في استعلام بنمط cache-first:
+ * - ينفذ callback فوراً بالنسخة المحلية المخزنة (إن وُجدت) بدون انتظار السيرفر.
+ * - ثم يشترك في التحديثات الحية — كل تغيير من السيرفر يصل تلقائياً.
+ */
+export const subscribeQueryCacheFirst = <T extends DocumentData>(
+  q: Query<T>,
+  callbacks: SubscribeCallbacks<QuerySnapshot<T>>
+): Unsubscribe => {
+  let delivered = false;
+
+  getDocsFromCache(q)
+    .then((cached) => {
+      if (!delivered && !cached.empty) {
+        callbacks.next(cached);
+      }
+    })
+    .catch(() => { /* لا توجد نسخة مخزنة */ });
+
+  return onSnapshot(
+    q,
+    { includeMetadataChanges: false },
+    (snap) => {
+      delivered = true;
+      callbacks.next(snap);
+    },
+    (err) => callbacks.error?.(err)
+  );
+};

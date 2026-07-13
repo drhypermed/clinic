@@ -124,6 +124,8 @@ export const useBookingSectionControls = ({
 
   // حالة روابط حجز الجمهور العام
   const [publicBookingLink, setPublicBookingLink] = useState<string | null>(null);
+  const [publicLinkError, setPublicLinkError] = useState(false);
+  const [publicLinkRetryCount, setPublicLinkRetryCount] = useState(0);
   const [publicBookingSecret, setPublicBookingSecret] = useState<string | null>(null);
   const [publicSectionOpen, setPublicSectionOpen] = useState(false);
   const [publicSlots, setPublicSlots] = useState<PublicBookingSlot[]>([]);
@@ -158,6 +160,7 @@ export const useBookingSectionControls = ({
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    setPublicLinkError(false);
     (async () => {
       try {
         const {
@@ -170,10 +173,17 @@ export const useBookingSectionControls = ({
       } catch (err) {
         if (cancelled) return;
         console.warn('[Booking] Failed to build public booking link:', err);
+        setPublicLinkError(true);
       }
     })();
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, publicLinkRetryCount]);
+
+  /** إعادة محاولة تحميل رابط الجمهور بعد فشل سابق */
+  const retryPublicLink = useCallback(() => {
+    setPublicLinkError(false);
+    setPublicLinkRetryCount((c) => c + 1);
+  }, []);
 
   // 3.1 مرآة publicBookingSecret + publicUrlSlug على bookingConfig — السكرتيرة
   // محرومة من قراءة users/{uid} ومن list على publicBookingConfig، فبدون المرآة دي
@@ -625,7 +635,7 @@ export const useBookingSectionControls = ({
       setCredentialsSuccess(false);
     },
     saveBookingCredentials,
-    publicBookingLink, publicBookingSecret, publicSectionOpen, togglePublicSection: () => setPublicSectionOpen(!publicSectionOpen),
+    publicBookingLink, publicLinkError, retryPublicLink, publicBookingSecret, publicSectionOpen, togglePublicSection: () => setPublicSectionOpen(!publicSectionOpen),
     publicSlots: visiblePublicSlots, publicSlotDateStr, setPublicSlotDateStr, publicSlotTimeStr, setPublicSlotTimeStr,
     publicLinkCopied, copyPublicLink, publicSlotAdding, addPublicSlot, removePublicSlot,
     editingPublicSlotId, editingPublicSlotDateStr, setEditingPublicSlotDateStr,

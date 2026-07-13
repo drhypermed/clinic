@@ -7,7 +7,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { getDocCacheFirst, getDocsCacheFirst } from './firestore/cacheFirst';
+import { getDocCacheFirst, getDocsCacheFirst, subscribeQueryCacheFirst } from './firestore/cacheFirst';
 import { getBookingSecretByUserId } from './firestore/booking-secretary/secretConfig.secret';
 
 export interface DiscountReason {
@@ -111,17 +111,13 @@ export const discountReasonService = {
     }
 
     const q = query(getReasonsRef(userId), orderBy('name', 'asc'));
-    let cancelled = false;
-
-    getDocsCacheFirst(q).then((snapshot) => {
-      if (cancelled) return;
-      // المزامنة مع المرآة بتحصل في saveReason/deleteReason فقط.
-      callback(mapReasonsSnapshot(snapshot));
-    }).catch(() => {
-      if (!cancelled) callback([]);
+    return subscribeQueryCacheFirst(q, {
+      next: (snapshot) => callback(mapReasonsSnapshot(snapshot)),
+      error: (err) => {
+        console.error('[DiscountReasonService] Error subscribing to reasons:', err);
+        callback([]);
+      }
     });
-
-    return () => { cancelled = true; };
   },
 
   subscribeToReasonsBySecret: (
@@ -135,16 +131,13 @@ export const discountReasonService = {
     }
 
     const q = query(getBookingConfigReasonsRef(normalizedSecret), orderBy('name', 'asc'));
-    let cancelled = false;
-
-    getDocsCacheFirst(q).then((snapshot) => {
-      if (cancelled) return;
-      callback(mapReasonsSnapshot(snapshot));
-    }).catch(() => {
-      if (!cancelled) callback([]);
+    return subscribeQueryCacheFirst(q, {
+      next: (snapshot) => callback(mapReasonsSnapshot(snapshot)),
+      error: (err) => {
+        console.error('[DiscountReasonService] Error subscribing to reasons by secret:', err);
+        callback([]);
+      }
     });
-
-    return () => { cancelled = true; };
   },
 
   saveReason: async (

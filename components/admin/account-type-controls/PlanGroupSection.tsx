@@ -241,11 +241,13 @@ export const PlanGroupSection: React.FC<FeatureRowProps> = ({
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-3 min-w-0">
             <PlanConfigCard plan={group.free} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
-            {group.plus && (
+            {!isOpenForPaid && group.plus && (
               <PlanConfigCard plan={group.plus} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
             )}
-            <PlanConfigCard plan={group.premium} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
-            {group.proMax && (
+            {!isOpenForPaid && (
+              <PlanConfigCard plan={group.premium} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
+            )}
+            {!isOpenForPaid && group.proMax && (
               <PlanConfigCard plan={group.proMax} form={form} setForm={setForm} whatsappNumber={whatsappNumber} />
             )}
           </div>

@@ -136,6 +136,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     publicFormSaving, savePublicFormSettings, isPublicSettingsSaved,
     publicSlotTodayStr, publicTimeMin,
     currentBranchLabel,
+    publicLinkError, retryPublicLink,
     branches: doctorBranches, // الفروع — لتوليد رابط منفصل لكل فرع في قسم الجمهور
   } = useBookingSectionControls({
     userId, bookingSecret: bookingSecretProp, onBookingSecretReady,
@@ -306,6 +307,8 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             onSaveEditedPublicSlot={saveEditedPublicSlot}
             currentBranchLabel={currentBranchLabel}
             branches={doctorBranches}
+            publicLinkError={publicLinkError}
+            onRetryPublicLink={retryPublicLink}
           /></div>
         )}
 

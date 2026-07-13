@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // TierComparisonTable — جدول مقارنة حي بين الباقات
 // ─────────────────────────────────────────────────────────────────────────────
 // بيقرأ القيم الفعلية لكل ميزة من إعدادات الأدمن لحظياً، ويعرضها كجدول
@@ -25,6 +25,7 @@ type FeatureRow = {
   freeKey: keyof AccountTypeControls;
   premiumKey: keyof AccountTypeControls;
   plusKey: keyof AccountTypeControls;
+  proMaxKey: keyof AccountTypeControls;
   proMaxKey: keyof AccountTypeControls;
   paidOpen?: boolean;
 };

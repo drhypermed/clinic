@@ -21,7 +21,7 @@ import {
   query,
   orderBy,
 } from 'firebase/firestore';
-import { getDocCacheFirst, getDocsCacheFirst } from './firestore/cacheFirst';
+import { getDocCacheFirst, getDocsCacheFirst, subscribeQueryCacheFirst } from './firestore/cacheFirst';
 import { getBookingSecretByUserId } from './firestore/booking-secretary/secretConfig.secret';
 // ─ تشديد أمني 2026-04: فحص حد شركات التأمين على السيرفر قبل أي إنشاء جديد ─
 import { validateInsuranceCompaniesCapacity } from './accountTypeControlsService';
@@ -208,18 +208,13 @@ export const insuranceService = {
       return () => {};
     }
     const q = query(getCompaniesRef(userId), orderBy('name', 'asc'));
-    let cancelled = false;
-
-    getDocsCacheFirst(q).then((snapshot) => {
-      if (cancelled) return;
-      // المزامنة مع المرآة في bookingConfig بتحصل في saveCompany/deleteCompany فقط.
-      // إزالة الـ auto-sync من هنا وفّرت ٩٠٪+ من كتابات Firestore المهدورة.
-      callback(mapCompaniesSnapshot(snapshot));
-    }).catch(() => {
-      if (!cancelled) callback([]);
+    return subscribeQueryCacheFirst(q, {
+      next: (snapshot) => callback(mapCompaniesSnapshot(snapshot)),
+      error: (err) => {
+        console.error('[InsuranceService] Error subscribing to companies:', err);
+        callback([]);
+      }
     });
-
-    return () => { cancelled = true; };
   },
 
   /**
@@ -235,16 +230,13 @@ export const insuranceService = {
       return () => {};
     }
     const q = query(getBookingConfigCompaniesRef(normalizedSecret), orderBy('name', 'asc'));
-    let cancelled = false;
-
-    getDocsCacheFirst(q).then((snapshot) => {
-      if (cancelled) return;
-      callback(mapCompaniesSnapshot(snapshot));
-    }).catch(() => {
-      if (!cancelled) callback([]);
+    return subscribeQueryCacheFirst(q, {
+      next: (snapshot) => callback(mapCompaniesSnapshot(snapshot)),
+      error: (err) => {
+        console.error('[InsuranceService] Error subscribing to companies by secret:', err);
+        callback([]);
+      }
     });
-
-    return () => { cancelled = true; };
   },
 
   /**
