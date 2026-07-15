@@ -13,11 +13,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import type {
   AppointmentType, PatientGender } from '../../../types';
 // دوال الهوية: تطبيع الجنس + حساب السن من فرق الوقت
-import {
-  advanceAgeByElapsedTime,
-  normalizeGender,
-} from '../../../utils/patientIdentity';
-import { formatAgeForStorage, formatAgeFromDateOfBirth } from '../utils';
+import { normalizeGender } from '../../../utils/patientIdentity';
+import { resolvePatientSuggestionAgeText } from '../patientSuggestionSelection';
 
 type UsePublicBookingPatientSelectionHandlersParams = {
   appointmentType: AppointmentType;
@@ -55,36 +52,11 @@ export const usePublicBookingPatientSelectionHandlers = ({
       setConsultationCandidatesVisibleCount(10);
     }
   };
-
-  /** نحسب السن الجديد من السن القديم + فرق الوقت بين آخر زيارة واليوم */
-  const resolveAdvancedAgeText = (candidate: { age?: string; lastExamDate?: string; lastConsultationDate?: string; examCompletedAt?: string }): string => {
-    const lastVisit = candidate.lastExamDate || candidate.lastConsultationDate || candidate.examCompletedAt;
-    if (!lastVisit || !candidate.age) return candidate.age ?? '';
-    const text = candidate.age;
-    const isMonth = /شهر/.test(text);
-    const isDay = /يوم/.test(text);
-    const match = text.replace(/[٠-٩]/g, (d) => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).match(/(\d+)/);
-    const num = match ? String(parseInt(match[1] || '0', 10) || 0) : '';
-    const oldAge = isDay
-      ? { years: '', months: '', days: num }
-      : isMonth
-        ? { years: '', months: num, days: '' }
-        : { years: num, months: '', days: '' };
-    const advanced = advanceAgeByElapsedTime(oldAge, lastVisit);
-    const y = parseInt(advanced.years || '0', 10);
-    const m = parseInt(advanced.months || '0', 10);
-    const d = parseInt(advanced.days || '0', 10);
-    if (y > 0) return formatAgeForStorage(String(y), 'year');
-    if (m > 0) return formatAgeForStorage(String(m), 'month');
-    if (d > 0) return formatAgeForStorage(String(d), 'day');
-    return candidate.age ?? '';
-  };
-
   // عند اختيار مريض قديم: ننقل الجنس (ثابت) + نحسب السن الحالي تلقائياً
   const applyPatientIdentity = (candidate: { gender?: PatientGender; age?: string; dateOfBirth?: string; lastExamDate?: string; lastConsultationDate?: string; examCompletedAt?: string }) => {
     setGender(normalizeGender(candidate.gender) ?? '');
     setDateOfBirth(candidate.dateOfBirth || '');
-    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth) || resolveAdvancedAgeText(candidate));
+    setAge(resolvePatientSuggestionAgeText(candidate));
     // الحمل/الرضاعة لا يُنقلا — بنسأل كل زيارة من الصفر
     setPregnant(null);
     setBreastfeeding(null);

@@ -9,6 +9,21 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "verificationStatus",
+          "order": "ASCENDING"
+        }
+      ]
+
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "authRole",
+          "order": "ASCENDING"
+        },
+        {
           "fieldPath": "accountType",
           "order": "ASCENDING"
         },

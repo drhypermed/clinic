@@ -14,10 +14,10 @@ import type {
 import {
   buildLocalDateTime,
   currentTimeMin,
-  formatAgeForStorage,
   formatAgeFromDateOfBirth,
   toLocalDateStr,
 } from '../utils';
+import { resolvePatientSuggestionAgeText } from '../patientSuggestionSelection';
 import {
   buildPatientSuggestions,
   buildRecentExamCandidates,
@@ -26,7 +26,6 @@ import {
 import { branchesService } from '../../../services/firestore/branches';
 // دوال هوية المريض: حساب السن الجديد من آخر زيارة + تطبيع الجنس
 import {
-  advanceAgeByElapsedTime,
   normalizeGender,
 } from '../../../utils/patientIdentity';
 
@@ -143,36 +142,6 @@ export const useAppointmentFormState = ({
     }
   };
 
-  /**
-   * حساب السن الجديد من السن القديم + فرق الوقت بين آخر زيارة واليوم.
-   * لو ما عندناش تاريخ زيارة، نستخدم السن القديم كما هو.
-   */
-  const resolveAdvancedAgeText = (candidate: { age?: string; lastExamDate?: string; lastConsultationDate?: string }): string => {
-    const lastVisit = candidate.lastExamDate || candidate.lastConsultationDate;
-    if (!lastVisit || !candidate.age) return candidate.age ?? '';
-    // نحلل السن النصي القديم ("10 سنة") لأجزاء years/months/days
-    const ageText = candidate.age;
-    const isMonth = /شهر/.test(ageText);
-    const isDay = /يوم/.test(ageText);
-    const match = ageText.replace(/[٠-٩]/g, (d) => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).match(/(\d+)/);
-    const num = match ? String(parseInt(match[1] || '0', 10) || 0) : '';
-    const oldAge = isDay
-      ? { years: '', months: '', days: num }
-      : isMonth
-        ? { years: '', months: num, days: '' }
-        : { years: num, months: '', days: '' };
-    const advanced = advanceAgeByElapsedTime(oldAge, lastVisit);
-    // نرجع نص سن بأكبر وحدة غير صفرية
-    const y = parseInt(advanced.years || '0', 10);
-    const m = parseInt(advanced.months || '0', 10);
-    const d = parseInt(advanced.days || '0', 10);
-    if (y > 0) return formatAgeForStorage(String(y), 'year');
-    if (m > 0) return formatAgeForStorage(String(m), 'month');
-    if (d > 0) return formatAgeForStorage(String(d), 'day');
-    return candidate.age ?? '';
-  };
-
-  /** ملء البيانات عند اختيار مريض من قائمة الاستشارات */
   const handleSelectConsultationCandidate = (candidate: RecentExamPatientOption) => {
     setSelectedConsultationCandidateId(candidate.id);
     setPatientName(candidate.patientName ?? '');
@@ -180,7 +149,7 @@ export const useAppointmentFormState = ({
     // نقل الجنس (ثابت) + حساب السن الحالي من فرق الوقت
     setGender(normalizeGender(candidate.gender) ?? '');
     setDateOfBirth(candidate.dateOfBirth ?? '');
-    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth, dateStr) || resolveAdvancedAgeText({ age: candidate.age, lastExamDate: candidate.examCompletedAt }));
+    setAge(resolvePatientSuggestionAgeText(candidate, dateStr));
     // الحمل/الرضاعة + عمر الحمل يُسألوا من الصفر (متغيرين لكل زيارة)
     setPregnant(null);
     setGestationalAgeWeeks(null);
@@ -193,7 +162,7 @@ export const useAppointmentFormState = ({
     setPhone(candidate.phone ?? '');
     setGender(normalizeGender(candidate.gender) ?? '');
     setDateOfBirth(candidate.dateOfBirth ?? '');
-    setAge(formatAgeFromDateOfBirth(candidate.dateOfBirth, dateStr) || resolveAdvancedAgeText(candidate));
+    setAge(resolvePatientSuggestionAgeText(candidate, dateStr));
     setPregnant(null);
     setGestationalAgeWeeks(null);
     setBreastfeeding(null);

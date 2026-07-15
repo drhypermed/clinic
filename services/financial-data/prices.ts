@@ -63,9 +63,11 @@ export const getPrices = async (userId: string, branchId?: string): Promise<Pric
         const snapshot = await getDocCacheFirst(docRef);
 
         if (snapshot.exists()) {
-            return normalizePricesPayload(
+            const payload = normalizePricesPayload(
                 snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
             );
+            void syncPricesToBookingConfig(userId, payload, branchId);
+            return payload;
         }
 
         // توافق رجعي: إن لم توجد الأسعار الثابته بعد، نستخدم آخر سعر شهري محفوظ.

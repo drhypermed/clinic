@@ -17,6 +17,7 @@ export interface BasicPatientSuggestion {
   patientName: string;      // اسم المريض
   phone?: string;           // رقم الهاتف
   ageText?: string;         // نص العمر المنسق (مثلاً: 5 سنوات و شهر)
+  dateOfBirth?: string;
   lastExamDate?: string;    // تاريخ آخر كشف طبي
   lastConsultationDate?: string; // تاريخ آخر استشارة
   patientFileNumber?: number; // رقم ملف المريض الثابت

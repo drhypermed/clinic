@@ -54,6 +54,8 @@ import {
   normalizeGender,
 } from '../../utils/patientIdentity';
 import { getReusableWeightForVisit } from '../../utils/patientMeasurements';
+import { parseAgeToYearsMonthsDays } from '../appointments/utils';
+import { resolvePatientSuggestionAgeText } from '../appointments/patientSuggestionSelection';
 // سقف قوائم الروشتة المتفق عليه: 15 عنصر لكل قائمة (أدوية/فحوصات/تعليمات)
 import {
   caseAnalysisPrescriptionListTextKey,
@@ -802,14 +804,14 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   patientSuggestions={patientSuggestions}
                   onSelectPatientSuggestion={(item) => {
                     const parsedFileNumber = Number(item.patientFileNumber);
+                    const resolvedAge = resolvePatientSuggestionAgeText(item, visitDate);
+                    const resolvedAgeParts = parseAgeToYearsMonthsDays(resolvedAge);
                     setPatientName(item.patientName || '');
                     setPhone(item.phone || '');
-                    // السن وتاريخ الميلاد لا ينتقلوا من الاقتراحات: الطبيب يدخلهم يدويًا لكل كشف.
-                    setDateOfBirth('');
-                    setAgeYears('');
-                    setAgeMonths('');
-                    setAgeDays('');
-                    // نقل الجنس فقط كهوية ثابتة.
+                    setDateOfBirth(item.dateOfBirth || '');
+                    setAgeYears(resolvedAgeParts.years);
+                    setAgeMonths(resolvedAgeParts.months);
+                    setAgeDays(resolvedAgeParts.days);
                     setGender(normalizeGender(item.gender) ?? '');
                     // الحمل/عمر الحمل/الرضاعة لا يُنقلوا — بنسأل كل زيارة من الصفر
                     setPregnant(null);
