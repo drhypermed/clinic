@@ -12,7 +12,6 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { firestoreService } from '../../../services/firestore';
 import { entryConversations } from '../../../services/firestore/entryConversations';
 import { resolveAppointmentType } from '../../../utils/appointmentType';
 import { functions } from '../../../services/firebaseConfig';
@@ -23,6 +22,7 @@ import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
 import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
 import { normalizeGender } from '../../../utils/patientIdentity';
+import { normalizePatientAddress } from '../../../utils/patientAddress';
 import type { TodayAppointment } from './types';
 import type { EntryRequestAppointment, UsePublicBookingAppointmentActionsParams } from './usePublicBookingAppointmentActions/types';
 import { callWithSessionRetry, isInvalidSecretarySessionError } from './usePublicBookingAppointmentActions/sessionHelpers';
@@ -44,6 +44,9 @@ export const usePublicBookingAppointmentActions = ({
   age,
   dateOfBirth,
   phone,
+  addressGovernorate,
+  addressCityArea,
+  addressDetails,
   gender,
   pregnant,
   breastfeeding,
@@ -87,6 +90,9 @@ export const usePublicBookingAppointmentActions = ({
   setAge,
   setDateOfBirth,
   setPhone,
+  setAddressGovernorate,
+  setAddressCityArea,
+  setAddressDetails,
   setGender,
   setPregnant,
   setBreastfeeding,
@@ -217,6 +223,10 @@ export const usePublicBookingAppointmentActions = ({
     setAge(apt.age || '');
     setDateOfBirth(apt.dateOfBirth || '');
     setPhone(apt.phone || '');
+    const appointmentAddress = normalizePatientAddress(apt.address);
+    setAddressGovernorate(appointmentAddress?.governorate || '');
+    setAddressCityArea(appointmentAddress?.cityArea || '');
+    setAddressDetails(appointmentAddress?.details || '');
     // تحميل حقول الهوية لو الموعد محفوظ بها (الموعد القديم قد لا يحتوي عليها)
     setGender(normalizeGender((apt as any).gender) ?? '');
     setPregnant(typeof (apt as any).pregnant === 'boolean' ? (apt as any).pregnant : null);
@@ -267,6 +277,11 @@ export const usePublicBookingAppointmentActions = ({
     const ageVal = sanitizePublicText(age);
     const dateOfBirthVal = sanitizePublicText(dateOfBirth);
     const ph = sanitizePhoneDigits(phone);
+    const normalizedAddress = normalizePatientAddress({
+      governorate: addressGovernorate,
+      cityArea: addressCityArea,
+      details: addressDetails,
+    });
     const reasonVal = sanitizePublicText(visitReason);
     if (!name) { setFormError('يرجى إدخال اسم المريض'); return; }
     if (!ageVal) { setFormError('يرجى إدخال السن'); return; }
@@ -335,6 +350,7 @@ export const usePublicBookingAppointmentActions = ({
         ageVal,
         dateOfBirthVal,
         ph,
+        address: normalizedAddress,
         reasonVal,
         dateTime,
         sanitizedSecretaryVitals,
@@ -363,6 +379,7 @@ export const usePublicBookingAppointmentActions = ({
           ageVal,
           dateOfBirthVal,
           ph,
+          address: normalizedAddress,
           reasonVal,
           sanitizedSecretaryVitals,
           dateTime,
@@ -402,6 +419,9 @@ export const usePublicBookingAppointmentActions = ({
       setAge('');
       setDateOfBirth('');
       setPhone('');
+      setAddressGovernorate('');
+      setAddressCityArea('');
+      setAddressDetails('');
       setGender('');
       setPregnant(null);
       setBreastfeeding(null);
@@ -453,6 +473,9 @@ export const usePublicBookingAppointmentActions = ({
     setAge('');
     setDateOfBirth('');
     setPhone('');
+    setAddressGovernorate('');
+    setAddressCityArea('');
+    setAddressDetails('');
     setGender('');
     setPregnant(null);
     setBreastfeeding(null);

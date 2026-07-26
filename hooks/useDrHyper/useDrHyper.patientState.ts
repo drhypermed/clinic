@@ -4,12 +4,16 @@ import type { Medication, PatientGender, PaymentType, PrescriptionItem, VitalSig
 import type { AppStateSnapshot } from './useDrHyper.types';
 import type { CaseAnalysisResult } from '../../services/geminiCaseAnalysisService';
 import { getCairoDayKey } from '../../utils/cairoTime';
+import type { PatientImageMetadata } from '../../services/patient-files/images';
 
 type VisitType = 'exam' | 'consultation';
 
 export const useDrHyperPatientState = () => {
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
+  const [addressGovernorate, setAddressGovernorate] = useState('');
+  const [addressCityArea, setAddressCityArea] = useState('');
+  const [addressDetails, setAddressDetails] = useState('');
   const [ageYears, setAgeYears] = useState('');
   const [ageMonths, setAgeMonths] = useState('');
   const [ageDays, setAgeDays] = useState('');
@@ -65,6 +69,7 @@ export const useDrHyperPatientState = () => {
   const [medicalHistory, setMedicalHistory] = useState(''); // التاريخ المرضي
   const [examination, setExamination] = useState(''); // نتائج الفحص
   const [investigations, setInvestigations] = useState(''); // الفحوصات والتشخيص
+  const [investigationImages, setInvestigationImages] = useState<PatientImageMetadata[]>([]);
   
   const [complaintEn, setComplaintEn] = useState('');
   const [historyEn, setHistoryEn] = useState('');
@@ -119,6 +124,12 @@ export const useDrHyperPatientState = () => {
     setPatientName,
     phone,
     setPhone,
+    addressGovernorate,
+    setAddressGovernorate,
+    addressCityArea,
+    setAddressCityArea,
+    addressDetails,
+    setAddressDetails,
     ageYears,
     setAgeYears,
     ageMonths,
@@ -172,6 +183,8 @@ export const useDrHyperPatientState = () => {
     setExamination,
     investigations,
     setInvestigations,
+    investigationImages,
+    setInvestigationImages,
     complaintEn,
     setComplaintEn,
     historyEn,

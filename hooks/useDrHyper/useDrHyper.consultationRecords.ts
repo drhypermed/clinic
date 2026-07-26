@@ -112,6 +112,7 @@ export const buildSeparatedConsultationRecordPayload = ({
   return {
     patientName: baseRecord.patientName,
     phone: baseRecord.phone || undefined,
+    address: baseRecord.address,
     age: baseRecord.age,
     gender: baseRecord.gender,
     pregnant: baseRecord.pregnant,

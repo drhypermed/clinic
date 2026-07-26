@@ -1,8 +1,11 @@
 /**
  * CostFormPanel:
- * نموذج إضافة/تعديل تكلفة كاش (تداخلات أو دخل آخر) — مكوّن عرض خالص.
+ * نموذج إضافة/تعديل دخل مباشر (تداخلات أو دخل آخر) — مكوّن عرض خالص.
  */
 import React from 'react';
+import type { DirectPaymentType } from '../../../utils/paymentMethods';
+import { DIRECT_PAYMENT_TYPES, getPaymentMethodLabel } from '../../../utils/paymentMethods';
+import { PaymentMethodIcon } from '../../common/PaymentMethodIcon';
 
 interface Props {
   editingCostId: string | null;
@@ -10,10 +13,12 @@ interface Props {
   costFormAmount: string;
   costFormType: 'interventions' | 'other';
   costFormNote: string;
+  costPaymentType: DirectPaymentType;
   setCostFormDate: (v: string) => void;
   setCostFormAmount: (v: string) => void;
   setCostFormType: (v: 'interventions' | 'other') => void;
   setCostFormNote: (v: string) => void;
+  setCostPaymentType: (v: DirectPaymentType) => void;
   onCancel: () => void;
   onSave: () => void;
 }
@@ -24,18 +29,40 @@ export const CostFormPanel: React.FC<Props> = ({
   costFormAmount,
   costFormType,
   costFormNote,
+  costPaymentType,
   setCostFormDate,
   setCostFormAmount,
   setCostFormType,
   setCostFormNote,
+  setCostPaymentType,
   onCancel,
   onSave,
 }) => (
   <div className="rounded-xl bg-brand-50 border border-brand-200 p-3 space-y-2">
     <div className="text-[11px] font-black text-brand-700">
-      {editingCostId ? 'تعديل تكلفة كاش' : 'إضافة تكلفة كاش'}
+      {editingCostId ? 'تعديل دخل مباشر' : 'إضافة دخل مباشر'}
     </div>
     <div className="grid grid-cols-2 gap-2">
+      <div className="col-span-2">
+        <label className="mb-1 block text-[10px] font-black text-slate-500">طريقة الدفع</label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          {DIRECT_PAYMENT_TYPES.map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setCostPaymentType(type)}
+              className={`inline-flex items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-black ${
+                costPaymentType === type
+                  ? 'border-brand-600 bg-brand-600 text-white'
+                  : 'border-brand-200 bg-white text-brand-700'
+              }`}
+            >
+              <PaymentMethodIcon type={type} className="h-3 w-3" />
+              {getPaymentMethodLabel(type)}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="col-span-2">
         <label className="mb-0.5 block text-[10px] font-black text-slate-500">التاريخ</label>
         <input

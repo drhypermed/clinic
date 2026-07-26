@@ -12,6 +12,7 @@ import type {
 import type { PatientFileData } from '../patientFilesShared';
 import type { PrescriptionSettings } from '../../../types';
 import { printPatientInvoice } from '../invoicePrintUtils';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 // ─── نوع البند الموحّد بعد الدمج ────────────────────────────────────────
 export type UnifiedInvoiceItem = {
@@ -142,6 +143,7 @@ export function useCostInvoiceSelection({
         patientName: patientFile.name || 'مريض',
         patientFileNumber: patientFile.fileNumber,
         patientPhone: patientFile.phones?.[0],
+        patientAddress: formatPatientAddress(patientFile.address) || undefined,
         items,
         discount: 0,
       },

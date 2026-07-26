@@ -222,13 +222,14 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     setSelectedPatientFileKey(key);
   };
 
-  // مزامنة هوية المريض (اسم/هاتف/عمر) — تُستخدم من نافذة تفاصيل الملف
+  // مزامنة هوية المريض (اسم/هاتف/عنوان/عمر) — تُستخدم من نافذة تفاصيل الملف
   const handleUpdatePatientIdentity = async (payload: {
     patientFileId?: string;
     patientFileNumber?: number;
     patientFileNameKey?: string;
     patientName: string;
     phone?: string;
+    address?: import('../../types').PatientAddress;
     ageYears?: string;
     ageMonths?: string;
     ageDays?: string;
@@ -243,6 +244,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
       patientFileNameKey: payload.patientFileNameKey,
       patientName: payload.patientName,
       phone: payload.phone,
+      address: payload.address,
       age: {
         years: payload.ageYears,
         months: payload.ageMonths,

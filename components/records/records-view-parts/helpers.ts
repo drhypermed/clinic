@@ -38,6 +38,7 @@ export interface CaseData {
     examEn: string;
     investigationsAr: string;
     investigationsEn: string;
+    investigationImageIds: string[];
     diagnosisEn: string;
     pregnancyTracking?: PatientRecord['pregnancyTracking'];
     rxItems: PatientRecord['rxItems'];
@@ -132,6 +133,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
             examEn: rec.examEn || '',
             investigationsAr: rec.investigationsAr || '',
             investigationsEn: rec.investigationsEn || '',
+            investigationImageIds: rec.investigationImageIds || [],
             diagnosisEn: rec.diagnosisEn || '',
             pregnancyTracking: rec.pregnancyTracking,
             rxItems: rec.rxItems || [],
@@ -153,6 +155,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
             examEn: rec.examEn || '',
             investigationsAr: rec.investigationsAr || '',
             investigationsEn: rec.investigationsEn || '',
+            investigationImageIds: rec.investigationImageIds || [],
             diagnosisEn: rec.diagnosisEn || '',
             pregnancyTracking: rec.pregnancyTracking,
             rxItems: rec.rxItems || [],
@@ -175,6 +178,7 @@ export const buildCase = (rec: PatientRecord, type: CaseType): CaseData | null =
         examEn: rec.consultation.examEn || '',
         investigationsAr: rec.consultation.investigationsAr || '',
         investigationsEn: rec.consultation.investigationsEn || '',
+        investigationImageIds: rec.consultation.investigationImageIds || [],
         diagnosisEn: rec.consultation.diagnosisEn || '',
         pregnancyTracking: rec.consultation.pregnancyTracking || rec.pregnancyTracking,
         rxItems: rec.consultation.rxItems || [],

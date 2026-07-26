@@ -16,6 +16,8 @@
 import { useEffect, useMemo } from 'react';
 import { firestoreService } from '../../../services/firestore';
 import type { ClinicAppointment } from '../../../types';
+import { isPendingAppointmentInSecretaryTodayQueue } from '../../../utils/appointmentRetention';
+import { isAppointmentPending } from '../../../utils/appointmentStatus';
 
 interface UseBookingConfigSyncParams {
   /** سر الحجز — المفتاح الرئيسي لـ bookingConfig document */
@@ -88,18 +90,12 @@ const initEmptyBranchMap = <T>(branchIds?: string[]): Record<string, T[]> => {
 /** الحصول على مفتاح الفرع من موعد، مع fallback على 'main'. */
 const getBranchKey = (apt: ClinicAppointment) => (apt.branchId || 'main').trim() || 'main';
 
-/** فلترة بسيطة: نفس اليوم، ولم يُكتمل فيه الكشف بعد. */
-const isAppointmentOnDay = (apt: ClinicAppointment, targetDayStr: string): boolean => {
-  const dt = new Date(apt.dateTime);
-  const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-  return dayStr === targetDayStr && !apt.examCompletedAt;
-};
-
 /** فلترة: تاريخ الموعد بعد اليوم (upcoming). */
 const isAppointmentAfterDay = (apt: ClinicAppointment, targetDayStr: string): boolean => {
   const dt = new Date(apt.dateTime);
+  if (Number.isNaN(dt.getTime()) || !isAppointmentPending(apt)) return false;
   const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-  return dayStr > targetDayStr && !apt.examCompletedAt;
+  return dayStr > targetDayStr;
 };
 
 export const useBookingConfigSync = ({
@@ -124,9 +120,10 @@ export const useBookingConfigSync = ({
   // ── 1) مواعيد اليوم مقسمة بالفرع (حقول كاملة) ──
   const todayAppointmentsByBranch = useMemo(() => {
     const result = initEmptyBranchMap<TodayAppointmentItem>(branchIds);
+    const nowMs = Date.now();
 
     const filtered = allAppointmentsAcrossBranches
-      .filter((apt) => isAppointmentOnDay(apt, todayStr))
+      .filter((apt) => isPendingAppointmentInSecretaryTodayQueue(apt, todayStr, nowMs))
       .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
     filtered.forEach((apt) => {

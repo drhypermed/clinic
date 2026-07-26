@@ -1,4 +1,4 @@
-name: CI
+name: CI checks
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  validate-and-deploy:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,38 +35,18 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # المتغيرات دي لازم تكون متاحة وقت البناء عشان App Check/FCM يتفعّلوا
-          # في الإنتاج. لو فاضية، التطبيق بيتنشر بدون حماية App Check.
           VITE_VAPID_KEY: ${{ secrets.VITE_VAPID_KEY }}
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
 
-      # لازم نحمّل متصفح Chromium في الـ CI قبل اختبارات Playwright —
-      # بدون الخطوة دي، Playwright بيفشل مع "Executable doesn't exist".
-      - name: Install Playwright browsers
+      - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
       - name: E2E tests
-        # continue-on-error عشان لو الـ E2E فشل لأي سبب (مثلاً شبكة بطيئة)،
-        # الـ deploy يكمل طبيعي. الاختبارات الأساسية (Unit + Type check + Lint)
-        # كفاية للحكم على الكود.
         continue-on-error: true
         run: npx playwright test --reporter=list
         env:
           CI: true
 
-      - name: Deploy to Firebase Hosting
-        # النشر يتم فقط عند الدمج أو الدفع المباشر لفرع main أو master
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: gen-lang-client-0444130146
-
-
-      # Firestore Rules و Storage Rules بيتنشروا يدوياً من الجهاز المحلي
-      # باستخدام: firebase deploy --only firestore:rules,storage
-      # لتوفير الحاجة لـ FIREBASE_TOKEN secret. يتم نشرهم فقط عند تعديل
-      # القواعد نفسها (نادراً ما يحصل بعد الإطلاق).
+      # Production deployment is intentionally local. This workflow validates
+      # the saved source only, so the same Hosting release is never deployed twice.

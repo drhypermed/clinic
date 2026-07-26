@@ -12,6 +12,18 @@ const {
 } = require('./secretaryLoginHelpers');
 
 module.exports = ({ HttpsError, getDb, admin }) => {
+  const normalizePatientAddress = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+    const address = {};
+    const governorate = normalizeText(value.governorate).slice(0, 120);
+    const cityArea = normalizeText(value.cityArea).slice(0, 160);
+    const details = normalizeText(value.details).slice(0, 300);
+    if (governorate) address.governorate = governorate;
+    if (cityArea) address.cityArea = cityArea;
+    if (details) address.details = details;
+    return Object.keys(address).length > 0 ? address : undefined;
+  };
+
   const buildAgeTextFromRecordAge = (age) => {
     if (!age || typeof age !== 'object') return '';
 
@@ -77,18 +89,23 @@ module.exports = ({ HttpsError, getDb, admin }) => {
       ? recordsRef.where('branchId', '==', branchId)
       : recordsRef;
 
+    const cutoffMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const cutoffIso = new Date(cutoffMs).toISOString();
     let recordsSnap;
     try {
-      recordsSnap = await baseQuery.orderBy('date', 'desc').limit(2000).get();
+      recordsSnap = await baseQuery
+        .where('date', '>=', cutoffIso)
+        .orderBy('date', 'desc')
+        .limit(300)
+        .get();
     } catch (error) {
       // fallback لو composite index (branchId + date desc) ناقص: نستخدم where
       // لوحده (single-field index تلقائي). الـ where بيفضل مطبق فما نخسرش
       // فايدة الـ branch filter حتى في حالة الـ fallback.
       console.warn('[secretaryFunctions] Falling back to unordered records read:', error?.message || error);
-      recordsSnap = await baseQuery.get();
+      recordsSnap = await baseQuery.where('date', '>=', cutoffIso).limit(300).get();
     }
 
-    const cutoffMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
     const maxIsoDate = (currentValue, nextValue) => {
       const currentIso = toIsoDateString(currentValue);
       const nextIso = toIsoDateString(nextValue);
@@ -162,6 +179,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
         const patientName = normalizeOptionalText(data.patientName) || 'بدون اسم';
         const age = buildAgeTextFromRecordAge(data.age);
         const phone = normalizeOptionalText(data.phone);
+        const address = normalizePatientAddress(data.address);
 
         const embeddedConsultationIso = toIsoDateString(data.consultation?.date);
         const separatedConsultationDates = consultationDatesBySourceRecordId.get(id) || [];
@@ -182,6 +200,7 @@ module.exports = ({ HttpsError, getDb, admin }) => {
           patientName,
           age: age || undefined,
           phone: phone || undefined,
+          address,
           examCompletedAt,
           consultationCompletedAt: consultationCompletedAt || undefined,
           consultationCompletedDates: mergedConsultationDates.length > 0
@@ -250,7 +269,6 @@ module.exports = ({ HttpsError, getDb, admin }) => {
 
     return {
       recentExamPatients,
-      patientDirectory,
     };
   };
 

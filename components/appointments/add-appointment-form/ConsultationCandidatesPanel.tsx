@@ -3,6 +3,7 @@ import type { RecentExamPatientOption } from './types';
 import { getArabicDayName, groupConsultationCandidatesByDate } from './helpers';
 import { buildCairoDateTime, formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { PatientContactActions } from '../../common/PatientContactActions';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 /**
  * لوحة اختيار مرشحي الاستشارات (Consultation Candidates Panel)
@@ -109,6 +110,11 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
                     <p className="text-sm font-black text-slate-800">{candidate.patientName}</p>
                     <span className="text-[10px] font-black text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-100">{candidate.age || 'السن غير معروف'}</span>
                     <span className="text-[10px] font-black text-success-800 bg-success-50 px-2 py-0.5 rounded border border-success-100">{candidate.phone || 'بدون رقم هاتف'}</span>
+                    {formatPatientAddress(candidate.address, 'summary') && (
+                      <span className="text-[10px] font-bold text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                        {formatPatientAddress(candidate.address, 'summary')}
+                      </span>
+                    )}
                     <div className={`max-w-full text-[10px] font-black px-2 py-1 rounded border leading-relaxed ${consultationStatus.hasConsultation ? 'text-warning-800 bg-warning-50 border-warning-100' : 'text-danger-800 bg-danger-50 border-danger-100'}`}>
                       <div>{consultationStatus.statusLabel}</div>
                       {consultationStatus.datesLabel && (

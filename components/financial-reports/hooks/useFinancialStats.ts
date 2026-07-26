@@ -41,6 +41,27 @@ import { asTimestamp, collectConsultationVisits } from './useFinancialStats/coll
 import { buildVisitFinancialByDate } from './useFinancialStats/buildVisitFinancialByDate';
 import { buildChartDays } from './useFinancialStats/buildChartDays';
 import { buildYearlyStats } from './useFinancialStats/buildYearlyStats';
+import {
+    addToDirectPaymentTotals,
+    createEmptyDirectPaymentTotals,
+    sumDirectPaymentTotals,
+    type DirectPaymentTotals,
+} from '../../../utils/paymentMethods';
+
+const addAdditionalRevenueByMethod = (
+    totals: DirectPaymentTotals,
+    totalAmount: number,
+    rawItems: unknown,
+) => {
+    const items = Array.isArray(rawItems) ? rawItems : [];
+    items.forEach((item) => addToDirectPaymentTotals(
+        totals,
+        item && typeof item === 'object' ? (item as { paymentType?: unknown }).paymentType : undefined,
+        item && typeof item === 'object' ? (item as { amount?: unknown }).amount : 0,
+    ));
+    const unclassifiedAmount = Math.max(0, totalAmount - sumDirectPaymentTotals(totals));
+    if (unclassifiedAmount > 0) totals.cash += unclassifiedAmount;
+};
 
 export const useFinancialStats = ({
     records,
@@ -190,7 +211,7 @@ export const useFinancialStats = ({
                 discountAmount: record.discountAmount,
                 discountPercent: record.discountPercent,
             });
-            exams.push({ patientName: record.patientName, cashAmount: breakdown.collectedCash, insuranceAmount: breakdown.insuranceClaims, companyName: record.insuranceCompanyName });
+            exams.push({ patientName: record.patientName, cashAmount: breakdown.collectedCash, insuranceAmount: breakdown.insuranceClaims, companyName: record.insuranceCompanyName, paymentType: record.paymentType });
         });
 
         const seenConsultIds = new Set<string>();
@@ -211,7 +232,7 @@ export const useFinancialStats = ({
                     discountAmount: record.discountAmount,
                     discountPercent: record.discountPercent,
                 });
-                consults.push({ patientName: record.patientName, cashAmount: breakdown.collectedCash, insuranceAmount: breakdown.insuranceClaims, companyName: record.insuranceCompanyName });
+                consults.push({ patientName: record.patientName, cashAmount: breakdown.collectedCash, insuranceAmount: breakdown.insuranceClaims, companyName: record.insuranceCompanyName, paymentType: record.paymentType });
             };
 
             if (record.isConsultationOnly) {
@@ -261,6 +282,28 @@ export const useFinancialStats = ({
             total: totalInterventions + totalOther
         };
     }, [dailyInterventions, dailyOther, selectedDayKey, selectedDate, yearlyDailyMap]);
+
+    const additionalRevenueDirectPaymentTotals = useMemo(() => {
+        const monthly = createEmptyDirectPaymentTotals();
+        const daily = createEmptyDirectPaymentTotals();
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        for (let d = 1; d <= lastDay; d++) {
+            const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const entry = yearlyDailyMap[dayKey];
+            const dayTotal = dayKey === selectedDayKey
+                ? (parseFloat(dailyInterventions) || 0) + (parseFloat(dailyOther) || 0)
+                : (Number(entry?.interventionsRevenue) || 0) + (Number(entry?.otherRevenue) || 0);
+            const dayTotals = createEmptyDirectPaymentTotals();
+            addAdditionalRevenueByMethod(dayTotals, dayTotal, entry?.cashCostItems);
+            (Object.keys(dayTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+                monthly[type] += dayTotals[type];
+                if (dayKey === selectedDayKey) daily[type] += dayTotals[type];
+            });
+        }
+        return { monthly, daily };
+    }, [dailyInterventions, dailyOther, selectedDate, selectedDayKey, yearlyDailyMap]);
 
     const monthlyAdditionalRevenue = useMemo(() => {
         const year = selectedDate.getFullYear();
@@ -353,6 +396,8 @@ export const useFinancialStats = ({
             selectedDayConsultsIncome: 0,
             selectedDayCollectedCash: 0,
             selectedDayDiscountExpense: 0,
+            directPaymentTotals: createEmptyDirectPaymentTotals(),
+            selectedDayDirectPaymentTotals: createEmptyDirectPaymentTotals(),
         };
 
         Object.values(visitFinancialByDate).forEach((day) => {
@@ -361,6 +406,9 @@ export const useFinancialStats = ({
             summary.monthCollectedCash += day.collectedCash;
             summary.monthInsuranceClaims += day.insuranceClaims;
             summary.monthDiscountExpense += day.discountExpense;
+            (Object.keys(day.directPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+                summary.directPaymentTotals[type] += day.directPaymentTotals[type];
+            });
         });
 
         const selectedDayFinancial = visitFinancialByDate[selectedDayKey];
@@ -369,6 +417,7 @@ export const useFinancialStats = ({
             summary.selectedDayConsultsIncome = selectedDayFinancial.consultsIncome;
             summary.selectedDayCollectedCash = selectedDayFinancial.collectedCash;
             summary.selectedDayDiscountExpense = selectedDayFinancial.discountExpense;
+            summary.selectedDayDirectPaymentTotals = { ...selectedDayFinancial.directPaymentTotals };
         }
 
         return summary;
@@ -446,6 +495,12 @@ export const useFinancialStats = ({
     const totalIncome = examsIncome + consultsIncome + monthlyAdditionalRevenue.total;
 
     const collectedCash = monthlyAdditionalRevenueCash.total + monthlyVisitFinancialTotals.monthCollectedCash;
+    const directPaymentTotals: DirectPaymentTotals = {
+        cash: monthlyVisitFinancialTotals.directPaymentTotals.cash + additionalRevenueDirectPaymentTotals.monthly.cash,
+        instapay: monthlyVisitFinancialTotals.directPaymentTotals.instapay + additionalRevenueDirectPaymentTotals.monthly.instapay,
+        wallet: monthlyVisitFinancialTotals.directPaymentTotals.wallet + additionalRevenueDirectPaymentTotals.monthly.wallet,
+        bank_transfer: monthlyVisitFinancialTotals.directPaymentTotals.bank_transfer + additionalRevenueDirectPaymentTotals.monthly.bank_transfer,
+    };
     const insuranceClaims = monthlyInsuranceExtrasTotal + monthlyVisitFinancialTotals.monthInsuranceClaims;
     const monthlyDiscountExpense = monthlyVisitFinancialTotals.monthDiscountExpense;
 
@@ -462,6 +517,12 @@ export const useFinancialStats = ({
         (parseFloat(dailyInterventions) || 0) +
         (parseFloat(dailyOther) || 0) +
         monthlyVisitFinancialTotals.selectedDayCollectedCash;
+    const dailyDirectPaymentTotals: DirectPaymentTotals = {
+        cash: monthlyVisitFinancialTotals.selectedDayDirectPaymentTotals.cash + additionalRevenueDirectPaymentTotals.daily.cash,
+        instapay: monthlyVisitFinancialTotals.selectedDayDirectPaymentTotals.instapay + additionalRevenueDirectPaymentTotals.daily.instapay,
+        wallet: monthlyVisitFinancialTotals.selectedDayDirectPaymentTotals.wallet + additionalRevenueDirectPaymentTotals.daily.wallet,
+        bank_transfer: monthlyVisitFinancialTotals.selectedDayDirectPaymentTotals.bank_transfer + additionalRevenueDirectPaymentTotals.daily.bank_transfer,
+    };
 
     const dailyDiscountExpense = monthlyVisitFinancialTotals.selectedDayDiscountExpense;
 
@@ -479,11 +540,13 @@ export const useFinancialStats = ({
         dailyConsultsIncome,
         dailyTotalRevenue,
         dailyCollectedCash,
+        dailyDirectPaymentTotals,
         dailyDiscountExpense,
         examsIncome,
         consultsIncome,
         totalIncome,
         collectedCash,
+        directPaymentTotals,
         insuranceClaims,
         monthlyDiscountExpense,
         totalExpenses

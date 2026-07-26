@@ -21,6 +21,14 @@ import {
   normalizeSecretaryVitalFieldDefinitions,
   normalizeSecretaryVitalsVisibility,
 } from '../../../utils/secretaryVitals';
+import {
+  getSecretaryUsernameValidationMessage,
+  normalizeSecretaryUsername,
+} from '../../../utils/secretaryUsername';
+import {
+  getSecretaryUsernameSaveErrorMessage,
+  setSecretaryUsername as saveSecretaryUsername,
+} from '../../../services/secretaryUsernameService';
 
 const pad2 = (value: number) => String(value).padStart(2, '0');
 
@@ -55,7 +63,6 @@ interface UseBookingSectionControlsArgs {
   ) => Promise<void> | void;
   userDisplayName?: string | null;
   userEmail?: string | null;
-  currentDayStr: string;
   doctorSpecialty?: string | null;
   activeBranchId?: string | null;
 }
@@ -69,7 +76,6 @@ export const useBookingSectionControls = ({
   onSyncSecretaryVitalsVisibility,
   userDisplayName,
   userEmail,
-  currentDayStr,
   doctorSpecialty,
   activeBranchId: activeBranchIdProp,
 }: UseBookingSectionControlsArgs) => {
@@ -95,6 +101,7 @@ export const useBookingSectionControls = ({
   const [credentialsSuccess, setCredentialsSuccess] = useState(false);
   const [bookingSectionOpen, setBookingSectionOpen] = useState(false);
   const [bookingFormTitle, setBookingFormTitle] = useState('');
+  const [secretaryUsername, setSecretaryUsername] = useState('');
   const [secretaryPassword, setSecretaryPassword] = useState('');
   const [secretaryPasswordTouched, setSecretaryPasswordTouched] = useState(false);
   const [secretarySettingsHydrated, setSecretarySettingsHydrated] = useState(false);
@@ -316,6 +323,7 @@ export const useBookingSectionControls = ({
       if (secretarySettingsRequestIdRef.current !== myRequestId) return;
       console.warn('[Secretary] Failed to load booking settings:', err);
       setBookingFormTitle('');
+      setSecretaryUsername('');
       setSecretaryPassword('');
       setSecretaryPasswordTouched(false);
       const fallbackFields = normalizeSecretaryVitalFieldDefinitions(
@@ -341,6 +349,7 @@ export const useBookingSectionControls = ({
 
         if (!userId) {
           setBookingFormTitle(config?.formTitle ?? '');
+          setSecretaryUsername(config?.secretaryUsername ?? '');
           setSecretaryPassword('');
           setSecretaryPasswordTouched(false);
           const rawVisibility = config?.secretaryVitalsVisibility;
@@ -366,6 +375,7 @@ export const useBookingSectionControls = ({
           .then((legacyConfig) => {
             if (secretarySettingsRequestIdRef.current !== myRequestId) return;
             setBookingFormTitle((config?.formTitle ?? '').trim() || legacyConfig?.formTitle || '');
+            setSecretaryUsername(legacyConfig?.secretaryUsername ?? config?.secretaryUsername ?? '');
             setSecretaryPassword((legacyConfig?.secretaryPasswordPlain ?? '').trim());
             const nextFields = normalizeSecretaryVitalFieldDefinitions(
               config?.secretaryVitalFields || legacyConfig?.secretaryVitalFields,
@@ -436,6 +446,13 @@ export const useBookingSectionControls = ({
     if (!secretarySettingsHydrated) return;
     if (credentialsSaving) return;
 
+    const normalizedUsername = normalizeSecretaryUsername(secretaryUsername);
+    const usernameValidationMessage = getSecretaryUsernameValidationMessage(normalizedUsername);
+    if (usernameValidationMessage) {
+      setCredentialsError(usernameValidationMessage);
+      return;
+    }
+
     // تحقق من طول الرقم السري للسكرتيرة (6 على الأقل) لو الطبيب غيّره فعلاً.
     // المستخدمون اللي مش بيغيّروا الباسورد معندهمش مشكلة لأن touched تفضل false.
     if (secretaryPasswordTouched) {
@@ -459,7 +476,20 @@ export const useBookingSectionControls = ({
 
       const pass = secretaryPasswordTouched ? secretaryPassword : undefined;
       const currentBranchId = effectiveActiveBranchId
-        || (userId ? branchesService.getActiveBranchId(userId) : undefined);
+        || (userId ? branchesService.getActiveBranchId(userId) : undefined)
+        || DEFAULT_BRANCH_ID;
+
+      try {
+        const savedUsername = await saveSecretaryUsername({
+          username: normalizedUsername,
+          branchId: currentBranchId,
+          secret: resolvedSecret,
+        });
+        setSecretaryUsername(savedUsername.username);
+      } catch (usernameError) {
+        throw new Error(getSecretaryUsernameSaveErrorMessage(usernameError));
+      }
+
       await firestoreService.updateBookingSettings(
         userId,
         resolvedSecret,
@@ -503,6 +533,7 @@ export const useBookingSectionControls = ({
     onBookingSecretReady,
     secretaryPasswordTouched,
     secretaryPassword,
+    secretaryUsername,
     bookingFormTitle,
     userDisplayName,
     userEmail,
@@ -539,7 +570,6 @@ export const useBookingSectionControls = ({
         publicBookingSecret,
         publicFormTitle,
         publicFormContactInfo,
-        true,
         effectivePublicBranchId,
       );
       setIsPublicSettingsSaved(true);
@@ -608,6 +638,12 @@ export const useBookingSectionControls = ({
     bookingSectionOpen, toggleBookingSection: () => setBookingSectionOpen(!bookingSectionOpen),
     bookingFormTitle, onBookingFormTitleChange: (v: string) => {
       setBookingFormTitle(v);
+      setSecretarySettingsDirty(true);
+      setCredentialsError(null);
+      setCredentialsSuccess(false);
+    },
+    secretaryUsername, onSecretaryUsernameChange: (v: string) => {
+      setSecretaryUsername(normalizeSecretaryUsername(v));
       setSecretarySettingsDirty(true);
       setCredentialsError(null);
       setCredentialsSuccess(false);

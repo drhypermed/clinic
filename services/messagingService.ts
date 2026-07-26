@@ -1,5 +1,5 @@
 ﻿import { deleteToken, getMessaging, onMessage, type Messaging } from 'firebase/messaging';
-import app, { auth } from './firebaseConfig';
+import app from './firebaseConfig';
 import { firestoreService } from './firestore';
 import {
   cachePushToken,
@@ -59,7 +59,6 @@ interface PushSetupResult {
   debugMessage?: string;
   debugScope?: string;
 }
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 function getVapidKey(): string | undefined {
   const normalizeCandidate = (value: string) => value.trim().replace(/^['"]+|['"]+$/g, '');
   const isLikelyVapid = (value: string) =>

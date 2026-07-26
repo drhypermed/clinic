@@ -16,11 +16,13 @@
 
 import React, { useState } from 'react';
 import { PatientRecord } from '../../types';
+import { getPaymentMethodLabel } from '../../utils/paymentMethods';
 import { buildCairoDateTime, formatUserDate } from '../../utils/cairoTime';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { CasePanel } from './records-view-parts/CasePanel';
 import { highlight } from './records-view-parts/highlight';
 import { RecordPackBadge } from '../specialty-packs/RecordPackBadge';
+import { formatPatientAddress } from '../../utils/patientAddress';
 import {
   buildCase,
   formatDateTimeSep,
@@ -138,11 +140,9 @@ export const DailyGroup: React.FC<{
               normalizedDiscountPercent > 0
                 ? `${normalizedDiscountPercent}%`
                 : (normalizedDiscountAmount > 0 ? `${normalizedDiscountAmount.toFixed(2)} ج.م` : '');
-            const paymentMetaText = rec.paymentType === 'insurance'
-              ? 'الدفع: تأمين'
-              : rec.paymentType === 'discount'
-                ? `الدفع: خصم${discountDetails ? ` (${discountDetails})` : ''}`
-                : 'الدفع: كاش';
+            const paymentMetaText = rec.paymentType === 'discount'
+              ? `الدفع: خصم${discountDetails ? ` (${discountDetails})` : ''}`
+              : `الدفع: ${getPaymentMethodLabel(rec.paymentType)}`;
             const discountReasonSummary = String(rec.discountReasonLabel || '').trim();
             const insuranceMeta = [
               rec.insuranceMembershipId ? `رقم الكارنية: ${rec.insuranceMembershipId}` : null,
@@ -264,6 +264,11 @@ export const DailyGroup: React.FC<{
                       <PatientContactActions phone={rec.phone} compact />
                     </div>
                   )}
+                  {formatPatientAddress(rec.address, 'summary') && (
+                    <div className="mt-1 text-xs font-medium text-slate-500">
+                      العنوان: {highlight(formatPatientAddress(rec.address, 'summary'), term)}
+                    </div>
+                  )}
                 </div>
 
                 {/* تفاصيل الحالة وأزرار الإجراءات (تظهر عند التوسيع) */}
@@ -294,9 +299,9 @@ export const DailyGroup: React.FC<{
                       )}
                     </div>
 
-                    {examCase && <CasePanel data={examCase} term={term} onDeleteCase={() => onDeleteExam(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} />}
+                    {examCase && <CasePanel data={examCase} term={term} onDeleteCase={() => onDeleteExam(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} userId={doctorUserId} />}
                     {/* الاستشارة تعرض نفس القياسات والعلامات الحيوية المحفوظة في السجل — بنفس منطق الكشف */}
-                    {consultationCase && <CasePanel data={consultationCase} term={term} onDeleteCase={() => onDeleteConsultation(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} />}
+                    {consultationCase && <CasePanel data={consultationCase} term={term} onDeleteCase={() => onDeleteConsultation(rec)} vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined} userId={doctorUserId} />}
                   </div>
                 )}
               </div>

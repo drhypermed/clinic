@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { ClinicAppointment, PatientGender, PatientRecord } from '../../../types';
+import type { ClinicAppointment, PatientGender, PatientRecord, PaymentType } from '../../../types';
 import { firestoreService } from '../../../services/firestore';
 import { consumeBookingQuota } from '../../../services/accountTypeControlsService';
 import { getQuotaVerificationFailureMessage } from '../../../services/account-type-controls/quotaErrors';
@@ -24,10 +24,13 @@ import {
   extractBookingQuotaNotice,
 } from './helpers';
 import { branchesService } from '../../../services/firestore/branches';
+import { usePatientDirectorySuggestions } from '../../../hooks/usePatientDirectorySuggestions';
+import { mergePatientSuggestions } from '../../../services/patientSuggestionSearch';
 // دوال هوية المريض: حساب السن الجديد من آخر زيارة + تطبيع الجنس
 import {
   normalizeGender,
 } from '../../../utils/patientIdentity';
+import { normalizePatientAddress } from '../../../utils/patientAddress';
 
 /**
  * الملف: useAppointmentFormState.ts (Hook)
@@ -38,12 +41,14 @@ import {
  */
 interface UseAppointmentFormStateArgs {
   userId: string;
+  branchId?: string;
   records: PatientRecord[];
   appointments: ClinicAppointment[];
 }
 
 export const useAppointmentFormState = ({
   userId,
+  branchId = 'main',
   records,
   appointments,
 }: UseAppointmentFormStateArgs) => {
@@ -52,6 +57,9 @@ export const useAppointmentFormState = ({
   const [age, setAge] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [phone, setPhone] = useState('');
+  const [addressGovernorate, setAddressGovernorate] = useState('');
+  const [addressCityArea, setAddressCityArea] = useState('');
+  const [addressDetails, setAddressDetails] = useState('');
   // حقول الهوية الجديدة: الجنس ثابت، الحمل/الرضاعة متغيرين لكل زيارة
   const [gender, setGender] = useState<PatientGender | ''>('');
   const [pregnant, setPregnant] = useState<boolean | null>(null);
@@ -67,7 +75,7 @@ export const useAppointmentFormState = ({
   const [editingAppointmentId, setEditingAppointmentId] = useState<string | null>(null);
   
   // حالات التأمين
-  const [paymentType, setPaymentType] = useState<'cash' | 'insurance' | 'discount'>('cash');
+  const [paymentType, setPaymentType] = useState<PaymentType>('cash');
   const [insuranceCompanyId, setInsuranceCompanyId] = useState('');
   const [insuranceCompanyName, setInsuranceCompanyName] = useState('');
   const [insuranceApprovalCode, setInsuranceApprovalCode] = useState('');
@@ -92,7 +100,18 @@ export const useAppointmentFormState = ({
   const previousDayStrRef = useRef(currentDayStr);
 
   // حساب الاقتراحات والمرشحين بشكل ذكي (Memoized)
-  const patientSuggestions = useMemo(() => buildPatientSuggestions(records), [records]);
+  const localPatientSuggestions = useMemo(() => buildPatientSuggestions(records), [records]);
+  const directoryPatientSuggestions = usePatientDirectorySuggestions({
+    userId,
+    branchId,
+    nameQuery: patientName,
+    phoneQuery: phone,
+    enabled: addAppointmentFormOpen,
+  });
+  const patientSuggestions = useMemo(
+    () => mergePatientSuggestions(directoryPatientSuggestions, localPatientSuggestions),
+    [directoryPatientSuggestions, localPatientSuggestions],
+  );
   const recentExamCandidates = useMemo(() => buildRecentExamCandidates(records), [records]);
   const visibleConsultationCandidates = recentExamCandidates;
 
@@ -146,6 +165,9 @@ export const useAppointmentFormState = ({
     setSelectedConsultationCandidateId(candidate.id);
     setPatientName(candidate.patientName ?? '');
     setPhone(candidate.phone ?? '');
+    setAddressGovernorate(candidate.address?.governorate ?? '');
+    setAddressCityArea(candidate.address?.cityArea ?? '');
+    setAddressDetails(candidate.address?.details ?? '');
     // نقل الجنس (ثابت) + حساب السن الحالي من فرق الوقت
     setGender(normalizeGender(candidate.gender) ?? '');
     setDateOfBirth(candidate.dateOfBirth ?? '');
@@ -160,6 +182,9 @@ export const useAppointmentFormState = ({
   const handleSelectPatientSuggestion = (candidate: PatientSuggestionOption) => {
     setPatientName(candidate.patientName ?? '');
     setPhone(candidate.phone ?? '');
+    setAddressGovernorate(candidate.address?.governorate ?? '');
+    setAddressCityArea(candidate.address?.cityArea ?? '');
+    setAddressDetails(candidate.address?.details ?? '');
     setGender(normalizeGender(candidate.gender) ?? '');
     setDateOfBirth(candidate.dateOfBirth ?? '');
     setAge(resolvePatientSuggestionAgeText(candidate, dateStr));
@@ -182,6 +207,9 @@ export const useAppointmentFormState = ({
     setDateOfBirth(apt.dateOfBirth ?? '');
     setAge(formatAgeFromDateOfBirth(apt.dateOfBirth, toLocalDateStr(dt)) || (apt.age ?? ''));
     setPhone(apt.phone ?? '');
+    setAddressGovernorate(apt.address?.governorate ?? '');
+    setAddressCityArea(apt.address?.cityArea ?? '');
+    setAddressDetails(apt.address?.details ?? '');
     setVisitReason(apt.visitReason ?? '');
     setDateStr(toLocalDateStr(dt));
     setTimeStr(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
@@ -281,11 +309,17 @@ export const useAppointmentFormState = ({
         : undefined;
     const breastfeedingForPayload = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
     const dateOfBirthForPayload = dateOfBirth.trim() || undefined;
+    const addressForPayload = normalizePatientAddress({
+      governorate: addressGovernorate,
+      cityArea: addressCityArea,
+      details: addressDetails,
+    });
 
     // بناء كائن الموعد (Payload)
     const basePayload: ClinicAppointment = editingAppointment ? {
       ...editingAppointment,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
+      address: addressForPayload,
       age: ageVal, visitReason: reasonVal, appointmentType: resolvedType,
       dateOfBirth: dateOfBirthForPayload,
       gender: genderForPayload,
@@ -295,6 +329,7 @@ export const useAppointmentFormState = ({
     } : {
       id: `apt-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       patientName: name, phone: ph, dateTime: chosenDateTime.toISOString(),
+      address: addressForPayload,
       createdAt: new Date().toISOString(), age: ageVal, visitReason: reasonVal,
       dateOfBirth: dateOfBirthForPayload,
       source: 'clinic', appointmentType: resolvedType,
@@ -365,6 +400,7 @@ export const useAppointmentFormState = ({
       
       // 4. تصفير النموذج
       setPatientName(''); setAge(''); setDateOfBirth(''); setPhone(''); setVisitReason('');
+      setAddressGovernorate(''); setAddressCityArea(''); setAddressDetails('');
       setGender(''); setPregnant(null); setGestationalAgeWeeks(null); setBreastfeeding(null);
       setAppointmentType('exam'); setSelectedConsultationCandidateId('');
       setEditingAppointmentId(null); setAddSuccessToast(true);
@@ -405,7 +441,9 @@ export const useAppointmentFormState = ({
   });
 
   return {
-    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone, currentDayStr,
+    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone,
+    addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
+    currentDayStr,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,

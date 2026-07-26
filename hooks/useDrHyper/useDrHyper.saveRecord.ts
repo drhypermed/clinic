@@ -9,7 +9,7 @@
  *   - `useDrHyper.saveRecord.patientFile.ts`    : حل مرجع ملف المريض والمزامنة.
  *   - `useDrHyper.saveRecord.priceResolvers.ts` : جلب الأسعار + branchId المحفوظة.
  *   - `useDrHyper.saveRecord.quotaCheck.ts`     : فحص الحصة اليومية قبل الحفظ.
- *   - `useDrHyper.saveRecord.paymentPayload.ts` : بناء جزء الدفع (كاش/تأمين/خصم).
+ *   - `useDrHyper.saveRecord.paymentPayload.ts` : بناء جزء الدفع (كاش/إلكتروني/تأمين/خصم).
  */
 
 import React from 'react';
@@ -40,6 +40,7 @@ import {
 } from './useDrHyper.saveRecord.priceResolvers';
 import { runPreSaveQuotaCheck } from './useDrHyper.saveRecord.quotaCheck';
 import { buildPaymentPayload } from './useDrHyper.saveRecord.paymentPayload';
+import { normalizePatientAddress } from '../../utils/patientAddress';
 
 // يجد تاريخ الكشف المصدر من قائمة السجلات — لحفظ sourceExamDate صراحةً
 const findSourceExamDate = (records: PatientRecord[], sourceExamRecordId: string): string | undefined => {
@@ -93,6 +94,9 @@ export const createSaveRecordAction = ({
   user,
   patientName,
   phone,
+  addressGovernorate,
+  addressCityArea,
+  addressDetails,
   ageYears,
   ageMonths,
   ageDays,
@@ -117,6 +121,7 @@ export const createSaveRecordAction = ({
   medicalHistory,
   examination,
   investigations,
+  investigationImages,
   visitDate,
   visitType,
   activeVisitDateTime,
@@ -261,6 +266,7 @@ export const createSaveRecordAction = ({
       historyAr: medicalHistory,
       examAr: examination,
       investigationsAr: investigations,
+      investigationImageIds: investigationImages.map((image) => image.id),
     });
 
     const paymentPayload = buildPaymentPayload({
@@ -313,10 +319,16 @@ export const createSaveRecordAction = ({
           })()
         : undefined;
     const breastfeedingForSave = typeof breastfeeding === 'boolean' ? breastfeeding : undefined;
+    const addressForSave = normalizePatientAddress({
+      governorate: addressGovernorate,
+      cityArea: addressCityArea,
+      details: addressDetails,
+    });
 
     const currentData = {
       patientName,
       phone: phone || undefined,
+      address: addressForSave,
       age: { years: ageYears, months: ageMonths, days: ageDays },
       dateOfBirth: dateOfBirth.trim() || undefined,
       gender: genderForSave,
@@ -525,6 +537,7 @@ export const createSaveRecordAction = ({
         const consultationUpdate = sanitizeForFirestore({
           patientName,
           phone: phone || undefined,
+          address: addressForSave,
           age: { years: ageYears, months: ageMonths, days: ageDays },
           dateOfBirth: dateOfBirth.trim() || undefined,
           gender: genderForSave,
@@ -666,6 +679,7 @@ export const createSaveRecordAction = ({
         userId: user.uid,
         patientName,
         phone,
+        address: addressForSave,
         ageYears,
         ageMonths,
         ageDays,

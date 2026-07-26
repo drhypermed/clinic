@@ -2,7 +2,7 @@
  * مكون اختيار الدفع والتأمين (Insurance Payment Selector)
  * 
  * يظهر في شاشة الكشف لتحديد:
- * 1. الدفع (كاش / تأمين)
+ * 1. الدفع (كاش / إنستا باي / محفظة / حساب بنكي / تأمين / خصم)
  * 2. اختيار شركة التأمين (إذا كان تأمين)
  * 3. إدخال رقم الكارنيه وكود الموافقة
  * 
@@ -19,6 +19,8 @@ import {
 import { discountReasonService } from '../../services/discountReasonService';
 import { useVisitServicePrices } from '../../hooks/useVisitServicePrices';
 import { DiscountPaymentFields, type DiscountReasonOption } from './DiscountPaymentFields';
+import { PaymentMethodIcon } from '../common/PaymentMethodIcon';
+import { getPaymentMethodShortLabel, isDirectPaymentType } from '../../utils/paymentMethods';
 
 interface InsurancePaymentSelectorProps {
   userId: string;
@@ -155,10 +157,16 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
     setDiscountReasonLabel?.('');
   };
 
+  const selectPaymentType = (nextType: PaymentType) => {
+    setPaymentType(nextType);
+    if (nextType !== 'insurance') clearInsuranceFields();
+    if (nextType !== 'discount') clearDiscountFields();
+  };
+
   // لا يظهر في وضع الطباعة
   if (isPrintMode) return null;
-  // عند إخفاء السويتش واختيار كاش لا توجد تفاصيل إضافية للعرض
-  if (!showToggle && paymentType === 'cash') return null;
+  // طرق الدفع المباشر لا تحتاج حقول تفاصيل إضافية.
+  if (!showToggle && isDirectPaymentType(paymentType)) return null;
 
   return (
     <section className="clinic-section no-print rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-5 text-right bg-white border border-slate-200 shadow-sm" dir="rtl">
@@ -166,49 +174,47 @@ export const InsurancePaymentSelector: React.FC<InsurancePaymentSelectorProps> =
       {showToggle && (
       <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
         <span className="text-sm sm:text-base font-black text-slate-800">💳 الدفع</span>
-        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto sm:min-w-[360px]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full sm:w-auto sm:min-w-[620px]">
+          {(['cash', 'instapay', 'wallet', 'bank_transfer'] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => selectPaymentType(type)}
+              className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
+                paymentType === type
+                  ? type === 'instapay'
+                    ? 'bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-sm scale-[1.01]'
+                    : 'bg-brand-600 text-white shadow-sm scale-[1.01]'
+                  : type === 'instapay'
+                    ? 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:border-fuchsia-300 hover:bg-fuchsia-100'
+                    : 'bg-brand-50 text-brand-700 border border-brand-200 hover:border-brand-300 hover:bg-brand-100'
+              }`}
+            >
+              <PaymentMethodIcon type={type} className="h-4 w-4 shrink-0" />
+              {getPaymentMethodShortLabel(type)}
+            </button>
+          ))}
           <button
             type="button"
-            onClick={() => {
-              setPaymentType('cash');
-              clearInsuranceFields();
-              clearDiscountFields();
-            }}
-            className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
-              paymentType === 'cash'
-                ? 'bg-brand-600 text-white shadow-sm scale-[1.01]'
-                : 'bg-brand-50 text-brand-700 border border-brand-200 hover:border-brand-300 hover:bg-brand-100'
-            }`}
-          >
-            💵 كاش
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentType('insurance');
-              clearDiscountFields();
-            }}
+            onClick={() => selectPaymentType('insurance')}
             className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
               paymentType === 'insurance'
                 ? 'bg-success-600 text-white shadow-sm scale-[1.01]'
                 : 'bg-success-50 text-success-700 border border-success-200 hover:border-success-300 hover:bg-success-100'
             }`}
           >
-            🏢 تأمين
+            <span className="inline-flex items-center justify-center gap-1.5"><PaymentMethodIcon type="insurance" /> تأمين</span>
           </button>
           <button
             type="button"
-            onClick={() => {
-              setPaymentType('discount');
-              clearInsuranceFields();
-            }}
+            onClick={() => selectPaymentType('discount')}
             className={`px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 ${
               paymentType === 'discount'
                 ? 'bg-warning-600 text-white shadow-sm scale-[1.01]'
                 : 'bg-warning-50 text-warning-700 border border-warning-200 hover:border-warning-300 hover:bg-warning-100'
             }`}
           >
-            🏷️ خصم
+            <span className="inline-flex items-center justify-center gap-1.5"><PaymentMethodIcon type="discount" /> خصم</span>
           </button>
         </div>
       </div>

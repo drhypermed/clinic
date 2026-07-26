@@ -2,7 +2,7 @@
  * الملف: PublicBookingLoginScreen.tsx
  * الوصف: "بوابة الدخول الآمنة" للسكرتارية. 
  * بما أن بيانات المرضى والمواعيد حساسة، يتم حماية واجهة السكرتاريا بشاشة دخول: 
- * - تطلب إيميل الطبيب (لتعريف العيادة) وكلمة السر (للتأكد من الهوية). 
+ * - تطلب اسم مستخدم السكرتارية وكلمة السر (للتأكد من الهوية).
  * - تتميز بتصميم بسيط يركز على حقول الإدخال مع أيقونات أمان. 
  * - توفر تغذية راجعة فورية في حال كان الخطأ في كلمة السر أو الإيميل.
  */
@@ -10,11 +10,11 @@ import React from 'react';
 
 /**
  * الخصائص الخاصة بشاشة تسجيل دخول السكرتارية
- * تتطلب إيميل الطبيب وكلمة السر المخصصة للسكرتارية
+ * تتطلب اسم المستخدم وكلمة السر المخصصين للسكرتارية
  */
 type PublicBookingLoginScreenProps = {
-  doctorEmailInput: string;
-  onDoctorEmailInputChange: (value: string) => void;
+  loginIdentifierInput: string;
+  onLoginIdentifierInputChange: (value: string) => void;
   passwordInput: string;
   authError: string;
   onPasswordInputChange: (value: string) => void;
@@ -26,8 +26,8 @@ type PublicBookingLoginScreenProps = {
  * واجهة بسيطة وآمنة تظهر للسكرتارية قبل السماح لهم بالوصول لبيانات المواعيد
  */
 export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> = ({
-  doctorEmailInput,
-  onDoctorEmailInputChange,
+  loginIdentifierInput,
+  onLoginIdentifierInputChange,
   passwordInput,
   authError,
   onPasswordInputChange,
@@ -49,18 +49,19 @@ export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> =
             </svg>
           </div>
           <h2 className="text-xl font-bold text-slate-800">الدخول محمي بكلمة مرور</h2>
-          <p className="text-slate-500 text-sm mt-2">يرجى إدخال إيميل الطبيب وكلمة المرور المعينة من قبله للمتابعة.</p>
+          <p className="text-slate-500 text-sm mt-2">أدخل اسم المستخدم وكلمة المرور اللذين حددهما الطبيب.</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            {/* حقل إدخال إيميل الطبيب (نظام التعريف الأساسي) */}
             <input
-              type="email"
-              value={doctorEmailInput}
-              onChange={(e) => onDoctorEmailInputChange(e.target.value)}
-              placeholder="إيميل الطبيب"
+              type="text"
+              value={loginIdentifierInput}
+              onChange={(e) => onLoginIdentifierInputChange(e.target.value)}
+              placeholder="اسم المستخدم"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-center text-lg placeholder:tracking-normal font-sans mb-4"
               dir="ltr"
+              autoComplete="username"
+              spellCheck={false}
               autoFocus
             />
           </div>
@@ -73,6 +74,7 @@ export const PublicBookingLoginScreen: React.FC<PublicBookingLoginScreenProps> =
               placeholder="كلمة المرور"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-center text-lg tracking-widest placeholder:tracking-normal font-sans"
               dir="ltr"
+              autoComplete="current-password"
             />
           </div>
           {/* عرض رسالة خطأ في حال كانت البيانات غير صحيحة */}

@@ -54,6 +54,9 @@ interface UseMainAppAppointmentOpenerParams {
   // setters من useDrHyper — بيانات المريض الأساسية
   setPatientName: (v: string) => void;
   setPhone: (v: string) => void;
+  setAddressGovernorate: (v: string) => void;
+  setAddressCityArea: (v: string) => void;
+  setAddressDetails: (v: string) => void;
   setAgeYears: (v: string) => void;
   setAgeMonths: (v: string) => void;
   setAgeDays: (v: string) => void;
@@ -144,7 +147,8 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     handleResetAndClearOpenedAppointment,
     handleOpenConsultation,
     navigateToView,
-    setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
+    setPatientName, setPhone, setAddressGovernorate, setAddressCityArea, setAddressDetails,
+    setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
     setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
@@ -192,6 +196,9 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
       // بيانات المريض الأساسية
       setPatientName(apt.patientName || '');
       setPhone(apt.phone || '');
+      setAddressGovernorate(apt.address?.governorate || '');
+      setAddressCityArea(apt.address?.cityArea || '');
+      setAddressDetails(apt.address?.details || '');
       setDateOfBirth(apt.dateOfBirth || '');
       // تحميل الهوية المحفوظة مع الموعد (السكرتارية قد تكون دخلتها)
       setGender((apt.gender === 'male' || apt.gender === 'female') ? apt.gender : '');
@@ -247,7 +254,8 @@ export const useMainAppAppointmentOpener = (params: UseMainAppAppointmentOpenerP
     appointments, records, prescriptionSecretaryFieldDefinitions, doctorSpecialty,
     mapAppointmentSecretaryCustomValues, setAppointmentSecretaryCustomValues,
     setOpenedAppointmentContext, handleResetAndClearOpenedAppointment,
-    setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
+    setPatientName, setPhone, setAddressGovernorate, setAddressCityArea, setAddressDetails,
+    setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
     setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,

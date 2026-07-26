@@ -15,6 +15,7 @@ import type { PatientRecord } from '../../../types';
 import { SecretaryVitalsPills } from '../../common/SecretaryVitalsPills';
 import { type CaseData, NO_PERTINENT_EN, formatDateTime, getFieldFallback, hasText } from './helpers';
 import { highlight } from './highlight';
+import { VisitInvestigationImages } from '../../patient-files/VisitInvestigationImages';
 
 /** مكون عرض حقل نصي منفرد */
 const Field: React.FC<{ title: string; value: string; term: string; titleTone?: string }> = ({ title, value, term, titleTone = 'border-slate-200 bg-slate-50 text-slate-600' }) => {
@@ -155,7 +156,7 @@ const PregnancyTrackingBlock: React.FC<{
  * لوحة عرض الحالة (Case Panel):
  * مكون يعرض تفاصيل زيارة واحدة (شكوى، تاريخ، فحص، تشخيص، أدوية).
  */
-export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: () => void; vitals?: Record<string, string> }> = ({ data, term, onDeleteCase, vitals }) => {
+export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: () => void; vitals?: Record<string, string>; userId?: string }> = ({ data, term, onDeleteCase, vitals, userId }) => {
     const meds = data.rxItems.filter(i => i.type === 'medication');
     const notes = data.rxItems.filter(i => i.type === 'note').map(i => (i.instructions || '').trim()).filter(Boolean);
 
@@ -198,6 +199,7 @@ export const CasePanel: React.FC<{ data: CaseData; term: string; onDeleteCase?: 
                 <DualField title="التاريخ المرضي" aiValue={data.historyEn} arValue={data.historyAr} term={term} titleTone={titleTone} />
                 <DualField title="ملاحظات الكشف" aiValue={data.examEn} arValue={data.examAr} term={term} titleTone={titleTone} />
                 <DualField title="الفحوصات الموجودة" aiValue={data.investigationsEn} arValue={data.investigationsAr} term={term} titleTone={titleTone} />
+                <VisitInvestigationImages userId={userId} imageIds={data.investigationImageIds} />
                 {(hasText(data.diagnosisEn) || (data.diagnosisEn || '').trim() === NO_PERTINENT_EN) && (
                     <div className="md:col-span-2"><Field title="التشخيص" value={data.diagnosisEn} term={term} titleTone={titleTone} /></div>
                 )}

@@ -7,9 +7,11 @@
 const { isUserAllowed } = require('./statsCounterAllowlist');
 const { resolvePatientFileKey } = require('./statsCounterHelpers');
 const { recomputeSummariesForUser } = require('./statsCounterCore');
+const registerSecretaryPatientDirectory = require('./secretaryPatientDirectoryFunctions');
 
 module.exports = ({ admin, getDb }) => {
   const FieldValue = admin.firestore.FieldValue;
+  const { syncSecretaryPatientDirectory } = registerSecretaryPatientDirectory({ admin, getDb });
 
   const isStandaloneConsultation = (data) => Boolean(data) && data.isConsultationOnly === true;
   const isExam = (data) => Boolean(data) && data.isConsultationOnly !== true;
@@ -112,6 +114,7 @@ module.exports = ({ admin, getDb }) => {
       const updates = {
         patientFileNameKey: fileNameKey,
         patientName: String(data.patientName || current.patientName || '').trim(),
+        ...(data.address ? { address: data.address } : {}),
         totalExams: nextExams,
         totalConsultations: nextConsultations,
         lastUpdatedAt: FieldValue.serverTimestamp(),
@@ -146,6 +149,18 @@ module.exports = ({ admin, getDb }) => {
   const syncPatientSummary = async (event) => {
     const userId = event.params && event.params.userId;
     if (!userId) return;
+
+    // Keep the secretary's compact, branch-scoped search index in the same
+    // Firestore trigger invocation. This avoids paying for a second trigger on
+    // every record write. A directory failure must not block the existing
+    // patient-summary counter; the reconciliation callable can repair drift.
+    try {
+      await syncSecretaryPatientDirectory(event);
+    } catch {
+      // Search keeps a legacy fallback until a successful reconciliation marks
+      // the directory ready, so a transient indexing failure is non-blocking.
+    }
+
     if (!isUserAllowed(userId)) return;
 
     const before = event.data && event.data.before && event.data.before.exists

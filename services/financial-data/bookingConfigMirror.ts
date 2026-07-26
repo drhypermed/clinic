@@ -17,7 +17,7 @@ import { collection, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { getDocCacheFirst, getDocsCacheFirst } from '../firestore/cacheFirst';
 import { getBookingSecretByUserId } from '../firestore/booking-secretary/secretConfig.secret';
-import { normalizeBookingSecret, parseBranchDocKey, toPriceText } from './normalizers';
+import { normalizeBookingSecret, toPriceText } from './normalizers';
 
 /**
  * جلب booking secret لمستخدم.

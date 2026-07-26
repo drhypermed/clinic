@@ -8,7 +8,7 @@
 //   - PublicBranchInfo: بيانات فرع منشورة للعرض في فورم الحجز العام
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { PatientGender, SecretaryVitalsInput, PaymentType } from './patient';
+import type { PatientAddress, PatientGender, SecretaryVitalsInput, PaymentType } from './patient';
 
 /**
  * موعد حجز في العيادة.
@@ -19,6 +19,8 @@ export interface ClinicAppointment {
   id: string;
   patientName: string;
   phone: string;
+  /** عنوان المريض الاختياري، يُملأ من ملفه عند اختياره أو مزامنة بياناته. */
+  address?: PatientAddress;
   dateTime: string; // ISO string — تاريخ ووقت الموعد
   createdAt?: string; // ISO — وقت إنشاء الحجز
   /** حالة تنفيذ الموعد. الحقول الزمنية القديمة تظل مدعومة للتوافق الرجعي. */

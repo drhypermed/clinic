@@ -8,6 +8,7 @@
 
 import { collection, doc, runTransaction } from 'firebase/firestore';
 import { ClinicAppointment } from '../../../types';
+import type { PaymentType } from '../../../types';
 import { normalizeText } from '../../../utils/textEncoding';
 import { db } from '../../firebaseConfig';
 import {
@@ -29,7 +30,7 @@ interface PublicBookingPayload {
   consultationSourceAppointmentId?: string;
   consultationSourceCompletedAt?: string;
   consultationSourceRecordId?: string;
-  paymentType?: 'cash' | 'insurance' | 'discount';
+  paymentType?: PaymentType;
   insuranceCompanyId?: string;
   insuranceCompanyName?: string;
   insuranceMembershipId?: string;

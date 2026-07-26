@@ -15,16 +15,11 @@
 
 import type { BookingConfigView, SecretaryLoginTarget } from './types';
 import {
-  collection,
-  deleteDoc,
   deleteField,
   doc,
   getDoc,
-  getDocs,
-  query,
   setDoc,
   updateDoc,
-  where,
 } from 'firebase/firestore';
 import { getDocCacheFirst } from '../cacheFirst';
 import { db } from '../../firebaseConfig';
@@ -50,6 +45,7 @@ import {
   getSecretaryLoginTargetByUserEmail as _getSecretaryLoginTargetByUserEmail,
 } from './secretConfig.settings.loginTargets';
 import { updateBookingSettings as _updateBookingSettings } from './secretConfig.settings.updateBooking';
+import { normalizeSecretaryUsername } from '../../../utils/secretaryUsername';
 
 /** مفتاح الفرع لخرائط الـ per-branch (undefined => 'main') */
 const resolveBranchMapKey = (branchId?: string): string =>
@@ -121,37 +117,6 @@ const pickPerBranchVitalsSettings = (
   return result;
 };
 
-const getSecretaryLoginIndexRef = (doctorEmail: string) => {
-  const normalizedEmail = normalizeEmail(doctorEmail);
-  const docId = sanitizeDocSegment(normalizedEmail);
-  if (!docId) return null;
-  return doc(db, 'secretaryLoginIndex', docId);
-};
-
-const upsertSecretaryLoginIndex = async (
-  doctorEmail: string,
-  userId: string,
-  hasPasswordHash: boolean
-): Promise<void> => {
-  const indexRef = getSecretaryLoginIndexRef(doctorEmail);
-  const normalizedUserId = sanitizeDocSegment(userId);
-  const normalizedEmail = normalizeEmail(doctorEmail);
-
-  if (!indexRef || !normalizedUserId || !normalizedEmail) return;
-
-  await setDoc(
-    indexRef,
-    {
-      doctorEmail: normalizedEmail,
-      userId: normalizedUserId,
-      secret: deleteField(),
-      hasPasswordHash,
-      updatedAt: new Date().toISOString(),
-    },
-    { merge: true }
-  );
-};
-
 export const getBookingConfigByUserId = async (
   userId: string,
   branchId?: string,
@@ -159,6 +124,7 @@ export const getBookingConfigByUserId = async (
   formTitle?: string;
   secretaryPasswordHash?: string;
   secretaryPasswordPlain?: string;
+  secretaryUsername?: string;
   secretaryVitalsVisibility?: SecretaryVitalsVisibility;
   secretaryVitalFields?: SecretaryVitalFieldDefinition[];
   doctorSpecialty?: string;
@@ -180,6 +146,11 @@ export const getBookingConfigByUserId = async (
   const secretaryPasswordPlain =
     plainMap && typeof plainMap === 'object' && typeof (plainMap as Record<string, unknown>)[branchKey] === 'string'
       ? String((plainMap as Record<string, unknown>)[branchKey]).trim()
+      : undefined;
+  const usernameMap = userData?.secretaryUsernameByBranch;
+  const secretaryUsername =
+    usernameMap && typeof usernameMap === 'object'
+      ? normalizeSecretaryUsername((usernameMap as Record<string, unknown>)[branchKey]) || undefined
       : undefined;
   const doctorEmailValue = normalizeEmail(userData?.doctorEmail);
   const bookingSecretValue = normalizeBookingSecret(userData?.bookingSecret);
@@ -221,21 +192,13 @@ export const getBookingConfigByUserId = async (
         await updateLegacyBookingConfigCleanup(bookingSecretValue, {
           secretaryAuthRequired: true,
         });
-        // الـindex بيتحدّث هنا فقط لأن الـhash اتغير فعلاً (migration حصل).
-        if (doctorEmailValue) {
-          await upsertSecretaryLoginIndex(doctorEmailValue, normalizedUserId, true).catch(() => undefined);
-        }
       }
     } catch (error) {
       console.warn('[Firestore] Failed migrating legacy secretary password to hash:', error);
     }
   }
 
-  // ملاحظه: شيلنا الـunconditional sync (updateLegacyBookingConfigCleanup + upsertSecretaryLoginIndex)
-  // اللي كان بيشتغل على كل قراءه. كان bug تكلفه: 2 writes زائده على كل getBookingConfigByUserId.
-  // الـsync دلوقت مسؤولية save functions (saveBookingCredentials / updateBookingSettings) فقط.
-
-  return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryVitalsVisibility, secretaryVitalFields, doctorSpecialty };
+  return { formTitle, secretaryPasswordHash, secretaryPasswordPlain, secretaryUsername, secretaryVitalsVisibility, secretaryVitalFields, doctorSpecialty };
 };
 
 export const saveBookingCredentials = async (
@@ -333,18 +296,6 @@ export const saveBookingCredentials = async (
     { merge: true }
   );
 
-  // الفرع الرئيسي بس يحدث فهرس الدخول — الفروع التانية بتستخدم الرابط مباشرة
-  if (doctorEmailValue && !isNonMainBranch) {
-    try {
-      await upsertSecretaryLoginIndex(
-        doctorEmailValue,
-        normalizedUserId,
-        Boolean(authData.secretaryPasswordHash)
-      );
-    } catch (error) {
-      console.warn('[Firestore] Failed to sync secretary login index after saveBookingCredentials:', error);
-    }
-  }
 };
 
 export const getBookingConfig = async (
@@ -376,6 +327,7 @@ export const getBookingConfig = async (
   return {
     userId: data.userId,
     username: typeof data?.username === 'string' ? data.username : undefined,
+    secretaryUsername: normalizeSecretaryUsername(data?.secretaryUsername) || undefined,
     passwordHash: typeof data?.passwordHash === 'string' ? data.passwordHash : undefined,
     doctorDisplayName: toOptionalText(data?.doctorDisplayName),
     doctorSpecialty: toOptionalText(data?.doctorSpecialty),
@@ -405,7 +357,6 @@ export const getSecretaryLoginTargetByUserEmail = async (
 ): Promise<SecretaryLoginTarget | null> =>
   _getSecretaryLoginTargetByUserEmail(email, getBookingConfig);
 
-// updateBookingSettings — مُوَجَّه إلى الملف الفرعي مع تمرير upsertSecretaryLoginIndex
 export const updateBookingSettings = async (
   userId: string,
   secret: string,
@@ -428,7 +379,6 @@ export const updateBookingSettings = async (
     secretaryVitalsVisibility,
     secretaryVitalFields,
     doctorSpecialty,
-    upsertSecretaryLoginIndex,
     branchId,
   );
 };

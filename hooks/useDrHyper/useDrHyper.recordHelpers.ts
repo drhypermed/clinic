@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { ConsultationData, PatientRecord, PaymentType, PrescriptionItem, VitalSigns } from '../../types';
+import type { PatientImageMetadata } from '../../services/patient-files/images';
 import { normalizeAdviceList } from '../../utils/rx/rxUtils';
 import { getCairoDayKey } from './useDrHyper.helpers';
 import type { AppStateSnapshot } from './useDrHyper.types';
@@ -13,6 +14,9 @@ type SetVisitType = React.Dispatch<React.SetStateAction<'exam' | 'consultation'>
 interface PatientDemographicsSetters {
   setPatientName: SetString;
   setPhone: SetString;
+  setAddressGovernorate?: SetString;
+  setAddressCityArea?: SetString;
+  setAddressDetails?: SetString;
   setAgeYears: SetString;
   setAgeMonths: SetString;
   setAgeDays: SetString;
@@ -35,6 +39,7 @@ interface ClinicalStateSetters {
   setMedicalHistory: SetString;
   setExamination: SetString;
   setInvestigations: SetString;
+  setInvestigationImages?: React.Dispatch<React.SetStateAction<PatientImageMetadata[]>>;
   setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
   setGeneralAdvice: SetStringArray;
   setLabInvestigations: SetStringArray;
@@ -49,10 +54,14 @@ interface RecordPhysicalSetters {
 interface ResetPatientFormSetters {
   setPatientName: SetString;
   setPhone: SetString;
+  setAddressGovernorate?: SetString;
+  setAddressCityArea?: SetString;
+  setAddressDetails?: SetString;
   setComplaint: SetString;
   setMedicalHistory: SetString;
   setExamination: SetString;
   setInvestigations: SetString;
+  setInvestigationImages?: React.Dispatch<React.SetStateAction<PatientImageMetadata[]>>;
   setComplaintEn: SetString;
   setHistoryEn: SetString;
   setExamEn: SetString;
@@ -117,6 +126,7 @@ type ClinicalPayloadInput = {
   historyAr?: string;
   examAr?: string;
   investigationsAr?: string;
+  investigationImageIds?: string[];
 };
 
 export const EMPTY_VITALS: VitalSigns = {
@@ -141,6 +151,7 @@ export const buildClinicalPayload = ({
   historyAr,
   examAr,
   investigationsAr,
+  investigationImageIds,
 }: ClinicalPayloadInput) => ({
   complaintEn,
   historyEn,
@@ -154,6 +165,7 @@ export const buildClinicalPayload = ({
   historyAr: historyAr || '',
   examAr: examAr || '',
   investigationsAr: investigationsAr || '',
+  investigationImageIds: investigationImageIds || [],
 });
 
 export const applyPatientDemographicsFromRecord = (
@@ -161,6 +173,9 @@ export const applyPatientDemographicsFromRecord = (
   {
     setPatientName,
     setPhone,
+    setAddressGovernorate,
+    setAddressCityArea,
+    setAddressDetails,
     setAgeYears,
     setAgeMonths,
     setAgeDays,
@@ -173,6 +188,9 @@ export const applyPatientDemographicsFromRecord = (
 ) => {
   setPatientName(record.patientName);
   setPhone(record.phone || '');
+  setAddressGovernorate?.(record.address?.governorate || '');
+  setAddressCityArea?.(record.address?.cityArea || '');
+  setAddressDetails?.(record.address?.details || '');
   setAgeYears(record.age?.years || '');
   setAgeMonths(record.age?.months || '');
   setAgeDays(record.age?.days || '');
@@ -211,6 +229,7 @@ export const applyClinicalPayloadToState = (
     setMedicalHistory,
     setExamination,
     setInvestigations,
+    setInvestigationImages,
     setRxItems,
     setGeneralAdvice,
     setLabInvestigations,
@@ -225,6 +244,7 @@ export const applyClinicalPayloadToState = (
   setMedicalHistory(payload.historyAr);
   setExamination(payload.examAr);
   setInvestigations(payload.investigationsAr);
+  if (setInvestigationImages) setInvestigationImages([]);
   setRxItems(payload.rxItems);
   setGeneralAdvice(normalizeAdviceList(payload.generalAdvice || []));
   setLabInvestigations(payload.labInvestigations || []);
@@ -244,6 +264,7 @@ export const buildClinicalPayloadFromRecord = (record: PatientRecord) =>
     historyAr: record.historyAr,
     examAr: record.examAr,
     investigationsAr: record.investigationsAr,
+    investigationImageIds: record.investigationImageIds,
   });
 
 export const buildClinicalPayloadFromConsultation = (consultation: ConsultationData) =>
@@ -260,6 +281,7 @@ export const buildClinicalPayloadFromConsultation = (consultation: ConsultationD
     historyAr: consultation.historyAr,
     examAr: consultation.examAr,
     investigationsAr: consultation.investigationsAr,
+    investigationImageIds: consultation.investigationImageIds,
   });
 
 export const getVisitDateDay = (isoDate?: string | null): string => {
@@ -271,10 +293,14 @@ export const getVisitDateDay = (isoDate?: string | null): string => {
 export const resetPatientFormState = ({
   setPatientName,
   setPhone,
+  setAddressGovernorate,
+  setAddressCityArea,
+  setAddressDetails,
   setComplaint,
   setMedicalHistory,
   setExamination,
   setInvestigations,
+  setInvestigationImages,
   setComplaintEn,
   setHistoryEn,
   setExamEn,
@@ -325,10 +351,14 @@ export const resetPatientFormState = ({
 }: ResetPatientFormSetters): void => {
   setPatientName('');
   setPhone('');
+  setAddressGovernorate?.('');
+  setAddressCityArea?.('');
+  setAddressDetails?.('');
   setComplaint('');
   setMedicalHistory('');
   setExamination('');
   setInvestigations('');
+  if (setInvestigationImages) setInvestigationImages([]);
   setComplaintEn('');
   setHistoryEn('');
   setExamEn('');

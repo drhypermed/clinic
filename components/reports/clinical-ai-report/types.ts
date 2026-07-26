@@ -88,6 +88,7 @@ export interface PatientClinicalTimelineSnapshot {
   patientName: string;
   patientFileNumber?: number;
   patientPhone?: string;
+  patientAddress?: string;
   patientAge: PatientAgeSnapshot;
   patientAgeTextAr: string;
   patientAgeTextEn: string;

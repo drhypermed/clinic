@@ -249,6 +249,15 @@ const DEFAULT_AI_PROXY_LIMITS = {
   premiumDailyLimit: 200,
   plusDailyLimit: 0,
   proMaxDailyLimit: 200,
+  // Hard monthly budget backstop per doctor. Daily/per-feature limits remain
+  // the normal product controls; these values only prevent runaway API spend.
+  freeMonthlyUsd: 0.10,
+  premiumMonthlyUsd: 0.50,
+  plusMonthlyUsd: 0,
+  proMaxMonthlyUsd: 1,
+  maxOutputTokens: 8192,
+  // Conservative post-free-quota price for Gemini 2.5 Google Search grounding.
+  googleSearchRequestUsd: 0.035,
 };
 
 

@@ -32,6 +32,8 @@ import {
 import { db } from '../services/firebaseConfig';
 import { getDocsCacheFirst } from '../services/firestore/cacheFirst';
 import { buildPatientFileNameKey } from '../services/patient-files';
+import type { PatientAddress } from '../types';
+import { normalizePatientAddress } from '../utils/patientAddress';
 
 /** الشكل الموحّد لملخص مريض جاي من السيرفر */
 export interface DoctorPatientSummary {
@@ -40,6 +42,7 @@ export interface DoctorPatientSummary {
   patientFileNumber?: number;
   patientFileId?: string;
   phones: string[];
+  address?: PatientAddress;
   totalExams: number;
   totalConsultations: number;
   lastVisitAtMs?: number;
@@ -73,6 +76,7 @@ const mapDocToSummary = (doc: DocumentSnapshot): DoctorPatientSummary => {
       : undefined,
     patientFileId: data.patientFileId ? String(data.patientFileId) : undefined,
     phones: Array.isArray(data.phones) ? data.phones.map(String) : [],
+    address: normalizePatientAddress(data.address),
     totalExams: Number(data.totalExams || 0),
     totalConsultations: Number(data.totalConsultations || 0),
     lastVisitAtMs: Number.isFinite(Number(data.lastVisitAtMs))

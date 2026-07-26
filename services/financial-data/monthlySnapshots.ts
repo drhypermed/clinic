@@ -22,6 +22,12 @@ import type { DailyFinancialData, MonthlyFinancialData } from './types';
 import type { PatientRecord } from '../../app/drug-catalog/types/patient';
 import { collectConsultationVisits } from '../../components/financial-reports/hooks/useFinancialStats/collectConsultationVisits';
 import { buildVisitFinancialByDate } from '../../components/financial-reports/hooks/useFinancialStats/buildVisitFinancialByDate';
+import {
+    addToDirectPaymentTotals,
+    createEmptyDirectPaymentTotals,
+    sumDirectPaymentTotals,
+    type DirectPaymentTotals,
+} from '../../utils/paymentMethods';
 
 /** الفترة السماحية بعد نهاية الشهر قبل ما يصبح eligible للإقفال (28 يوم). */
 const SNAPSHOT_GRACE_DAYS = 28;
@@ -40,8 +46,11 @@ const SNAPSHOT_GRACE_DAYS = 28;
  *
  * v4 (2026-05): لا يكتب snapshot إلا بعد إثبات اكتمال تحميل سجلات الشهر نفسه،
  * لمنع إقفال شهر بصفر أثناء تحميل pagination في الخلفية.
+ *
+ * v5 (2026-07): حفظ تفصيل التحصيل المباشر (كاش/إنستا باي/محفظة/بنكي)
+ * داخل إجمالي الشهر وكل يوم، مع بقاء الإجمالي المحاسبي متوافقاً مع collectedCash.
  */
-const SNAPSHOT_VERSION = 4;
+const SNAPSHOT_VERSION = 5;
 
 /**
  * تفصيل أرقام يوم واحد داخل snapshot — يكفي لـuseFinancialStats عشان
@@ -59,6 +68,7 @@ export interface MonthlySnapshotDailyEntry {
     otherRevenue: number;
     insuranceExtrasTotal: number;
     dailyExpense: number;
+    directPaymentTotals: DirectPaymentTotals;
 }
 
 /**
@@ -81,6 +91,7 @@ export interface MonthlySnapshot {
     examsIncome: number;          // فواتير الكشوف (بعد الخصم/قبل التحصيل)
     consultsIncome: number;       // فواتير الاستشارات
     collectedCash: number;        // الكاش المحصّل فعلاً (مش بما فيه التأمين)
+    directPaymentTotals: DirectPaymentTotals; // توزيع التحصيل المباشر حسب الطريقة
     insuranceClaims: number;      // مطالبات التأمين
     discountExpense: number;      // قيمة الخصومات (تُحسب كمصروف)
 
@@ -226,6 +237,7 @@ const computeMonthlySnapshot = ({
                 otherRevenue: 0,
                 insuranceExtrasTotal: 0,
                 dailyExpense: 0,
+                directPaymentTotals: createEmptyDirectPaymentTotals(),
             };
         }
         return dailyBreakdown[dateKey];
@@ -267,12 +279,16 @@ const computeMonthlySnapshot = ({
     let collectedCash = 0;
     let insuranceClaims = 0;
     let discountExpense = 0;
+    const directPaymentTotals = createEmptyDirectPaymentTotals();
     Object.entries(visitFinancialByDate).forEach(([dateKey, day]) => {
         examsIncome += day.examsIncome;
         consultsIncome += day.consultsIncome;
         collectedCash += day.collectedCash;
         insuranceClaims += day.insuranceClaims;
         discountExpense += day.discountExpense;
+        (Object.keys(day.directPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+            directPaymentTotals[type] += day.directPaymentTotals[type];
+        });
         // نضع نفس القيم في dailyBreakdown للاستخدام في chartDays/selectedDay
         const entry = ensureDay(dateKey);
         entry.examsIncome += day.examsIncome;
@@ -280,6 +296,7 @@ const computeMonthlySnapshot = ({
         entry.collectedCash += day.collectedCash;
         entry.insuranceClaims += day.insuranceClaims;
         entry.discountExpense += day.discountExpense;
+        entry.directPaymentTotals = { ...day.directPaymentTotals };
     });
 
     // الإيرادات الإضافية من dailyEntries (interventions, other، insuranceExtras)
@@ -302,6 +319,18 @@ const computeMonthlySnapshot = ({
         const expenseVal = Number(entry.dailyExpense) || 0;
         interventionsRevenue += intervVal;
         otherRevenue += otherVal;
+        const dayDirectRevenueTotals = createEmptyDirectPaymentTotals();
+        const cashCostItems = Array.isArray(entry.cashCostItems) ? entry.cashCostItems : [];
+        cashCostItems.forEach((item: any) => {
+            addToDirectPaymentTotals(dayDirectRevenueTotals, item?.paymentType, item?.amount);
+        });
+        dayDirectRevenueTotals.cash += Math.max(
+            0,
+            intervVal + otherVal - sumDirectPaymentTotals(dayDirectRevenueTotals),
+        );
+        (Object.keys(dayDirectRevenueTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+            directPaymentTotals[type] += dayDirectRevenueTotals[type];
+        });
         dailyExpensesTotal += expenseVal;
         let dayInsuranceExtras = 0;
         if (Array.isArray(entry.insuranceExtras)) {
@@ -316,6 +345,9 @@ const computeMonthlySnapshot = ({
             const dayEntry = ensureDay(dateKey);
             dayEntry.interventionsRevenue += intervVal;
             dayEntry.otherRevenue += otherVal;
+            (Object.keys(dayDirectRevenueTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+                dayEntry.directPaymentTotals[type] += dayDirectRevenueTotals[type];
+            });
             dayEntry.dailyExpense += expenseVal;
             dayEntry.insuranceExtrasTotal += dayInsuranceExtras;
         }
@@ -345,6 +377,7 @@ const computeMonthlySnapshot = ({
         examsIncome,
         consultsIncome,
         collectedCash,
+        directPaymentTotals,
         insuranceClaims,
         discountExpense,
         interventionsRevenue,

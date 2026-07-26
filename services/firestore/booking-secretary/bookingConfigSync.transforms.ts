@@ -9,6 +9,7 @@ import type { BookingConfigTodayAppointment } from '../../../types';
 import { resolveAppointmentType } from '../../../utils/appointmentType';
 import { omitUndefined, toOptionalText } from './helpers';
 import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
+import { normalizePatientAddress } from '../../../utils/patientAddress';
 
 // ─── مساعدات رقمية خالصة ─────────────────────────────────────────────
 const toPositiveFileNumber = (value: unknown): number | undefined => {
@@ -48,6 +49,7 @@ export const sanitizeTodayAppointment = (item: BookingConfigTodayAppointment) =>
     age: item.age ? toOptionalText(item.age) : undefined,
     dateOfBirth: item.dateOfBirth ? toOptionalText(item.dateOfBirth) : undefined,
     phone: item.phone ? toOptionalText(item.phone) : undefined,
+    address: normalizePatientAddress(item.address),
     visitReason: item.visitReason ? toOptionalText(item.visitReason) : undefined,
     secretaryVitals: sanitizeSecretaryVitalsInput(item.secretaryVitals),
     dateTime: item.dateTime,
@@ -94,6 +96,7 @@ export const sanitizeRecentExamPatient = (item: RecentExamPatient) =>
     age: item.age ? toOptionalText(item.age) : undefined,
     dateOfBirth: item.dateOfBirth ? toOptionalText(item.dateOfBirth) : undefined,
     phone: item.phone ? toOptionalText(item.phone) : undefined,
+    address: normalizePatientAddress(item.address),
     examCompletedAt: item.examCompletedAt,
     consultationCompletedAt: item.consultationCompletedAt,
     consultationCompletedDates: Array.isArray(item.consultationCompletedDates)
@@ -113,6 +116,7 @@ export const sanitizePatientDirectoryItem = (item: PatientDirectoryItem) =>
     patientName: toOptionalText(item.patientName) || '',
     age: item.age ? toOptionalText(item.age) : undefined,
     phone: item.phone ? toOptionalText(item.phone) : undefined,
+    address: normalizePatientAddress(item.address),
     lastExamDate: item.lastExamDate,
     lastConsultationDate: item.lastConsultationDate,
     patientFileNumber: toPositiveFileNumber(item.patientFileNumber),
@@ -141,6 +145,7 @@ export const mapTodayAppointments = (
         patientName: toOptionalText(item.patientName) || '',
         age: toOptionalText(item.age),
         phone: toOptionalText(item.phone),
+        address: normalizePatientAddress(item.address),
         visitReason: toOptionalText(item.visitReason),
         secretaryVitals: sanitizeSecretaryVitalsInput(item.secretaryVitals),
         dateTime: item.dateTime,
@@ -164,6 +169,9 @@ export const mapTodayAppointments = (
         paymentType:
           item.paymentType === 'insurance' ||
           item.paymentType === 'discount' ||
+          item.paymentType === 'instapay' ||
+          item.paymentType === 'wallet' ||
+          item.paymentType === 'bank_transfer' ||
           item.paymentType === 'cash'
             ? item.paymentType
             : undefined,
@@ -212,6 +220,7 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
         age?: string;
         dateOfBirth?: string;
         phone?: string;
+        address?: unknown;
         examCompletedAt: string;
         consultationCompletedAt?: string;
         consultationCompletedDates?: string[];
@@ -223,6 +232,7 @@ export const mapRecentExamPatients = (raw: unknown): RecentExamPatient[] | undef
         age: toOptionalText(item.age),
         dateOfBirth: toOptionalText(item.dateOfBirth),
         phone: toOptionalText(item.phone),
+        address: normalizePatientAddress(item.address),
         examCompletedAt: item.examCompletedAt,
         consultationCompletedAt:
           typeof item.consultationCompletedAt === 'string'
@@ -259,6 +269,7 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         age?: string;
         dateOfBirth?: string;
         phone?: string;
+        address?: unknown;
         lastExamDate?: string;
         lastConsultationDate?: string;
         patientFileNumber?: number;
@@ -269,6 +280,7 @@ export const mapPatientDirectory = (raw: unknown): PatientDirectoryItem[] | unde
         age: toOptionalText(item.age),
         dateOfBirth: toOptionalText(item.dateOfBirth),
         phone: toOptionalText(item.phone),
+        address: normalizePatientAddress(item.address),
         lastExamDate: typeof item.lastExamDate === 'string' ? item.lastExamDate : undefined,
         lastConsultationDate:
           typeof item.lastConsultationDate === 'string' ? item.lastConsultationDate : undefined,

@@ -179,7 +179,6 @@ export const usePublicBookingPublicSection = ({
         publicSecret,
         publicFormTitle,
         publicFormContactInfo,
-        true,
         currentBranchId,
       );
       setPublicSettingsSaved(true);

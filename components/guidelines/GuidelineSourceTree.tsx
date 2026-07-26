@@ -17,21 +17,21 @@ export const buildHighlightTerms = (value: string) =>
     .map((term) => term.trim())
     .filter((term) => term.length >= 2);
 
-export const localizeNumber = (text: string | number | undefined, isArabic: boolean): string => {
+export const localizeNumber = (text: string | number | undefined, _isArabic?: boolean): string => {
   if (text === undefined || text === null) return '';
   return String(text);
 };
 
-export const renderHighlightedText = (text: string, terms: string[], isArabic: boolean = false) => {
-  if (terms.length === 0) return localizeNumber(text, isArabic);
+export const renderHighlightedText = (text: string, terms: string[], _isArabic: boolean = false) => {
+  if (terms.length === 0) return localizeNumber(text);
   const pattern = new RegExp(`(${terms.map(escapeRegExp).join('|')})`, 'gi');
   return text.split(pattern).map((part, index) => {
     const isMatch = terms.some((term) => part.localeCompare(term, undefined, { sensitivity: 'accent' }) === 0)
       || terms.some((term) => part.toLowerCase() === term.toLowerCase());
-    if (!isMatch) return <React.Fragment key={`${part}-${index}`}>{localizeNumber(part, isArabic)}</React.Fragment>;
+    if (!isMatch) return <React.Fragment key={`${part}-${index}`}>{localizeNumber(part)}</React.Fragment>;
     return (
       <mark key={`${part}-${index}`} className="rounded bg-amber-200 px-1 font-black text-amber-950">
-        {localizeNumber(part, isArabic)}
+        {localizeNumber(part)}
       </mark>
     );
   });
@@ -250,7 +250,7 @@ export const GuidelineSourceTree: React.FC<{
                                   ? 'AAP Clinical Practice Guidelines'
                                   : c.school === 'CDC ACIP'
                                     ? 'CDC ACIP Vaccine Recommendations'
-                                      : `${c.school} ${c.year === 2026 && c.school === 'KDIGO' ? (isArabic ? 'المكتبة' : 'Library') : localizeNumber(c.year, isArabic)}`}
+                                      : `${c.school} ${c.year === 2026 && c.school === 'KDIGO' ? (isArabic ? 'المكتبة' : 'Library') : localizeNumber(c.year)}`}
                           {isFreeGuidelinesPlan && (
                             isLockedCollection ? (
                               <LuLock className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={isArabic ? 'مقفول' : 'Locked'} />

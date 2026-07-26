@@ -23,6 +23,7 @@ export type AiFeatureName =
 
 interface SecureGeminiParams {
   prompt: string;
+  images?: Array<{ mimeType: 'image/jpeg'; data: string }>;
   model?: string;
   temperature?: number;
   responseMimeType?: 'application/json' | 'text/plain';

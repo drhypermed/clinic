@@ -18,6 +18,7 @@ import type {
     YearlyMonthData,
     ChartDay,
 } from './useFinancialStats.shared';
+import { createEmptyDirectPaymentTotals } from '../../../utils/paymentMethods';
 
 /** أسماء أيام الأسبوع بالعربي للـchartDays. */
 const ARABIC_WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -35,6 +36,7 @@ const EMPTY_DAY_ENTRY: MonthlySnapshotDailyEntry = {
     otherRevenue: 0,
     insuranceExtrasTotal: 0,
     dailyExpense: 0,
+    directPaymentTotals: createEmptyDirectPaymentTotals(),
 };
 
 /** يبني chartDays من snapshot.dailyBreakdown — يدّي يوم لكل تاريخ في الشهر. */
@@ -115,6 +117,18 @@ export const applyMonthSnapshotToStats = (
     const dailyCash = selectedDayEntry.collectedCash
         + selectedDayEntry.interventionsRevenue
         + selectedDayEntry.otherRevenue;
+    const monthlyDirectPaymentTotals = snapshot.directPaymentTotals
+        ? { ...snapshot.directPaymentTotals }
+        : {
+            ...createEmptyDirectPaymentTotals(),
+            cash: snapshot.collectedCash + snapshot.interventionsRevenue + snapshot.otherRevenue,
+        };
+    const dailyDirectPaymentTotals = selectedDayEntry.directPaymentTotals
+        ? { ...selectedDayEntry.directPaymentTotals }
+        : {
+            ...createEmptyDirectPaymentTotals(),
+            cash: selectedDayEntry.collectedCash + selectedDayEntry.interventionsRevenue + selectedDayEntry.otherRevenue,
+        };
     const dailyTotalRevenue = selectedDayEntry.examsIncome
         + selectedDayEntry.consultsIncome
         + selectedDayEntry.interventionsRevenue
@@ -153,11 +167,13 @@ export const applyMonthSnapshotToStats = (
         dailyConsultsIncome: selectedDayEntry.consultsIncome,
         dailyTotalRevenue,
         dailyCollectedCash: dailyCash,
+        dailyDirectPaymentTotals,
         dailyDiscountExpense: selectedDayEntry.discountExpense,
         examsIncome: snapshot.examsIncome,
         consultsIncome: snapshot.consultsIncome,
         totalIncome: snapshot.totalRevenue,
         collectedCash: totalCollectedCash,
+        directPaymentTotals: monthlyDirectPaymentTotals,
         insuranceClaims: totalInsuranceClaims,
         monthlyDiscountExpense: snapshot.discountExpense,
         totalExpenses: snapshot.totalExpenses,

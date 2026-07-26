@@ -4,7 +4,6 @@ import type {
   SecretaryVitalsVisibility,
 } from '../../types';
 import { isSecretaryFieldEnabled } from '../../utils/secretaryVitals';
-import { useCopyFeedback } from '../../hooks/useCopyFeedback';
 
 /**
  * الملف: BookingSectionSecretary.tsx
@@ -17,8 +16,6 @@ import { useCopyFeedback } from '../../hooks/useCopyFeedback';
 interface BookingSectionSecretaryProps {
   isOpen: boolean;                      // حالة فتح/غلق القسم
   onToggleOpen: () => void;
-  // إيميل الطبيب المرتبط — يُعرض داخل قسم إعدادات السكرتارية لنسخه وإعطائه للسكرتارية
-  doctorEmail?: string | null;
   /** اسم الفرع الحالي — يظهر لتوضيح أن كلمة السر مرتبطة بهذا الفرع */
   currentBranchLabel?: string;
   /** هل الدكتور عنده أكثر من فرع (يفعّل لافتة توضيحية) */
@@ -26,6 +23,8 @@ interface BookingSectionSecretaryProps {
   doctorSpecialty?: string;
   bookingFormTitle: string;             // الاسم الذي سيظهر للسكرتيرة في تطبيقها
   onBookingFormTitleChange: (value: string) => void;
+  secretaryUsername: string;            // اسم الدخول المستقل للفرع الحالي
+  onSecretaryUsernameChange: (value: string) => void;
   secretaryPassword: string;            // كلمة المرور المطلوبة لدخول السكرتارية
   onSecretaryPasswordChange: (value: string) => void;
   secretaryVitalFields: SecretaryVitalFieldDefinition[];
@@ -40,17 +39,14 @@ interface BookingSectionSecretaryProps {
 
 export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = ({
   isOpen, onToggleOpen,
-  doctorEmail,
   currentBranchLabel,
   hasMultipleBranches = false,
-  bookingFormTitle, onBookingFormTitleChange, secretaryPassword,
+  bookingFormTitle, onBookingFormTitleChange, secretaryUsername, onSecretaryUsernameChange, secretaryPassword,
   secretaryVitalFields,
   secretaryVitalsVisibility, onSecretaryVitalVisibilityChange,
   onSecretaryPasswordChange, credentialsSaving, credentialsError,
   credentialsSuccess, onSaveCredentials, alwaysExpanded = false,
 }) => {
-  const normalizedDoctorEmail = String(doctorEmail || '').trim().toLowerCase();
-  const { copied: doctorEmailCopied, copy: copyEmailToClipboard } = useCopyFeedback({ resetMs: 1800 });
   const sortedSecretaryFields = [...(secretaryVitalFields || [])].sort((left, right) => left.order - right.order);
   const enabledVitalsCount = sortedSecretaryFields.filter((field) =>
     isSecretaryFieldEnabled(secretaryVitalsVisibility, field.id, field.key)
@@ -67,10 +63,6 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
         onSecretaryVitalVisibilityChange(field.id, nextEnabled);
       }
     });
-  };
-
-  const copyDoctorEmail = () => {
-    if (normalizedDoctorEmail) copyEmailToClipboard(normalizedDoctorEmail);
   };
 
   return (
@@ -120,33 +112,31 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
             />
           </div>
 
-          {/* حقل إيميل الطبيب — بيانات الدخول التي سيستخدمها حساب السكرتارية */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 mb-1">إيميل الطبيب</label>
-            <div className="flex items-center gap-2">
-              <div
-                dir="ltr"
-                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 font-bold text-sm text-left select-none"
-                onCopy={(e) => e.preventDefault()}
-              >
-                {normalizedDoctorEmail || 'لا يوجد إيميل مسجل لحساب الطبيب'}
-              </div>
-              <button
-                type="button"
-                onClick={copyDoctorEmail}
-                disabled={!normalizedDoctorEmail}
-                title="نسخ إيميل الطبيب"
-                className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-50"
-                aria-label="نسخ إيميل الطبيب"
-              >
-                {doctorEmailCopied ? (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
-                )}
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1">يمكن نسخ الإيميل من علامة النسخ فقط لإرساله للسكرتارية.</p>
+            <label className="block text-xs font-bold text-slate-500 mb-1">
+              اسم مستخدم السكرتارية
+              {currentBranchLabel && (
+                <span className="mr-2 text-[11px] text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full font-black">
+                  فرع: {currentBranchLabel}
+                </span>
+              )}
+            </label>
+            <input
+              type="text"
+              value={secretaryUsername}
+              onChange={(e) => onSecretaryUsernameChange(e.target.value)}
+              placeholder="مثال: clinic.nasr"
+              minLength={4}
+              maxLength={32}
+              required
+              autoComplete="off"
+              spellCheck={false}
+              dir="ltr"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 font-bold text-sm text-left"
+            />
+            <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+              من 4 إلى 32 حرفًا إنجليزيًا أو رقمًا، ويمكن استخدام النقطة والشرطة. كل فرع له اسم مستخدم مستقل.
+            </p>
           </div>
 
           <div className="sm:col-span-2">
@@ -178,7 +168,7 @@ export const BookingSectionSecretary: React.FC<BookingSectionSecretaryProps> = (
                 السكرتارية اللي هتدخل بالكلمة دي هتشوف مواعيد هذا الفرع فقط.
               </p>
             ) : (
-              <p className="text-[10px] text-slate-400 mt-1">الدخول للسكرتارية يتم من صفحة تسجيل دخول السكرتارية فقط باستخدام إيميل الطبيب + الرقم السري.</p>
+              <p className="text-[10px] text-slate-400 mt-1">الدخول للسكرتارية يتم باستخدام اسم المستخدم والرقم السري المحددين هنا.</p>
             )}
           </div>
 

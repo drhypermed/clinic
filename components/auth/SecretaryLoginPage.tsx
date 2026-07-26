@@ -14,10 +14,12 @@ import {
   secretaryLogin,
   type AmbiguousBranchOption,
 } from '../../services/secretaryLoginService';
+import {
+  getSecretaryUsernameValidationMessage,
+  normalizeSecretaryUsername,
+} from '../../utils/secretaryUsername';
 
 const SECRETARY_LAST_SECRET_KEY = 'dh_secretary_last_secret';
-const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
 const inputBase =
   'w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-slate-900 text-base font-semibold placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 hover:border-slate-400 transition';
 
@@ -25,7 +27,7 @@ const labelBase = 'block text-sm font-bold text-slate-900 mb-1.5';
 
 export const SecretaryLoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [doctorEmail, setDoctorEmail] = useState('');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [secretaryPassword, setSecretaryPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,7 +42,7 @@ export const SecretaryLoginPage: React.FC = () => {
     setError('');
     try {
       const data = await secretaryLogin({
-        doctorEmail: doctorEmail.trim().toLowerCase(),
+        secretaryUsername: normalizeSecretaryUsername(loginIdentifier),
         secretaryPassword,
         preferredBranchId,
       });
@@ -71,9 +73,10 @@ export const SecretaryLoginPage: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    const normalizedEmail = doctorEmail.trim().toLowerCase();
-    if (!validateEmail(normalizedEmail)) {
-      setError('يرجى إدخال بريد إلكتروني صحيح للطبيب');
+    const normalizedIdentifier = loginIdentifier.trim().toLowerCase();
+    const identifierError = getSecretaryUsernameValidationMessage(normalizedIdentifier);
+    if (identifierError) {
+      setError(identifierError);
       return;
     }
 
@@ -113,7 +116,7 @@ export const SecretaryLoginPage: React.FC = () => {
             <p className="text-sm text-slate-600 font-semibold mt-1">
               {ambiguousBranches
                 ? 'كلمة السر متطابقة لأكتر من فرع. اضغط على الفرع الصحيح.'
-                : 'سجّل بإيميل الطبيب والرقم السرّي.'}
+                : 'سجّل باسم المستخدم والرقم السرّي المحددين من الطبيب.'}
             </p>
           </div>
 
@@ -154,22 +157,23 @@ export const SecretaryLoginPage: React.FC = () => {
             )}
 
             <div>
-              <label htmlFor="doctorEmail" className={labelBase}>
-                إيميل الطبيب
+              <label htmlFor="secretaryUsername" className={labelBase}>
+                اسم المستخدم
               </label>
               <input
-                id="doctorEmail"
-                type="email"
-                value={doctorEmail}
+                id="secretaryUsername"
+                type="text"
+                value={loginIdentifier}
                 onChange={(e) => {
-                  setDoctorEmail(e.target.value);
+                  setLoginIdentifier(e.target.value);
                   setError('');
                 }}
                 className={`${inputBase} text-left`}
-                placeholder="doctor@mail.com"
+                placeholder="clinic.username"
                 dir="ltr"
                 disabled={loading}
-                autoComplete="email"
+                autoComplete="username"
+                spellCheck={false}
               />
             </div>
 

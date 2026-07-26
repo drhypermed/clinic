@@ -7,6 +7,7 @@ import { getSourceBadgeStyle, getSourceLabel } from './helpers';
 import type { TodayAppointment } from '../../../types';
 import { buildCairoDateTime, formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { FirstVisitBadge } from '../FirstVisitBadge';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 type DayGroup = { dateStr: string; fullDate: string; appointments: TodayAppointment[] };
 
@@ -99,6 +100,7 @@ const UpcomingDayGroupCard: React.FC<{
 
 const UpcomingCard: React.FC<{ apt: TodayAppointment; onEdit: (a: TodayAppointment) => void; onRemove: (id: string) => void }> = ({ apt, onEdit, onRemove }) => {
   const isConsultation = isConsultationAppointment(apt);
+  const addressSummary = formatPatientAddress(apt.address, 'summary');
   return (
     <div className="dh-patient-shell rounded-2xl border overflow-hidden">
       <div className="p-3 space-y-2 text-right" dir="rtl">
@@ -119,6 +121,7 @@ const UpcomingCard: React.FC<{ apt: TodayAppointment; onEdit: (a: TodayAppointme
         </div>
         {apt.phone && <p className="text-[11px] font-bold text-slate-500" dir="ltr">{apt.phone}</p>}
         {apt.visitReason && <p className="text-[11px] font-bold text-slate-500">{apt.visitReason}</p>}
+        {addressSummary && <p className="text-[11px] font-bold text-slate-500">العنوان: {addressSummary}</p>}
         <div className="flex items-center gap-2 pt-1">
           <button type="button" onClick={() => onEdit(apt)} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-all">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>

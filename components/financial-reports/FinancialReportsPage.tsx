@@ -483,6 +483,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             onUpdateOtherLabel={(val) => financialData.updateLabel('otherRevenueLabel', val)}
                             totalDailyRevenue={stats.dailyCollectedCash}
                             dailyInsuranceTotal={Math.max(0, stats.dailyTotalRevenue - stats.dailyCollectedCash)}
+                            directPaymentTotals={stats.dailyDirectPaymentTotals}
                             dailyInsuranceExtras={financialData.dailyInsuranceExtras}
                             userId={userId}
                             branchId={branchId}
@@ -564,6 +565,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             totalIncome={stats.totalIncome}
                             collectedCash={stats.collectedCash}
                             insuranceClaims={stats.insuranceClaims}
+                            directPaymentTotals={stats.directPaymentTotals}
                         />
                         <MonthlyExpensesSection
                             currentMonthLabel={navigation.monthLabel}

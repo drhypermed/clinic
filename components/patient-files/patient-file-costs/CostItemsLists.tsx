@@ -1,7 +1,7 @@
 /**
  * CostItemsLists:
  * - InvoiceSelectionPanel: لوحة اختيار بنود الفاتورة للطباعة.
- * - CashCostList: قائمة تكاليف الكاش.
+ * - CashCostList: قائمة بنود التحصيل المباشر (الاسم البرمجي محفوظ للتوافق).
  * - InsuranceClaimsList: قائمة مطالبات التأمين.
  * مكوّنات عرض خالصة (تعتمد على props فقط).
  */
@@ -12,6 +12,8 @@ import type {
 } from '../../../services/patientCostService';
 import type { UnifiedInvoiceItem } from './useCostInvoiceSelection';
 import { formatDayLabel } from './useCostInvoiceSelection';
+import { getPaymentMethodLabel } from '../../../utils/paymentMethods';
+import { PaymentMethodIcon } from '../../common/PaymentMethodIcon';
 
 // ─── لوحة اختيار بنود الفاتورة ────────────────────────────────────────
 interface InvoicePanelProps {
@@ -134,7 +136,7 @@ export const CashCostList: React.FC<CashListProps> = ({ items, onEdit, onDelete 
   return (
     <div className="space-y-1.5">
       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-        تكاليف كاش
+        دخل مباشر
       </div>
       {[...items]
         .sort((a, b) => b.createdAt - a.createdAt)
@@ -158,6 +160,10 @@ export const CashCostList: React.FC<CashListProps> = ({ items, onEdit, onDelete 
                   {item.type === 'interventions' ? 'التداخلات' : 'دخل آخر'}
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold">{item.dateKey}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-brand-700 border border-brand-100">
+                  <PaymentMethodIcon type={item.paymentType || 'cash'} className="h-3 w-3" />
+                  {getPaymentMethodLabel(item.paymentType)}
+                </span>
               </div>
               {item.note && <div className="text-[11px] text-slate-500 mt-0.5">{item.note}</div>}
             </div>

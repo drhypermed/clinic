@@ -1,6 +1,6 @@
 /**
  * useDrHyper.saveRecord.paymentPayload:
- * بناء جزء الـ payment من payload الحفظ (كاش/تأمين/خصم).
+ * بناء جزء الـ payment من payload الحفظ (كاش/إلكتروني/تأمين/خصم).
  * مستخرج لأنه كان مكرر 3 مرات في نفس الملف (exam، consultation update، consultation new).
  */
 

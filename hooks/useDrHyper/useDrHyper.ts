@@ -2,7 +2,7 @@
 import { useMedications } from '../medications';
 import { useAuth } from '../useAuth';
 import { usageTrackingService } from '../../services/usageTrackingService';
-import { consumeSmartPrescriptionQuota, consumeStorageQuota, getAccountTypeControls } from '../../services/accountTypeControlsService';
+import { consumeSmartPrescriptionQuota, consumeStorageQuota } from '../../services/accountTypeControlsService';
 import {
     SMART_QUOTA_NOTICE_STORAGE_KEY,
     getCairoDayKey,
@@ -13,13 +13,11 @@ import {
 import { deleteDoc } from 'firebase/firestore';
 import { useDrHyperNotifications } from './useDrHyper.notifications';
 import { useDrHyperViewAndUsage } from './useDrHyper.viewAndUsage';
-import { resolveCurrentUserAccountType } from './useDrHyper.accountType';
 import { useDrHyperPatientState } from './useDrHyper.patientState';
 import {
     extractSmartQuotaErrorDetails,
     buildWhatsAppUrlFromNumber,
     getQuotaReachedMessage,
-    applyLimitPlaceholder,
     sanitizeExternalHttpUrl,
 } from './useDrHyper.quota';
 import { useDrHyperRealtimeData } from './useDrHyper.realtime';
@@ -48,6 +46,12 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         setPatientName,
         phone,
         setPhone,
+        addressGovernorate,
+        setAddressGovernorate,
+        addressCityArea,
+        setAddressCityArea,
+        addressDetails,
+        setAddressDetails,
         ageYears,
         setAgeYears,
         ageMonths,
@@ -214,17 +218,13 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         realtimeData,
         setCurrentView,
         trackMedUsage,
-        resolveCurrentUserAccountType: () => resolveCurrentUserAccountType(user?.uid),
-        getAccountTypeControls,
         consumeStorageQuota,
         consumeSmartPrescriptionQuota,
         sanitizeRxItemsForSave,
         sanitizeForFirestore,
         uniqTextList,
         extractSmartQuotaErrorDetails,
-        buildWhatsAppUrlFromNumber,
         getQuotaReachedMessage,
-        applyLimitPlaceholder,
         onTrackSmartPrescription: (complaintText) => {
             if (!user?.uid) return;
             usageTrackingService.trackEvent({
@@ -278,6 +278,9 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
     const patientIdentityBindings = {
         patientName, setPatientName,
         phone, setPhone,
+        addressGovernorate, setAddressGovernorate,
+        addressCityArea, setAddressCityArea,
+        addressDetails, setAddressDetails,
         ageYears, setAgeYears,
         ageMonths, setAgeMonths,
         ageDays, setAgeDays,
@@ -299,6 +302,8 @@ export const useDrHyper = (options?: { activeBranchId?: string }) => {
         medicalHistory, setMedicalHistory,
         examination, setExamination,
         investigations, setInvestigations,
+        investigationImages: patientState.investigationImages,
+        setInvestigationImages: patientState.setInvestigationImages,
         complaintEn, setComplaintEn,
         historyEn, setHistoryEn,
         examEn, setExamEn,

@@ -15,7 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const admin = require('firebase-admin');
-const { getOtpMailer, isValidEmail } = require('../otpUtils');
+const { getEmailMailer, isValidEmail } = require('../emailUtils');
 
 const CLINIC_LOGIN_URL = 'https://clinic.drhypermed.com/login/doctor';
 // الشعار الموجود بالفعل في الـPWA — نستخدمه في الإيميل عشان يبقى موحّد
@@ -115,7 +115,7 @@ const notifyDoctorOnApproval = async (event) => {
 
   console.log(`[notifyDoctorOnApproval] ${userId}: target email = ${doctorEmail}`);
 
-  const mailer = getOtpMailer();
+  const mailer = getEmailMailer();
   if (!mailer) {
     console.error(`[notifyDoctorOnApproval] ${userId}: ❌ SMTP NOT CONFIGURED — env vars missing (SMTP_HOST=${process.env.SMTP_HOST ? 'set' : 'MISSING'}, SMTP_USER=${process.env.SMTP_USER ? 'set' : 'MISSING'}, SMTP_PASS=${process.env.SMTP_PASS ? 'set' : 'MISSING'})`);
     return;

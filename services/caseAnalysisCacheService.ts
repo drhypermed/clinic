@@ -29,6 +29,7 @@ interface CaseAnalysisCacheKeyInput {
   medicalHistory: string;
   examination: string;
   investigations: string;
+  images?: Array<{ id: string }>;
   ageYears: number;
   ageMonths: number;
   ageDays: number;
@@ -93,6 +94,7 @@ const serializeInput = (input: CaseAnalysisCacheKeyInput): string => {
     'h=' + toText(input.medicalHistory).toLowerCase(),
     'e=' + toText(input.examination).toLowerCase(),
     'i=' + toText(input.investigations).toLowerCase(),
+    'imgs=' + (input.images || []).map((image) => toText(image.id)).sort().join('|'),
     'ay=' + String(input.ageYears || 0),
     'am=' + String(input.ageMonths || 0),
     'ad=' + String(input.ageDays || 0),

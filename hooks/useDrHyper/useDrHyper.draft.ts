@@ -31,6 +31,9 @@ interface DraftPayload {
 const buildSerializableState = (state: DrHyperPatientState): Record<string, unknown> => ({
   patientName: state.patientName,
   phone: state.phone,
+  addressGovernorate: state.addressGovernorate,
+  addressCityArea: state.addressCityArea,
+  addressDetails: state.addressDetails,
   ageYears: state.ageYears,
   ageMonths: state.ageMonths,
   ageDays: state.ageDays,
@@ -41,6 +44,7 @@ const buildSerializableState = (state: DrHyperPatientState): Record<string, unkn
   medicalHistory: state.medicalHistory,
   examination: state.examination,
   investigations: state.investigations,
+  investigationImages: state.investigationImages,
   complaintEn: state.complaintEn,
   historyEn: state.historyEn,
   examEn: state.examEn,
@@ -67,6 +71,9 @@ const hasMeaningfulContent = (snapshot: Record<string, unknown>): boolean => {
   const s = snapshot as any;
   if (String(s.patientName || '').trim()) return true;
   if (String(s.phone || '').trim()) return true;
+  if (String(s.addressGovernorate || '').trim()) return true;
+  if (String(s.addressCityArea || '').trim()) return true;
+  if (String(s.addressDetails || '').trim()) return true;
   if (Array.isArray(s.rxItems) && s.rxItems.length > 0) return true;
   if (Array.isArray(s.generalAdvice) && s.generalAdvice.length > 0) return true;
   if (Array.isArray(s.labInvestigations) && s.labInvestigations.length > 0) return true;
@@ -74,6 +81,7 @@ const hasMeaningfulContent = (snapshot: Record<string, unknown>): boolean => {
   if (String(s.medicalHistory || '').trim()) return true;
   if (String(s.examination || '').trim()) return true;
   if (String(s.investigations || '').trim()) return true;
+  if (Array.isArray(s.investigationImages) && s.investigationImages.length > 0) return true;
   if (String(s.diagnosisEn || '').trim()) return true;
   if (String(s.weight || '').trim()) return true;
   if (String(s.height || '').trim()) return true;
@@ -149,6 +157,9 @@ export const useDrHyperDraft = ({
   }, [
     patientState.patientName,
     patientState.phone,
+    patientState.addressGovernorate,
+    patientState.addressCityArea,
+    patientState.addressDetails,
     patientState.ageYears,
     patientState.ageMonths,
     patientState.ageDays,
@@ -159,6 +170,7 @@ export const useDrHyperDraft = ({
     patientState.medicalHistory,
     patientState.examination,
     patientState.investigations,
+    patientState.investigationImages,
     patientState.complaintEn,
     patientState.historyEn,
     patientState.examEn,
@@ -211,6 +223,9 @@ export const useDrHyperDraft = ({
     try {
       if (typeof s.patientName === 'string') patientState.setPatientName(s.patientName);
       if (typeof s.phone === 'string') patientState.setPhone(s.phone);
+      if (typeof s.addressGovernorate === 'string') patientState.setAddressGovernorate(s.addressGovernorate);
+      if (typeof s.addressCityArea === 'string') patientState.setAddressCityArea(s.addressCityArea);
+      if (typeof s.addressDetails === 'string') patientState.setAddressDetails(s.addressDetails);
       if (typeof s.ageYears === 'string') patientState.setAgeYears(s.ageYears);
       if (typeof s.ageMonths === 'string') patientState.setAgeMonths(s.ageMonths);
       if (typeof s.ageDays === 'string') patientState.setAgeDays(s.ageDays);
@@ -221,6 +236,7 @@ export const useDrHyperDraft = ({
       if (typeof s.medicalHistory === 'string') patientState.setMedicalHistory(s.medicalHistory);
       if (typeof s.examination === 'string') patientState.setExamination(s.examination);
       if (typeof s.investigations === 'string') patientState.setInvestigations(s.investigations);
+      if (Array.isArray(s.investigationImages)) patientState.setInvestigationImages(s.investigationImages);
       if (typeof s.complaintEn === 'string') patientState.setComplaintEn(s.complaintEn);
       if (typeof s.historyEn === 'string') patientState.setHistoryEn(s.historyEn);
       if (typeof s.examEn === 'string') patientState.setExamEn(s.examEn);
@@ -230,7 +246,10 @@ export const useDrHyperDraft = ({
       if (Array.isArray(s.generalAdvice)) patientState.setGeneralAdvice(s.generalAdvice);
       if (Array.isArray(s.labInvestigations)) patientState.setLabInvestigations(s.labInvestigations);
       if (s.visitType === 'exam' || s.visitType === 'consultation') patientState.setVisitType(s.visitType);
-      if (s.paymentType === 'cash' || s.paymentType === 'insurance' || s.paymentType === 'discount') {
+      if (
+        s.paymentType === 'cash' || s.paymentType === 'insurance' || s.paymentType === 'discount' ||
+        s.paymentType === 'instapay' || s.paymentType === 'wallet' || s.paymentType === 'bank_transfer'
+      ) {
         patientState.setPaymentType(s.paymentType);
       }
       if (typeof s.insuranceCompanyId === 'string') patientState.setInsuranceCompanyId(s.insuranceCompanyId);

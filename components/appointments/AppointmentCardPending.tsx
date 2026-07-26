@@ -7,6 +7,8 @@ import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from './FirstVisitBadge';
 import { PatientFileLinkSuggestion } from './PatientFileLinkSuggestion';
+import { PaymentMethodBadge } from '../common/PaymentMethodBadge';
+import { formatPatientAddress } from '../../utils/patientAddress';
 
 interface AppointmentCardPendingProps {
   apt: ClinicAppointment;
@@ -94,16 +96,7 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
           {isToday && (
             <span className="rounded-full border border-danger-200 bg-danger-100 px-2 py-0.5 text-[10px] font-black text-danger-800">اليوم</span>
           )}
-          {apt.paymentType === 'insurance' && (
-            <span className="rounded-full border border-brand-200 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-800">
-              تأمين {apt.insuranceCompanyName ? `(${apt.insuranceCompanyName})` : ''}
-            </span>
-          )}
-          {apt.paymentType === 'discount' && (
-            <span className="rounded-full border border-warning-200 bg-warning-100 px-2 py-0.5 text-[10px] font-black text-warning-800">
-              خصم {discountBadgeText ? `(${discountBadgeText})` : ''}
-            </span>
-          )}
+          <PaymentMethodBadge paymentType={apt.paymentType} insuranceCompanyName={apt.insuranceCompanyName} discountText={discountBadgeText} />
           {apt.paymentType === 'discount' && discountReasonSummary && (
             <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-bold text-warning-800">
               {discountReasonSummary}
@@ -155,6 +148,11 @@ const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = (
               />
             )}
           </div>
+        )}
+        {formatPatientAddress(apt.address, 'summary') && (
+          <p className="text-[11px] font-bold text-slate-500">
+            العنوان: {formatPatientAddress(apt.address, 'summary')}
+          </p>
         )}
 
         <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />

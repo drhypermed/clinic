@@ -9,11 +9,15 @@
 
 import type React from 'react';
 import type { PatientGender, PatientRecord, PaymentType, PrescriptionItem, VitalSigns } from '../../types';
+import type { PatientImageMetadata } from '../../services/patient-files/images';
 
 export interface CreateSaveRecordActionParams {
     user: { uid: string } | null | undefined;
     patientName: string;
     phone: string;
+    addressGovernorate: string;
+    addressCityArea: string;
+    addressDetails: string;
     ageYears: string;
     ageMonths: string;
     ageDays: string;
@@ -40,6 +44,7 @@ export interface CreateSaveRecordActionParams {
     medicalHistory: string;
     examination: string;
     investigations: string;
+    investigationImages: PatientImageMetadata[];
     visitDate: string;
     visitType: 'exam' | 'consultation';
     activeVisitDateTime: string | null;

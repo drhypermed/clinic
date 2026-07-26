@@ -27,6 +27,7 @@ import {
     type PatientInsuranceItem,
 } from '../../../services/patientCostService';
 import type { InsuranceCompany } from '../../../services/insuranceService';
+import type { DirectPaymentType } from '../../../utils/paymentMethods';
 
 export const getTodayDateKey = () =>
     new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
@@ -139,6 +140,7 @@ interface SaveCostInput {
     costFormDate: string;
     costFormType: 'interventions' | 'other';
     costFormNote: string;
+    costPaymentType: DirectPaymentType;
     editingCostId: string | null;
     costItems: PatientCostItem[];
     insuranceItems: PatientInsuranceItem[];
@@ -151,7 +153,7 @@ interface SaveCostInput {
 }
 
 export const handleSaveCostOperation = (input: SaveCostInput): void => {
-    const { fileId, patientName, costFormAmount, costFormDate, costFormType, costFormNote, branchId } = input;
+    const { fileId, patientName, costFormAmount, costFormDate, costFormType, costFormNote, costPaymentType, branchId } = input;
 
     if (!fileId) { input.setCostError('ملف المريض غير مكتمل.'); return; }
     const amount = parseFloat(costFormAmount);
@@ -161,7 +163,7 @@ export const handleSaveCostOperation = (input: SaveCostInput): void => {
 
     if (input.editingCostId) {
         const oldItem = input.costItems.find(c => c.id === input.editingCostId);
-        editCostItem(fileId, input.editingCostId, { amount, type: costFormType, dateKey: dk, note: costFormNote || undefined });
+        editCostItem(fileId, input.editingCostId, { amount, type: costFormType, dateKey: dk, note: costFormNote || undefined, paymentType: costPaymentType });
         const updated = loadPatientFileCosts(fileId);
         input.setCostItems(updated);
         doSyncCostsToFirestore({
@@ -174,7 +176,7 @@ export const handleSaveCostOperation = (input: SaveCostInput): void => {
         });
         input.setEditingCostId(null);
     } else {
-        addCostItem(fileId, patientName, { amount, type: costFormType, dateKey: dk, note: costFormNote || undefined }, branchId);
+        addCostItem(fileId, patientName, { amount, type: costFormType, dateKey: dk, note: costFormNote || undefined, paymentType: costPaymentType }, branchId);
         const updated = loadPatientFileCosts(fileId);
         input.setCostItems(updated);
         doSyncCostsToFirestore({

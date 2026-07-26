@@ -1,6 +1,8 @@
 import type { PatientRecord } from '../../types';
 import { formatUserDateTime } from '../../utils/cairoTime';
 import { normalizePatientNameForFile } from '../../services/patient-files';
+import type { PatientAddress } from '../../types';
+import { normalizePatientAddress } from '../../utils/patientAddress';
 
 type PatientVisitType = 'exam' | 'consultation';
 
@@ -19,6 +21,7 @@ export interface PatientFileData {
   fileNumber?: number;
   fileId?: string;
   phones: string[];
+  address?: PatientAddress;
   visits: PatientVisitEntry[];
   examCount: number;
   consultationCount: number;
@@ -247,6 +250,9 @@ export const buildPatientFiles = (records: PatientRecord[]): PatientFileData[] =
       if (phoneCandidates.length > 0) {
         existing.phones = uniqueTrimmed([...existing.phones, ...phoneCandidates]);
       }
+      if (!existing.address) {
+        existing.address = normalizePatientAddress(record.address);
+      }
       return existing;
     }
 
@@ -256,6 +262,7 @@ export const buildPatientFiles = (records: PatientRecord[]): PatientFileData[] =
       fileNumber: isPositiveFileNumber(record.patientFileNumber) ? record.patientFileNumber : undefined,
       fileId: record.patientFileId,
       phones: extractRecordPhoneCandidates(record),
+      address: normalizePatientAddress(record.address),
       visits: [],
       examCount: 0,
       consultationCount: 0,

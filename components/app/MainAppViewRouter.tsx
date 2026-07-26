@@ -125,6 +125,9 @@ interface MainAppViewRouterProps {
   setAnalyzing: (v: boolean) => void;
   patientName: string; setPatientName: (v: string) => void;
   phone: string; setPhone: (v: string) => void;
+  addressGovernorate: string; setAddressGovernorate: (v: string) => void;
+  addressCityArea: string; setAddressCityArea: (v: string) => void;
+  addressDetails: string; setAddressDetails: (v: string) => void;
   ageYears: string; setAgeYears: (v: string) => void;
   ageMonths: string; setAgeMonths: (v: string) => void;
   ageDays: string; setAgeDays: (v: string) => void;
@@ -151,6 +154,8 @@ interface MainAppViewRouterProps {
   medicalHistory: string; setMedicalHistory: (v: string) => void;
   examination: string; setExamination: (v: string) => void;
   investigations: string; setInvestigations: (v: string) => void;
+  investigationImages: import('../../services/patient-files/images').PatientImageMetadata[];
+  setInvestigationImages: (images: import('../../services/patient-files/images').PatientImageMetadata[]) => void;
   handleFullAutomatedRX: () => Promise<void>;
   /** زر "إضافة إلى الروشتة والسجلات" — يضيف البيانات بدون popup ويسيب Dx فاضي */
   handleQuickAddToRx: () => Promise<void>;
@@ -291,6 +296,9 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           onCancelAnalyze={() => { if (window.confirm('هل تريد إيقاف التحليل؟')) { p.setAnalyzing(false); } }}
           patientName={p.patientName} setPatientName={p.setPatientName}
           phone={p.phone} setPhone={p.setPhone}
+          addressGovernorate={p.addressGovernorate} setAddressGovernorate={p.setAddressGovernorate}
+          addressCityArea={p.addressCityArea} setAddressCityArea={p.setAddressCityArea}
+          addressDetails={p.addressDetails} setAddressDetails={p.setAddressDetails}
           ageYears={p.ageYears} setAgeYears={p.setAgeYears}
           ageMonths={p.ageMonths} setAgeMonths={p.setAgeMonths}
           ageDays={p.ageDays} setAgeDays={p.setAgeDays}
@@ -314,6 +322,8 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           medicalHistory={p.medicalHistory} setMedicalHistory={p.setMedicalHistory}
           examination={p.examination} setExamination={p.setExamination}
           investigations={p.investigations} setInvestigations={p.setInvestigations}
+          investigationImages={p.investigationImages} setInvestigationImages={p.setInvestigationImages}
+          accountType={p.accountType}
           onAnalyze={p.handleDeepAnalyzeWithPopup}
           onQuickAddToRx={p.handleQuickAddToRx}
           // state نافذة تحليل الحالة الغنية
@@ -449,6 +459,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
 
       {p.currentView === 'patientFiles' && (
         <PatientFilesPage
+          accountType={p.accountType}
           records={p.records}
           doctorSpecialty={p.normalizedDoctorSpecialty}
           onLoadRecord={(rec) => {

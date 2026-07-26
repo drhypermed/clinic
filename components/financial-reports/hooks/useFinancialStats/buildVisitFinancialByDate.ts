@@ -16,6 +16,11 @@ import type { PatientRecord } from '../../../../types';
 import { computePaymentBreakdownForBasePrice } from '../../../../utils/paymentDiscount';
 import { formatDateKey } from '../../utils/formatters';
 import { asTimestamp, type ConsultationVisit } from './collectConsultationVisits';
+import {
+    addToDirectPaymentTotals,
+    createEmptyDirectPaymentTotals,
+    type DirectPaymentTotals,
+} from '../../../../utils/paymentMethods';
 
 interface VisitFinancialDayEntry {
     examsIncome: number;
@@ -23,6 +28,7 @@ interface VisitFinancialDayEntry {
     collectedCash: number;
     insuranceClaims: number;
     discountExpense: number;
+    directPaymentTotals: DirectPaymentTotals;
 }
 
 interface BuildVisitFinancialByDateInput {
@@ -53,6 +59,7 @@ export const buildVisitFinancialByDate = ({
                 collectedCash: 0,
                 insuranceClaims: 0,
                 discountExpense: 0,
+                directPaymentTotals: createEmptyDirectPaymentTotals(),
             };
         }
         return byDay[dayKey];
@@ -82,6 +89,7 @@ export const buildVisitFinancialByDate = ({
         day.collectedCash += breakdown.collectedCash;
         day.insuranceClaims += breakdown.insuranceClaims;
         day.discountExpense += breakdown.discountAmount;
+        addToDirectPaymentTotals(day.directPaymentTotals, record.paymentType, breakdown.collectedCash);
     });
 
     consultationVisits.forEach((visit) => {
@@ -107,6 +115,7 @@ export const buildVisitFinancialByDate = ({
         day.collectedCash += breakdown.collectedCash;
         day.insuranceClaims += breakdown.insuranceClaims;
         day.discountExpense += breakdown.discountAmount;
+        addToDirectPaymentTotals(day.directPaymentTotals, visit.paymentType, breakdown.collectedCash);
     });
 
     return byDay;

@@ -38,6 +38,7 @@ import {
   InsuranceClaimsList,
   InvoiceSelectionPanel,
 } from './patient-file-costs/CostItemsLists';
+import type { DirectPaymentType } from '../../utils/paymentMethods';
 
 interface PatientFileCostsSectionProps {
   patientFile: PatientFileData | null;
@@ -65,6 +66,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
   const [costFormDate, setCostFormDate] = useState<string>(getTodayDateKey);
   const [costFormType, setCostFormType] = useState<'interventions' | 'other'>('interventions');
   const [costFormNote, setCostFormNote] = useState('');
+  const [costPaymentType, setCostPaymentType] = useState<DirectPaymentType>('cash');
   const [editingCostId, setEditingCostId] = useState<string | null>(null);
 
   // نموذج مطالبة التأمين
@@ -113,6 +115,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     setCostFormDate(getTodayDateKey());
     setCostFormType('interventions');
     setCostFormNote('');
+    setCostPaymentType('cash');
     setEditingCostId(null);
     setShowAddInsurance(false);
     setInsFormCompanyId('');
@@ -212,6 +215,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
       costFormDate,
       costFormType,
       costFormNote,
+      costPaymentType,
       editingCostId,
       costItems,
       insuranceItems,
@@ -223,6 +227,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
       resetCostForm: () => {
         setCostFormAmount('');
         setCostFormNote('');
+        setCostPaymentType('cash');
         setShowAddCost(false);
       },
     });
@@ -246,6 +251,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
     setCostFormDate(item.dateKey);
     setCostFormType(item.type);
     setCostFormNote(item.note ?? '');
+    setCostPaymentType(item.paymentType || 'cash');
     setShowAddCost(true);
     setShowAddInsurance(false);
   };
@@ -329,7 +335,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
           <div>
             <div className="text-sm font-black text-white">تكاليف أخرى</div>
             <div className="text-[11px] font-medium text-brand-100 mt-0.5">
-              تداخلات ودخل آخر كاش + مطالبات تأمين — تُغذِّي التقارير المالية تلقائيًا
+              تداخلات ودخل آخر: كاش أو إنستا باي أو محفظة أو حساب بنكي + مطالبات تأمين
             </div>
           </div>
           <button
@@ -344,7 +350,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {costItems.length > 0 && (
               <span className="inline-flex items-center bg-white/20 border border-white/30 text-white rounded-full px-2.5 py-0.5 text-[11px] font-black">
-                {costItems.length} تكلفة كاش
+                {costItems.length} بند تحصيل مباشر
               </span>
             )}
             {insuranceItems.length > 0 && (
@@ -369,7 +375,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
             </div>
           )}
 
-          {/* أزرار الإجراءات: إضافة كاش / تأمين / طباعة فاتورة */}
+          {/* أزرار الإجراءات: إضافة تحصيل مباشر / تأمين / طباعة فاتورة */}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -379,13 +385,14 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
                 setEditingCostId(null);
                 setCostFormAmount('');
                 setCostFormNote('');
+                setCostPaymentType('cash');
                 setCostFormDate(getTodayDateKey());
                 setCostFormType('interventions');
                 setCostError(null);
               }}
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-brand-700"
             >
-              + إضافة تكلفة كاش
+              + إضافة دخل مباشر
             </button>
             <button
               type="button"
@@ -438,7 +445,7 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
             />
           )}
 
-          {/* نموذج تكلفة الكاش */}
+          {/* نموذج الدخل المباشر */}
           {showAddCost && (
             <CostFormPanel
               editingCostId={editingCostId}
@@ -446,10 +453,12 @@ export const PatientFileCostsSection: React.FC<PatientFileCostsSectionProps> = (
               costFormAmount={costFormAmount}
               costFormType={costFormType}
               costFormNote={costFormNote}
+              costPaymentType={costPaymentType}
               setCostFormDate={setCostFormDate}
               setCostFormAmount={setCostFormAmount}
               setCostFormType={setCostFormType}
               setCostFormNote={setCostFormNote}
+              setCostPaymentType={setCostPaymentType}
               onCancel={() => {
                 setShowAddCost(false);
                 setEditingCostId(null);

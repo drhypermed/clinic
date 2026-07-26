@@ -4,7 +4,7 @@
 // يحتوي على:
 //   - VitalSigns: العلامات الحيوية (ضغط، نبض، حرارة ...)
 //   - SecretaryVital*: إعدادات السكرتارية لإدخال القياسات قبل الكشف
-//   - PaymentType: نوع الدفع (كاش / تأمين / خصم)
+//   - PaymentType: نوع الدفع (كاش / إلكتروني / تأمين / خصم)
 //   - PatientRecord: سجل الكشف الكامل (الوصفة الأساسية)
 //   - ConsultationData: سجل استشارة بعد الكشف
 //   - ReadyPrescription: روشتة جاهزة محفوظة للاستخدام المتكرر
@@ -67,13 +67,26 @@ export type SecretaryVitalsInput = Partial<Record<string, string>>;
 export type SecretaryVitalsVisibility = Record<string, boolean>;
 
 /** نوع الدفع للكشف — مستخدم في الإحصائيات المالية */
-export type PaymentType = 'cash' | 'insurance' | 'discount';
+export type PaymentType =
+  | 'cash'
+  | 'instapay'
+  | 'wallet'
+  | 'bank_transfer'
+  | 'insurance'
+  | 'discount';
 
 /**
  * جنس المريض — ثابت مدى الحياة، يُخزَّن في ملف المريض الموحد ويُنقل تلقائياً
  * لكل حجز/استشارة جديدة لنفس المريض (مفتاح البحث: الاسم/الهاتف/patientFileId).
  */
 export type PatientGender = 'male' | 'female';
+
+/** عنوان المريض المنظّم — كل الحقول اختيارية لتسهيل التسجيل السريع. */
+export interface PatientAddress {
+  governorate?: string;
+  cityArea?: string;
+  details?: string;
+}
 
 /** Snapshot مختصر لزيارة حمل محفوظة داخل سجل الكشف/الاستشارة. */
 export interface PregnancyVisitSnapshot {
@@ -112,6 +125,8 @@ export interface PatientRecord {
   date: string;
   patientName: string;
   phone?: string;
+  /** عنوان المريض وقت الزيارة، ويُزامن مع ملفه الموحد عند التعديل. */
+  address?: PatientAddress;
   /**
    * سن المريض وقت الزيارة (snapshot ثابت) — لا يتغير بعد حفظ السجل.
    * ده أساس حساب السن التلقائي: لما ندور على المريض في زيارة جاية،
@@ -158,6 +173,8 @@ export interface PatientRecord {
   historyAr?: string;
   examAr?: string;
   investigationsAr?: string;
+  /** صور الفحوصات المرتبطة بهذه الزيارة، بينما ملف الصورة نفسه محفوظ مرة واحدة في معرض المريض. */
+  investigationImageIds?: string[];
 
   // ─── خاص بالاستشارات ───
   isConsultationOnly?: boolean;
@@ -182,7 +199,7 @@ export interface PatientRecord {
   patientFileNameKey?: string;
 
   // ─── بيانات الدفع ───
-  /** الدفع: كاش أو تأمين أو خصم */
+  /** الدفع: كاش، إنستا باي، محفظة، حساب بنكي، تأمين أو خصم */
   paymentType?: PaymentType;
   /** معرف شركة التأمين (مرجع لجدول insuranceCompanies) */
   insuranceCompanyId?: string;
@@ -232,6 +249,7 @@ export interface ConsultationData {
   historyAr?: string;
   examAr?: string;
   investigationsAr?: string;
+  investigationImageIds?: string[];
   /**
    * سن المريض وقت الاستشارة (snapshot). لا يتغير بعد الحفظ حتى لو زاد العمر لاحقاً.
    * الهدف: ثبات السجلات التاريخية بالسن اللي كان وقت الاستشارة فعلياً.

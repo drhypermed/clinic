@@ -6,14 +6,12 @@
  *   - مستند المستخدم (`users/{uid}`).
  *   - مستند إعدادات الحجز (`bookingConfig/{secret}`).
  *   - مستند المصادقة (`bookingConfigAuth/{secret}`).
- *   - فهرس دخول السكرتارية (`secretaryLoginIndex/{email}`).
  *
  * تتضمن:
  *   1. تطبيع البيانات (formTitle، doctorEmail، العلامات الحيوية).
  *   2. hash كلمة المرور الجديدة (مع التحقق من المطابقة مع الـ hash الحالي).
  *   3. الكتابة المتوازية إلى الثلاث collections.
  *   4. التحقق من الكتابة على السيرفر (`getDocFromServer`).
- *   5. مزامنة فهرس الدخول.
  *
  * مستخرج من `secretConfig.settings.ts` لتقليل حجمه.
  */
@@ -32,10 +30,6 @@ import type {
 import { normalizeBookingSecret, normalizeEmail, sanitizeDocSegment, toOptionalText } from './helpers';
 import { getSecretaryAuthRef } from './secretaryAuthStorage';
 
-interface UpdateSecretaryLoginIndexFn {
-    (doctorEmail: string, userId: string, hasPasswordHash: boolean): Promise<void>;
-}
-
 export const updateBookingSettings = async (
     userId: string,
     secret: string,
@@ -46,7 +40,6 @@ export const updateBookingSettings = async (
     secretaryVitalsVisibility: SecretaryVitalsVisibility | undefined,
     secretaryVitalFields: SecretaryVitalFieldDefinition[] | undefined,
     doctorSpecialty: string | undefined,
-    upsertSecretaryLoginIndex: UpdateSecretaryLoginIndexFn,
     /** الفرع النشط — لمنع الكتابة على الـ global secret لما يكون فرع غير الرئيسي */
     branchId?: string,
 ): Promise<void> => {
@@ -257,13 +250,11 @@ export const updateBookingSettings = async (
         throw new Error('Cloud save verification failed for secretary form title.');
     }
 
-    let hasPasswordHash = false;
     if (secretaryPassword !== undefined) {
         if (isNonMainBranch && branchAuthRef) {
             // الفرع الفرعي: قواعد Firestore بتمنع قراءة secretaryAuth/{secret}/branches/{branchId}
             // من الكلاينت (حماية للـ passwordHash). فبنعتمد على نجاح الـ setDoc فوق —
             // لو رجع بدون throw، يبقى الحفظ اتم على السيرفر.
-            hasPasswordHash = Boolean(expectedSecretaryHash);
         } else {
             // الفرع الرئيسي: نفس التحقق القديم
             const serverAuthSnap = await getDocFromServer(authRef);
@@ -277,21 +268,9 @@ export const updateBookingSettings = async (
                 if (serverHash !== expectedSecretaryHash) {
                     throw new Error('Cloud save verification failed for secretary password hash.');
                 }
-                hasPasswordHash = true;
             } else if (serverHash) {
                 throw new Error('Cloud save verification failed for secretary password removal.');
             }
-        }
-    } else {
-        hasPasswordHash = Boolean(currentHash);
-    }
-
-    // الفرع الرئيسي بس يحدث فهرس الدخول — الفروع التانية بتستخدم الرابط مباشرة
-    if (doctorEmailValue && !isNonMainBranch) {
-        try {
-            await upsertSecretaryLoginIndex(doctorEmailValue, normalizedUserId, hasPasswordHash);
-        } catch (error) {
-            console.warn('[Firestore] Failed to sync secretary login index after updateBookingSettings:', error);
         }
     }
 };

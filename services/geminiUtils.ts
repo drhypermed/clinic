@@ -56,6 +56,7 @@ export const generateContentWithSecurity = async (
     /** اسم الميزة — يُسجَّل في تقرير استهلاك الأدمن per-feature. */
     feature?: AiFeatureName;
     googleSearch?: boolean;
+    images?: Array<{ mimeType: 'image/jpeg'; data: string }>;
   }
 ): Promise<string> => {
   const response = await generateGeminiContentSecure({
@@ -65,6 +66,7 @@ export const generateContentWithSecurity = async (
     responseMimeType: opts?.responseMimeType ?? 'application/json',
     thinkingBudget: opts?.thinkingBudget ?? GEMINI_DEFAULT_THINKING_BUDGET,
     googleSearch: opts?.googleSearch,
+    images: opts?.images,
     feature: opts?.feature, // ← يمرر اسم الميزة للـbackend لـper-feature counter
   });
   return response.text || '';

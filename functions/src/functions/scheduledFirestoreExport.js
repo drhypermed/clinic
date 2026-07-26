@@ -1,8 +1,7 @@
 /**
- * scheduledFirestoreExport — نسخ احتياطي تلقائي يومي لـ Firestore.
- *
- * يصدّر كل Firestore إلى مجلد `gs://{bucket}/firestore-backups/YYYY-MM-DD/` يومياً.
- * وينظف تلقائياً النسخ الأقدم من 30 يوماً لتوفير تكلفة Storage.
+ * نسخ Firestore الاحتياطية الموفّرة للتكلفة:
+ * - نسخة يومية للبيانات السريرية والحسابات، مع احتفاظ 14 يوماً.
+ * - نسخة كاملة أسبوعية، مع احتفاظ 56 يوماً.
  *
  * المتطلبات لتشغيله:
  *   1. تفعيل Datastore API في Google Cloud Console
@@ -15,14 +14,62 @@
  * google-auth-library + fetch (مرفقة ضمن firebase-admin).
  */
 
-const BACKUP_RETENTION_DAYS = 30;
-const BACKUP_FOLDER_PREFIX = 'firestore-backups';
+const CLINICAL_BACKUP_RETENTION_DAYS = 14;
+const FULL_BACKUP_RETENTION_DAYS = 56;
+const CLINICAL_BACKUP_FOLDER_PREFIX = 'firestore-backups/clinical-daily';
+const FULL_BACKUP_FOLDER_PREFIX = 'firestore-backups/full-weekly';
+
+// Firestore's managed export filters by collection-group ID. This list keeps
+// clinical, financial, account, and booking data protected every day while
+// excluding bulky reproducible guideline/search collections.
+const CLINICAL_COLLECTION_IDS = Object.freeze([
+  'users',
+  'settings',
+  'appointments',
+  'publicBookings',
+  'records',
+  'branches',
+  'readyPrescriptions',
+  'notifications',
+  'usageDaily',
+  'usageMonthly',
+  'monthlyPrices',
+  'financialData',
+  'entries',
+  'insuranceCompanies',
+  'discountReasons',
+  'patientFileData',
+  'patientSummaries',
+  'secretaryPatientDirectories',
+  'patients',
+  'bookingConfig',
+  'secretaryAuth',
+  'secretaryLoginIndex',
+  'secretaryUsernameIndex',
+  'secretaryEntryRequests',
+  'secretaryApprovedEntryIds',
+  'secretaryFcmTokens',
+  'secretaryEntryAlertResponse',
+  'secretaryProfiles',
+  'publicBookingConfig',
+  'slots',
+  'publicBookingLookup',
+  'publicBookingClaims',
+  'pending_doctors',
+  'subscriptionPrices',
+  'expenses',
+]);
 
 /**
  * يُنشئ export job على Firestore.
  * مرجع: https://cloud.google.com/firestore/docs/manage-data/export-import#start_a_managed_export_operation
  */
-const triggerFirestoreExport = async ({ admin, bucketName, exportPath }) => {
+const buildExportRequestBody = ({ bucketName, exportPath, collectionIds }) => ({
+  outputUriPrefix: `gs://${bucketName}/${exportPath}`,
+  ...(Array.isArray(collectionIds) && collectionIds.length > 0 ? { collectionIds } : {}),
+});
+
+const triggerFirestoreExport = async ({ admin, bucketName, exportPath, collectionIds }) => {
   const projectId = admin.app().options.projectId || process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
   if (!projectId) throw new Error('Project ID not available for export');
 
@@ -35,9 +82,7 @@ const triggerFirestoreExport = async ({ admin, bucketName, exportPath }) => {
       Authorization: `Bearer ${accessToken.access_token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      outputUriPrefix: `gs://${bucketName}/${exportPath}`,
-    }),
+    body: JSON.stringify(buildExportRequestBody({ bucketName, exportPath, collectionIds })),
   });
 
   if (!response.ok) {
@@ -50,20 +95,21 @@ const triggerFirestoreExport = async ({ admin, bucketName, exportPath }) => {
 };
 
 /**
- * يحذف النسخ الأقدم من BACKUP_RETENTION_DAYS من الـ bucket.
+ * يحذف النسخ الأقدم من مدة الاحتفاظ المحددة من الـ bucket.
  * يبحث بالـ prefix ويفلتر حسب التاريخ الموجود في اسم المجلد.
  */
-const cleanupOldBackups = async ({ admin, bucketName }) => {
+const cleanupOldBackups = async ({ admin, bucketName, folderPrefix, retentionDays }) => {
   const bucket = admin.storage().bucket(bucketName);
   const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - BACKUP_RETENTION_DAYS);
+  cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-  const [files] = await bucket.getFiles({ prefix: `${BACKUP_FOLDER_PREFIX}/` });
+  const [files] = await bucket.getFiles({ prefix: `${folderPrefix}/` });
   let deletedCount = 0;
 
   for (const file of files) {
-    // اسم الملف: firestore-backups/2026-03-15/output-0 (مثلاً)
-    const match = file.name.match(/^firestore-backups\/(\d{4})-(\d{2})-(\d{2})\//);
+    // الجزء النسبي: 2026-03-15/output-0 (مثلاً)
+    const relativeName = file.name.slice(`${folderPrefix}/`.length);
+    const match = relativeName.match(/^(\d{4})-(\d{2})-(\d{2})\//);
     if (!match) continue;
     const [, year, month, day] = match;
     const fileDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
@@ -83,7 +129,7 @@ const cleanupOldBackups = async ({ admin, bucketName }) => {
 module.exports = (context) => {
   const { admin } = context;
 
-  const scheduledFirestoreExport = async () => {
+  const runScheduledExport = async ({ folderPrefix, retentionDays, collectionIds, backupType }) => {
     // Bucket افتراضياً: firestorage bucket الخاص بالمشروع.
     const defaultBucket = admin.app().options.storageBucket ||
       `${admin.app().options.projectId}.firebasestorage.app`;
@@ -91,14 +137,14 @@ module.exports = (context) => {
 
     const nowIso = new Date().toISOString();
     const datePart = nowIso.slice(0, 10); // YYYY-MM-DD
-    const exportPath = `${BACKUP_FOLDER_PREFIX}/${datePart}`;
+    const exportPath = `${folderPrefix}/${datePart}`;
 
     let exportResult = null;
     let exportError = null;
     try {
-      exportResult = await triggerFirestoreExport({ admin, bucketName, exportPath });
+      exportResult = await triggerFirestoreExport({ admin, bucketName, exportPath, collectionIds });
       console.log('[scheduledFirestoreExport] export started', {
-        bucketName, exportPath, operationName: exportResult.operationName,
+        backupType, bucketName, exportPath, operationName: exportResult.operationName,
       });
     } catch (err) {
       exportError = err?.message || String(err);
@@ -108,7 +154,7 @@ module.exports = (context) => {
     // نظّف النسخ القديمة حتى لو فشل الـ export الحالي
     let cleanedCount = 0;
     try {
-      cleanedCount = await cleanupOldBackups({ admin, bucketName });
+      cleanedCount = await cleanupOldBackups({ admin, bucketName, folderPrefix, retentionDays });
       console.log('[scheduledFirestoreExport] cleaned', cleanedCount, 'old backup files');
     } catch (cleanupErr) {
       console.warn('[scheduledFirestoreExport] cleanup error:', cleanupErr?.message || cleanupErr);
@@ -116,6 +162,7 @@ module.exports = (context) => {
 
     return {
       ok: !exportError,
+      backupType,
       bucketName,
       exportPath,
       operationName: exportResult?.operationName || '',
@@ -125,5 +172,22 @@ module.exports = (context) => {
     };
   };
 
-  return { scheduledFirestoreExport };
+  const scheduledClinicalFirestoreExport = () => runScheduledExport({
+    folderPrefix: CLINICAL_BACKUP_FOLDER_PREFIX,
+    retentionDays: CLINICAL_BACKUP_RETENTION_DAYS,
+    collectionIds: CLINICAL_COLLECTION_IDS,
+    backupType: 'clinical-daily',
+  });
+
+  const scheduledFullFirestoreExport = () => runScheduledExport({
+    folderPrefix: FULL_BACKUP_FOLDER_PREFIX,
+    retentionDays: FULL_BACKUP_RETENTION_DAYS,
+    collectionIds: null,
+    backupType: 'full-weekly',
+  });
+
+  return { scheduledClinicalFirestoreExport, scheduledFullFirestoreExport };
 };
+
+module.exports.CLINICAL_COLLECTION_IDS = CLINICAL_COLLECTION_IDS;
+module.exports.buildExportRequestBody = buildExportRequestBody;

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { collection, deleteDoc, deleteField, doc, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, getDoc, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { getDocsCacheFirst } from '../../services/firestore/cacheFirst';
 import { PatientRecord, PaymentType, PrescriptionItem } from '../../types';
 import {
@@ -20,6 +20,16 @@ import {
     buildSeparatedConsultationRecordPayload,
 } from './useDrHyper.consultationRecords';
 import { getReusableWeightForVisit } from '../../utils/patientMeasurements';
+import {
+    deletePatientImagesByIds,
+    loadPatientImagesByIds,
+    type PatientImageMetadata,
+} from '../../services/patient-files/images';
+
+const collectRecordImageIds = (record?: Partial<PatientRecord> | null): string[] => Array.from(new Set([
+    ...(Array.isArray(record?.investigationImageIds) ? record.investigationImageIds : []),
+    ...(Array.isArray(record?.consultation?.investigationImageIds) ? record.consultation.investigationImageIds : []),
+].map((imageId) => String(imageId || '').trim()).filter(Boolean)));
 
 interface CreateRecordActionsParams {
     user: any;
@@ -52,6 +62,7 @@ interface CreateRecordActionsParams {
     setMedicalHistory: React.Dispatch<React.SetStateAction<string>>;
     setExamination: React.Dispatch<React.SetStateAction<string>>;
     setInvestigations: React.Dispatch<React.SetStateAction<string>>;
+    setInvestigationImages: React.Dispatch<React.SetStateAction<PatientImageMetadata[]>>;
     setRxItems: React.Dispatch<React.SetStateAction<PrescriptionItem[]>>;
     setGeneralAdvice: React.Dispatch<React.SetStateAction<string[]>>;
     setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
@@ -109,6 +120,7 @@ export const createRecordActions = ({
     setMedicalHistory,
     setExamination,
     setInvestigations,
+    setInvestigationImages,
     setRxItems,
     setGeneralAdvice,
     setLabInvestigations,
@@ -174,10 +186,19 @@ export const createRecordActions = ({
             setMedicalHistory,
             setExamination,
             setInvestigations,
+            setInvestigationImages,
             setRxItems,
             setGeneralAdvice,
             setLabInvestigations,
         });
+        const imageIds = payload.investigationImageIds || [];
+        if (!user?.uid || imageIds.length === 0) {
+            setInvestigationImages([]);
+        } else {
+            void loadPatientImagesByIds(user.uid, imageIds)
+                .then(setInvestigationImages)
+                .catch(() => setInvestigationImages([]));
+        }
     };
 
     const applyPatientFileIdentity = (record: PatientRecord) => {
@@ -291,13 +312,30 @@ export const createRecordActions = ({
         }
 
         try {
-            await deleteDoc(doc(db, 'users', user.uid, 'records', id));
+            const recordRef = doc(db, 'users', user.uid, 'records', id);
+            const recordSnapshot = await getDoc(recordRef);
+            const recordData = recordSnapshot.exists() ? recordSnapshot.data() as Partial<PatientRecord> : null;
+            let linkedConsultationDocs: Awaited<ReturnType<typeof getDocsCacheFirst>>['docs'] = [];
+
             if (!id.startsWith(CONSULTATION_RECORD_PREFIX)) {
                 const recordsCollectionRef = collection(db, 'users', user.uid, 'records');
                 const linkedConsultationsSnap = await getDocsCacheFirst(
                     query(recordsCollectionRef, where('sourceExamRecordId', '==', id))
                 );
-                const deleteLinkedPromises = linkedConsultationsSnap.docs.map((docSnap) =>
+                linkedConsultationDocs = linkedConsultationsSnap.docs;
+            }
+
+            const imageIds = Array.from(new Set([
+                ...collectRecordImageIds(recordData),
+                ...linkedConsultationDocs.flatMap((docSnap) => collectRecordImageIds(docSnap.data() as Partial<PatientRecord>)),
+            ]));
+            // لا نحذف مستند السجل قبل نجاح حذف صوره من Storage؛ لو فشل الاتصال يظل السجل
+            // موجودًا ويمكن للطبيب إعادة المحاولة بدل ترك ملفات سحابية يتيمة بتكلفة مستمرة.
+            await deletePatientImagesByIds(user.uid, imageIds);
+            await deleteDoc(recordRef);
+
+            if (!id.startsWith(CONSULTATION_RECORD_PREFIX)) {
+                const deleteLinkedPromises = linkedConsultationDocs.map((docSnap) =>
                     deleteDoc(doc(db, 'users', user.uid, 'records', docSnap.id))
                 );
 
@@ -369,6 +407,10 @@ export const createRecordActions = ({
                 }
                 showNotification('تم حذف الاستشارة بحذف السجل بنجاح', 'info');
             } else {
+                const examImageIds = new Set(record.investigationImageIds || []);
+                const embeddedConsultationImageIds = (record.consultation?.investigationImageIds || [])
+                    .filter((imageId) => !examImageIds.has(imageId));
+                await deletePatientImagesByIds(user.uid, embeddedConsultationImageIds);
                 const recordRef = doc(db, 'users', user.uid, 'records', record.id);
                 await updateDoc(recordRef, {
                     consultation: deleteField(),
@@ -396,6 +438,14 @@ export const createRecordActions = ({
         try {
             const recordRef = doc(db, 'users', user.uid, 'records', record.id);
             const recordsCollectionRef = collection(db, 'users', user.uid, 'records');
+            const preservedConsultationImageIds = new Set(
+                Array.isArray(record.consultation?.investigationImageIds)
+                    ? record.consultation.investigationImageIds
+                    : [],
+            );
+            const examImageIds = (record.investigationImageIds || [])
+                .filter((imageId) => !preservedConsultationImageIds.has(imageId));
+            await deletePatientImagesByIds(user.uid, examImageIds);
 
             if (!record.consultation) {
                 await deleteDoc(recordRef);

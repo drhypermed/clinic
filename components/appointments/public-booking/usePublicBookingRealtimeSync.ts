@@ -9,7 +9,6 @@
  * 4. تشغيل أصوات التنبيهات (Notification Sounds) عند وصول طلبات جديدة.
  */
 import { EntryAlert, SecretaryAuthCredentials } from './types';
-import { PatientSuggestionOption } from '../add-appointment-form/types';
 import { TodayAppointment } from './types';
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { firestoreService } from '../../../services/firestore';
@@ -34,7 +33,6 @@ import {
   normalizeSecretaryVitalFieldDefinitions,
   normalizeSecretaryVitalsVisibility,
 } from '../../../utils/secretaryVitals';
-import { mergePatientDirectoryLists } from './realtimeSync.helpers';
 
 /**
  * المعاملات الخاصة بـ Hook المزامنة اللحظية مع Firestore
@@ -57,7 +55,6 @@ type UsePublicBookingRealtimeSyncParams = {
   setTodayAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setUpcomingAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setCompletedAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
-  setPatientDirectory: Dispatch<SetStateAction<PatientSuggestionOption[]>>;
   setDoctorEntryResponse: Dispatch<SetStateAction<DoctorEntryResponse>>;
   setApprovedEntryAppointmentIds: Dispatch<SetStateAction<string[]>>;
   setSubscriptionFormTitle: Dispatch<SetStateAction<string>>;
@@ -88,7 +85,6 @@ export const usePublicBookingRealtimeSync = ({
   setTodayAppointments,
   setUpcomingAppointments,
   setCompletedAppointments,
-  setPatientDirectory,
   setDoctorEntryResponse,
   setApprovedEntryAppointmentIds,
   setSubscriptionFormTitle,
@@ -287,15 +283,6 @@ export const usePublicBookingRealtimeSync = ({
       }
 
       // دليل المرضى — تفضيل نسخة الفرع أولاً ثم الدليل الموحد (fallback)
-      const branchDirectory = data.patientDirectoryByBranch?.[secretaryBranchKey];
-      const effectiveDirectory =
-        Array.isArray(branchDirectory) && branchDirectory.length > 0
-          ? branchDirectory
-          : data.patientDirectory;
-      if (Array.isArray(effectiveDirectory) && effectiveDirectory.length > 0) {
-        setPatientDirectory((current) => mergePatientDirectoryLists(current, effectiveDirectory));
-      }
-
       // 4. مراقبة "رد فعل الطبيب" اللحظي على طلبات الدخول — من خريطة الفرع أولاً
       //    ⚠️ لو الرد مصدره السكرتيرة نفسها (source='secretary') → نتجاهله
       //    لأن السكرتيرة هي اللي كتبته ومش محتاجة إشعار عن ردها!
@@ -379,7 +366,6 @@ export const usePublicBookingRealtimeSync = ({
     setEntryAlert,
     setTodayAppointments,
     setUpcomingAppointments,
-    setPatientDirectory,
     setDoctorEntryResponse,
     setApprovedEntryAppointmentIds,
     setSubscriptionFormTitle,

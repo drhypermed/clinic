@@ -8,7 +8,6 @@ import type {
 import { useAuth } from '../../hooks/useAuth';
 import { BookingSectionSecretary } from '../appointments/BookingSectionSecretary';
 import { useBookingSectionControls } from '../appointments/appointments-view/useBookingSectionControls';
-import { toLocalDateStr } from '../appointments/utils';
 
 interface SecretaryPageProps {
   bookingSecret: string | null;
@@ -35,14 +34,14 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
 }) => {
   const { user } = useAuth();
   const userId = user?.uid ?? '';
-  const currentDayStr = toLocalDateStr(new Date());
-
   const {
     credentialsSaving,
     credentialsError,
     credentialsSuccess,
     bookingFormTitle,
     onBookingFormTitleChange,
+    secretaryUsername,
+    onSecretaryUsernameChange,
     secretaryPassword,
     onSecretaryPasswordChange,
     secretaryVitalFields,
@@ -60,7 +59,6 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
     onSyncSecretaryVitalsVisibility,
     userDisplayName: user?.displayName,
     userEmail: user?.email,
-    currentDayStr,
     doctorSpecialty,
   });
 
@@ -70,13 +68,13 @@ export const SecretaryPage: React.FC<SecretaryPageProps> = ({
         isOpen={true}
         onToggleOpen={() => {}}
         alwaysExpanded={true}
-        // إيميل الطبيب هو بيانات الدخول التي تحتاجها السكرتارية.
-        doctorEmail={user?.email ?? ''}
         currentBranchLabel={currentBranchLabel}
         hasMultipleBranches={hasMultipleBranches}
         doctorSpecialty={doctorSpecialty}
         bookingFormTitle={bookingFormTitle}
         onBookingFormTitleChange={onBookingFormTitleChange}
+        secretaryUsername={secretaryUsername}
+        onSecretaryUsernameChange={onSecretaryUsernameChange}
         secretaryPassword={secretaryPassword}
         onSecretaryPasswordChange={onSecretaryPasswordChange}
         secretaryVitalFields={secretaryVitalFields}

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { ClinicAppointment } from '../../../types';
 import { buildCairoDateTime, formatUserDate } from '../../../utils/cairoTime';
-import { currentTimeMin, toLocalDateStr } from '../utils';
+import { toLocalDateStr } from '../utils';
 import {
   groupCompletedAppointments,
   groupPendingAppointments,
@@ -21,13 +21,11 @@ import { isAppointmentCompleted, isAppointmentPending } from '../../../utils/app
 interface UseAppointmentsDerivedDataArgs {
   appointments: ClinicAppointment[];
   currentDayStr: string;                // التاريخ الحالي للعيادة
-  dateStr: string;                      // التاريخ المختار في النموذج
 }
 
 export const useAppointmentsDerivedData = ({
   appointments,
   currentDayStr,
-  dateStr,
 }: UseAppointmentsDerivedDataArgs) => {
   // 1. فرز القائمة الكلية زمنياً من الأقدم للأحدث
   const sortedList = useMemo(
@@ -58,9 +56,6 @@ export const useAppointmentsDerivedData = ({
   const now = Date.now();
   const todayStr = currentDayStr;
   
-  // تحديد الحد الأدنى للوقت (فقط إذا كان التاريخ المختار هو اليوم)
-  const timeMin = dateStr === todayStr ? currentTimeMin() : undefined;
-
   // توليد بيانات التاريخ للترويسة (مثلاً: الأحد - 25 مارس)
   const todayDateMeta = useMemo(() => {
     const dateObj = buildCairoDateTime(todayStr, '12:00');
@@ -102,7 +97,7 @@ export const useAppointmentsDerivedData = ({
   , [sortedList, now]);
 
   return {
-    sortedList, now, todayStr, timeMin, todayDateMeta, todayPending,
+    sortedList, now, todayStr, todayDateMeta, todayPending,
     futurePendingGroups, completedGroups, completedInLastMonth,
     bookedInLastMonth, todayCount, upcomingCount,
   };

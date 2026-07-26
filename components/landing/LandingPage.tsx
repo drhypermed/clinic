@@ -390,7 +390,7 @@ export const LandingPage: React.FC = () => {
                   <h3 className="text-base font-black text-slate-900">للسكرتارية</h3>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-500 font-semibold leading-relaxed flex-1">
-                  ادخل بيانات المرضى وأدر قائمة الانتظار — بإيميل الطبيب والرقم السري.
+                  ادخل بيانات المرضى وأدر قائمة الانتظار — باسم مستخدم ورقم سري يحددهما الطبيب.
                 </p>
                 <button type="button" onClick={() => go('/login/secretary')} className="self-start flex items-center gap-1.5 bg-success-600 hover:bg-success-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors active:scale-[0.97]">
                   <HiOutlineArrowRightEndOnRectangle className="w-3.5 h-3.5" />

@@ -23,17 +23,13 @@ interface UseDrHyperActionsArgs {
   realtimeData: DrHyperRealtimeData;
   setCurrentView: DrHyperViewAndUsageState['setCurrentView'];
   trackMedUsage: DrHyperViewAndUsageState['trackMedUsage'];
-  resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'plus' | 'pro_max'>;
-  getAccountTypeControls: () => Promise<any>;
   consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint') => Promise<unknown>;
   consumeSmartPrescriptionQuota: () => Promise<unknown>;
   sanitizeRxItemsForSave: (items: any[]) => any[];
   sanitizeForFirestore: (value: unknown) => unknown;
   uniqTextList: (items: string[]) => string[];
   extractSmartQuotaErrorDetails: (error: unknown) => SmartQuotaLimitErrorDetails | null;
-  buildWhatsAppUrlFromNumber: (number: string, message: string) => string;
   getQuotaReachedMessage: (details: SmartQuotaLimitErrorDetails, fallback: string) => string;
-  applyLimitPlaceholder: (template: string, limit: number, fallback: string) => string;
   onTrackSmartPrescription?: (complaint: string) => void;
   /** الفرع النشط لحفظه مع السجلات */
   activeBranchId?: string;
@@ -48,17 +44,13 @@ export const useDrHyperActions = ({
   realtimeData,
   setCurrentView,
   trackMedUsage,
-  resolveCurrentUserAccountType,
-  getAccountTypeControls,
   consumeStorageQuota,
   consumeSmartPrescriptionQuota,
   sanitizeRxItemsForSave,
   sanitizeForFirestore,
   uniqTextList,
   extractSmartQuotaErrorDetails,
-  buildWhatsAppUrlFromNumber,
   getQuotaReachedMessage,
-  applyLimitPlaceholder,
   onTrackSmartPrescription,
   activeBranchId,
   requestDraftSync,
@@ -77,10 +69,14 @@ export const useDrHyperActions = ({
     setLabInvestigations,
     setPatientName,
     setPhone,
+    setAddressGovernorate,
+    setAddressCityArea,
+    setAddressDetails,
     setComplaint,
     setMedicalHistory,
     setExamination,
     setInvestigations,
+    setInvestigationImages,
     setComplaintEn,
     setHistoryEn,
     setExamEn,
@@ -124,6 +120,9 @@ export const useDrHyperActions = ({
     setDiscountReasonLabel,
     patientName,
     phone,
+    addressGovernorate,
+    addressCityArea,
+    addressDetails,
     ageYears,
     ageMonths,
     ageDays,
@@ -145,6 +144,7 @@ export const useDrHyperActions = ({
     medicalHistory,
     examination,
     investigations,
+    investigationImages,
     visitDate,
     visitType,
     activeVisitDateTime,
@@ -180,8 +180,6 @@ export const useDrHyperActions = ({
     markOfflineSyncPendingIfNeeded,
   } = notifications;
 
-  const { readyPrescriptions } = realtimeData;
-
   const prescriptionStateBindings = {
     rxItems,
     generalAdvice,
@@ -194,6 +192,9 @@ export const useDrHyperActions = ({
   const patientDemographicsSetterBindings = {
     setPatientName,
     setPhone,
+    setAddressGovernorate,
+    setAddressCityArea,
+    setAddressDetails,
     setAgeYears,
     setAgeMonths,
     setAgeDays,
@@ -210,6 +211,7 @@ export const useDrHyperActions = ({
     setMedicalHistory,
     setExamination,
     setInvestigations,
+    setInvestigationImages,
     setComplaintEn,
     setHistoryEn,
     setExamEn,
@@ -270,6 +272,9 @@ export const useDrHyperActions = ({
     user: user ? { uid: user.uid } : null,
     patientName,
     phone,
+    addressGovernorate,
+    addressCityArea,
+    addressDetails,
     ageYears,
     ageMonths,
     ageDays,
@@ -294,6 +299,7 @@ export const useDrHyperActions = ({
     medicalHistory,
     examination,
     investigations,
+    investigationImages,
     visitDate,
     visitType,
     activeVisitDateTime,
@@ -337,23 +343,17 @@ export const useDrHyperActions = ({
     user,
     db,
     ...prescriptionStateBindings,
-    readyPrescriptions,
     sanitizeRxItemsForSave,
     sanitizeForFirestore,
     showNotification,
-    getAccountTypeControls,
-    resolveCurrentUserAccountType,
-    applyLimitPlaceholder,
     dismissNotification,
     openQuotaNoticeModal,
-    buildWhatsAppUrlFromNumber,
     consumeStorageQuota,
     extractSmartQuotaErrorDetails,
     getQuotaReachedMessage,
     saveHistory,
     setLastSavedHash,
     uniqTextList,
-    activeBranchId,
   });
 
   const recordActions = createRecordActions({
@@ -388,6 +388,7 @@ export const useDrHyperActions = ({
     medicalHistory,
     examination,
     investigations,
+    investigationImages,
     complaintEn,
     historyEn,
     examEn,

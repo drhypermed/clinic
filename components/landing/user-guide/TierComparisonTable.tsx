@@ -26,7 +26,6 @@ type FeatureRow = {
   premiumKey: keyof AccountTypeControls;
   plusKey: keyof AccountTypeControls;
   proMaxKey: keyof AccountTypeControls;
-  proMaxKey: keyof AccountTypeControls;
   paidOpen?: boolean;
 };
 

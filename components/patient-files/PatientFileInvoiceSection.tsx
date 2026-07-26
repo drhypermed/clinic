@@ -4,6 +4,7 @@ import type { PatientFileData } from './patientFilesShared';
 import { useAuth } from '../../hooks/useAuth';
 import { usePrescriptionSettings } from '../../hooks/usePrescriptionSettings';
 import { printPatientInvoice } from './invoicePrintUtils';
+import { formatPatientAddress } from '../../utils/patientAddress';
 import {
   type InvoiceLineItem,
   type PatientInvoice,
@@ -246,6 +247,7 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
           patientName: invoice.patientName,
           patientFileNumber: invoice.patientFileNumber,
           patientPhone: invoice.patientPhone,
+          patientAddress: formatPatientAddress(patientFile.address) || undefined,
           items: invoice.items.map(i => ({ description: i.description, amount: i.amount })),
           discount: invoice.discount,
           notes: invoice.notes,
@@ -255,7 +257,7 @@ export const PatientFileInvoiceSection: React.FC<PatientFileInvoiceSectionProps>
         rxSettings,
       );
     },
-    [rxSettings],
+    [patientFile?.address, rxSettings],
   );
 
   if (!patientFile) return null;

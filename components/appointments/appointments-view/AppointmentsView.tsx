@@ -87,7 +87,9 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
    * التحقق من صحة البيانات، ومعالجة حالات التعديل (Editing).
    */
   const {
-    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone, currentDayStr,
+    patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone,
+    addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
+    currentDayStr,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
@@ -108,7 +110,12 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     discountReasonId, setDiscountReasonId,
     discountReasonLabel, setDiscountReasonLabel,
     discountReasons,
-  } = useAppointmentFormState({ userId, records, appointments });
+  } = useAppointmentFormState({
+    userId,
+    branchId: activeBranchId || 'main',
+    records,
+    appointments,
+  });
 
   // الهوك ده بيدير (side-effects + قسم رابط الفورم العام للجمهور):
   // - بيجيب الـ bookingSecret الخاص بالسكرتارية ويزامن حقول القياسات
@@ -143,17 +150,17 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     prescriptionVitalsConfig,
     prescriptionCustomBoxes,
     onSyncSecretaryVitalsVisibility,
-    userDisplayName: user?.displayName, userEmail: user?.email, currentDayStr,
+    userDisplayName: user?.displayName, userEmail: user?.email,
     doctorSpecialty,
     activeBranchId,
   });
 
   // معالجة البيانات للعرض (فرز المواعيد حسب التاريخ، حساب الإحصائيات)
   const {
-    sortedList, now, todayStr, timeMin, todayDateMeta, todayPending,
+    sortedList, now, todayStr, todayDateMeta, todayPending,
     futurePendingGroups, completedGroups, completedInLastMonth, bookedInLastMonth,
     todayCount, upcomingCount,
-  } = useAppointmentsDerivedData({ appointments, currentDayStr, dateStr });
+  } = useAppointmentsDerivedData({ appointments, currentDayStr });
 
   // الأكشنز الخاصة بالتعامل مع كل موعد (فتح الكشف، حذف...)
   const { removeAppointment, openExam, openConsultation } = useAppointmentExecutionActions({
@@ -217,13 +224,6 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
       [activeBranchKey]: recentExamCandidates,
     });
   }, [bookingSecret, recentExamCandidates, activeBranchKey]);
-
-  useEffect(() => {
-    if (!bookingSecret) return;
-    firestoreService.setBookingConfigPatientDirectoryByBranch(bookingSecret, {
-      [activeBranchKey]: patientSuggestions,
-    });
-  }, [bookingSecret, patientSuggestions, activeBranchKey]);
 
   const portalTarget = typeof document !== 'undefined' ? document.body : null;
 
@@ -318,13 +318,16 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
           patientName={patientName} onPatientNameChange={setPatientName} age={age} onAgeChange={setAge}
           dateOfBirth={dateOfBirth} onDateOfBirthChange={setDateOfBirth}
           phone={phone} onPhoneChange={setPhone}
+          addressGovernorate={addressGovernorate} onAddressGovernorateChange={setAddressGovernorate}
+          addressCityArea={addressCityArea} onAddressCityAreaChange={setAddressCityArea}
+          addressDetails={addressDetails} onAddressDetailsChange={setAddressDetails}
           gender={gender} onGenderChange={setGender}
           pregnant={pregnant} onPregnantChange={setPregnant}
           gestationalAgeWeeks={gestationalAgeWeeks} onGestationalAgeWeeksChange={setGestationalAgeWeeks}
           breastfeeding={breastfeeding} onBreastfeedingChange={setBreastfeeding}
           dateStr={dateStr} onDateStrChange={setDateStr}
           timeStr={timeStr} onTimeStrChange={setTimeStr} visitReason={visitReason} onVisitReasonChange={setVisitReason}
-          todayStr={todayStr} timeMin={timeMin} saving={saving} formError={formError}
+          todayStr={todayStr} saving={saving} formError={formError}
           bookingQuotaNotice={bookingQuotaNotice} appointmentType={appointmentType}
           onAppointmentTypeChange={handleAppointmentTypeChange} consultationCandidates={visibleConsultationCandidates}
           selectedConsultationCandidateId={selectedConsultationCandidateId} onSelectConsultationCandidate={handleSelectConsultationCandidate}

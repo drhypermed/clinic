@@ -8,6 +8,8 @@ import type { TodayAppointment } from '../../../types';
 import { buildCairoDateTime, formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { PatientContactActions } from '../../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../../common/SecretaryVitalsPills';
+import { PaymentMethodBadge } from '../../common/PaymentMethodBadge';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 type DayGroup = { dateStr: string; fullDate: string; appointments: TodayAppointment[] };
 
@@ -129,6 +131,7 @@ const CompletedCard: React.FC<{
   const isConsultation = isConsultationAppointment(apt);
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
+  const addressSummary = formatPatientAddress(apt.address, 'summary');
   const discountReasonSummary = String(apt.discountReasonLabel || '').trim();
   const discountBadgeText = normalizedDiscountPercent > 0 ? `${normalizedDiscountPercent}%` : (normalizedDiscountAmount > 0 ? `${normalizedDiscountAmount.toFixed(2)} ج.م` : '');
 
@@ -149,16 +152,7 @@ const CompletedCard: React.FC<{
           <span className="rounded-full border border-success-200 bg-success-50 px-2 py-0.5 text-[10px] font-bold text-success-800">
             {formatUserTime(apt.dateTime, { hour: '2-digit', minute: '2-digit' }, 'ar-EG')}
           </span>
-          {apt.paymentType === 'insurance' && (
-            <span className="rounded-full border border-brand-200 bg-brand-100 px-2 py-0.5 text-[10px] font-black text-brand-800">
-              تأمين {apt.insuranceCompanyName ? `(${apt.insuranceCompanyName})` : ''}
-            </span>
-          )}
-          {normalizedDiscountAmount > 0 || normalizedDiscountPercent > 0 ? (
-            <span className="rounded-full border border-warning-200 bg-warning-100 px-2 py-0.5 text-[10px] font-black text-warning-800">
-              خصم {discountBadgeText ? `(${discountBadgeText})` : ''}
-            </span>
-          ) : null}
+          <PaymentMethodBadge paymentType={apt.paymentType} insuranceCompanyName={apt.insuranceCompanyName} discountText={discountBadgeText} />
           {discountReasonSummary && (
             <span className="rounded-full border border-warning-200 bg-warning-50 px-2 py-0.5 text-[10px] font-bold text-warning-800">{discountReasonSummary}</span>
           )}
@@ -181,6 +175,7 @@ const CompletedCard: React.FC<{
           </div>
         )}
 
+        {addressSummary && <p className="text-[11px] font-bold text-slate-500">العنوان: {addressSummary}</p>}
         {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
 
         <div className="flex justify-start pt-0.5">

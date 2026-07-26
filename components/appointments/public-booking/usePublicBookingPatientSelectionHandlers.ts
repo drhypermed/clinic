@@ -14,6 +14,7 @@ import type {
   AppointmentType, PatientGender } from '../../../types';
 // دوال الهوية: تطبيع الجنس + حساب السن من فرق الوقت
 import { normalizeGender } from '../../../utils/patientIdentity';
+import { normalizePatientAddress } from '../../../utils/patientAddress';
 import { resolvePatientSuggestionAgeText } from '../patientSuggestionSelection';
 
 type UsePublicBookingPatientSelectionHandlersParams = {
@@ -25,6 +26,9 @@ type UsePublicBookingPatientSelectionHandlersParams = {
   setAge: Dispatch<SetStateAction<string>>;
   setDateOfBirth: Dispatch<SetStateAction<string>>;
   setPhone: Dispatch<SetStateAction<string>>;
+  setAddressGovernorate: Dispatch<SetStateAction<string>>;
+  setAddressCityArea: Dispatch<SetStateAction<string>>;
+  setAddressDetails: Dispatch<SetStateAction<string>>;
   setGender: Dispatch<SetStateAction<PatientGender | ''>>;
   setPregnant: Dispatch<SetStateAction<boolean | null>>;
   setBreastfeeding: Dispatch<SetStateAction<boolean | null>>;
@@ -40,6 +44,9 @@ export const usePublicBookingPatientSelectionHandlers = ({
   setAge,
   setDateOfBirth,
   setPhone,
+  setAddressGovernorate,
+  setAddressCityArea,
+  setAddressDetails,
   setGender,
   setPregnant,
   setBreastfeeding,
@@ -62,18 +69,27 @@ export const usePublicBookingPatientSelectionHandlers = ({
     setBreastfeeding(null);
   };
 
+  const applyPatientAddress = (candidate: PatientSuggestionOption | RecentExamPatientOption) => {
+    const address = normalizePatientAddress(candidate.address);
+    setAddressGovernorate(address?.governorate || '');
+    setAddressCityArea(address?.cityArea || '');
+    setAddressDetails(address?.details || '');
+  };
+
   const handleSelectConsultationCandidate = (candidate: RecentExamPatientOption) => {
     setAppointmentType('consultation');
     setSelectedConsultationCandidateId(candidate.id);
     setPatientName(candidate.patientName || '');
     setPhone(candidate.phone || '');
     applyPatientIdentity(candidate);
+    applyPatientAddress(candidate);
   };
 
   const handleSelectPatientSuggestion = (candidate: PatientSuggestionOption) => {
     setPatientName(candidate.patientName || '');
     setPhone(candidate.phone || '');
     applyPatientIdentity(candidate);
+    applyPatientAddress(candidate);
     if (appointmentType === 'consultation') {
       setSelectedConsultationCandidateId(findMatchedConsultationCandidateId(candidate));
     }

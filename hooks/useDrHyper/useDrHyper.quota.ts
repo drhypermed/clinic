@@ -74,9 +74,3 @@ export const getQuotaReachedMessage = (details: SmartQuotaLimitErrorDetails, fal
   const fromBackend = applyQuotaPlaceholders(details.limitReachedMessage || '', details);
     return fromBackend || fallback;
 };
-
-export const applyLimitPlaceholder = (template: string, limit: number, fallback: string): string => {
-    const raw = String(template || '').trim();
-    if (!raw) return fallback;
-    return raw.replace(/\{\s*limit\s*\}/gi, String(limit));
-};

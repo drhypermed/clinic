@@ -4,6 +4,7 @@
  * يحتوي هذا الملف على جميع الواجهات (Interfaces) المستخدمة في وحدة
  * `patient-files` — المرجع الموحد لتعريف بيانات المريض في كل الـ modules.
  */
+import type { PatientAddress } from '../../types';
 
 /** مرجع ملف مريض (المعرّف + الرقم التسلسلي + مفتاح الاسم) */
 export interface PatientFileReference {
@@ -36,6 +37,7 @@ export interface SyncPatientIdentityByFileInput {
     userId: string;
     patientName: string;
     phone?: string;
+    address?: PatientAddress;
     age?: PatientIdentityAgeInput;
     patientFileId?: string;
     patientFileNumber?: number;

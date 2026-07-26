@@ -16,7 +16,6 @@ import { NotificationPermissionPrompt } from '../../common/NotificationPermissio
 import { AppUpdateBroadcastBanner } from '../../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../../common/InAppAudienceNotificationPopup';
 import { LoadingStateScreen } from '../../app/LoadingStateScreen';
-import { currentTimeMin } from '../utils';
 import { PublicBookingLoginScreen } from './PublicBookingLoginScreen';
 import { PublicBookingConfigErrorScreen } from './PublicBookingConfigErrorScreen';
 import { PublicBookingAlerts } from './PublicBookingAlerts';
@@ -80,8 +79,8 @@ export const PublicBookingPage: React.FC = () => {
     secret,
     authChecking,
     isAuthenticated,
-    doctorEmailInput,
-    setDoctorEmailInput,
+    loginIdentifierInput,
+    setLoginIdentifierInput,
     passwordInput,
     setPasswordInput,
     authError,
@@ -116,8 +115,6 @@ export const PublicBookingPage: React.FC = () => {
     upcomingAppointments,
     completedAppointments,
     todayDateMeta,
-    todaySectionOpen,
-    setTodaySectionOpen,
     approvedEntryAppointmentIds,
     secretaryApprovedEntryIds,
     pendingEntryAppointmentId,
@@ -125,8 +122,6 @@ export const PublicBookingPage: React.FC = () => {
     requestEntryNow,
     handleEditAppointment,
     removeTodayAppointment,
-    bookingFormOpen,
-    setBookingFormOpen,
     editingAppointmentId,
     handleCancelEdit,
     bookingFormLoading,
@@ -138,6 +133,12 @@ export const PublicBookingPage: React.FC = () => {
     setDateOfBirth,
     phone,
     setPhone,
+    addressGovernorate,
+    setAddressGovernorate,
+    addressCityArea,
+    setAddressCityArea,
+    addressDetails,
+    setAddressDetails,
     gender,
     setGender,
     pregnant,
@@ -168,7 +169,6 @@ export const PublicBookingPage: React.FC = () => {
     patientDirectory,
     handleSelectPatientSuggestion,
     handleSubmit,
-    publicSectionOpen,
     setPublicSectionOpen,
     publicBookingLink,
     publicLinkCopied,
@@ -246,8 +246,8 @@ export const PublicBookingPage: React.FC = () => {
   if (!isAuthenticated && secret) {
     return (
       <PublicBookingLoginScreen
-        doctorEmailInput={doctorEmailInput}
-        onDoctorEmailInputChange={setDoctorEmailInput}
+        loginIdentifierInput={loginIdentifierInput}
+        onLoginIdentifierInputChange={setLoginIdentifierInput}
         passwordInput={passwordInput}
         authError={authError}
         onPasswordInputChange={setPasswordInput}
@@ -423,7 +423,6 @@ export const PublicBookingPage: React.FC = () => {
             <div className="px-3 py-3 sm:px-5 sm:py-4 space-y-4">
               <PublicBookingFormSection
                 bookingFormOpen={true}
-                onToggleOpen={() => {}}
                 editingAppointmentId={editingAppointmentId}
                 onCancelEdit={handleCancelEdit}
                 bookingFormLoading={bookingFormLoading}
@@ -435,6 +434,12 @@ export const PublicBookingPage: React.FC = () => {
                 onDateOfBirthChange={setDateOfBirth}
                 phone={phone}
                 onPhoneChange={setPhone}
+                addressGovernorate={addressGovernorate}
+                onAddressGovernorateChange={setAddressGovernorate}
+                addressCityArea={addressCityArea}
+                onAddressCityAreaChange={setAddressCityArea}
+                addressDetails={addressDetails}
+                onAddressDetailsChange={setAddressDetails}
                 gender={gender}
                 onGenderChange={setGender}
                 pregnant={pregnant}
@@ -453,7 +458,6 @@ export const PublicBookingPage: React.FC = () => {
                 doctorSpecialty={config?.doctorSpecialty}
                 onSecretaryVitalsChange={setSecretaryVitals}
                 todayStr={todayStr}
-                timeMin={dateStr === todayStr ? currentTimeMin() : undefined}
                 submitting={submitting}
                 formError={formError}
                 bookingQuotaNotice={bookingQuotaNotice}

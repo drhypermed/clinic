@@ -12,20 +12,26 @@ import {
     doc,
     setDoc,
     deleteDoc,
-    onSnapshot,
     query,
     where,
     type Query,
 } from 'firebase/firestore';
-import { getDocsCacheFirst } from './cacheFirst';
+import { subscribeQueryCacheFirst } from './cacheFirst';
 import { ClinicAppointment } from '../../types';
 import { resolveAppointmentType } from '../../utils/appointmentType';
 import { omitUndefined } from '../../utils/firestoreHelpers';
 import { DEFAULT_BRANCH_ID } from './branches';
+import {
+    getPendingAppointmentExpiryMs,
+    isPendingAppointmentExpired,
+} from '../../utils/appointmentRetention';
 
 // الثوابت الزمنية للحذف التلقائي
-const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000; // شهر واحد
 const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000; // 3 شهور
+
+const reportAppointmentPruneError = (appointmentId: string, error: unknown) => {
+    console.error('[Firestore] Error pruning appointment:', appointmentId, error);
+};
 
 export const appointmentsService = {
     /**
@@ -49,6 +55,48 @@ export const appointmentsService = {
         const subscriptionTarget: Query = isSubBranch
             ? query(appointmentsRef, where('branchId', '==', branchId))
             : appointmentsRef;
+
+        const filterByActiveBranch = (appointments: ClinicAppointment[]) => branchId
+            ? appointments.filter(a => (a.branchId || DEFAULT_BRANCH_ID) === branchId)
+            : appointments;
+
+        let pendingExpiryTimer: ReturnType<typeof setTimeout> | null = null;
+        const clearPendingExpiryTimer = () => {
+            if (pendingExpiryTimer !== null) {
+                clearTimeout(pendingExpiryTimer);
+                pendingExpiryTimer = null;
+            }
+        };
+
+        const schedulePendingExpiryCleanup = (appointments: ClinicAppointment[], now: number) => {
+            clearPendingExpiryTimer();
+            const expiryTimes = appointments
+                .map(getPendingAppointmentExpiryMs)
+                .filter((value): value is number => value !== null && value > now);
+            if (expiryTimes.length === 0) return;
+
+            const nextExpiryMs = Math.min(...expiryTimes);
+            const delayMs = Math.min(Math.max(nextExpiryMs - now + 50, 0), 2_147_483_647);
+            pendingExpiryTimer = setTimeout(() => {
+                pendingExpiryTimer = null;
+                const cleanupNow = Date.now();
+                const expired = appointments.filter((appointment) =>
+                    isPendingAppointmentExpired(appointment, cleanupNow)
+                );
+                const expiredIds = new Set(expired.map((appointment) => appointment.id));
+                const retained = appointments.filter((appointment) => !expiredIds.has(appointment.id));
+
+                // اخفِ المنتهي فوراً من قائمة الطبيب حتى لو تأخرت الكتابة السحابية بسبب الشبكة.
+                if (expired.length > 0) {
+                    onUpdate(filterByActiveBranch(retained));
+                }
+                expired.forEach((appointment) => {
+                    appointmentsService.deleteAppointment(userId, appointment.id)
+                        .catch((error) => reportAppointmentPruneError(appointment.id, error));
+                });
+                schedulePendingExpiryCleanup(retained, cleanupNow);
+            }, delayMs);
+        };
 
         /** معالجة البيانات القادمة من Firestore (Snapshot Processing) */
         const processAppointments = (snapshot: any) => {
@@ -80,11 +128,7 @@ export const appointmentsService = {
             const clockLooksTrustworthy = !latestCreatedMs || now >= latestCreatedMs - 60_000;
 
             // منطق فلترة وحذف المواعيد القديمة
-            const pendingCutoff = now - ONE_MONTH_MS;
             const completedCutoff = now - THREE_MONTHS_MS;
-            const startOfToday = new Date(now);
-            startOfToday.setHours(0, 0, 0, 0);
-            const startOfTodayMs = startOfToday.getTime();
 
             // شروط الحذف التلقائي:
             // 1. كشف مكتمل مر عليه أكثر من 3 شهور.
@@ -93,22 +137,17 @@ export const appointmentsService = {
                 return getDateMs(a.examCompletedAt) <= completedCutoff;
             };
 
-            // 2. موعد معلق مر عليه أكثر من شهر.
-            const isVeryOldPending = (a: ClinicAppointment) => {
-                if (a.examCompletedAt) return false;
-                return getDateMs(a.dateTime) <= pendingCutoff;
-            };
-
-            // 3. موعد انتهى وقته (قبل اليوم) ولم يتم الكشف عليه.
-            const isExpiredWithoutEntry = (a: ClinicAppointment) => {
-                const t = getDateMs(a.dateTime);
-                return Number.isFinite(t) && t < startOfTodayMs && !a.examCompletedAt;
-            };
-
             const toDelete = clockLooksTrustworthy
-                ? all.filter(a => isOldCompleted(a) || isExpiredWithoutEntry(a) || isVeryOldPending(a))
+                ? all.filter(a => isOldCompleted(a) || isPendingAppointmentExpired(a, now))
                 : [];
-            const toKeep = clockLooksTrustworthy ? all.filter(a => !toDelete.includes(a)) : all;
+            const toDeleteIds = new Set(toDelete.map(a => a.id));
+            const toKeep = clockLooksTrustworthy ? all.filter(a => !toDeleteIds.has(a.id)) : all;
+
+            if (clockLooksTrustworthy) {
+                schedulePendingExpiryCleanup(toKeep, now);
+            } else {
+                clearPendingExpiryTimer();
+            }
 
             if (!clockLooksTrustworthy) {
                 console.warn('[Firestore] Skipping auto-prune: client clock appears to be behind latest createdAt; refusing to delete appointments.');
@@ -116,40 +155,31 @@ export const appointmentsService = {
 
             // تنفيذ الحذف الفعلي من قاعدة البيانات للمواعيد القديمة
             toDelete.forEach(a => {
-                appointmentsService.deleteAppointment(userId, a.id).catch(err =>
-                    console.error("[Firestore] Error pruning old appointment:", a.id, err)
-                );
+                appointmentsService.deleteAppointment(userId, a.id)
+                    .catch(err => reportAppointmentPruneError(a.id, err));
             });
 
             // فلترة حسب الفرع (البيانات القديمة بدون branchId تُعتبر تابعة للفرع الرئيسي)
-            if (branchId) {
-                return toKeep.filter(a => (a.branchId || DEFAULT_BRANCH_ID) === branchId);
-            }
-
-            return toKeep;
+            return filterByActiveBranch(toKeep);
         };
 
-        // 1. المحاولة الأولى: تحميل لحظي من الكاش (لتكون التجربة "طائرة")
-        getDocsCacheFirst(subscriptionTarget).then(cachedSnapshot => {
-            if (!cachedSnapshot.empty) {
-                console.log('[Firestore] Instant load of appointments from cache');
-                const appointments = processAppointments(cachedSnapshot);
+        // نعرض الكاش فوراً ثم نفتح اشتراكاً حياً واحداً. لا ننفذ getDocs من
+        // الشبكة قبل الاشتراك، لأن ذلك كان يكرر قراءة البداية نفسها.
+        const unsubscribe = subscribeQueryCacheFirst(subscriptionTarget, {
+            next: (snapshot) => {
+                const appointments = processAppointments(snapshot);
                 onUpdate(appointments);
-            }
-        }).catch(() => {
-            // لا يوجد كاش، لا بأس، سننتظر السيرفر
+            },
+            error: (error) => {
+                console.error("[Firestore] Error subscribing to appointments:", error);
+                onUpdate([]);
+            },
         });
 
-        // 2. المحاولة الثانية: الاشتراك في التحديثات الحية من السيرفر
-        const unsubscribe = onSnapshot(subscriptionTarget, (snapshot) => {
-            const appointments = processAppointments(snapshot);
-            onUpdate(appointments);
-        }, (error) => {
-            console.error("[Firestore] Error subscribing to appointments:", error);
-            onUpdate([]);
-        });
-
-        return unsubscribe;
+        return () => {
+            clearPendingExpiryTimer();
+            unsubscribe();
+        };
     },
 
     /** حفظ موعد جديد أو تحديث بيانات موعد موجود */

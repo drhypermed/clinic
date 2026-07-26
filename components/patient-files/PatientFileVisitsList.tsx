@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import type { PatientRecord } from '../../types';
 import { buildCase, CasePanel, getBMICategory } from '../records/recordsViewParts';
 import { formatPatientFileDateLabel, type PatientVisitEntry } from './patientFilesShared';
+import { getPaymentMethodLabel } from '../../utils/paymentMethods';
 
 interface PatientFileVisitsListProps {
+  userId?: string;
   visits: PatientVisitEntry[];
   onEditExamVisit: (record: PatientRecord) => void;
   onEditConsultationVisit: (record: PatientRecord) => void;
 }
 
 export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
+  userId,
   visits,
   onEditExamVisit,
   onEditConsultationVisit,
@@ -39,11 +42,9 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
         const discountDetails = normalizedDiscountPercent > 0
           ? `${normalizedDiscountPercent}%`
           : (normalizedDiscountAmount > 0 ? `${normalizedDiscountAmount.toFixed(2)} ج.م` : '');
-        const paymentLabel = rec.paymentType === 'insurance'
-          ? 'تأمين'
-          : rec.paymentType === 'discount'
-            ? `خصم${discountDetails ? ` (${discountDetails})` : ''}`
-            : 'كاش';
+        const paymentLabel = rec.paymentType === 'discount'
+          ? `خصم${discountDetails ? ` (${discountDetails})` : ''}`
+          : getPaymentMethodLabel(rec.paymentType);
         const discountReasonSummary = String(rec.discountReasonLabel || '').trim();
 
         const sessionVitals: Record<string, string> = {
@@ -126,6 +127,7 @@ export const PatientFileVisitsList: React.FC<PatientFileVisitsListProps> = ({
                   )}
                 </div>
                 <CasePanel
+                  userId={userId}
                   data={caseData}
                   term=""
                   vitals={Object.keys(sessionVitals).length > 0 ? sessionVitals : undefined}

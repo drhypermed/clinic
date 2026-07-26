@@ -1,6 +1,6 @@
 ﻿import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { PatientRecord } from '../../types';
+import type { PatientAddress, PatientRecord } from '../../types';
 import {
   formatPatientFileDateLabel,
   isPositiveFileNumber,
@@ -14,6 +14,8 @@ import { PatientFileInvoiceSection } from './PatientFileInvoiceSection';
 import { PatientFileVisitsList } from './PatientFileVisitsList';
 import { patientFilesService } from '../../services/patient-files';
 import { useEnabledSpecialtyPack } from '../../hooks/useSpecialtyPack';
+import { PatientFileImagesSection } from './PatientFileImagesSection';
+import { formatPatientAddress, normalizePatientAddress } from '../../utils/patientAddress';
 
 // ─ تحميل كسول لباكدج النساء — أطباء التخصصات التانيه ما يحمّلوش الكود ده أبداً ─
 const PregnancySection = React.lazy(
@@ -25,6 +27,7 @@ const PediatricSection = React.lazy(
 );
 
 interface PatientFileDetailsModalProps {
+  accountType?: 'free' | 'premium' | 'plus' | 'pro_max';
   patientFile: PatientFileData | null;
   onClose: () => void;
   onEditExamVisit: (record: PatientRecord) => void;
@@ -41,6 +44,7 @@ interface PatientFileDetailsModalProps {
     patientFileNameKey?: string;
     patientName: string;
     phone?: string;
+    address?: PatientAddress;
     ageYears?: string;
     ageMonths?: string;
     ageDays?: string;
@@ -68,6 +72,7 @@ interface PatientFileDetailsModalProps {
 }
 
 export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = ({
+  accountType,
   patientFile,
   onClose,
   onEditExamVisit,
@@ -84,6 +89,9 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
   const [isIdentityEditorOpen, setIsIdentityEditorOpen] = useState(false);
   const [editPatientName, setEditPatientName] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editAddressGovernorate, setEditAddressGovernorate] = useState('');
+  const [editAddressCityArea, setEditAddressCityArea] = useState('');
+  const [editAddressDetails, setEditAddressDetails] = useState('');
   const [editAgeYears, setEditAgeYears] = useState('');
   const [editAgeMonths, setEditAgeMonths] = useState('');
   const [editAgeDays, setEditAgeDays] = useState('');
@@ -146,6 +154,10 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
 
     setEditPatientName(String(patientFile.name || '').trim());
     setEditPhone(String(patientFile.phones?.[0] || latestVisitRecord?.phone || '').trim());
+    const address = normalizePatientAddress(patientFile.address || latestVisitRecord?.address);
+    setEditAddressGovernorate(address?.governorate || '');
+    setEditAddressCityArea(address?.cityArea || '');
+    setEditAddressDetails(address?.details || '');
     setEditAgeYears(String(latestVisitRecord?.age?.years || '').trim());
     setEditAgeMonths(String(latestVisitRecord?.age?.months || '').trim());
     setEditAgeDays(String(latestVisitRecord?.age?.days || '').trim());
@@ -224,6 +236,11 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
         patientFileNameKey: patientFile.key,
         patientName: normalizedName,
         phone: String(editPhone || '').trim() || undefined,
+        address: normalizePatientAddress({
+          governorate: editAddressGovernorate,
+          cityArea: editAddressCityArea,
+          details: editAddressDetails,
+        }),
         ageYears: String(editAgeYears || '').trim() || undefined,
         ageMonths: String(editAgeMonths || '').trim() || undefined,
         ageDays: String(editAgeDays || '').trim() || undefined,
@@ -389,6 +406,11 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                         </div>
                       </div>
                     )}
+                    {formatPatientAddress(patientFile.address) && (
+                      <div className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-brand-100">
+                        العنوان: {formatPatientAddress(patientFile.address)}
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -464,6 +486,36 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
                       placeholder="01xxxxxxxxx"
                       dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-black text-slate-600">المحافظة</label>
+                    <input
+                      value={editAddressGovernorate}
+                      onChange={(event) => setEditAddressGovernorate(event.target.value)}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
+                      placeholder="المحافظة"
+                      maxLength={100}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-black text-slate-600">المدينة / المنطقة</label>
+                    <input
+                      value={editAddressCityArea}
+                      onChange={(event) => setEditAddressCityArea(event.target.value)}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
+                      placeholder="المدينة أو المنطقة"
+                      maxLength={150}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="mb-1 block text-[11px] font-black text-slate-600">العنوان التفصيلي</label>
+                    <input
+                      value={editAddressDetails}
+                      onChange={(event) => setEditAddressDetails(event.target.value)}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
+                      placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
+                      maxLength={400}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -645,6 +697,9 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                 )}
               </>
             )}
+
+            {/* قسم التقرير الطبي */}
+            <PatientFileImagesSection userId={user?.uid} patientFile={patientFile} accountType={accountType} />
 
             {/* قسم التقرير الطبي */}
             <div className="dh-day-shell rounded-2xl border overflow-hidden">
@@ -852,6 +907,7 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
 
             {/* قائمة الزيارات — مرتبة من الأحدث للأقدم */}
             <PatientFileVisitsList
+              userId={user?.uid}
               visits={sortedVisits}
               onEditExamVisit={onEditExamVisit}
               onEditConsultationVisit={onEditConsultationVisit}

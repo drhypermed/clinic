@@ -49,6 +49,7 @@ import {
     toTrimmedText,
 } from './normalizers';
 import { ensurePatientFileReference } from './patientFileReference';
+import { normalizePatientAddress } from '../../utils/patientAddress';
 import type {
     SyncPatientIdentityByFileInput,
     SyncPatientIdentityByFileResult,
@@ -63,6 +64,8 @@ export const syncPatientIdentityByFile = async (
     if (!userId || !patientNameText) return null;
 
     const phoneText = toTrimmedText(input.phone);
+    const addressPayload = normalizePatientAddress(input.address);
+    const addressSignature = JSON.stringify(addressPayload || {});
     const normalizedAge = normalizeAgeInput(input.age);
     const agePayload = {
         years: normalizedAge.years,
@@ -126,6 +129,7 @@ export const syncPatientIdentityByFile = async (
         .set(doc(db, 'users', userId, 'settings', resolvedPatientFileId), {
             patientName: patientNameText,
             phone: phoneText || deleteField(),
+            address: addressPayload || deleteField(),
             patientFileNumber: resolvedPatientFileNumber,
             patientFileNameKey: targetNameKey,
             updatedAt: serverTimestamp(),
@@ -178,6 +182,9 @@ export const syncPatientIdentityByFile = async (
         const existing = matchedRecordDataById.get(recordId) || {};
         const existingName = normalizePatientNameForFile(existing.patientName as string);
         const existingPhone = toTrimmedText(existing.phone);
+        const existingAddress = normalizePatientAddress(
+            existing.address as Parameters<typeof normalizePatientAddress>[0]
+        );
         const existingAge = (existing.age && typeof existing.age === 'object')
             ? existing.age as { years?: unknown; months?: unknown; days?: unknown }
             : {};
@@ -191,6 +198,7 @@ export const syncPatientIdentityByFile = async (
         const hasChanges = (
             existingName !== patientNameText
             || existingPhone !== phoneText
+            || JSON.stringify(existingAddress || {}) !== addressSignature
             || existingYears !== agePayload.years
             || existingMonths !== agePayload.months
             || existingDays !== agePayload.days
@@ -206,6 +214,7 @@ export const syncPatientIdentityByFile = async (
             payload: {
                 patientName: patientNameText,
                 phone: phoneText || deleteField(),
+                address: addressPayload || deleteField(),
                 age: agePayload,
                 patientFileId: resolvedPatientFileId,
                 patientFileNumber: resolvedPatientFileNumber,
@@ -222,6 +231,9 @@ export const syncPatientIdentityByFile = async (
         const data = appointmentSnap.data() as Record<string, unknown>;
         const existingName = normalizePatientNameForFile(data.patientName as string);
         const existingPhone = toTrimmedText(data.phone);
+        const existingAddress = normalizePatientAddress(
+            data.address as Parameters<typeof normalizePatientAddress>[0]
+        );
         const existingPhoneDigits = toPhoneDigits(data.phone);
         const existingAgeText = toTrimmedText(data.age);
         const existingFileNumber = toPositiveInteger(data.patientFileNumber);
@@ -239,6 +251,7 @@ export const syncPatientIdentityByFile = async (
         const hasChanges = (
             existingName !== patientNameText
             || existingPhone !== phoneText
+            || JSON.stringify(existingAddress || {}) !== addressSignature
             || existingAgeText !== appointmentAgeText
             || existingFileNumber !== resolvedPatientFileNumber
         );
@@ -250,6 +263,7 @@ export const syncPatientIdentityByFile = async (
             payload: {
                 patientName: patientNameText,
                 phone: phoneText || deleteField(),
+                address: addressPayload || deleteField(),
                 age: appointmentAgeText || deleteField(),
                 patientFileNumber: resolvedPatientFileNumber,
                 updatedAt: serverTimestamp(),

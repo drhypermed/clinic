@@ -9,6 +9,7 @@ import { formatUserTime } from '../../../utils/cairoTime';
 import { PatientContactActions } from '../../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from '../FirstVisitBadge';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 type PublicBookingTodaySectionProps = {
   sortedTodayAppointments: TodayAppointment[];
@@ -61,6 +62,7 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
             const sourceIcon = getSourceIcon(apt.source);
             const isApproved = approvedEntryAppointmentIds.includes(apt.id) || secretaryApprovedEntryIds.includes(apt.id);
             const isPending = pendingEntryAppointmentId === apt.id;
+            const addressSummary = formatPatientAddress(apt.address, 'summary');
 
             return (
               <div key={apt.id} className="dh-patient-shell rounded-2xl border overflow-hidden">
@@ -91,6 +93,10 @@ export const PublicBookingTodaySection: React.FC<PublicBookingTodaySectionProps>
                     {apt.phone && <p dir="ltr" className="text-right">رقم الموبايل: {apt.phone}</p>}
                     {apt.visitReason && <p>سبب الزيارة: {apt.visitReason}</p>}
                   </div>
+
+                  {addressSummary && (
+                    <p className="text-[11px] font-bold text-slate-500">العنوان: {addressSummary}</p>
+                  )}
 
                   {canShowSecretaryVitals && (
                     <SecretaryVitalsPills vitals={apt.secretaryVitals} compact className="mt-1" />

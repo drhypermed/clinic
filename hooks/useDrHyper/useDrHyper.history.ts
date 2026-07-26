@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PrescriptionItem } from '../../types';
+import { PaymentType, PrescriptionItem } from '../../types';
 import { AppStateSnapshot } from './useDrHyper.types';
 import { resetPatientFormState } from './useDrHyper.recordHelpers';
 
@@ -59,7 +59,7 @@ interface CreateHistoryActionsParams {
     setActivePatientFileId: SetNullableString;
     setActivePatientFileNameKey: SetNullableString;
     setActivePatientFileNumber: React.Dispatch<React.SetStateAction<number | null>>;
-    setPaymentType: React.Dispatch<React.SetStateAction<'cash' | 'insurance' | 'discount'>>;
+    setPaymentType: React.Dispatch<React.SetStateAction<PaymentType>>;
     setInsuranceCompanyId: SetString;
     setInsuranceCompanyName: SetString;
     setInsuranceApprovalCode: SetString;

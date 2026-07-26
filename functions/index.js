@@ -1,4 +1,4 @@
-const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentWritten, onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
@@ -30,7 +30,7 @@ function getFunctionContext() {
   if (memoizedContext) return memoizedContext;
 
   const crypto = require('crypto');
-  const otpUtils = require('./src/otpUtils');
+  const emailUtils = require('./src/emailUtils');
   const urlUtils = require('./src/urlUtils');
   const accountTypeConfig = require('./src/accountTypeConfig');
   const smartRxDefaults = require('./src/smartRxDefaults');
@@ -47,6 +47,7 @@ function getFunctionContext() {
     onSchedule,
     onDocumentWritten,
     onDocumentCreated,
+    onDocumentDeleted,
     HttpsError,
     crypto,
     admin,
@@ -57,7 +58,7 @@ function getFunctionContext() {
     deleteExpiredSlotsByScan: core.deleteExpiredSlotsByScan,
     ...urlUtils,
     ...fcm,
-    ...otpUtils,
+    ...emailUtils,
     ...accountTypeConfig,
     ...smartRxDefaults,
     getSmartRxConfig: () => accountTypeConfig.getSmartRxConfig(core.getDb()),
@@ -116,11 +117,6 @@ const BASE_CALLABLE_OPTIONS = {
   concurrency: CALLABLE_CONCURRENCY,
 };
 
-const CRITICAL_CALLABLE_OPTIONS = {
-  ...BASE_CALLABLE_OPTIONS,
-  minInstances: Math.min(CALLABLE_MAX_INSTANCES, CRITICAL_CALLABLE_MIN_INSTANCES),
-};
-
 const SECRETARY_CALLABLE_OPTIONS = {
   ...BASE_CALLABLE_OPTIONS,
   enforceAppCheck: false,
@@ -139,7 +135,8 @@ const ACCOUNT_CONTROLS_CALLABLE_OPTIONS = {
 };
 
 const SECRETARY_CRITICAL_CALLABLE_OPTIONS = {
-  ...CRITICAL_CALLABLE_OPTIONS,
+  ...BASE_CALLABLE_OPTIONS,
+  minInstances: Math.min(CALLABLE_MAX_INSTANCES, CRITICAL_CALLABLE_MIN_INSTANCES),
   enforceAppCheck: false,
 };
 
@@ -159,14 +156,14 @@ const EXTERNAL_BROADCAST_CALLABLE_OPTIONS = {
   memory: '1GiB',
 };
 
-// --- Public OTP Functions ---
-exports.sendPublicEmailOtpCode = onCall(CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/publicOtpFunctions', 'sendPublicEmailOtpCode'));
-exports.verifyPublicEmailOtpCode = onCall(CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/publicOtpFunctions', 'verifyPublicEmailOtpCode'));
+exports.secretaryLogin = onCall(SECRETARY_CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'secretaryLogin'));
 exports.secretaryLoginWithDoctorEmail = onCall(SECRETARY_CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'secretaryLoginWithDoctorEmail'));
+exports.setSecretaryUsername = onCall(SECRETARY_CRITICAL_CALLABLE_OPTIONS, lazy('./src/functions/secretaryUsernameFunctions', 'setSecretaryUsername'));
 exports.deleteAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'deleteAppointmentBySecretary'));
 exports.updateAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'updateAppointmentBySecretary'));
 exports.createAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'createAppointmentBySecretary'));
 exports.listRecentExamRecordsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryExamRecordsFunctions', 'listRecentExamRecordsForSecretary'));
+exports.searchPatientsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryPatientSearchFunctions', 'searchPatientsForSecretary'));
 exports.listAppointmentsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'listAppointmentsForSecretary'));
 // 🔒 2026-05-10: تجديد الـ Firebase Custom Token للسكرتيرة كل ~٥٠ دقيقة
 // عشان الكتابات على Firestore تفضل تشتغل بعد ساعة (الـ token عمره ساعة).
@@ -205,7 +202,6 @@ exports.notifyDevicesToDismissAppointmentNotification = onDocumentCreated(
   { document: 'users/{userId}/dismissedAppointmentNotifications/{appointmentId}', region: REGION },
   lazy('./src/functions/pushFunctions', 'notifyDevicesToDismissAppointmentNotification')
 );
-exports.cleanupExternalNotificationBroadcastLogs = onSchedule({ schedule: 'every day 03:30', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'cleanupExternalNotificationBroadcastLogs'));
 exports.retryFailedAudienceBroadcasts = onSchedule({ schedule: 'every 2 hours', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/pushFunctions', 'retryFailedAudienceBroadcasts'));
 exports.onDoctorAdReviewWrite = onDocumentWritten({ document: 'doctorAdReviews/{doctorId}/items/{reviewId}', region: REGION }, lazy('./src/functions/reviewFunctions', 'onDoctorAdReviewWrite'));
 // ─────────────────────────────────────────────────────────────────────
@@ -227,6 +223,18 @@ const enforceTextLengthHandler = lazy('./src/functions/securityFunctions', 'enfo
 exports.enforceTextLengthOnUserDoc = onDocumentWritten({ document: 'users/{userId}', region: REGION }, enforceTextLengthHandler);
 // 2) سجلات المرضى — أطول حقل في التطبيق (تاريخ، ملاحظات الكشف)
 exports.enforceTextLengthOnRecord = onDocumentWritten({ document: 'users/{userId}/records/{recordId}', region: REGION }, enforceTextLengthHandler);
+// أي سجل يُحذف من أي شاشة أو من الصيانة يطلق تنظيف صور فحوصاته من Storage.
+// الصور التي ما زال سجل آخر يشير إليها لا تُحذف حتى لا نكسر سجلًا باقياً.
+exports.cleanupPatientImagesOnRecordDelete = onDocumentDeleted(
+  { document: 'users/{userId}/records/{recordId}', region: REGION },
+  lazy('./src/functions/patientRecordImageCleanupFunctions', 'cleanupPatientImagesOnRecordDelete')
+);
+// شبكة أمان أخيرة: أي حذف لمستند metadata، حتى لو جاء من مسار صيانة أو نسخة قديمة
+// من الواجهة، يحذف ملف Storage الفعلي بالمسار المحفوظ في المستند المحذوف.
+exports.cleanupPatientImageObjectOnMetadataDelete = onDocumentDeleted(
+  { document: 'users/{userId}/patientImages/{imageId}', region: REGION },
+  lazy('./src/functions/patientImageMetadataCleanupFunctions', 'cleanupPatientImageObjectOnMetadataDelete')
+);
 // 3) المواعيد — قد تحتوي ملاحظات
 exports.enforceTextLengthOnAppointment = onDocumentWritten({ document: 'users/{userId}/appointments/{aptId}', region: REGION }, enforceTextLengthHandler);
 // 4) الروشتات الجاهزة — نصوص دواء وتعليمات
@@ -260,60 +268,27 @@ exports.enforceTextLengthOnPendingDoctor = onDocumentWritten({ document: 'pendin
 
 // --- Cleanup Functions ---
 exports.runCleanupNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/cleanupFunctions', 'runCleanupNow'));
-exports.cleanupCompletedAppointments = onSchedule(
-  { schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/cleanupFunctions', 'cleanupOldCompletedAppointments')
-);
-// تنظيف سجلات الأخطاء الأقدم من 30 يوم — كل يوم الساعة 3 الفجر
-exports.cleanupOldErrorLogs = onSchedule(
-  { schedule: 'every day 03:00', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/cleanupFunctions', 'cleanupOldErrorLogs')
-);
-// تنظيف أحداث تتبع الاستخدام الأقدم من 90 يوم — كل يوم الساعة 3:15 الفجر
-exports.cleanupOldUsageEvents = onSchedule(
-  { schedule: 'every day 03:15', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/cleanupFunctions', 'cleanupOldUsageEvents')
-);
-// تنظيف سجلات "تم رؤية إشعار الحجز" الأقدم من 30 يوم — كل يوم الساعة 3:45 الفجر
-// (تباعد عن باقي الـ cleanups في 03:00/03:15/03:30 لتجنب الكتابة المتزامنة).
-exports.cleanupOldDismissedAppointmentNotifications = onSchedule(
-  { schedule: 'every day 03:45', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/cleanupFunctions', 'cleanupOldDismissedAppointmentNotifications')
+// نجمع أعمال الصيانة اليومية في Scheduler job واحدة لتقليل التكلفة الثابتة.
+// المنفذ يشغّل كل خطوة حتى لو فشلت خطوة أخرى، ثم يرفع خطأً مجمعًا للمراقبة.
+exports.dailyMaintenance = onSchedule(
+  { schedule: '0 03 * * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
+  lazy('./src/functions/maintenanceSchedulerFunctions', 'dailyMaintenance')
 );
 // 🆕 (2026-05) تنظيف سجلات المرضى — شهرياً (يوم 1 من كل شهر الساعة 4:00 الفجر).
-// المدد حسب الباقة: مجاني = 5 سنين، برو = 5 سنين، برو ماكس = 7 سنين.
+// المدد حسب الباقة: مجاني = سنة، Plus = سنتان، برو = 3 سنين، برو ماكس = 5 سنين.
 // (سياسة الاحتفاظ Retention Policy — موضّحة للأطباء في دليل الاستخدام).
 // تغيرنا من daily لـ monthly عشان نوفر ~95% من قراءات users + iterations
 // (الفرونت إند مش محتاج cleanup يومي مع retention طويل بالسنين).
 // timeoutSeconds=540 (9 دقايق) لأن المسح بيلف على كل الأطباء.
-exports.cleanupOldPatientRecords = onSchedule(
-  { schedule: '0 4 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
-  lazy('./src/functions/cleanupFunctions', 'cleanupOldPatientRecords')
-);
-
-// 🆕 (2026-05) تعطيل الحسابات المجانية الخاملة — يوم 1 من كل شهر الساعة 5:00 الفجر.
-// طبيب accountType='free' + lastActiveAt > 3 شهور → isAccountDisabled=true.
-// عند محاولة الـ login بعد التعطيل: رسالة "تواصل مع الإدارة لإعادة التفعيل".
-exports.disableInactiveFreeAccounts = onSchedule(
-  { schedule: '0 5 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
-  lazy('./src/functions/cleanupFunctions', 'disableInactiveFreeAccounts')
-);
-
-// 🆕 (2026-05) حذف نهائي للحسابات المتعطلة لأكتر من سنة — يوم 1 من كل شهر الساعة 5:30.
-// disabledAt > 1 سنة → حذف Auth + Firestore + كل الـ subcollections.
-// ⚠️ ROOT_ADMIN_UID مستثنى من الحذف مهما حصل.
-exports.deleteAbandonedDisabledAccounts = onSchedule(
-  { schedule: '30 5 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
-  lazy('./src/functions/cleanupFunctions', 'deleteAbandonedDisabledAccounts')
+// أعمال الاحتفاظ بالحسابات والسجلات تعمل شهريًا داخل job واحدة.
+exports.monthlyMaintenance = onSchedule(
+  { schedule: '0 04 1 * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
+  lazy('./src/functions/maintenanceSchedulerFunctions', 'monthlyMaintenance')
 );
 // المسح الكامل لكل الأطباء مرة واحدة يومياً الساعة 12:00 منتصف الليل (وقت قاهرة).
 // كان كل 6 ساعات — تم تقليله لـ24 ساعة لتوفير ~75% من قراءات المسح.
 // كل العدّادات (روشتات/طباعات/إيرادات/AI/تقارير) تتحدّث في نفس التوقيت.
 // الأدمن يقدر يضغط "تحديث الآن" أي وقت لقراءة فورية بدون انتظار.
-exports.refreshAdminDashboardAggregates = onSchedule(
-  { schedule: '0 0 * * *', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/dashboardAggregationFunctions', 'refreshAdminDashboardAggregates')
-);
 exports.refreshAdminDashboardAggregatesNow = onCall(
   BASE_CALLABLE_OPTIONS,
   lazy('./src/functions/dashboardAggregationFunctions', 'refreshAdminDashboardAggregatesNow')
@@ -361,12 +336,14 @@ exports.recomputePatientSummaries = onCall(
   BASE_CALLABLE_OPTIONS,
   lazy('./src/functions/perPatientSummariesReconcile', 'recomputePatientSummaries')
 );
+// One-time/repair rebuild of the compact branch-scoped directory used by the
+// secretary autocomplete. It scans records only when explicitly requested.
+exports.recomputeSecretaryPatientDirectory = onCall(
+  BASE_CALLABLE_OPTIONS,
+  lazy('./src/functions/secretaryPatientDirectoryFunctions', 'recomputeSecretaryPatientDirectory')
+);
 // مباعدة عن refreshAdminDashboardAggregates بـ5 دقائق لتفادي الكتابة المتزامنة
 // على settings/adminDashboardStats. الاثنان الآن مرة واحدة يومياً الساعة 12:05 ص.
-exports.materializeAdminDashboardSummary = onSchedule(
-  { schedule: '5 0 * * *', timeZone: 'Africa/Cairo', region: REGION },
-  lazy('./src/functions/dashboardCounterFunctions', 'materializeAdminDashboardSummary')
-);
 exports.materializeAdminDashboardSummaryNow = onCall(
   BASE_CALLABLE_OPTIONS,
   lazy('./src/functions/dashboardCounterFunctions', 'materializeAdminDashboardSummaryNow')
@@ -389,12 +366,7 @@ exports.deletePublicAccount = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/function
 // Delete this line + the file cleanupLegacyBookingPasswordPlain.js after running once.
 exports.cleanupLegacyBookingPasswordPlain = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/cleanupLegacyBookingPasswordPlain', 'cleanupLegacyBookingPasswordPlain'));
 
-// نسخ احتياطي يومي لـ Firestore → Cloud Storage، مع تنظيف النسخ > 30 يوم.
-exports.scheduledFirestoreExport = onSchedule(
-  { schedule: '30 02 * * *', timeZone: 'Africa/Cairo', region: REGION, timeoutSeconds: 540 },
-  lazy('./src/functions/scheduledFirestoreExport', 'scheduledFirestoreExport')
-);
-exports.generateGeminiContent = onCall({ 
+exports.generateGeminiContent = onCall({
   ...GEMINI_CALLABLE_OPTIONS,
   secrets: [GEMINI_API_KEY]
 }, lazy('./src/functions/adminFunctions', 'generateGeminiContent'));
@@ -420,8 +392,13 @@ exports.validateInsuranceCompaniesCapacity = onCall(ACCOUNT_CONTROLS_CALLABLE_OP
 //   يقدر يكتب فرع جديد عبر هذه الدالة (atomic: فحص + إنشاء bookingConfig + كتابة).
 exports.createBranch = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/accountControlsFunctions', 'createBranch'));
 
+// Patient image metadata is mutated only on the trusted server. Storage accepts
+// an upload after this server creates an exact, capacity-checked reservation.
+exports.reservePatientImageUpload = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/patientImageFunctions', 'reservePatientImageUpload'));
+exports.finalizePatientImageUpload = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/patientImageFunctions', 'finalizePatientImageUpload'));
+exports.deletePatientImage = onCall(ACCOUNT_CONTROLS_CALLABLE_OPTIONS, lazy('./src/functions/patientImageFunctions', 'deletePatientImage'));
+
 // --- Subscription Functions ---
-exports.checkExpiredProSubscriptions = onSchedule({ schedule: 'every day 02:00', timeZone: 'Africa/Cairo', region: REGION }, lazy('./src/functions/subscriptionFunctions', 'checkExpiredProSubscriptions'));
 exports.runExpiredSubscriptionsCheckNow = onCall(BASE_CALLABLE_OPTIONS, lazy('./src/functions/subscriptionFunctions', 'runExpiredSubscriptionsCheckNow'));
 
 // --- Guidelines Search Functions ---

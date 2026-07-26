@@ -34,6 +34,16 @@ import {
     readReportPreferencesFromLocalStorage,
     saveReportPreferences,
 } from './reportPreferences';
+export {
+    MAX_PATIENT_IMAGES,
+    compressPatientImagePreservingDimensions,
+    deletePatientImage,
+    deletePatientImagesByIds,
+    loadPatientImageObjectUrl,
+    subscribeToPatientImages,
+    uploadPatientImage,
+} from './images';
+export type { PatientImageMetadata } from './images';
 
 export {
     buildPatientFileDocIdFromNameKey,

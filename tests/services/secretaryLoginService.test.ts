@@ -20,6 +20,15 @@ describe('getSecretaryLoginErrorMessage', () => {
     expect(getSecretaryLoginErrorMessage({ code: 'failed-precondition' })).toBe(genericAuthError);
   });
 
+  it('does not reveal username validation details during login', () => {
+    expect(
+      getSecretaryLoginErrorMessage({
+        code: 'invalid-argument',
+        message: 'INVALID_SECRETARY_USERNAME',
+      })
+    ).toBe(genericAuthError);
+  });
+
   it('returns doctor-not-configured message for SECRETARY_PASSWORD_NOT_SET', () => {
     expect(
       getSecretaryLoginErrorMessage({

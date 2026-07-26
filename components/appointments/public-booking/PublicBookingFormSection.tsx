@@ -30,7 +30,6 @@ import type { DiscountReason } from '../../../services/discountReasonService';
  */
 type PublicBookingFormSectionProps = {
   bookingFormOpen: boolean; // هل قسم النموذج مفتوح أم مغلق؟
-  onToggleOpen: () => void; // دالة لفتح وإغلاق القسم
   editingAppointmentId: string | null; // معرف الموعد الذي يتم تعديله حالياً (في حال تعديل موعد قديم)
   onCancelEdit: () => void;
   bookingFormLoading: boolean;
@@ -42,6 +41,12 @@ type PublicBookingFormSectionProps = {
   onDateOfBirthChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
+  addressGovernorate: string;
+  onAddressGovernorateChange: (value: string) => void;
+  addressCityArea: string;
+  onAddressCityAreaChange: (value: string) => void;
+  addressDetails: string;
+  onAddressDetailsChange: (value: string) => void;
   gender: PatientGender | '';
   onGenderChange: (value: PatientGender | '') => void;
   pregnant: boolean | null;
@@ -60,7 +65,6 @@ type PublicBookingFormSectionProps = {
   doctorSpecialty?: string | null;
   onSecretaryVitalsChange: (value: SecretaryVitalsInput) => void;
   todayStr: string;
-  timeMin: string | undefined;
   submitting: boolean;
   formError: string | null;
   bookingQuotaNotice: BookingQuotaNotice | null;
@@ -112,7 +116,6 @@ type PublicBookingFormSectionProps = {
  */
 export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> = ({
   bookingFormOpen,
-  onToggleOpen,
   editingAppointmentId,
   onCancelEdit,
   bookingFormLoading,
@@ -124,6 +127,12 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   onDateOfBirthChange,
   phone,
   onPhoneChange,
+  addressGovernorate,
+  onAddressGovernorateChange,
+  addressCityArea,
+  onAddressCityAreaChange,
+  addressDetails,
+  onAddressDetailsChange,
   gender,
   onGenderChange,
   pregnant,
@@ -142,7 +151,6 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   doctorSpecialty,
   onSecretaryVitalsChange,
   todayStr,
-  timeMin,
   submitting,
   formError,
   bookingQuotaNotice,
@@ -216,6 +224,12 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               onDateOfBirthChange={onDateOfBirthChange}
               phone={phone}
               onPhoneChange={onPhoneChange}
+              addressGovernorate={addressGovernorate}
+              onAddressGovernorateChange={onAddressGovernorateChange}
+              addressCityArea={addressCityArea}
+              onAddressCityAreaChange={onAddressCityAreaChange}
+              addressDetails={addressDetails}
+              onAddressDetailsChange={onAddressDetailsChange}
               gender={gender}
               onGenderChange={onGenderChange}
               pregnant={pregnant}
@@ -234,7 +248,6 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               doctorSpecialty={doctorSpecialty}
               onSecretaryVitalsChange={onSecretaryVitalsChange}
               todayStr={todayStr}
-              timeMin={timeMin}
               saving={submitting}
               formError={formError}
               bookingQuotaNotice={bookingQuotaNotice}

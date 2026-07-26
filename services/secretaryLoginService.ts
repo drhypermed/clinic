@@ -4,7 +4,7 @@ import { auth, functions } from './firebaseConfig';
 import { formatUserDate } from '../utils/cairoTime';
 
 type SecretaryLoginPayload = {
-  doctorEmail?: string;
+  secretaryUsername: string;
   secret?: string;
   secretaryPassword: string;
   /**
@@ -127,9 +127,11 @@ export const getSecretaryLoginErrorMessage = (error: unknown): string => {
     code === 'permission-denied' ||
     code === 'not-found' ||
     code === 'failed-precondition' ||
+    code === 'invalid-argument' ||
     normalizedMessage.includes('INVALID_CREDENTIALS') ||
     normalizedMessage.includes('INVALID_SECRETARY_PASSWORD') ||
-    normalizedMessage.includes('DOCTOR_EMAIL_SECRET_MISMATCH')
+    normalizedMessage.includes('DOCTOR_EMAIL_SECRET_MISMATCH') ||
+    normalizedMessage.includes('INVALID_SECRETARY_USERNAME')
   ) {
     return 'بيانات الدخول غير صحيحة أو نظام السكرتارية غير مفعّل';
   }
@@ -185,7 +187,7 @@ export const getAmbiguousBranchesFromError = (
 export const secretaryLogin = async (
   payload: SecretaryLoginPayload
 ): Promise<SecretaryLoginResult> => {
-  const callable = httpsCallable(functions, 'secretaryLoginWithDoctorEmail');
+  const callable = httpsCallable(functions, 'secretaryLogin');
   const response = await callable(payload);
   const data = (response.data || {}) as (Partial<SecretaryLoginResult> & { customAuthToken?: string });
 

@@ -437,7 +437,6 @@ export const savePublicFormSettings = async (
   secret: string,
   title: string,
   contactInfo: string,
-  requireGoogleSignIn: boolean,
   branchId?: string
 ): Promise<void> => {
   const normalizedUserId = sanitizeDocSegment(userId);

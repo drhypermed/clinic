@@ -18,6 +18,7 @@ interface PrintableInvoiceData {
   patientName: string;
   patientFileNumber?: number;
   patientPhone?: string;
+  patientAddress?: string;
   items: PrintableInvoiceItem[];
   discount: number;
   notes?: string;
@@ -159,6 +160,11 @@ export function printPatientInvoice(
         <div>
           <div style="font-size:8px;font-weight:800;color:#94a3b8;margin-bottom:1px;">رقم التليفون</div>
           <div style="font-size:11px;font-weight:700;color:#334155;" dir="ltr">${escapeHtml(data.patientPhone)}</div>
+        </div>` : ''}
+        ${data.patientAddress ? `
+        <div style="min-width:180px;flex:1;">
+          <div style="font-size:8px;font-weight:800;color:#94a3b8;margin-bottom:1px;">العنوان</div>
+          <div style="font-size:10px;font-weight:700;color:#334155;">${escapeHtml(data.patientAddress)}</div>
         </div>` : ''}
       </div>
     </div>

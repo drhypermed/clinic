@@ -140,7 +140,6 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   const [bookingSecret, setBookingSecret] = useState<string | null>(null);
   const [secretaryEntryRequest, setSecretaryEntryRequest] = useState<SecretaryEntryRequestData | null>(null);
   const lastSecretaryRequestCreatedRef = useRef<string | null>(null);
-  const handledPushDoctorActionsRef = useRef<Set<string>>(new Set());
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const [, setPushRegistrationRequired] = useState(false);
   const [pushEnableSuccessMessage, setPushEnableSuccessMessage] = useState<string | null>(null);

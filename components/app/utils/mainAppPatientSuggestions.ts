@@ -49,6 +49,11 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
     // أحدث gender متاح — ثابت، ما يتغيرش بين سجلات نفس المريض
     const genderFromRecords = sorted.map((item) => item.gender).find((value) => Boolean(value));
     const firstWithDateOfBirth = sorted.find((item) => String(item.dateOfBirth || '').trim());
+    const firstWithAddress = sorted.find((item) => Boolean(
+      String(item.address?.governorate || '').trim()
+      || String(item.address?.cityArea || '').trim()
+      || String(item.address?.details || '').trim()
+    ));
     const firstWithFileId = sorted.find((item) => String(item.patientFileId || '').trim());
     const firstWithFileNameKey = sorted.find((item) => String(item.patientFileNameKey || '').trim());
 
@@ -56,6 +61,7 @@ export const buildBasicPatientSuggestions = (records: PatientRecord[]): BasicPat
       id: latest.id,
       patientName: latest.patientName,
       phone: latest.phone,
+      address: firstWithAddress?.address,
       ageText: buildAgeText(latest.age?.years, latest.age?.months, latest.age?.days),
       dateOfBirth: String(firstWithDateOfBirth?.dateOfBirth || '').trim() || undefined,
       lastExamDate,

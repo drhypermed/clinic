@@ -63,6 +63,32 @@ service firebase.storage {
                    && (request.auth.uid == userId || isAdmin())
                    && (request.resource == null || (isValidSize() && isImage()));
     }
+    function hasReservedPatientImage(userId, patientFileId, fileName) {
+      let metadata = request.resource.metadata;
+      let imageId = 'patientImageId' in metadata ? metadata.patientImageId : '__missing__';
+      let reservation = firestore.get(/databases/(default)/documents/users/$(userId)/patientImages/$(imageId));
+      return imageId is string &&
+        reservation.data.patientFileId == patientFileId &&
+        reservation.data.status == 'uploading' &&
+        reservation.data.storagePath == 'patient-images/' + userId + '/' + patientFileId + '/' + fileName;
+    }
+
+    // صور ملفات المرضى: خاصة بالطبيب صاحب الحساب فقط، وبعد ضغطها على الجهاز.
+    // لا نسمح بالتحديث فوق ملف قائم؛ كل صورة لها object مستقل لتفادي الكتابة المتزامنة.
+    match /patient-images/{userId}/{patientFileId}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && hasReservedPatientImage(userId, patientFileId, fileName)
+                    && isValidSize()
+                    && (
+                      request.resource.contentType == 'image/jpeg' ||
+                      request.resource.contentType == 'image/png' ||
+                      request.resource.contentType == 'image/webp'
+                    );
+      allow update: if false;
+      allow delete: if false;
+    }
 
     match /homepage-banners/{fileName} {
       allow read: if true;

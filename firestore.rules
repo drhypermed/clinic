@@ -487,6 +487,14 @@ service cloud.firestore {
       match /patientFileData/{fileId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+      // فهرس صور ملفات المرضى. الملفات نفسها خاصة في Storage؛ هذا المستند يحتفظ
+      // بالمسار والأبعاد والحجم وتاريخ الرفع اللازم للحذف التلقائي حسب الباقة.
+      match /patientImages/{imageId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Reservations, finalization, counter changes, and deletion are handled by
+        // authenticated Cloud Functions after checking Pro Max and the 50-image cap.
+        allow write: if false;
+      }
       // كاش تحليل الحالة السحابي (مدة 30 يوم):
       // الطبيب بس هو اللي يقرأ/يكتب في كاشه — ما ينفعش طبيب تاني يشوف تحليلات مريض غيره.
       // TTL على حقل `expiresAt` لازم يتفعل من Firebase Console يدوياً (مش في rules).
@@ -508,6 +516,37 @@ service cloud.firestore {
       match /patientSummaries/{summaryId} {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow write: if false;
+      }
+
+      // Compact, branch-scoped patient search index for the secretary booking form.
+      // The Cloud Function is the only writer. A secretary can read only the
+      // doctor and branch embedded in her short-lived custom-auth claims.
+      match /secretaryPatientDirectories/{branchId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == userId ||
+          isAdmin() ||
+          (
+            request.auth.token.role == 'secretary' &&
+            request.auth.token.doctorUserId == userId &&
+            request.auth.token.branchId == branchId &&
+            request.auth.uid.matches('^secretary:.+:' + branchId + '$')
+          )
+        );
+        allow write: if false;
+
+        match /patients/{patientId} {
+          allow read: if request.auth != null && (
+            request.auth.uid == userId ||
+            isAdmin() ||
+            (
+              request.auth.token.role == 'secretary' &&
+              request.auth.token.doctorUserId == userId &&
+              request.auth.token.branchId == branchId &&
+              request.auth.uid.matches('^secretary:.+:' + branchId + '$')
+            )
+          );
+          allow write: if false;
+        }
       }
     }
     // Booking config — قراءة للطبيب المالك، السكرتيرة المسجلة، أو أي شخص يعرف
@@ -696,20 +735,14 @@ service cloud.firestore {
       }
     }
     match /secretaryLoginIndex/{doctorEmail} {
-      // Prevent cross-account email harvesting. Only owner/admin can read a specific record.
-      allow get: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin()
-      );
-      allow list: if false;
-      allow create, update: if request.auth != null && (
-        request.resource.data.userId == request.auth.uid ||
-        isAdmin()
-      );
-      allow delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin()
-      );
+      // Legacy email-login index. Kept unreadable while accounts move to usernames.
+      allow read, write: if false;
+    }
+    match /secretaryUsernameIndex/{username} {
+      // الإنشاء والتغيير يتمان ذريًا من Cloud Function فقط لمنع سباق حجز الاسم.
+      allow get, list, create, update: if false;
+      // حذف الفرع ينظف الاسم بعد نقل بيانات الفرع. لا يستطيع طبيب حذف اسم طبيب آخر.
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     // ⚠️ ROLLBACK 2026-05-10: شيلت تشديد `isAuthenticatedSecretaryForSecret` لإن
     // العملاء في الإنتاج فيهم اللي عندهم كاش قديم بدون auto-refresh، فالكتابات

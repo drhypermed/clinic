@@ -9,6 +9,10 @@ import {
 } from '../../../services/patientCostService';
 import { financialDataService, type DailyFinancialData } from '../../../services/financial-data';
 import { PatientCard, RevenueSection } from './daily-revenue/PatientCard';
+import type { DirectPaymentTotals } from '../../../utils/paymentMethods';
+import { DIRECT_PAYMENT_TYPES, getPaymentMethodLabel } from '../../../utils/paymentMethods';
+import type { DirectPaymentType } from '../../../utils/paymentMethods';
+import { PaymentMethodIcon } from '../../common/PaymentMethodIcon';
 
 interface CashCostEntry {
     id: string;
@@ -18,6 +22,7 @@ interface CashCostEntry {
     type: 'interventions' | 'other';
     dateKey: string;
     note?: string;
+    paymentType?: DirectPaymentType;
 }
 
 interface DailyRevenueSectionProps {
@@ -33,6 +38,7 @@ interface DailyRevenueSectionProps {
     onUpdateOtherLabel: (value: string) => void;
     totalDailyRevenue: number;
     dailyInsuranceTotal: number;
+    directPaymentTotals: DirectPaymentTotals;
     dailyInsuranceExtras: DailyInsuranceExtraEntry[];
     userId: string;
     /** الفرع النشط — يُستخدم لفصل مفاتيح localStorage بين الفروع */
@@ -62,7 +68,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
     selectedDayExamBreakdowns, selectedDayConsultBreakdowns,
     interventionsValue, interventionsLabel, onUpdateInterventionsLabel,
     otherValue, otherLabel, onUpdateOtherLabel,
-    totalDailyRevenue, dailyInsuranceTotal, dailyInsuranceExtras,
+    totalDailyRevenue, dailyInsuranceTotal, directPaymentTotals, dailyInsuranceExtras,
     userId, branchId, yearlyDailyMap,
 }) => {
     const [cashCostItems, setCashCostItems] = useState<CashCostEntry[]>([]);
@@ -447,13 +453,13 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                 {/* تفاصيل المرضى (تحت الملخص) — تبقى للتحرير والحذف */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <RevenueSection emoji="💉" title="الكشوفات">
-                        <PatientCard label="كشوفات كاش" amount={examCashTotal} />
+                        <PatientCard label="كشوفات بتحصيل مباشر" amount={examCashTotal} />
                         {examInsEntries.map((b, i) => (
                             <PatientCard key={i} isInsurance label="مطالبات التأمين - كشف" sublabel={b.companyName} amount={b.insuranceAmount} patientName={b.patientName} />
                         ))}
                     </RevenueSection>
                     <RevenueSection emoji="💬" title="الاستشارات">
-                        <PatientCard label="استشارات كاش" amount={consultCashTotal} />
+                        <PatientCard label="استشارات بتحصيل مباشر" amount={consultCashTotal} />
                         {consultInsEntries.map((b, i) => (
                             <PatientCard key={i} isInsurance label="مطالبات التأمين - استشارة" sublabel={b.companyName} amount={b.insuranceAmount} patientName={b.patientName} />
                         ))}
@@ -470,7 +476,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                         </div>
                     }>
                         {cashInterventions.map(item => (
-                            <PatientCard key={item.id} label="تداخل كاش"
+                            <PatientCard key={item.id} label={`تداخل - ${getPaymentMethodLabel(item.paymentType)}`}
                                 amount={item.amount} patientName={item.patientName} note={item.note}
                                 onEdit={() => openEditCash(item)} onDelete={() => handleDeleteCash(item)} />
                         ))}
@@ -492,7 +498,7 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                         </div>
                     }>
                         {cashOtherItems.map(item => (
-                            <PatientCard key={item.id} label="دخل آخر كاش"
+                            <PatientCard key={item.id} label={`دخل آخر - ${getPaymentMethodLabel(item.paymentType)}`}
                                 amount={item.amount} patientName={item.patientName} note={item.note}
                                 onEdit={() => openEditCash(item)} onDelete={() => handleDeleteCash(item)} />
                         ))}
@@ -512,8 +518,19 @@ export const DailyRevenueSection: React.FC<DailyRevenueSectionProps> = ({
                         <span className="text-base sm:text-xl font-black text-white">{formatCurrency((totalDailyRevenue || 0) + (dailyInsuranceTotal || 0))}</span>
                     </div>
                     <div className="flex items-center justify-between bg-gradient-to-r from-success-600 to-success-500 rounded-xl px-3 py-2.5">
-                        <span className="text-sm font-bold text-white">💵 نقد محصّل</span>
+                        <span className="text-sm font-bold text-white">💳 تحصيل مباشر</span>
                         <span className="text-sm font-black text-white">{formatCurrency(totalDailyRevenue || 0)}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        {DIRECT_PAYMENT_TYPES.map((type) => (
+                            <div key={type} className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-black">
+                                    <PaymentMethodIcon type={type} className="h-3.5 w-3.5" />
+                                    {getPaymentMethodLabel(type)}
+                                </span>
+                                <span className="text-xs font-black">{formatCurrency(directPaymentTotals[type] || 0)}</span>
+                            </div>
+                        ))}
                     </div>
                     {(dailyInsuranceTotal || 0) > 0 && (
                         <div className="flex items-center justify-between bg-gradient-to-r from-brand-600 to-brand-500 rounded-xl px-3 py-2.5">

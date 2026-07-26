@@ -4,6 +4,16 @@ const {
   loadUnifiedDoctorProfile,
   loadUnifiedUsageDoc,
 } = require('../profileStore');
+const {
+  USD_TO_MICROS,
+  calculateActualCostMicros,
+  estimateReservationMicros,
+  reserveMonthlyCost,
+  resolveGoogleSearchCostMicros,
+  resolveMaxOutputTokens,
+  resolveMonthlyBudgetMicros,
+  settleMonthlyCost,
+} = require('./geminiCostControls');
 
 module.exports = ({
   HttpsError,
@@ -18,6 +28,7 @@ module.exports = ({
   getSmartRxConfig,
   pickTierValue,
   buildWhatsAppUrl,
+  crypto,
 }) => {
   
   const deleteDoctorAccount = async (request) => {
@@ -123,6 +134,13 @@ module.exports = ({
             await file.delete();
             deletedCollections.storageFiles++;
             console.log(`[deleteDoctorAccount] Deleted prescription file: ${file.name}`);
+          }
+
+          const patientImagesFolder = `patient-images/${doctorId}/`;
+          const [patientImageFiles] = await bucket.getFiles({ prefix: patientImagesFolder });
+          for (const file of patientImageFiles) {
+            await file.delete();
+            deletedCollections.storageFiles++;
           }
 
           storageDeleted = true;
@@ -279,6 +297,18 @@ module.exports = ({
     const rawFeature = String(request?.data?.feature || 'unknown').trim().toLowerCase();
     const feature = ALLOWED_AI_FEATURES.has(rawFeature) ? rawFeature : 'unknown';
     const useGoogleSearch = request?.data?.googleSearch === true;
+    const rawImages = Array.isArray(request?.data?.images) ? request.data.images : [];
+    const images = rawImages.slice(0, 50).map((item) => ({
+      mimeType: String(item?.mimeType || ''),
+      data: String(item?.data || ''),
+    }));
+    const totalImageBase64Chars = images.reduce((sum, item) => sum + item.data.length, 0);
+    if (rawImages.length > 50 || images.some((item) => item.mimeType !== 'image/jpeg' || !item.data)) {
+      throw new HttpsError('invalid-argument', 'Invalid investigation images');
+    }
+    if (totalImageBase64Chars > 8_000_000) {
+      throw new HttpsError('invalid-argument', 'Investigation images are too large');
+    }
 
     // thinkingBudget لوضع التفكير في gemini-2.5-flash:
     // -1 = ديناميكي (default، الموديل يقرر)، 0 = تعطيل، >0 = حد أقصى tokens.
@@ -330,6 +360,24 @@ module.exports = ({
     const db = getDb();
     const dayKey = getCairoDateKey(new Date());
     const usageDocId = `gemini-${dayKey}`;
+    const monthKey = dayKey.slice(0, 7);
+    const monthlyUsageDocId = `gemini-cost-${monthKey}`;
+    const monthlyUsageRef = db.collection('users').doc(userId).collection('usageMonthly').doc(monthlyUsageDocId);
+    const reservationId = crypto.randomUUID();
+    const maxOutputTokens = resolveMaxOutputTokens({
+      requested: request?.data?.maxOutputTokens,
+      defaults: DEFAULT_AI_PROXY_LIMITS,
+    });
+    const googleSearchCostMicros = resolveGoogleSearchCostMicros({
+      enabled: useGoogleSearch,
+      defaults: DEFAULT_AI_PROXY_LIMITS,
+    });
+    const reservationMicros = estimateReservationMicros({
+      model,
+      promptUtf8Bytes: Buffer.byteLength(prompt, 'utf8') + Math.ceil(totalImageBase64Chars * 0.75),
+      maxOutputTokens,
+      thinkingBudget,
+    }) + googleSearchCostMicros;
     const guidelinesChatConfig = feature === 'guidelines_chat'
       ? await getSmartRxConfig()
       : null;
@@ -342,6 +390,9 @@ module.exports = ({
       }
 
       const accountType = resolveDoctorAccountType(doctorProfile.mergedData);
+      if (images.length > 0 && accountType !== 'pro_max') {
+        throw new HttpsError('permission-denied', 'PATIENT_IMAGES_REQUIRE_PRO_MAX', { accountType });
+      }
       // برو وبرو ماكس نفس سقف الـ AI proxy (backstop) — الـ pro_max بيستخدم قيمة خاصة لو متوفرة
       const globalLimit = accountType === 'pro_max'
         ? (DEFAULT_AI_PROXY_LIMITS.proMaxDailyLimit ?? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit)
@@ -351,21 +402,29 @@ module.exports = ({
           ? DEFAULT_AI_PROXY_LIMITS.premiumDailyLimit
           : DEFAULT_AI_PROXY_LIMITS.freeDailyLimit;
 
-      if (!doctorProfile.userSnap.exists) {
-        tx.set(doctorProfile.userRef, buildDoctorUserProfilePayload({
-          uid: userId,
+      const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
+      const monthlyUsageSnap = await tx.get(monthlyUsageRef);
+      const monthlyUsageData = monthlyUsageSnap.exists ? (monthlyUsageSnap.data() || {}) : {};
+      const monthlyBudgetMicros = resolveMonthlyBudgetMicros({
+        accountType,
+        defaults: DEFAULT_AI_PROXY_LIMITS,
+      });
+      const monthlyReservation = reserveMonthlyCost({
+        data: monthlyUsageData,
+        reservationId,
+        reserveMicros: reservationMicros,
+        capMicros: monthlyBudgetMicros,
+        nowMs: Date.now(),
+      });
+      if (!monthlyReservation.allowed) {
+        throw new HttpsError('resource-exhausted', 'MONTHLY_AI_BUDGET_REACHED', {
           accountType,
-          premiumStartDate: typeof doctorProfile.mergedData?.premiumStartDate === 'string' ? doctorProfile.mergedData.premiumStartDate : null,
-          premiumExpiryDate: typeof doctorProfile.mergedData?.premiumExpiryDate === 'string' ? doctorProfile.mergedData.premiumExpiryDate : null,
-          doctorName: typeof doctorProfile.mergedData?.doctorName === 'string' ? doctorProfile.mergedData.doctorName : '',
-          doctorEmail: typeof doctorProfile.mergedData?.doctorEmail === 'string'
-            ? doctorProfile.mergedData.doctorEmail
-            : (typeof doctorProfile.mergedData?.email === 'string' ? doctorProfile.mergedData.email : ''),
-          syncedFromLegacyDoctorAt: admin.firestore.FieldValue.serverTimestamp(),
-        }), { merge: true });
+          monthKey,
+          budgetUsd: monthlyBudgetMicros / USD_TO_MICROS,
+          accruedUsd: monthlyReservation.accruedCostMicros / USD_TO_MICROS,
+        });
       }
 
-      const usageDoc = await loadUnifiedUsageDoc({ db, userId, usageDocId, tx });
       const used = Number(usageDoc.mergedUsageData?.geminiCallCount || 0);
       if (used >= globalLimit) {
         throw new HttpsError('resource-exhausted', 'DAILY_AI_LIMIT_REACHED', {
@@ -403,6 +462,20 @@ module.exports = ({
         nextGuidelinesUsed = guidelinesUsed + 1;
       }
 
+      if (!doctorProfile.userSnap.exists) {
+        tx.set(doctorProfile.userRef, buildDoctorUserProfilePayload({
+          uid: userId,
+          accountType,
+          premiumStartDate: typeof doctorProfile.mergedData?.premiumStartDate === 'string' ? doctorProfile.mergedData.premiumStartDate : null,
+          premiumExpiryDate: typeof doctorProfile.mergedData?.premiumExpiryDate === 'string' ? doctorProfile.mergedData.premiumExpiryDate : null,
+          doctorName: typeof doctorProfile.mergedData?.doctorName === 'string' ? doctorProfile.mergedData.doctorName : '',
+          doctorEmail: typeof doctorProfile.mergedData?.doctorEmail === 'string'
+            ? doctorProfile.mergedData.doctorEmail
+            : (typeof doctorProfile.mergedData?.email === 'string' ? doctorProfile.mergedData.email : ''),
+          syncedFromLegacyDoctorAt: admin.firestore.FieldValue.serverTimestamp(),
+        }), { merge: true });
+      }
+
       tx.set(usageDoc.userUsageRef, {
         doctorId: userId,
         dayKey,
@@ -422,12 +495,28 @@ module.exports = ({
           : usageDoc.mergedUsageData?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
 
+      tx.set(monthlyUsageRef, {
+        doctorId: userId,
+        accountType,
+        monthKey,
+        budgetMicros: monthlyBudgetMicros,
+        accruedCostMicros: monthlyReservation.accruedCostMicros,
+        reservations: monthlyReservation.reservations,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: monthlyUsageSnap.exists
+          ? monthlyUsageData.createdAt || admin.firestore.FieldValue.serverTimestamp()
+          : admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
       return {
         accountType,
         used: isGuidelinesChat ? nextGuidelinesUsed : nextUsed,
         limit: isGuidelinesChat ? guidelinesLimit : globalLimit,
         remaining: Math.max((isGuidelinesChat ? guidelinesLimit : globalLimit) - (isGuidelinesChat ? nextGuidelinesUsed : nextUsed), 0),
         dayKey,
+        monthKey,
+        monthlyBudgetMicros,
+        monthlyAccruedCostMicros: monthlyReservation.accruedCostMicros,
       };
     });
 
@@ -438,13 +527,17 @@ module.exports = ({
     const generationConfig = {
       responseMimeType,
       temperature,
+      maxOutputTokens,
     };
     if (supportsThinking) {
       generationConfig.thinkingConfig = { thinkingBudget };
     }
 
     const payload = {
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts: [
+        { text: prompt },
+        ...images.map((image) => ({ inline_data: { mime_type: image.mimeType, data: image.data } })),
+      ] }],
       generationConfig,
     };
     if (useGoogleSearch) {
@@ -483,6 +576,32 @@ module.exports = ({
       }
     };
 
+    const updateMonthlyCost = async (actualCostMicros) => {
+      await db.runTransaction(async (tx) => {
+        const monthlySnap = await tx.get(monthlyUsageRef);
+        const monthlyData = monthlySnap.exists ? (monthlySnap.data() || {}) : {};
+        const settled = settleMonthlyCost({
+          data: monthlyData,
+          reservationId,
+          actualCostMicros,
+          nowMs: Date.now(),
+        });
+        tx.set(monthlyUsageRef, {
+          accruedCostMicros: settled.accruedCostMicros,
+          reservations: settled.reservations,
+          lastActualCostMicros: Math.max(0, Number(actualCostMicros || 0)),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      });
+    };
+
+    const refundQuotaAndReservation = async () => {
+      await Promise.allSettled([
+        refundQuota(),
+        updateMonthlyCost(0),
+      ]);
+    };
+
     let response;
     try {
       const controller = new AbortController();
@@ -498,12 +617,12 @@ module.exports = ({
         clearTimeout(timer);
       }
     } catch (err) {
-      await refundQuota();
+      await refundQuotaAndReservation();
       throw new HttpsError('unavailable', `Gemini request failed: ${err instanceof Error ? err.message : 'unknown error'}`);
     }
 
     if (!response.ok) {
-      await refundQuota();
+      await refundQuotaAndReservation();
       const errText = await response.text().catch(() => '');
       throw new HttpsError('internal', `Gemini API error (${response.status}): ${errText.slice(0, 500)}`);
     }
@@ -514,7 +633,7 @@ module.exports = ({
       : '';
 
     if (!text.trim()) {
-      await refundQuota();
+      await refundQuotaAndReservation();
       throw new HttpsError('internal', 'Gemini returned empty response');
     }
 
@@ -527,6 +646,20 @@ module.exports = ({
     const candidatesTokens = Number(usageMeta?.candidatesTokenCount || 0);
     const thoughtsTokens = Number(usageMeta?.thoughtsTokenCount || 0); // tokens التفكير (Thinking Mode)
     const totalTokens = Number(usageMeta?.totalTokenCount || (promptTokens + candidatesTokens + thoughtsTokens));
+    const actualCostMicros = calculateActualCostMicros({
+      model,
+      promptTokens,
+      candidatesTokens,
+      thoughtsTokens,
+    }) + googleSearchCostMicros;
+
+    try {
+      await updateMonthlyCost(actualCostMicros);
+    } catch (costTrackErr) {
+      // Keep the reservation in place if settlement fails. It expires after 15
+      // minutes, which is safer than accidentally allowing unmetered requests.
+      console.error('[generateGeminiContent] Monthly cost settlement failed:', costTrackErr);
+    }
 
     // تحديث usage document بالـ tokens المتراكمة — بدون blocking على الرد للمستخدم.
     try {
@@ -544,6 +677,7 @@ module.exports = ({
             candidatesTokens: currentCandidates + candidatesTokens,
             thoughtsTokens: currentThoughts + thoughtsTokens,
             totalTokens: currentTotal + totalTokens,
+            estimatedCostMicros: Number(currentMetrics?.estimatedCostMicros || 0) + actualCostMicros,
             lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
           },
         }, { merge: true });
@@ -593,6 +727,9 @@ module.exports = ({
         thoughts: thoughtsTokens,
         total: totalTokens,
       },
+      estimatedCostUsd: actualCostMicros / USD_TO_MICROS,
+      monthlyBudgetUsd: quota.monthlyBudgetMicros / USD_TO_MICROS,
+      monthlyAccruedCostUsd: (quota.monthlyAccruedCostMicros + actualCostMicros) / USD_TO_MICROS,
     };
   };
 

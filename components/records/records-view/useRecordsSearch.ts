@@ -6,6 +6,7 @@
  */
 import { useMemo, useState } from 'react';
 import type { PatientRecord } from '../../../types';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 export interface SearchSuggestion {
   value: string;
@@ -24,6 +25,7 @@ export function useRecordsSearch(records: PatientRecord[]) {
         rec.patientName.toLowerCase().includes(term) ||
         String(rec.patientFileNumber || '').includes(term) ||
         (rec.phone || '').toLowerCase().includes(term) ||
+        formatPatientAddress(rec.address).toLowerCase().includes(term) ||
         (rec.insuranceMembershipId || '').toLowerCase().includes(term) ||
         (rec.insuranceApprovalCode || '').toLowerCase().includes(term) ||
         rec.date.includes(term) ||
@@ -69,6 +71,7 @@ export function useRecordsSearch(records: PatientRecord[]) {
       add(r.examAr);
       add(r.investigationsAr);
       add(r.patientName);
+      add(formatPatientAddress(r.address));
       add(r.diagnosisEn);
       add(r.complaintEn);
       add(r.historyEn);

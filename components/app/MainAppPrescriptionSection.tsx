@@ -62,6 +62,7 @@ import {
   normalizeCaseAnalysisPrescriptionListText,
 } from '../../utils/rx/caseAnalysisText';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
+import type { PatientImageMetadata, PatientImagesAccountType } from '../../services/patient-files/images';
 
 /**
  * مكون قسم الروشتة الرئيسي (Main App Prescription Section Component)
@@ -87,6 +88,12 @@ interface MainAppPrescriptionSectionProps {
   setPatientName: (value: string) => void;
   phone: string;
   setPhone: (value: string) => void;
+  addressGovernorate: string;
+  setAddressGovernorate: (value: string) => void;
+  addressCityArea: string;
+  setAddressCityArea: (value: string) => void;
+  addressDetails: string;
+  setAddressDetails: (value: string) => void;
   ageYears: string;
   setAgeYears: (value: string) => void;
   ageMonths: string;
@@ -128,6 +135,9 @@ interface MainAppPrescriptionSectionProps {
   setExamination: (value: string) => void;
   investigations: string;
   setInvestigations: (value: string) => void;
+  investigationImages: PatientImageMetadata[];
+  setInvestigationImages: (images: PatientImageMetadata[]) => void;
+  accountType?: PatientImagesAccountType;
   
   // التحكم في الذكاء الاصطناعي
   onAnalyze: () => void;                  // زر "تحليل الحالة" — الغني (بالـ popup)
@@ -260,10 +270,11 @@ interface MainAppPrescriptionSectionProps {
 
 export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProps> = ({
   analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
+  addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
   gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
   activePatientFileId, activePatientFileNumber, displayPatientFileNumber, activePatientFileNameKey,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
-  complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
+  complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, investigationImages, setInvestigationImages, accountType, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
   caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
   addedDiagnosesFromModal, setAddedDiagnosesFromModal,
   addedInvestigationsFromModal, setAddedInvestigationsFromModal,
@@ -792,6 +803,9 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                 <PatientInfoSection
                   patientName={patientName} setPatientName={setPatientName}
                   phone={phone} setPhone={setPhone}
+                  addressGovernorate={addressGovernorate} setAddressGovernorate={setAddressGovernorate}
+                  addressCityArea={addressCityArea} setAddressCityArea={setAddressCityArea}
+                  addressDetails={addressDetails} setAddressDetails={setAddressDetails}
                   ageYears={ageYears} setAgeYears={setAgeYears}
                   ageMonths={ageMonths} setAgeMonths={setAgeMonths}
                   ageDays={ageDays} setAgeDays={setAgeDays}
@@ -808,6 +822,9 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                     const resolvedAgeParts = parseAgeToYearsMonthsDays(resolvedAge);
                     setPatientName(item.patientName || '');
                     setPhone(item.phone || '');
+                    setAddressGovernorate(item.address?.governorate || '');
+                    setAddressCityArea(item.address?.cityArea || '');
+                    setAddressDetails(item.address?.details || '');
                     setDateOfBirth(item.dateOfBirth || '');
                     setAgeYears(resolvedAgeParts.years);
                     setAgeMonths(resolvedAgeParts.months);
@@ -836,7 +853,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                 />
               </div>
 
-              {paymentType !== 'cash' && (
+              {(paymentType === 'insurance' || paymentType === 'discount') && (
               <div className="editor-block editor-block--payment dh-stagger-2">
                 <InsurancePaymentSelector
                   userId={userId}
@@ -933,10 +950,11 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                   exam={examination} setExam={setExamination}
                   investigations={investigations} setInvestigations={setInvestigations}
                   errorMsg={smartQuotaNotice || isQuotaLimitError ? null : errorMsg}
-                  doctorSpecialty={doctorSpecialty}
-                />
+                  doctorSpecialty={doctorSpecialty} userId={userId} accountType={accountType}
+                  patientName={patientName} phone={phone} patientFileId={activePatientFileId}
+                  patientFileNumber={activePatientFileNumber} patientFileNameKey={activePatientFileNameKey}
+                  investigationImages={investigationImages} setInvestigationImages={setInvestigationImages} />
               </div>
-
               <div className="editor-block editor-block--analyze dh-stagger-4">
                 <section className="apple-action-card flex flex-col gap-2.5">
                   {/* الزرّين جنب بعض على الديسكتوب (md+)، فوق بعض على الموبايل */}

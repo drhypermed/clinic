@@ -36,13 +36,11 @@ import { Sidebar } from '../layout/Sidebar';
 // ملاحظة: كل الـ lazy imports للشاشات الرئيسية اتنقلت لـ MainAppViewRouter.tsx
 // عشان الـ bundle splitting يبقى في مكان واحد مع الـ JSX بتاعها.
 
-import { LoadingStateScreen } from './LoadingStateScreen';
 import { NotificationToast } from './NotificationToast';
 import { NotificationPermissionPrompt } from '../common/NotificationPermissionPrompt';
 import { AppUpdateBroadcastBanner } from '../common/AppUpdateBroadcastBanner';
 import { InAppAudienceNotificationPopup } from '../common/InAppAudienceNotificationPopup';
 import { MainAppViewRouter, preloadMainAppViewChunks } from './MainAppViewRouter';
-import type { AppView } from './utils';
 import { buildBasicPatientSuggestions, buildBreadcrumbs, VIEW_TAB_PARAM } from './utils';
 import { useMainAppRouteSync } from './hooks/useMainAppRouteSync';
 import { useMainAppProfile } from './hooks/useMainAppProfile';
@@ -67,6 +65,9 @@ import { ConfirmModal } from '../modals/ConfirmModal';
 import { WhatsAppDownloadGuideModal } from '../prescription/WhatsAppDownloadGuideModal';
 import { useBranches } from '../../hooks/useBranches';
 import { useHideBootSplash } from '../../hooks/useHideBootSplash';
+import { usePatientDirectorySuggestions } from '../../hooks/usePatientDirectorySuggestions';
+import { mergePatientSuggestions } from '../../services/patientSuggestionSearch';
+import type { BasicPatientSuggestion } from '../consultation/PatientInfoSection';
 
 export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = false }) => {
   // إخفاء السبلاش الأوّلي فور ما MainApp تعمل mount — ده بيضمن إن المستخدم
@@ -108,10 +109,13 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
     currentView, setCurrentView,
     notifications,
     showNotification,
-    patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
+    patientName, setPatientName, phone, setPhone,
+    addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
+    ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     weight, setWeight, height, setHeight, bmi, vitals, setVitals, updateVital,
     complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations,
+    investigationImages, setInvestigationImages,
     complaintEn, setComplaintEn, historyEn, setHistoryEn, examEn, setExamEn, investigationsEn, setInvestigationsEn, diagnosisEn, setDiagnosisEn,
     rxItems, generalAdvice, labInvestigations, usageStats,
     // setters المباشرة المضافة لمودال تحليل الحالة (إضافة فحوصات/نصائح)
@@ -137,7 +141,6 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
     updateAdvice, removeAdvice, updateLab, removeLab,
     dismissNotification,
     dismissSmartQuotaNotice,
-    openQuotaNoticeModal, // 🆕 لتمريره لـuseMainAppPrescriptionExport
     consultationDate, setConsultationDate,
     visitDate, setVisitDate,
     visitType, setVisitType,
@@ -205,7 +208,30 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
   // تحديث عنوان التاب في المتصفح ليعكس الموقع الحالي
   useBreadcrumbPageTitle(breadcrumbs);
 
-  const basicPatientSuggestions = useMemo(() => buildBasicPatientSuggestions(records), [records]);
+  const localBasicPatientSuggestions = useMemo(() => buildBasicPatientSuggestions(records), [records]);
+  const directoryPatientSuggestions = usePatientDirectorySuggestions({
+    userId,
+    branchId: activeBranchId || 'main',
+    nameQuery: patientName,
+    phoneQuery: phone,
+    enabled: currentView === 'prescription',
+  });
+  const basicPatientSuggestions = useMemo(() => mergePatientSuggestions<BasicPatientSuggestion>(
+    directoryPatientSuggestions.map((item) => ({
+      id: item.id,
+      patientFileId: item.patientFileId,
+      patientName: item.patientName,
+      phone: item.phone,
+      address: item.address,
+      ageText: item.age,
+      dateOfBirth: item.dateOfBirth,
+      lastExamDate: item.lastExamDate,
+      lastConsultationDate: item.lastConsultationDate,
+      patientFileNumber: item.patientFileNumber,
+      gender: item.gender,
+    })),
+    localBasicPatientSuggestions,
+  ), [directoryPatientSuggestions, localBasicPatientSuggestions]);
 
   // 🔒 أسرار الفروع — بعد تشديد 2026-05-10، الـ secret اتنقل لـ users/{uid}.bookingSecretByBranch.
   // محتاجين الـ map ده قبل useMainAppAppointments عشان branchSubscriptions تستخدمه (مش الموقع القديم
@@ -463,7 +489,8 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
     handleResetAndClearOpenedAppointment,
     handleOpenConsultation,
     navigateToView,
-    setPatientName, setPhone, setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
+    setPatientName, setPhone, setAddressGovernorate, setAddressCityArea, setAddressDetails,
+    setAgeYears, setAgeMonths, setAgeDays, setDateOfBirth,
     setGender, setPregnant, setGestationalAgeWeeks, setBreastfeeding,
     setVisitDate, setVisitType, setIsPastConsultationMode,
     setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey,
@@ -552,6 +579,9 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
               setAnalyzing={setAnalyzing}
               patientName={patientName} setPatientName={setPatientName}
               phone={phone} setPhone={setPhone}
+              addressGovernorate={addressGovernorate} setAddressGovernorate={setAddressGovernorate}
+              addressCityArea={addressCityArea} setAddressCityArea={setAddressCityArea}
+              addressDetails={addressDetails} setAddressDetails={setAddressDetails}
               ageYears={ageYears} setAgeYears={setAgeYears}
               ageMonths={ageMonths} setAgeMonths={setAgeMonths}
               ageDays={ageDays} setAgeDays={setAgeDays}
@@ -575,6 +605,7 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
               medicalHistory={medicalHistory} setMedicalHistory={setMedicalHistory}
               examination={examination} setExamination={setExamination}
               investigations={investigations} setInvestigations={setInvestigations}
+              investigationImages={investigationImages} setInvestigationImages={setInvestigationImages}
               handleFullAutomatedRX={handleFullAutomatedRX}
               handleQuickAddToRx={handleQuickAddToRx}
               handleDeepAnalyzeWithPopup={handleDeepAnalyzeWithPopup}

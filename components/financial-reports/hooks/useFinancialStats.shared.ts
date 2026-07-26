@@ -1,6 +1,8 @@
 import type { PatientRecord } from '../../../types';
 import type { DailyFinancialData, MonthlyFinancialData } from '../../../services/financial-data';
 import type { DailyInsuranceExtraEntry } from './useFinancialData';
+import type { DirectPaymentTotals } from '../../../utils/paymentMethods';
+import type { PaymentType } from '../../../types';
 
 export interface DayStats {
     exams: number;           // عدد الكشوفات
@@ -96,6 +98,7 @@ export interface PatientDailyBreakdown {
     cashAmount: number;
     insuranceAmount: number;
     companyName?: string;
+    paymentType?: PaymentType;
 }
 export interface UseFinancialStatsReturn {
     monthStats: MonthStats;
@@ -115,11 +118,13 @@ export interface UseFinancialStatsReturn {
     dailyConsultsIncome: number;
     dailyTotalRevenue: number;
     dailyCollectedCash: number; // النقد المحصل فعلياً اليوم (كاش + حصة المريض)
+    dailyDirectPaymentTotals: DirectPaymentTotals;
     dailyDiscountExpense: number;
     examsIncome: number;
     consultsIncome: number;
     totalIncome: number;       // إجمالي الفواتير (كاش + تأمين)
     collectedCash: number;     // النقد المحصّل فعلياً
+    directPaymentTotals: DirectPaymentTotals;
     insuranceClaims: number;   // مطالبات التأمين عند الشركات
     monthlyDiscountExpense: number;
     totalExpenses: number;

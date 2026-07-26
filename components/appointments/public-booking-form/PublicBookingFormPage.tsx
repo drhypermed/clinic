@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BookingSuccessCard } from '../BookingSuccessCard';
 import type { AppointmentType, PatientSuggestionOption, RecentExamPatientOption } from '../AddAppointmentForm';
-import type { PatientGender, PublicBookingSlot, PublicBranchInfo } from '../../../types';
+import type { PatientGender, PublicBranchInfo } from '../../../types';
 import {
   advancedAgeText,
   normalizeGender,

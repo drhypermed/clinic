@@ -16,6 +16,7 @@
 
 import type { PatientGender, VitalSigns } from '../types';
 import { generateContentWithSecurity, GEMINI_MODEL, tryParseJson } from './geminiUtils';
+import type { CaseAnalysisImage } from './patient-files/images';
 
 // ─── الواجهة الخارجية للنتائج ────────────────────────────────────────────
 /** عنصر واحد في قائمة التشخيصات التفريقية */
@@ -210,6 +211,7 @@ interface CaseAnalysisInput {
   medicalHistory: string;     // التاريخ المرضي
   examination: string;        // الفحص السريري
   investigations: string;     // فحوصات سابقة
+  images?: CaseAnalysisImage[];
   ageYears: number;
   ageMonths: number;
   ageDays: number;
@@ -299,7 +301,8 @@ Vitals: ${vitalsSummary}
 Complaint: ${toTrimmed(input.complaint) || 'NOT PROVIDED'}
 History: ${toTrimmed(input.medicalHistory) || 'NOT PROVIDED'}
 Exam: ${toTrimmed(input.examination) || 'NOT PROVIDED'}
-Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}${specialtyPackBlock}
+Prior investigations: ${toTrimmed(input.investigations) || 'NOT PROVIDED'}
+Attached investigation images: ${input.images?.length || 0}. Inspect attached images as supporting clinical evidence; describe only clearly visible findings and state uncertainty instead of guessing.${specialtyPackBlock}
 
 ═══ ABSOLUTE ANTI-HALLUCINATION RULES ═══
 1. Use ONLY the data provided above. NEVER invent symptoms, findings, history, or vital signs not stated.
@@ -398,6 +401,7 @@ COUNTS (all adaptive — be honest, not paranoid; never pad to fill quotas)
       temperature: 0,
       thinkingBudget: 1000,
       feature: 'case_analysis', // تتسجل في تقارير الاستهلاك تحت "تحليل الحالة"
+      images: input.images?.map(({ mimeType, data }) => ({ mimeType, data })),
     });
 
     const parsed = tryParseJson(responseText || '{}');

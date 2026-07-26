@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection } from 'firebase/firestore';
 import { getDocsCacheFirst } from '../../services/firestore/cacheFirst';
-import type { PatientRecord } from '../../types';
+import type { PatientAddress, PatientRecord } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../services/firebaseConfig';
 import { normalizePatientNameForFile, patientFilesService } from '../../services/patient-files';
@@ -20,8 +20,14 @@ import { PatientFileDetailsModal } from './PatientFileDetailsModal';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { StatCard } from '../records/recordsViewParts';
 import { useDoctorPatientSummaries } from '../../hooks/useDoctorPatientSummaries';
+import {
+  formatPatientAddress,
+  normalizePatientAddress,
+  patientAddressSearchText,
+} from '../../utils/patientAddress';
 
 interface PatientFilesPageProps {
+  accountType?: 'free' | 'premium' | 'plus' | 'pro_max';
   records: PatientRecord[];
   onLoadRecord: (record: PatientRecord) => void;
   onLoadConsultation: (record: PatientRecord) => void;
@@ -46,6 +52,7 @@ type PatientFilesSortOption =
 const PATIENT_FILES_PAGE_SIZE = 10;
 
 export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
+  accountType,
   records,
   onLoadRecord,
   onLoadConsultation,
@@ -60,6 +67,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(PATIENT_FILES_PAGE_SIZE);
   const [settingsPhonesByNameKey, setSettingsPhonesByNameKey] = useState<Record<string, string[]>>({});
+  const [settingsAddressByNameKey, setSettingsAddressByNameKey] = useState<Record<string, PatientAddress>>({});
   const [appointmentPhonesByNameKey, setAppointmentPhonesByNameKey] = useState<Record<string, string[]>>({});
   const [additionalInfoByNameKey, setAdditionalInfoByNameKey] = useState<Record<string, string>>({});
   const seniorityIndexRunRef = useRef<{ userId: string; recordCount: number } | null>(null);
@@ -95,6 +103,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
           fileNumber: s.patientFileNumber,
           fileId: s.patientFileId,
           phones: Array.isArray(s.phones) ? s.phones : [],
+          address: s.address,
           visits: [], // ما بنحفظهاش في الـsummary — modal بيجيبها lazy عند الحاجة
           examCount: s.totalExams,
           consultationCount: s.totalConsultations,
@@ -117,6 +126,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
           fileId: existing.fileId || localFile.fileId,
           fileNumber: isPositiveFileNumber(existing.fileNumber) ? existing.fileNumber : localFile.fileNumber,
           phones: uniqueTrimmed([...existing.phones, ...localFile.phones]),
+          address: localFile.address || existing.address,
           visits: localFile.visits.length > 0 ? localFile.visits : existing.visits,
           examCount: Math.max(existing.examCount, localFile.examCount),
           consultationCount: Math.max(existing.consultationCount, localFile.consultationCount),
@@ -162,6 +172,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
   useEffect(() => {
     if (!userId) {
       setSettingsPhonesByNameKey({});
+      setSettingsAddressByNameKey({});
       setAdditionalInfoByNameKey({});
       return;
     }
@@ -174,6 +185,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         if (cancelled) return;
 
         const nextPhonesByNameKey: Record<string, string[]> = {};
+        const nextAddressByNameKey: Record<string, PatientAddress> = {};
         const nextAdditionalInfoByNameKey: Record<string, string> = {};
         settingsSnap.docs.forEach((snap) => {
           if (!snap.id.startsWith(PATIENT_FILE_DOC_PREFIX)) return;
@@ -186,6 +198,10 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
           if (additionalInfoText) {
             nextAdditionalInfoByNameKey[nameKey] = additionalInfoText;
           }
+          const address = normalizePatientAddress(
+            data.address as Parameters<typeof normalizePatientAddress>[0],
+          );
+          if (address) nextAddressByNameKey[nameKey] = address;
 
           const phoneCandidates = uniqueTrimmed([
             String(data.phone || '').trim(),
@@ -202,6 +218,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         });
 
         setSettingsPhonesByNameKey(nextPhonesByNameKey);
+        setSettingsAddressByNameKey(nextAddressByNameKey);
         setAdditionalInfoByNameKey(nextAdditionalInfoByNameKey);
       } catch (error) {
         console.error('Error loading patient file phones from settings:', error);
@@ -271,8 +288,9 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
         ...(appointmentPhonesByNameKey[file.key] || []),
       ]),
       additionalInfo: additionalInfoByNameKey[file.key] || '',
+      address: settingsAddressByNameKey[file.key] || file.address,
     }));
-  }, [patientFiles, settingsPhonesByNameKey, appointmentPhonesByNameKey, additionalInfoByNameKey]);
+  }, [patientFiles, settingsPhonesByNameKey, settingsAddressByNameKey, appointmentPhonesByNameKey, additionalInfoByNameKey]);
 
   const filteredPatientFiles = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -281,10 +299,12 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
     return patientFilesWithPhones.filter((file) => {
       const fileNumberText = String(file.fileNumber || '');
       const phoneMatch = file.phones.some((phone) => phone.toLowerCase().includes(term));
+      const addressMatch = patientAddressSearchText(file.address).includes(term);
       return (
         file.name.toLowerCase().includes(term)
         || fileNumberText.includes(term)
         || phoneMatch
+        || addressMatch
       );
     });
   }, [patientFilesWithPhones, searchTerm]);
@@ -402,6 +422,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
     patientFileNameKey?: string;
     patientName: string;
     phone?: string;
+    address?: PatientAddress;
     ageYears?: string;
     ageMonths?: string;
     ageDays?: string;
@@ -410,19 +431,30 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
       throw new Error('يجب تسجيل الدخول أولاً.');
     }
 
-    return patientFilesService.syncPatientIdentityByFile({
+    const result = await patientFilesService.syncPatientIdentityByFile({
       userId,
       patientFileId: payload.patientFileId,
       patientFileNumber: payload.patientFileNumber,
       patientFileNameKey: payload.patientFileNameKey,
       patientName: payload.patientName,
       phone: payload.phone,
+      address: payload.address,
       age: {
         years: payload.ageYears,
         months: payload.ageMonths,
         days: payload.ageDays,
       },
     });
+    if (result) {
+      setSettingsAddressByNameKey((previous) => {
+        const next = { ...previous };
+        const address = normalizePatientAddress(payload.address);
+        if (address) next[result.patientFileNameKey] = address;
+        else delete next[result.patientFileNameKey];
+        return next;
+      });
+    }
+    return result;
   };
 
   const handleSaveAdditionalInfo = async (payload: {
@@ -484,7 +516,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
           <input
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="ابحث بالاسم أو رقم الملف أو الهاتف..."
+            placeholder="ابحث بالاسم أو رقم الملف أو الهاتف أو العنوان..."
             className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 font-medium text-slate-800 placeholder-slate-400 text-sm focus:ring-2 focus:ring-brand-100 focus:border-brand-400 outline-none transition-all"
           />
         </div>
@@ -545,6 +577,11 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
                   </div>
                   <div className="mt-1 text-[12px] font-medium text-brand-100">
                     <span className="truncate block">{file.phones.length > 0 ? file.phones.join(' | ') : 'لا يوجد هاتف مسجل'}</span>
+                    {formatPatientAddress(file.address, 'summary') && (
+                      <span className="mt-0.5 block truncate text-[11px] text-white/80">
+                        {formatPatientAddress(file.address, 'summary')}
+                      </span>
+                    )}
                     {file.phones.length > 0 && (
                       <div className="mt-1">
                         <PatientContactActions phone={file.phones[0]} compact preventParentClick />
@@ -596,6 +633,7 @@ export const PatientFilesPage: React.FC<PatientFilesPageProps> = ({
       )}
 
       <PatientFileDetailsModal
+        accountType={accountType}
         patientFile={selectedPatientFile}
         onClose={() => setSelectedKey(null)}
         onEditExamVisit={(record) => {

@@ -3,15 +3,6 @@ export { getCairoDayKey } from '../../utils/cairoTime';
 
 export const SMART_QUOTA_NOTICE_STORAGE_KEY = 'dr_hyper_smart_quota_notice';
 
-// Helper to parse numbers including Arabic numerals
-const parseNum = (str: string | number): string => {
-    if (typeof str === 'number') return str.toString();
-    if (!str) return '';
-    const englishStr = str.toString().replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
-    // Return as string to keep state type consistent (React state is string for inputs usually)
-    return englishStr;
-};
-
 /** تنظيف القيم المفقودة والدوال والقيم غير الصالحة من Firestore */
 export function sanitizeForFirestore(value: unknown): unknown {
     if (value === undefined || typeof value === 'function') return undefined;

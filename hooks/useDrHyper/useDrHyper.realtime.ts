@@ -709,7 +709,7 @@ export const useDrHyperRealtimeData = ({
       setReadyPrescriptions(loadedPresets);
     };
 
-    const unsubscribe = onSnapshot(q, handleSnap, (error) => {
+    const unsubscribe = onSnapshot(q, handleSnap, () => {
       showNotificationRef.current('حدث خطأ في تحميل الروشتات الجاهزة', 'error');
     });
 

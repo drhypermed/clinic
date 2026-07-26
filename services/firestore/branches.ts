@@ -354,6 +354,10 @@ export const branchesService = {
                 // الـ publicBookingSecret موحّد لكل العيادة (مش لكل فرع) → قراءته من user root
                 const userRootSnap = await getDoc(doc(db, 'users', userId));
                 const publicSecret = String((userRootSnap.data() as { publicBookingSecret?: string } | undefined)?.publicBookingSecret || '').trim();
+                const secretaryUsername = String(
+                    (userRootSnap.data() as { secretaryUsernameByBranch?: Record<string, unknown> } | undefined)
+                        ?.secretaryUsernameByBranch?.[branchId] || ''
+                ).trim().toLowerCase();
 
                 // مسح الـslots المتاحه للحجز العام اللي تخص الفرع المحذوف فقط (الـwhere بيفلتر بالـbranchId)
                 if (publicSecret) {
@@ -424,6 +428,9 @@ export const branchesService = {
                         userRootMain
                             ? deleteDoc(doc(db, 'secretaryAuth', userRootMain, 'branches', branchId)).catch(() => undefined)
                             : Promise.resolve(),
+                        secretaryUsername
+                            ? deleteDoc(doc(db, 'secretaryUsernameIndex', secretaryUsername)).catch(() => undefined)
+                            : Promise.resolve(),
                     ]);
 
                     // (ج) أخيراً: bookingConfig/{branchSecret} نفسه — بعد ما كل
@@ -439,6 +446,7 @@ export const branchesService = {
                     [`secretaryVitalsVisibilityByBranch.${branchId}`]: deleteField(),
                     [`secretaryVitalFieldsByBranch.${branchId}`]: deleteField(),
                     [`secretaryPasswordPlainByBranch.${branchId}`]: deleteField(),
+                    [`secretaryUsernameByBranch.${branchId}`]: deleteField(),
                     [`bookingSecretByBranch.${branchId}`]: deleteField(),
                 }).catch(() => undefined);
             } catch (cleanupError) {

@@ -17,7 +17,6 @@ import {
   requestPermissionAndSaveTokenForSecretaryWithDetails,
   showForegroundSystemNotification,
 } from '../../../services/messagingService';
-import { firestoreService } from '../../../services/firestore';
 import { entryConversations } from '../../../services/firestore/entryConversations';
 import { resolveNotificationActionStatus } from '../../../utils/notificationAction';
 import { SECRETARY_TOAST_AUTO_HIDE_MS } from './constants';

@@ -1,4 +1,7 @@
 import React from 'react';
+import type { DirectPaymentTotals } from '../../../utils/paymentMethods';
+import { DIRECT_PAYMENT_TYPES, getPaymentMethodLabel } from '../../../utils/paymentMethods';
+import { PaymentMethodIcon } from '../../common/PaymentMethodIcon';
 import { formatCurrency } from '../utils/formatters';
 
 interface MonthlyRevenueSectionProps {
@@ -14,6 +17,7 @@ interface MonthlyRevenueSectionProps {
     totalIncome: number;
     collectedCash?: number;
     insuranceClaims?: number;
+    directPaymentTotals?: DirectPaymentTotals;
 }
 
 export const MonthlyRevenueSection: React.FC<MonthlyRevenueSectionProps> = ({
@@ -29,6 +33,7 @@ export const MonthlyRevenueSection: React.FC<MonthlyRevenueSectionProps> = ({
     totalIncome,
     collectedCash,
     insuranceClaims,
+    directPaymentTotals,
 }) => {
     // المسميات بتوصل مُنظّفة من services/financial-data/labels.ts (auto-migration)
     const displayInterventionsLabel = (interventionsLabel || '').trim() || 'التداخلات';
@@ -97,9 +102,22 @@ export const MonthlyRevenueSection: React.FC<MonthlyRevenueSectionProps> = ({
                     {totalIncome > 0 && (collectedCash !== undefined || insuranceClaims !== undefined) && (
                         <div className="space-y-2">
                             <div className="flex items-center justify-between bg-gradient-to-r from-success-600 to-success-500 rounded-xl px-3 py-2.5">
-                                <span className="text-sm font-bold text-white">💵 نقد محصّل</span>
+                                <span className="text-sm font-bold text-white">💳 تحصيل مباشر</span>
                                 <span className="text-sm font-black text-white">{formatCurrency(collectedCash ?? totalIncome)}</span>
                             </div>
+                            {directPaymentTotals && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    {DIRECT_PAYMENT_TYPES.map((type) => (
+                                        <div key={type} className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-black">
+                                                <PaymentMethodIcon type={type} className="h-3.5 w-3.5" />
+                                                {getPaymentMethodLabel(type)}
+                                            </span>
+                                            <span className="text-xs font-black">{formatCurrency(directPaymentTotals[type] || 0)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                             {(insuranceClaims ?? 0) > 0 && (
                                 <div className="flex items-center justify-between bg-gradient-to-r from-brand-600 to-brand-500 rounded-xl px-3 py-2.5">
                                     <span className="text-sm font-bold text-white">🏢 مطالبات تأمين</span>

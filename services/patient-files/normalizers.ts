@@ -47,6 +47,8 @@ export const normalizePatientNameForFile = (name?: string): string => {
     if (!raw) return '';
 
     let result = raw
+        // توحيد أشكال Unicode المتكافئة قبل معالجة الحروف العربية.
+        .normalize('NFKC')
         // 1. شيل التشكيل العربي (التنوين، الفتحة، الكسرة، الضمة، الشدة، السكون، إلخ)
         .replace(/[\u064B-\u0652\u0670\u0640]/g, '')
         // 2. توحيد الألف بكل أشكالها

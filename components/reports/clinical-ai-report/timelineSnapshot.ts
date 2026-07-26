@@ -1,5 +1,6 @@
 import { extractVisitContent, formatPatientFileDateLabel } from '../../patient-files/patientFilesShared';
 import type { PatientFileData } from '../../patient-files/patientFilesShared';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 import type {
   ClinicalReportLanguage,
@@ -277,6 +278,7 @@ export const buildPatientClinicalTimelineSnapshot = (
     patientName: resolvePatientNameForReport(toText(patientFile.name), language),
     patientFileNumber: patientFile.fileNumber,
     patientPhone: phoneCandidates[0],
+    patientAddress: formatPatientAddress(patientFile.address || latestVisitRecord?.address) || undefined,
     patientAge: age,
     patientAgeTextAr: buildAgeTextAr(age),
     patientAgeTextEn: buildAgeTextEn(age),

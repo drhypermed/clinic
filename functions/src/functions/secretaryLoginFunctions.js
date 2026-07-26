@@ -1,6 +1,7 @@
 ﻿const {
   normalizeEmail,
   normalizeText,
+  isValidSecretaryUsername,
   normalizeSecret,
   SECRET_PATTERN,
   timestampToMs,
@@ -21,17 +22,47 @@
   assertSecretarySessionForBranch,
   normalizeOptionalText,
 } = require('./secretaryLoginHelpers');
+const { parseSecretaryLoginIdentifier, resolveSecretaryUsernameLoginTarget } =
+  require('./secretaryUsernameFunctions');
+const { isPendingAppointmentExpired } = require('../appointmentRetention');
+
+const SUPPORTED_PAYMENT_TYPES = new Set([
+  'cash',
+  'instapay',
+  'wallet',
+  'bank_transfer',
+  'insurance',
+  'discount',
+]);
+
+const normalizePaymentType = (value) => {
+  const normalized = normalizeText(value).toLowerCase();
+  return SUPPORTED_PAYMENT_TYPES.has(normalized) ? normalized : 'cash';
+};
+
+const normalizePatientAddressValue = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const address = {};
+  const governorate = normalizeText(value.governorate).slice(0, 120);
+  const cityArea = normalizeText(value.cityArea).slice(0, 160);
+  const details = normalizeText(value.details).slice(0, 300);
+  if (governorate) address.governorate = governorate;
+  if (cityArea) address.cityArea = cityArea;
+  if (details) address.details = details;
+  return Object.keys(address).length > 0 ? address : null;
+};
 
 module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
-  const secretaryLoginWithDoctorEmail = async (request) => {
-    const doctorEmail = normalizeEmail(request?.data?.doctorEmail);
+  const secretaryLogin = async (request) => {
+    const { loginIdentifier, secretaryUsername } =
+      parseSecretaryLoginIdentifier(request?.data);
     const requestedSecret = normalizeSecret(request?.data?.secret);
     const secretaryPassword = normalizeText(request?.data?.secretaryPassword);
-    if (!doctorEmail && !requestedSecret) {
+    if (!loginIdentifier) {
       throw new HttpsError('invalid-argument', 'MISSING_LOGIN_IDENTIFIER');
     }
-    if (doctorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(doctorEmail)) {
-      throw new HttpsError('invalid-argument', 'INVALID_DOCTOR_EMAIL');
+    if (!isValidSecretaryUsername(secretaryUsername)) {
+      throw new HttpsError('invalid-argument', 'INVALID_SECRETARY_USERNAME');
     }
     if (requestedSecret && !SECRET_PATTERN.test(requestedSecret)) {
       throw new HttpsError('invalid-argument', 'INVALID_SECRET');
@@ -42,7 +73,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const db = getDb();
     const nowMs = Date.now();
     const nowTs = admin.firestore.Timestamp.fromMillis(nowMs);
-    const rateLimitKey = buildRateLimitKey(doctorEmail, requestedSecret);
+    const rateLimitKey = buildRateLimitKey(loginIdentifier, requestedSecret);
     const rateLimitRef = db.collection(SECRETARY_LOGIN_RATE_LIMIT_COLLECTION).doc(rateLimitKey);
     const registerFailedAttempt = async () => {
       try {
@@ -87,91 +118,26 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       }
     }
 
-    const findSecretByUserId = async (uid) => {
-      const normalizedUserId = normalizeText(uid);
-      if (!normalizedUserId) return '';
-      // 🔒 إصلاح 2026-05-11: نقرأ الـmain secret من users/{uid}.bookingSecret أولاً.
-      // كان الكود بيبحث في bookingConfig بـuserId ويرجع أول match — ده بيرجع
-      // **أي** فرع للطبيب عشوائياً (لو عنده فروع متعددة، كل واحد له bookingConfig).
-      // النتيجة: السكرتيرة بتدخل بـsecret لفرع غير اللي الطبيب بيكتب عليه،
-      // فالـentryAlert ما يوصلش (الـ"تم الإرسال" بيظهر بس مفيش قراءة).
-      try {
-        const userSnap = await db.collection('users').doc(normalizedUserId).get();
-        if (userSnap.exists) {
-          const mainSecret = normalizeSecret(userSnap.data()?.bookingSecret);
-          if (mainSecret) return mainSecret;
-        }
-      } catch {
-        // لو فشل، نكمّل بالـfallback القديم
-      }
-      // Fallback: لو user doc مش موجود/مفيهوش bookingSecret، نلجأ للبحث القديم.
-      const cfgByUser = await db.collection('bookingConfig').where('userId', '==', normalizedUserId).limit(1).get();
-      if (cfgByUser.empty) return '';
-      return normalizeSecret(cfgByUser.docs[0].id);
-    };
-
     let userId = '';
     let secret = '';
-    let resolvedDoctorEmail = doctorEmail;
+    let authSecret = '';
+    let usernameBranchId = '';
+    let resolvedDoctorEmail = '';
     let configData = {};
-
-    if (requestedSecret) {
-      secret = requestedSecret;
-      const configSnap = await db.collection('bookingConfig').doc(secret).get();
-      if (!configSnap.exists) {
-        await failWithRateLimit('permission-denied', 'INVALID_CREDENTIALS');
-      }
-
-      configData = configSnap.data() || {};
-      userId = normalizeText(configData.userId);
-      if (!userId) {
-        await failWithRateLimit('permission-denied', 'INVALID_CREDENTIALS');
-      }
-
-      const configDoctorEmail = normalizeEmail(configData.doctorEmail);
-      resolvedDoctorEmail = configDoctorEmail || resolvedDoctorEmail;
-      if (doctorEmail && configDoctorEmail && doctorEmail !== configDoctorEmail) {
-        await failWithRateLimit('permission-denied', 'DOCTOR_EMAIL_SECRET_MISMATCH');
-      }
-    } else {
-      const indexSnap = await db.collection('secretaryLoginIndex').doc(doctorEmail).get();
-      if (indexSnap.exists) {
-        const indexData = indexSnap.data() || {};
-        userId = normalizeText(indexData.userId);
-        secret = await findSecretByUserId(userId);
-      }
-
-      if (!userId || !secret) {
-        const usersRef = db.collection('users');
-        const [byDoctorEmail, byEmail] = await Promise.all([
-          usersRef.where('doctorEmail', '==', doctorEmail).limit(1).get(),
-          usersRef.where('email', '==', doctorEmail).limit(1).get(),
-        ]);
-
-        const matchedUser = byDoctorEmail.docs[0] || byEmail.docs[0];
-        if (!matchedUser) {
-          await failWithRateLimit('permission-denied', 'INVALID_CREDENTIALS');
-        }
-
-        userId = matchedUser.id;
-        const userData = matchedUser.data() || {};
-        secret = normalizeSecret(userData.bookingSecret);
-        resolvedDoctorEmail = normalizeEmail(userData.doctorEmail) || doctorEmail;
-        if (!secret) {
-          secret = await findSecretByUserId(userId);
-        }
-      }
-
-      if (!userId || !secret) {
-        await failWithRateLimit('permission-denied', 'INVALID_CREDENTIALS');
-      }
-
-      const configSnap = await db.collection('bookingConfig').doc(secret).get();
-      configData = configSnap.exists ? (configSnap.data() || {}) : {};
-      if (!resolvedDoctorEmail) {
-        resolvedDoctorEmail = normalizeEmail(configData.doctorEmail) || doctorEmail;
-      }
-    }
+    const target = await resolveSecretaryUsernameLoginTarget({
+      db,
+      secretaryUsername,
+      requestedSecret,
+      failWithRateLimit,
+    });
+    userId = target.userId;
+    usernameBranchId = target.branchId;
+    secret = target.secret;
+    authSecret = target.authSecret;
+    configData = target.configData;
+    resolvedDoctorEmail = normalizeEmail(configData.doctorEmail)
+      || normalizeEmail(target.userData.doctorEmail)
+      || normalizeEmail(target.userData.email);
 
     await assertDoctorAccountIsActiveForSecretaryLogin({
       db,
@@ -183,17 +149,17 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const auth = await readSecretaryAuthData({
       db,
       admin,
-      secret,
+      secret: authSecret || secret,
       userId,
       doctorEmail: resolvedDoctorEmail,
       configData,
     });
 
-    const preferredBranchId = String(request?.data?.preferredBranchId || '').trim();
+    const preferredBranchId = usernameBranchId;
     let matchResult;
     try {
       matchResult = await tryMatchSecretaryPasswordAcrossBranches({
-        db, admin, auth, secret, userId, secretaryPassword, resolvedDoctorEmail,
+        db, admin, auth, secret: authSecret || secret, userId, secretaryPassword, resolvedDoctorEmail,
         verifyPassword: verifySecretaryPassword,
         hashPassword: hashSecretaryPassword,
         generateSessionToken,
@@ -216,9 +182,13 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
 
     const matchedBranchId = matchResult?.matchedBranchId || null;
     const matchedSessionToken = matchResult?.sessionToken || null;
-    const usedMainPath = matchResult?.usedMainPath || false;
 
-    if (!matchedBranchId && !(await hasAnySecretaryPassword({ db, auth, secret, userId }))) {
+    if (!matchedBranchId && !(await hasAnySecretaryPassword({
+      db,
+      auth,
+      secret: authSecret || secret,
+      userId,
+    }))) {
       throw new HttpsError('failed-precondition', 'SECRETARY_PASSWORD_NOT_SET', {
         status: 'SECRETARY_PASSWORD_NOT_SET',
       });
@@ -264,19 +234,6 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       },
       { merge: true }
     );
-
-    if (resolvedDoctorEmail && usedMainPath) {
-      await db.collection('secretaryLoginIndex').doc(resolvedDoctorEmail).set(
-        {
-          doctorEmail: resolvedDoctorEmail,
-          userId,
-          secret: admin.firestore.FieldValue.delete(),
-          hasPasswordHash: true,
-          updatedAt: nowTs,
-        },
-        { merge: true }
-      );
-    }
 
     let customAuthToken = '';
     try {
@@ -356,13 +313,6 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
   const normalizeAppointmentType = (value) => {
     const normalized = normalizeText(value).toLowerCase();
     return normalized === 'consultation' ? 'consultation' : 'exam';
-  };
-
-  const normalizePaymentType = (value) => {
-    const normalized = normalizeText(value).toLowerCase();
-    if (normalized === 'insurance') return 'insurance';
-    if (normalized === 'discount') return 'discount';
-    return 'cash';
   };
 
   const normalizeDiscountNumber = (value) => {
@@ -525,6 +475,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const age = normalizeOptionalText(appointmentInput.age);
     const dateOfBirth = normalizeOptionalText(appointmentInput.dateOfBirth);
     const phone = normalizeText(appointmentInput.phone);
+    const address = normalizePatientAddressValue(appointmentInput.address);
     const dateTime = normalizeText(appointmentInput.dateTime);
     const visitReason = normalizeOptionalText(appointmentInput.visitReason);
     const specialtyConfigData = await resolveConfigWithDoctorSpecialty(db, configData);
@@ -572,6 +523,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       dateOfBirth: dateOfBirth || admin.firestore.FieldValue.delete(),
       // التليفون اختياري — نحذف الحقل لو فاضي بدل تخزين سلسلة فارغة
       phone: phone || admin.firestore.FieldValue.delete(),
+      address: address || admin.firestore.FieldValue.delete(),
       dateTime,
       visitReason: visitReason || admin.firestore.FieldValue.delete(),
       secretaryVitals: secretaryVitals || admin.firestore.FieldValue.delete(),
@@ -666,6 +618,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
 
     const patientName = normalizeText(appointmentInput.patientName);
     const phone = normalizeText(appointmentInput.phone);
+    const address = normalizePatientAddressValue(appointmentInput.address);
     const dateTime = normalizeText(appointmentInput.dateTime);
 
     // الاسم والتاريخ فقط إلزامي — التليفون وسبب الزيارة اختياريان (متناسق مع UI).
@@ -714,6 +667,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     };
 
     if (phone) appointmentData.phone = phone;
+    if (address) appointmentData.address = address;
     if (age) appointmentData.age = age;
     if (dateOfBirth) appointmentData.dateOfBirth = dateOfBirth;
     if (visitReason) appointmentData.visitReason = visitReason;
@@ -800,6 +754,16 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (data.age) out.age = String(data.age).slice(0, 32);
     if (data.dateOfBirth) out.dateOfBirth = String(data.dateOfBirth).slice(0, 10);
     if (data.phone) out.phone = String(data.phone).slice(0, 20);
+    if (data.address && typeof data.address === 'object' && !Array.isArray(data.address)) {
+      const address = {};
+      const governorate = normalizeText(data.address.governorate).slice(0, 120);
+      const cityArea = normalizeText(data.address.cityArea).slice(0, 160);
+      const details = normalizeText(data.address.details).slice(0, 300);
+      if (governorate) address.governorate = governorate;
+      if (cityArea) address.cityArea = cityArea;
+      if (details) address.details = details;
+      if (Object.keys(address).length > 0) out.address = address;
+    }
     if (data.visitReason) out.visitReason = String(data.visitReason).slice(0, 400);
     if (typeof data.isFirstVisit === 'boolean') out.isFirstVisit = data.isFirstVisit;
     if (data.secretaryVitals) out.secretaryVitals = data.secretaryVitals;
@@ -864,19 +828,50 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     await assertSecretarySessionForBranch({ db, secret, mainAuth: auth, branchId, sessionToken, HttpsError });
     await assertBranchBelongsToDoctor({ db, userId, branchId, HttpsError });
 
-    // جلب كل المواعيد لهذا الطبيب (نفلترها بالفرع هنا بدل where عشان لا نفتقد للـ index)
+    // نحتاج فقط مواعيد اليوم/القادمة والمنفذة حديثاً. القراءة القديمة كانت
+    // تسحب تاريخ كل المواعيد ثم تفلتره في الذاكرة، فتكلفتها تزيد مع عمر الحساب.
+    // نستعلم بفترتين: واحدة حسب موعد الحجز، وأخرى حسب وقت التنفيذ، حتى نظل
+    // نُظهر موعداً نُفذ حديثاً ولو كان تاريخ حجزه أقدم من 30 يوماً.
     const appointmentsRef = db.collection('users').doc(userId).collection('appointments');
-    const snap = await appointmentsRef.get().catch((err) => {
-      console.error('[listAppointmentsForSecretary] Failed to read appointments:', err);
+    const thirtyDaysAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgoIso = new Date(thirtyDaysAgoMs).toISOString();
+    const isMainBranch = branchId === DEFAULT_BRANCH_ID;
+    const recentAppointmentsQuery = isMainBranch
+      ? appointmentsRef.where('dateTime', '>=', thirtyDaysAgoIso)
+      : appointmentsRef
+        .where('branchId', '==', branchId)
+        .where('dateTime', '>=', thirtyDaysAgoIso);
+    const recentlyCompletedQuery = isMainBranch
+      ? appointmentsRef.where('examCompletedAt', '>=', thirtyDaysAgoIso)
+      : appointmentsRef
+        .where('branchId', '==', branchId)
+        .where('examCompletedAt', '>=', thirtyDaysAgoIso);
+
+    const [recentAppointmentsSnap, recentlyCompletedSnap] = await Promise.all([
+      recentAppointmentsQuery.get(),
+      recentlyCompletedQuery.get(),
+    ]).catch((err) => {
+      console.error('[listAppointmentsForSecretary] Failed to read relevant appointments:', err);
       throw new HttpsError('internal', 'FAILED_TO_LIST_APPOINTMENTS');
     });
 
-    const thirtyDaysAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    // نفس الموعد قد يظهر في الاستعلامين؛ نحتفظ به مرة واحدة فقط.
+    const appointmentDocs = new Map();
+    recentAppointmentsSnap.docs.forEach((appointmentDoc) => {
+      appointmentDocs.set(appointmentDoc.id, appointmentDoc);
+    });
+    recentlyCompletedSnap.docs.forEach((appointmentDoc) => {
+      appointmentDocs.set(appointmentDoc.id, appointmentDoc);
+    });
+
     const today = [];
     const upcoming = [];
     const completed = [];
+    const expiredPendingRefs = [];
 
-    snap.docs.forEach((doc) => {
+    const nowMs = Date.now();
+
+    appointmentDocs.forEach((doc) => {
       const data = doc.data() || {};
       const aptBranchId = normalizeText(data.branchId) || DEFAULT_BRANCH_ID;
       if (aptBranchId !== branchId) return;
@@ -887,19 +882,37 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       if (!aptDayStr) return;
 
       const compact = compactAppointmentForSecretary(doc);
-      const isCompleted = Boolean(data.examCompletedAt);
+      const isCompleted = data.appointmentStatus === 'completed' || Boolean(data.examCompletedAt);
 
       if (isCompleted) {
         const completedMs = Date.parse(String(data.examCompletedAt || ''));
         if (Number.isFinite(completedMs) && completedMs < thirtyDaysAgoMs) return;
         completed.push(compact);
-      } else if (aptDayStr === todayStr) {
-        today.push(compact);
-      } else if (aptDayStr > todayStr) {
-        upcoming.push(compact);
+      } else {
+        // نحتفظ بالموعد غير المنفذ 24 ساعة كاملة بعد وقته، حتى لو عبر منتصف الليل.
+        if (isPendingAppointmentExpired(dateTime, nowMs)) {
+          expiredPendingRefs.push(doc.ref);
+          return;
+        }
+        if (aptDayStr <= todayStr) {
+          today.push(compact);
+        } else {
+          upcoming.push(compact);
+        }
       }
-      // لو aptDayStr < todayStr وغير مكتمل: نتجاهل (مواعيد قديمة لم تنفذ)
     });
+
+    // حذف best-effort: وجود السكرتارية وحدها يكفي لتنظيف الموعد بعد انتهاء المهلة.
+    // نستخدم دفعات أقل من حد Firestore (500 عملية) ولا نعطّل عرض القائمة لو فشل التنظيف.
+    for (let offset = 0; offset < expiredPendingRefs.length; offset += 400) {
+      const batch = db.batch();
+      expiredPendingRefs.slice(offset, offset + 400).forEach((ref) => batch.delete(ref));
+      try {
+        await batch.commit();
+      } catch {
+        // Best-effort only: the doctor subscription retries cleanup on its next snapshot.
+      }
+    }
 
     today.sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
     upcoming.sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
@@ -1048,7 +1061,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
   };
 
   return {
-    secretaryLoginWithDoctorEmail,
+    secretaryLogin,
+    secretaryLoginWithDoctorEmail: secretaryLogin,
     deleteAppointmentBySecretary,
     updateAppointmentBySecretary,
     createAppointmentBySecretary,
@@ -1057,3 +1071,5 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     getBookingConfigPublicMetadata,
   };
 };
+
+module.exports.normalizePaymentType = normalizePaymentType;

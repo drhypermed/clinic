@@ -8,6 +8,7 @@
  */
 
 import type {
+  PatientAddress,
   PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
@@ -18,6 +19,7 @@ import type {
 export interface BookingConfigView {
   userId: string;
   username?: string;
+  secretaryUsername?: string;
   passwordHash?: string;
   doctorDisplayName?: string;
   doctorSpecialty?: string;
@@ -55,6 +57,7 @@ export interface BookingConfigTodayAppointment {
   age?: string;
   dateOfBirth?: string;
   phone?: string;
+  address?: PatientAddress;
   visitReason?: string;
   secretaryVitals?: SecretaryVitalsInput;
   dateTime: string;
@@ -92,6 +95,7 @@ export interface RecentExamPatient {
   age?: string;
   dateOfBirth?: string;
   phone?: string;
+  address?: PatientAddress;
   examCompletedAt: string;
   consultationCompletedAt?: string;
   consultationCompletedDates?: string[];
@@ -106,6 +110,7 @@ export interface PatientDirectoryItem {
   patientName: string;
   age?: string;
   phone?: string;
+  address?: PatientAddress;
   lastExamDate?: string;
   lastConsultationDate?: string;
   patientFileNumber?: number;

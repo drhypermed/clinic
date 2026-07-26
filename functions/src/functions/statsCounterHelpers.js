@@ -27,6 +27,7 @@ const normalizePatientNameForFile = (name) => {
   if (!raw) return '';
 
   return raw
+    .normalize('NFKC')
     .replace(/[ً-ْٰـ]/g, '')
     .replace(/[أإآٱ]/g, 'ا')
     .replace(/ى/g, 'ي')

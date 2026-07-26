@@ -9,6 +9,7 @@
  */
 import type { AppointmentType, PatientSuggestionOption, RecentExamPatientOption } from '../AddAppointmentForm';
 import type {
+  PatientAddress,
   PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
@@ -43,9 +44,11 @@ export type BookingQuotaNotice = {
   whatsappNumber: string;
 };
 
-// بيانات الاعتماد الخاصة بدخول السكرتارية (كلمة السر، التوكن، إيميل الطبيب)
+// بيانات الاعتماد الخاصة بدخول السكرتارية (معرّف الدخول والتوكن)
 export type SecretaryAuthCredentials = {
   sessionToken?: string;
+  loginIdentifier?: string;
+  /** Legacy metadata retained while old email-based sessions are supported. */
   doctorEmail?: string;
 };
 
@@ -64,6 +67,7 @@ export type TodayAppointment = {
   patientName: string;
   age?: string;
   phone?: string;
+  address?: PatientAddress;
   visitReason?: string;
   /** أول زيارة؟ — من فورم الجمهور، لمساعدة السكرتارية في ربط المريض بملف سابق */
   isFirstVisit?: boolean;

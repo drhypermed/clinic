@@ -2,6 +2,25 @@
 const { loadUnifiedDoctorProfile } = require('../profileStore');
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizeText = (value) => String(value || '').trim();
+const SECRETARY_USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9._-]{2,30}[a-z0-9])$/;
+const RESERVED_SECRETARY_USERNAMES = new Set([
+  'admin',
+  'api',
+  'clinic',
+  'doctor',
+  'drhyper',
+  'mail',
+  'root',
+  'secretary',
+  'support',
+  'system',
+  'www',
+]);
+const normalizeSecretaryUsername = (value) => String(value || '').trim().toLowerCase();
+const isValidSecretaryUsername = (value) => {
+  const username = normalizeSecretaryUsername(value);
+  return SECRETARY_USERNAME_PATTERN.test(username) && !RESERVED_SECRETARY_USERNAMES.has(username);
+};
 const SECRET_PATTERN = /^b_[a-z0-9]{10,120}$/i;
 const normalizeSecret = (value) => {
   const normalized = normalizeText(value);
@@ -89,8 +108,13 @@ const SECRETARY_LOGIN_MAX_FAILED_ATTEMPTS = 10;
 const SECRETARY_SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const timestampToMs = (value) =>
   value && typeof value.toMillis === 'function' ? value.toMillis() : 0;
-const buildRateLimitKey = (doctorEmail, secret) =>
-  doctorEmail ? `email_${doctorEmail}` : `secret_${secret}`;
+const buildRateLimitKey = (loginIdentifier, secret) => {
+  const normalizedIdentifier = normalizeText(loginIdentifier).toLowerCase();
+  if (normalizedIdentifier) {
+    return `username_${normalizedIdentifier}`;
+  }
+  return `secret_${secret}`;
+};
 const toIsoDateString = (value) => {
   if (!value) return '';
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -258,6 +282,10 @@ const normalizeOptionalText = (value) => {
 module.exports = {
   normalizeEmail,
   normalizeText,
+  SECRETARY_USERNAME_PATTERN,
+  RESERVED_SECRETARY_USERNAMES,
+  normalizeSecretaryUsername,
+  isValidSecretaryUsername,
   normalizeSecret,
   SECRET_PATTERN,
   timingSafeHexEqual,

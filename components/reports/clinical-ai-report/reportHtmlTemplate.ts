@@ -39,6 +39,7 @@ const buildLabels = (language: ClinicalReportLanguage) => {
       fileNumber: '\u0631\u0642\u0645 \u0627\u0644\u0645\u0644\u0641',
       age: '\u0627\u0644\u0633\u0646',
       phone: '\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641',
+      address: '\u0627\u0644\u0639\u0646\u0648\u0627\u0646',
       doctorSection: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0628\u064a\u0628',
       doctorName: '\u0627\u0644\u0637\u0628\u064a\u0628 \u0627\u0644\u0645\u0639\u0627\u0644\u062c',
       reportDate: '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0642\u0631\u064a\u0631',
@@ -65,7 +66,7 @@ const buildLabels = (language: ClinicalReportLanguage) => {
     dir: 'ltr', lang: 'en',
     reportTitle: 'Medical Report',
     patientSection: 'Patient Information', patientName: 'Full Name', fileNumber: 'File Number',
-    age: 'Age', phone: 'Phone', doctorSection: 'Doctor Information', doctorName: 'Treating Doctor',
+    age: 'Age', phone: 'Phone', address: 'Address', doctorSection: 'Doctor Information', doctorName: 'Treating Doctor',
     reportDate: 'Report Date', totalVisits: 'visit', exams: 'exam', consultations: 'consultation',
     clinicalSummary: 'Clinical Summary',
     visitHistory: 'Medical Visit History', visitHistoryNote: 'All visits listed from newest to oldest',
@@ -141,6 +142,7 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
   const reportDate = formatUserDateTime(new Date());
   const doctorText = toText(doctorName) || L.notDocumented;
   const phoneText = toText(snapshot.patientPhone) || L.noData;
+  const addressText = toText(snapshot.patientAddress);
   const fileNumText =
     Number.isFinite(Number(snapshot.patientFileNumber)) && Number(snapshot.patientFileNumber) > 0
       ? `#${Number(snapshot.patientFileNumber)}`
@@ -353,6 +355,7 @@ export const buildClinicalAiReportHtml = (input: OpenClinicalAiReportWindowInput
       <div class="info-row"><span class="info-lbl">${escapeHtml(L.patientName)}</span><span class="info-val" contenteditable="true" spellcheck="false">${escapeHtml(snapshot.patientName)}</span></div>
       <div class="info-row"><span class="info-lbl">${escapeHtml(L.age)}</span><span class="info-val" contenteditable="true" spellcheck="false">${escapeHtml(ageText)}</span></div>
       <div class="info-row"><span class="info-lbl">${escapeHtml(L.phone)}</span><span class="info-val" contenteditable="true" spellcheck="false">${escapeHtml(phoneText)}</span></div>
+      ${addressText ? `<div class="info-row"><span class="info-lbl">${escapeHtml(L.address)}</span><span class="info-val" contenteditable="true" spellcheck="false">${escapeHtml(addressText)}</span></div>` : ''}
     </div>
     <div class="info-panel">
       <div class="info-eyebrow">${escapeHtml(L.doctorSection)}</div>

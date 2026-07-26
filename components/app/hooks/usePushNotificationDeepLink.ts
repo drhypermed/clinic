@@ -21,7 +21,6 @@
 import { useEffect, useRef } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { closePushNotificationsByContext } from '../../../services/messagingService';
-import { firestoreService } from '../../../services/firestore';
 import { entryConversations } from '../../../services/firestore/entryConversations';
 import { resolveNotificationActionStatus } from '../../../utils/notificationAction';
 import { extractSecretaryVitalsFromNotificationData } from '../../../utils/secretaryVitals';

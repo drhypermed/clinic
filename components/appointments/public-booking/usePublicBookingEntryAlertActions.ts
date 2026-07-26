@@ -9,7 +9,6 @@
  */
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 
-import { firestoreService } from '../../../services/firestore';
 import { entryConversations } from '../../../services/firestore/entryConversations';
 import { closePushNotificationsByContext } from '../../../services/messagingService';
 import { playNotificationCue } from '../../../utils/notificationSound';

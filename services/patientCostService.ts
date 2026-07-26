@@ -7,6 +7,7 @@
 import { db } from './firebaseConfig';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { getDocCacheFirst } from './firestore/cacheFirst';
+import type { DirectPaymentType } from '../utils/paymentMethods';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,8 @@ export interface PatientCostItem {
   type: 'interventions' | 'other';
   dateKey: string; // YYYY-MM-DD
   note?: string;
+  /** طريقة التحصيل المباشر. العناصر القديمة بدونها تُعامل ككاش. */
+  paymentType?: DirectPaymentType;
   createdAt: number;
   /**
    * الفرع اللي اتضافت فيه التكلفة. العناصر القديمة (قبل ما الحقل ده يتضاف)
@@ -153,7 +156,7 @@ function recomputeDailyTotals(dateKey: string, branchId?: string): void {
 export function addCostItem(
   fileId: string,
   patientName: string,
-  fields: Pick<PatientCostItem, 'amount' | 'type' | 'dateKey' | 'note'>,
+  fields: Pick<PatientCostItem, 'amount' | 'type' | 'dateKey' | 'note' | 'paymentType'>,
   branchId?: string,
 ): PatientCostItem {
   const item: PatientCostItem = {
@@ -164,6 +167,7 @@ export function addCostItem(
     type: fields.type,
     dateKey: fields.dateKey,
     note: fields.note,
+    paymentType: fields.paymentType || 'cash',
     createdAt: Date.now(),
     branchId: branchId || undefined,
   };
@@ -181,7 +185,7 @@ export function addCostItem(
 export function editCostItem(
   fileId: string,
   itemId: string,
-  changes: Partial<Pick<PatientCostItem, 'amount' | 'type' | 'dateKey' | 'note'>>
+  changes: Partial<Pick<PatientCostItem, 'amount' | 'type' | 'dateKey' | 'note' | 'paymentType'>>
 ): void {
   const fileCosts = loadPatientFileCosts(fileId);
   const existing = fileCosts.find(c => c.id === itemId);

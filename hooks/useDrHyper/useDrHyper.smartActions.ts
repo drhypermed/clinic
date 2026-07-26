@@ -25,6 +25,10 @@ import {
   buildPregnancyContext,
 } from '../../services/specialty-packs';
 import { normalizePatientNameForFile } from '../../services/patient-files';
+import {
+  loadPatientImagesForCaseAnalysis,
+  type PatientImageMetadata,
+} from '../../services/patient-files/images';
 // كاش سحابي للتحليل — يحفظ النتيجة شهر ويرجعها فوراً لنفس الكشف
 // (توفير ضخم في الكوتا والتكلفة لو الطبيب فتح نفس الكشف مرة تانية)
 import {
@@ -39,6 +43,7 @@ interface CreateSmartRxActionsParams {
   medicalHistory: string;
   examination: string;
   investigations: string;
+  investigationImages: PatientImageMetadata[];
   complaintEn: string;
   historyEn: string;
   examEn: string;
@@ -136,6 +141,7 @@ export const createSmartRxActions = ({
   medicalHistory,
   examination,
   investigations,
+  investigationImages,
   complaintEn,
   historyEn,
   examEn,
@@ -516,11 +522,21 @@ export const createSmartRxActions = ({
     // تجميع بيانات التحليل الغني — مع النوع/الحمل/الرضاعة + التخصص + سياق الباكدج
     const weightNum = parseFloat(weight);
     const heightNum = parseFloat(height);
+    let analysisImages = [] as Awaited<ReturnType<typeof loadPatientImagesForCaseAnalysis>>;
+    if (investigationImages.length > 0) {
+      try {
+        analysisImages = await loadPatientImagesForCaseAnalysis(investigationImages);
+      } catch {
+        showNotification('تعذر تجهيز إحدى صور الفحوصات للتحليل. سيتم استكمال التحليل بالبيانات النصية.', 'info');
+      }
+    }
+
     const deepInput = {
       complaint,
       medicalHistory,
       examination,
       investigations,
+      images: analysisImages,
       ageYears: parseInt(ageYears) || 0,
       ageMonths: parseInt(ageMonths) || 0,
       ageDays: parseInt(ageDays) || 0,

@@ -1,5 +1,6 @@
 import type React from 'react';
 import type {
+  PatientAddress,
   PatientGender,
   PaymentType,
   SecretaryVitalFieldDefinition,
@@ -20,6 +21,7 @@ export interface RecentExamPatientOption {
   age?: string;
   dateOfBirth?: string;
   phone?: string;
+  address?: PatientAddress;
   examCompletedAt: string;         // تاريخ اكتمال الكشف الأساسي
   consultationCompletedAt?: string; // تاريخ ووقت تنفيذ الاستشارة (إن وجدت)
   consultationCompletedDates?: string[]; // كل تواريخ الاستشارات المنفذة (أحدث أولا)
@@ -31,9 +33,11 @@ export interface RecentExamPatientOption {
 /** مريض مقترح (عند البحث في قاعدة البيانات الحالية) */
 export interface PatientSuggestionOption {
   id: string;
+  patientFileId?: string;
   patientName: string;
   age?: string;
   phone?: string;
+  address?: PatientAddress;
   lastExamDate?: string;
   lastConsultationDate?: string;
   patientFileNumber?: number;
@@ -61,6 +65,12 @@ export interface AddAppointmentFormProps {
   onAgeChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
+  addressGovernorate?: string;
+  onAddressGovernorateChange?: (value: string) => void;
+  addressCityArea?: string;
+  onAddressCityAreaChange?: (value: string) => void;
+  addressDetails?: string;
+  onAddressDetailsChange?: (value: string) => void;
   /** جنس المريض — ثابت لكل زياراته (يُحفظ في ملف المريض الموحد) */
   gender?: PatientGender | '';
   onGenderChange?: (value: PatientGender | '') => void;
@@ -88,7 +98,6 @@ export interface AddAppointmentFormProps {
   doctorSpecialty?: string | null;
   onSecretaryVitalsChange?: (value: SecretaryVitalsInput) => void;
   todayStr: string;
-  timeMin: string | undefined;
   saving: boolean;                       // حالة الحفظ (لعرض لودر)
   formError: string | null;              // رسالة خطأ التحقق
   bookingQuotaNotice?: BookingQuotaNoticeInfo | null;

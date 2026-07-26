@@ -40,6 +40,9 @@ export const usePublicBookingPageState = () => {
   const [age, setAge] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [phone, setPhone] = useState('');
+  const [addressGovernorate, setAddressGovernorate] = useState('');
+  const [addressCityArea, setAddressCityArea] = useState('');
+  const [addressDetails, setAddressDetails] = useState('');
   // حقول الهوية الجديدة: الجنس ثابت، الحمل والرضاعة متغيرين لكل زيارة
   const [gender, setGender] = useState<PatientGender | ''>('');
   const [pregnant, setPregnant] = useState<boolean | null>(null);
@@ -128,6 +131,12 @@ export const usePublicBookingPageState = () => {
     setDateOfBirth,
     phone,
     setPhone,
+    addressGovernorate,
+    setAddressGovernorate,
+    addressCityArea,
+    setAddressCityArea,
+    addressDetails,
+    setAddressDetails,
     gender,
     setGender,
     pregnant,

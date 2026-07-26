@@ -56,7 +56,7 @@ const OPTIONS: RoleOption[] = [
   {
     id: 'login-secretary',
     title: 'دخول السكرتارية',
-    subtitle: 'بإيميل الطبيب والرقم السري',
+    subtitle: 'باسم المستخدم والرقم السري',
     icon: <FaClipboardUser className="w-6 h-6" />,
     route: '/login/secretary',
     audience: 'clinic',

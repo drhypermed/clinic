@@ -95,6 +95,14 @@ export const ScaleToolsPanel: React.FC = () => {
         text: `✓ تم حساب ملفات المرضى: ${JSON.stringify(r2.data)}`,
       });
 
+      append({ type: 'info', text: '⏳ جاري بناء دليل بحث السكرتارية الموفّر حسب الفرع...' });
+      const recomputeSecretaryDirectory = httpsCallable(functions, 'recomputeSecretaryPatientDirectory');
+      const r3 = await recomputeSecretaryDirectory({});
+      append({
+        type: 'success',
+        text: `✓ تم بناء دليل بحث السكرتارية: ${JSON.stringify(r3.data)}`,
+      });
+
       append({ type: 'success', text: '🎉 تمت كل العمليات بنجاح' });
     } catch (e) {
       append({ type: 'error', text: `✗ خطأ: ${(e as Error).message}` });

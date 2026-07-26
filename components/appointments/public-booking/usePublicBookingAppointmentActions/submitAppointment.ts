@@ -16,14 +16,12 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../../../services/firebaseConfig';
 import { firestoreService } from '../../../../services/firestore';
 import { sanitizePublicText } from '../securityUtils';
-import { sanitizeSecretaryVitalsInput } from '../../../../utils/secretaryVitals';
 import type {
     AppointmentType,
+    PatientAddress,
     PatientGender,
     PaymentType,
-    SecretaryVitalFieldDefinition,
     SecretaryVitalsInput,
-    SecretaryVitalsVisibility,
 } from '../../../../types';
 import type { TodayAppointment } from '../types';
 import { callWithSessionRetry } from './sessionHelpers';
@@ -72,6 +70,7 @@ interface SubmitAppointmentInput {
     ageVal: string;
     dateOfBirthVal?: string;
     ph: string;
+    address?: PatientAddress;
     reasonVal: string;
     dateTime: Date;
     sanitizedSecretaryVitals: SecretaryVitalsInput | undefined;
@@ -100,6 +99,7 @@ type AppointmentPayload = {
     age: string;
     dateOfBirth?: string;
     phone: string;
+    address?: PatientAddress;
     dateTime: string;
     visitReason: string;
     secretaryVitals?: SecretaryVitalsInput;
@@ -129,6 +129,7 @@ export const submitAppointment = async (input: SubmitAppointmentInput): Promise<
         age: input.ageVal,
         dateOfBirth: input.dateOfBirthVal,
         phone: input.ph,
+        address: input.address,
         dateTime: input.dateTime.toISOString(),
         visitReason: input.reasonVal,
         secretaryVitals: input.sanitizedSecretaryVitals,
@@ -208,6 +209,7 @@ interface BuildMergedAppointmentInput {
     ageVal: string;
     dateOfBirthVal?: string;
     ph: string;
+    address?: PatientAddress;
     reasonVal: string;
     sanitizedSecretaryVitals: SecretaryVitalsInput | undefined;
     dateTime: Date;
@@ -240,6 +242,7 @@ export const buildMergedTodayAppointment = (
     age: input.ageVal || undefined,
     dateOfBirth: input.dateOfBirthVal || undefined,
     phone: input.ph || undefined,
+    address: input.address,
     visitReason: input.reasonVal || undefined,
     secretaryVitals: input.sanitizedSecretaryVitals,
     dateTime: input.dateTime.toISOString(),

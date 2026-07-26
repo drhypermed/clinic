@@ -17,6 +17,7 @@ import {
     patientFilesService,
 } from '../../services/patient-files';
 import type { ResolvedPatientFileReference } from './useDrHyper.saveRecord.types';
+import type { PatientAddress } from '../../types';
 
 const isBrowserOffline = (): boolean =>
     typeof navigator !== 'undefined' && navigator.onLine === false;
@@ -128,6 +129,7 @@ interface SyncPatientIdentityAfterSaveInput {
     userId: string;
     patientName: string;
     phone?: string;
+    address?: PatientAddress;
     ageYears: string;
     ageMonths: string;
     ageDays: string;
@@ -178,6 +180,7 @@ export const syncPatientIdentityAfterSave = async (
             userId: input.userId,
             patientName: input.patientName,
             phone: input.phone || undefined,
+            address: input.address,
             age: {
                 years: input.ageYears,
                 months: input.ageMonths,

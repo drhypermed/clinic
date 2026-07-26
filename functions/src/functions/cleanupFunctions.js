@@ -1,3 +1,4 @@
+const { getPendingAppointmentCutoffIso } = require('../appointmentRetention');
 
 module.exports = ({
   HttpsError,
@@ -8,7 +9,6 @@ module.exports = ({
   deleteQueryBatch,
   deleteExpiredSlotsByScan,
 }) => {
-  
   const runCleanupNow = async (request) => {
     await assertAdminRequest(request);
     const now = new Date();
@@ -20,14 +20,12 @@ module.exports = ({
       slotsDeleted = await deleteExpiredSlotsByScan(now.getTime());
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const cutoffIso = startOfToday.toISOString();
+    const cutoffIso = getPendingAppointmentCutoffIso(now.getTime());
     const apptsQuery = getDb().collectionGroup('appointments')
-      .where('dateTime', '<', cutoffIso)
+      .where('dateTime', '<=', cutoffIso)
       .where('examCompletedAt', '==', null);
     
-    const apptsDeleted = await deleteQueryBatch(apptsQuery, 'expired appointments (manual)');
+    const apptsDeleted = await deleteQueryBatch(apptsQuery, 'pending appointments older than 24 hours (manual)');
 
     return { slotsDeleted, apptsDeleted, cutoff: cutoffIso };
   };
@@ -38,7 +36,7 @@ module.exports = ({
     const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000;
     const cutoff = new Date(now.getTime() - THREE_MONTHS_MS);
     const cutoffIso = cutoff.toISOString();
-    // Range query: examCompletedAt is a valid ISO date and older than 6 months.
+    // Range query: examCompletedAt is a valid ISO date and older than 3 months.
     // Lower bound excludes null/missing fields (Firestore inequality filters exclude missing fields).
     const minValidDate = '2000-01-01T00:00:00.000Z';
     const query = getDb().collectionGroup('appointments')
@@ -110,7 +108,8 @@ module.exports = ({
    *   3. التقارير المالية الشهرية — users/{uid}/financialData/monthly/entries/{month}
    *   4. تاريخ تغيير الأسعار — users/{uid}/financialData/priceHistory/entries/{autoId}
    *      (entries بتاريخ changedAt أقدم من cutoff)
-   *   5. الملفات الفاضية   — users/{uid}/settings/patientFile__* (smart cleanup)
+   *   5. صور ملفات المرضى  — Storage: patient-images/{uid}/... + فهرس patientImages
+   *   6. الملفات الفاضية   — users/{uid}/settings/patientFile__* (smart cleanup)
    *
    * ─── الجدولة (2026-05): شهرياً ───
    * يشتغل يوم 1 من كل شهر، 4 الفجر بتوقيت القاهرة.
@@ -120,6 +119,7 @@ module.exports = ({
    *   1. مفيش له سجلات متبقية (آخر زيارة عدّت الـ retention)
    *   2. مفيش فيه additionalInfo (ملاحظات الطبيب)
    *   3. مفيش له مصروفات/تأمينات في patientFileData
+   *   4. مفيش له صور ما زالت داخل مدة الاحتفاظ
    * أي شرط منهم بـ"يحقق" → الملف يفضل.
    *
    * ─── اللي بيفضل دايماً ───
@@ -174,6 +174,8 @@ module.exports = ({
     let totalDeletedDailyFinancials = 0;
     let totalDeletedMonthlyFinancials = 0;
     let totalDeletedPriceHistory = 0;
+    let totalDeletedPatientImages = 0;
+    let totalDeletedPatientImageBytes = 0;
 
     // helper: استخراج المفتاح الأصلي من docId مالي (يدعم prefix الفروع)
     // الـ format: "YYYY-MM-DD" للـ main أو "{branchId}__YYYY-MM-DD" للفروع
@@ -207,9 +209,79 @@ module.exports = ({
       const tierKey = resolveTierKey(userData.accountType);
       const retentionMs = RETENTION_BY_TIER[tierKey];
       const cutoffIso = cutoffsByTier[tierKey];
+      const cutoffMs = nowMs - retentionMs;
 
-      // المرحلة 1+2: حذف السجلات القديمة لهذا الطبيب + جمع الملفات المتأثرة
+      // نجمع الملفات المتأثرة من الصور والسجلات، عشان Smart Cleanup يفحصها بعد التنظيف.
       const affectedFiles = new Map(); // fileKey → { fileId, nameKey }
+      const patientImagesRef = db.collection('users').doc(userId).collection('patientImages');
+
+      // المرحلة 1: حذف صور المرضى المنتهية من Storage نفسه أولاً، ثم حذف الفهرس.
+      // لو فشل حذف الـ object نترك المستند كما هو كي تُعاد المحاولة الشهر القادم.
+      // التحقق من prefix يمنع أي metadata تالفة من توجيه الحذف لمسار خارج حساب الطبيب.
+      while (true) {
+        const expiredImagesSnap = await patientImagesRef
+          .where('createdAt', '<', admin.firestore.Timestamp.fromMillis(cutoffMs))
+          .limit(400)
+          .get();
+        if (expiredImagesSnap.empty) break;
+
+        const successfullyDeleted = [];
+        for (const imageDoc of expiredImagesSnap.docs) {
+          const imageData = imageDoc.data() || {};
+          const storagePath = String(imageData.storagePath || '').trim();
+          const patientFileId = String(imageData.patientFileId || '').trim();
+          const patientFileNameKey = String(imageData.patientFileNameKey || '').trim();
+          const expectedPrefix = `patient-images/${userId}/`;
+          if (!storagePath.startsWith(expectedPrefix) || !patientFileId) {
+            continue;
+          }
+
+          try {
+            await admin.storage().bucket().file(storagePath).delete({ ignoreNotFound: true });
+            successfullyDeleted.push({ imageDoc, imageData, patientFileId, patientFileNameKey });
+          } catch {
+            // نترك metadata كما هي كي تعيد الدورة الشهرية التالية محاولة الحذف.
+          }
+        }
+
+        // لا نحذف metadata لصورة فشل حذفها من السحابة. لو مفيش أي نجاح نخرج
+        // لتفادي loop لا نهائي على نفس أول 400 مستند.
+        if (successfullyDeleted.length === 0) break;
+
+        const imageBatch = db.batch();
+        const deletedInBatchByFile = new Map();
+        for (const item of successfullyDeleted) {
+          imageBatch.delete(item.imageDoc.ref);
+          deletedInBatchByFile.set(
+            item.patientFileId,
+            (deletedInBatchByFile.get(item.patientFileId) || 0) + 1
+          );
+          affectedFiles.set(item.patientFileId, {
+            fileId: item.patientFileId,
+            nameKey: item.patientFileNameKey,
+          });
+          totalDeletedPatientImages += 1;
+          totalDeletedPatientImageBytes += Math.max(0, Number(item.imageData.compressedSizeBytes || 0));
+        }
+
+        // حذف الفهرس وخفض العداد في نفس commit: إما الاثنان ينجحان أو لا شيء،
+        // وFieldValue.increment يظل صحيحاً مع أي رفع متزامن.
+        for (const [patientFileId, deletedCount] of deletedInBatchByFile.entries()) {
+          const imageFileRef = db.collection('users').doc(userId).collection('settings').doc(patientFileId);
+          imageBatch.set(imageFileRef, {
+            patientImageCount: admin.firestore.FieldValue.increment(-deletedCount),
+            patientImagesUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          }, { merge: true });
+        }
+        await imageBatch.commit();
+
+        // لو الدفعة احتوت نجاحات وإخفاقات، نفس الإخفاقات ستظهر في الاستعلام التالي.
+        // نخرج بعد حفظ النجاحات كي لا ندور بلا نهاية؛ الباقي سيُعاد الشهر القادم.
+        if (successfullyDeleted.length < expiredImagesSnap.size) break;
+      }
+
+      // المرحلة 2: حذف السجلات القديمة لهذا الطبيب + جمع الملفات المتأثرة
       const recordsRef = db.collection('users').doc(userId).collection('records');
       const recordsQuery = recordsRef
         .where('date', '>=', minValidDate)
@@ -268,6 +340,13 @@ module.exports = ({
         const fileData = fileSnap.data() || {};
         const hasAdditionalInfo = String(fileData.additionalInfo || '').trim().length > 0;
         if (hasAdditionalInfo) continue;
+
+        // صور أحدث من مدة الاحتفاظ تعتبر قيمة داخل الملف وتمنع حذفه.
+        const remainingImages = await patientImagesRef
+          .where('patientFileId', '==', resolvedFileId)
+          .limit(1)
+          .get();
+        if (!remainingImages.empty) continue;
 
         // 3) فحص: في patientFileData بمصروفات/تأمينات؟
         const fileDataRef = db.collection('users').doc(userId)
@@ -363,8 +442,6 @@ module.exports = ({
       // مدعوم: Firestore Timestamp / ms number / ISO string.
       // ⚠️ أمان: لو الـ entry مفيهوش timestamp صالح (= 0)، بنتركه — حماية ضد
       //         حذف عشوائي لـ entries malformed.
-      const cutoffMs = nowMs - retentionMs;
-
       try {
         const priceHistoryRef = db.collection('users').doc(userId)
           .collection('financialData').doc('priceHistory').collection('entries');
@@ -403,7 +480,8 @@ module.exports = ({
       `${totalDeletedEmptyFiles} empty files (of ${totalInspectedFiles} inspected), ` +
       `${totalDeletedDailyFinancials} daily financial entries, ` +
       `${totalDeletedMonthlyFinancials} monthly financial entries, ` +
-      `${totalDeletedPriceHistory} priceHistory entries. ` +
+      `${totalDeletedPriceHistory} priceHistory entries, ` +
+      `${totalDeletedPatientImages} patient images (${totalDeletedPatientImageBytes} bytes). ` +
       `Cutoffs: free=${cutoffsByTier.free}, premium=${cutoffsByTier.premium}, plus=${cutoffsByTier.plus}, pro_max=${cutoffsByTier.pro_max}`
     );
     return {
@@ -413,6 +491,8 @@ module.exports = ({
       deletedDailyFinancials: totalDeletedDailyFinancials,
       deletedMonthlyFinancials: totalDeletedMonthlyFinancials,
       deletedPriceHistory: totalDeletedPriceHistory,
+      deletedPatientImages: totalDeletedPatientImages,
+      deletedPatientImageBytes: totalDeletedPatientImageBytes,
       cutoffs: cutoffsByTier,
     };
   };
@@ -684,6 +764,10 @@ module.exports = ({
             console.warn(`[deleteAbandonedDisabledAccounts] Auth delete failed for ${userId}:`, authErr.message);
           }
         }
+
+        // صور المرضى لازم تتمسح من Storage قبل حذف فهرس Firestore، وإلا تتحول
+        // لملفات يتيمة تكلف مساحة ولا يمكن لعملية retention العثور عليها لاحقاً.
+        await admin.storage().bucket().deleteFiles({ prefix: `patient-images/${userId}/` });
 
         // 2) حذف الـ subcollections (records, settings, financialData, etc.)
         // الـ Firestore Admin SDK ما عندوش recursive delete في batch، فبنحذف collection by collection

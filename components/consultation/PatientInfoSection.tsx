@@ -1,8 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { PatientGender, PaymentType } from '../../types';
+import type { PatientAddress, PatientGender, PaymentType } from '../../types';
+import { formatPatientAddress } from '../../utils/patientAddress';
 import { buildCairoDateWithCurrentTime, formatUserDate, formatUserTime } from '../../utils/cairoTime';
 // قرار سؤال الحمل/الرضاعة
 import { shouldAskFertilityQuestions } from '../../utils/patientIdentity';
+import { getPaymentMethodShortLabel } from '../../utils/paymentMethods';
+import { PaymentMethodIcon } from '../common/PaymentMethodIcon';
+import { normalizePatientNameForFile } from '../../services/patient-files';
+import {
+  normalizePatientPhoneForSearch,
+  rankPatientSuggestions,
+} from '../../services/patientSuggestionSearch';
 import {
   calculateAgePartsFromDateOfBirth,
   estimateDateOfBirthFromAgeParts,
@@ -16,6 +24,7 @@ export interface BasicPatientSuggestion {
   id: string;               // المعرف الفريد للمريض في Firestore
   patientName: string;      // اسم المريض
   phone?: string;           // رقم الهاتف
+  address?: PatientAddress; // عنوان المريض المنظّم
   ageText?: string;         // نص العمر المنسق (مثلاً: 5 سنوات و شهر)
   dateOfBirth?: string;
   lastExamDate?: string;    // تاريخ آخر كشف طبي
@@ -38,8 +47,6 @@ const toPositiveFileNumber = (value: unknown): number | undefined => {
   return Math.floor(parsed);
 };
 
-const normalizePhoneDigits = (value?: string): string => String(value || '').replace(/\D/g, '');
-
 /**
  * مكون بيانات المريض الأساسية (Patient Info Section)
  * المسؤول عن جمع هوية المريض (الاسم، الهاتف، العمر) وتاريخ الزيارة.
@@ -48,6 +55,9 @@ const normalizePhoneDigits = (value?: string): string => String(value || '').rep
 interface PatientInfoSectionProps {
   patientName: string; setPatientName: (v: string) => void;         // الاسم الحالي ودالة التحديث
   phone: string; setPhone: (v: string) => void;                     // الهاتف الحالي ودالة التحديث
+  addressGovernorate: string; setAddressGovernorate: (v: string) => void;
+  addressCityArea: string; setAddressCityArea: (v: string) => void;
+  addressDetails: string; setAddressDetails: (v: string) => void;
   ageYears: string; setAgeYears: (v: string) => void;               // السن (سنوات) ودالة التحديث
   ageMonths: string; setAgeMonths: (v: string) => void;             // السن (شهور) ودالة التحديث
   ageDays: string; setAgeDays: (v: string) => void;                 // السن (أيام) ودالة التحديث
@@ -78,6 +88,7 @@ interface PatientInfoSectionProps {
 
 export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
   patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
+  addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
   dateOfBirth = '', setDateOfBirth, showDateOfBirth = false,
   gender = '', setGender,
   pregnant = null, setPregnant,
@@ -110,30 +121,25 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
    * يقوم بمطابقة ما يكتبه الطبيب مع قاعدة بيانات المرضى القدامى بناءً على الاسم أو الهاتف.
    * يستخدم useMemo لضمان عدم إعادة الفلترة إلا عند تغير المدخلات.
    */
-  const query = (activeSuggestionField === 'phone' ? phone : patientName).trim().toLocaleLowerCase();
+  const nameQuery = activeSuggestionField === 'name' ? patientName : '';
+  const phoneQuery = activeSuggestionField === 'phone' ? phone : '';
   const visibleSuggestions = useMemo(() => {
-    if (!query) return [] as BasicPatientSuggestion[];
-    return patientSuggestions
-      .filter((item) => {
-        const name = (item.patientName || '').toLocaleLowerCase();
-        const phoneValue = (item.phone || '').toLocaleLowerCase();
-        return name.includes(query) || phoneValue.includes(query);
-      })
-      .slice(0, 5); // عرض أول 5 نتائج فقط للحفاظ على نظافة الواجهة
-  }, [patientSuggestions, query]);
+    if (!nameQuery.trim() && !phoneQuery.trim()) return [] as BasicPatientSuggestion[];
+    return rankPatientSuggestions(patientSuggestions, nameQuery, phoneQuery).slice(0, 20);
+  }, [nameQuery, patientSuggestions, phoneQuery]);
 
   const currentPatientFileNumber = useMemo(() => {
-    const normalizedName = String(patientName || '').trim().toLocaleLowerCase();
+    const normalizedName = normalizePatientNameForFile(patientName);
     if (!normalizedName) return undefined;
 
-    const normalizedPhone = normalizePhoneDigits(phone);
+    const normalizedPhone = normalizePatientPhoneForSearch(phone);
     const byName = patientSuggestions.filter(
-      (item) => String(item.patientName || '').trim().toLocaleLowerCase() === normalizedName
+      (item) => normalizePatientNameForFile(item.patientName) === normalizedName
     );
     if (byName.length === 0) return undefined;
 
     const exactPhoneMatch = normalizedPhone
-      ? byName.find((item) => normalizePhoneDigits(item.phone) === normalizedPhone)
+      ? byName.find((item) => normalizePatientPhoneForSearch(item.phone) === normalizedPhone)
       : undefined;
     const selected = exactPhoneMatch || byName[0];
     return toPositiveFileNumber(selected?.patientFileNumber);
@@ -290,6 +296,11 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                         {' · '}
                         آخر استشارة: {formatDate(item.lastConsultationDate)}
                       </div>
+                      {formatPatientAddress(item.address, 'summary') && (
+                        <div className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
+                          العنوان: {formatPatientAddress(item.address, 'summary')}
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -534,6 +545,11 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
                         {' · '}
                         آخر استشارة: {formatDate(item.lastConsultationDate)}
                       </div>
+                      {formatPatientAddress(item.address, 'summary') && (
+                        <div className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
+                          العنوان: {formatPatientAddress(item.address, 'summary')}
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -568,33 +584,69 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           {paymentType !== undefined && setPaymentType && (
             <div>
               <p className={fieldTitleClass}>الدفع</p>
-              <div className="clinic-field w-full h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 hover:!border-brand-300 transition-colors dropdown-shadow">
-                <div className="grid grid-cols-3 gap-1.5 h-full">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('cash')}
-                    className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${paymentType === 'cash' ? 'clinic-toggle-btn--active scale-[1.01]' : 'clinic-toggle-btn--idle'}`}
-                  >
-                    💵 كاش
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('insurance')}
-                    className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${paymentType === 'insurance' ? 'clinic-toggle-btn--insurance-active scale-[1.01]' : 'clinic-toggle-btn--idle'}`}
-                  >
-                    🏢 تأمين
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('discount')}
-                    className={`clinic-toggle-btn h-full rounded-xl px-2 py-1 text-[11px] font-black transition-all ${paymentType === 'discount' ? 'clinic-toggle-btn--discount-active scale-[1.01]' : 'clinic-toggle-btn--idle'}`}
-                  >
-                    🏷️ خصم
-                  </button>
+              <div className="clinic-field w-full min-h-[44px] p-1 rounded-2xl !bg-white !border-2 !border-slate-200 hover:!border-brand-300 transition-colors dropdown-shadow">
+                <div className="grid grid-cols-3 gap-1.5 min-h-[36px]">
+                  {(['cash', 'instapay', 'wallet', 'bank_transfer', 'insurance', 'discount'] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setPaymentType(type)}
+                      title={type === 'bank_transfer' ? 'حساب بنكي' : undefined}
+                      className={`clinic-toggle-btn inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-1.5 py-1 text-[10px] font-black transition-all ${
+                        paymentType === type
+                          ? type === 'insurance'
+                            ? 'clinic-toggle-btn--insurance-active scale-[1.01]'
+                            : type === 'discount'
+                              ? 'clinic-toggle-btn--discount-active scale-[1.01]'
+                              : 'clinic-toggle-btn--active scale-[1.01]'
+                          : 'clinic-toggle-btn--idle'
+                      }`}
+                    >
+                      <PaymentMethodIcon type={type} className="h-3.5 w-3.5 shrink-0" />
+                      <span>{getPaymentMethodShortLabel(type)}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           )}
+        </div>
+
+        {/* ═══ عنوان المريض — اختياري ومقسّم لتسهيل البحث والعرض المختصر ═══ */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className={fieldTitleClass}>المحافظة (اختياري)</p>
+            <input
+              type="text"
+              value={addressGovernorate}
+              onChange={(event) => setAddressGovernorate(event.target.value)}
+              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
+              placeholder="مثال: القاهرة"
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <p className={fieldTitleClass}>المدينة / المنطقة (اختياري)</p>
+            <input
+              type="text"
+              value={addressCityArea}
+              onChange={(event) => setAddressCityArea(event.target.value)}
+              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
+              placeholder="مثال: مدينة نصر"
+              maxLength={150}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <p className={fieldTitleClass}>العنوان التفصيلي (اختياري)</p>
+            <input
+              type="text"
+              value={addressDetails}
+              onChange={(event) => setAddressDetails(event.target.value)}
+              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
+              placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
+              maxLength={400}
+            />
+          </div>
         </div>
 
       </div>

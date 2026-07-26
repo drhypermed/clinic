@@ -172,13 +172,15 @@ const tryMatchSecretaryPasswordAcrossBranches = async ({
   //   - لو أكثر بدون preferredBranchId → نرفض مع تفاصيل الفروع المطابقة عشان
   //     الـ UI يقدر يعرض اختيار للسكرتارية بدل ما توقف مسدودة (2026-05-11).
   let selected = null;
-  if (matches.length === 1) {
+  const normalizedPreferred = String(preferredBranchId || '').trim();
+  if (normalizedPreferred) {
+    // اسم المستخدم مربوط بفرع محدد. لا يجوز أن تسمح كلمة سر صحيحة لفرع آخر
+    // بالدخول عندما يكون اسم المستخدم أو اختيار الفرع يشير إلى فرع مختلف.
+    selected = matches.find((m) => m.branchId === normalizedPreferred) || null;
+    if (!selected) return null;
+  } else if (matches.length === 1) {
     selected = matches[0];
   } else {
-    const normalizedPreferred = String(preferredBranchId || '').trim();
-    if (normalizedPreferred) {
-      selected = matches.find((m) => m.branchId === normalizedPreferred) || null;
-    }
     if (!selected) {
       // قراءة أسماء الفروع المطابقة عشان الـ UI يعرضها للسكرتارية تختار.
       // آمن أمنياً لأن السكرتارية بالفعل قدمت كلمة سر صحيحة (مطابقة لأكثر من فرع)،

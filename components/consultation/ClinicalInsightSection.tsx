@@ -1,5 +1,7 @@
 import React from 'react';
 import { getClinicalPlaceholders } from './clinicalPlaceholders';
+import { InvestigationImagesField } from './InvestigationImagesField';
+import type { PatientImageMetadata, PatientImagesAccountType } from '../../services/patient-files/images';
 
 /**
  * مكون المعلومات السريرية (Clinical Insight Section)
@@ -19,11 +21,22 @@ interface ClinicalInsightSectionProps {
   errorMsg: string | null;                                     // رسالة الخطأ في حال فشل الاتصال أو التحليل
   // 🆕 تخصص الطبيب — لتخصيص الأمثله في الـplaceholders حسب التخصص
   doctorSpecialty?: string;
+  userId: string;
+  accountType?: PatientImagesAccountType;
+  patientName: string;
+  phone?: string;
+  patientFileId?: string | null;
+  patientFileNumber?: number | null;
+  patientFileNameKey?: string | null;
+  investigationImages: PatientImageMetadata[];
+  setInvestigationImages: (images: PatientImageMetadata[]) => void;
 }
 
 export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
   complaint, setComplaint, history, setHistory, exam, setExam, investigations, setInvestigations, errorMsg,
   doctorSpecialty,
+  userId, accountType, patientName, phone, patientFileId, patientFileNumber, patientFileNameKey,
+  investigationImages, setInvestigationImages,
 }) => {
   // ─ Placeholders ذكيه: تجيب أمثله مناسبه لتخصص الطبيب ─
   // بدل ما يفضل "احتقان" ظاهر لطبيب قلب — كل تخصص يلاقي مثال متعلق بشغله.
@@ -134,6 +147,17 @@ export const ClinicalInsightSection: React.FC<ClinicalInsightSectionProps> = ({
             rows={1}
             className="clinic-field w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-sm resize-none overflow-hidden text-right !bg-white !border-2 !border-slate-200 focus:!border-slate-400 hover:!border-slate-300 transition-colors dropdown-shadow"
             placeholder={placeholders.investigations}
+          />
+          <InvestigationImagesField
+            userId={userId}
+            accountType={accountType}
+            patientName={patientName}
+            phone={phone}
+            patientFileId={patientFileId}
+            patientFileNumber={patientFileNumber}
+            patientFileNameKey={patientFileNameKey}
+            images={investigationImages}
+            onChange={setInvestigationImages}
           />
         </div>
       </div>

@@ -1,5 +1,8 @@
 import type { PatientSuggestionOption, RecentExamPatientOption } from './types';
 import { buildCairoDateTime, formatUserDate, getCairoDayKey } from '../../../utils/cairoTime';
+import { normalizePatientNameForFile } from '../../../services/patient-files/normalizers';
+import { rankPatientSuggestions } from '../../../services/patientSuggestionSearch';
+import { formatPatientAddress } from '../../../utils/patientAddress';
 
 /**
  * وظائف مساعدة لنموذج إضافة المواعيد (Add Appointment Form Helpers)
@@ -14,22 +17,22 @@ import { buildCairoDateTime, formatUserDate, getCairoDayKey } from '../../../uti
  * 4. إزالة المسافات الزائدة.
  * هذا يساعد في دقة البحث عن أسماء المرضى مهما اختلفت طريقة الكتابة.
  */
-const normalizeArabicName = (value?: string) =>
-  (value || '')
-    .toLocaleLowerCase()
-    .normalize('NFKC')
-    .replace(/[\u064B-\u065F\u0670]/g, '') // إزالة التشكيل
-    .replace(/\u0640/g, '')               // إزالة التطويل
-    .replace(/[إأآا]/g, 'ا')
-    .replace(/ى/g, 'ي')
-    .replace(/ئ/g, 'ي')
-    .replace(/ؤ/g, 'و')
-    .replace(/ة/g, 'ه')
-    .replace(/\s+/g, ' ')
-    .trim();
+// مصدر واحد للتطبيع في ملفات المرضى، وفهرس السكرتارية، وفلتر الواجهة.
+const normalizeArabicName = normalizePatientNameForFile;
 
 /** استخراج الأرقام فقط من رقم الهاتف */
 export const normalizePhoneDigits = (value?: string) => (value || '').replace(/\D/g, '');
+
+/** توحيد صيغ الموبايل المصري للبحث (+20 / 0020 / 01). */
+const normalizePhoneSearchKey = (value?: string) => {
+  let digits = normalizePhoneDigits(value);
+  if (!digits) return '';
+  if (digits.startsWith('0020') && digits.length >= 14) digits = digits.slice(2);
+  if (digits.startsWith('20') && digits.length >= 12) return `0${digits.slice(-10)}`;
+  if (digits.length === 10 && digits.startsWith('1')) return `0${digits}`;
+  if (digits.length > 11) return digits.slice(-11);
+  return digits;
+};
 
 export const toPositiveFileNumber = (value: unknown): number | undefined => {
   const parsed = Number(value);
@@ -46,7 +49,7 @@ const formatSuggestionDate = (value?: string) => {
 };
 
 interface PatientSuggestionDetailLine {
-  key: 'fileNumber' | 'phone' | 'age' | 'lastExam' | 'lastConsultation';
+  key: 'fileNumber' | 'phone' | 'address' | 'age' | 'lastExam' | 'lastConsultation';
   label: string;
   value: string;
 }
@@ -79,6 +82,11 @@ export const buildPatientSuggestionDisplayModel = (
         label: 'رقم التليفون',
         value: phoneText,
       },
+      ...(formatPatientAddress(candidate.address, 'summary') ? [{
+        key: 'address' as const,
+        label: 'العنوان',
+        value: formatPatientAddress(candidate.address, 'summary'),
+      }] : []),
       {
         key: 'age',
         label: 'السن',
@@ -109,17 +117,16 @@ export const getVisiblePatientSuggestions = (
   phone: string
 ) => {
   const isPhoneField = activeSuggestionField === 'phone';
-  const query = isPhoneField ? normalizePhoneDigits(phone) : normalizeArabicName(patientName);
+  const nameQuery = isPhoneField ? '' : patientName;
+  const phoneQuery = isPhoneField ? phone : '';
+  const query = isPhoneField ? normalizePhoneSearchKey(phoneQuery) : normalizeArabicName(nameQuery);
   if (!query) return [] as PatientSuggestionOption[];
 
-  return patientSuggestions
-    .filter((item) => {
-      const name = normalizeArabicName(item.patientName);
-      const phoneText = normalizePhoneDigits(item.phone);
-      if (isPhoneField) return phoneText.includes(query);
-      return name.includes(query);
-    })
-    .slice(0, 5);
+  return rankPatientSuggestions(patientSuggestions, nameQuery, phoneQuery)
+    // The server already caps the compact query at 20 documents. Keeping the
+    // same cap here makes every returned match reachable in the scrollable
+    // dropdown instead of silently hiding matches 6..20.
+    .slice(0, 20);
 };
 
 /**

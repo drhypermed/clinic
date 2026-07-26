@@ -37,16 +37,11 @@ interface CreateReadyPrescriptionActionsParams {
     rxItems: PrescriptionItem[];
     generalAdvice: string[];
     labInvestigations: string[];
-    readyPrescriptions: ReadyPrescription[];
     sanitizeRxItemsForSave: (items: PrescriptionItem[]) => PrescriptionItem[];
     sanitizeForFirestore: (value: unknown) => unknown;
     showNotification: ShowNotification;
-    getAccountTypeControls: () => Promise<any>;
-    resolveCurrentUserAccountType: () => Promise<'free' | 'premium' | 'plus' | 'pro_max'>;
-    applyLimitPlaceholder: (template: string, limit: number, fallback: string) => string;
     dismissNotification: (id?: string, manual?: boolean) => void;
     openQuotaNoticeModal: (payload: { message: string; whatsappNumber?: string; whatsappUrl?: string; dayKey?: string; persist?: boolean }) => void;
-    buildWhatsAppUrlFromNumber: (number: string, message: string) => string;
     consumeStorageQuota: (feature: 'readyPrescriptionSave' | 'medicalReportPrint') => Promise<any>;
     extractSmartQuotaErrorDetails: (error: any) => SmartQuotaLimitErrorDetails | null;
     getQuotaReachedMessage: (details: SmartQuotaLimitErrorDetails, fallback: string) => string;
@@ -56,7 +51,6 @@ interface CreateReadyPrescriptionActionsParams {
     setLabInvestigations: React.Dispatch<React.SetStateAction<string[]>>;
     setLastSavedHash: React.Dispatch<React.SetStateAction<string>>;
     uniqTextList: (items: string[]) => string[];
-    activeBranchId?: string;
 }
 
 export const createReadyPrescriptionActions = ({
@@ -65,16 +59,11 @@ export const createReadyPrescriptionActions = ({
     rxItems,
     generalAdvice,
     labInvestigations,
-    readyPrescriptions,
     sanitizeRxItemsForSave,
     sanitizeForFirestore,
     showNotification,
-    getAccountTypeControls,
-    resolveCurrentUserAccountType,
-    applyLimitPlaceholder,
     dismissNotification,
     openQuotaNoticeModal,
-    buildWhatsAppUrlFromNumber,
     consumeStorageQuota,
     extractSmartQuotaErrorDetails,
     getQuotaReachedMessage,
@@ -84,7 +73,6 @@ export const createReadyPrescriptionActions = ({
     setLabInvestigations,
     setLastSavedHash,
     uniqTextList,
-    activeBranchId,
 }: CreateReadyPrescriptionActionsParams) => {
     const OFFLINE_SYNC_PENDING_KEY = 'dh_offline_sync_pending';
 
@@ -93,11 +81,6 @@ export const createReadyPrescriptionActions = ({
         rxItems: PrescriptionItem[];
         generalAdvice: string[];
         labInvestigations: string[];
-    };
-
-    const getReadableErrorMessage = (error: unknown, fallback: string): string => {
-        const message = String((error as { message?: unknown })?.message || '').trim();
-        return message || fallback;
     };
 
     const normalizeReadyPrescriptionPayload = (payload: ReadyPrescriptionPayload): ReadyPrescriptionPayload => {

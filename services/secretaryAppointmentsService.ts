@@ -14,6 +14,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseConfig';
 import type { TodayAppointment } from '../components/appointments/public-booking/types';
+import { normalizePatientAddress } from '../utils/patientAddress';
 
 type ListAppointmentsPayload = {
   secret: string;
@@ -73,6 +74,8 @@ const parseAppointment = (raw: unknown): TodayAppointment | null => {
   if (age) result.age = age;
   const phone = toOptionalText(item.phone);
   if (phone) result.phone = phone;
+  const address = normalizePatientAddress(item.address as TodayAppointment['address']);
+  if (address) result.address = address;
   const visitReason = toOptionalText(item.visitReason);
   if (visitReason) result.visitReason = visitReason;
   if (typeof item.isFirstVisit === 'boolean') result.isFirstVisit = item.isFirstVisit;
@@ -98,7 +101,10 @@ const parseAppointment = (raw: unknown): TodayAppointment | null => {
   }
 
   const paymentType = toOptionalText(item.paymentType);
-  if (paymentType === 'insurance' || paymentType === 'discount' || paymentType === 'cash') {
+  if (
+    paymentType === 'insurance' || paymentType === 'discount' || paymentType === 'cash' ||
+    paymentType === 'instapay' || paymentType === 'wallet' || paymentType === 'bank_transfer'
+  ) {
     result.paymentType = paymentType;
   }
   const insuranceCompanyId = toOptionalText(item.insuranceCompanyId);

@@ -7,6 +7,10 @@ import { SECRETARY_LAST_SECRET_KEY } from './constants';
 import { secretaryAuthSecretKey, secretaryAuthUserKey, secretaryBranchKey } from './helpers';
 import { sanitizeSecretaryName } from './securityUtils';
 import type { SecretaryAuthCredentials } from '../../../types';
+import {
+  getSecretaryUsernameValidationMessage,
+  normalizeSecretaryUsername,
+} from '../../../utils/secretaryUsername';
 
 type UsePublicBookingAuthProfileParams = {
   secret: string;
@@ -35,9 +39,6 @@ const isAuthPermissionError = (error: unknown): boolean => {
   );
 };
 
-const extractEmail = (value: string): string =>
-  value.match(/[^\s@]+@[^\s@]+\.[^\s@]+/i)?.[0].toLowerCase() || '';
-
 export const usePublicBookingAuthProfile = ({
   secret,
   userId,
@@ -45,7 +46,7 @@ export const usePublicBookingAuthProfile = ({
 }: UsePublicBookingAuthProfileParams) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
-  const [doctorEmailInput, setDoctorEmailInput] = useState('');
+  const [loginIdentifierInput, setLoginIdentifierInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [secretaryName, setSecretaryName] = useState('');
@@ -113,9 +114,10 @@ export const usePublicBookingAuthProfile = ({
       return;
     }
 
-    const normalizedDoctorEmail = extractEmail(doctorEmailInput);
-    if (!normalizedDoctorEmail) {
-      setAuthError('يرجى إدخال إيميل الطبيب الصحيح');
+    const normalizedIdentifier = loginIdentifierInput.trim().toLowerCase();
+    const identifierError = getSecretaryUsernameValidationMessage(normalizedIdentifier);
+    if (identifierError) {
+      setAuthError(identifierError);
       return;
     }
 
@@ -127,7 +129,7 @@ export const usePublicBookingAuthProfile = ({
     try {
       const data = await secretaryLogin({
         secret,
-        doctorEmail: normalizedDoctorEmail,
+        secretaryUsername: normalizeSecretaryUsername(normalizedIdentifier),
         secretaryPassword: passwordInput,
       });
 
@@ -145,7 +147,7 @@ export const usePublicBookingAuthProfile = ({
 
       activeAuthCredentialsRef.current = {
         sessionToken: data.sessionToken,
-        doctorEmail: normalizedDoctorEmail,
+        loginIdentifier: normalizedIdentifier,
       };
       setIsAuthenticated(true);
       setAuthError('');
@@ -182,7 +184,7 @@ export const usePublicBookingAuthProfile = ({
     activeAuthCredentialsRef.current = {};
     setProfileMenuOpen(false);
     setIsAuthenticated(false);
-    setDoctorEmailInput('');
+    setLoginIdentifierInput('');
     setPasswordInput('');
     setAuthError('');
     navigate('/', { replace: true });
@@ -299,8 +301,8 @@ export const usePublicBookingAuthProfile = ({
     setIsAuthenticated,
     authChecking,
     setAuthChecking,
-    doctorEmailInput,
-    setDoctorEmailInput,
+    loginIdentifierInput,
+    setLoginIdentifierInput,
     passwordInput,
     setPasswordInput,
     authError,

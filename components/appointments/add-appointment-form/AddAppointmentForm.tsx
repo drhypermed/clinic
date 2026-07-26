@@ -7,7 +7,6 @@ import { PatientSuggestionsDropdown } from './PatientSuggestionsDropdown';
 import { getVisiblePatientSuggestions, normalizePhoneDigits, toPositiveFileNumber } from './helpers';
 import { sanitizeExternalHttpUrl } from './securityUtils';
 import type { AddAppointmentFormProps } from './types';
-import type { CustomBox } from '../../../types';
 import {
   estimateDateOfBirthFromAgeString,
   formatAgeFromDateOfBirth,
@@ -27,7 +26,6 @@ import {
   normalizeSecretaryVitalValue,
   normalizeSecretaryVitalFieldDefinitions,
   toSecretaryCustomFieldId,
-  toSecretaryVitalSignConfigs,
 } from '../../../utils/secretaryVitals';
 import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSelector';
 
@@ -43,6 +41,9 @@ import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSel
 
 export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   patientName, onPatientNameChange, age, onAgeChange, phone, onPhoneChange,
+  addressGovernorate = '', onAddressGovernorateChange,
+  addressCityArea = '', onAddressCityAreaChange,
+  addressDetails = '', onAddressDetailsChange,
   gender = '', onGenderChange,
   dateOfBirth = '', onDateOfBirthChange,
   pregnant = null, onPregnantChange,
@@ -50,7 +51,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   breastfeeding = null, onBreastfeedingChange,
   dateStr, onDateStrChange, timeStr, onTimeStrChange, visitReason, onVisitReasonChange,
   secretaryVitals = {}, secretaryVitalFields = [], secretaryVitalsVisibility, doctorSpecialty, onSecretaryVitalsChange,
-  todayStr, timeMin, saving, formError, bookingQuotaNotice, onSubmit,
+  todayStr, saving, formError, bookingQuotaNotice, onSubmit,
   appointmentType = 'exam', onAppointmentTypeChange, consultationCandidates = [],
   selectedConsultationCandidateId, onSelectConsultationCandidate,
   patientSuggestions = [], onSelectPatientSuggestion,
@@ -137,15 +138,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
     setTimeout(() => setActiveSuggestionField(null), 120);
   };
 
-  const secretaryVitalsConfig = useMemo(
-    () => toSecretaryVitalSignConfigs(undefined, {
-      visibility: secretaryVitalsVisibility,
-      fieldDefinitions: secretaryVitalFields,
-      doctorSpecialty,
-    }),
-    [doctorSpecialty, secretaryVitalFields, secretaryVitalsVisibility]
-  );
-
   const normalizedSecretaryFieldDefinitions = useMemo(
     () => normalizeSecretaryVitalFieldDefinitions(
       secretaryVitalFields,
@@ -161,20 +153,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
         isSecretaryFieldEnabled(secretaryVitalsVisibility, field.id, field.key)
       ),
     [normalizedSecretaryFieldDefinitions, secretaryVitalsVisibility]
-  );
-
-  const secretaryCustomBoxes = useMemo<CustomBox[]>(
-    () =>
-      enabledSecretaryFields
-        .filter((field) => field.kind === 'customBox')
-        .map((field, index) => ({
-          id: field.id,
-          label: String(field.labelAr || field.label || '').trim() || `حقل ${index + 1}`,
-          enabled: true,
-          order: field.order,
-          value: '',
-        })),
-    [enabledSecretaryFields]
   );
 
   const readSecretaryFieldValue = (fieldId: string, customBoxId?: string): string => {
@@ -198,16 +176,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
         (normalizedCustomBoxId ? secretaryVitals?.[normalizedCustomBoxId] : undefined)
     );
   };
-
-  const secretaryCustomBoxValues = useMemo(() => {
-    const values: Record<string, string> = {};
-    enabledSecretaryFields.forEach((field) => {
-      if (field.kind !== 'customBox') return;
-      const fieldValue = readSecretaryFieldValue(field.id, field.customBoxId);
-      if (fieldValue) values[field.id] = fieldValue;
-    });
-    return values;
-  }, [enabledSecretaryFields, secretaryVitals]);
 
   // خريطة القيم الحالية لكل حقل قياسات — تُستخدم لعرض القيم في الفورم
   const secretaryFieldValues = useMemo(() => {
@@ -532,6 +500,40 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             {activeSuggestionField === 'phone' && <PatientSuggestionsDropdown suggestions={visiblePatientSuggestions} onApplySuggestion={applyPatientSuggestion} />}
           </div>
 
+          <div className="sm:col-span-1 lg:col-span-1">
+            <label className="block text-xs font-bold text-slate-500 mb-1.5">المحافظة (اختياري)</label>
+            <input
+              type="text"
+              value={addressGovernorate}
+              onChange={(event) => onAddressGovernorateChange?.(event.target.value)}
+              placeholder="المحافظة"
+              className={fieldClass}
+              maxLength={100}
+            />
+          </div>
+          <div className="sm:col-span-1 lg:col-span-1">
+            <label className="block text-xs font-bold text-slate-500 mb-1.5">المدينة / المنطقة (اختياري)</label>
+            <input
+              type="text"
+              value={addressCityArea}
+              onChange={(event) => onAddressCityAreaChange?.(event.target.value)}
+              placeholder="المدينة أو المنطقة"
+              className={fieldClass}
+              maxLength={150}
+            />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-2">
+            <label className="block text-xs font-bold text-slate-500 mb-1.5">العنوان التفصيلي (اختياري)</label>
+            <input
+              type="text"
+              value={addressDetails}
+              onChange={(event) => onAddressDetailsChange?.(event.target.value)}
+              placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
+              className={fieldClass}
+              maxLength={400}
+            />
+          </div>
+
           <div className="sm:col-span-2 lg:col-span-2">
             <label className="block text-xs font-bold text-slate-500 mb-1.5">التاريخ والوقت</label>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -544,7 +546,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                />
                {/* ملاحظة: لا نضيف min على حقل الوقت — لو مرّت دقائق بين فتح الفورم والضغط
                     على حفظ، الـ JS handler يتولى auto-adjust للوقت الحالي بدلاً من حظر
-                    الإرسال بـ HTML5 validation. (_timeMin) محفوظ كـ prop للتوافق فقط. */}
+                    الإرسال بـ HTML5 validation. */}
                <input
                  type="time"
                  value={timeStr}

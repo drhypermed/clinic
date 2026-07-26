@@ -9,7 +9,7 @@
  * 4. حفظ واسترجاع حالة الكوتا من الـ LocalStorage لضمان استمرارية الرسائل التحذيرية.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { onSnapshotsInSync } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import type { NotificationState } from './useDrHyper.types';

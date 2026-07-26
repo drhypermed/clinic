@@ -24,9 +24,13 @@ import type { Dispatch, SetStateAction } from 'react';
 import { listRecentExamRecordsForSecretary } from '../../../services/secretaryRecordsService';
 import { listAppointmentsForSecretary } from '../../../services/secretaryAppointmentsService';
 import { toLocalDateStr } from '../utils';
-import { mergePatientDirectoryLists } from './usePublicBookingPageLogic.helpers';
-import type { PatientSuggestionOption, RecentExamPatientOption } from '../add-appointment-form/types';
+import type { RecentExamPatientOption } from '../add-appointment-form/types';
 import type { TodayAppointment } from './types';
+
+// Background refreshes are a safety net. Opening the page, returning to it, and
+// appointment changes all have their own immediate refresh path. Patient-name
+// suggestions use their own on-demand search and therefore need no polling.
+const APPOINTMENTS_POLLING_INTERVAL_MS = 10 * 60 * 1000;
 
 interface UseSecretaryDataLoadingParams {
   isAuthenticated: boolean;
@@ -36,7 +40,6 @@ interface UseSecretaryDataLoadingParams {
   getCurrentSessionToken?: () => string | undefined;
   invalidateSecretarySession: (message: string) => void;
   setRecentExamPatients: Dispatch<SetStateAction<RecentExamPatientOption[]>>;
-  setPatientDirectory: Dispatch<SetStateAction<PatientSuggestionOption[]>>;
   setTodayAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setUpcomingAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setCompletedAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
@@ -64,7 +67,6 @@ export const useSecretaryDataLoading = ({
   getCurrentSessionToken,
   invalidateSecretarySession,
   setRecentExamPatients,
-  setPatientDirectory,
   setTodayAppointments,
   setUpcomingAppointments,
   setCompletedAppointments,
@@ -74,8 +76,11 @@ export const useSecretaryDataLoading = ({
     if (!isAuthenticated || !secret || !userId) return;
 
     let isDisposed = false;
+    let isLoading = false;
 
     const loadRecentExamPatients = async () => {
+      if (isDisposed || isLoading) return;
+      isLoading = true;
       try {
         const data = await listRecentExamRecordsForSecretary({
           secret,
@@ -85,9 +90,6 @@ export const useSecretaryDataLoading = ({
         });
         if (!isDisposed) {
           setRecentExamPatients(data.recentExamPatients);
-          if (data.patientDirectory.length > 0) {
-            setPatientDirectory((current) => mergePatientDirectoryLists(current, data.patientDirectory));
-          }
         }
       } catch (error) {
         if (isInvalidSecretarySessionError(error)) {
@@ -95,17 +97,18 @@ export const useSecretaryDataLoading = ({
           return;
         }
         console.error('[Secretary] Failed loading recent exam records:', error);
+      } finally {
+        isLoading = false;
       }
     };
 
+    // مصدر التحديثات بعد التحميل الأول هو bookingConfig اللحظي، والذي يحتوي
+    // بالفعل على آخر الكشوفات ودليل المرضى للفرع. تجنّب الـpolling هنا يمنع
+    // مسحاً دورياً قد يصل إلى آلاف السجلات بلا داعٍ.
     void loadRecentExamPatients();
-    const interval = setInterval(() => {
-      void loadRecentExamPatients();
-    }, 60000);
 
     return () => {
       isDisposed = true;
-      clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, secret, userId]);
@@ -159,7 +162,7 @@ export const useSecretaryDataLoading = ({
 
     const startPolling = () => {
       if (intervalId != null) return;
-      intervalId = setInterval(tick, 15000);
+      intervalId = setInterval(tick, APPOINTMENTS_POLLING_INTERVAL_MS);
     };
     const stopPolling = () => {
       if (intervalId == null) return;

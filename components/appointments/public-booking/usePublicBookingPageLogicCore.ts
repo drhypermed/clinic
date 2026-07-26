@@ -29,6 +29,13 @@ import { useSecretaryTokenRefresh } from './useSecretaryTokenRefresh'; // تجد
 import { secretaryAuthSecretKey } from './helpers';
 import { insuranceService } from '../../../services/insuranceService'; // خدمة شركات التأمين
 import { discountReasonService } from '../../../services/discountReasonService';
+import { searchPatientsForSecretary } from '../../../services/secretaryPatientSearchService';
+import { normalizePatientNameForFile } from '../../../services/patient-files';
+import {
+  normalizePatientPhoneForSearch,
+  rankPatientSuggestions,
+} from '../../../services/patientSuggestionSearch';
+import type { PatientSuggestionOption } from '../add-appointment-form/types';
 import {
   INTERNAL_TOAST_MIN_VISIBLE_MS,
   buildSecretaryActionToastKey,
@@ -57,6 +64,8 @@ export const usePublicBookingPageLogic = () => {
 
   const state = usePublicBookingPageState();
   const userId = state.config?.userId ?? linkResolution.userIdParam;
+  const patientSearchRequestRef = useRef(0);
+  const patientSearchCacheRef = useRef(new Map<string, PatientSuggestionOption[]>());
 
   const auth = usePublicBookingAuthProfile({
     secret: linkResolution.secret,
@@ -142,6 +151,9 @@ export const usePublicBookingPageLogic = () => {
     setAge: state.setAge,
     setDateOfBirth: state.setDateOfBirth,
     setPhone: state.setPhone,
+    setAddressGovernorate: state.setAddressGovernorate,
+    setAddressCityArea: state.setAddressCityArea,
+    setAddressDetails: state.setAddressDetails,
     setGender: state.setGender,
     setPregnant: state.setPregnant,
     setBreastfeeding: state.setBreastfeeding,
@@ -160,11 +172,100 @@ export const usePublicBookingPageLogic = () => {
     getCurrentSessionToken: auth.getCurrentSessionToken,
     invalidateSecretarySession: auth.invalidateSecretarySession,
     setRecentExamPatients: state.setRecentExamPatients,
-    setPatientDirectory: state.setPatientDirectory,
     setTodayAppointments: state.setTodayAppointments,
     setUpcomingAppointments: state.setUpcomingAppointments,
     setCompletedAppointments: state.setCompletedAppointments,
   });
+
+  // نبحث بعد توقف قصير في الكتابة بدلاً من تحميل دليل كامل عند فتح الصفحة.
+  // الكاش خاص بالجلسة، لذلك الرجوع إلى اسم تم البحث عنه لا يسبب قراءة جديدة.
+  useEffect(() => {
+    const nameQuery = String(state.patientName || '').trim();
+    const phoneQuery = String(state.phone || '').trim();
+    const normalizedNameQuery = normalizePatientNameForFile(nameQuery);
+    const phoneDigits = normalizePatientPhoneForSearch(phoneQuery);
+    const requestId = ++patientSearchRequestRef.current;
+
+    if (
+      !auth.isAuthenticated ||
+      !linkResolution.secret ||
+      !userId ||
+      (normalizedNameQuery.length < 2 && phoneDigits.length < 7)
+    ) {
+      state.setPatientDirectory([]);
+      return;
+    }
+
+    const branchId = auth.sessionBranchId || 'main';
+    const cachePrefix = `${userId}|${branchId}|`;
+    const cacheKey = `${cachePrefix}${normalizedNameQuery}|${phoneDigits}`;
+    const cached = patientSearchCacheRef.current.get(cacheKey);
+    if (cached) {
+      state.setPatientDirectory(rankPatientSuggestions(cached, nameQuery, phoneQuery));
+      return;
+    }
+
+    const reusable = Array.from(patientSearchCacheRef.current.entries())
+      .filter(([key, patients]) => {
+        if (!key.startsWith(cachePrefix) || patients.length >= 20) return false;
+        const [cachedName = '', cachedPhone = ''] = key.slice(cachePrefix.length).split('|');
+        return (
+          (!phoneDigits && !cachedPhone && normalizedNameQuery.startsWith(cachedName))
+          || (!normalizedNameQuery && !cachedName && phoneDigits.startsWith(cachedPhone))
+        );
+      })
+      .sort((left, right) => right[0].length - left[0].length)[0]?.[1];
+    if (reusable) {
+      const ranked = rankPatientSuggestions(reusable, nameQuery, phoneQuery);
+      patientSearchCacheRef.current.set(cacheKey, ranked);
+      state.setPatientDirectory(ranked);
+      return;
+    }
+
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      void searchPatientsForSecretary({
+        secret: linkResolution.secret,
+        userId,
+        sessionToken: auth.getCurrentSessionToken?.(),
+        branchId,
+        nameQuery,
+        phoneQuery,
+      })
+        .then((patients) => {
+          if (disposed || patientSearchRequestRef.current !== requestId) return;
+          const ranked = rankPatientSuggestions(patients, nameQuery, phoneQuery);
+          patientSearchCacheRef.current.set(cacheKey, ranked);
+          state.setPatientDirectory(ranked);
+        })
+        .catch((error) => {
+          if (disposed || patientSearchRequestRef.current !== requestId) return;
+          const code = String((error as { code?: unknown })?.code || '')
+            .replace(/^functions\//, '')
+            .toLowerCase();
+          if (code === 'unauthenticated') {
+            auth.invalidateSecretarySession('انتهت جلسة السكرتارية. يرجى تسجيل الدخول مرة أخرى.');
+            return;
+          }
+          state.setPatientDirectory([]);
+        });
+    }, 350);
+
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+    };
+  }, [
+    auth.getCurrentSessionToken,
+    auth.invalidateSecretarySession,
+    auth.isAuthenticated,
+    auth.sessionBranchId,
+    linkResolution.secret,
+    state.patientName,
+    state.phone,
+    state.setPatientDirectory,
+    userId,
+  ]);
 
   useEffect(() => {
     if (linkResolution.resolvingSecret) return;
@@ -235,7 +336,6 @@ export const usePublicBookingPageLogic = () => {
     setTodayAppointments: state.setTodayAppointments,
     setUpcomingAppointments: state.setUpcomingAppointments,
     setCompletedAppointments: state.setCompletedAppointments,
-    setPatientDirectory: state.setPatientDirectory,
     setDoctorEntryResponse: state.setDoctorEntryResponse,
     setApprovedEntryAppointmentIds: state.setApprovedEntryAppointmentIds,
     setSubscriptionFormTitle: state.setSubscriptionFormTitle,
@@ -330,6 +430,9 @@ export const usePublicBookingPageLogic = () => {
     age: state.age,
     dateOfBirth: state.dateOfBirth,
     phone: state.phone,
+    addressGovernorate: state.addressGovernorate,
+    addressCityArea: state.addressCityArea,
+    addressDetails: state.addressDetails,
     gender: state.gender,
     pregnant: state.pregnant,
     breastfeeding: state.breastfeeding,
@@ -373,6 +476,9 @@ export const usePublicBookingPageLogic = () => {
     setAge: state.setAge,
     setDateOfBirth: state.setDateOfBirth,
     setPhone: state.setPhone,
+    setAddressGovernorate: state.setAddressGovernorate,
+    setAddressCityArea: state.setAddressCityArea,
+    setAddressDetails: state.setAddressDetails,
     setGender: state.setGender,
     setPregnant: state.setPregnant,
     setBreastfeeding: state.setBreastfeeding,
@@ -439,8 +545,8 @@ export const usePublicBookingPageLogic = () => {
     secret: linkResolution.secret,
     authChecking: auth.authChecking,
     isAuthenticated: auth.isAuthenticated,
-    doctorEmailInput: auth.doctorEmailInput,
-    setDoctorEmailInput: auth.setDoctorEmailInput,
+    loginIdentifierInput: auth.loginIdentifierInput,
+    setLoginIdentifierInput: auth.setLoginIdentifierInput,
     passwordInput: auth.passwordInput,
     setPasswordInput: auth.setPasswordInput,
     authError: auth.authError,
@@ -498,6 +604,12 @@ export const usePublicBookingPageLogic = () => {
     setDateOfBirth: state.setDateOfBirth,
     phone: state.phone,
     setPhone: state.setPhone,
+    addressGovernorate: state.addressGovernorate,
+    setAddressGovernorate: state.setAddressGovernorate,
+    addressCityArea: state.addressCityArea,
+    setAddressCityArea: state.setAddressCityArea,
+    addressDetails: state.addressDetails,
+    setAddressDetails: state.setAddressDetails,
     gender: state.gender,
     setGender: state.setGender,
     pregnant: state.pregnant,
