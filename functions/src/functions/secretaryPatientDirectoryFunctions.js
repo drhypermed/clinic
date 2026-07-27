@@ -168,7 +168,6 @@ const buildRecordContribution = (data) => {
     phoneSearchKeys,
     age: buildAgeText(data.age),
     address: normalizePatientAddress(data.address),
-    address: normalizePatientAddress(data.address),
     dateOfBirth: String(data.dateOfBirth || '').trim(),
     gender: data.gender === 'male' || data.gender === 'female' ? data.gender : '',
     identityUpdatedAtMs: recordDateMs,
@@ -190,7 +189,6 @@ const createEmptySummary = (contribution) => ({
   phones: new Set(),
   phoneSearchKeys: new Set(),
   age: '',
-  address: null,
   address: null,
   dateOfBirth: '',
   gender: '',
@@ -214,7 +212,6 @@ const hydrateSummary = (data, contribution) => {
     Array.isArray(data.phoneSearchKeys) ? data.phoneSearchKeys.map(String) : [],
   );
   summary.age = String(data.age || '');
-  summary.address = normalizePatientAddress(data.address);
   summary.address = normalizePatientAddress(data.address);
   summary.dateOfBirth = String(data.dateOfBirth || '');
   summary.gender = data.gender === 'male' || data.gender === 'female' ? data.gender : '';
@@ -243,7 +240,6 @@ const mergeContribution = (summary, contribution) => {
   if (!summary.patientName || contribution.identityUpdatedAtMs >= summary.identityUpdatedAtMs) {
     summary.patientName = contribution.patientName || summary.patientName;
     summary.age = contribution.age || summary.age;
-    summary.address = contribution.address || summary.address;
     summary.address = contribution.address || summary.address;
     summary.dateOfBirth = contribution.dateOfBirth || summary.dateOfBirth;
     summary.gender = contribution.gender || summary.gender;
@@ -275,7 +271,6 @@ const serializeSummary = (summary, timestampValue) => {
   if (summary.patientFileNumber > 0) payload.patientFileNumber = summary.patientFileNumber;
   if (summary.patientFileId) payload.patientFileId = summary.patientFileId;
   if (summary.age) payload.age = summary.age;
-  if (summary.address) payload.address = summary.address;
   if (summary.address) payload.address = summary.address;
   if (summary.dateOfBirth) payload.dateOfBirth = summary.dateOfBirth;
   if (summary.gender) payload.gender = summary.gender;

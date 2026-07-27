@@ -16,6 +16,7 @@ import { patientFilesService } from '../../services/patient-files';
 import { useEnabledSpecialtyPack } from '../../hooks/useSpecialtyPack';
 import { PatientFileImagesSection } from './PatientFileImagesSection';
 import { formatPatientAddress, normalizePatientAddress } from '../../utils/patientAddress';
+import { PatientAddressFields } from '../common/PatientAddressFields';
 
 // ─ تحميل كسول لباكدج النساء — أطباء التخصصات التانيه ما يحمّلوش الكود ده أبداً ─
 const PregnancySection = React.lazy(
@@ -488,36 +489,19 @@ export const PatientFileDetailsModal: React.FC<PatientFileDetailsModalProps> = (
                       dir="ltr"
                     />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] font-black text-slate-600">المحافظة</label>
-                    <input
-                      value={editAddressGovernorate}
-                      onChange={(event) => setEditAddressGovernorate(event.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
-                      placeholder="المحافظة"
-                      maxLength={100}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] font-black text-slate-600">المدينة / المنطقة</label>
-                    <input
-                      value={editAddressCityArea}
-                      onChange={(event) => setEditAddressCityArea(event.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
-                      placeholder="المدينة أو المنطقة"
-                      maxLength={150}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="mb-1 block text-[11px] font-black text-slate-600">العنوان التفصيلي</label>
-                    <input
-                      value={editAddressDetails}
-                      onChange={(event) => setEditAddressDetails(event.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
-                      placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
-                      maxLength={400}
-                    />
-                  </div>
+                  <PatientAddressFields
+                    role="doctor"
+                    userId={user?.uid}
+                    governorate={editAddressGovernorate}
+                    onGovernorateChange={setEditAddressGovernorate}
+                    cityArea={editAddressCityArea}
+                    onCityAreaChange={setEditAddressCityArea}
+                    details={editAddressDetails}
+                    onDetailsChange={setEditAddressDetails}
+                    fieldClassName="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:border-brand-500 focus:outline-none"
+                    labelClassName="mb-1 block text-[11px] font-black text-slate-600"
+                    detailsContainerClassName="md:col-span-2"
+                  />
                   <div className="md:col-span-2">
                     <label className="mb-1 block text-[11px] font-black text-slate-600">السن (سنوات / شهور / أيام)</label>
                     <div className="grid grid-cols-3 gap-2">

@@ -118,6 +118,8 @@ export interface AddAppointmentFormProps {
   // حقول التأمين (اختيارية - تظهر للسكرتير)
   userId?: string;
   bookingSecret?: string;
+  addressTemplateRole?: 'doctor' | 'secretary';
+  secretarySessionToken?: string;
   /** الفرع النشط — يستخدم لاختيار override نسبة تحمل المريض من شركة التأمين (لو موجود). */
   activeBranchId?: string;
   paymentType?: PaymentType;

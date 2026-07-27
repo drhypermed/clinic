@@ -15,6 +15,7 @@ import {
   calculateAgePartsFromDateOfBirth,
   estimateDateOfBirthFromAgeParts,
 } from '../appointments/utils';
+import { PatientAddressFields } from '../common/PatientAddressFields';
 
 /**
  * واجهة بيانات المريض المقترحة (Basic Patient Suggestion)
@@ -53,6 +54,7 @@ const toPositiveFileNumber = (value: unknown): number | undefined => {
  */
 
 interface PatientInfoSectionProps {
+  userId?: string;
   patientName: string; setPatientName: (v: string) => void;         // الاسم الحالي ودالة التحديث
   phone: string; setPhone: (v: string) => void;                     // الهاتف الحالي ودالة التحديث
   addressGovernorate: string; setAddressGovernorate: (v: string) => void;
@@ -87,6 +89,7 @@ interface PatientInfoSectionProps {
 }
 
 export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
+  userId,
   patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays,
   addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
   dateOfBirth = '', setDateOfBirth, showDateOfBirth = false,
@@ -612,41 +615,20 @@ export const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
           )}
         </div>
 
-        {/* ═══ عنوان المريض — اختياري ومقسّم لتسهيل البحث والعرض المختصر ═══ */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <p className={fieldTitleClass}>المحافظة (اختياري)</p>
-            <input
-              type="text"
-              value={addressGovernorate}
-              onChange={(event) => setAddressGovernorate(event.target.value)}
-              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
-              placeholder="مثال: القاهرة"
-              maxLength={100}
-            />
-          </div>
-          <div>
-            <p className={fieldTitleClass}>المدينة / المنطقة (اختياري)</p>
-            <input
-              type="text"
-              value={addressCityArea}
-              onChange={(event) => setAddressCityArea(event.target.value)}
-              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
-              placeholder="مثال: مدينة نصر"
-              maxLength={150}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <p className={fieldTitleClass}>العنوان التفصيلي (اختياري)</p>
-            <input
-              type="text"
-              value={addressDetails}
-              onChange={(event) => setAddressDetails(event.target.value)}
-              className="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 placeholder-slate-400 transition-colors hover:!border-brand-300 focus:!border-brand-400"
-              placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
-              maxLength={400}
-            />
-          </div>
+          <PatientAddressFields
+            role="doctor"
+            userId={userId}
+            governorate={addressGovernorate}
+            onGovernorateChange={setAddressGovernorate}
+            cityArea={addressCityArea}
+            onCityAreaChange={setAddressCityArea}
+            details={addressDetails}
+            onDetailsChange={setAddressDetails}
+            fieldClassName="clinic-field h-[44px] w-full rounded-2xl !border-2 !border-slate-200 !bg-white px-4 text-right text-sm font-black text-slate-900 transition-colors hover:!border-brand-300 focus:!border-brand-400"
+            labelClassName={fieldTitleClass}
+            detailsContainerClassName="sm:col-span-2"
+          />
         </div>
 
       </div>

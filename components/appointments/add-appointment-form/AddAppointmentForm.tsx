@@ -28,6 +28,7 @@ import {
   toSecretaryCustomFieldId,
 } from '../../../utils/secretaryVitals';
 import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSelector';
+import { PatientAddressFields } from '../../common/PatientAddressFields';
 
 /**
  * الملف: AddAppointmentForm.tsx
@@ -57,7 +58,7 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   patientSuggestions = [], onSelectPatientSuggestion,
   canLoadMoreConsultationCandidates = false, onLoadMoreConsultationCandidates,
   submitLabel, hideTopHeader = false, isOpen = true, onToggleOpen,
-  bookingSecret,
+  bookingSecret, addressTemplateRole = 'doctor', secretarySessionToken,
   userId, activeBranchId, paymentType = 'cash', onPaymentTypeChange,
   insuranceCompanyId = '', onInsuranceCompanyIdChange,
   insuranceCompanyName = '', onInsuranceCompanyNameChange,
@@ -500,39 +501,23 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
             {activeSuggestionField === 'phone' && <PatientSuggestionsDropdown suggestions={visiblePatientSuggestions} onApplySuggestion={applyPatientSuggestion} />}
           </div>
 
-          <div className="sm:col-span-1 lg:col-span-1">
-            <label className="block text-xs font-bold text-slate-500 mb-1.5">المحافظة (اختياري)</label>
-            <input
-              type="text"
-              value={addressGovernorate}
-              onChange={(event) => onAddressGovernorateChange?.(event.target.value)}
-              placeholder="المحافظة"
-              className={fieldClass}
-              maxLength={100}
-            />
-          </div>
-          <div className="sm:col-span-1 lg:col-span-1">
-            <label className="block text-xs font-bold text-slate-500 mb-1.5">المدينة / المنطقة (اختياري)</label>
-            <input
-              type="text"
-              value={addressCityArea}
-              onChange={(event) => onAddressCityAreaChange?.(event.target.value)}
-              placeholder="المدينة أو المنطقة"
-              className={fieldClass}
-              maxLength={150}
-            />
-          </div>
-          <div className="sm:col-span-2 lg:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 mb-1.5">العنوان التفصيلي (اختياري)</label>
-            <input
-              type="text"
-              value={addressDetails}
-              onChange={(event) => onAddressDetailsChange?.(event.target.value)}
-              placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
-              className={fieldClass}
-              maxLength={400}
-            />
-          </div>
+          <PatientAddressFields
+            role={addressTemplateRole}
+            userId={userId}
+            bookingSecret={bookingSecret}
+            secretarySessionToken={secretarySessionToken}
+            branchId={activeBranchId}
+            governorate={addressGovernorate}
+            onGovernorateChange={(value) => onAddressGovernorateChange?.(value)}
+            cityArea={addressCityArea}
+            onCityAreaChange={(value) => onAddressCityAreaChange?.(value)}
+            details={addressDetails}
+            onDetailsChange={(value) => onAddressDetailsChange?.(value)}
+            fieldClassName={fieldClass}
+            governorateContainerClassName="sm:col-span-1 lg:col-span-1"
+            cityContainerClassName="sm:col-span-1 lg:col-span-1"
+            detailsContainerClassName="sm:col-span-2 lg:col-span-2"
+          />
 
           <div className="sm:col-span-2 lg:col-span-2">
             <label className="block text-xs font-bold text-slate-500 mb-1.5">التاريخ والوقت</label>

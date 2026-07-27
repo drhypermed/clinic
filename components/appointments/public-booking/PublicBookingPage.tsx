@@ -110,6 +110,7 @@ export const PublicBookingPage: React.FC = () => {
     profileSaveMessage,
     handleSecretaryLogout,
     fixedTitle: _fixedTitle,
+    secretarySessionToken,
     success,
     sortedTodayAppointments,
     upcomingAppointments,
@@ -494,6 +495,7 @@ export const PublicBookingPage: React.FC = () => {
                 discountReasons={discountReasons}
                 insuranceCompanies={insuranceCompanies}
                 bookingSecret={secret}
+                secretarySessionToken={secretarySessionToken}
                 userId={secret ? userId : undefined}
                 sessionBranchId={sessionBranchId}
               />

@@ -103,6 +103,7 @@ type PublicBookingFormSectionProps = {
   insuranceCompanies?: InsuranceCompany[];
   userId?: string;
   bookingSecret?: string;
+  secretarySessionToken?: string;
   /**
    * الفرع الحالي للسكرتيرة — يُمرَّر إلى `AddAppointmentForm` ثم `InsurancePaymentSelector`
    * لاختيار override نسبة تحمل المريض الخاصة بالفرع (لو الطبيب حدد نسب مختلفة لكل فرع).
@@ -188,6 +189,7 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   insuranceCompanies,
   userId,
   bookingSecret,
+  secretarySessionToken,
   sessionBranchId,
 }) => {
   return (
@@ -264,6 +266,8 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               hideTopHeader
               onSubmit={onSubmit}
               bookingSecret={bookingSecret}
+              addressTemplateRole="secretary"
+              secretarySessionToken={secretarySessionToken}
               paymentType={paymentType}
               onPaymentTypeChange={onPaymentTypeChange}
               insuranceCompanyId={insuranceCompanyId}

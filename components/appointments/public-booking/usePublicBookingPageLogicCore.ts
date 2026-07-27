@@ -577,6 +577,7 @@ export const usePublicBookingPageLogic = () => {
     profileSaveMessage: auth.profileSaveMessage,
     handleSecretaryLogout: auth.handleSecretaryLogout,
     fixedTitle,
+    secretarySessionToken: auth.getCurrentSessionToken(),
     success: state.success,
     sortedTodayAppointments: state.sortedTodayAppointments,
     upcomingAppointments: state.upcomingAppointments,

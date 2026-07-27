@@ -801,7 +801,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
             <div className="apple-exam-stack prescription-editor-grid">
               <div className="editor-block editor-block--patient dh-stagger-1">
                 <PatientInfoSection
-                  patientName={patientName} setPatientName={setPatientName}
+                  userId={userId} patientName={patientName} setPatientName={setPatientName}
                   phone={phone} setPhone={setPhone}
                   addressGovernorate={addressGovernorate} setAddressGovernorate={setAddressGovernorate}
                   addressCityArea={addressCityArea} setAddressCityArea={setAddressCityArea}
