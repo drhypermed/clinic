@@ -18,6 +18,7 @@ import type { DiscountReason } from '../../../services/discountReasonService';
 export interface RecentExamPatientOption {
   id: string;
   patientName: string;
+  patientFileNumber?: number;
   age?: string;
   dateOfBirth?: string;
   phone?: string;
@@ -109,8 +110,6 @@ export interface AddAppointmentFormProps {
   onSelectConsultationCandidate?: (candidate: RecentExamPatientOption) => void;
   patientSuggestions?: PatientSuggestionOption[];     // اقتراحات الأسماء الحية
   onSelectPatientSuggestion?: (candidate: PatientSuggestionOption) => void;
-  canLoadMoreConsultationCandidates?: boolean;
-  onLoadMoreConsultationCandidates?: () => void;
   submitLabel?: string;                  // نص زر الحفظ (اختياري)
   hideTopHeader?: boolean;
   isOpen?: boolean;

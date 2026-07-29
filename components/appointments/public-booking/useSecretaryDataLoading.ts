@@ -3,9 +3,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // يغلف 3 أنواع من استدعاءات Cloud Functions مع polling:
 //
-//   1) loadRecentExamPatients (كل 60 ثانية):
+//   1) loadRecentExamPatients (عند اختيار وضع الاستشارة):
 //      - قائمة المرضى اللي عندهم كشوفات حديثة (آخر 30 يوم)
-//      - يدمج الـ patient directory مع القادم الجديد (mergePatientDirectoryLists)
+//      - يقرأها على دفعات من السيرفر بلا حد أقصى للعدد
 //
 //   2) refreshAppointments (كل 30 ثانية + يدوياً بعد CRUD):
 //      - مواعيد اليوم / القادمة / المنفذة لسكرتارية الفرع الحالي
@@ -39,6 +39,7 @@ interface UseSecretaryDataLoadingParams {
   sessionBranchId: string | undefined;
   getCurrentSessionToken?: () => string | undefined;
   invalidateSecretarySession: (message: string) => void;
+  loadRecentExamPatients: boolean;
   setRecentExamPatients: Dispatch<SetStateAction<RecentExamPatientOption[]>>;
   setTodayAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setUpcomingAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
@@ -66,14 +67,18 @@ export const useSecretaryDataLoading = ({
   sessionBranchId,
   getCurrentSessionToken,
   invalidateSecretarySession,
+  loadRecentExamPatients: shouldLoadRecentExamPatients,
   setRecentExamPatients,
   setTodayAppointments,
   setUpcomingAppointments,
   setCompletedAppointments,
 }: UseSecretaryDataLoadingParams) => {
-  // ── 1) تحميل كشوفات حديثة كل 60 ثانية ──
+  // ── 1) تحميل كشوفات حديثة عند فتح وضع الاستشارة فقط ──
   useEffect(() => {
-    if (!isAuthenticated || !secret || !userId) return;
+    if (!isAuthenticated || !secret || !userId || !shouldLoadRecentExamPatients) {
+      setRecentExamPatients([]);
+      return;
+    }
 
     let isDisposed = false;
     let isLoading = false;
@@ -110,8 +115,14 @@ export const useSecretaryDataLoading = ({
     return () => {
       isDisposed = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, secret, userId]);
+  }, [
+    isAuthenticated,
+    secret,
+    sessionBranchId,
+    shouldLoadRecentExamPatients,
+    userId,
+    setRecentExamPatients,
+  ]);
 
   // ── 2) تحميل المواعيد (اليوم / القادمة / المنفذة) عبر Cloud Function ──
   // نستخدم ref حتى نقدر نستدعيها يدوياً بعد CRUD بدون إعادة إنشاء الدالة.

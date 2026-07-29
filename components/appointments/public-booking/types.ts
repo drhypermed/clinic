@@ -92,6 +92,13 @@ export type TodayAppointment = {
   examCompletedAt?: string;
   /** الفرع المرتبط بالموعد - مهم للفلترة الصحيحة بين الفروع */
   branchId?: string;
+  /** هوية ملف المريض المرتبط — لازمة لربط خدمات الزيارة بنفس الملف. */
+  patientFileId?: string;
+  patientFileNumber?: number;
+  patientFileNameKey?: string;
+  /** ملخص الخدمات الإضافية لهذه الزيارة لعرضه على كارت السكرتارية. */
+  serviceChargesCount?: number;
+  serviceChargesTotal?: number;
   /** جنس المريض — ينتقل من فورم الحجز للطبيب */
   gender?: PatientGender;
   /** تاريخ الميلاد — لحساب السن تلقائياً */

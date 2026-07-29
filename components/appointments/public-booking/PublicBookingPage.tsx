@@ -163,8 +163,6 @@ export const PublicBookingPage: React.FC = () => {
     appointmentType,
     handleAppointmentTypeChange,
     visibleConsultationCandidates,
-    canLoadMoreConsultationCandidates,
-    loadMoreConsultationCandidates,
     selectedConsultationCandidateId,
     handleSelectConsultationCandidate,
     patientDirectory,
@@ -385,6 +383,11 @@ export const PublicBookingPage: React.FC = () => {
               <PublicBookingTodaySection
                 sortedTodayAppointments={sortedTodayAppointments}
                 todayDateMeta={todayDateMeta}
+                userId={userId}
+                secret={secret}
+                sessionToken={secretarySessionToken}
+                branchId={sessionBranchId}
+                secretaryName={secretaryNameInput}
                 approvedEntryAppointmentIds={approvedEntryAppointmentIds}
                 secretaryApprovedEntryIds={secretaryApprovedEntryIds}
                 pendingEntryAppointmentId={pendingEntryAppointmentId}
@@ -413,6 +416,11 @@ export const PublicBookingPage: React.FC = () => {
             <div className="px-3 py-3 sm:px-5 sm:py-4">
               <PublicBookingCompletedSection
                 completedAppointments={completedAppointments}
+                userId={userId}
+                secret={secret}
+                sessionToken={secretarySessionToken}
+                branchId={sessionBranchId}
+                secretaryName={secretaryNameInput}
                 canShowSecretaryVitals={canShowSecretaryVitals}
                 onRemoveAppointment={removeTodayAppointment}
               />
@@ -465,8 +473,6 @@ export const PublicBookingPage: React.FC = () => {
                 appointmentType={appointmentType}
                 onAppointmentTypeChange={handleAppointmentTypeChange}
                 visibleConsultationCandidates={visibleConsultationCandidates}
-                canLoadMoreConsultationCandidates={canLoadMoreConsultationCandidates}
-                onLoadMoreConsultationCandidates={loadMoreConsultationCandidates}
                 selectedConsultationCandidateId={selectedConsultationCandidateId}
                 onSelectConsultationCandidate={handleSelectConsultationCandidate}
                 patientSuggestions={patientDirectory}

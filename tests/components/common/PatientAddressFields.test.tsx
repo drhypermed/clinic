@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { PatientAddressFields } from '../../../components/common/PatientAddressFields';
-import { EGYPT_GOVERNORATES } from '../../../utils/egyptGovernorates';
 
 const AddressFieldsHarness = () => {
   const [governorate, setGovernorate] = useState('');
@@ -10,34 +9,47 @@ const AddressFieldsHarness = () => {
   const [details, setDetails] = useState('');
 
   return (
-    <div>
-      <PatientAddressFields
-        governorate={governorate}
-        onGovernorateChange={setGovernorate}
-        cityArea={cityArea}
-        onCityAreaChange={setCityArea}
-        details={details}
-        onDetailsChange={setDetails}
-        fieldClassName="field"
-      />
-    </div>
+    <PatientAddressFields
+      governorate={governorate}
+      onGovernorateChange={setGovernorate}
+      cityArea={cityArea}
+      onCityAreaChange={setCityArea}
+      details={details}
+      onDetailsChange={setDetails}
+      fieldClassName="field"
+    />
   );
 };
 
 describe('PatientAddressFields', () => {
-  it('offers all governorates and enables custom city entry through Other', () => {
+  it('uses one full-address field with the transparent Benha example', () => {
     render(<AddressFieldsHarness />);
 
-    const [governorateSelect, citySelect] = screen.getAllByRole('combobox');
-    EGYPT_GOVERNORATES.forEach((governorate) => {
-      expect(screen.getByRole('option', { name: governorate })).toBeInTheDocument();
-    });
+    const addressInput = screen.getByRole('textbox', { name: 'العنوان' });
+    expect(addressInput).toHaveAttribute('placeholder', 'مثال: بنها');
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
 
-    fireEvent.change(governorateSelect, { target: { value: 'القاهرة' } });
-    fireEvent.change(citySelect, {
-      target: { value: '__other__' },
-    });
+    fireEvent.change(addressInput, { target: { value: 'بنها، شارع فريد ندا' } });
+    expect(addressInput).toHaveValue('بنها، شارع فريد ندا');
 
-    expect(screen.getByPlaceholderText('اكتب المدينة أو المنطقة الجديدة')).toBeInTheDocument();
+    fireEvent.change(addressInput, { target: { value: 'بنها شارع ' } });
+    expect(addressInput).toHaveValue('بنها شارع ');
+  });
+
+  it('combines an existing structured address without losing its parts', () => {
+    render(
+      <PatientAddressFields
+        governorate="القليوبية"
+        onGovernorateChange={() => undefined}
+        cityArea="بنها"
+        onCityAreaChange={() => undefined}
+        details="شارع فريد ندا"
+        onDetailsChange={() => undefined}
+        fieldClassName="field"
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: 'العنوان' }))
+      .toHaveValue('القليوبية، بنها، شارع فريد ندا');
   });
 });

@@ -127,6 +127,22 @@ const parseAppointment = (raw: unknown): TodayAppointment | null => {
   if (discountReasonId) result.discountReasonId = discountReasonId;
   const discountReasonLabel = toOptionalText(item.discountReasonLabel);
   if (discountReasonLabel) result.discountReasonLabel = discountReasonLabel;
+  const patientFileId = toOptionalText(item.patientFileId);
+  if (patientFileId) result.patientFileId = patientFileId;
+  const patientFileNumber = toFiniteNumber(item.patientFileNumber);
+  if (patientFileNumber !== undefined && patientFileNumber > 0) {
+    result.patientFileNumber = Math.floor(patientFileNumber);
+  }
+  const patientFileNameKey = toOptionalText(item.patientFileNameKey);
+  if (patientFileNameKey) result.patientFileNameKey = patientFileNameKey;
+  const serviceChargesCount = toFiniteNumber(item.serviceChargesCount);
+  if (serviceChargesCount !== undefined && serviceChargesCount >= 0) {
+    result.serviceChargesCount = Math.floor(serviceChargesCount);
+  }
+  const serviceChargesTotal = toFiniteNumber(item.serviceChargesTotal);
+  if (serviceChargesTotal !== undefined && serviceChargesTotal >= 0) {
+    result.serviceChargesTotal = serviceChargesTotal;
+  }
 
   return result;
 };

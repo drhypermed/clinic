@@ -23,9 +23,16 @@ import {
   buildRecentExamCandidates,
   extractBookingQuotaNotice,
 } from './helpers';
+import {
+  consultationCandidateMatchesPatient,
+  findMatchingConsultationCandidateId,
+} from '../add-appointment-form/helpers';
 import { branchesService } from '../../../services/firestore/branches';
 import { usePatientDirectorySuggestions } from '../../../hooks/usePatientDirectorySuggestions';
 import { mergePatientSuggestions } from '../../../services/patientSuggestionSearch';
+import {
+  listRecentExamRecordsForDoctor,
+} from '../../../services/recentExamRecordsService';
 // دوال هوية المريض: حساب السن الجديد من آخر زيارة + تطبيع الجنس
 import {
   normalizeGender,
@@ -93,6 +100,7 @@ export const useAppointmentFormState = ({
   const [saving, setSaving] = useState(false);
   const [addSuccessToast, setAddSuccessToast] = useState(false);
   const [addAppointmentFormOpen, setAddAppointmentFormOpen] = useState(false);
+  const [serverRecentExamRecords, setServerRecentExamRecords] = useState<PatientRecord[]>([]);
 
   // تثبيت الفرع لحظة فتح النموذج لمنع تضارب عند تبديل الفرع أثناء الكتابة
   const formBranchIdRef = useRef<string | null>(null);
@@ -112,8 +120,47 @@ export const useAppointmentFormState = ({
     () => mergePatientSuggestions(directoryPatientSuggestions, localPatientSuggestions),
     [directoryPatientSuggestions, localPatientSuggestions],
   );
-  const recentExamCandidates = useMemo(() => buildRecentExamCandidates(records), [records]);
+  const localRecentExamCandidates = useMemo(() => buildRecentExamCandidates(records), [records]);
+  const serverRecentExamCandidates = useMemo(
+    () => buildRecentExamCandidates(serverRecentExamRecords),
+    [serverRecentExamRecords],
+  );
+  const recentExamCandidates = useMemo(() => {
+    const byRecordId = new Map<string, RecentExamPatientOption>();
+    serverRecentExamCandidates.forEach((candidate) => byRecordId.set(candidate.id, candidate));
+    localRecentExamCandidates.forEach((candidate) => {
+      byRecordId.set(candidate.id, {
+        ...byRecordId.get(candidate.id),
+        ...candidate,
+      });
+    });
+    return Array.from(byRecordId.values())
+      .sort(
+        (left, right) =>
+          Date.parse(right.examCompletedAt || '') - Date.parse(left.examCompletedAt || ''),
+      );
+  }, [localRecentExamCandidates, serverRecentExamCandidates]);
   const visibleConsultationCandidates = recentExamCandidates;
+
+  useEffect(() => {
+    let disposed = false;
+    setServerRecentExamRecords([]);
+    if (!userId || !addAppointmentFormOpen || appointmentType !== 'consultation') return () => {
+      disposed = true;
+    };
+
+    void listRecentExamRecordsForDoctor(userId, branchId)
+      .then((result) => {
+        if (!disposed) setServerRecentExamRecords(result);
+      })
+      .catch(() => {
+        // القائمة المحلية تظل fallback آمناً إذا تعذر الاستعلام المستقل مؤقتاً.
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, [addAppointmentFormOpen, appointmentType, branchId, userId]);
 
   // تحديث "تاريخ اليوم" كل دقيقة لضمان دقة الاختيار التلقائي (Auto-Refresh)
   useEffect(() => {
@@ -191,6 +238,11 @@ export const useAppointmentFormState = ({
     setPregnant(null);
     setGestationalAgeWeeks(null);
     setBreastfeeding(null);
+    if (appointmentType === 'consultation') {
+      setSelectedConsultationCandidateId(
+        findMatchingConsultationCandidateId(recentExamCandidates, candidate),
+      );
+    }
   };
 
   /** دخول وضع تعديل موعد موجود */
@@ -295,6 +347,29 @@ export const useAppointmentFormState = ({
       return;
     }
 
+    const existingConsultationSourceId =
+      editingAppointment?.consultationSourceRecordId ||
+      editingAppointment?.consultationSourceAppointmentId;
+    if (
+      resolvedType === 'consultation' &&
+      !selectedConsultationCandidate &&
+      !existingConsultationSourceId
+    ) {
+      setFormError('اختر المريض من كشوفات آخر 30 يوم حتى ترتبط الاستشارة بالكشف الصحيح.');
+      return;
+    }
+    if (
+      resolvedType === 'consultation' &&
+      selectedConsultationCandidate &&
+      !consultationCandidateMatchesPatient(selectedConsultationCandidate, {
+        patientName: name,
+        phone: ph,
+      })
+    ) {
+      setFormError('بيانات المريض تغيّرت بعد اختيار الكشف. اختر المريض مرة أخرى من قائمة الاستشارات.');
+      return;
+    }
+
     // تطبيع الحقول الجديدة قبل الحفظ (undefined لو فاضي عشان Firestore ما يحفظش قيم فارغة)
     const genderForPayload = normalizeGender(gender);
     const pregnantForPayload = typeof pregnant === 'boolean' ? pregnant : undefined;
@@ -347,11 +422,29 @@ export const useAppointmentFormState = ({
       ...basePayload,
       appointmentType: resolvedType,
       consultationSourceAppointmentId:
-        resolvedType === 'consultation' ? (selectedConsultationCandidateId || undefined) : undefined,
+        resolvedType === 'consultation'
+          ? (
+              selectedConsultationCandidateId ||
+              editingAppointment?.consultationSourceAppointmentId ||
+              undefined
+            )
+          : undefined,
       consultationSourceCompletedAt:
-        resolvedType === 'consultation' ? selectedConsultationCandidate?.examCompletedAt : undefined,
+        resolvedType === 'consultation'
+          ? (
+              selectedConsultationCandidate?.examCompletedAt ||
+              editingAppointment?.consultationSourceCompletedAt ||
+              undefined
+            )
+          : undefined,
       consultationSourceRecordId:
-        resolvedType === 'consultation' ? selectedConsultationCandidate?.consultationSourceRecordId : undefined,
+        resolvedType === 'consultation'
+          ? (
+              selectedConsultationCandidate?.consultationSourceRecordId ||
+              editingAppointment?.consultationSourceRecordId ||
+              undefined
+            )
+          : undefined,
     };
 
     // إضافة بيانات التأمين لللواح (payload)

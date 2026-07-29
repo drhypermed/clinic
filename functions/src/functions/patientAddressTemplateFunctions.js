@@ -8,111 +8,114 @@ const {
   assertSecretarySessionForBranch,
 } = require('./secretaryLoginHelpers');
 
-const EGYPT_GOVERNORATES = new Set([
-  'القاهرة',
-  'الجيزة',
-  'الإسكندرية',
-  'الدقهلية',
-  'البحر الأحمر',
-  'البحيرة',
-  'الفيوم',
-  'الغربية',
-  'الإسماعيلية',
-  'المنوفية',
-  'المنيا',
-  'القليوبية',
-  'الوادي الجديد',
-  'السويس',
-  'أسوان',
-  'أسيوط',
-  'بني سويف',
-  'بورسعيد',
-  'دمياط',
-  'الشرقية',
-  'جنوب سيناء',
-  'كفر الشيخ',
-  'مطروح',
-  'الأقصر',
-  'قنا',
-  'شمال سيناء',
-  'سوهاج',
-]);
-
 const cleanText = (value, maxLength) =>
   normalizeText(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
 
-const uniqueSorted = (values, maxLength, maxItems) => {
-  if (!Array.isArray(values)) return [];
-  return Array.from(new Set(values.map((value) => cleanText(value, maxLength)).filter(Boolean)))
-    .sort((left, right) => left.localeCompare(right, 'ar'))
-    .slice(0, maxItems);
+const cleanId = (value) =>
+  cleanText(value, 120).replace(/[^a-zA-Z0-9_-]/g, '');
+
+const makeLegacyId = (value) => {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `legacy_${(hash >>> 0).toString(36)}`;
 };
 
-const normalizeLibrary = (value) => {
-  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  const cityMap = new Map();
-  (Array.isArray(source.cities) ? source.cities : []).forEach((rawGroup) => {
-    if (!rawGroup || typeof rawGroup !== 'object' || Array.isArray(rawGroup)) return;
-    const governorate = cleanText(rawGroup.governorate, 100);
-    if (!EGYPT_GOVERNORATES.has(governorate)) return;
-    const values = uniqueSorted(rawGroup.values, 150, 100);
-    if (values.length === 0) return;
-    const current = cityMap.get(governorate) || [];
-    cityMap.set(governorate, uniqueSorted([...current, ...values], 150, 100));
-  });
-
-  const detailsMap = new Map();
-  (Array.isArray(source.details) ? source.details : []).forEach((rawGroup) => {
-    if (!rawGroup || typeof rawGroup !== 'object' || Array.isArray(rawGroup)) return;
-    const governorate = cleanText(rawGroup.governorate, 100);
-    const cityArea = cleanText(rawGroup.cityArea, 150);
-    if (!EGYPT_GOVERNORATES.has(governorate)) return;
-    const values = uniqueSorted(rawGroup.values, 400, 150);
-    if (values.length === 0) return;
-    const key = `${governorate}\u0000${cityArea}`;
-    const current = detailsMap.get(key) || { governorate, cityArea, values: [] };
-    current.values = uniqueSorted([...current.values, ...values], 400, 150);
-    detailsMap.set(key, current);
-  });
-
+const normalizeTemplate = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const address = cleanText(value.address ?? value.value, 500);
+  if (!address) return null;
   return {
-    version: 1,
-    cities: Array.from(cityMap.entries())
-      .map(([governorate, values]) => ({ governorate, values }))
-      .sort((left, right) => left.governorate.localeCompare(right.governorate, 'ar'))
-      .slice(0, 27),
-    details: Array.from(detailsMap.values())
-      .sort((left, right) =>
-        left.governorate.localeCompare(right.governorate, 'ar')
-        || left.cityArea.localeCompare(right.cityArea, 'ar'))
-      .slice(0, 500),
+    id: cleanId(value.id) || makeLegacyId(address),
+    name: cleanText(value.name, 100) || address.slice(0, 100),
+    address,
   };
 };
 
-const addTemplate = (library, input) => {
+const readLegacyTemplates = (source) => {
+  const addresses = [];
+  (Array.isArray(source.details) ? source.details : []).forEach((rawGroup) => {
+    if (!rawGroup || typeof rawGroup !== 'object' || Array.isArray(rawGroup)) return;
+    const prefix = [
+      cleanText(rawGroup.governorate, 100),
+      cleanText(rawGroup.cityArea, 150),
+    ].filter(Boolean);
+    (Array.isArray(rawGroup.values) ? rawGroup.values : []).forEach((rawValue) => {
+      const address = [...prefix, cleanText(rawValue, 400)].filter(Boolean).join('، ');
+      if (address) addresses.push({ id: makeLegacyId(address), name: address, address });
+    });
+  });
+  (Array.isArray(source.cities) ? source.cities : []).forEach((rawGroup) => {
+    if (!rawGroup || typeof rawGroup !== 'object' || Array.isArray(rawGroup)) return;
+    const governorate = cleanText(rawGroup.governorate, 100);
+    (Array.isArray(rawGroup.values) ? rawGroup.values : []).forEach((rawValue) => {
+      const address = [governorate, cleanText(rawValue, 150)].filter(Boolean).join('، ');
+      if (address) addresses.push({ id: makeLegacyId(address), name: address, address });
+    });
+  });
+  return addresses;
+};
+
+const normalizeLibrary = (value) => {
+  const initial = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const source = initial.patientAddressTemplates
+    && initial.patientAddressTemplates !== value
+    ? initial.patientAddressTemplates
+    : initial;
+  const candidates = [
+    ...(Array.isArray(source.addresses) ? source.addresses : []),
+    ...readLegacyTemplates(source),
+  ];
+  const byId = new Map();
+  const addressIds = new Map();
+
+  candidates.forEach((candidate) => {
+    const template = normalizeTemplate(candidate);
+    if (!template) return;
+    const addressKey = template.address.toLocaleLowerCase('ar');
+    const duplicateId = addressIds.get(addressKey);
+    if (duplicateId && duplicateId !== template.id) return;
+    byId.set(template.id, template);
+    addressIds.set(addressKey, template.id);
+  });
+
+  return {
+    version: 2,
+    addresses: Array.from(byId.values())
+      .sort((left, right) => left.name.localeCompare(right.name, 'ar'))
+      .slice(0, 300),
+  };
+};
+
+const upsertTemplate = (library, input) => {
   const next = normalizeLibrary(library);
-  if (input.kind === 'city') {
-    const group = next.cities.find((item) => item.governorate === input.governorate);
-    if (group) {
-      group.values = uniqueSorted([...group.values, input.value], 150, 100);
-    } else {
-      next.cities.push({ governorate: input.governorate, values: [input.value] });
-    }
-  } else {
-    const group = next.details.find(
-      (item) => item.governorate === input.governorate && item.cityArea === input.cityArea,
-    );
-    if (group) {
-      group.values = uniqueSorted([...group.values, input.value], 400, 150);
-    } else {
-      next.details.push({
-        governorate: input.governorate,
-        cityArea: input.cityArea,
-        values: [input.value],
-      });
-    }
-  }
+  const template = normalizeTemplate(input);
+  if (!template) return next;
+  next.addresses = next.addresses
+    .filter((item) =>
+      item.id !== template.id
+      && item.address.toLocaleLowerCase('ar') !== template.address.toLocaleLowerCase('ar'))
+    .concat(template);
   return normalizeLibrary(next);
+};
+
+const removeTemplate = (library, templateId) => {
+  const next = normalizeLibrary(library);
+  next.addresses = next.addresses.filter((item) => item.id !== templateId);
+  return normalizeLibrary(next);
+};
+
+const readLegacyRequestTemplate = (data) => {
+  const kind = data?.kind === 'details' ? 'details' : 'city';
+  const governorate = cleanText(data?.governorate, 100);
+  const cityArea = kind === 'details' ? cleanText(data?.cityArea, 150) : '';
+  const value = cleanText(data?.value, kind === 'details' ? 400 : 150);
+  const address = [governorate, cityArea, value].filter(Boolean).join('، ');
+  return address
+    ? { id: makeLegacyId(address), name: address.slice(0, 100), address }
+    : null;
 };
 
 module.exports = ({ HttpsError, getDb, admin }) => {
@@ -121,12 +124,12 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     const secret = normalizeSecret(request?.data?.secret);
     const sessionToken = cleanText(request?.data?.sessionToken, 300);
     const branchId = cleanText(request?.data?.branchId, 160) || DEFAULT_BRANCH_ID;
-    const kind = request?.data?.kind === 'details' ? 'details' : 'city';
-    const governorate = cleanText(request?.data?.governorate, 100);
-    const cityArea = cleanText(request?.data?.cityArea, 150);
-    const value = cleanText(request?.data?.value, kind === 'city' ? 150 : 400);
+    const action = request?.data?.action === 'delete' ? 'delete' : 'upsert';
+    const templateId = cleanId(request?.data?.templateId);
+    const template = normalizeTemplate(request?.data?.template)
+      || readLegacyRequestTemplate(request?.data);
 
-    if (!EGYPT_GOVERNORATES.has(governorate) || !value) {
+    if ((action === 'delete' && !templateId) || (action === 'upsert' && !template)) {
       throw new HttpsError('invalid-argument', 'INVALID_ADDRESS_TEMPLATE');
     }
 
@@ -172,12 +175,10 @@ module.exports = ({ HttpsError, getDb, admin }) => {
     let templates;
     await db.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(settingsRef);
-      templates = addTemplate(snapshot.exists ? snapshot.data() : {}, {
-        kind,
-        governorate,
-        cityArea,
-        value,
-      });
+      const current = snapshot.exists ? snapshot.data() : {};
+      templates = action === 'delete'
+        ? removeTemplate(current, templateId)
+        : upsertTemplate(current, template);
       transaction.set(settingsRef, {
         ...templates,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),

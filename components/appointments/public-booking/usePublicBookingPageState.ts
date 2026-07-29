@@ -74,7 +74,6 @@ export const usePublicBookingPageState = () => {
   const [discountReasons, setDiscountReasons] = useState<DiscountReason[]>([]);
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
   const [selectedConsultationCandidateId, setSelectedConsultationCandidateId] = useState<string>('');
-  const [consultationCandidatesVisibleCount, setConsultationCandidatesVisibleCount] = useState(10);
   const [editingAppointmentId, setEditingAppointmentId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [bookingQuotaNotice, setBookingQuotaNotice] = useState<BookingQuotaNotice | null>(null);
@@ -183,8 +182,6 @@ export const usePublicBookingPageState = () => {
     setAppointmentType,
     selectedConsultationCandidateId,
     setSelectedConsultationCandidateId,
-    consultationCandidatesVisibleCount,
-    setConsultationCandidatesVisibleCount,
     editingAppointmentId,
     setEditingAppointmentId,
     formError,

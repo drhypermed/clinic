@@ -1,13 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePatientAddressTemplates } from '../../hooks/usePatientAddressTemplates';
 import type { PatientAddressTemplateRole } from '../../services/patientAddressTemplatesService';
-import { EGYPT_GOVERNORATES, isEgyptGovernorate } from '../../utils/egyptGovernorates';
-import {
-  getPatientAddressCityTemplates,
-  getPatientAddressDetailsTemplates,
-} from '../../utils/patientAddressTemplates';
-
-const OTHER_VALUE = '__other__';
+import type { PatientAddressTemplate } from '../../utils/patientAddressTemplates';
 
 interface PatientAddressFieldsProps {
   governorate: string;
@@ -28,6 +22,9 @@ interface PatientAddressFieldsProps {
   detailsContainerClassName?: string;
 }
 
+const cleanText = (value: unknown): string =>
+  String(value || '').replace(/\s+/g, ' ').trim();
+
 export const PatientAddressFields: React.FC<PatientAddressFieldsProps> = ({
   governorate,
   onGovernorateChange,
@@ -46,148 +43,225 @@ export const PatientAddressFields: React.FC<PatientAddressFieldsProps> = ({
   cityContainerClassName,
   detailsContainerClassName,
 }) => {
-  const { templates, saveError, rememberCity, rememberDetails } = usePatientAddressTemplates({
+  const {
+    templates,
+    saveError,
+    rememberAddress,
+    updateTemplate,
+    removeTemplate,
+  } = usePatientAddressTemplates({
     role,
     userId,
     bookingSecret,
     secretarySessionToken,
     branchId,
   });
-  const [customCityOpen, setCustomCityOpen] = useState(false);
-  const [customDetailsOpen, setCustomDetailsOpen] = useState(false);
-  const canRemember = role === 'secretary' ? Boolean(bookingSecret) : Boolean(userId);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<PatientAddressTemplate | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editBusy, setEditBusy] = useState(false);
+  const canManageTemplates = role === 'secretary' ? Boolean(bookingSecret) : Boolean(userId);
 
-  const cityOptions = useMemo(
-    () => getPatientAddressCityTemplates(templates, governorate),
-    [governorate, templates],
-  );
-  const detailsOptions = useMemo(
-    () => getPatientAddressDetailsTemplates(templates, governorate, cityArea),
-    [cityArea, governorate, templates],
-  );
+  const fullAddress = useMemo(() => {
+    if (!cleanText(governorate) && !cleanText(cityArea)) return details;
+    return [governorate, cityArea, details].map(cleanText).filter(Boolean).join('، ');
+  }, [cityArea, details, governorate]);
+  const matchingTemplates = useMemo(() => {
+    const query = cleanText(fullAddress).toLocaleLowerCase('ar');
+    if (!query) return templates.addresses;
+    return templates.addresses.filter((template) =>
+      template.name.toLocaleLowerCase('ar').includes(query)
+      || template.address.toLocaleLowerCase('ar').includes(query));
+  }, [fullAddress, templates.addresses]);
 
-  useEffect(() => {
-    if (!cityArea) return;
-    setCustomCityOpen(!cityOptions.includes(cityArea));
-  }, [cityArea, cityOptions]);
-
-  useEffect(() => {
-    if (!details) return;
-    setCustomDetailsOpen(!detailsOptions.includes(details));
-  }, [details, detailsOptions]);
-
-  const handleGovernorateChange = (value: string) => {
-    onGovernorateChange(value);
+  const setFullAddress = (value: string) => {
+    onGovernorateChange('');
     onCityAreaChange('');
-    onDetailsChange('');
-    setCustomCityOpen(false);
-    setCustomDetailsOpen(false);
-  };
-
-  const handleCitySelection = (value: string) => {
-    if (value === OTHER_VALUE) {
-      onCityAreaChange('');
-      onDetailsChange('');
-      setCustomCityOpen(true);
-      setCustomDetailsOpen(false);
-      return;
-    }
-    onCityAreaChange(value);
-    onDetailsChange('');
-    setCustomCityOpen(false);
-    setCustomDetailsOpen(false);
-  };
-
-  const handleDetailsSelection = (value: string) => {
-    if (value === OTHER_VALUE) {
-      onDetailsChange('');
-      setCustomDetailsOpen(true);
-      return;
-    }
     onDetailsChange(value);
-    setCustomDetailsOpen(false);
   };
 
-  const citySelectValue = customCityOpen ? OTHER_VALUE : cityArea;
-  const detailsSelectValue = customDetailsOpen ? OTHER_VALUE : details;
+  const handleWidgetBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+    setTemplatesOpen(false);
+    if (canManageTemplates && cleanText(fullAddress)) {
+      void rememberAddress(fullAddress);
+    }
+  };
+
+  const startEditing = (template: PatientAddressTemplate) => {
+    setEditingTemplate(template);
+    setEditName(template.name);
+    setEditAddress(template.address);
+    setTemplatesOpen(false);
+  };
+
+  const saveEditedTemplate = async () => {
+    if (!editingTemplate || !cleanText(editName) || !cleanText(editAddress)) return;
+    setEditBusy(true);
+    const saved = await updateTemplate({
+      ...editingTemplate,
+      name: editName,
+      address: editAddress,
+    });
+    setEditBusy(false);
+    if (saved) setEditingTemplate(null);
+  };
+
+  const deleteTemplate = async (template: PatientAddressTemplate) => {
+    if (!window.confirm(`حذف قالب العنوان «${template.name}»؟`)) return;
+    setEditBusy(true);
+    const deleted = await removeTemplate(template.id);
+    setEditBusy(false);
+    if (deleted && editingTemplate?.id === template.id) setEditingTemplate(null);
+  };
+
+  const containerClassName = detailsContainerClassName
+    || cityContainerClassName
+    || governorateContainerClassName;
 
   return (
-    <>
-      <div className={governorateContainerClassName}>
-        <label className={labelClassName}>المحافظة (اختياري)</label>
-        <select
-          value={governorate}
-          onChange={(event) => handleGovernorateChange(event.target.value)}
-          className={fieldClassName}
-        >
-          <option value="">اختر المحافظة</option>
-          {!isEgyptGovernorate(governorate) && governorate && (
-            <option value={governorate}>{governorate}</option>
-          )}
-          {EGYPT_GOVERNORATES.map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
-      </div>
+    <div className={containerClassName} onBlur={handleWidgetBlur}>
+      <label className={labelClassName}>العنوان (اختياري)</label>
+      <div className="relative">
+        <input
+          type="text"
+          value={fullAddress}
+          onChange={(event) => {
+            setFullAddress(event.target.value);
+            setTemplatesOpen(true);
+          }}
+          onFocus={() => setTemplatesOpen(true)}
+          placeholder="مثال: بنها"
+          className={`${fieldClassName} ${templates.addresses.length > 0 ? 'pl-20' : ''} placeholder:font-normal placeholder:text-slate-300`}
+          maxLength={500}
+          autoComplete="off"
+          aria-label="العنوان"
+          aria-expanded={templatesOpen}
+        />
+        {templates.addresses.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setTemplatesOpen((open) => !open)}
+            className="absolute inset-y-0 left-2 my-auto h-7 rounded-lg px-2 text-[11px] font-black text-brand-600 hover:bg-brand-50"
+            aria-label="عرض قوالب العناوين"
+          >
+            القوالب
+          </button>
+        )}
 
-      <div className={cityContainerClassName}>
-        <label className={labelClassName}>المدينة / المنطقة (اختياري)</label>
-        <select
-          value={citySelectValue}
-          onChange={(event) => handleCitySelection(event.target.value)}
-          className={fieldClassName}
-          disabled={!governorate}
-        >
-          <option value="">{governorate ? 'اختر المدينة أو المنطقة' : 'اختر المحافظة أولًا'}</option>
-          {cityOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-          <option value={OTHER_VALUE}>أخرى — إضافة مدينة أو منطقة جديدة</option>
-        </select>
-        {customCityOpen && (
-          <>
-            <input
-              type="text"
-              value={cityArea}
-              onChange={(event) => onCityAreaChange(event.target.value)}
-              onBlur={() => canRemember && void rememberCity(governorate, cityArea)}
-              placeholder="اكتب المدينة أو المنطقة الجديدة"
-              className={`${fieldClassName} mt-2`}
-              maxLength={150}
-              autoFocus
-            />
-            {canRemember && <p className="mt-1 text-[10px] font-bold text-brand-600">سيُحفظ تلقائيًا ضمن الاختيارات.</p>}
-          </>
+        {templatesOpen && templates.addresses.length > 0 && (
+          <div className="absolute z-[180] mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 text-right shadow-xl">
+            {matchingTemplates.length > 0 ? matchingTemplates.map((template) => (
+              <div
+                key={template.id}
+                className="flex items-center gap-1 rounded-lg hover:bg-slate-50"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFullAddress(template.address);
+                    setTemplatesOpen(false);
+                  }}
+                  className="min-w-0 flex-1 px-2 py-2 text-right"
+                >
+                  <span className="block truncate text-xs font-black text-slate-800">
+                    {template.name}
+                  </span>
+                  {template.name !== template.address && (
+                    <span className="mt-0.5 block truncate text-[10px] font-bold text-slate-500">
+                      {template.address}
+                    </span>
+                  )}
+                </button>
+                {canManageTemplates && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => startEditing(template)}
+                      className="rounded-md px-2 py-1 text-[10px] font-black text-brand-600 hover:bg-brand-50"
+                    >
+                      تعديل
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteTemplate(template)}
+                      className="rounded-md px-2 py-1 text-[10px] font-black text-danger-600 hover:bg-danger-50"
+                    >
+                      حذف
+                    </button>
+                  </>
+                )}
+              </div>
+            )) : (
+              <p className="px-3 py-2 text-xs font-bold text-slate-500">
+                لا يوجد قالب مطابق؛ سيُحفظ العنوان الجديد تلقائيًا.
+              </p>
+            )}
+          </div>
         )}
       </div>
 
-      <div className={detailsContainerClassName}>
-        <label className={labelClassName}>العنوان التفصيلي (اختياري)</label>
-        <select
-          value={detailsSelectValue}
-          onChange={(event) => handleDetailsSelection(event.target.value)}
-          className={fieldClassName}
-          disabled={!governorate}
-        >
-          <option value="">{governorate ? 'اختر عنوانًا محفوظًا' : 'اختر المحافظة أولًا'}</option>
-          {detailsOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-          <option value={OTHER_VALUE}>أخرى — إضافة عنوان تفصيلي جديد</option>
-        </select>
-        {customDetailsOpen && (
-          <>
+      {canManageTemplates && (
+        <p className="mt-1 text-[10px] font-bold text-brand-600">
+          أي عنوان جديد تكتبه سيُحفظ تلقائيًا كقالب جاهز للطبيب والسكرتارية.
+        </p>
+      )}
+
+      {editingTemplate && (
+        <div className="mt-2 rounded-xl border border-brand-100 bg-brand-50/50 p-3">
+          <p className="mb-2 text-xs font-black text-slate-700">تعديل قالب العنوان</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <input
               type="text"
-              value={details}
-              onChange={(event) => onDetailsChange(event.target.value)}
-              onBlur={() => canRemember && void rememberDetails(governorate, cityArea, details)}
-              placeholder="الشارع، رقم العقار، الدور أو علامة مميزة"
-              className={`${fieldClassName} mt-2`}
-              maxLength={400}
-              autoFocus
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+              placeholder="اسم القالب، مثال: المنزل"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-brand-400"
+              maxLength={100}
+              aria-label="اسم قالب العنوان"
             />
-            {canRemember && <p className="mt-1 text-[10px] font-bold text-brand-600">سيُحفظ تلقائيًا ضمن الاختيارات.</p>}
-          </>
-        )}
-        {saveError && <p className="mt-1 text-[10px] font-bold text-danger-600">{saveError}</p>}
-      </div>
-    </>
+            <input
+              type="text"
+              value={editAddress}
+              onChange={(event) => setEditAddress(event.target.value)}
+              placeholder="نص العنوان"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-brand-400"
+              maxLength={500}
+              aria-label="نص قالب العنوان"
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void saveEditedTemplate()}
+              disabled={editBusy || !cleanText(editName) || !cleanText(editAddress)}
+              className="rounded-lg bg-brand-600 px-3 py-1.5 text-[11px] font-black text-white disabled:opacity-50"
+            >
+              حفظ التعديل
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingTemplate(null)}
+              disabled={editBusy}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-black text-slate-600"
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              onClick={() => void deleteTemplate(editingTemplate)}
+              disabled={editBusy}
+              className="rounded-lg border border-danger-200 bg-white px-3 py-1.5 text-[11px] font-black text-danger-600"
+            >
+              حذف القالب
+            </button>
+          </div>
+        </div>
+      )}
+
+      {saveError && <p className="mt-1 text-[10px] font-bold text-danger-600">{saveError}</p>}
+    </div>
   );
 };

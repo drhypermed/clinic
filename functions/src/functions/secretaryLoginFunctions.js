@@ -783,6 +783,11 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (typeof data.discountPercent === 'number') out.discountPercent = data.discountPercent;
     if (data.discountReasonId) out.discountReasonId = data.discountReasonId;
     if (data.discountReasonLabel) out.discountReasonLabel = data.discountReasonLabel;
+    if (data.patientFileId) out.patientFileId = String(data.patientFileId).slice(0, 500);
+    if (typeof data.patientFileNumber === 'number') out.patientFileNumber = data.patientFileNumber;
+    if (data.patientFileNameKey) out.patientFileNameKey = String(data.patientFileNameKey).slice(0, 240);
+    if (typeof data.serviceChargesCount === 'number') out.serviceChargesCount = data.serviceChargesCount;
+    if (typeof data.serviceChargesTotal === 'number') out.serviceChargesTotal = data.serviceChargesTotal;
     // إرجاع حقول الهويه للسكرتاريه عشان تشوفها في القائمه
     // ولما تعدل الموعد ميرجعوش فاضيين في الفورم.
     if (data.gender === 'male' || data.gender === 'female') out.gender = data.gender;

@@ -23,6 +23,12 @@ export interface SavePatientAddressTemplateInput extends PatientAddressTemplateS
   template: PatientAddressTemplateInput;
 }
 
+export interface DeletePatientAddressTemplateInput extends PatientAddressTemplateSource {
+  sessionToken?: string;
+  branchId?: string;
+  templateId: string;
+}
+
 const normalizeId = (value: unknown): string => String(value || '').trim();
 
 export const subscribeToPatientAddressTemplates = (
@@ -37,7 +43,7 @@ export const subscribeToPatientAddressTemplates = (
     : (userId ? doc(db, 'users', userId, 'settings', 'patientAddressTemplates') : null);
 
   if (!reference) {
-    onUpdate({ ...EMPTY_PATIENT_ADDRESS_TEMPLATES, cities: [], details: [] });
+    onUpdate({ ...EMPTY_PATIENT_ADDRESS_TEMPLATES, addresses: [] });
     return () => undefined;
   }
 
@@ -59,10 +65,8 @@ export const savePatientAddressTemplate = async (
       secret?: string;
       sessionToken?: string;
       branchId?: string;
-      kind: PatientAddressTemplateInput['kind'];
-      governorate: string;
-      cityArea?: string;
-      value: string;
+      action: 'upsert';
+      template: PatientAddressTemplateInput;
     },
     { templates?: unknown }
   >(functions, 'upsertPatientAddressTemplate');
@@ -72,10 +76,35 @@ export const savePatientAddressTemplate = async (
     secret: normalizeId(input.bookingSecret) || undefined,
     sessionToken: normalizeId(input.sessionToken) || undefined,
     branchId: normalizeId(input.branchId) || undefined,
-    kind: input.template.kind,
-    governorate: input.template.governorate,
-    cityArea: input.template.cityArea,
-    value: input.template.value,
+    action: 'upsert',
+    template: input.template,
+  });
+
+  return normalizePatientAddressTemplateLibrary(response.data?.templates);
+};
+
+export const deletePatientAddressTemplate = async (
+  input: DeletePatientAddressTemplateInput,
+): Promise<PatientAddressTemplateLibrary> => {
+  const callable = httpsCallable<
+    {
+      userId?: string;
+      secret?: string;
+      sessionToken?: string;
+      branchId?: string;
+      action: 'delete';
+      templateId: string;
+    },
+    { templates?: unknown }
+  >(functions, 'upsertPatientAddressTemplate');
+
+  const response = await callable({
+    userId: normalizeId(input.userId) || undefined,
+    secret: normalizeId(input.bookingSecret) || undefined,
+    sessionToken: normalizeId(input.sessionToken) || undefined,
+    branchId: normalizeId(input.branchId) || undefined,
+    action: 'delete',
+    templateId: normalizeId(input.templateId),
   });
 
   return normalizePatientAddressTemplateLibrary(response.data?.templates);

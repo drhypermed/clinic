@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  deletePatientAddressTemplate,
   savePatientAddressTemplate,
   subscribeToPatientAddressTemplates,
   type PatientAddressTemplateRole,
 } from '../services/patientAddressTemplatesService';
 import {
-  addPatientAddressTemplateLocally,
-  getPatientAddressCityTemplates,
-  getPatientAddressDetailsTemplates,
+  createPatientAddressTemplateId,
+  deletePatientAddressTemplateLocally,
+  findPatientAddressTemplate,
+  upsertPatientAddressTemplateLocally,
+  type PatientAddressTemplate,
   type PatientAddressTemplateInput,
   type PatientAddressTemplateLibrary,
 } from '../utils/patientAddressTemplates';
@@ -21,10 +24,12 @@ interface UsePatientAddressTemplatesInput {
 }
 
 const createEmptyLibrary = (): PatientAddressTemplateLibrary => ({
-  version: 1,
-  cities: [],
-  details: [],
+  version: 2,
+  addresses: [],
 });
+
+const normalizeText = (value: unknown, maxLength: number): string =>
+  String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
 
 export const usePatientAddressTemplates = ({
   role = 'doctor',
@@ -49,32 +54,8 @@ export const usePatientAddressTemplates = ({
     );
   }, [bookingSecret, role, userId]);
 
-  const rememberTemplate = useCallback(async (template: PatientAddressTemplateInput) => {
-    const normalizedValue = String(template.value || '').replace(/\s+/g, ' ').trim();
-    const normalizedGovernorate = String(template.governorate || '').trim();
-    const normalizedCity = String(template.cityArea || '').replace(/\s+/g, ' ').trim();
-    if (!normalizedGovernorate || !normalizedValue) return;
-
-    const normalizedTemplate = {
-      ...template,
-      governorate: normalizedGovernorate,
-      cityArea: normalizedCity || undefined,
-      value: normalizedValue,
-    };
-
-    const relevantValues = normalizedTemplate.kind === 'city'
-      ? getPatientAddressCityTemplates(templatesRef.current, normalizedGovernorate)
-      : getPatientAddressDetailsTemplates(
-        templatesRef.current,
-        normalizedGovernorate,
-        normalizedCity,
-      );
-    if (relevantValues.includes(normalizedValue)) return;
-
-    const optimistic = addPatientAddressTemplateLocally(
-      templatesRef.current,
-      normalizedTemplate,
-    );
+  const persistTemplate = useCallback(async (template: PatientAddressTemplateInput) => {
+    const optimistic = upsertPatientAddressTemplateLocally(templatesRef.current, template);
     templatesRef.current = optimistic;
     setTemplates(optimistic);
 
@@ -85,31 +66,79 @@ export const usePatientAddressTemplates = ({
         bookingSecret,
         sessionToken: secretarySessionToken || undefined,
         branchId: branchId || undefined,
-        template: normalizedTemplate,
+        template,
       });
       templatesRef.current = saved;
       setTemplates(saved);
       setSaveError('');
+      return saved.addresses.find((item) => item.id === template.id);
     } catch {
-      setSaveError('تعذر حفظ القالب الآن؛ سيظل العنوان موجودًا في بيانات المريض.');
+      setSaveError('تعذر حفظ قالب العنوان الآن؛ سيظل العنوان موجودًا في بيانات المريض.');
+      return undefined;
     }
   }, [bookingSecret, branchId, role, secretarySessionToken, userId]);
 
-  const rememberCity = useCallback(
-    (governorate: string, cityArea: string) =>
-      rememberTemplate({ kind: 'city', governorate, value: cityArea }),
-    [rememberTemplate],
+  const rememberAddress = useCallback(async (addressValue: string) => {
+    const address = normalizeText(addressValue, 500);
+    if (!address) return undefined;
+    const existing = findPatientAddressTemplate(templatesRef.current, address);
+    if (existing) return existing;
+
+    const template: PatientAddressTemplateInput = {
+      id: createPatientAddressTemplateId(),
+      name: address.slice(0, 100),
+      address,
+    };
+    await persistTemplate(template);
+    return template;
+  }, [persistTemplate]);
+
+  const updateTemplate = useCallback(
+    async (template: PatientAddressTemplate): Promise<boolean> => {
+      const id = normalizeText(template.id, 120);
+      const name = normalizeText(template.name, 100);
+      const address = normalizeText(template.address, 500);
+      if (!id || !name || !address) return false;
+      const saved = await persistTemplate({ id, name, address });
+      return Boolean(saved);
+    },
+    [persistTemplate],
   );
-  const rememberDetails = useCallback(
-    (governorate: string, cityArea: string, details: string) =>
-      rememberTemplate({ kind: 'details', governorate, cityArea, value: details }),
-    [rememberTemplate],
-  );
+
+  const removeTemplate = useCallback(async (templateId: string): Promise<boolean> => {
+    const normalizedId = normalizeText(templateId, 120);
+    if (!normalizedId) return false;
+    const previous = templatesRef.current;
+    const optimistic = deletePatientAddressTemplateLocally(previous, normalizedId);
+    templatesRef.current = optimistic;
+    setTemplates(optimistic);
+
+    try {
+      const saved = await deletePatientAddressTemplate({
+        role,
+        userId,
+        bookingSecret,
+        sessionToken: secretarySessionToken || undefined,
+        branchId: branchId || undefined,
+        templateId: normalizedId,
+      });
+      templatesRef.current = saved;
+      setTemplates(saved);
+      setSaveError('');
+      return true;
+    } catch {
+      templatesRef.current = previous;
+      setTemplates(previous);
+      setSaveError('تعذر حذف قالب العنوان الآن.');
+      return false;
+    }
+  }, [bookingSecret, branchId, role, secretarySessionToken, userId]);
 
   return useMemo(() => ({
     templates,
     saveError,
-    rememberCity,
-    rememberDetails,
-  }), [rememberCity, rememberDetails, saveError, templates]);
+    rememberAddress,
+    updateTemplate,
+    removeTemplate,
+  }), [rememberAddress, removeTemplate, saveError, templates, updateTemplate]);
 };

@@ -279,6 +279,7 @@ export const buildRecentExamCandidates = (records: PatientRecord[]): RecentExamP
       })(),
       id: rec.id,
       patientName: (rec.patientName || '').trim() || 'بدون اسم',
+      patientFileNumber: toPositiveFileNumber(rec.patientFileNumber),
       age: buildAgeTextFromRecordAge(rec.age),
       phone: rec.phone,
       address: rec.address,

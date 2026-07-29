@@ -165,6 +165,9 @@ exports.createAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('
 exports.listRecentExamRecordsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryExamRecordsFunctions', 'listRecentExamRecordsForSecretary'));
 exports.searchPatientsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryPatientSearchFunctions', 'searchPatientsForSecretary'));
 exports.listAppointmentsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'listAppointmentsForSecretary'));
+exports.listVisitServicesForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'listVisitServicesForSecretary'));
+exports.addVisitServiceForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'addVisitServiceForSecretary'));
+exports.deleteVisitServiceForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'deleteVisitServiceForSecretary'));
 exports.upsertPatientAddressTemplate = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/patientAddressTemplateFunctions', 'upsertPatientAddressTemplate'));
 // 🔒 2026-05-10: تجديد الـ Firebase Custom Token للسكرتيرة كل ~٥٠ دقيقة
 // عشان الكتابات على Firestore تفضل تشتغل بعد ساعة (الـ token عمره ساعة).

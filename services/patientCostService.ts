@@ -20,6 +20,15 @@ export interface PatientCostItem {
   type: 'interventions' | 'other';
   dateKey: string; // YYYY-MM-DD
   note?: string;
+  /** اسم الخدمة كلقطة تاريخية مستقلة عن القالب. */
+  serviceName?: string;
+  /** مرجع القالب الجاهز إن كان البند أُضيف من نافذة خدمات الزيارة. */
+  serviceTemplateId?: string;
+  /** معرّف الموعد/الزيارة لضمان التزامن بين الطبيب والسكرتارية. */
+  visitId?: string;
+  source?: 'doctor_new_exam' | 'secretary_appointment';
+  addedByRole?: 'doctor' | 'secretary';
+  addedByName?: string;
   /** طريقة التحصيل المباشر. العناصر القديمة بدونها تُعامل ككاش. */
   paymentType?: DirectPaymentType;
   createdAt: number;

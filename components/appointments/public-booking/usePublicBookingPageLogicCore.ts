@@ -103,7 +103,6 @@ export const usePublicBookingPageLogic = () => {
 
   const consultationData = usePublicBookingConsultationData({
     recentExamPatients: state.recentExamPatients,
-    consultationCandidatesVisibleCount: state.consultationCandidatesVisibleCount,
   });
 
   // ننتظر اكتمال signInWithCustomToken قبل الاشتراك في قائمة الفروع.
@@ -146,7 +145,6 @@ export const usePublicBookingPageLogic = () => {
     appointmentType: state.appointmentType,
     setAppointmentType: state.setAppointmentType,
     setSelectedConsultationCandidateId: state.setSelectedConsultationCandidateId,
-    setConsultationCandidatesVisibleCount: state.setConsultationCandidatesVisibleCount,
     setPatientName: state.setPatientName,
     setAge: state.setAge,
     setDateOfBirth: state.setDateOfBirth,
@@ -171,6 +169,7 @@ export const usePublicBookingPageLogic = () => {
     sessionBranchId: auth.sessionBranchId,
     getCurrentSessionToken: auth.getCurrentSessionToken,
     invalidateSecretarySession: auth.invalidateSecretarySession,
+    loadRecentExamPatients: state.appointmentType === 'consultation',
     setRecentExamPatients: state.setRecentExamPatients,
     setTodayAppointments: state.setTodayAppointments,
     setUpcomingAppointments: state.setUpcomingAppointments,
@@ -515,10 +514,6 @@ export const usePublicBookingPageLogic = () => {
     setSecretaryActionToast: state.setSecretaryActionToast,
   });
 
-  const loadMoreConsultationCandidates = () => {
-    state.setConsultationCandidatesVisibleCount((prev) => prev + 10);
-  };
-
   // نغلّف handleSubmit/removeTodayAppointment عشان بعد كل نجاح تحديث/إضافة/حذف
   // نطلب refresh للمواعيد من الـ Cloud Function (مصدر الحقيقة).
   // ده يضمن ظهور الموعد الجديد فوراً حتى لو الـ local sync فشل أو الطبيب مش online.
@@ -634,8 +629,6 @@ export const usePublicBookingPageLogic = () => {
     appointmentType: state.appointmentType,
     handleAppointmentTypeChange: selectionHandlers.handleAppointmentTypeChange,
     visibleConsultationCandidates: consultationData.visibleConsultationCandidates,
-    canLoadMoreConsultationCandidates: consultationData.canLoadMoreConsultationCandidates,
-    loadMoreConsultationCandidates,
     selectedConsultationCandidateId: state.selectedConsultationCandidateId,
     handleSelectConsultationCandidate: selectionHandlers.handleSelectConsultationCandidate,
     patientDirectory: state.patientDirectory,

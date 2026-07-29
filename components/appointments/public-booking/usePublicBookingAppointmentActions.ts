@@ -23,6 +23,7 @@ import { playNotificationCue } from '../../../utils/notificationSound';
 import type { AppointmentType } from '../../../types';
 import { normalizeGender } from '../../../utils/patientIdentity';
 import { normalizePatientAddress } from '../../../utils/patientAddress';
+import { consultationCandidateMatchesPatient } from '../add-appointment-form/helpers';
 import type { TodayAppointment } from './types';
 import type { EntryRequestAppointment, UsePublicBookingAppointmentActionsParams } from './usePublicBookingAppointmentActions/types';
 import { callWithSessionRetry, isInvalidSecretarySessionError } from './usePublicBookingAppointmentActions/sessionHelpers';
@@ -314,6 +315,29 @@ export const usePublicBookingAppointmentActions = ({
       return;
     }
 
+    const existingConsultationSourceId =
+      editingAppointment?.consultationSourceRecordId ||
+      editingAppointment?.consultationSourceAppointmentId;
+    if (
+      resolvedAppointmentType === 'consultation' &&
+      !selectedConsultationCandidate &&
+      !existingConsultationSourceId
+    ) {
+      setFormError('اختر المريض من كشوفات آخر 30 يوم حتى ترتبط الاستشارة بالكشف الصحيح.');
+      return;
+    }
+    if (
+      resolvedAppointmentType === 'consultation' &&
+      selectedConsultationCandidate &&
+      !consultationCandidateMatchesPatient(selectedConsultationCandidate, {
+        patientName: name,
+        phone: ph,
+      })
+    ) {
+      setFormError('بيانات المريض تغيّرت بعد اختيار الكشف. اختر المريض مرة أخرى من قائمة الاستشارات.');
+      return;
+    }
+
     const normalizedDiscountReasonId = String(discountReasonId || '').trim();
     const normalizedDiscountReasonLabel = sanitizePublicText(discountReasonLabel);
 
@@ -323,14 +347,19 @@ export const usePublicBookingAppointmentActions = ({
       consultationSourceCompletedAt?: string;
       consultationSourceRecordId?: string;
     } = {};
-    if (resolvedAppointmentType === 'consultation' && selectedConsultationCandidateId) {
-      consultationSourceMeta.consultationSourceAppointmentId = selectedConsultationCandidateId;
-      if (selectedConsultationCandidate?.examCompletedAt) {
-        consultationSourceMeta.consultationSourceCompletedAt = selectedConsultationCandidate.examCompletedAt;
-      }
-      if (selectedConsultationCandidate?.consultationSourceRecordId) {
-        consultationSourceMeta.consultationSourceRecordId = selectedConsultationCandidate.consultationSourceRecordId;
-      }
+    if (resolvedAppointmentType === 'consultation') {
+      consultationSourceMeta.consultationSourceAppointmentId =
+        selectedConsultationCandidateId ||
+        editingAppointment?.consultationSourceAppointmentId ||
+        undefined;
+      consultationSourceMeta.consultationSourceCompletedAt =
+        selectedConsultationCandidate?.examCompletedAt ||
+        editingAppointment?.consultationSourceCompletedAt ||
+        undefined;
+      consultationSourceMeta.consultationSourceRecordId =
+        selectedConsultationCandidate?.consultationSourceRecordId ||
+        editingAppointment?.consultationSourceRecordId ||
+        undefined;
     }
 
     // تطبيع حقول الهوية الجديدة قبل الإرسال

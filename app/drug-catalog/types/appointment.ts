@@ -95,6 +95,11 @@ export interface ClinicAppointment {
   /** نص سبب الخصم المختار */
   discountReasonLabel?: string;
 
+  // ─── ملخص الخدمات/الرسوم الإضافية المرتبطة بالزيارة ───
+  serviceChargesCount?: number;
+  serviceChargesTotal?: number;
+  serviceChargesUpdatedAt?: number;
+
   /** معرّف الفرع الذي ينتمي إليه الموعد */
   branchId?: string;
 }

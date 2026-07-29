@@ -10,18 +10,29 @@ import { PatientContactActions } from '../../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../../common/SecretaryVitalsPills';
 import { PaymentMethodBadge } from '../../common/PaymentMethodBadge';
 import { formatPatientAddress } from '../../../utils/patientAddress';
+import { SecretaryVisitServicesButton } from '../../visit-services/SecretaryVisitServicesButton';
 
 type DayGroup = { dateStr: string; fullDate: string; appointments: TodayAppointment[] };
 
 type Props = {
   completedAppointments: TodayAppointment[];
   canShowSecretaryVitals?: boolean;
+  userId: string;
+  secret: string;
+  sessionToken?: string;
+  branchId?: string;
+  secretaryName?: string;
   onRemoveAppointment: (id: string) => void;
 };
 
 export const PublicBookingCompletedSection: React.FC<Props> = ({
   completedAppointments,
   canShowSecretaryVitals = false,
+  userId,
+  secret,
+  sessionToken,
+  branchId,
+  secretaryName,
   onRemoveAppointment,
 }) => {
   const dayGroups = useMemo((): DayGroup[] => {
@@ -68,6 +79,11 @@ export const PublicBookingCompletedSection: React.FC<Props> = ({
             key={group.dateStr}
             group={group}
             canShowSecretaryVitals={canShowSecretaryVitals}
+            userId={userId}
+            secret={secret}
+            sessionToken={sessionToken}
+            branchId={branchId}
+            secretaryName={secretaryName}
             onRemove={onRemoveAppointment}
           />
         ))
@@ -87,8 +103,22 @@ export const PublicBookingCompletedSection: React.FC<Props> = ({
 const CompletedDayGroupCard: React.FC<{
   group: DayGroup;
   canShowSecretaryVitals: boolean;
+  userId: string;
+  secret: string;
+  sessionToken?: string;
+  branchId?: string;
+  secretaryName?: string;
   onRemove: (id: string) => void;
-}> = ({ group, canShowSecretaryVitals, onRemove }) => {
+}> = ({
+  group,
+  canShowSecretaryVitals,
+  userId,
+  secret,
+  sessionToken,
+  branchId,
+  secretaryName,
+  onRemove,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -113,6 +143,11 @@ const CompletedDayGroupCard: React.FC<{
               key={apt.id}
               apt={apt}
               canShowSecretaryVitals={canShowSecretaryVitals}
+              userId={userId}
+              secret={secret}
+              sessionToken={sessionToken}
+              branchId={branchId}
+              secretaryName={secretaryName}
               onRemove={onRemove}
             />
           ))}
@@ -126,8 +161,22 @@ const CompletedDayGroupCard: React.FC<{
 const CompletedCard: React.FC<{
   apt: TodayAppointment;
   canShowSecretaryVitals: boolean;
+  userId: string;
+  secret: string;
+  sessionToken?: string;
+  branchId?: string;
+  secretaryName?: string;
   onRemove: (id: string) => void;
-}> = ({ apt, canShowSecretaryVitals, onRemove }) => {
+}> = ({
+  apt,
+  canShowSecretaryVitals,
+  userId,
+  secret,
+  sessionToken,
+  branchId,
+  secretaryName,
+  onRemove,
+}) => {
   const isConsultation = isConsultationAppointment(apt);
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;
   const normalizedDiscountPercent = Number(apt.discountPercent || 0) || 0;
@@ -178,7 +227,15 @@ const CompletedCard: React.FC<{
         {addressSummary && <p className="text-[11px] font-bold text-slate-500">العنوان: {addressSummary}</p>}
         {canShowSecretaryVitals && <SecretaryVitalsPills vitals={apt.secretaryVitals} compact />}
 
-        <div className="flex justify-start pt-0.5">
+        <div className="flex flex-wrap justify-start gap-2 pt-0.5">
+          <SecretaryVisitServicesButton
+            userId={userId}
+            secret={secret}
+            sessionToken={sessionToken}
+            branchId={branchId}
+            secretaryName={secretaryName}
+            appointment={apt}
+          />
           <button type="button" onClick={() => onRemove(apt.id)} className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200 transition-all">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>

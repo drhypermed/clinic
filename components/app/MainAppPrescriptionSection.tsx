@@ -63,22 +63,10 @@ import {
 } from '../../utils/rx/caseAnalysisText';
 import { MAX_PRESCRIPTION_ITEMS_PER_LIST } from '../../utils/rx/rxUtils';
 import type { PatientImageMetadata, PatientImagesAccountType } from '../../services/patient-files/images';
-
-/**
- * مكون قسم الروشتة الرئيسي (Main App Prescription Section Component)
- * هذا المكون هو المسؤول عن واجهة تحرير الروشتة بالكامل.
- * ينقسم المكون من الناحية البصرية إلى جزئين رئيسيين:
- * 1. الجانب الأيمن (Editor): يحتوي على مدخلات بيانات المريض، العلامات الحيوية، بيانات الكشف، ومحرك البحث السريع عن الأدوية.
- * 2. الجانب الأيسر (Preview): يحتوي على الروشتة بشكلها الوردي النهائي القابل للطباعة.
- */
-
-// ─── Class strings ثابتة على مستوى الموديول ─────────────────────────────
-// السبب: قبل التغيير كانت متعرّفة جوّه الـ component → نص جديد يتعمل في كل
-// render حتى لو محتواه ثابت. النقل برّه يخلّيها reference واحد طول العمر.
+import { DoctorVisitServicesButton } from '../visit-services/DoctorVisitServicesButton';
 const PREVIEW_PRIMARY_ACTION_CLASS = 'prescription-save-cta rx-gradient-btn rx-gradient-btn--blue flex items-center gap-2 px-4 md:px-3 lg:px-5 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
 const PREVIEW_SECONDARY_ACTION_CLASS = 'rx-gradient-btn flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-2.5 lg:px-4 py-2.5 rounded-2xl transition-all active:scale-[0.98] font-black text-[11px] md:text-xs lg:text-sm whitespace-nowrap';
 const HISTORY_ARROW_ICON_CLASS = 'w-4 h-4 md:w-[18px] md:h-[18px]';
-
 interface MainAppPrescriptionSectionProps {
   analyzing: boolean; // هل الذكاء الاصطناعي يقوم بالتحليل حالياً؟
   onCancelAnalyze: () => void;
@@ -116,6 +104,7 @@ interface MainAppPrescriptionSectionProps {
   activePatientFileNumber: number | null;
   displayPatientFileNumber: number | null;
   activePatientFileNameKey: string | null;
+  openedAppointmentId?: string;
   setActivePatientFileId: (value: string | null) => void;
   setActivePatientFileNumber: (value: number | null) => void;
   setActivePatientFileNameKey: (value: string | null) => void;
@@ -263,6 +252,7 @@ interface MainAppPrescriptionSectionProps {
   showNotification: (message: string, type?: unknown, options?: unknown) => void;
   // تخصص الطبيب — يستخدم لإظهار ودجت متابعه الحمل لأطباء النسا فقط
   doctorSpecialty?: string;
+  doctorName?: string;
   // معرّف الطبيب الحالي — للقراءه/كتابه ملفات الحمل
   doctorUserId?: string | null;
 }
@@ -272,7 +262,7 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   analyzing, onCancelAnalyze, patientName, setPatientName, phone, setPhone, ageYears, setAgeYears, ageMonths, setAgeMonths, ageDays, setAgeDays, dateOfBirth, setDateOfBirth,
   addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
   gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
-  activePatientFileId, activePatientFileNumber, displayPatientFileNumber, activePatientFileNameKey,
+  activePatientFileId, activePatientFileNumber, displayPatientFileNumber, activePatientFileNameKey, openedAppointmentId,
   setActivePatientFileId, setActivePatientFileNumber, setActivePatientFileNameKey, patientSuggestions, visitDate, setVisitDate, visitType, setVisitType, onReset,
   complaint, setComplaint, medicalHistory, setMedicalHistory, examination, setExamination, investigations, setInvestigations, investigationImages, setInvestigationImages, accountType, onAnalyze, onQuickAddToRx, smartQuotaNotice, isQuotaLimitError, errorMsg,
   caseAnalysisOpen, setCaseAnalysisOpen, caseAnalysisResult, caseAnalysisLoading,
@@ -288,20 +278,13 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
   onSaveRecord, onOpenSaveReadyPrescriptionModal, onUndo, onRedo, historyLength, futureLength,
   userId, activeBranchId, paymentType, setPaymentType, insuranceCompanyId, setInsuranceCompanyId, insuranceCompanyName, setInsuranceCompanyName, insuranceApprovalCode, setInsuranceApprovalCode, insuranceMembershipId, setInsuranceMembershipId, patientSharePercent, setPatientSharePercent, discountAmount, setDiscountAmount, discountPercent, setDiscountPercent, discountReasonId, setDiscountReasonId, discountReasonLabel, setDiscountReasonLabel,
   showNotification,
-  doctorSpecialty, doctorUserId,
+  doctorSpecialty, doctorName, doctorUserId,
 }) => {
   const [isSavingRecord, setIsSavingRecord] = React.useState(false);
   const [showInlineCancelHint, setShowInlineCancelHint] = React.useState(false);
-  // تتبّع أي زر اتضغط عشان الـ spinner يظهر عليه هو بس مش على الزر التاني
-  // (quick = إضافة للروشتة، deep = تحليل الحالة)
   const [activeAnalyzeMode, setActiveAnalyzeMode] = React.useState<'quick' | 'deep' | null>(null);
-  // يحدد الباكدج المفعّل للطبيب (نسا، ...) — null لو مفيش
   const enabledSpecialtyPack = useEnabledSpecialtyPack(doctorSpecialty);
 
-  // ─ 🆕 افتراضي للجنس لطبيبه النسا ─
-  // معظم مرضى طبيبه النسا إناث. لما تفتح كشف جديد فاضي (مفيش اسم ومفيش جنس)
-  // والتخصص نسا، نخلي الجنس "أنثى" تلقائياً عشان حقول "حامل" و"مرضعه"
-  // تظهر بدون ما تختار الجنس يدوي. الدكتور يقدر يغيّره لمذكر لو الحاله نادره.
   React.useEffect(() => {
     if (enabledSpecialtyPack !== 'gynecology') return;
     if (gender) return; // لو فيه جنس مسجل بالفعل، ما نلمسش
@@ -309,30 +292,21 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
     setGender('female');
   }, [enabledSpecialtyPack, gender, patientName, setGender]);
 
-  // ─── حالة مودال فحص التداخلات الدوائية ──────────────────────────────────
-  // الحالة محلية في المكون لأنها featured zone مستقلة — لا تحتاج رفعها للـ parent.
   const [interactionsOpen, setInteractionsOpen] = React.useState(false);
   const [interactionsLoading, setInteractionsLoading] = React.useState(false);
   const [interactionsResult, setInteractionsResult] = React.useState<DrugInteractionsResult | null>(null);
-  // عدد الأدوية اللي اتبعتت (للعرض في هيدر المودال)
   const [interactionsDrugCount, setInteractionsDrugCount] = React.useState(0);
-  // تنبيه ينزل لما الطبيب يضغط زر التداخلات والروشتة فاضية أو فيها دواء واحد فقط
   const [interactionsNoDrugsNotice, setInteractionsNoDrugsNotice] = React.useState<string | null>(null);
 
-  // ─── حالة مودال فحص سلامة الحمل ──────────────────────────────────────────
   const [pregnancyOpen, setPregnancyOpen] = React.useState(false);
   const [pregnancyLoading, setPregnancyLoading] = React.useState(false);
   const [pregnancyResult, setPregnancyResult] = React.useState<PregnancySafetyResult | null>(null);
 
-  // ─── استخراج أسماء الأدوية من عناصر الروشتة ─────────────────────────────
-  // نستخدم اسم الدواء المخصص لو الطبيب عدّل، وإلا الاسم الأصلي من قاعدة الأدوية.
-  // نتجاهل عناصر "note" (الملاحظات) لأنها مش أدوية، ونتجاهل الفاضي/المكرر.
   const prescriptionDrugNames = React.useMemo<string[]>(() => {
     const seen = new Set<string>();
     const names: string[] = [];
     rxItems.forEach((item) => {
       if (item.type !== 'medication') return;
-      // الاسم قد يجي من ثلاثة مصادر: customName على العنصر، Medication.name، أو فارغ
       const name = (item.medication?.name || '').trim();
       if (!name) return;
       const key = name.toLowerCase();
@@ -885,6 +859,19 @@ export const MainAppPrescriptionSection: React.FC<MainAppPrescriptionSectionProp
                 />
               </div>
               )}
+
+              <div className="editor-block dh-stagger-2">
+                <DoctorVisitServicesButton
+                  userId={userId} branchId={activeBranchId}
+                  patientName={patientName} phone={phone} patientFileId={activePatientFileId}
+                  dateKey={visitDate} visitType={visitType} appointmentId={openedAppointmentId}
+                  doctorName={doctorName} paymentType={paymentType}
+                  onPatientFileResolved={(identity) => {
+                    setActivePatientFileId(identity.patientFileId); setActivePatientFileNumber(identity.patientFileNumber);
+                    setActivePatientFileNameKey(identity.patientFileNameKey);
+                  }}
+                />
+              </div>
 
               <div className="editor-block editor-block--vitals dh-stagger-2">
                 <VitalSignsSection

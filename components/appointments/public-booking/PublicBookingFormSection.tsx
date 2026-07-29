@@ -71,8 +71,6 @@ type PublicBookingFormSectionProps = {
   appointmentType: AppointmentType;
   onAppointmentTypeChange: (value: AppointmentType) => void;
   visibleConsultationCandidates: RecentExamPatientOption[];
-  canLoadMoreConsultationCandidates?: boolean;
-  onLoadMoreConsultationCandidates?: () => void;
   selectedConsultationCandidateId: string;
   onSelectConsultationCandidate: (candidate: RecentExamPatientOption) => void;
   patientSuggestions: PatientSuggestionOption[];
@@ -158,8 +156,6 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   appointmentType,
   onAppointmentTypeChange,
   visibleConsultationCandidates,
-  canLoadMoreConsultationCandidates,
-  onLoadMoreConsultationCandidates,
   selectedConsultationCandidateId,
   onSelectConsultationCandidate,
   patientSuggestions,
@@ -256,8 +252,6 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               appointmentType={appointmentType}
               onAppointmentTypeChange={onAppointmentTypeChange}
               consultationCandidates={visibleConsultationCandidates}
-              canLoadMoreConsultationCandidates={canLoadMoreConsultationCandidates}
-              onLoadMoreConsultationCandidates={onLoadMoreConsultationCandidates}
               selectedConsultationCandidateId={selectedConsultationCandidateId}
               onSelectConsultationCandidate={onSelectConsultationCandidate}
               patientSuggestions={patientSuggestions}

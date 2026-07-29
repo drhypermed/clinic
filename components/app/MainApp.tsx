@@ -594,6 +594,7 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
               activePatientFileNumber={activePatientFileNumber}
               displayPatientFileNumber={displayPatientFileNumber}
               activePatientFileNameKey={activePatientFileNameKey}
+              openedAppointmentId={openedAppointmentContext?.id}
               setActivePatientFileId={setActivePatientFileId}
               setActivePatientFileNumber={setActivePatientFileNumber}
               setActivePatientFileNameKey={setActivePatientFileNameKey}

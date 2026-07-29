@@ -145,6 +145,86 @@ export const groupConsultationCandidatesByDate = (candidates: RecentExamPatientO
   return { grouped, sortedDates };
 };
 
+/** بحث فوري داخل كشوفات آخر 30 يوم مع دعم الاسم العربي والموبايل ورقم الملف. */
+export const filterConsultationCandidates = (
+  candidates: RecentExamPatientOption[],
+  rawQuery: string,
+): RecentExamPatientOption[] => {
+  const queryText = String(rawQuery || '').trim();
+  if (!queryText) return candidates;
+
+  const normalizedNameQuery = normalizeArabicName(queryText);
+  const normalizedPhoneQuery = normalizePhoneSearchKey(queryText);
+  const numericQuery = queryText.replace(/\D/g, '');
+
+  return candidates.filter((candidate) => {
+    const candidateName = normalizeArabicName(candidate.patientName || '');
+    const candidateNameTokens = candidateName.split(' ').filter(Boolean);
+    const queryNameTokens = normalizedNameQuery.split(' ').filter(Boolean);
+    const candidatePhone = normalizePhoneSearchKey(candidate.phone);
+    const candidateFileNumber = toPositiveFileNumber(candidate.patientFileNumber);
+
+    const matchesName =
+      Boolean(normalizedNameQuery) &&
+      (
+        queryNameTokens.every((queryToken) =>
+          candidateNameTokens.some((candidateToken) => candidateToken.startsWith(queryToken))
+        ) ||
+        candidateName.includes(normalizedNameQuery)
+      );
+    const matchesPhone =
+      Boolean(normalizedPhoneQuery) &&
+      candidatePhone.includes(normalizedPhoneQuery);
+    const matchesFileNumber =
+      Boolean(numericQuery) &&
+      Boolean(candidateFileNumber) &&
+      String(candidateFileNumber).includes(numericQuery);
+
+    return matchesName || matchesPhone || matchesFileNumber;
+  });
+};
+
+/** يربط اقتراح دليل المرضى بالكشف المؤهل نفسه بدل إنشاء استشارة بلا مصدر. */
+export const findMatchingConsultationCandidateId = (
+  candidates: RecentExamPatientOption[],
+  patient: PatientSuggestionOption,
+): string => {
+  const patientFileNumber = toPositiveFileNumber(patient.patientFileNumber);
+  if (patientFileNumber) {
+    const byFileNumber = candidates.find(
+      (candidate) => toPositiveFileNumber(candidate.patientFileNumber) === patientFileNumber,
+    );
+    if (byFileNumber) return byFileNumber.id;
+  }
+
+  const patientPhone = normalizePhoneSearchKey(patient.phone);
+  if (patientPhone) {
+    const byPhone = candidates.find(
+      (candidate) => normalizePhoneSearchKey(candidate.phone) === patientPhone,
+    );
+    if (byPhone) return byPhone.id;
+  }
+
+  const patientName = normalizeArabicName(patient.patientName || '');
+  if (!patientName) return '';
+  return candidates.find(
+    (candidate) => normalizeArabicName(candidate.patientName || '') === patientName,
+  )?.id || '';
+};
+
+export const consultationCandidateMatchesPatient = (
+  candidate: RecentExamPatientOption,
+  patient: Pick<PatientSuggestionOption, 'patientName' | 'phone'>,
+): boolean => {
+  const candidatePhone = normalizePhoneSearchKey(candidate.phone);
+  const patientPhone = normalizePhoneSearchKey(patient.phone);
+  if (candidatePhone && patientPhone) return candidatePhone === patientPhone;
+
+  const candidateName = normalizeArabicName(candidate.patientName || '');
+  const patientName = normalizeArabicName(patient.patientName || '');
+  return Boolean(candidateName) && candidateName === patientName;
+};
+
 /** تحويل تاريخ (YYYY-MM-DD) إلى اسم اليوم باللغة العربية */
 export const getArabicDayName = (dateStr: string) => {
   return formatUserDate(buildCairoDateTime(dateStr, '12:00'), { weekday: 'long' }, 'ar-EG');

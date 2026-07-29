@@ -91,19 +91,42 @@ module.exports = ({ HttpsError, getDb, admin }) => {
 
     const cutoffMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
     const cutoffIso = new Date(cutoffMs).toISOString();
-    let recordsSnap;
-    try {
-      recordsSnap = await baseQuery
-        .where('date', '>=', cutoffIso)
-        .orderBy('date', 'desc')
-        .limit(300)
-        .get();
-    } catch (error) {
-      // fallback لو composite index (branchId + date desc) ناقص: نستخدم where
-      // لوحده (single-field index تلقائي). الـ where بيفضل مطبق فما نخسرش
-      // فايدة الـ branch filter حتى في حالة الـ fallback.
-      console.warn('[secretaryFunctions] Falling back to unordered records read:', error?.message || error);
-      recordsSnap = await baseQuery.where('date', '>=', cutoffIso).limit(300).get();
+    const batchSize = 300;
+    const recordsDocs = [];
+    let cursor = null;
+    let orderedQueryAvailable = true;
+
+    // نُكمل بالـ cursor حتى نهاية آخر 30 يوماً. سجلات الاستشارات
+    // وسجلات الفروع الأخرى لا تفرض حداً على عدد الكشوف المؤهلة.
+    while (true) {
+      let pageQuery = baseQuery.where('date', '>=', cutoffIso);
+      if (orderedQueryAvailable) pageQuery = pageQuery.orderBy('date', 'desc');
+      if (cursor) pageQuery = pageQuery.startAfter(cursor);
+      pageQuery = pageQuery.limit(batchSize);
+
+      let pageSnap;
+      try {
+        pageSnap = await pageQuery.get();
+      } catch (error) {
+        if (!orderedQueryAvailable) throw error;
+        console.warn('[secretaryFunctions] Falling back to unordered records read:', error?.message || error);
+        orderedQueryAvailable = false;
+        cursor = null;
+        recordsDocs.length = 0;
+        continue;
+      }
+
+      if (pageSnap.empty) break;
+      pageSnap.docs.forEach((recordDoc) => {
+        const data = recordDoc.data() || {};
+        const recordBranchId = normalizeText(data.branchId) || DEFAULT_BRANCH_ID;
+        if (recordBranchId !== branchId) return;
+
+        recordsDocs.push({ id: recordDoc.id, data });
+      });
+
+      cursor = pageSnap.docs[pageSnap.docs.length - 1] || null;
+      if (pageSnap.size < batchSize || !cursor) break;
     }
 
     const maxIsoDate = (currentValue, nextValue) => {
@@ -117,16 +140,6 @@ module.exports = ({ HttpsError, getDb, admin }) => {
       if (!Number.isFinite(currentMs) || nextMs > currentMs) return nextIso;
       return currentIso;
     };
-
-    const recordsDocs = recordsSnap.docs
-      .map((recordDoc) => ({
-        id: recordDoc.id,
-        data: recordDoc.data() || {},
-      }))
-      .filter(({ data }) => {
-        const recordBranchId = normalizeText(data.branchId) || DEFAULT_BRANCH_ID;
-        return recordBranchId === branchId;
-      });
 
     const parseSourceRecordIdFromConsultationDocId = (consultationRecordId) => {
       const normalizedId = normalizeOptionalText(consultationRecordId);
@@ -198,9 +211,12 @@ module.exports = ({ HttpsError, getDb, admin }) => {
         return {
           id,
           patientName,
+          patientFileNumber: toPositiveFileNumber(data.patientFileNumber) || undefined,
           age: age || undefined,
           phone: phone || undefined,
           address,
+          gender: data.gender === 'male' || data.gender === 'female' ? data.gender : undefined,
+          dateOfBirth: normalizeOptionalText(data.dateOfBirth) || undefined,
           examCompletedAt,
           consultationCompletedAt: consultationCompletedAt || undefined,
           consultationCompletedDates: mergedConsultationDates.length > 0

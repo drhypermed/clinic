@@ -21,7 +21,6 @@ type UsePublicBookingPatientSelectionHandlersParams = {
   appointmentType: AppointmentType;
   setAppointmentType: Dispatch<SetStateAction<AppointmentType>>;
   setSelectedConsultationCandidateId: Dispatch<SetStateAction<string>>;
-  setConsultationCandidatesVisibleCount: Dispatch<SetStateAction<number>>;
   setPatientName: Dispatch<SetStateAction<string>>;
   setAge: Dispatch<SetStateAction<string>>;
   setDateOfBirth: Dispatch<SetStateAction<string>>;
@@ -39,7 +38,6 @@ export const usePublicBookingPatientSelectionHandlers = ({
   appointmentType,
   setAppointmentType,
   setSelectedConsultationCandidateId,
-  setConsultationCandidatesVisibleCount,
   setPatientName,
   setAge,
   setDateOfBirth,
@@ -56,7 +54,6 @@ export const usePublicBookingPatientSelectionHandlers = ({
     setAppointmentType(value);
     if (value !== 'consultation') {
       setSelectedConsultationCandidateId('');
-      setConsultationCandidatesVisibleCount(10);
     }
   };
   // عند اختيار مريض قديم: ننقل الجنس (ثابت) + نحسب السن الحالي تلقائياً

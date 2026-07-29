@@ -142,6 +142,7 @@ interface MainAppViewRouterProps {
   activePatientFileNumber: number | null;
   displayPatientFileNumber: number | null;
   activePatientFileNameKey: string | null;
+  openedAppointmentId?: string;
   setActivePatientFileId: (v: string | null) => void;
   setActivePatientFileNumber: (v: number | null) => void;
   setActivePatientFileNameKey: (v: string | null) => void;
@@ -311,6 +312,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           activePatientFileNumber={p.activePatientFileNumber}
           displayPatientFileNumber={p.displayPatientFileNumber}
           activePatientFileNameKey={p.activePatientFileNameKey}
+          openedAppointmentId={p.openedAppointmentId}
           setActivePatientFileId={p.setActivePatientFileId}
           setActivePatientFileNumber={p.setActivePatientFileNumber}
           setActivePatientFileNameKey={p.setActivePatientFileNameKey}
@@ -397,6 +399,7 @@ export const MainAppViewRouter: React.FC<MainAppViewRouterProps> = (p) => {
           discountReasonLabel={p.discountReasonLabel} setDiscountReasonLabel={p.setDiscountReasonLabel}
           showNotification={p.showNotification}
           doctorSpecialty={p.normalizedDoctorSpecialty}
+          doctorName={p.normalizedDoctorName}
           doctorUserId={p.userId}
         />
       )}

@@ -56,7 +56,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   appointmentType = 'exam', onAppointmentTypeChange, consultationCandidates = [],
   selectedConsultationCandidateId, onSelectConsultationCandidate,
   patientSuggestions = [], onSelectPatientSuggestion,
-  canLoadMoreConsultationCandidates = false, onLoadMoreConsultationCandidates,
   submitLabel, hideTopHeader = false, isOpen = true, onToggleOpen,
   bookingSecret, addressTemplateRole = 'doctor', secretarySessionToken,
   userId, activeBranchId, paymentType = 'cash', onPaymentTypeChange,
@@ -322,8 +321,6 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
               consultationCandidates={consultationCandidates}
               selectedConsultationCandidateId={selectedConsultationCandidateId}
               onSelectCandidate={handleSelectCandidate}
-              canLoadMoreConsultationCandidates={canLoadMoreConsultationCandidates}
-              onLoadMoreConsultationCandidates={onLoadMoreConsultationCandidates}
             />
           )}
 

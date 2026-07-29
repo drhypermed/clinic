@@ -1,5 +1,6 @@
 import type { GuideTopic } from './userGuideData';
 import { ADDITIONAL_SIDEBAR_TOPICS } from './userGuideData.sidebarAdditional';
+import { VISIT_SERVICE_GUIDE_SECTIONS } from './userGuideData.visitServices';
 
 export const SIDEBAR_TOPICS: GuideTopic[] = [
   // ═══════════════════════════ 1. الرئيسية ═══════════════════════════
@@ -71,7 +72,7 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
     id: 'prescription',
     title: '2. كشف جديد — كتابة الروشتة',
     summary: 'الميزة الأهمّ — مدعومه بذكاء اصطناعي: تنظيف البيانات طبياً، وتحليل الحالة (DDx + Must-Not-Miss + فحوصات + تعليمات).',
-    readMinutes: 13,
+    readMinutes: 15,
     sections: [
       {
         heading: 'ترتيب أقسام الروشتة (بالظبط زي ما بتتطبع)',
@@ -258,20 +259,21 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
         tip: 'ماتحتاجش تعدّل السن يدوياً لمريض قديم. اكتب سنه مره واحدة في أول زيارة، وخليها على التطبيق يحسبها في الزيارات اللي بعدها.',
         heading: 'نصيحه',
       },
+      ...VISIT_SERVICE_GUIDE_SECTIONS.prescription,
     ],
   },
-
   // ═══════════════════════════ 3. سجلات المرضى ═══════════════════════════
   {
     id: 'records',
     title: '3. سجلات المرضى',
     summary: 'أرشيف كل كشوفاتك مرتّب بالتاريخ — تقدر تبحث وتفتح أي كشف قديم.',
-    readMinutes: 3,
+    readMinutes: 4,
     sections: [
       {
         heading: 'إيه السجلات؟',
         body: 'كل كشف/استشارة عملتها، بيتسجّل تلقائياً في "سجلات المرضى". بتشوفهم مرتّبين من الأحدث للأقدم في خط زمني.',
       },
+      ...VISIT_SERVICE_GUIDE_SECTIONS.records,
       {
         heading: 'البحث والفلتره',
         body: 'البحث **عميق** — بيلاقي المريض حتى لو كشفه من سنين، ومش بس باسمه:',
@@ -419,13 +421,12 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 4. ملفات المرضى ═══════════════════════════
   {
     id: 'patientFiles',
     title: '4. ملفات المرضى',
     summary: 'كل مريض له ملف واحد مجمّع فيه كل زياراته + صوره + مصروفاته + ملاحظاتك الخاصة عنه.',
-    readMinutes: 7,
+    readMinutes: 8,
     sections: [
       {
         heading: '🤔 الفرق بين "السجل" و"الملف"',
@@ -497,6 +498,7 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
           'بيغذّي **التقارير المالية اليومية** تلقائياً — أي إضافة هنا بتظهر فوراً في إيرادات اليوم/الشهر.',
         ],
       },
+      ...VISIT_SERVICE_GUIDE_SECTIONS.patientFiles,
       {
         body: '**ملاحظة:** الكشوفات والاستشارات نفسها بتتسجّل على الزيارة (مش هنا) — وأسعارها وخصوماتها بتتحدّد من شاشة الكشف. القسم ده مخصّص فقط للتكاليف الإضافية والمطالبات التأمينية.',
       },
@@ -578,7 +580,6 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 5. المواعيد ═══════════════════════════
   {
     id: 'appointments',
@@ -690,13 +691,12 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 6. التقارير الماليّه ═══════════════════════════
   {
     id: 'financialReports',
     title: '6. التقارير الماليّه',
     summary: 'إيرادات، مصروفات، تأمينات — في 4 تبويبات (يومي / شهري / سنوي / إعدادات).',
-    readMinutes: 5,
+    readMinutes: 6,
     sections: [
       {
         heading: '4 تبويبات',
@@ -716,6 +716,7 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
           'تفصيل الإيراد: كاش، تداخلات، دخل آخر.',
         ],
       },
+      ...VISIT_SERVICE_GUIDE_SECTIONS.financialReports,
       {
         heading: '🔒 إقفال الشهور المنتهية تلقائياً',
         body: 'بعد ما يعدّي شهر كامل + 28 يوم على نهايته، التطبيق بيعمل **"إقفال" تلقائي** للشهر ده — يعني أرقامه (عدد الكشوفات، الإيرادات، المصروفات، صافي الربح) بتثبت كملخّص نهائي في حسابك. ليه ده مهم:',
@@ -770,7 +771,6 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 7. المساعد الطبي ═══════════════════════════
   {
     id: 'medicalAssistant',
@@ -814,7 +814,6 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 8. مكتبة الجايدلاينز ═══════════════════════════
   {
     id: 'guidelinesLibrary',
@@ -879,7 +878,6 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 9. أدوات الأدوية ═══════════════════════════
   {
     id: 'drugtools',
@@ -929,13 +927,12 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 10. السكرتارية ═══════════════════════════
   {
     id: 'secretary',
     title: '10. السكرتارية — نظام المحادثه الصامت',
     summary: 'تواصل لحظي بينك والسكرتيرة بدون ما تدخل عليك العيادة — إشعارات + ردود فورية.',
-    readMinutes: 9,
+    readMinutes: 10,
     sections: [
       {
         heading: 'المشكله اللي بيحلّها النظام',
@@ -961,6 +958,7 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
           '**كل ده بيحصل في ثواني** من غير ما حد يدخل على حد.',
         ],
       },
+      ...VISIT_SERVICE_GUIDE_SECTIONS.secretary,
       {
         heading: 'إضافة السكرتيرة',
         body: 'من صفحة "السكرتارية" في القائمة الجانبية:',
@@ -998,7 +996,6 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
       },
     ],
   },
-
   // ═══════════════════════════ 11. تصميم الروشتة ═══════════════════════════
   {
     id: 'settings',
@@ -1093,7 +1090,3 @@ export const SIDEBAR_TOPICS: GuideTopic[] = [
 
   ...ADDITIONAL_SIDEBAR_TOPICS,
 ];
-
-// ═════════════════════════════════════════════════════════════════════════════
-// التصنيفات النهائيّه
-// ═════════════════════════════════════════════════════════════════════════════

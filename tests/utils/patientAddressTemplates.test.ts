@@ -1,68 +1,61 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addPatientAddressTemplateLocally,
-  getPatientAddressCityTemplates,
-  getPatientAddressDetailsTemplates,
+  deletePatientAddressTemplateLocally,
+  findPatientAddressTemplate,
   normalizePatientAddressTemplateLibrary,
+  upsertPatientAddressTemplateLocally,
 } from '../../utils/patientAddressTemplates';
 
 describe('patient address templates', () => {
-  it('stores cities under their governorate and removes duplicates', () => {
-    const first = addPatientAddressTemplateLocally(
-      { version: 1, cities: [], details: [] },
-      { kind: 'city', governorate: 'القاهرة', value: ' مدينة نصر ' },
+  it('stores a full address with an editable template name', () => {
+    const library = upsertPatientAddressTemplateLocally(
+      { version: 2, addresses: [] },
+      { id: 'home', name: 'المنزل', address: 'بنها' },
     );
-    const second = addPatientAddressTemplateLocally(first, {
-      kind: 'city',
-      governorate: 'القاهرة',
-      value: 'مدينة  نصر',
-    });
-    const third = addPatientAddressTemplateLocally(second, {
-      kind: 'city',
-      governorate: 'الجيزة',
-      value: 'الدقي',
+    const updated = upsertPatientAddressTemplateLocally(library, {
+      id: 'home',
+      name: 'بيت المريض',
+      address: 'بنها، شارع فريد ندا',
     });
 
-    expect(getPatientAddressCityTemplates(third, 'القاهرة')).toEqual(['مدينة نصر']);
-    expect(getPatientAddressCityTemplates(third, 'الجيزة')).toEqual(['الدقي']);
+    expect(updated.addresses).toEqual([{
+      id: 'home',
+      name: 'بيت المريض',
+      address: 'بنها، شارع فريد ندا',
+    }]);
   });
 
-  it('keeps detailed addresses scoped to the selected governorate and city', () => {
-    let library = addPatientAddressTemplateLocally(
-      { version: 1, cities: [], details: [] },
-      {
-        kind: 'details',
-        governorate: 'القاهرة',
-        cityArea: 'مدينة نصر',
-        value: 'شارع الطيران، عمارة 10',
-      },
-    );
-    library = addPatientAddressTemplateLocally(library, {
-      kind: 'details',
-      governorate: 'القاهرة',
-      cityArea: 'التجمع الخامس',
-      value: 'شارع التسعين',
+  it('removes a template without touching other saved templates', () => {
+    const library = normalizePatientAddressTemplateLibrary({
+      version: 2,
+      addresses: [
+        { id: 'home', name: 'المنزل', address: 'بنها' },
+        { id: 'work', name: 'العمل', address: 'القاهرة' },
+      ],
     });
+    const updated = deletePatientAddressTemplateLocally(library, 'home');
 
-    expect(getPatientAddressDetailsTemplates(library, 'القاهرة', 'مدينة نصر'))
-      .toEqual(['شارع الطيران، عمارة 10']);
-    expect(getPatientAddressDetailsTemplates(library, 'القاهرة', 'التجمع الخامس'))
-      .toEqual(['شارع التسعين']);
-    expect(getPatientAddressDetailsTemplates(library, 'الجيزة', 'مدينة نصر')).toEqual([]);
+    expect(updated.addresses).toHaveLength(1);
+    expect(updated.addresses[0].id).toBe('work');
   });
 
-  it('normalizes the bookingConfig mirror shape', () => {
+  it('migrates the previous governorate, city and details templates to full addresses', () => {
     const normalized = normalizePatientAddressTemplateLibrary({
       patientAddressTemplates: {
         version: 1,
-        cities: [{ governorate: 'القاهرة', values: ['مدينة نصر'] }],
-        details: [],
+        cities: [{ governorate: 'القليوبية', values: ['بنها'] }],
+        details: [{
+          governorate: 'القليوبية',
+          cityArea: 'بنها',
+          values: ['شارع فريد ندا'],
+        }],
       },
     });
 
-    expect(normalized.cities[0]).toEqual({
-      governorate: 'القاهرة',
-      values: ['مدينة نصر'],
-    });
+    expect(findPatientAddressTemplate(normalized, 'القليوبية، بنها')).toBeDefined();
+    expect(findPatientAddressTemplate(
+      normalized,
+      'القليوبية، بنها، شارع فريد ندا',
+    )).toBeDefined();
   });
 });

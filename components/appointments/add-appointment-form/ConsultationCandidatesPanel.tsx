@@ -1,6 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { RecentExamPatientOption } from './types';
-import { getArabicDayName, groupConsultationCandidatesByDate } from './helpers';
+import {
+  filterConsultationCandidates,
+  getArabicDayName,
+  groupConsultationCandidatesByDate,
+} from './helpers';
 import { buildCairoDateTime, formatUserDate, formatUserTime } from '../../../utils/cairoTime';
 import { PatientContactActions } from '../../common/PatientContactActions';
 import { formatPatientAddress } from '../../../utils/patientAddress';
@@ -18,21 +22,32 @@ interface ConsultationCandidatesPanelProps {
   consultationCandidates: RecentExamPatientOption[];
   selectedConsultationCandidateId?: string;
   onSelectCandidate: (candidate: RecentExamPatientOption) => void;
-  canLoadMoreConsultationCandidates?: boolean;
-  onLoadMoreConsultationCandidates?: () => void;
 }
 
 export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelProps> = ({
   consultationCandidates,
   selectedConsultationCandidateId,
   onSelectCandidate,
-  canLoadMoreConsultationCandidates = false,
-  onLoadMoreConsultationCandidates,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(10);
+  const filteredCandidates = useMemo(
+    () => filterConsultationCandidates(consultationCandidates, searchQuery),
+    [consultationCandidates, searchQuery],
+  );
+  const visibleCandidates = useMemo(
+    () => filteredCandidates.slice(0, visibleCount),
+    [filteredCandidates, visibleCount],
+  );
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [consultationCandidates, searchQuery]);
+
   // تجميع المرشحين حسب التاريخ (مثلاً: كشوفات الأحد، كشوفات الإثنين...)
   const { grouped, sortedDates } = useMemo(
-    () => groupConsultationCandidatesByDate(consultationCandidates),
-    [consultationCandidates]
+    () => groupConsultationCandidatesByDate(visibleCandidates),
+    [visibleCandidates]
   );
 
   const formatConsultationDateTime = (value: string): string => {
@@ -87,10 +102,39 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
         <p className="inline-flex items-center gap-1 rounded-lg bg-black/20 px-2.5 py-1 text-xs font-black text-white ring-1 ring-white/40">
           كشوفات اخر 30 يوم
         </p>
+        <span className="text-[11px] font-black text-white/90">
+          {filteredCandidates.length} نتيجة
+        </span>
+      </div>
+
+      <div className="relative mb-3">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="ابحث بالاسم أو الموبايل أو رقم الملف"
+          aria-label="بحث في كشوفات آخر 30 يوم"
+          className="w-full rounded-xl border border-white/50 bg-white px-4 py-2.5 pe-10 text-sm font-bold text-slate-800 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-warning-300"
+          dir="rtl"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-black text-slate-500 hover:bg-slate-100"
+            aria-label="مسح البحث"
+          >
+            مسح
+          </button>
+        )}
       </div>
 
       {consultationCandidates.length === 0 ? (
         <p className="text-xs font-bold text-white/90">لا يوجد مرضى مؤهلون للاستشارة حالياً.</p>
+      ) : filteredCandidates.length === 0 ? (
+        <p className="rounded-xl bg-white/15 px-3 py-2 text-xs font-bold text-white">
+          لا توجد نتيجة مطابقة داخل كشوفات آخر 30 يوم.
+        </p>
       ) : (
         <div className="space-y-4">
           {sortedDates.map((dateKey) => (
@@ -108,6 +152,11 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
                 <div key={candidate.id} className={`rounded-xl border-2 p-2.5 transition-all flex items-center justify-between gap-3 ${selectedConsultationCandidateId === candidate.id ? 'border-warning-400 bg-white shadow-md scale-[1.01]' : 'border-success-200 bg-white/95'}`}>
                   <div className="flex flex-wrap items-center gap-2 flex-1">
                     <p className="text-sm font-black text-slate-800">{candidate.patientName}</p>
+                    {candidate.patientFileNumber && (
+                      <span className="text-[10px] font-black text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                        ملف #{candidate.patientFileNumber}
+                      </span>
+                    )}
                     <span className="text-[10px] font-black text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-100">{candidate.age || 'السن غير معروف'}</span>
                     <span className="text-[10px] font-black text-success-800 bg-success-50 px-2 py-0.5 rounded border border-success-100">{candidate.phone || 'بدون رقم هاتف'}</span>
                     {formatPatientAddress(candidate.address, 'summary') && (
@@ -130,14 +179,14 @@ export const ConsultationCandidatesPanel: React.FC<ConsultationCandidatesPanelPr
             </div>
           ))}
 
-          {canLoadMoreConsultationCandidates && onLoadMoreConsultationCandidates && (
+          {filteredCandidates.length > visibleCandidates.length && (
             <div className="pt-1">
               <button
                 type="button"
-                onClick={onLoadMoreConsultationCandidates}
+                onClick={() => setVisibleCount((current) => current + 10)}
                 className="w-full rounded-xl bg-white/90 hover:bg-white text-brand-700 text-xs font-black px-3 py-2 border border-brand-200 transition-colors"
               >
-                تحميل المزيد
+                تحميل 10 مرضى إضافيين
               </button>
             </div>
           )}
