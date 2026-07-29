@@ -18,6 +18,7 @@ import { firestoreService } from '../../../services/firestore';
 import type { ClinicAppointment } from '../../../types';
 import { isPendingAppointmentInSecretaryTodayQueue } from '../../../utils/appointmentRetention';
 import { isAppointmentPending } from '../../../utils/appointmentStatus';
+import { getClinicDayKey } from '../../../utils/clinicWorkday';
 
 interface UseBookingConfigSyncParams {
   /** سر الحجز — المفتاح الرئيسي لـ bookingConfig document */
@@ -27,6 +28,7 @@ interface UseBookingConfigSyncParams {
   allAppointmentsAcrossBranches: ClinicAppointment[];
   /** تاريخ اليوم كـ YYYY-MM-DD (يتحدث تلقائياً عند منتصف الليل) */
   todayStr: string;
+  clinicDayCutoffMinutes: number;
   /** قائمة معرفات الفروع لضمان كتابة [] فارغة للفروع بدون مواعيد */
   branchIds?: string[];
 }
@@ -91,10 +93,14 @@ const initEmptyBranchMap = <T>(branchIds?: string[]): Record<string, T[]> => {
 const getBranchKey = (apt: ClinicAppointment) => (apt.branchId || 'main').trim() || 'main';
 
 /** فلترة: تاريخ الموعد بعد اليوم (upcoming). */
-const isAppointmentAfterDay = (apt: ClinicAppointment, targetDayStr: string): boolean => {
+const isAppointmentAfterDay = (
+  apt: ClinicAppointment,
+  targetDayStr: string,
+  clinicDayCutoffMinutes: number,
+): boolean => {
   const dt = new Date(apt.dateTime);
   if (Number.isNaN(dt.getTime()) || !isAppointmentPending(apt)) return false;
-  const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  const dayStr = getClinicDayKey(dt, clinicDayCutoffMinutes);
   return dayStr > targetDayStr;
 };
 
@@ -103,6 +109,7 @@ export const useBookingConfigSync = ({
   bookingSecrets,
   allAppointmentsAcrossBranches,
   todayStr,
+  clinicDayCutoffMinutes,
   branchIds,
 }: UseBookingConfigSyncParams) => {
   const targetSecrets = useMemo(() => {
@@ -123,7 +130,12 @@ export const useBookingConfigSync = ({
     const nowMs = Date.now();
 
     const filtered = allAppointmentsAcrossBranches
-      .filter((apt) => isPendingAppointmentInSecretaryTodayQueue(apt, todayStr, nowMs))
+      .filter((apt) => isPendingAppointmentInSecretaryTodayQueue(
+        apt,
+        todayStr,
+        nowMs,
+        clinicDayCutoffMinutes,
+      ))
       .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
     filtered.forEach((apt) => {
@@ -157,7 +169,7 @@ export const useBookingConfigSync = ({
     });
 
     return result;
-  }, [allAppointmentsAcrossBranches, todayStr, branchIds]);
+  }, [allAppointmentsAcrossBranches, todayStr, clinicDayCutoffMinutes, branchIds]);
 
   useEffect(() => {
     if (targetSecrets.length === 0) return;
@@ -175,7 +187,7 @@ export const useBookingConfigSync = ({
     const result = initEmptyBranchMap<UpcomingAppointmentItem>(branchIds);
 
     const filtered = allAppointmentsAcrossBranches
-      .filter((apt) => isAppointmentAfterDay(apt, todayStr))
+      .filter((apt) => isAppointmentAfterDay(apt, todayStr, clinicDayCutoffMinutes))
       .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
     filtered.forEach((apt) => {
@@ -198,7 +210,7 @@ export const useBookingConfigSync = ({
     });
 
     return result;
-  }, [allAppointmentsAcrossBranches, todayStr, branchIds]);
+  }, [allAppointmentsAcrossBranches, todayStr, clinicDayCutoffMinutes, branchIds]);
 
   useEffect(() => {
     if (targetSecrets.length === 0) return;

@@ -1,6 +1,13 @@
 import React from 'react';
 import type { ChartDay } from '../hooks/useFinancialStats';
 import { formatCurrency } from '../utils/formatters';
+import {
+    createEmptyDirectPaymentTotals,
+    type DirectPaymentTotals,
+} from '../../../utils/paymentMethods';
+import { CompactPaymentBreakdown } from './CompactPaymentBreakdown';
+import { CompactExpenseBreakdown } from './CompactExpenseBreakdown';
+import type { ExpenseBreakdown } from '../utils/expenseBreakdown';
 
 interface DailyStatsCalendarProps {
     currentMonthLabel: string;
@@ -10,6 +17,7 @@ interface DailyStatsCalendarProps {
     currentDateKey: string;
     onSelectDay: (date: Date) => void;
     totalMonthlyExpenses: number;
+    monthlyExpenseBreakdown: ExpenseBreakdown;
 }
 
 export const DailyStatsCalendar: React.FC<DailyStatsCalendarProps> = ({
@@ -17,16 +25,32 @@ export const DailyStatsCalendar: React.FC<DailyStatsCalendarProps> = ({
     chartDays,
     maxDailyIncome,
     totalMonthlyExpenses,
+    monthlyExpenseBreakdown,
 }) => {
-    const monthTotals = chartDays.reduce((acc, day) => ({
-        exams: acc.exams + day.exams,
-        consultations: acc.consultations + day.consultations,
-        examsIncome: acc.examsIncome + day.examsIncome,
-        consultsIncome: acc.consultsIncome + day.consultsIncome,
-        interventions: acc.interventions + day.interventions,
-        other: acc.other + day.other,
-        income: acc.income + day.income
-    }), { exams: 0, consultations: 0, examsIncome: 0, consultsIncome: 0, interventions: 0, other: 0, income: 0 });
+    const monthTotals = chartDays.reduce((acc, day) => {
+        acc.exams += day.exams;
+        acc.consultations += day.consultations;
+        acc.examsIncome += day.examsIncome;
+        acc.consultsIncome += day.consultsIncome;
+        acc.interventions += day.interventions;
+        acc.other += day.other;
+        acc.income += day.income;
+        acc.insuranceClaims += day.insuranceClaims;
+        (Object.keys(acc.directPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+            acc.directPaymentTotals[type] += day.directPaymentTotals[type];
+        });
+        return acc;
+    }, {
+        exams: 0,
+        consultations: 0,
+        examsIncome: 0,
+        consultsIncome: 0,
+        interventions: 0,
+        other: 0,
+        income: 0,
+        insuranceClaims: 0,
+        directPaymentTotals: createEmptyDirectPaymentTotals(),
+    });
 
     const netProfit = monthTotals.income - totalMonthlyExpenses;
     const today = new Date();
@@ -73,10 +97,21 @@ export const DailyStatsCalendar: React.FC<DailyStatsCalendarProps> = ({
                         <div className="bg-success-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">إجمالي الدخل</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(monthTotals.income, true)}</div>
+                            <CompactPaymentBreakdown
+                                directPaymentTotals={monthTotals.directPaymentTotals}
+                                insuranceClaims={monthTotals.insuranceClaims}
+                                tone="dark"
+                                className="mt-1"
+                            />
                         </div>
                         <div className="bg-danger-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">المصروفات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(totalMonthlyExpenses, true)}</div>
+                            <CompactExpenseBreakdown
+                                expenseBreakdown={monthlyExpenseBreakdown}
+                                tone="dark"
+                                className="mt-1"
+                            />
                         </div>
                         <div className={`rounded-xl p-3 text-center ${netProfit >= 0 ? 'bg-white/20' : 'bg-danger-600/80'}`}>
                             <div className="text-xs text-white font-bold">{netProfit >= 0 ? 'صافي الربح' : 'صافي الخسارة'}</div>
@@ -157,13 +192,22 @@ export const DailyStatsCalendar: React.FC<DailyStatsCalendarProps> = ({
                                         </div>
 
                                         <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                                            <div className="flex items-center justify-between gap-2 bg-success-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-success-700 font-bold whitespace-nowrap">الدخل</span>
-                                                <span className="font-black text-success-800 whitespace-nowrap text-left">{formatCurrency(day.income, true)}</span>
+                                            <div className="space-y-1 bg-success-50 px-2 py-1.5 rounded-lg">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-success-700 font-bold whitespace-nowrap">الدخل</span>
+                                                    <span className="font-black text-success-800 whitespace-nowrap text-left">{formatCurrency(day.income, true)}</span>
+                                                </div>
+                                                <CompactPaymentBreakdown
+                                                    directPaymentTotals={day.directPaymentTotals}
+                                                    insuranceClaims={day.insuranceClaims}
+                                                />
                                             </div>
-                                            <div className="flex items-center justify-between gap-2 bg-danger-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-danger-700 font-bold whitespace-nowrap">المصروفات</span>
-                                                <span className="font-black text-danger-800 whitespace-nowrap text-left">{formatCurrency(day.expense, true)}</span>
+                                            <div className="space-y-1 bg-danger-50 px-2 py-1.5 rounded-lg">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-danger-700 font-bold whitespace-nowrap">المصروفات</span>
+                                                    <span className="font-black text-danger-800 whitespace-nowrap text-left">{formatCurrency(day.expense, true)}</span>
+                                                </div>
+                                                <CompactExpenseBreakdown expenseBreakdown={day.expenseBreakdown} />
                                             </div>
                                             <div className={`flex items-center justify-between gap-2 p-2 rounded-lg ${netDayProfit >= 0 ? 'bg-brand-50' : 'bg-danger-100'}`}>
                                                 <span className={`font-bold whitespace-nowrap ${netDayProfit >= 0 ? 'text-brand-700' : 'text-danger-700'}`}>الصافي</span>

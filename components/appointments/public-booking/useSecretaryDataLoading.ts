@@ -23,7 +23,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { listRecentExamRecordsForSecretary } from '../../../services/secretaryRecordsService';
 import { listAppointmentsForSecretary } from '../../../services/secretaryAppointmentsService';
-import { toLocalDateStr } from '../utils';
 import type { RecentExamPatientOption } from '../add-appointment-form/types';
 import type { TodayAppointment } from './types';
 
@@ -44,6 +43,7 @@ interface UseSecretaryDataLoadingParams {
   setTodayAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setUpcomingAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
   setCompletedAppointments: Dispatch<SetStateAction<TodayAppointment[]>>;
+  currentDayStr: string;
 }
 
 /** التحقق من أن الخطأ يمثل انتهاء جلسة السكرتارية. */
@@ -72,6 +72,7 @@ export const useSecretaryDataLoading = ({
   setTodayAppointments,
   setUpcomingAppointments,
   setCompletedAppointments,
+  currentDayStr,
 }: UseSecretaryDataLoadingParams) => {
   // ── 1) تحميل كشوفات حديثة عند فتح وضع الاستشارة فقط ──
   useEffect(() => {
@@ -131,13 +132,12 @@ export const useSecretaryDataLoading = ({
   const refreshAppointments = useCallback(async () => {
     if (!isAuthenticated || !secret || !userId) return;
     try {
-      const todayStr = toLocalDateStr(new Date());
       const data = await listAppointmentsForSecretary({
         secret,
         userId,
         sessionToken: getCurrentSessionToken?.(),
         branchId: sessionBranchId,
-        todayStr,
+        todayStr: currentDayStr,
       });
       setTodayAppointments(data.today);
       setUpcomingAppointments(data.upcoming);
@@ -153,6 +153,7 @@ export const useSecretaryDataLoading = ({
     isAuthenticated, secret, userId, sessionBranchId,
     getCurrentSessionToken, invalidateSecretarySession,
     setTodayAppointments, setUpcomingAppointments, setCompletedAppointments,
+    currentDayStr,
   ]);
 
   refreshAppointmentsRef.current = refreshAppointments;

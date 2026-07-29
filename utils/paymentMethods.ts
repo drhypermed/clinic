@@ -79,3 +79,37 @@ export const addToDirectPaymentTotals = (
 
 export const sumDirectPaymentTotals = (totals: DirectPaymentTotals): number =>
   DIRECT_PAYMENT_TYPES.reduce((sum, type) => sum + (Number(totals[type]) || 0), 0);
+
+/**
+ * يوزّع إجمالي دخل يدوي (تداخلات/دخل آخر) على طرق الدفع المحفوظة في عناصره.
+ *
+ * بعض البيانات القديمة تحفظ الإجمالي فقط بدون عناصر تفصيلية؛ المتبقي يُنسب
+ * للكاش للحفاظ على التوافق. كما نحدّ التوزيع بالإجمالي نفسه حتى لا تجعل عناصر
+ * قديمة أو مكررة مجموع طرق الدفع أكبر من الدخل المحاسبي.
+ */
+export const summarizeDirectRevenueByMethod = (
+  totalAmountInput: unknown,
+  rawItems: unknown,
+): DirectPaymentTotals => {
+  const totals = createEmptyDirectPaymentTotals();
+  const parsedTotal = Number(totalAmountInput);
+  let remaining = Number.isFinite(parsedTotal) && parsedTotal > 0 ? parsedTotal : 0;
+  const items = Array.isArray(rawItems) ? rawItems : [];
+
+  for (const item of items) {
+    if (remaining <= 0) break;
+    if (!item || typeof item !== 'object') continue;
+    const amount = Number((item as { amount?: unknown }).amount);
+    if (!Number.isFinite(amount) || amount <= 0) continue;
+    const allocatedAmount = Math.min(amount, remaining);
+    addToDirectPaymentTotals(
+      totals,
+      (item as { paymentType?: unknown }).paymentType,
+      allocatedAmount,
+    );
+    remaining -= allocatedAmount;
+  }
+
+  if (remaining > 0) totals.cash += remaining;
+  return totals;
+};

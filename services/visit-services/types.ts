@@ -26,6 +26,7 @@ export interface VisitServiceCharge {
   amount: number;
   type: VisitServiceType;
   dateKey: string;
+  clinicDayCutoffMinutes?: number;
   note?: string;
   serviceName?: string;
   serviceTemplateId?: string;

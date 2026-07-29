@@ -42,6 +42,8 @@ import {
   clearTimedPayload,
   persistTimedPayload,
 } from '../internalToastStorage'; // نفس آلية إخفاء التوست المستخدمة في توست أكشن السكرتيرة
+import { financialDataService } from '../../../services/financial-data';
+import { normalizeClinicDayCutoffMinutes } from '../../../utils/clinicWorkday';
 
 
 
@@ -114,6 +116,16 @@ export const usePublicBookingPageLogic = () => {
   // `sessionBranchId` = 'main' افتراضياً (قبل الـ login أو للـ legacy).
   const sessionBranchId = auth.sessionBranchId || 'main';
 
+  useEffect(() => {
+    if (!linkResolution.secret) return;
+    return financialDataService.subscribeToPricesBySecret(
+      linkResolution.secret,
+      (prices) => state.setClinicDayCutoffMinutes(
+        normalizeClinicDayCutoffMinutes(prices.clinicDayCutoffMinutes),
+      ),
+    );
+  }, [linkResolution.secret, state.setClinicDayCutoffMinutes]);
+
   const publicSection = usePublicBookingPublicSection({
     userId,
     currentDayStr: state.currentDayStr,
@@ -127,7 +139,6 @@ export const usePublicBookingPageLogic = () => {
 
   usePublicBookingTimeAndFormEffects({
     currentDayStr: state.currentDayStr,
-    setCurrentDayStr: state.setCurrentDayStr,
     previousDayStrRef: state.previousDayStrRef,
     dateStr: state.dateStr,
     setDateStr: state.setDateStr,
@@ -174,6 +185,7 @@ export const usePublicBookingPageLogic = () => {
     setTodayAppointments: state.setTodayAppointments,
     setUpcomingAppointments: state.setUpcomingAppointments,
     setCompletedAppointments: state.setCompletedAppointments,
+    currentDayStr: state.currentDayStr,
   });
 
   // نبحث بعد توقف قصير في الكتابة بدلاً من تحميل دليل كامل عند فتح الصفحة.
@@ -437,6 +449,8 @@ export const usePublicBookingPageLogic = () => {
     pregnant: state.pregnant,
     breastfeeding: state.breastfeeding,
     dateStr: state.dateStr,
+    currentDayStr: state.currentDayStr,
+    clinicDayCutoffMinutes: state.clinicDayCutoffMinutes,
     timeStr: state.timeStr,
     visitReason: state.visitReason,
     secretaryVitals: state.secretaryVitals,

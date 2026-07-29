@@ -63,8 +63,9 @@ describe('finalize pending visit services', () => {
 
   it('posts a pending service once and removes it from the pending list', async () => {
     const patientPath = 'users/doctor-1/patientFileData/patient-1';
-    const dailyPath = 'users/doctor-1/financialData/daily/entries/2026-07-29';
+    const dailyPath = 'users/doctor-1/financialData/daily/entries/2026-07-28';
     const appointmentPath = 'users/doctor-1/appointments/apt-1';
+    const recordPath = 'users/doctor-1/records/record-1';
     const pendingItem = {
       id: 'service-1',
       patientFileId: 'patient-1',
@@ -84,6 +85,11 @@ describe('finalize pending visit services', () => {
     });
     firestoreState.documents.set(dailyPath, { cashCostItems: [] });
     firestoreState.documents.set(appointmentPath, { patientName: 'أحمد' });
+    firestoreState.documents.set(recordPath, {
+      clinicDayKey: '2026-07-28',
+      clinicDayCutoffMinutes: 360,
+      branchId: 'main',
+    });
 
     const input = {
       userId: 'doctor-1',
@@ -104,6 +110,8 @@ describe('finalize pending visit services', () => {
           id: 'service-1',
           financialStatus: 'posted',
           recordId: 'record-1',
+          dateKey: '2026-07-28',
+          clinicDayCutoffMinutes: 360,
           postedAt: expect.any(Number),
         }),
       ],
@@ -118,6 +126,8 @@ describe('finalize pending visit services', () => {
       serviceChargesTotal: 250,
       serviceChargesStatus: 'posted',
       recordId: 'record-1',
+      clinicDayKey: '2026-07-28',
+      clinicDayCutoffMinutes: 360,
     }));
     expect(serviceMocks.loadCostsFromFirestore).toHaveBeenCalledTimes(1);
   });

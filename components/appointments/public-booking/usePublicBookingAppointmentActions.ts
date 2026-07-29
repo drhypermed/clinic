@@ -16,6 +16,7 @@ import { entryConversations } from '../../../services/firestore/entryConversatio
 import { resolveAppointmentType } from '../../../utils/appointmentType';
 import { functions } from '../../../services/firebaseConfig';
 import { buildLocalDateTime, currentTimeMin, toLocalDateStr } from '../utils';
+import { getClinicDayKey } from '../../../utils/clinicWorkday';
 import { extractBookingQuotaNotice } from './helpers';
 import { sanitizePhoneDigits, sanitizePublicText } from './securityUtils';
 import { sanitizeSecretaryVitalsInput } from '../../../utils/secretaryVitals';
@@ -29,7 +30,6 @@ import type { EntryRequestAppointment, UsePublicBookingAppointmentActionsParams 
 import { callWithSessionRetry, isInvalidSecretarySessionError } from './usePublicBookingAppointmentActions/sessionHelpers';
 import {
   buildMergedTodayAppointment,
-  isSameLocalDay,
   submitAppointment,
   syncTodayAppointmentsToBookingConfig,
 } from './usePublicBookingAppointmentActions/submitAppointment';
@@ -53,6 +53,8 @@ export const usePublicBookingAppointmentActions = ({
   pregnant,
   breastfeeding,
   dateStr,
+  currentDayStr,
+  clinicDayCutoffMinutes,
   timeStr,
   visitReason,
   secretaryVitals,
@@ -119,7 +121,7 @@ export const usePublicBookingAppointmentActions = ({
   };
 
   const isAppointmentForToday = (dateTime: string) =>
-    isSameLocalDay(dateTime, toLocalDateStr(new Date()), toLocalDateStr);
+    getClinicDayKey(dateTime, clinicDayCutoffMinutes) === currentDayStr;
 
   const requestEntryNow = async (apt: EntryRequestAppointment) => {
     if (!secret || !userId) return;
@@ -300,7 +302,7 @@ export const usePublicBookingAppointmentActions = ({
     const now = new Date();
     if (chosenDateTime.getTime() < now.getTime()) {
       chosenDateTime = now;
-      setDateStr(toLocalDateStr(now));
+      setDateStr(currentDayStr);
       setTimeStr(currentTimeMin());
     }
     const dateTime = chosenDateTime;
@@ -440,9 +442,8 @@ export const usePublicBookingAppointmentActions = ({
             0,
           ),
         });
-        const currentDayStr = toLocalDateStr(new Date());
         const cleanedCurrentDayAppointments = todayAppointments.filter((apt) =>
-          isSameLocalDay(apt.dateTime, currentDayStr, toLocalDateStr)
+          getClinicDayKey(apt.dateTime, clinicDayCutoffMinutes) === currentDayStr
         );
         const withoutCurrent = cleanedCurrentDayAppointments.filter((apt) => apt.id !== savedAppointmentId);
         const updatedTodayAppointments = isAppointmentForToday(mergedAppointment.dateTime)
@@ -465,7 +466,7 @@ export const usePublicBookingAppointmentActions = ({
       setGender('');
       setPregnant(null);
       setBreastfeeding(null);
-      setDateStr(toLocalDateStr(new Date()));
+      setDateStr(currentDayStr);
       setTimeStr(currentTimeMin());
       setVisitReason('');
       setSecretaryVitals({});
@@ -520,7 +521,7 @@ export const usePublicBookingAppointmentActions = ({
     setGender('');
     setPregnant(null);
     setBreastfeeding(null);
-    setDateStr(toLocalDateStr(new Date()));
+    setDateStr(currentDayStr);
     setTimeStr(currentTimeMin());
     setVisitReason('');
     setSecretaryVitals({});

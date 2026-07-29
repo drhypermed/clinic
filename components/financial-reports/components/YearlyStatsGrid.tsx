@@ -1,6 +1,16 @@
 import React from 'react';
 import type { YearlyMonthData } from '../hooks/useFinancialStats';
 import { formatCurrency } from '../utils/formatters';
+import {
+    createEmptyDirectPaymentTotals,
+    type DirectPaymentTotals,
+} from '../../../utils/paymentMethods';
+import { CompactPaymentBreakdown } from './CompactPaymentBreakdown';
+import { CompactExpenseBreakdown } from './CompactExpenseBreakdown';
+import {
+    createEmptyExpenseBreakdown,
+    type ExpenseBreakdown,
+} from '../utils/expenseBreakdown';
 
 interface YearlyStatsGridProps {
     currentYear: number;
@@ -18,17 +28,25 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
     const maxIncome = Math.max(...yearlyStats.map((month) => month.income), 1);
 
     const yearTotals = yearlyStats.reduce(
-        (acc, month) => ({
-            exams: acc.exams + month.exams,
-            consultations: acc.consultations + month.consultations,
-            examsIncome: acc.examsIncome + month.examsIncome,
-            consultsIncome: acc.consultsIncome + month.consultsIncome,
-            interventionsRevenue: acc.interventionsRevenue + month.interventionsRevenue,
-            otherRevenue: acc.otherRevenue + month.otherRevenue,
-            income: acc.income + month.income,
-            expenses: acc.expenses + month.expenses,
-            netProfit: acc.netProfit + (month.income - month.expenses)
-        }),
+        (acc, month) => {
+            acc.exams += month.exams;
+            acc.consultations += month.consultations;
+            acc.examsIncome += month.examsIncome;
+            acc.consultsIncome += month.consultsIncome;
+            acc.interventionsRevenue += month.interventionsRevenue;
+            acc.otherRevenue += month.otherRevenue;
+            acc.income += month.income;
+            acc.expenses += month.expenses;
+            acc.netProfit += month.income - month.expenses;
+            acc.insuranceClaims += month.insuranceClaims;
+            (Object.keys(acc.directPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+                acc.directPaymentTotals[type] += month.directPaymentTotals[type];
+            });
+            (Object.keys(acc.expenseBreakdown) as Array<keyof ExpenseBreakdown>).forEach((type) => {
+                acc.expenseBreakdown[type] += month.expenseBreakdown[type];
+            });
+            return acc;
+        },
         {
             exams: 0,
             consultations: 0,
@@ -38,7 +56,10 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
             otherRevenue: 0,
             income: 0,
             expenses: 0,
-            netProfit: 0
+            netProfit: 0,
+            insuranceClaims: 0,
+            directPaymentTotals: createEmptyDirectPaymentTotals(),
+            expenseBreakdown: createEmptyExpenseBreakdown(),
         }
     );
 
@@ -90,11 +111,22 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                         <div className="bg-success-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">إجمالي الدخل</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(yearTotals.income, true)}</div>
+                            <CompactPaymentBreakdown
+                                directPaymentTotals={yearTotals.directPaymentTotals}
+                                insuranceClaims={yearTotals.insuranceClaims}
+                                tone="dark"
+                                className="mt-1"
+                            />
                         </div>
 
                         <div className="bg-danger-500/80 rounded-xl p-3 text-center">
                             <div className="text-xs text-white font-bold">المصروفات</div>
                             <div className="text-xl sm:text-2xl font-black text-white">{formatCurrency(yearTotals.expenses, true)}</div>
+                            <CompactExpenseBreakdown
+                                expenseBreakdown={yearTotals.expenseBreakdown}
+                                tone="dark"
+                                className="mt-1"
+                            />
                         </div>
 
                         <div
@@ -194,18 +226,27 @@ export const YearlyStatsGrid: React.FC<YearlyStatsGridProps> = ({
                                         </div>
 
                                         <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                                            <div className="flex items-center justify-between gap-2 bg-success-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-success-700 font-bold whitespace-nowrap">الدخل</span>
-                                                <span className="font-black text-success-800 whitespace-nowrap text-left">
-                                                    {formatCurrency(monthData.income, true)}
-                                                </span>
+                                            <div className="space-y-1 bg-success-50 px-2 py-1.5 rounded-lg">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-success-700 font-bold whitespace-nowrap">الدخل</span>
+                                                    <span className="font-black text-success-800 whitespace-nowrap text-left">
+                                                        {formatCurrency(monthData.income, true)}
+                                                    </span>
+                                                </div>
+                                                <CompactPaymentBreakdown
+                                                    directPaymentTotals={monthData.directPaymentTotals}
+                                                    insuranceClaims={monthData.insuranceClaims}
+                                                />
                                             </div>
 
-                                            <div className="flex items-center justify-between gap-2 bg-danger-50 px-2 py-1.5 rounded-lg">
-                                                <span className="text-danger-700 font-bold whitespace-nowrap">المصروفات</span>
-                                                <span className="font-black text-danger-800 whitespace-nowrap text-left">
-                                                    {formatCurrency(monthData.expenses, true)}
-                                                </span>
+                                            <div className="space-y-1 bg-danger-50 px-2 py-1.5 rounded-lg">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-danger-700 font-bold whitespace-nowrap">المصروفات</span>
+                                                    <span className="font-black text-danger-800 whitespace-nowrap text-left">
+                                                        {formatCurrency(monthData.expenses, true)}
+                                                    </span>
+                                                </div>
+                                                <CompactExpenseBreakdown expenseBreakdown={monthData.expenseBreakdown} />
                                             </div>
 
                                             <div

@@ -5,6 +5,7 @@ import {
   createEmptyDirectPaymentTotals,
   getPaymentMethodLabel,
   normalizePaymentType,
+  summarizeDirectRevenueByMethod,
 } from '../../utils/paymentMethods';
 
 describe('electronic payment methods', () => {
@@ -36,5 +37,26 @@ describe('electronic payment methods', () => {
     expect(getPaymentMethodLabel('instapay')).toBe('إنستا باي');
     expect(getPaymentMethodLabel('wallet')).toBe('محفظة إلكترونية');
     expect(getPaymentMethodLabel('bank_transfer')).toBe('حساب بنكي');
+  });
+
+  it('attributes legacy unclassified revenue to cash', () => {
+    expect(summarizeDirectRevenueByMethod(500, [])).toEqual({
+      cash: 500,
+      instapay: 0,
+      wallet: 0,
+      bank_transfer: 0,
+    });
+  });
+
+  it('never lets stale item rows exceed the accounting total', () => {
+    expect(summarizeDirectRevenueByMethod(500, [
+      { paymentType: 'wallet', amount: 400 },
+      { paymentType: 'instapay', amount: 400 },
+    ])).toEqual({
+      cash: 0,
+      instapay: 100,
+      wallet: 400,
+      bank_transfer: 0,
+    });
   });
 });

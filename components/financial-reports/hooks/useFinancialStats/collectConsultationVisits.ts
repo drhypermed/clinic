@@ -15,6 +15,7 @@ import type { PatientRecord } from '../../../../types';
 export interface ConsultationVisit {
     id: string;
     date: string;
+    clinicDayKey?: string;
     serviceBasePrice?: number;
     paymentType: PatientRecord['paymentType'];
     patientSharePercent: PatientRecord['patientSharePercent'];
@@ -37,6 +38,7 @@ export const collectConsultationVisits = (records: PatientRecord[]): Consultatio
         id,
         fallbackId,
         date,
+        clinicDayKey,
         paymentType,
         patientSharePercent,
         discountAmount,
@@ -46,6 +48,7 @@ export const collectConsultationVisits = (records: PatientRecord[]): Consultatio
         id?: string;
         fallbackId: string;
         date?: string;
+        clinicDayKey?: string;
         serviceBasePrice?: unknown;
         paymentType: PatientRecord['paymentType'];
         patientSharePercent: PatientRecord['patientSharePercent'];
@@ -62,6 +65,7 @@ export const collectConsultationVisits = (records: PatientRecord[]): Consultatio
         visits.push({
             id: normalizedId,
             date: normalizedDate,
+            clinicDayKey,
             serviceBasePrice: Number.isFinite(Number(serviceBasePrice)) ? Number(serviceBasePrice) : undefined,
             paymentType,
             patientSharePercent,
@@ -76,6 +80,7 @@ export const collectConsultationVisits = (records: PatientRecord[]): Consultatio
                 id: record.id,
                 fallbackId: `consultation-only:${record.id}:${record.date}`,
                 date: record.date,
+                clinicDayKey: record.clinicDayKey,
                 serviceBasePrice: record.serviceBasePrice,
                 paymentType: record.paymentType,
                 patientSharePercent: record.patientSharePercent,
@@ -118,6 +123,7 @@ export const collectConsultationVisits = (records: PatientRecord[]): Consultatio
                 id: record.consultationRecordId,
                 fallbackId: `${record.id}:inline:${record.consultation.date}`,
                 date: record.consultation.date,
+                clinicDayKey: record.consultation.clinicDayKey,
                 serviceBasePrice: record.consultationServiceBasePrice,
                 paymentType: record.paymentType,
                 patientSharePercent: record.patientSharePercent,

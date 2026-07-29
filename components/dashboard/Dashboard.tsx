@@ -20,6 +20,12 @@ import {
 import { PeriodCard } from './PeriodStatsCard';
 import { NextPatientCard } from './NextPatientCard';
 import { AppointmentRow } from './AppointmentRow';
+import {
+    DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+    getClinicDayKey,
+    normalizeClinicDayCutoffMinutes,
+    resolveStoredClinicDayKey,
+} from '../../utils/clinicWorkday';
 
 /* ──────────────────────────────────────────────────────── */
 
@@ -52,14 +58,6 @@ interface DashboardProps {
 }
 
 /* ──────────────────────────────────────────────────────── */
-
-/** format YYYY-MM-DD from Date */
-const toDayKey = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-/** format YYYY-MM from Date */
-const toMonthKey = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 const MAX_RECORD_RANGE_FETCH = 5000;
 
@@ -105,6 +103,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [bannerAssetReady, setBannerAssetReady] = React.useState(false);
     const [examPrice, setExamPrice] = React.useState(0);
     const [consultPrice, setConsultPrice] = React.useState(0);
+    const [clinicDayCutoffMinutes, setClinicDayCutoffMinutes] = React.useState(
+        DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+    );
+    const currentClinicDayKey = React.useMemo(
+        () => getClinicDayKey(currentTime, clinicDayCutoffMinutes),
+        [currentTime, clinicDayCutoffMinutes],
+    );
     const [yearlyDaily, setYearlyDaily] = React.useState<Record<string, { interventions: number; other: number; interventionsIns: number; otherIns: number; expense: number }>>({});
     const [yearlyMonthly, setYearlyMonthly] = React.useState<Record<string, number>>({});
     // الـraw maps — محفوظة بشكلها الأصلي عشان ensureSnapshots يقدر يستخدمها
@@ -173,13 +178,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // Fetch exam/consultation prices
     React.useEffect(() => {
         if (!userId) return;
-        let cancelled = false;
-        financialDataService.getPrices(userId, activeBranchId).then((p) => {
-            if (cancelled) return;
+        return financialDataService.subscribeToPrices(userId, (p) => {
             setExamPrice(parseFloat(p.examinationPrice || '0') || 0);
             setConsultPrice(parseFloat(p.consultationPrice || '0') || 0);
-        }).catch(() => {});
-        return () => { cancelled = true; };
+            setClinicDayCutoffMinutes(normalizeClinicDayCutoffMinutes(p.clinicDayCutoffMinutes));
+        }, undefined, activeBranchId);
     }, [userId, activeBranchId]);
 
     // ─── إقفال الشهور المغلقة تلقائياً (auto-close snapshots) ────────
@@ -195,13 +198,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (!recordsPagingEnabled) return;
         if (completeRecordMonthKeys.length === 0) return;
         const targetBranch = activeBranchId || 'main';
-        const currentYear = currentTime.getFullYear();
+        const currentYear = Number(currentClinicDayKey.slice(0, 4));
         // Timeout عشان maps تلحق تتحمّل (الـuseEffect السنوي بياخد ثواني).
         if (!financialMapYearsLoaded.includes(currentYear)) return;
         const loadedRecordMonthKeys = new Set<string>();
         records.forEach((record) => {
             if ((record.branchId || 'main') !== targetBranch) return;
-            const monthKey = String(record.date || '').slice(0, 7);
+            const monthKey = resolveStoredClinicDayKey(
+                record.clinicDayKey,
+                record.date,
+            ).slice(0, 7);
             if (/^\d{4}-\d{2}$/.test(monthKey)) loadedRecordMonthKeys.add(monthKey);
         });
         const completeRecordMonthKeysForClose = completeRecordMonthKeys.filter((monthKey) =>
@@ -230,7 +236,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         records?.length,
         examPrice,
         consultPrice,
-        currentTime,
+        currentClinicDayKey,
         records,
         completeRecordMonthKeys,
         financialMapYearsLoaded,
@@ -253,7 +259,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         let cancelled = false;
         const now = new Date();
-        const currentYear = now.getFullYear();
+        const currentYear = Number(currentClinicDayKey.slice(0, 4));
         const SNAPSHOT_GRACE_MS = 28 * 24 * 60 * 60 * 1000;
 
         // اقرأ snapshots السنة الأول عشان نعرف أي شهور مغلقة بـsnapshot.
@@ -280,8 +286,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             // طلب واحد بنطاق يغطي كل الشهور المحتاجة (دمج الـqueries).
             const earliest = Math.min(...monthsNeedingRecords.map((m) => new Date(currentYear, m, 1).getTime()));
             const latest = Math.max(...monthsNeedingRecords.map((m) => new Date(currentYear, m + 1, 0, 23, 59, 59, 999).getTime()));
-            void onFetchRecordsByDateRange(earliest, latest).then((fetchedCount) => {
-                if (!cancelled) markCompleteRecordRange(earliest, latest, fetchedCount);
+            const expandedEarliest = earliest - 86_400_000;
+            const expandedLatest = latest + 86_400_000;
+            void onFetchRecordsByDateRange(expandedEarliest, expandedLatest).then((fetchedCount) => {
+                if (!cancelled) {
+                    markCompleteRecordRange(expandedEarliest, expandedLatest, fetchedCount);
+                }
             });
         }).catch(() => {
             // فشل قراءة snapshots — ما نعرفش أي شهور مغطّاة. آمن إن نتجاهل
@@ -289,10 +299,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         });
 
         return () => { cancelled = true; };
-    }, [userId, recordsPagingEnabled, onFetchRecordsByDateRange, activeBranchId, markCompleteRecordRange]);
+    }, [
+        userId,
+        recordsPagingEnabled,
+        onFetchRecordsByDateRange,
+        activeBranchId,
+        markCompleteRecordRange,
+        currentClinicDayKey,
+    ]);
 
     // جلب البيانات المالية السنوية — نشتق السنة من currentTime (يتحدث كل دقيقة) حتى تُعاد الجلب تلقائياً عند بداية سنة جديدة
-    const effectiveYear = currentTime.getFullYear();
+    const effectiveYear = Number(currentClinicDayKey.slice(0, 4));
     React.useEffect(() => {
         if (!userId) return;
         let cancelled = false;
@@ -391,9 +408,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     /* ── Daily / Monthly / Yearly Stats from records ── */
     // مشتق من currentTime (يتحدث كل دقيقة) حتى تتغير مفاتيح اليوم/الشهر/السنة تلقائياً عند منتصف الليل أو بداية شهر/سنة جديدة.
-    const todayKey = React.useMemo(() => toDayKey(currentTime), [currentTime]);
-    const monthKey = React.useMemo(() => toMonthKey(currentTime), [currentTime]);
-    const currentYear = React.useMemo(() => currentTime.getFullYear(), [currentTime]);
+    const todayKey = currentClinicDayKey;
+    const monthKey = todayKey.slice(0, 7);
+    const currentYear = Number(todayKey.slice(0, 4));
 
     const periodStats = React.useMemo(() => {
         let todayExams = 0, todayConsults = 0;
@@ -454,11 +471,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             computePaymentBreakdownForBasePrice({ basePrice, paymentType: r.paymentType, patientSharePercent: r.patientSharePercent, discountAmount: r.discountAmount, discountPercent: r.discountPercent });
 
         for (const r of records) {
-            let d: Date;
-            try { d = new Date(r.date); } catch { continue; }
-            const recDayKey = toDayKey(d);
-            const recMonthKey = toMonthKey(d);
-            const recYear = d.getFullYear();
+            const recDayKey = resolveStoredClinicDayKey(r.clinicDayKey, r.date);
+            const recMonthKey = recDayKey.slice(0, 7);
+            const recYear = Number(recDayKey.slice(0, 4));
 
             if (r.isConsultationOnly) {
                 const bp = (Number.isFinite(r.serviceBasePrice) && (r.serviceBasePrice ?? 0) > 0) ? r.serviceBasePrice! : consultPrice;
@@ -474,10 +489,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
             // كسجلات isConsultationOnly مستقلة، فلا نكررها هنا. نعد فقط الاستشارة
             // القديمة المضمّنة (legacy inline) اللي مالهاش سجل منفصل.
             if (r.consultation?.date && !r.consultationRecordId) {
-                let d3: Date;
-                try { d3 = new Date(r.consultation.date); } catch { continue; }
+                const consultationDayKey = resolveStoredClinicDayKey(
+                    r.consultation.clinicDayKey,
+                    r.consultation.date,
+                );
                 const cbp = (r.consultationServiceBasePrice ?? 0) > 0 ? r.consultationServiceBasePrice! : consultPrice;
-                addConsult(toDayKey(d3), toMonthKey(d3), d3.getFullYear(), calcBreakdown(r, cbp));
+                addConsult(
+                    consultationDayKey,
+                    consultationDayKey.slice(0, 7),
+                    Number(consultationDayKey.slice(0, 4)),
+                    calcBreakdown(r, cbp),
+                );
             }
         }
 

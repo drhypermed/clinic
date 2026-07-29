@@ -137,18 +137,42 @@ export const toTimestampMillis = (value: unknown): number => {
 
 /** توحيد payload أسعار الكشف/الاستشارة قبل الحفظ أو القراءة */
 export const normalizePricesPayload = (
-    data?: { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown } | null
-): { examinationPrice?: string; consultationPrice?: string; updatedAt?: number } => {
+    data?: {
+        examinationPrice?: unknown;
+        consultationPrice?: unknown;
+        clinicDayCutoffMinutes?: unknown;
+        clinicDaySettingsUpdatedAt?: unknown;
+        updatedAt?: unknown;
+    } | null
+): {
+    examinationPrice?: string;
+    consultationPrice?: string;
+    clinicDayCutoffMinutes?: number;
+    clinicDaySettingsUpdatedAt?: number;
+    updatedAt?: number;
+} => {
     if (!data) return {};
 
-    const normalized: { examinationPrice?: string; consultationPrice?: string; updatedAt?: number } = {};
+    const normalized: {
+        examinationPrice?: string;
+        consultationPrice?: string;
+        clinicDayCutoffMinutes?: number;
+        clinicDaySettingsUpdatedAt?: number;
+        updatedAt?: number;
+    } = {};
 
     const exam = toOptionalPriceText(data.examinationPrice);
     const consult = toOptionalPriceText(data.consultationPrice);
+    const cutoff = Number(data.clinicDayCutoffMinutes);
+    const settingsUpdatedAt = toTimestampMillis(data.clinicDaySettingsUpdatedAt);
     const updatedAt = toTimestampMillis(data.updatedAt);
 
     if (exam !== undefined) normalized.examinationPrice = exam;
     if (consult !== undefined) normalized.consultationPrice = consult;
+    if (Number.isFinite(cutoff) && cutoff >= 0 && cutoff < 1440) {
+        normalized.clinicDayCutoffMinutes = Math.round(cutoff);
+    }
+    if (settingsUpdatedAt > 0) normalized.clinicDaySettingsUpdatedAt = settingsUpdatedAt;
     if (updatedAt > 0) normalized.updatedAt = updatedAt;
 
     return normalized;

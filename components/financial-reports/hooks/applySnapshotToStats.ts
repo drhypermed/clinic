@@ -19,6 +19,10 @@ import type {
     ChartDay,
 } from './useFinancialStats.shared';
 import { createEmptyDirectPaymentTotals } from '../../../utils/paymentMethods';
+import {
+    createEmptyExpenseBreakdown,
+    type ExpenseBreakdown,
+} from '../utils/expenseBreakdown';
 
 /** أسماء أيام الأسبوع بالعربي للـchartDays. */
 const ARABIC_WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -68,9 +72,21 @@ const buildChartDaysFromSnapshot = (snapshot: MonthlySnapshot): ChartDay[] => {
             consultsIncome: entry.consultsIncome,
             interventions: entry.interventionsRevenue,
             other: entry.otherRevenue,
-            expense: entry.dailyExpense,
+            expense: entry.dailyExpense + entry.discountExpense,
             discountExpense: entry.discountExpense,
             income,
+            directPaymentTotals: entry.directPaymentTotals
+                ? { ...entry.directPaymentTotals }
+                : {
+                    ...createEmptyDirectPaymentTotals(),
+                    cash: entry.collectedCash + entry.interventionsRevenue + entry.otherRevenue,
+                },
+            insuranceClaims: entry.insuranceClaims + entry.insuranceExtrasTotal,
+            expenseBreakdown: {
+                ...createEmptyExpenseBreakdown(),
+                daily: entry.dailyExpense,
+                discounts: entry.discountExpense,
+            },
         });
     }
     return days;
@@ -134,6 +150,15 @@ export const applyMonthSnapshotToStats = (
         + selectedDayEntry.interventionsRevenue
         + selectedDayEntry.otherRevenue
         + selectedDayEntry.insuranceExtrasTotal;
+    const monthlyExpenseBreakdown: ExpenseBreakdown = {
+        rent: snapshot.rentExpense,
+        salaries: snapshot.salariesExpense,
+        tools: snapshot.toolsExpense,
+        electricity: snapshot.electricityExpense,
+        daily: snapshot.dailyExpensesTotal,
+        other: snapshot.otherExpense,
+        discounts: snapshot.discountExpense,
+    };
 
     return {
         ...liveStats,
@@ -176,6 +201,7 @@ export const applyMonthSnapshotToStats = (
         directPaymentTotals: monthlyDirectPaymentTotals,
         insuranceClaims: totalInsuranceClaims,
         monthlyDiscountExpense: snapshot.discountExpense,
+        expenseBreakdown: monthlyExpenseBreakdown,
         totalExpenses: snapshot.totalExpenses,
     };
 };
@@ -210,6 +236,22 @@ export const applyYearlySnapshotsToYearlyStats = (
             otherRevenue: snapshot.otherRevenue,
             expenses: snapshot.totalExpenses,
             income: totalIncome,
+            directPaymentTotals: snapshot.directPaymentTotals
+                ? { ...snapshot.directPaymentTotals }
+                : {
+                    ...createEmptyDirectPaymentTotals(),
+                    cash: snapshot.collectedCash + snapshot.interventionsRevenue + snapshot.otherRevenue,
+                },
+            insuranceClaims: snapshot.insuranceClaims + snapshot.insuranceExtrasTotal,
+            expenseBreakdown: {
+                rent: snapshot.rentExpense,
+                salaries: snapshot.salariesExpense,
+                tools: snapshot.toolsExpense,
+                electricity: snapshot.electricityExpense,
+                daily: snapshot.dailyExpensesTotal,
+                other: snapshot.otherExpense,
+                discounts: snapshot.discountExpense,
+            },
         };
     });
 };

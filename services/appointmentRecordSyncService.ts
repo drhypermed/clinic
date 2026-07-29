@@ -13,7 +13,12 @@ export interface AppointmentRecordSyncTask {
   appointmentId: string;
   appointmentPatch: Pick<
     ClinicAppointment,
-    'appointmentStatus' | 'examStartedAt' | 'examCompletedAt' | 'consultationCompletedAt'
+    | 'appointmentStatus'
+    | 'examStartedAt'
+    | 'examCompletedAt'
+    | 'consultationCompletedAt'
+    | 'clinicDayKey'
+    | 'clinicDayCutoffMinutes'
   >;
   recordId?: string;
   publicUserId?: string;

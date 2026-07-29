@@ -9,12 +9,10 @@
  */
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 
-import { toLocalDateStr } from '../utils';
 import { getDefaultTimeStr } from './helpers';
 
 type UsePublicBookingTimeAndFormEffectsParams = {
   currentDayStr: string;
-  setCurrentDayStr: Dispatch<SetStateAction<string>>;
   previousDayStrRef: MutableRefObject<string>;
   dateStr: string;
   setDateStr: Dispatch<SetStateAction<string>>;
@@ -30,7 +28,6 @@ type UsePublicBookingTimeAndFormEffectsParams = {
 
 export const usePublicBookingTimeAndFormEffects = ({
   currentDayStr,
-  setCurrentDayStr,
   previousDayStrRef,
   dateStr,
   setDateStr,
@@ -43,15 +40,6 @@ export const usePublicBookingTimeAndFormEffects = ({
   setBookingFormLoading,
   bookingFormLoadingTimerRef,
 }: UsePublicBookingTimeAndFormEffectsParams) => {
-  useEffect(() => {
-    const syncCurrentDay = () => {
-      setCurrentDayStr(toLocalDateStr(new Date()));
-    };
-    syncCurrentDay();
-    const interval = setInterval(syncCurrentDay, 60 * 1000);
-    return () => clearInterval(interval);
-  }, [setCurrentDayStr]);
-
   useEffect(() => {
     const previousDayStr = previousDayStrRef.current;
     if (currentDayStr === previousDayStr) return;

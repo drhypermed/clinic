@@ -31,6 +31,9 @@ export interface ClinicAppointment {
   examCompletedAt?: string;
   /** وقت تنفيذ الاستشارة - ISO */
   consultationCompletedAt?: string;
+  /** يوم العمل الفعلي الذي اكتمل فيه الموعد، مثبّت عند حفظ سجل المريض. */
+  clinicDayKey?: string;
+  clinicDayCutoffMinutes?: number;
   /** السن (مثلاً: ٣٠ سنة أو ٥ سنوات) */
   age?: string;
   /** سبب الزيارة */

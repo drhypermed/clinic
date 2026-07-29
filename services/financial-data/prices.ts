@@ -45,6 +45,7 @@ import {
     toTimestampMillis,
 } from './normalizers';
 import type { PricesTextPayload } from './types';
+import { normalizeClinicDayCutoffMinutes } from '../../utils/clinicWorkday';
 
 // ─────────────────────────────────────────────────────────────
 // النظام الثابت (Legacy / Fixed Prices)
@@ -64,7 +65,7 @@ export const getPrices = async (userId: string, branchId?: string): Promise<Pric
 
         if (snapshot.exists()) {
             const payload = normalizePricesPayload(
-                snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                snapshot.data() as PricesTextPayload
             );
             void syncPricesToBookingConfig(userId, payload, branchId);
             return payload;
@@ -136,6 +137,21 @@ export const savePrices = async (
     }
 };
 
+/** حفظ بداية يوم العمل للفرع بدون إنشاء سجل تغيير وهمي لأسعار الكشف. */
+export const saveClinicDayCutoff = async (
+    userId: string,
+    clinicDayCutoffMinutes: number,
+    branchId?: string,
+): Promise<void> => {
+    if (!userId) throw new Error('User ID is required');
+    const normalizedCutoff = normalizeClinicDayCutoffMinutes(clinicDayCutoffMinutes);
+    const clinicDaySettingsUpdatedAt = Date.now();
+    const payload = { clinicDayCutoffMinutes: normalizedCutoff, clinicDaySettingsUpdatedAt };
+    const docRef = doc(db, 'users', userId, 'financialData', branchDocKey('prices', branchId));
+    await setDoc(docRef, payload, { merge: true });
+    await syncPricesToBookingConfig(userId, payload, branchId);
+};
+
 /**
  * حفظ الأسعار الثابتة مع تسجيل سجل تغيير مفصل (من -> إلى).
  * لا يُسجَّل سجل جديد إذا كانت القيم لم تتغير فعلياً.
@@ -203,7 +219,7 @@ export const subscribeToPrices = (
             onUpdate(
                 snapshot.exists()
                     ? normalizePricesPayload(
-                        snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                        snapshot.data() as PricesTextPayload
                     )
                     : {}
             );
@@ -348,7 +364,13 @@ export const getPricesBySecret = async (
         const snapshot = await getDocCacheFirst(docRef);
         if (snapshot.exists()) {
             return normalizePricesPayload(
-                snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                snapshot.data() as {
+                    examinationPrice?: unknown;
+                    consultationPrice?: unknown;
+                    clinicDayCutoffMinutes?: unknown;
+                    clinicDaySettingsUpdatedAt?: unknown;
+                    updatedAt?: unknown;
+                }
             );
         }
         return {};
@@ -378,7 +400,13 @@ export const subscribeToPricesBySecret = (
             onUpdate(
                 snapshot.exists()
                     ? normalizePricesPayload(
-                        snapshot.data() as { examinationPrice?: unknown; consultationPrice?: unknown; updatedAt?: unknown }
+                        snapshot.data() as {
+                            examinationPrice?: unknown;
+                            consultationPrice?: unknown;
+                            clinicDayCutoffMinutes?: unknown;
+                            clinicDaySettingsUpdatedAt?: unknown;
+                            updatedAt?: unknown;
+                        }
                     )
                     : {}
             );

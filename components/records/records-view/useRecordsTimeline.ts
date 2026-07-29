@@ -9,7 +9,7 @@
 import { useMemo } from 'react';
 import type { PatientRecord } from '../../../types';
 import type { DoctorStatsSummary } from '../../../hooks/useDoctorStatsSummary';
-import { toDateOnly, type RecordTimelineEntry } from '../recordsViewParts';
+import { type RecordTimelineEntry } from '../recordsViewParts';
 import {
   applyConsultationSequence,
   buildPatientTimelineKey,
@@ -18,6 +18,14 @@ import {
   type TimelineDateFilterMode,
   type TimelineSortOrder,
 } from './helpers';
+import { resolveStoredClinicDayKey } from '../../../utils/clinicWorkday';
+
+const getTimelineEntryDayKey = (entry: RecordTimelineEntry): string => {
+  if (entry.visitType === 'exam' || entry.record.isConsultationOnly) {
+    return resolveStoredClinicDayKey(entry.record.clinicDayKey, entry.date);
+  }
+  return resolveStoredClinicDayKey(entry.record.consultation?.clinicDayKey, entry.date);
+};
 
 interface HookArgs {
   records: PatientRecord[];
@@ -157,7 +165,7 @@ export function useRecordsTimeline({
   // تطبيق فلاتر التاريخ (كل التواريخ / يوم واحد / نطاق)
   const timelineEntriesDateFilteredBase = useMemo<RecordTimelineEntry[]>(() => {
     return timelineEntriesBase.filter((entry) => {
-      const entryDate = toDateOnly(entry.date);
+      const entryDate = getTimelineEntryDayKey(entry);
       return isTimelineEntryWithinDateFilters(
         entryDate,
         dateFilterMode,
@@ -208,7 +216,7 @@ export function useRecordsTimeline({
     let consultationsThisMonth = 0;
 
     allTimelineEntries.forEach((entry) => {
-      const entryDate = toDateOnly(entry.date);
+      const entryDate = getTimelineEntryDayKey(entry);
       const inToday = entryDate === todayStr;
       const inMonth = entryDate >= firstDayOfMonthStr && entryDate <= todayStr;
 
@@ -236,7 +244,7 @@ export function useRecordsTimeline({
     const groups: Record<string, RecordTimelineEntry[]> = {};
 
     timelineEntries.forEach((entry) => {
-      const key = toDateOnly(entry.date);
+      const key = getTimelineEntryDayKey(entry);
       if (!groups[key]) groups[key] = [];
       groups[key].push(entry);
     });

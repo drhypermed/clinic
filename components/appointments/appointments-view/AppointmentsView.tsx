@@ -89,7 +89,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
   const {
     patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone,
     addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
-    currentDayStr,
+    currentDayStr, clinicDayCutoffMinutes,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,
@@ -160,7 +160,11 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
     sortedList, now, todayStr, todayDateMeta, todayPending,
     futurePendingGroups, completedGroups, completedInLastMonth, bookedInLastMonth,
     todayCount, upcomingCount,
-  } = useAppointmentsDerivedData({ appointments, currentDayStr });
+  } = useAppointmentsDerivedData({
+    appointments,
+    currentDayStr,
+    clinicDayCutoffMinutes,
+  });
 
   // الأكشنز الخاصة بالتعامل مع كل موعد (فتح الكشف، حذف...)
   const { removeAppointment, openExam, openConsultation } = useAppointmentExecutionActions({
@@ -362,6 +366,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         <div className="dh-stagger-3"><AppointmentsListColumns
           todayPending={todayPending} futurePendingGroups={futurePendingGroups} completedGroups={completedGroups}
           todayDateMeta={todayDateMeta} now={now} todayStr={todayStr}
+          clinicDayCutoffMinutes={clinicDayCutoffMinutes}
           doctorId={userId}
           doctorSpecialty={doctorSpecialty}
           approvedEntryAppointmentIds={approvedEntryAppointmentIds} sentEntryForIds={sentEntryForIds}

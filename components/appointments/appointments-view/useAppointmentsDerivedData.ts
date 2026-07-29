@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import type { ClinicAppointment } from '../../../types';
 import { buildCairoDateTime, formatUserDate } from '../../../utils/cairoTime';
-import { toLocalDateStr } from '../utils';
 import {
   groupCompletedAppointments,
   groupPendingAppointments,
 } from './helpers';
 import { isAppointmentCompleted, isAppointmentPending } from '../../../utils/appointmentStatus';
+import { getClinicDayKey } from '../../../utils/clinicWorkday';
 
 /**
  * الملف: useAppointmentsDerivedData.ts (Hook)
@@ -21,11 +21,13 @@ import { isAppointmentCompleted, isAppointmentPending } from '../../../utils/app
 interface UseAppointmentsDerivedDataArgs {
   appointments: ClinicAppointment[];
   currentDayStr: string;                // التاريخ الحالي للعيادة
+  clinicDayCutoffMinutes: number;
 }
 
 export const useAppointmentsDerivedData = ({
   appointments,
   currentDayStr,
+  clinicDayCutoffMinutes,
 }: UseAppointmentsDerivedDataArgs) => {
   // 1. فرز القائمة الكلية زمنياً من الأقدم للأحدث
   const sortedList = useMemo(
@@ -67,8 +69,8 @@ export const useAppointmentsDerivedData = ({
 
   // تقسيم المواعيد المنتظرة إلى مجموعات يومية
   const { todayPending, futurePendingGroups } = useMemo(
-    () => groupPendingAppointments(pendingList, todayStr),
-    [pendingList, todayStr]
+    () => groupPendingAppointments(pendingList, todayStr, clinicDayCutoffMinutes),
+    [pendingList, todayStr, clinicDayCutoffMinutes]
   );
 
   // تجميع المواعيد المكتملة حسب اليوم
@@ -89,8 +91,11 @@ export const useAppointmentsDerivedData = ({
   , [sortedList, now]);
 
   const todayCount = useMemo(() =>
-    sortedList.filter(a => isAppointmentPending(a) && toLocalDateStr(new Date(a.dateTime)) === todayStr).length
-  , [sortedList, todayStr]);
+    sortedList.filter(a =>
+      isAppointmentPending(a)
+      && getClinicDayKey(a.dateTime, clinicDayCutoffMinutes) === todayStr
+    ).length
+  , [sortedList, todayStr, clinicDayCutoffMinutes]);
 
   const upcomingCount = useMemo(() => 
     sortedList.filter(a => new Date(a.dateTime).getTime() > now).length

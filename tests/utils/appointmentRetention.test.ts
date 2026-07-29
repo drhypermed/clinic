@@ -3,6 +3,7 @@ import {
   PENDING_APPOINTMENT_RETENTION_MS,
   getPendingAppointmentExpiryMs,
   isPendingAppointmentExpired,
+  isPendingAppointmentInSecretaryTodayQueue,
 } from '../../utils/appointmentRetention';
 
 const pendingAppointment = {
@@ -44,5 +45,18 @@ describe('pending appointment 24-hour retention', () => {
       ...pendingAppointment,
       dateTime: 'invalid-date',
     }, Date.now())).toBe(false);
+  });
+
+  it('uses the same configured workday in the secretary queue', () => {
+    const afterMidnightAppointment = {
+      ...pendingAppointment,
+      dateTime: '2026-07-29T02:00:00+03:00',
+    };
+    expect(isPendingAppointmentInSecretaryTodayQueue(
+      afterMidnightAppointment,
+      '2026-07-28',
+      Date.parse('2026-07-29T02:30:00+03:00'),
+      360,
+    )).toBe(true);
   });
 });

@@ -100,6 +100,8 @@ export interface CreateSaveRecordActionParams {
 export interface SaveRecordResult {
     ok: boolean;
     recordId?: string;
+    clinicDayKey?: string;
+    clinicDayCutoffMinutes?: number;
     reason?: 'validation' | 'auth' | 'quota' | 'no-changes' | 'error';
 }
 

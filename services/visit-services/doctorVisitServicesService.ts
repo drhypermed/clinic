@@ -167,7 +167,6 @@ export const addDoctorVisitService = async (
   const appointmentRef = input.appointmentId
     ? doc(db, 'users', input.userId, 'appointments', input.appointmentId)
     : null;
-
   await runTransaction(db, async (transaction) => {
     const [patientSnapshot, templateSnapshot, appointmentSnapshot] = await Promise.all([
       transaction.get(patientRef),
@@ -242,7 +241,6 @@ export const deleteDoctorVisitService = async (
   const appointmentRef = input.appointmentId
     ? doc(db, 'users', input.userId, 'appointments', input.appointmentId)
     : null;
-
   await runTransaction(db, async (transaction) => {
     const patientSnapshot = await transaction.get(patientRef);
     if (!patientSnapshot.exists()) return;
@@ -317,6 +315,9 @@ export const finalizePendingVisitServices = async (
   const appointmentRef = input.appointmentId
     ? doc(db, 'users', input.userId, 'appointments', input.appointmentId)
     : null;
+  const recordRef = input.recordId
+    ? doc(db, 'users', input.userId, 'records', input.recordId)
+    : null;
 
   const postedCount = await runTransaction(db, async (transaction) => {
     const patientSnapshot = await transaction.get(patientRef);
@@ -326,16 +327,27 @@ export const finalizePendingVisitServices = async (
     const matchingPending = pendingItems.filter((entry) => entry.visitId === normalizedVisitId);
     if (matchingPending.length === 0) return 0;
 
-    const branchId = String(
-      input.branchId || matchingPending[0]?.branchId || 'main',
-    ).trim() || 'main';
-    const dateKey = String(matchingPending[0]?.dateKey || '').trim();
-    if (!dateKey) return 0;
-    const dailyRef = getDailyRef(input.userId, dateKey, branchId);
-    const [dailySnapshot, appointmentSnapshot] = await Promise.all([
-      transaction.get(dailyRef),
+    const [recordSnapshot, appointmentSnapshot] = await Promise.all([
+      recordRef ? transaction.get(recordRef) : Promise.resolve(null),
       appointmentRef ? transaction.get(appointmentRef) : Promise.resolve(null),
     ]);
+    const recordData = recordSnapshot?.exists()
+      ? recordSnapshot.data() as {
+          clinicDayKey?: unknown;
+          clinicDayCutoffMinutes?: unknown;
+          branchId?: unknown;
+        }
+      : {};
+    const branchId = String(
+      recordData.branchId || input.branchId || matchingPending[0]?.branchId || 'main',
+    ).trim() || 'main';
+    const storedRecordDayKey = String(recordData.clinicDayKey || '').trim();
+    const dateKey = /^\d{4}-\d{2}-\d{2}$/.test(storedRecordDayKey)
+      ? storedRecordDayKey
+      : String(matchingPending[0]?.dateKey || '').trim();
+    if (!dateKey) return 0;
+    const dailyRef = getDailyRef(input.userId, dateKey, branchId);
+    const dailySnapshot = await transaction.get(dailyRef);
     const now = Date.now();
     const existingPosted = toArray<VisitServiceCharge>(patientData.costItems);
     const existingIds = new Set(existingPosted.map((entry) => entry.id));
@@ -344,6 +356,11 @@ export const finalizePendingVisitServices = async (
       .map((entry) => ({
         ...entry,
         financialStatus: 'posted' as const,
+        dateKey,
+        branchId,
+        ...(Number.isFinite(Number(recordData.clinicDayCutoffMinutes))
+          ? { clinicDayCutoffMinutes: Number(recordData.clinicDayCutoffMinutes) }
+          : {}),
         ...(input.recordId ? { recordId: input.recordId } : {}),
         postedAt: now,
       }));
@@ -374,6 +391,10 @@ export const finalizePendingVisitServices = async (
         serviceChargesStatus: 'posted',
         serviceChargesPostedAt: now,
         ...(input.recordId ? { recordId: input.recordId } : {}),
+        clinicDayKey: dateKey,
+        ...(Number.isFinite(Number(recordData.clinicDayCutoffMinutes))
+          ? { clinicDayCutoffMinutes: Number(recordData.clinicDayCutoffMinutes) }
+          : {}),
       }, { merge: true });
     }
     return matchingPending.length;

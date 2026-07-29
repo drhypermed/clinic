@@ -9,10 +9,20 @@ import { doc } from 'firebase/firestore';
 import { getDocCacheFirst } from '../../services/firestore/cacheFirst';
 import { db } from '../../services/firebaseConfig';
 import { financialDataService } from '../../services/financial-data';
+import {
+  DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+  normalizeClinicDayCutoffMinutes,
+} from '../../utils/clinicWorkday';
 
 interface ResolvedServicePrices {
   examPrice?: number;
   consultationPrice?: number;
+  clinicDayCutoffMinutes: number;
+}
+
+export interface PersistedClinicDayMetadata {
+  clinicDayKey?: string;
+  clinicDayCutoffMinutes?: number;
 }
 
 /** جلب أسعار الكشف والاستشارة الحالية من Financial Data (برجع undefined لو الأسعار غير متاحة). */
@@ -27,9 +37,42 @@ export async function resolveCurrentServicePrices(
     return {
       examPrice: Number.isFinite(exam) && exam >= 0 ? exam : undefined,
       consultationPrice: Number.isFinite(consult) && consult >= 0 ? consult : undefined,
+      clinicDayCutoffMinutes: normalizeClinicDayCutoffMinutes(
+        currentPrices.clinicDayCutoffMinutes,
+      ),
     };
   } catch {
     // احتياطي: لو القراءة فشلت، نكمل بدون سعر (stats resolver هيتولّى الحل).
+    return { clinicDayCutoffMinutes: DEFAULT_CLINIC_DAY_CUTOFF_MINUTES };
+  }
+}
+
+export async function getPersistedClinicDayMetadata(
+  userId: string | undefined,
+  recordId: string,
+): Promise<PersistedClinicDayMetadata> {
+  const normalizedRecordId = String(recordId || '').trim();
+  if (!normalizedRecordId || !userId) return {};
+  try {
+    const snapshot = await getDocCacheFirst(
+      doc(db, 'users', userId, 'records', normalizedRecordId),
+    );
+    if (!snapshot.exists()) return {};
+    const data = snapshot.data() as {
+      clinicDayKey?: unknown;
+      clinicDayCutoffMinutes?: unknown;
+    };
+    const clinicDayKey = /^\d{4}-\d{2}-\d{2}$/.test(String(data.clinicDayKey || '').trim())
+      ? String(data.clinicDayKey).trim()
+      : undefined;
+    const rawCutoff = Number(data.clinicDayCutoffMinutes);
+    return {
+      clinicDayKey,
+      clinicDayCutoffMinutes: Number.isFinite(rawCutoff)
+        ? normalizeClinicDayCutoffMinutes(rawCutoff)
+        : undefined,
+    };
+  } catch {
     return {};
   }
 }

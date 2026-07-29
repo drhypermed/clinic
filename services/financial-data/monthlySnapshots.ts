@@ -23,11 +23,11 @@ import type { PatientRecord } from '../../app/drug-catalog/types/patient';
 import { collectConsultationVisits } from '../../components/financial-reports/hooks/useFinancialStats/collectConsultationVisits';
 import { buildVisitFinancialByDate } from '../../components/financial-reports/hooks/useFinancialStats/buildVisitFinancialByDate';
 import {
-    addToDirectPaymentTotals,
     createEmptyDirectPaymentTotals,
-    sumDirectPaymentTotals,
+    summarizeDirectRevenueByMethod,
     type DirectPaymentTotals,
 } from '../../utils/paymentMethods';
+import { resolveStoredClinicDayKey } from '../../utils/clinicWorkday';
 
 /** الفترة السماحية بعد نهاية الشهر قبل ما يصبح eligible للإقفال (28 يوم). */
 const SNAPSHOT_GRACE_DAYS = 28;
@@ -50,7 +50,7 @@ const SNAPSHOT_GRACE_DAYS = 28;
  * v5 (2026-07): حفظ تفصيل التحصيل المباشر (كاش/إنستا باي/محفظة/بنكي)
  * داخل إجمالي الشهر وكل يوم، مع بقاء الإجمالي المحاسبي متوافقاً مع collectedCash.
  */
-const SNAPSHOT_VERSION = 5;
+const SNAPSHOT_VERSION = 6;
 
 /**
  * تفصيل أرقام يوم واحد داخل snapshot — يكفي لـuseFinancialStats عشان
@@ -248,9 +248,9 @@ const computeMonthlySnapshot = ({
     branchRecords.forEach((record) => {
         if (record.isConsultationOnly) return;
         const recTs = Date.parse(String(record.date || ''));
-        if (!Number.isFinite(recTs) || recTs < startTs || recTs > endTs) return;
+        const dayKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
+        if (!Number.isFinite(recTs) || !dayKey.startsWith(`${monthKey}-`)) return;
         examsCount += 1;
-        const dayKey = String(record.date || '').slice(0, 10);
         if (/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) ensureDay(dayKey).exams += 1;
     });
 
@@ -259,9 +259,9 @@ const computeMonthlySnapshot = ({
     let consultationsCount = 0;
     consultationVisits.forEach((visit) => {
         const visitTs = Date.parse(String(visit.date || ''));
-        if (!Number.isFinite(visitTs) || visitTs < startTs || visitTs > endTs) return;
+        const dayKey = resolveStoredClinicDayKey(visit.clinicDayKey, visit.date);
+        if (!Number.isFinite(visitTs) || !dayKey.startsWith(`${monthKey}-`)) return;
         consultationsCount += 1;
-        const dayKey = String(visit.date || '').slice(0, 10);
         if (/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) ensureDay(dayKey).consultations += 1;
     });
 
@@ -269,8 +269,7 @@ const computeMonthlySnapshot = ({
     const visitFinancialByDate = buildVisitFinancialByDate({
         records: branchRecords,
         consultationVisits,
-        startTs,
-        endTs,
+        selectedMonthKey: monthKey,
         resolveBasePriceByDate,
     });
 
@@ -306,8 +305,8 @@ const computeMonthlySnapshot = ({
     let dailyExpensesTotal = 0;
     const monthEntriesPrefix = monthKey + '-'; // YYYY-MM-
     const sourceRecordsCount = branchRecords.reduce((count, record) => {
-        const recTs = Date.parse(String(record.date || ''));
-        return Number.isFinite(recTs) && recTs >= startTs && recTs <= endTs ? count + 1 : count;
+        const dayKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
+        return dayKey.startsWith(monthEntriesPrefix) ? count + 1 : count;
     }, 0);
     const dailyEntriesCount = Object.keys(yearlyDailyMap).filter((dateKey) =>
         dateKey.startsWith(monthEntriesPrefix)
@@ -319,14 +318,9 @@ const computeMonthlySnapshot = ({
         const expenseVal = Number(entry.dailyExpense) || 0;
         interventionsRevenue += intervVal;
         otherRevenue += otherVal;
-        const dayDirectRevenueTotals = createEmptyDirectPaymentTotals();
-        const cashCostItems = Array.isArray(entry.cashCostItems) ? entry.cashCostItems : [];
-        cashCostItems.forEach((item: any) => {
-            addToDirectPaymentTotals(dayDirectRevenueTotals, item?.paymentType, item?.amount);
-        });
-        dayDirectRevenueTotals.cash += Math.max(
-            0,
-            intervVal + otherVal - sumDirectPaymentTotals(dayDirectRevenueTotals),
+        const dayDirectRevenueTotals = summarizeDirectRevenueByMethod(
+            intervVal + otherVal,
+            entry.cashCostItems,
         );
         (Object.keys(dayDirectRevenueTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
             directPaymentTotals[type] += dayDirectRevenueTotals[type];
@@ -565,8 +559,8 @@ export const ensureSnapshotsForClosedMonths = async ({
     const branchRecords = records.filter((r) => (r.branchId || 'main') === branchId);
     const loadedRecordYears = new Set<number>();
     for (const record of branchRecords) {
-        const isoDate = String(record.date || '');
-        const year = parseInt(isoDate.slice(0, 4), 10);
+        const clinicDayKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
+        const year = parseInt(clinicDayKey.slice(0, 4), 10);
         if (Number.isFinite(year) && year > 1900) {
             loadedRecordYears.add(year);
         }

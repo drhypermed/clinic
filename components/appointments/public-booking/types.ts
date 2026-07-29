@@ -90,6 +90,8 @@ export type TodayAppointment = {
   discountReasonLabel?: string;
   /** وقت تنفيذ فتح الكشف — ISO string */
   examCompletedAt?: string;
+  clinicDayKey?: string;
+  clinicDayCutoffMinutes?: number;
   /** الفرع المرتبط بالموعد - مهم للفلترة الصحيحة بين الفروع */
   branchId?: string;
   /** هوية ملف المريض المرتبط — لازمة لربط خدمات الزيارة بنفس الملف. */

@@ -49,5 +49,8 @@ export interface PriceChangeHistoryEntry {
 export interface PricesTextPayload {
     examinationPrice?: string;
     consultationPrice?: string;
+    /** بداية يوم العمل الجديد بالدقائق بعد منتصف الليل بتوقيت القاهرة. */
+    clinicDayCutoffMinutes?: number;
+    clinicDaySettingsUpdatedAt?: number;
     updatedAt?: number;
 }

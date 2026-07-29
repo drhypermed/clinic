@@ -14,13 +14,13 @@
 
 import type { PatientRecord } from '../../../../types';
 import { computePaymentBreakdownForBasePrice } from '../../../../utils/paymentDiscount';
-import { formatDateKey } from '../../utils/formatters';
 import { asTimestamp, type ConsultationVisit } from './collectConsultationVisits';
 import {
     addToDirectPaymentTotals,
     createEmptyDirectPaymentTotals,
     type DirectPaymentTotals,
 } from '../../../../utils/paymentMethods';
+import { resolveStoredClinicDayKey } from '../../../../utils/clinicWorkday';
 
 interface VisitFinancialDayEntry {
     examsIncome: number;
@@ -34,8 +34,7 @@ interface VisitFinancialDayEntry {
 interface BuildVisitFinancialByDateInput {
     records: PatientRecord[];
     consultationVisits: ConsultationVisit[];
-    startTs: number;
-    endTs: number;
+    selectedMonthKey: string;
     resolveBasePriceByDate: {
         exam: (visitTs: number) => number;
         consultation: (visitTs: number) => number;
@@ -45,8 +44,7 @@ interface BuildVisitFinancialByDateInput {
 export const buildVisitFinancialByDate = ({
     records,
     consultationVisits,
-    startTs,
-    endTs,
+    selectedMonthKey,
     resolveBasePriceByDate,
 }: BuildVisitFinancialByDateInput): Record<string, VisitFinancialDayEntry> => {
     const byDay: Record<string, VisitFinancialDayEntry> = {};
@@ -68,14 +66,14 @@ export const buildVisitFinancialByDate = ({
     records.forEach((record) => {
         if (record.isConsultationOnly) return;
         const recTs = asTimestamp(record.date);
-        if (!Number.isFinite(recTs) || recTs < startTs || recTs > endTs) return;
+        const dayKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
+        if (!Number.isFinite(recTs) || !dayKey.startsWith(`${selectedMonthKey}-`)) return;
 
         const explicitBasePrice = Number(record.serviceBasePrice);
         const effectiveBasePrice = Number.isFinite(explicitBasePrice) && explicitBasePrice > 0
             ? explicitBasePrice
             : resolveBasePriceByDate.exam(recTs);
 
-        const dayKey = formatDateKey(new Date(record.date));
         const breakdown = computePaymentBreakdownForBasePrice({
             basePrice: effectiveBasePrice,
             paymentType: record.paymentType,
@@ -94,14 +92,14 @@ export const buildVisitFinancialByDate = ({
 
     consultationVisits.forEach((visit) => {
         const consultTs = asTimestamp(visit.date);
-        if (!Number.isFinite(consultTs) || consultTs < startTs || consultTs > endTs) return;
+        const dayKey = resolveStoredClinicDayKey(visit.clinicDayKey, visit.date);
+        if (!Number.isFinite(consultTs) || !dayKey.startsWith(`${selectedMonthKey}-`)) return;
 
         const explicitBasePrice = Number(visit.serviceBasePrice);
         const effectiveBasePrice = Number.isFinite(explicitBasePrice) && explicitBasePrice > 0
             ? explicitBasePrice
             : resolveBasePriceByDate.consultation(consultTs);
 
-        const dayKey = formatDateKey(new Date(visit.date));
         const breakdown = computePaymentBreakdownForBasePrice({
             basePrice: effectiveBasePrice,
             paymentType: visit.paymentType,

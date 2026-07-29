@@ -3,6 +3,7 @@ import type { DailyFinancialData, MonthlyFinancialData } from '../../../services
 import type { DailyInsuranceExtraEntry } from './useFinancialData';
 import type { DirectPaymentTotals } from '../../../utils/paymentMethods';
 import type { PaymentType } from '../../../types';
+import type { ExpenseBreakdown } from '../utils/expenseBreakdown';
 
 export interface DayStats {
     exams: number;           // عدد الكشوفات
@@ -28,6 +29,9 @@ export interface ChartDay {
     expense: number;        // مصروفات اليوم
     discountExpense: number;
     income: number;         // إجمالي الدخل
+    directPaymentTotals: DirectPaymentTotals;
+    insuranceClaims: number;
+    expenseBreakdown: ExpenseBreakdown;
 }
 export interface YearlyMonthData {
     month: number;                  // 0-11
@@ -40,6 +44,9 @@ export interface YearlyMonthData {
     otherRevenue: number;
     expenses: number;
     income: number;
+    directPaymentTotals: DirectPaymentTotals;
+    insuranceClaims: number;
+    expenseBreakdown: ExpenseBreakdown;
 }
 export const parseInsuranceExtras = (raw: string | null): DailyInsuranceExtraEntry[] => {
     if (!raw) return [];
@@ -127,6 +134,7 @@ export interface UseFinancialStatsReturn {
     directPaymentTotals: DirectPaymentTotals;
     insuranceClaims: number;   // مطالبات التأمين عند الشركات
     monthlyDiscountExpense: number;
+    expenseBreakdown: ExpenseBreakdown;
     totalExpenses: number;
 }
 

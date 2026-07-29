@@ -6,8 +6,14 @@
  * Manages selected date state and navigation between them
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { formatDateKey, formatMonthKey, formatMonthLabel, formatDayLabel } from '../utils/formatters';
+import {
+    clinicDayKeyToDate,
+    getClinicDayKey,
+    getMillisecondsUntilClinicDayChange,
+    normalizeClinicDayCutoffMinutes,
+} from '../../../utils/clinicWorkday';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // الهوك الرئيسي | Main Hook
@@ -55,17 +61,22 @@ interface UseFinancialNavigationReturn {
  * 3. مزامنة الشهر تلقائياً عند تجاوز حدود الشهر
  * 4. حساب حدود الشهر للتصفية
  */
-export const useFinancialNavigation = (): UseFinancialNavigationReturn => {
+export const useFinancialNavigation = (clinicDayCutoffMinutes?: number): UseFinancialNavigationReturn => {
+    const normalizedCutoff = normalizeClinicDayCutoffMinutes(clinicDayCutoffMinutes);
+    const initialClinicDay = () => clinicDayKeyToDate(getClinicDayKey(new Date(), normalizedCutoff));
 
     // ─────────────────────────────────────────────────────────────────────────
     // الحالة | State
     // ─────────────────────────────────────────────────────────────────────────
 
     /** الشهر المحدد (افتراضي: الشهر الحالي) */
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(initialClinicDay);
 
     /** اليوم المحدد (افتراضي: اليوم) */
-    const [selectedDay, setSelectedDay] = useState(new Date());
+    const [selectedDay, setSelectedDay] = useState(initialClinicDay);
+    const [currentDateKey, setCurrentDateKey] = useState(
+        () => getClinicDayKey(new Date(), normalizedCutoff),
+    );
 
     // ─────────────────────────────────────────────────────────────────────────
     // المفاتيح المحسوبة | Computed Keys
@@ -78,7 +89,36 @@ export const useFinancialNavigation = (): UseFinancialNavigationReturn => {
     const selectedDayKey = useMemo(() => formatDateKey(selectedDay), [selectedDay]);
 
     /** مفتاح اليوم الحالي (YYYY-MM-DD) */
-    const currentDateKey = useMemo(() => formatDateKey(new Date()), []);
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const refreshClinicDay = () => {
+            const now = new Date();
+            const nextKey = getClinicDayKey(now, normalizedCutoff);
+            setCurrentDateKey((previousKey) => {
+                if (previousKey !== nextKey) {
+                    setSelectedDay((previousDay) => (
+                        formatDateKey(previousDay) === previousKey
+                            ? clinicDayKeyToDate(nextKey)
+                            : previousDay
+                    ));
+                    setSelectedDate((previousMonth) => (
+                        formatMonthKey(previousMonth) === previousKey.slice(0, 7)
+                            ? clinicDayKeyToDate(`${nextKey.slice(0, 7)}-01`)
+                            : previousMonth
+                    ));
+                }
+                return nextKey;
+            });
+            timer = setTimeout(
+                refreshClinicDay,
+                getMillisecondsUntilClinicDayChange(now, normalizedCutoff),
+            );
+        };
+        refreshClinicDay();
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [normalizedCutoff]);
 
     // ─────────────────────────────────────────────────────────────────────────
     // التسميات المنسقة | Formatted Labels
@@ -92,10 +132,8 @@ export const useFinancialNavigation = (): UseFinancialNavigationReturn => {
 
     /** هل الشهر المحدد هو الشهر الحالي؟ */
     const isCurrentMonth = useMemo(() => {
-        const now = new Date();
-        return now.getMonth() === selectedDate.getMonth() &&
-            now.getFullYear() === selectedDate.getFullYear();
-    }, [selectedDate]);
+        return currentDateKey.slice(0, 7) === selectedMonthKey;
+    }, [currentDateKey, selectedMonthKey]);
 
     // ─────────────────────────────────────────────────────────────────────────
     // حدود الشهر | Month Boundaries

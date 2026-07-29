@@ -19,6 +19,12 @@ import { parseInsuranceExtras, summarizeInsuranceExtrasByType } from '../useFina
 import { buildCairoDateTime, formatUserDate, getCairoDateParts } from '../../../../utils/cairoTime';
 import { formatDateKey } from '../../utils/formatters';
 import type { DailyFinancialData } from '../../../../services/financial-data';
+import {
+    createEmptyDirectPaymentTotals,
+    summarizeDirectRevenueByMethod,
+    type DirectPaymentTotals,
+} from '../../../../utils/paymentMethods';
+import { createEmptyExpenseBreakdown } from '../../utils/expenseBreakdown';
 
 interface BuildChartDaysInput {
     startOfMonth: Date;
@@ -32,6 +38,8 @@ interface BuildChartDaysInput {
         examsIncome: number;
         consultsIncome: number;
         discountExpense: number;
+        directPaymentTotals: DirectPaymentTotals;
+        insuranceClaims: number;
     }>;
     selectedDayInsuranceExtras: { interventions: number; other: number; total: number };
     /** خريطة البيانات اليومية من Firestore (مفتاحها YYYY-MM-DD) — مفلترة بالفرع في طبقة الـ service */
@@ -85,7 +93,17 @@ export const buildChartDays = ({
             examsIncome: 0,
             consultsIncome: 0,
             discountExpense: 0,
+            directPaymentTotals: createEmptyDirectPaymentTotals(),
+            insuranceClaims: 0,
         };
+        const directPaymentTotals = { ...dayVisitFinancial.directPaymentTotals };
+        const additionalRevenueTotals = summarizeDirectRevenueByMethod(
+            dayInterventionsCash + dayOtherCash,
+            entry?.cashCostItems,
+        );
+        (Object.keys(directPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+            directPaymentTotals[type] += additionalRevenueTotals[type];
+        });
 
         days.push({
             date: dateStr,
@@ -99,6 +117,13 @@ export const buildChartDays = ({
             discountExpense: dayVisitFinancial.discountExpense,
             expense: dayManualExpense + dayVisitFinancial.discountExpense,
             income: dayVisitFinancial.examsIncome + dayVisitFinancial.consultsIncome + dayInterventions + dayOther,
+            directPaymentTotals,
+            insuranceClaims: dayVisitFinancial.insuranceClaims + dayInsuranceExtras.total,
+            expenseBreakdown: {
+                ...createEmptyExpenseBreakdown(),
+                daily: dayManualExpense,
+                discounts: dayVisitFinancial.discountExpense,
+            },
         });
 
         current.setDate(current.getDate() + 1);

@@ -68,6 +68,7 @@ import { useHideBootSplash } from '../../hooks/useHideBootSplash';
 import { usePatientDirectorySuggestions } from '../../hooks/usePatientDirectorySuggestions';
 import { mergePatientSuggestions } from '../../services/patientSuggestionSearch';
 import type { BasicPatientSuggestion } from '../consultation/PatientInfoSection';
+import { getClinicDayKey, resolveStoredClinicDayKey } from '../../utils/clinicWorkday';
 
 export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = false }) => {
   // إخفاء السبلاش الأوّلي فور ما MainApp تعمل mount — ده بيضمن إن المستخدم
@@ -253,6 +254,7 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
     todayAppointmentsCount,
     dashboardStats,
     todayStr,
+    clinicDayCutoffMinutes,
   } = useMainAppAppointments({
     userId,
     userEmail: user?.email,
@@ -282,11 +284,12 @@ export const MainApp: React.FC<{ isAdminUser?: boolean }> = ({ isAdminUser = fal
   // فلترة مواعيد اليوم للصفحة الرئيسية — نستخدم todayStr المُشترك من الـ hook حتى يتحدّث تلقائياً عند منتصف الليل
   const todayAppointmentsList = useMemo(() => {
     return appointments.filter((apt) => {
-      const dt = new Date(apt.dateTime);
-      const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      const dayStr = apt.appointmentStatus === 'completed' || Boolean(apt.examCompletedAt)
+        ? resolveStoredClinicDayKey(apt.clinicDayKey, apt.examCompletedAt || apt.dateTime)
+        : getClinicDayKey(apt.dateTime, clinicDayCutoffMinutes);
       return dayStr === todayStr;
     });
-  }, [appointments, todayStr]);
+  }, [appointments, todayStr, clinicDayCutoffMinutes]);
 
   const {
     profileKey,

@@ -38,6 +38,7 @@ interface ReportsHeaderProps {
     // للتبويب السنوي (إحصائيات السنة — selectedYear المنفصل)
     selectedStatsYear: number;
     currentYear: number;
+    currentDayKey?: string;
     onSetStatsYear: (year: number) => void;
 }
 
@@ -71,6 +72,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
     onSetDay,
     selectedStatsYear,
     currentYear,
+    currentDayKey,
     onSetStatsYear,
 }) => {
     const yearOptions = React.useMemo(
@@ -78,10 +80,7 @@ export const ReportsHeader: React.FC<ReportsHeaderProps> = ({
         [currentYear]
     );
 
-    const todayStr = React.useMemo(
-        () => new Date().toISOString().split('T')[0],
-        []
-    );
+    const todayStr = currentDayKey || new Date().toISOString().split('T')[0];
 
     return (
         // توحيد مع الصفحات النظيفه (سجلات المرضى، ملفات المرضى): خلفيه بيضاء

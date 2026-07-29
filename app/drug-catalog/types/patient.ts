@@ -123,6 +123,9 @@ export interface PregnancyTrackingSnapshot {
 export interface PatientRecord {
   id: string;
   date: string;
+  /** يوم عمل العيادة المثبّت وقت أول حفظ؛ لا يتغير إذا تغيّر إعداد الإغلاق لاحقًا. */
+  clinicDayKey?: string;
+  clinicDayCutoffMinutes?: number;
   patientName: string;
   phone?: string;
   /** عنوان المريض وقت الزيارة، ويُزامن مع ملفه الموحد عند التعديل. */
@@ -237,6 +240,8 @@ export interface PatientRecord {
  */
 export interface ConsultationData {
   date: string;
+  clinicDayKey?: string;
+  clinicDayCutoffMinutes?: number;
   complaintEn: string;
   historyEn: string;
   examEn: string;

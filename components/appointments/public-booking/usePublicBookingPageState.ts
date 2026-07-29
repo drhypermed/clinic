@@ -15,7 +15,6 @@ import { PatientSuggestionOption, RecentExamPatientOption } from '../add-appoint
 import { TodayAppointment } from './types';
 import { useMemo, useRef, useState } from 'react';
 import { buildCairoDateTime, formatUserDate } from '../../../utils/cairoTime';
-import { toLocalDateStr } from '../utils';
 import { getDefaultTimeStr } from './helpers';
 import {
   buildSecretaryVitalFieldDefinitionsWithDefaults,
@@ -32,6 +31,8 @@ import type {
 import type { InsuranceCompany } from '../../../services/insuranceService';
 import type { DiscountReason } from '../../../services/discountReasonService';
 import type { VisitServiceDraft } from '../../../services/visit-services/types';
+import { useCurrentClinicDayKey } from '../../../hooks/useClinicDay';
+import { DEFAULT_CLINIC_DAY_CUTOFF_MINUTES } from '../../../utils/clinicWorkday';
 
 export const usePublicBookingPageState = () => {
   const [config, setConfig] = useState<Config | null>(null);
@@ -48,7 +49,11 @@ export const usePublicBookingPageState = () => {
   const [gender, setGender] = useState<PatientGender | ''>('');
   const [pregnant, setPregnant] = useState<boolean | null>(null);
   const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
-  const [dateStr, setDateStr] = useState(() => toLocalDateStr(new Date()));
+  const [clinicDayCutoffMinutes, setClinicDayCutoffMinutes] = useState(
+    DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+  );
+  const currentDayStr = useCurrentClinicDayKey(clinicDayCutoffMinutes);
+  const [dateStr, setDateStr] = useState(currentDayStr);
   const [timeStr, setTimeStr] = useState(() => getDefaultTimeStr());
   const [visitReason, setVisitReason] = useState('');
   const [secretaryVitals, setSecretaryVitals] = useState<SecretaryVitalsInput>({});
@@ -101,7 +106,6 @@ export const usePublicBookingPageState = () => {
   const [bookingFormLoading, setBookingFormLoading] = useState(false);
   const bookingFormLoadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [currentDayStr, setCurrentDayStr] = useState(() => toLocalDateStr(new Date()));
   const previousDayStrRef = useRef(currentDayStr);
 
   const sortedTodayAppointments = useMemo(
@@ -232,7 +236,8 @@ export const usePublicBookingPageState = () => {
     setBookingFormLoading,
     bookingFormLoadingTimerRef,
     currentDayStr,
-    setCurrentDayStr,
+    clinicDayCutoffMinutes,
+    setClinicDayCutoffMinutes,
     previousDayStrRef,
     sortedTodayAppointments,
     todayDateMeta,

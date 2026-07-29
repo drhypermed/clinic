@@ -801,6 +801,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (data.patientFileNameKey) out.patientFileNameKey = String(data.patientFileNameKey).slice(0, 240);
     if (typeof data.serviceChargesCount === 'number') out.serviceChargesCount = data.serviceChargesCount;
     if (typeof data.serviceChargesTotal === 'number') out.serviceChargesTotal = data.serviceChargesTotal;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(data.clinicDayKey || ''))) out.clinicDayKey = data.clinicDayKey;
+    if (Number.isFinite(Number(data.clinicDayCutoffMinutes))) out.clinicDayCutoffMinutes = Number(data.clinicDayCutoffMinutes);
     // إرجاع حقول الهويه للسكرتاريه عشان تشوفها في القائمه
     // ولما تعدل الموعد ميرجعوش فاضيين في الفورم.
     if (data.gender === 'male' || data.gender === 'female') out.gender = data.gender;
@@ -816,10 +818,6 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const branchId = normalizeText(request?.data?.branchId) || DEFAULT_BRANCH_ID;
     // اليوم حسب التوقيت المحلي للعميل (السكرتيرة) — يرسله العميل لتجنب فروق المنطقة الزمنية
     const todayStrInput = normalizeText(request?.data?.todayStr);
-    const todayStr = /^\d{4}-\d{2}-\d{2}$/.test(todayStrInput)
-      ? todayStrInput
-      : getCairoDateKey(new Date());
-
     if (!userId || !secret) {
       throw new HttpsError('invalid-argument', 'MISSING_PARAMETERS');
     }
@@ -833,7 +831,6 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     if (configData.userId !== userId) {
       throw new HttpsError('permission-denied', 'SECRET_USER_MISMATCH');
     }
-
     const storedDoctorEmail = normalizeEmail(configData.doctorEmail);
     const auth = await readSecretaryAuthData({
       db,
@@ -845,7 +842,12 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     });
     await assertSecretarySessionForBranch({ db, secret, mainAuth: auth, branchId, sessionToken, HttpsError });
     await assertBranchBelongsToDoctor({ db, userId, branchId, HttpsError });
-
+    const pricesSnap = await db.collection('bookingConfig').doc(secret).collection('prices').doc('current').get().catch(() => null);
+    const rawCutoff = Number(pricesSnap?.exists ? (pricesSnap.data() || {}).clinicDayCutoffMinutes : 360);
+    const clinicDayCutoffMinutes = Number.isFinite(rawCutoff)
+      ? Math.max(0, Math.min(1439, Math.round(rawCutoff))) : 360;
+    const todayStr = /^\d{4}-\d{2}-\d{2}$/.test(todayStrInput)
+      ? todayStrInput : getCairoDateKey(new Date(Date.now() - clinicDayCutoffMinutes * 60 * 1000));
     // نحتاج فقط مواعيد اليوم/القادمة والمنفذة حديثاً. القراءة القديمة كانت
     // تسحب تاريخ كل المواعيد ثم تفلتره في الذاكرة، فتكلفتها تزيد مع عمر الحساب.
     // نستعلم بفترتين: واحدة حسب موعد الحجز، وأخرى حسب وقت التنفيذ، حتى نظل
@@ -896,7 +898,10 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       const dateTime = normalizeText(data.dateTime);
       if (!dateTime) return;
 
-      const aptDayStr = toLocalIsoDayString(dateTime);
+      const appointmentMs = Date.parse(dateTime);
+      const aptDayStr = Number.isFinite(appointmentMs)
+        ? getCairoDateKey(new Date(appointmentMs - clinicDayCutoffMinutes * 60 * 1000))
+        : '';
       if (!aptDayStr) return;
 
       const compact = compactAppointmentForSecretary(doc);

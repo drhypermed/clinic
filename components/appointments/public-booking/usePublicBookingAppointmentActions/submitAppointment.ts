@@ -257,6 +257,9 @@ export const buildMergedTodayAppointment = (
     dateTime: input.dateTime.toISOString(),
     source: input.editingAppointment?.source || 'secretary',
     appointmentType: input.resolvedAppointmentType,
+    examCompletedAt: input.editingAppointment?.examCompletedAt,
+    clinicDayKey: input.editingAppointment?.clinicDayKey,
+    clinicDayCutoffMinutes: input.editingAppointment?.clinicDayCutoffMinutes,
     consultationSourceAppointmentId: input.consultationSourceAppointmentId,
     consultationSourceCompletedAt: input.consultationSourceCompletedAt,
     consultationSourceRecordId: input.consultationSourceRecordId,
@@ -276,6 +279,9 @@ export const buildMergedTodayAppointment = (
             : undefined,
     // الفرع: نستخدم الـ branchId الجديد، أو نحتفظ بـ branchId القديم من الـ editing appointment
     branchId: input.branchId || input.editingAppointment?.branchId || 'main',
+    patientFileId: input.editingAppointment?.patientFileId,
+    patientFileNumber: input.editingAppointment?.patientFileNumber,
+    patientFileNameKey: input.editingAppointment?.patientFileNameKey,
     // الحقول الجديدة — تُعرض للطبيب في قائمة مواعيد اليوم وتصل معه للكشف
     gender: input.gender,
     pregnant: input.pregnant,

@@ -48,6 +48,7 @@ import {
     saveFixedPricesWithHistory,
     saveMonthlyPrices,
     savePrices,
+    saveClinicDayCutoff,
     subscribeToMonthlyPrices,
     subscribeToPrices,
     subscribeToPricesBySecret,
@@ -94,6 +95,7 @@ export const financialDataService = {
 
     // Prices — Legacy / Fixed
     savePrices,
+    saveClinicDayCutoff,
     saveFixedPricesWithHistory,
     getPrices,
     subscribeToPrices,

@@ -42,26 +42,15 @@ import { buildVisitFinancialByDate } from './useFinancialStats/buildVisitFinanci
 import { buildChartDays } from './useFinancialStats/buildChartDays';
 import { buildYearlyStats } from './useFinancialStats/buildYearlyStats';
 import {
-    addToDirectPaymentTotals,
     createEmptyDirectPaymentTotals,
-    sumDirectPaymentTotals,
+    summarizeDirectRevenueByMethod,
     type DirectPaymentTotals,
 } from '../../../utils/paymentMethods';
-
-const addAdditionalRevenueByMethod = (
-    totals: DirectPaymentTotals,
-    totalAmount: number,
-    rawItems: unknown,
-) => {
-    const items = Array.isArray(rawItems) ? rawItems : [];
-    items.forEach((item) => addToDirectPaymentTotals(
-        totals,
-        item && typeof item === 'object' ? (item as { paymentType?: unknown }).paymentType : undefined,
-        item && typeof item === 'object' ? (item as { amount?: unknown }).amount : 0,
-    ));
-    const unclassifiedAmount = Math.max(0, totalAmount - sumDirectPaymentTotals(totals));
-    if (unclassifiedAmount > 0) totals.cash += unclassifiedAmount;
-};
+import { resolveStoredClinicDayKey } from '../../../utils/clinicWorkday';
+import {
+    sumExpenseBreakdown,
+    type ExpenseBreakdown,
+} from '../utils/expenseBreakdown';
 
 export const useFinancialStats = ({
     records,
@@ -82,6 +71,7 @@ export const useFinancialStats = ({
     yearlyMonthlyMap: propYearlyMonthlyMap,
 }: UseFinancialStatsProps): UseFinancialStatsReturn => {
     const selectedDayKey = formatDateKey(selectedDay);
+    const selectedMonthKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`;
 
     // لما السنة اللي عايزها التبويب السنوي (selectedYear) تكون مختلفة عن سنة الشهر المعروض (viewYear)،
     // بنجلب خريطة إضافية للسنة التانية من Firestore (cache-first — سريع بفضل IndexedDB).
@@ -122,7 +112,7 @@ export const useFinancialStats = ({
         consultation: (_visitTs?: number) => Math.max(0, consultPrice || 0),
     }), [examPrice, consultPrice]);
 
-    const { startOfMonth, endOfMonth, startTs, endTs } = useMemo(() => {
+    const { startOfMonth, endOfMonth } = useMemo(() => {
         const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
         // Bug #6 fix: نهاية الشهر = أول لحظة في الشهر اللي بعده ناقص 1 مللي ثانية (بدل 23:59:59.999).
         // ده بيضمن إن أي سجل في اللحظة الأخيرة من الشهر يتحسب بدون مشاكل تقريب.
@@ -131,8 +121,6 @@ export const useFinancialStats = ({
         return {
             startOfMonth: start,
             endOfMonth: end,
-            startTs: start.getTime(),
-            endTs: end.getTime()
         };
     }, [selectedDate]);
 
@@ -144,10 +132,8 @@ export const useFinancialStats = ({
         let monthConsultations = 0;
         records.forEach(record => {
             if (record.isConsultationOnly) return;
-            const recTs = asTimestamp(record.date);
-            if (!Number.isFinite(recTs) || recTs < startTs || recTs > endTs) return;
-
-            const dateKey = formatDateKey(new Date(record.date));
+            const dateKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
+            if (!dateKey.startsWith(`${selectedMonthKey}-`)) return;
             if (!dailyExams[dateKey]) {
                 dailyExams[dateKey] = { exams: 0, consultations: 0 };
             }
@@ -156,10 +142,8 @@ export const useFinancialStats = ({
         });
 
         consultationVisits.forEach((visit) => {
-            const consultTs = asTimestamp(visit.date);
-            if (!Number.isFinite(consultTs) || consultTs < startTs || consultTs > endTs) return;
-
-            const consultDateKey = formatDateKey(new Date(visit.date));
+            const consultDateKey = resolveStoredClinicDayKey(visit.clinicDayKey, visit.date);
+            if (!consultDateKey.startsWith(`${selectedMonthKey}-`)) return;
             if (!dailyExams[consultDateKey]) {
                 dailyExams[consultDateKey] = { exams: 0, consultations: 0 };
             }
@@ -173,18 +157,18 @@ export const useFinancialStats = ({
             collectedCash: 0,   // يُحسب لاحقاً بعد حساب الأسعار
             insuranceClaims: 0, // يُحسب لاحقاً
         };
-    }, [records, consultationVisits, startTs, endTs]);
+    }, [records, consultationVisits, selectedMonthKey]);
 
     const selectedDayStats = useMemo(() => {
         let exams = 0;
         records.forEach(r => {
             if (r.isConsultationOnly) return;
-            const rDate = formatDateKey(new Date(r.date));
+            const rDate = resolveStoredClinicDayKey(r.clinicDayKey, r.date);
             if (rDate === selectedDayKey) exams++;
         });
 
         const consultations = consultationVisits.reduce((count, visit) => {
-            const consultDay = formatDateKey(new Date(visit.date));
+            const consultDay = resolveStoredClinicDayKey(visit.clinicDayKey, visit.date);
             return consultDay === selectedDayKey ? count + 1 : count;
         }, 0);
 
@@ -197,7 +181,7 @@ export const useFinancialStats = ({
 
         records.forEach((record) => {
             if (record.isConsultationOnly) return;
-            const dayKey = formatDateKey(new Date(record.date));
+            const dayKey = resolveStoredClinicDayKey(record.clinicDayKey, record.date);
             if (dayKey !== selectedDayKey) return;
 
             const recTs = asTimestamp(record.date);
@@ -216,9 +200,14 @@ export const useFinancialStats = ({
 
         const seenConsultIds = new Set<string>();
         records.forEach((record) => {
-            const processConsult = (visitDate: string, explicitBasePrice: unknown, key: string) => {
+            const processConsult = (
+                visitDate: string,
+                explicitBasePrice: unknown,
+                key: string,
+                clinicDayKey?: string,
+            ) => {
                 if (seenConsultIds.has(key)) return;
-                const dayKey = formatDateKey(new Date(visitDate));
+                const dayKey = resolveStoredClinicDayKey(clinicDayKey, visitDate);
                 if (dayKey !== selectedDayKey) return;
                 seenConsultIds.add(key);
                 const consultTs = asTimestamp(visitDate);
@@ -236,7 +225,7 @@ export const useFinancialStats = ({
             };
 
             if (record.isConsultationOnly) {
-                processConsult(record.date, record.serviceBasePrice, record.id);
+                processConsult(record.date, record.serviceBasePrice, record.id, record.clinicDayKey);
                 return;
             }
             const historyDates = Array.isArray(record.consultationHistoryDates) ? record.consultationHistoryDates : [];
@@ -247,7 +236,12 @@ export const useFinancialStats = ({
                 });
             } else if (record.consultation?.date) {
                 const key = record.consultationRecordId || `${record.id}:inline:${record.consultation.date}`;
-                processConsult(record.consultation.date, record.consultationServiceBasePrice, key);
+                processConsult(
+                    record.consultation.date,
+                    record.consultationServiceBasePrice,
+                    key,
+                    record.consultation.clinicDayKey,
+                );
             }
         });
 
@@ -295,8 +289,7 @@ export const useFinancialStats = ({
             const dayTotal = dayKey === selectedDayKey
                 ? (parseFloat(dailyInterventions) || 0) + (parseFloat(dailyOther) || 0)
                 : (Number(entry?.interventionsRevenue) || 0) + (Number(entry?.otherRevenue) || 0);
-            const dayTotals = createEmptyDirectPaymentTotals();
-            addAdditionalRevenueByMethod(dayTotals, dayTotal, entry?.cashCostItems);
+            const dayTotals = summarizeDirectRevenueByMethod(dayTotal, entry?.cashCostItems);
             (Object.keys(dayTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
                 monthly[type] += dayTotals[type];
                 if (dayKey === selectedDayKey) daily[type] += dayTotals[type];
@@ -378,11 +371,10 @@ export const useFinancialStats = ({
         () => buildVisitFinancialByDate({
             records,
             consultationVisits,
-            startTs,
-            endTs,
+            selectedMonthKey,
             resolveBasePriceByDate,
         }),
-        [records, consultationVisits, resolveBasePriceByDate, startTs, endTs]
+        [records, consultationVisits, resolveBasePriceByDate, selectedMonthKey]
     );
 
     const monthlyVisitFinancialTotals = useMemo(() => {
@@ -504,14 +496,16 @@ export const useFinancialStats = ({
     const insuranceClaims = monthlyInsuranceExtrasTotal + monthlyVisitFinancialTotals.monthInsuranceClaims;
     const monthlyDiscountExpense = monthlyVisitFinancialTotals.monthDiscountExpense;
 
-    const totalExpenses =
-        (parseFloat(monthlyExpenses.rentExpense) || 0) +
-        (parseFloat(monthlyExpenses.salariesExpense) || 0) +
-        (parseFloat(monthlyExpenses.toolsExpense) || 0) +
-        (parseFloat(monthlyExpenses.electricityExpense) || 0) +
-        (parseFloat(monthlyExpenses.otherExpense) || 0) +
-        monthlyDailyExpenses +
-        monthlyDiscountExpense;
+    const expenseBreakdown: ExpenseBreakdown = {
+        rent: parseFloat(monthlyExpenses.rentExpense) || 0,
+        salaries: parseFloat(monthlyExpenses.salariesExpense) || 0,
+        tools: parseFloat(monthlyExpenses.toolsExpense) || 0,
+        electricity: parseFloat(monthlyExpenses.electricityExpense) || 0,
+        daily: monthlyDailyExpenses,
+        other: parseFloat(monthlyExpenses.otherExpense) || 0,
+        discounts: monthlyDiscountExpense,
+    };
+    const totalExpenses = sumExpenseBreakdown(expenseBreakdown);
 
     const dailyCollectedCash =
         (parseFloat(dailyInterventions) || 0) +
@@ -549,6 +543,7 @@ export const useFinancialStats = ({
         directPaymentTotals,
         insuranceClaims,
         monthlyDiscountExpense,
+        expenseBreakdown,
         totalExpenses
     };
 };

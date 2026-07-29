@@ -15,7 +15,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { PatientRecord } from '../../types';
 import { DailyGroup, StatCard } from './recordsViewParts';
-import { getCairoDayKey } from '../../utils/cairoTime';
 import { PatientFileDetailsModal } from '../patient-files/PatientFileDetailsModal';
 import {
   buildPatientFiles,
@@ -46,6 +45,7 @@ import type {
 import { useRecordsSearch } from './records-view/useRecordsSearch';
 import { useRecordsTimeline } from './records-view/useRecordsTimeline';
 import { RecordsSearchFilters } from './records-view/RecordsSearchFilters';
+import { useClinicDayCutoff, useCurrentClinicDayKey } from '../../hooks/useClinicDay';
 
 interface RecordsViewProps {
   records: PatientRecord[];
@@ -119,8 +119,8 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   const [deleteConsultationState, setDeleteConsultationState] =
     useState<DeletePartialRecordState>({ isOpen: false, record: null });
 
-  const now = new Date();
-  const todayStr = getCairoDayKey(now);
+  const clinicDayCutoffMinutes = useClinicDayCutoff(userId, branchId);
+  const todayStr = useCurrentClinicDayKey(clinicDayCutoffMinutes);
   const firstDayOfMonthStr = `${todayStr.slice(0, 7)}-01`;
 
 
@@ -170,11 +170,24 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   useEffect(() => {
     if (!recordsPagingEnabled || !onFetchRecordsByDateRange) return;
     if (!filterStartDate || !filterEndDate) return;
-    const startMs = new Date(`${filterStartDate}T00:00:00`).getTime();
-    const endMs = new Date(`${filterEndDate}T23:59:59.999`).getTime();
+    const startMs = new Date(`${filterStartDate}T00:00:00`).getTime() - 86_400_000;
+    const endMs = new Date(`${filterEndDate}T23:59:59.999`).getTime() + 86_400_000;
     if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return;
     void onFetchRecordsByDateRange(startMs, endMs);
   }, [recordsPagingEnabled, onFetchRecordsByDateRange, filterStartDate, filterEndDate]);
+
+  useEffect(() => {
+    if (!recordsPagingEnabled || !onFetchRecordsByDateRange) return;
+    const startMs = new Date(`${firstDayOfMonthStr}T00:00:00`).getTime() - 86_400_000;
+    const endMs = new Date(`${todayStr}T23:59:59.999`).getTime() + 86_400_000;
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return;
+    void onFetchRecordsByDateRange(startMs, endMs);
+  }, [
+    recordsPagingEnabled,
+    onFetchRecordsByDateRange,
+    firstDayOfMonthStr,
+    todayStr,
+  ]);
 
   // ─── ملخص إحصائيات الطبيب من السيرفر (المرحلة 1 من خطة التوسع) ────
   // لو الـ feature flag مفعّل (dh_doctor_stats_counter_enabled)، الـhook
@@ -194,7 +207,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     rangeEndDate,
     todayStr,
     firstDayOfMonthStr,
-    doctorStatsSummary,
+    doctorStatsSummary: clinicDayCutoffMinutes === 0 ? doctorStatsSummary : null,
   });
 
   // ─── ملفات المرضى (للنافذة المنبثقة) ────────────────────────────────

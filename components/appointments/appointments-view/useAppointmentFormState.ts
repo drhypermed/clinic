@@ -38,6 +38,7 @@ import {
   normalizeGender,
 } from '../../../utils/patientIdentity';
 import { normalizePatientAddress } from '../../../utils/patientAddress';
+import { useClinicDayCutoff, useCurrentClinicDayKey } from '../../../hooks/useClinicDay';
 
 /**
  * الملف: useAppointmentFormState.ts (Hook)
@@ -73,8 +74,9 @@ export const useAppointmentFormState = ({
   // عمر الحمل بالأسابيع — null = غير مدخل بعد، رقم = القيمة الفعلية (1-42)
   const [gestationalAgeWeeks, setGestationalAgeWeeks] = useState<number | null>(null);
   const [breastfeeding, setBreastfeeding] = useState<boolean | null>(null);
-  const [currentDayStr, setCurrentDayStr] = useState(() => toLocalDateStr(new Date()));
-  const [dateStr, setDateStr] = useState(() => toLocalDateStr(new Date()));
+  const clinicDayCutoffMinutes = useClinicDayCutoff(userId, branchId);
+  const currentDayStr = useCurrentClinicDayKey(clinicDayCutoffMinutes);
+  const [dateStr, setDateStr] = useState(currentDayStr);
   const [timeStr, setTimeStr] = useState(() => currentTimeMin());
   const [visitReason, setVisitReason] = useState('');
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
@@ -163,13 +165,6 @@ export const useAppointmentFormState = ({
   }, [addAppointmentFormOpen, appointmentType, branchId, userId]);
 
   // تحديث "تاريخ اليوم" كل دقيقة لضمان دقة الاختيار التلقائي (Auto-Refresh)
-  useEffect(() => {
-    const syncCurrentDay = () => setCurrentDayStr(toLocalDateStr(new Date()));
-    syncCurrentDay();
-    const interval = setInterval(syncCurrentDay, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   /** 
    * مزامنة التواريخ (Date Sync).
    * إذا تغير اليوم الفعلي (عبر منتصف الليل مثلاً) وكان الطبيب قد ترك النموذج على "اليوم"، 
@@ -536,7 +531,7 @@ export const useAppointmentFormState = ({
   return {
     patientName, setPatientName, age, setAge, dateOfBirth, setDateOfBirth, phone, setPhone,
     addressGovernorate, setAddressGovernorate, addressCityArea, setAddressCityArea, addressDetails, setAddressDetails,
-    currentDayStr,
+    currentDayStr, clinicDayCutoffMinutes,
     gender, setGender, pregnant, setPregnant, gestationalAgeWeeks, setGestationalAgeWeeks, breastfeeding, setBreastfeeding,
     dateStr, setDateStr, timeStr, setTimeStr, visitReason, setVisitReason,
     appointmentType, selectedConsultationCandidateId, editingAppointmentId,

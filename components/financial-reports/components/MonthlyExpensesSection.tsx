@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatCurrency } from '../utils/formatters';
+import { CompactExpenseBreakdown } from './CompactExpenseBreakdown';
 
 interface MonthlyExpensesSectionProps {
     currentMonthLabel: string;
@@ -34,6 +35,16 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
     monthlyDiscountExpense,
     totalExpenses,
 }) => {
+    const expenseBreakdown = {
+        rent: parseFloat(rentExpense) || 0,
+        salaries: parseFloat(salariesExpense) || 0,
+        tools: parseFloat(toolsExpense) || 0,
+        electricity: parseFloat(electricityExpense) || 0,
+        daily: monthlyDailyExpenses,
+        other: parseFloat(otherExpense) || 0,
+        discounts: monthlyDiscountExpense,
+    };
+
     return (
         <div className="rounded-2xl shadow-sm overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-danger-600 to-danger-500">
@@ -169,13 +180,19 @@ export const MonthlyExpensesSection: React.FC<MonthlyExpensesSectionProps> = ({
                     </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-danger-600 to-danger-500 rounded-xl p-3">
                         <span className="font-bold text-white">💰 إجمالي المصروفات الشهرية</span>
                         <span className="text-base sm:text-xl font-black text-white break-words">
                             {formatCurrency(totalExpenses)}
                         </span>
                     </div>
+                    {totalExpenses > 0 && (
+                        <CompactExpenseBreakdown
+                            expenseBreakdown={expenseBreakdown}
+                            className="px-1"
+                        />
+                    )}
                 </div>
             </div>
         </div>

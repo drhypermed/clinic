@@ -74,7 +74,13 @@ interface UseAppointmentSyncOnSaveArgs {
     prescriptionSecretaryFieldDefinitions: SecretaryVitalFieldDefinition[];
     doctorSpecialty?: string | null;
     // Save handler
-    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{ ok: boolean; reason?: string; recordId?: string } | undefined | void> | any;
+    handleSaveRecord: (e?: React.MouseEvent<any>) => Promise<{
+        ok: boolean;
+        reason?: string;
+        recordId?: string;
+        clinicDayKey?: string;
+        clinicDayCutoffMinutes?: number;
+    } | undefined | void> | any;
     showNotification: (msg: string, type?: 'success' | 'error' | 'info', opts?: any) => void;
 }
 
@@ -111,7 +117,11 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
         showNotification,
     } = args;
 
-    const syncOpenedAppointmentAfterRecordSave = React.useCallback(async (recordId?: string) => {
+    const syncOpenedAppointmentAfterRecordSave = React.useCallback(async (
+        recordId?: string,
+        clinicDayKey?: string,
+        clinicDayCutoffMinutes?: number,
+    ) => {
         if (!userId || !openedAppointmentContext) return;
 
         const completedAt = new Date().toISOString();
@@ -163,6 +173,10 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
             age: normalizedAge,
             examCompletedAt: completedAt,
             ...(isConsultation ? { consultationCompletedAt: completedAt } : {}),
+            ...(clinicDayKey ? { clinicDayKey } : {}),
+            ...(Number.isFinite(clinicDayCutoffMinutes)
+                ? { clinicDayCutoffMinutes }
+                : {}),
             secretaryVitals: sanitizedVitals,
             ...(activePatientFileId ? { patientFileId: activePatientFileId } : {}),
             ...(Number.isFinite(Number(activePatientFileNumber)) && Number(activePatientFileNumber) > 0
@@ -192,6 +206,8 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
                 examStartedAt: updatedAppointment.examStartedAt,
                 examCompletedAt: updatedAppointment.examCompletedAt,
                 consultationCompletedAt: updatedAppointment.consultationCompletedAt,
+                clinicDayKey: updatedAppointment.clinicDayKey,
+                clinicDayCutoffMinutes: updatedAppointment.clinicDayCutoffMinutes,
             },
             recordId,
             publicUserId: updatedAppointment.source === 'public'
@@ -276,7 +292,11 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
         if (!openedAppointmentContext) return saveResult;
 
         try {
-            await syncOpenedAppointmentAfterRecordSave(saveResult?.recordId);
+            await syncOpenedAppointmentAfterRecordSave(
+                saveResult?.recordId,
+                saveResult?.clinicDayKey,
+                saveResult?.clinicDayCutoffMinutes,
+            );
         } catch (error) {
             console.error('Record saved but appointment sync failed:', error);
             showNotification('تم حفظ السجل، وسيُعاد مزامنة الموعد المنفذ تلقائياً عند توفر الاتصال.', 'info', { id: 'appointment-sync-after-save' });

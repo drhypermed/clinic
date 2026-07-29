@@ -80,7 +80,13 @@ export const syncMonthlyPricesToBookingConfig = async (
 /** مرآة الأسعار الثابتة إلى bookingConfig/{secret}/prices/current */
 export const syncPricesToBookingConfig = async (
     userId: string,
-    prices: { examinationPrice?: string; consultationPrice?: string; updatedAt?: number },
+    prices: {
+        examinationPrice?: string;
+        consultationPrice?: string;
+        clinicDayCutoffMinutes?: number;
+        clinicDaySettingsUpdatedAt?: number;
+        updatedAt?: number;
+    },
     branchId?: string,
 ): Promise<void> => {
     const normalizedUserId = String(userId || '').trim();
@@ -91,13 +97,24 @@ export const syncPricesToBookingConfig = async (
         if (!bookingSecret) return;
 
         const mirrorRef = doc(db, 'bookingConfig', bookingSecret, 'prices', 'current');
+        const mirrorPayload = {
+            ...(prices.examinationPrice !== undefined
+                ? { examinationPrice: toPriceText(prices.examinationPrice) }
+                : {}),
+            ...(prices.consultationPrice !== undefined
+                ? { consultationPrice: toPriceText(prices.consultationPrice) }
+                : {}),
+            ...(Number.isFinite(prices.clinicDayCutoffMinutes)
+                ? { clinicDayCutoffMinutes: Math.round(Number(prices.clinicDayCutoffMinutes)) }
+                : {}),
+            ...(Number.isFinite(prices.clinicDaySettingsUpdatedAt)
+                ? { clinicDaySettingsUpdatedAt: Number(prices.clinicDaySettingsUpdatedAt) }
+                : {}),
+            updatedAt: Number(prices.updatedAt || Date.now()) || Date.now(),
+        };
         await setDoc(
             mirrorRef,
-            {
-                examinationPrice: toPriceText(prices.examinationPrice),
-                consultationPrice: toPriceText(prices.consultationPrice),
-                updatedAt: Number(prices.updatedAt || Date.now()) || Date.now(),
-            },
+            mirrorPayload,
             { merge: true }
         );
     } catch {

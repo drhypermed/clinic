@@ -4,6 +4,7 @@ import { normalizeText } from '../../../utils/textEncoding';
 import { toLocalDateStr } from '../utils';
 import type { AppointmentDayGroup } from '../../../types';
 import { sanitizeExternalHttpUrl } from './securityUtils';
+import { getClinicDayKey, resolveStoredClinicDayKey } from '../../../utils/clinicWorkday';
 
 /**
  * الملف: helpers.ts
@@ -285,6 +286,8 @@ export const buildRecentExamCandidates = (records: PatientRecord[]): RecentExamP
       address: rec.address,
       dateOfBirth: rec.dateOfBirth,
       examCompletedAt: rec.date,
+      clinicDayKey: rec.clinicDayKey,
+      clinicDayCutoffMinutes: rec.clinicDayCutoffMinutes,
       consultationSourceRecordId: rec.id,
       // نقل الهوية الثابتة (الجنس) مع المريض للاستشارة التالية
       gender: rec.gender,
@@ -292,12 +295,16 @@ export const buildRecentExamCandidates = (records: PatientRecord[]): RecentExamP
 };
 
 /** تقسيم المواعيد قيد الانتظار إلى موعد اليوم والمواعيد القادمة */
-export const groupPendingAppointments = (pendingList: ClinicAppointment[], todayStr: string): { todayPending: ClinicAppointment[]; futurePendingGroups: AppointmentDayGroup[] } => {
+export const groupPendingAppointments = (
+  pendingList: ClinicAppointment[],
+  todayStr: string,
+  clinicDayCutoffMinutes = 360,
+): { todayPending: ClinicAppointment[]; futurePendingGroups: AppointmentDayGroup[] } => {
   const today: ClinicAppointment[] = [];
   const groups: Record<string, ClinicAppointment[]> = {};
 
   pendingList.forEach((apt) => {
-    const dStr = toLocalDateStr(new Date(apt.dateTime));
+    const dStr = getClinicDayKey(apt.dateTime, clinicDayCutoffMinutes);
     if (dStr === todayStr) today.push(apt);
     else {
       if (!groups[dStr]) groups[dStr] = [];
@@ -312,7 +319,10 @@ export const groupPendingAppointments = (pendingList: ClinicAppointment[], today
 export const groupCompletedAppointments = (completedList: ClinicAppointment[]): AppointmentDayGroup[] => {
   const groups: Record<string, ClinicAppointment[]> = {};
   completedList.forEach((apt) => {
-    const dStr = toLocalDateStr(new Date(apt.dateTime));
+    const dStr = resolveStoredClinicDayKey(
+      apt.clinicDayKey,
+      apt.examCompletedAt || apt.dateTime,
+    );
     if (!groups[dStr]) groups[dStr] = [];
     groups[dStr].push(apt);
   });

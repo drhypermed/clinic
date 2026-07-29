@@ -25,6 +25,8 @@ import {
   getAppointmentSyncQueue,
 } from '../../../services/appointmentRecordSyncService';
 import { isAppointmentPending } from '../../../utils/appointmentStatus';
+import { useClinicDayCutoff, useCurrentClinicDayKey } from '../../../hooks/useClinicDay';
+import { getClinicDayKey, resolveStoredClinicDayKey } from '../../../utils/clinicWorkday';
 
 /**
  * Hook إدارة المواعيد والتنبيهات (useMainAppAppointments)
@@ -103,8 +105,6 @@ interface UseMainAppAppointmentsParams {
 // النافذة الزمنية موحَّدة عبر الكود لضمان سلوك ثابت.
 export const NOTIFICATION_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
 const NOTIFICATION_STALE_AFTER_MS = NOTIFICATION_MAX_AGE_MS;
-const formatLocalDayStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
 const isNewAppointmentToastData = (value: unknown): value is NewAppointmentToastData => {
   if (!value || typeof value !== 'object') return false;
   const toast = value as Partial<NewAppointmentToastData>;
@@ -143,7 +143,8 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const [, setPushRegistrationRequired] = useState(false);
   const [pushEnableSuccessMessage, setPushEnableSuccessMessage] = useState<string | null>(null);
-  const [todayStr, setTodayStr] = useState<string>(() => formatLocalDayStr(new Date()));
+  const clinicDayCutoffMinutes = useClinicDayCutoff(userId, activeBranchId);
+  const todayStr = useCurrentClinicDayKey(clinicDayCutoffMinutes);
   const newAppointmentToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // الـ Set دي بتيجي من Firestore — كل أجهزة الطبيب بتشاركها، فلو جهاز عمل dismiss،
   // باقي الأجهزة تعرف فوراً ومتعرضش الـ toast من جديد.
@@ -157,21 +158,6 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   const [dismissedSubscriptionReady, setDismissedSubscriptionReady] = useState(false);
 
   // تحديث "تاريخ اليوم" تلقائياً عند منتصف الليل حتى تعكس عدادات مواعيد اليوم اليوم الصحيح
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const scheduleNextMidnight = () => {
-      const now = new Date();
-      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
-      const delay = Math.max(1000, next.getTime() - now.getTime());
-      timeoutId = setTimeout(() => {
-        setTodayStr(formatLocalDayStr(new Date()));
-        scheduleNextMidnight();
-      }, delay);
-    };
-    scheduleNextMidnight();
-    return () => { if (timeoutId) clearTimeout(timeoutId); };
-  }, []);
-
   const clearNewAppointmentToast = useCallback(() => {
     if (newAppointmentToastTimerRef.current) {
       clearTimeout(newAppointmentToastTimerRef.current);
@@ -662,11 +648,12 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
   // 8. حساب إحصائيات لوحة التحكم لمواعيد اليوم
   const todayAppointmentsCount = useMemo(() => {
     return appointments.filter((apt) => {
-      const dt = new Date(apt.dateTime);
-      const dayStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      const dayStr = apt.appointmentStatus === 'completed' || Boolean(apt.examCompletedAt)
+        ? resolveStoredClinicDayKey(apt.clinicDayKey, apt.examCompletedAt || apt.dateTime)
+        : getClinicDayKey(apt.dateTime, clinicDayCutoffMinutes);
       return dayStr === todayStr && isAppointmentPending(apt);
     }).length;
-  }, [appointments, todayStr]);
+  }, [appointments, todayStr, clinicDayCutoffMinutes]);
 
   // ── مزامنة bookingConfig (today + upcoming + completed) لكل الفروع ──
   // Hook مستخرج بيتولى بناء المصفوفات الـ 3 + الـ sync effects (~200 سطر).
@@ -675,6 +662,7 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     bookingSecrets: branchBookingSecrets,
     allAppointmentsAcrossBranches,
     todayStr,
+    clinicDayCutoffMinutes,
     branchIds,
   });
 
@@ -690,5 +678,6 @@ export const useMainAppAppointments = ({ userId, userEmail, records, pathname, s
     secretaryEntryRequest, setSecretaryEntryRequest,
     showPushPrompt, pushEnableSuccessMessage, handleEnablePushNotifications, todayAppointmentsCount, dashboardStats,
     todayStr,
+    clinicDayCutoffMinutes,
   };
 };

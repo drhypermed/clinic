@@ -23,6 +23,13 @@ import { computePaymentBreakdownForBasePrice } from '../../../../utils/paymentDi
 import { formatMonthLabel } from '../../utils/formatters';
 import type { DailyFinancialData, MonthlyFinancialData } from '../../../../services/financial-data';
 import { asTimestamp, type ConsultationVisit } from './collectConsultationVisits';
+import {
+    addToDirectPaymentTotals,
+    createEmptyDirectPaymentTotals,
+    summarizeDirectRevenueByMethod,
+    type DirectPaymentTotals,
+} from '../../../../utils/paymentMethods';
+import { type ExpenseBreakdown } from '../../utils/expenseBreakdown';
 
 interface BuildYearlyStatsInput {
     records: PatientRecord[];
@@ -71,6 +78,8 @@ export const buildYearlyStats = ({
         let monthInt = 0;
         let monthOther = 0;
         let monthDailyExpenses = 0;
+        let monthInsuranceClaims = 0;
+        const monthDirectPaymentTotals = createEmptyDirectPaymentTotals();
 
         for (let d = 1; d <= lastDayOfMonth; d++) {
             const dayKey = `${selectedYear}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -91,6 +100,17 @@ export const buildYearlyStats = ({
                 monthOther += (Number(entry?.otherRevenue) || 0) + extrasSummary.other;
                 monthDailyExpenses += Number(entry?.dailyExpense) || 0;
             }
+            const directRevenueTotal = dayKey === selectedDayKey
+                ? (parseFloat(dailyInterventions) || 0) + (parseFloat(dailyOther) || 0)
+                : (Number(entry?.interventionsRevenue) || 0) + (Number(entry?.otherRevenue) || 0);
+            const dayDirectPaymentTotals = summarizeDirectRevenueByMethod(
+                directRevenueTotal,
+                entry?.cashCostItems,
+            );
+            (Object.keys(monthDirectPaymentTotals) as Array<keyof DirectPaymentTotals>).forEach((type) => {
+                monthDirectPaymentTotals[type] += dayDirectPaymentTotals[type];
+            });
+            monthInsuranceClaims += extrasSummary.total;
         }
 
         const monthlyEntry = yearlyMonthlyMap[mKey];
@@ -125,6 +145,8 @@ export const buildYearlyStats = ({
             });
             monthExamIncome += breakdown.billedIncome;
             monthDiscountExpense += breakdown.discountAmount;
+            addToDirectPaymentTotals(monthDirectPaymentTotals, record.paymentType, breakdown.collectedCash);
+            monthInsuranceClaims += breakdown.insuranceClaims;
         });
 
         consultationVisits.forEach((visit) => {
@@ -145,9 +167,20 @@ export const buildYearlyStats = ({
             });
             monthConsultIncome += breakdown.billedIncome;
             monthDiscountExpense += breakdown.discountAmount;
+            addToDirectPaymentTotals(monthDirectPaymentTotals, visit.paymentType, breakdown.collectedCash);
+            monthInsuranceClaims += breakdown.insuranceClaims;
         });
 
         const monthExpenses = mRent + mSalaries + mTools + mElectricity + mOtherExp + monthDailyExpenses + monthDiscountExpense;
+        const expenseBreakdown: ExpenseBreakdown = {
+            rent: mRent,
+            salaries: mSalaries,
+            tools: mTools,
+            electricity: mElectricity,
+            daily: monthDailyExpenses,
+            other: mOtherExp,
+            discounts: monthDiscountExpense,
+        };
 
         months.push({
             month: m,
@@ -160,6 +193,9 @@ export const buildYearlyStats = ({
             otherRevenue: monthOther,
             expenses: monthExpenses,
             income: monthExamIncome + monthConsultIncome + monthInt + monthOther,
+            directPaymentTotals: monthDirectPaymentTotals,
+            insuranceClaims: monthInsuranceClaims,
+            expenseBreakdown,
         });
     }
 

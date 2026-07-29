@@ -1,8 +1,8 @@
 import React from 'react';
 import type { ClinicAppointment } from '../../types';
-import { toLocalDateStr } from './utils';
 import { isConsultationAppointment } from '../../utils/appointmentType';
 import { formatUserTime } from '../../utils/cairoTime';
+import { getClinicDayKey } from '../../utils/clinicWorkday';
 import { PatientContactActions } from '../common/PatientContactActions';
 import { SecretaryVitalsPills } from '../common/SecretaryVitalsPills';
 import { FirstVisitBadge } from './FirstVisitBadge';
@@ -18,6 +18,7 @@ interface AppointmentCardPendingProps {
   doctorSpecialty?: string;
   now: number;
   todayStr: string;
+  clinicDayCutoffMinutes: number;
   queueOrder?: number;
   approvedEntryAppointmentIds: string[];
   sentEntryForIds: Set<string>;
@@ -46,13 +47,14 @@ const getSourceBadge = (source?: ClinicAppointment['source']) => {
 // ─ React.memo: قائمة المواعيد طويلة (10-50 موعد) في صفحة المواعيد، وكل re-render
 //   كان يعيد render كل البطاقات. الـmemo يخفّض ده لـbatches خفيفة.
 const AppointmentCardPendingComponent: React.FC<AppointmentCardPendingProps> = ({
-  apt, patientFileNumber, doctorId, now, todayStr, queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
+  apt, patientFileNumber, doctorId, now, todayStr, clinicDayCutoffMinutes,
+  queueOrder, approvedEntryAppointmentIds, sentEntryForIds,
   secretaryApprovedEntryIds, secretaryEntryAlertResponse, entrySendingId,
   onSendEntryRequest, onOpenExam, onOpenConsultation, onEditAppointment, onRemoveAppointment,
 }) => {
   const aptTime = new Date(apt.dateTime).getTime();
   const isPast = aptTime < now;
-  const isToday = toLocalDateStr(new Date(apt.dateTime)) === todayStr;
+  const isToday = getClinicDayKey(apt.dateTime, clinicDayCutoffMinutes) === todayStr;
   const isConsultation = isConsultationAppointment(apt);
   const typeLabel = isConsultation ? 'استشارة' : 'كشف';
   const normalizedDiscountAmount = Number(apt.discountAmount || 0) || 0;

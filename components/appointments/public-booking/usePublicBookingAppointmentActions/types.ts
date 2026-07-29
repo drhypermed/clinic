@@ -54,6 +54,8 @@ export type UsePublicBookingAppointmentActionsParams = {
     pregnant: boolean | null;
     breastfeeding: boolean | null;
     dateStr: string;
+    currentDayStr: string;
+    clinicDayCutoffMinutes: number;
     timeStr: string;
     visitReason: string;
     secretaryVitals: SecretaryVitalsInput;

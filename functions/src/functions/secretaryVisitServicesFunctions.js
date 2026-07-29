@@ -11,6 +11,7 @@ const { normalizePatientNameForFile } = require('./statsCounterHelpers');
 
 module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
   const directPaymentTypes = new Set(['cash', 'instapay', 'wallet', 'bank_transfer']);
+  const isClinicDayKey = (value) => /^\d{4}-\d{2}-\d{2}$/.test(normalizeText(value));
 
   const branchDocKey = (key, branchId) =>
     !branchId || branchId === DEFAULT_BRANCH_ID ? key : `${branchId}__${key}`;
@@ -236,9 +237,31 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       || context.appointment.dateTime
       || Date.now()
     );
-    const dateKey = getCairoDateKey(
+    const recordId = normalizeText(context.appointment.recordId);
+    const recordSnap = recordId
+      ? await context.db
+          .collection('users')
+          .doc(context.userId)
+          .collection('records')
+          .doc(recordId)
+          .get()
+      : null;
+    const recordData = recordSnap?.exists ? recordSnap.data() || {} : {};
+    const storedClinicDayKey = isClinicDayKey(context.appointment.clinicDayKey)
+      ? normalizeText(context.appointment.clinicDayKey)
+      : (isClinicDayKey(recordData.clinicDayKey) ? normalizeText(recordData.clinicDayKey) : '');
+    // Existing visits keep their stored operational day. Legacy visits fall back
+    // to their original Cairo calendar date so a later setting change never moves them.
+    const dateKey = storedClinicDayKey || getCairoDateKey(
       Number.isNaN(appointmentDate.getTime()) ? new Date() : appointmentDate
     );
+    const storedCutoff = Number(
+      context.appointment.clinicDayCutoffMinutes
+      ?? recordData.clinicDayCutoffMinutes
+    );
+    const clinicDayCutoffMinutes = Number.isFinite(storedCutoff)
+      ? Math.max(0, Math.min(1439, Math.round(storedCutoff)))
+      : undefined;
     const refs = getRefs(context, identity, dateKey);
     const now = Date.now();
     const itemId = `ci_${now}_${Math.random().toString(36).slice(2, 9)}`;
@@ -285,6 +308,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
           addedByRole: 'secretary',
           addedByName: secretaryName,
           financialStatus: 'pending',
+          ...(clinicDayCutoffMinutes !== undefined ? { clinicDayCutoffMinutes } : {}),
         };
         const patientData = patientDataSnap.exists ? patientDataSnap.data() || {} : {};
         const pendingItems = Array.isArray(patientData.pendingCostItems)
@@ -412,6 +436,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
         addedByName: secretaryName,
         financialStatus: 'posted',
         postedAt: now,
+        ...(clinicDayCutoffMinutes !== undefined ? { clinicDayCutoffMinutes } : {}),
       };
       const updatedPatientItems = [...costItems.filter((entry) => entry?.id !== itemId), item];
 
@@ -496,6 +521,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
         patientFileId: identity.patientFileId,
         patientFileNumber,
         patientFileNameKey: identity.patientFileNameKey,
+        clinicDayKey: dateKey,
+        ...(clinicDayCutoffMinutes !== undefined ? { clinicDayCutoffMinutes } : {}),
         ...buildAppointmentSummary(updatedPatientItems, context.appointmentId, now),
       }, { merge: true });
 

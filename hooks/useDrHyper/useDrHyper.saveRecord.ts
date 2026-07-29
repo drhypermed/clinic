@@ -34,6 +34,7 @@ import {
   syncPatientIdentityAfterSave,
 } from './useDrHyper.saveRecord.patientFile';
 import {
+  getPersistedClinicDayMetadata,
   getPersistedBranchId,
   getPersistedServiceBasePrice,
   resolveCurrentServicePrices,
@@ -41,6 +42,7 @@ import {
 import { runPreSaveQuotaCheck } from './useDrHyper.saveRecord.quotaCheck';
 import { buildPaymentPayload } from './useDrHyper.saveRecord.paymentPayload';
 import { normalizePatientAddress } from '../../utils/patientAddress';
+import { getClinicDayKey } from '../../utils/clinicWorkday';
 
 // يجد تاريخ الكشف المصدر من قائمة السجلات — لحفظ sourceExamDate صراحةً
 const findSourceExamDate = (records: PatientRecord[], sourceExamRecordId: string): string | undefined => {
@@ -245,8 +247,13 @@ export const createSaveRecordAction = ({
     const shouldSaveAsConsultation = visitType === 'consultation';
 
     // ─── جلب الأسعار الحالية (helper مستخرج) ───────────────────────────
-    const { examPrice: resolvedExamServicePrice, consultationPrice: resolvedConsultServicePrice } =
+    const {
+      examPrice: resolvedExamServicePrice,
+      consultationPrice: resolvedConsultServicePrice,
+      clinicDayCutoffMinutes: resolvedClinicDayCutoffMinutes,
+    } =
       await resolveCurrentServicePrices(user.uid, activeBranchId);
+    const resolvedClinicDayKey = getClinicDayKey(visitIso, resolvedClinicDayCutoffMinutes);
     const resolvedServiceBasePrice = shouldSaveAsConsultation
       ? resolvedConsultServicePrice
       : resolvedExamServicePrice;
@@ -343,6 +350,8 @@ export const createSaveRecordAction = ({
       ...clinicalPayload,
       date: visitIso,
       dateMs: visitDateMs,
+      clinicDayKey: resolvedClinicDayKey,
+      clinicDayCutoffMinutes: resolvedClinicDayCutoffMinutes,
       branchId: activeBranchId || DEFAULT_BRANCH_ID,
       ...paymentPayload,
       serviceBasePrice: Number.isFinite(Number(resolvedServiceBasePrice))
@@ -354,10 +363,20 @@ export const createSaveRecordAction = ({
     const currentHash = JSON.stringify({ ...currentData, __visitType: visitType });
     if (currentHash === lastSavedHash) {
       showNotification('لا توجد تغييرات جديدة ليتم حفظها في سجلات المرضى', 'info', e);
+      const existingClinicDay = activeRecordId
+        ? await getPersistedClinicDayMetadata(user.uid, activeRecordId)
+            .catch(() => ({
+              clinicDayKey: undefined,
+              clinicDayCutoffMinutes: undefined,
+            }))
+        : {};
       return {
         ok: false,
         reason: 'no-changes',
         recordId: String(activeRecordId || '').trim() || undefined,
+        clinicDayKey: existingClinicDay.clinicDayKey || resolvedClinicDayKey,
+        clinicDayCutoffMinutes:
+          existingClinicDay.clinicDayCutoffMinutes ?? resolvedClinicDayCutoffMinutes,
       };
     }
 
@@ -398,6 +417,8 @@ export const createSaveRecordAction = ({
 
     try {
       let savedRecordId: string | undefined;
+      let savedClinicDayKey = resolvedClinicDayKey;
+      let savedClinicDayCutoffMinutes = resolvedClinicDayCutoffMinutes;
 
       // ─── حل مرجع ملف المريض (helper مستخرج) ───────────────────────────
       const patientFileReference = await resolvePatientFileReference({
@@ -530,6 +551,9 @@ export const createSaveRecordAction = ({
         const persistedConsultationBranchId = isEditingExistingConsultationRecord
           ? await getPersistedBranchId(user.uid, consultationDocId)
           : undefined;
+        const persistedConsultationClinicDay = isEditingExistingConsultationRecord
+          ? await getPersistedClinicDayMetadata(user.uid, consultationDocId)
+          : {};
 
         // نجيب تاريخ الكشف الأصلي لحفظه صراحةً — بيحمي العرض لو الكشف في branch مختلف
         const resolvedSourceExamDate = findSourceExamDate(records, sourceExamRecordId);
@@ -551,6 +575,10 @@ export const createSaveRecordAction = ({
           vitals,
           date: visitIso,
           dateMs: visitDateMs,
+          clinicDayKey: persistedConsultationClinicDay.clinicDayKey || resolvedClinicDayKey,
+          clinicDayCutoffMinutes:
+            persistedConsultationClinicDay.clinicDayCutoffMinutes
+            ?? resolvedClinicDayCutoffMinutes,
           ...clinicalPayload,
           isConsultationOnly: true,
           branchId: persistedConsultationBranchId || activeBranchId || DEFAULT_BRANCH_ID,
@@ -564,6 +592,11 @@ export const createSaveRecordAction = ({
               ? Number(resolvedConsultServicePrice)
               : undefined,
         }) as Record<string, unknown>;
+        savedClinicDayKey =
+          persistedConsultationClinicDay.clinicDayKey || resolvedClinicDayKey;
+        savedClinicDayCutoffMinutes =
+          persistedConsultationClinicDay.clinicDayCutoffMinutes
+          ?? resolvedClinicDayCutoffMinutes;
         const consultationWritePayload = {
           ...consultationUpdate,
           ...(isConvertingExamToConsultation
@@ -618,13 +651,25 @@ export const createSaveRecordAction = ({
           activeRecordId,
         );
         const persistedExamBranchId = await getPersistedBranchId(user.uid, activeRecordId);
+        const persistedExamClinicDay = await getPersistedClinicDayMetadata(
+          user.uid,
+          activeRecordId,
+        );
         const updatePayload = {
           ...payload,
           serviceBasePrice: Number.isFinite(Number(persistedExamServiceBasePrice))
             ? Number(persistedExamServiceBasePrice)
             : payload.serviceBasePrice,
           branchId: persistedExamBranchId || payload.branchId,
+          clinicDayKey: persistedExamClinicDay.clinicDayKey || payload.clinicDayKey,
+          clinicDayCutoffMinutes:
+            persistedExamClinicDay.clinicDayCutoffMinutes
+            ?? payload.clinicDayCutoffMinutes,
         };
+        savedClinicDayKey = String(updatePayload.clinicDayKey || resolvedClinicDayKey);
+        savedClinicDayCutoffMinutes = Number(
+          updatePayload.clinicDayCutoffMinutes ?? resolvedClinicDayCutoffMinutes,
+        );
 
         await commitFirestoreWrite(
           () => setDoc(
@@ -765,7 +810,12 @@ export const createSaveRecordAction = ({
 
       setActiveVisitDateTime(visitIso);
       setLastSavedHash(currentHash);
-      return { ok: true, recordId: savedRecordId };
+      return {
+        ok: true,
+        recordId: savedRecordId,
+        clinicDayKey: savedClinicDayKey,
+        clinicDayCutoffMinutes: savedClinicDayCutoffMinutes,
+      };
     } catch (error: unknown) {
       console.error('Error saving record:', error);
       const friendly = 'حدث خطأ أثناء الحفظ. يرجى التحقق من اتصال الإنترنت';

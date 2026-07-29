@@ -32,6 +32,13 @@ import { InsuranceCompaniesSection } from './components/InsuranceCompaniesSectio
 import { DiscountReasonsSection } from './components/DiscountReasonsSection';
 import { InsuranceClaimsSection } from './components/InsuranceClaimsSection';
 import { SnapshotRecalculateButton } from './components/SnapshotRecalculateButton';
+import { ClinicDaySettingsSection } from './components/ClinicDaySettingsSection';
+import {
+    DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+    formatClinicCutoffArabic,
+    getClinicDayKey,
+    normalizeClinicDayCutoffMinutes,
+} from '../../utils/clinicWorkday';
 
 // الخصائص | Props
 
@@ -143,10 +150,27 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
     );
 
     // التنقل | Navigation
-    const navigation = useFinancialNavigation();
+    const [clinicDayCutoffMinutes, setClinicDayCutoffMinutes] = React.useState(
+        DEFAULT_CLINIC_DAY_CUTOFF_MINUTES,
+    );
+    const navigation = useFinancialNavigation(clinicDayCutoffMinutes);
 
     // السنة المحددة | Selected Year
-    const [selectedYear, setSelectedYear] = React.useState<number>(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = React.useState<number>(
+        () => Number(getClinicDayKey(new Date(), DEFAULT_CLINIC_DAY_CUTOFF_MINUTES).slice(0, 4)),
+    );
+    const previousCurrentClinicYearRef = React.useRef(
+        Number(navigation.currentDateKey.slice(0, 4)),
+    );
+    React.useEffect(() => {
+        const nextCurrentYear = Number(navigation.currentDateKey.slice(0, 4));
+        setSelectedYear((previousSelectedYear) => (
+            previousSelectedYear === previousCurrentClinicYearRef.current
+                ? nextCurrentYear
+                : previousSelectedYear
+        ));
+        previousCurrentClinicYearRef.current = nextCurrentYear;
+    }, [navigation.currentDateKey]);
     const [completeRecordMonthKeys, setCompleteRecordMonthKeys] = React.useState<string[]>([]);
 
     React.useEffect(() => {
@@ -177,8 +201,12 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
             for (const year of yearsToFetch) {
                 const startMs = new Date(year, 0, 1, 0, 0, 0, 0).getTime();
                 const endMs = new Date(year + 1, 0, 1, 0, 0, 0, 0).getTime() - 1;
-                void onFetchRecordsByDateRange(startMs, endMs).then((fetchedCount) => {
-                    if (!cancelled) markCompleteRecordRange(startMs, endMs, fetchedCount);
+                const expandedStartMs = startMs - 86_400_000;
+                const expandedEndMs = endMs + 86_400_000;
+                void onFetchRecordsByDateRange(expandedStartMs, expandedEndMs).then((fetchedCount) => {
+                    if (!cancelled) {
+                        markCompleteRecordRange(expandedStartMs, expandedEndMs, fetchedCount);
+                    }
                 }).catch(() => {});
             }
             return () => { cancelled = true; };
@@ -207,13 +235,20 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
     });
 
     // تحميل الأسعار الثابتة (غير شهرية)
-    const [fixedPrices, setFixedPrices] = React.useState<{ examinationPrice?: string; consultationPrice?: string; updatedAt?: number }>({});
+    const [fixedPrices, setFixedPrices] = React.useState<{
+        examinationPrice?: string;
+        consultationPrice?: string;
+        clinicDayCutoffMinutes?: number;
+        clinicDaySettingsUpdatedAt?: number;
+        updatedAt?: number;
+    }>({});
     const [isSavingPrices, setIsSavingPrices] = React.useState(false);
     const [priceSaveError, setPriceSaveError] = React.useState('');
 
     React.useEffect(() => {
         if (!userId) {
             setFixedPrices({});
+            setClinicDayCutoffMinutes(DEFAULT_CLINIC_DAY_CUTOFF_MINUTES);
             return;
         }
 
@@ -224,8 +259,11 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
             setFixedPrices({
                 examinationPrice: prices.examinationPrice || '',
                 consultationPrice: prices.consultationPrice || '',
+                clinicDayCutoffMinutes: prices.clinicDayCutoffMinutes,
+                clinicDaySettingsUpdatedAt: prices.clinicDaySettingsUpdatedAt,
                 updatedAt: prices.updatedAt,
             });
+            setClinicDayCutoffMinutes(normalizeClinicDayCutoffMinutes(prices.clinicDayCutoffMinutes));
         }).catch(() => {});
 
         const unsubscribe = financialDataService.subscribeToPrices(userId, (prices) => {
@@ -233,8 +271,11 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
             setFixedPrices({
                 examinationPrice: prices.examinationPrice || '',
                 consultationPrice: prices.consultationPrice || '',
+                clinicDayCutoffMinutes: prices.clinicDayCutoffMinutes,
+                clinicDaySettingsUpdatedAt: prices.clinicDaySettingsUpdatedAt,
                 updatedAt: prices.updatedAt,
             });
+            setClinicDayCutoffMinutes(normalizeClinicDayCutoffMinutes(prices.clinicDayCutoffMinutes));
         }, undefined, branchId);
 
         return () => {
@@ -273,6 +314,12 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
         } finally {
             setIsSavingPrices(false);
         }
+    };
+
+    const saveClinicDayCutoff = async (cutoffMinutes: number) => {
+        if (!userId) return;
+        await financialDataService.saveClinicDayCutoff(userId, cutoffMinutes, branchId);
+        setClinicDayCutoffMinutes(normalizeClinicDayCutoffMinutes(cutoffMinutes));
     };
 
     // ─── تحميل maps السنة الإضافية | Extra-Year Maps ──────────────────
@@ -460,7 +507,8 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                 selectedDayStr={navigation.selectedDayKey}
                 onSetDay={navigation.setDayFromString}
                 selectedStatsYear={selectedYear}
-                currentYear={new Date().getFullYear()}
+                currentYear={Number(navigation.currentDateKey.slice(0, 4))}
+                currentDayKey={navigation.currentDateKey}
                 onSetStatsYear={setSelectedYear}
             /></div>
 
@@ -470,6 +518,10 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                 {/* تبويب: اليومي | Daily Tab */}
                 {activeTab === 'daily' && (
                     <>
+                        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-900">
+                            يوم العمل المحدد: {navigation.selectedDayKey} — يبدأ اليوم الجديد الساعة{' '}
+                            {formatClinicCutoffArabic(clinicDayCutoffMinutes)}
+                        </div>
                         <DailyRevenueSection
                             formattedSelectedDay={navigation.formattedSelectedDay}
                             selectedDayKey={navigation.selectedDayKey}
@@ -563,7 +615,6 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             otherLabel={financialData.labels.otherRevenueLabel}
                             otherIncome={stats.monthlyAdditionalRevenue.other}
                             totalIncome={stats.totalIncome}
-                            collectedCash={stats.collectedCash}
                             insuranceClaims={stats.insuranceClaims}
                             directPaymentTotals={stats.directPaymentTotals}
                         />
@@ -596,6 +647,7 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                             currentDateKey={navigation.currentDateKey}
                             onSelectDay={navigation.setSelectedDay}
                             totalMonthlyExpenses={stats.totalExpenses}
+                            monthlyExpenseBreakdown={stats.expenseBreakdown}
                         />
                     </>
                 )}
@@ -605,14 +657,20 @@ export const FinancialReportsPage: React.FC<FinancialReportsPageProps> = ({
                     <YearlyStatsGrid
                         currentYear={selectedYear}
                         yearlyStats={stats.yearlyStats}
-                        currentMonth={new Date().getMonth()}
-                        isCurrentYear={selectedYear === new Date().getFullYear()}
+                        currentMonth={Number(navigation.currentDateKey.slice(5, 7)) - 1}
+                        isCurrentYear={
+                            selectedYear === Number(navigation.currentDateKey.slice(0, 4))
+                        }
                     />
                 )}
 
                 {/* تبويب: الإعدادات | Settings Tab */}
                 {activeTab === 'settings' && (
                     <>
+                        <ClinicDaySettingsSection
+                            cutoffMinutes={clinicDayCutoffMinutes}
+                            onSave={saveClinicDayCutoff}
+                        />
                         <PriceListSection
                             userId={userId}
                             branchId={branchId}
