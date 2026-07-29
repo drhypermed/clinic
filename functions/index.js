@@ -165,6 +165,7 @@ exports.createAppointmentBySecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('
 exports.listRecentExamRecordsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryExamRecordsFunctions', 'listRecentExamRecordsForSecretary'));
 exports.searchPatientsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryPatientSearchFunctions', 'searchPatientsForSecretary'));
 exports.listAppointmentsForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryLoginFunctions', 'listAppointmentsForSecretary'));
+exports.listVisitServiceTemplatesForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'listVisitServiceTemplatesForSecretary'));
 exports.listVisitServicesForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'listVisitServicesForSecretary'));
 exports.addVisitServiceForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'addVisitServiceForSecretary'));
 exports.deleteVisitServiceForSecretary = onCall(SECRETARY_CALLABLE_OPTIONS, lazy('./src/functions/secretaryVisitServicesFunctions', 'deleteVisitServiceForSecretary'));

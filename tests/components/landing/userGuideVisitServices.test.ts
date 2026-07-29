@@ -9,6 +9,7 @@ const topicHeadings = (topicId: string) => {
 
 describe('visit services user guide', () => {
   it('places each service-fee explanation under its intended topic', () => {
+    expect(topicHeadings('secretary')).toContain('🧾 إضافة خدمة/رسوم أثناء حجز موعد جديد');
     expect(topicHeadings('prescription')).toContain('🧾 إضافة خدمة/رسوم أثناء الكشف');
     expect(topicHeadings('records')).toContain('هل رسوم الزيارة بتظهر كسجل طبي؟');
     expect(topicHeadings('patientFiles')).toContain('خدمات أضيفت من الكشف أو السكرتارية');

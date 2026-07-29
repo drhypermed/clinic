@@ -31,6 +31,7 @@ import type {
 } from '../../../types';
 import type { InsuranceCompany } from '../../../services/insuranceService';
 import type { DiscountReason } from '../../../services/discountReasonService';
+import type { VisitServiceDraft } from '../../../services/visit-services/types';
 
 export const usePublicBookingPageState = () => {
   const [config, setConfig] = useState<Config | null>(null);
@@ -70,6 +71,7 @@ export const usePublicBookingPageState = () => {
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [discountReasonId, setDiscountReasonId] = useState('');
   const [discountReasonLabel, setDiscountReasonLabel] = useState('');
+  const [visitServiceDrafts, setVisitServiceDrafts] = useState<VisitServiceDraft[]>([]);
   const [insuranceCompanies, setInsuranceCompanies] = useState<InsuranceCompany[]>([]);
   const [discountReasons, setDiscountReasons] = useState<DiscountReason[]>([]);
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('exam');
@@ -174,6 +176,8 @@ export const usePublicBookingPageState = () => {
     setDiscountReasonId,
     discountReasonLabel,
     setDiscountReasonLabel,
+    visitServiceDrafts,
+    setVisitServiceDrafts,
     insuranceCompanies,
     setInsuranceCompanies,
     discountReasons,

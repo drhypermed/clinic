@@ -9,8 +9,21 @@ const firestoreMock = vi.hoisted(() => ({
   markPublicUserBookingCompleted: vi.fn(),
 }));
 
+const visitServicesMock = vi.hoisted(() => ({
+  getActiveVisitServiceScope: vi.fn(),
+  finalizePendingVisitServices: vi.fn(),
+}));
+
 vi.mock('../../../../services/firestore', () => ({
   firestoreService: firestoreMock,
+}));
+
+vi.mock('../../../../services/visit-services/activeVisitServiceScope', () => ({
+  getActiveVisitServiceScope: visitServicesMock.getActiveVisitServiceScope,
+}));
+
+vi.mock('../../../../services/visit-services/doctorVisitServicesService', () => ({
+  finalizePendingVisitServices: visitServicesMock.finalizePendingVisitServices,
 }));
 
 const emptyVitals: VitalSigns = {
@@ -72,6 +85,10 @@ describe('useAppointmentSyncOnSave', () => {
     firestoreMock.markPublicUserBookingCompleted.mockReset();
     firestoreMock.saveAppointment.mockResolvedValue(undefined);
     firestoreMock.markPublicUserBookingCompleted.mockResolvedValue(undefined);
+    visitServicesMock.getActiveVisitServiceScope.mockReset();
+    visitServicesMock.finalizePendingVisitServices.mockReset();
+    visitServicesMock.getActiveVisitServiceScope.mockReturnValue(null);
+    visitServicesMock.finalizePendingVisitServices.mockResolvedValue(0);
   });
 
   it('marks a consultation appointment completed even when the record has no new changes', async () => {
@@ -102,6 +119,62 @@ describe('useAppointmentSyncOnSave', () => {
     await result.current.handleSaveRecordWithAppointmentSync();
 
     expect(firestoreMock.saveAppointment).not.toHaveBeenCalled();
+    expect(visitServicesMock.finalizePendingVisitServices).not.toHaveBeenCalled();
+  });
+
+  it('posts pending services only after the medical record saves successfully', async () => {
+    visitServicesMock.getActiveVisitServiceScope.mockReturnValue({
+      visitId: 'apt-1',
+      patientFileId: 'patient-file-1',
+      appointmentId: 'apt-1',
+      branchId: 'main',
+    });
+    const args = buildArgs({
+      handleSaveRecord: vi.fn(async () => ({ ok: true, recordId: 'record-1' })),
+    });
+
+    const { result } = renderHook(() => useAppointmentSyncOnSave(args));
+    await result.current.handleSaveRecordWithAppointmentSync();
+
+    expect(visitServicesMock.finalizePendingVisitServices).toHaveBeenCalledTimes(1);
+    expect(visitServicesMock.finalizePendingVisitServices).toHaveBeenCalledWith({
+      userId: 'doctor-1',
+      branchId: 'main',
+      patientFileId: 'patient-file-1',
+      visitId: 'apt-1',
+      appointmentId: 'apt-1',
+      recordId: 'record-1',
+    });
+    expect(
+      visitServicesMock.finalizePendingVisitServices.mock.invocationCallOrder[0],
+    ).toBeLessThan(firestoreMock.saveAppointment.mock.invocationCallOrder[0]);
+  });
+
+  it('keeps the appointment open when service posting fails so saving can retry', async () => {
+    const setOpenedAppointmentContext = vi.fn();
+    const showNotification = vi.fn();
+    visitServicesMock.getActiveVisitServiceScope.mockReturnValue({
+      visitId: 'apt-1',
+      patientFileId: 'patient-file-1',
+      appointmentId: 'apt-1',
+    });
+    visitServicesMock.finalizePendingVisitServices.mockRejectedValueOnce(new Error('offline'));
+
+    const args = buildArgs({
+      setOpenedAppointmentContext,
+      showNotification,
+      handleSaveRecord: vi.fn(async () => ({ ok: true, recordId: 'record-1' })),
+    });
+    const { result } = renderHook(() => useAppointmentSyncOnSave(args));
+    await result.current.handleSaveRecordWithAppointmentSync();
+
+    expect(firestoreMock.saveAppointment).not.toHaveBeenCalled();
+    expect(setOpenedAppointmentContext).not.toHaveBeenCalled();
+    expect(showNotification).toHaveBeenCalledWith(
+      expect.stringContaining('ستظل معلّقة'),
+      'info',
+      { id: 'visit-services-finalize-pending' },
+    );
   });
 
   it('queues only the selected appointment completion when appointment sync fails', async () => {

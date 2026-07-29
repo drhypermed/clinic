@@ -185,13 +185,29 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       refs.templateRef.get(),
     ]);
     const patientData = patientDataSnap.exists ? patientDataSnap.data() || {} : {};
-    const items = Array.isArray(patientData.costItems)
-      ? patientData.costItems.filter((item) => item?.visitId === context.appointmentId)
-      : [];
+    const items = [
+      ...(Array.isArray(patientData.costItems) ? patientData.costItems : []),
+      ...(Array.isArray(patientData.pendingCostItems) ? patientData.pendingCostItems : []),
+    ].filter((item) => item?.visitId === context.appointmentId);
     const templateData = templateSnap.exists ? templateSnap.data() || {} : {};
     return {
       items,
       templates: normalizeTemplates(templateData.items),
+    };
+  };
+
+  const listVisitServiceTemplatesForSecretary = async (request) => {
+    const context = await authorize(request);
+    const templateRef = context.db
+      .collection('users')
+      .doc(context.userId)
+      .collection('financialData')
+      .doc(branchDocKey('serviceTemplates', context.branchId));
+    const templateSnap = await templateRef.get();
+    return {
+      templates: normalizeTemplates(
+        templateSnap.exists ? (templateSnap.data() || {}).items : []
+      ),
     };
   };
 
@@ -227,6 +243,121 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     const now = Date.now();
     const itemId = `ci_${now}_${Math.random().toString(36).slice(2, 9)}`;
     const templateId = saveAsTemplate ? buildTemplateId(type, normalizedName) : '';
+    const appointmentCompleted =
+      Boolean(normalizeText(context.appointment.examCompletedAt))
+      || Boolean(normalizeText(context.appointment.recordId));
+
+    if (!appointmentCompleted) {
+      return context.db.runTransaction(async (transaction) => {
+        const [appointmentSnap, patientDataSnap, templateSnap] = await Promise.all([
+          transaction.get(context.appointmentRef),
+          transaction.get(refs.patientDataRef),
+          transaction.get(refs.templateRef),
+        ]);
+        if (!appointmentSnap.exists) throw new HttpsError('not-found', 'APPOINTMENT_NOT_FOUND');
+        const freshAppointment = appointmentSnap.data() || {};
+        const freshBranchId = normalizeText(freshAppointment.branchId) || DEFAULT_BRANCH_ID;
+        if (freshBranchId !== context.branchId) {
+          throw new HttpsError('permission-denied', 'APPOINTMENT_BRANCH_MISMATCH');
+        }
+        const becameCompleted =
+          Boolean(normalizeText(freshAppointment.examCompletedAt))
+          || Boolean(normalizeText(freshAppointment.recordId));
+        if (becameCompleted) {
+          throw new HttpsError('aborted', 'APPOINTMENT_COMPLETED_RETRY');
+        }
+
+        const item = {
+          id: itemId,
+          patientFileId: identity.patientFileId,
+          patientName: identity.patientName,
+          amount,
+          type,
+          dateKey,
+          note: serviceName,
+          serviceName,
+          ...(templateId ? { serviceTemplateId: templateId } : {}),
+          paymentType,
+          createdAt: now,
+          branchId: context.branchId,
+          visitId: context.appointmentId,
+          source: 'secretary_appointment',
+          addedByRole: 'secretary',
+          addedByName: secretaryName,
+          financialStatus: 'pending',
+        };
+        const patientData = patientDataSnap.exists ? patientDataSnap.data() || {} : {};
+        const pendingItems = Array.isArray(patientData.pendingCostItems)
+          ? patientData.pendingCostItems
+          : [];
+        const postedItems = Array.isArray(patientData.costItems) ? patientData.costItems : [];
+        const updatedPendingItems = [...pendingItems.filter((entry) => entry?.id !== itemId), item];
+
+        const templates = normalizeTemplates(
+          templateSnap.exists ? (templateSnap.data() || {}).items : []
+        );
+        let updatedTemplates = templates;
+        if (saveAsTemplate && templateId) {
+          const existingTemplate = templates.find(
+            (entry) => entry.type === type && entry.normalizedName === normalizedName
+          );
+          const template = existingTemplate
+            ? {
+                ...existingTemplate,
+                usageCount: existingTemplate.usageCount + 1,
+                updatedAt: now,
+                lastUsedAt: now,
+                active: true,
+              }
+            : {
+                id: templateId,
+                name: serviceName,
+                normalizedName,
+                type,
+                defaultPrice: amount,
+                branchId: context.branchId,
+                active: true,
+                usageCount: 1,
+                createdAt: now,
+                updatedAt: now,
+                lastUsedAt: now,
+                createdByRole: 'secretary',
+                createdByName: secretaryName,
+              };
+          updatedTemplates = [
+            ...templates.filter((entry) => entry.id !== template.id),
+            template,
+          ];
+          transaction.set(refs.templateRef, {
+            items: updatedTemplates,
+            updatedAt: now,
+          }, { merge: true });
+        }
+
+        transaction.set(refs.patientDataRef, {
+          pendingCostItems: updatedPendingItems,
+          updatedAt: now,
+        }, { merge: true });
+        transaction.set(context.appointmentRef, {
+          patientFileId: identity.patientFileId,
+          patientFileNameKey: identity.patientFileNameKey,
+          ...buildAppointmentSummary(
+            [...postedItems, ...updatedPendingItems],
+            context.appointmentId,
+            now
+          ),
+          serviceChargesStatus: 'pending',
+        }, { merge: true });
+
+        return {
+          items: [
+            ...postedItems,
+            ...updatedPendingItems,
+          ].filter((entry) => entry?.visitId === context.appointmentId),
+          templates: updatedTemplates,
+        };
+      });
+    }
 
     const transactionResult = await context.db.runTransaction(async (transaction) => {
       const [
@@ -279,6 +410,8 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
         source: 'secretary_appointment',
         addedByRole: 'secretary',
         addedByName: secretaryName,
+        financialStatus: 'posted',
+        postedAt: now,
       };
       const updatedPatientItems = [...costItems.filter((entry) => entry?.id !== itemId), item];
 
@@ -396,6 +529,37 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
       if (!patientDataSnap.exists) return [];
       const patientData = patientDataSnap.data() || {};
       const costItems = Array.isArray(patientData.costItems) ? patientData.costItems : [];
+      const pendingItems = Array.isArray(patientData.pendingCostItems)
+        ? patientData.pendingCostItems
+        : [];
+      const pendingTarget = pendingItems.find(
+        (entry) => entry?.id === itemId && entry?.visitId === context.appointmentId
+      );
+      if (pendingTarget) {
+        const appointmentSnap = await transaction.get(context.appointmentRef);
+        const updatedPendingItems = pendingItems.filter((entry) => entry?.id !== itemId);
+        const now = Date.now();
+        transaction.set(patientDataRef, {
+          pendingCostItems: updatedPendingItems,
+          updatedAt: now,
+        }, { merge: true });
+        if (appointmentSnap.exists) {
+          transaction.set(context.appointmentRef, {
+            ...buildAppointmentSummary(
+              [...costItems, ...updatedPendingItems],
+              context.appointmentId,
+              now
+            ),
+            serviceChargesStatus: updatedPendingItems.some(
+              (entry) => entry?.visitId === context.appointmentId
+            ) ? 'pending' : 'posted',
+          }, { merge: true });
+        }
+        return [
+          ...costItems,
+          ...updatedPendingItems,
+        ].filter((entry) => entry?.visitId === context.appointmentId);
+      }
       const target = costItems.find(
         (entry) => entry?.id === itemId && entry?.visitId === context.appointmentId
       );
@@ -448,6 +612,7 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
   };
 
   return {
+    listVisitServiceTemplatesForSecretary,
     listVisitServicesForSecretary,
     addVisitServiceForSecretary,
     deleteVisitServiceForSecretary,

@@ -36,6 +36,10 @@ import {
     syncAppointmentRecordTask,
 } from '../../../services/appointmentRecordSyncService';
 import { buildAgeTextFromParts } from './helpers';
+import {
+    getActiveVisitServiceScope,
+} from '../../../services/visit-services/activeVisitServiceScope';
+import { finalizePendingVisitServices } from '../../../services/visit-services/doctorVisitServicesService';
 
 interface UseAppointmentSyncOnSaveArgs {
     userId: string;
@@ -242,8 +246,34 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
 
     const handleSaveRecordWithAppointmentSync = React.useCallback(async (e?: React.MouseEvent<any>) => {
         const saveResult = await handleSaveRecord(e);
-        if (!openedAppointmentContext) return;
-        if (!saveResult?.ok && saveResult?.reason !== 'no-changes') return;
+        if (!saveResult?.ok && saveResult?.reason !== 'no-changes') return saveResult;
+
+        const activeServiceScope = getActiveVisitServiceScope(userId);
+        if (activeServiceScope?.visitId) {
+            try {
+                await finalizePendingVisitServices({
+                    userId,
+                    branchId: activeServiceScope.branchId,
+                    patientFileId:
+                        activeServiceScope.patientFileId
+                        || String(activePatientFileId || '').trim(),
+                    visitId: activeServiceScope.visitId,
+                    appointmentId:
+                        activeServiceScope.appointmentId
+                        || openedAppointmentContext?.id,
+                    recordId: saveResult?.recordId,
+                });
+            } catch {
+                showNotification(
+                    'تم حفظ السجل، لكن تعذر ترحيل الخدمات والرسوم الآن. ستظل معلّقة ويمكن إعادة الحفظ للمحاولة مرة أخرى.',
+                    'info',
+                    { id: 'visit-services-finalize-pending' },
+                );
+                return saveResult;
+            }
+        }
+
+        if (!openedAppointmentContext) return saveResult;
 
         try {
             await syncOpenedAppointmentAfterRecordSave(saveResult?.recordId);
@@ -251,7 +281,15 @@ export const useAppointmentSyncOnSave = (args: UseAppointmentSyncOnSaveArgs) => 
             console.error('Record saved but appointment sync failed:', error);
             showNotification('تم حفظ السجل، وسيُعاد مزامنة الموعد المنفذ تلقائياً عند توفر الاتصال.', 'info', { id: 'appointment-sync-after-save' });
         }
-    }, [handleSaveRecord, openedAppointmentContext, showNotification, syncOpenedAppointmentAfterRecordSave]);
+        return saveResult;
+    }, [
+        activePatientFileId,
+        handleSaveRecord,
+        openedAppointmentContext,
+        showNotification,
+        syncOpenedAppointmentAfterRecordSave,
+        userId,
+    ]);
 
     return {
         syncOpenedAppointmentAfterRecordSave,

@@ -25,6 +25,7 @@ import type {
 } from '../../../../types';
 import type { TodayAppointment } from '../types';
 import { callWithSessionRetry } from './sessionHelpers';
+import type { VisitServiceDraft } from '../../../../services/visit-services/types';
 
 /** تحقق هل تاريخ ISO يساوي نفس اليوم المحلي */
 export const isSameLocalDay = (dateTime: string, dayStr: string, toLocalDateStr: (date: Date) => string): boolean => {
@@ -92,6 +93,8 @@ interface SubmitAppointmentInput {
     gender?: PatientGender;
     pregnant?: boolean;
     breastfeeding?: boolean;
+    secretaryName?: string;
+    visitServices: VisitServiceDraft[];
 }
 
 type AppointmentPayload = {
@@ -184,6 +187,8 @@ export const submitAppointment = async (input: SubmitAppointmentInput): Promise<
         sessionToken?: string;
         branchId?: string;
         appointment: AppointmentPayload;
+        secretaryName?: string;
+        visitServices: Array<Omit<VisitServiceDraft, 'id'>>;
     }>(functions, 'createAppointmentBySecretary');
 
     const result = await callWithSessionRetry(
@@ -194,6 +199,8 @@ export const submitAppointment = async (input: SubmitAppointmentInput): Promise<
                 sessionToken: currentSessionToken,
                 branchId: input.branchId,
                 appointment: appointmentPayload,
+                secretaryName: input.secretaryName,
+                visitServices: input.visitServices.map(({ id: _id, ...service }) => service),
             }),
         input.resolveCurrentSessionToken
     );
@@ -231,6 +238,8 @@ interface BuildMergedAppointmentInput {
     gender?: PatientGender;
     pregnant?: boolean;
     breastfeeding?: boolean;
+    serviceChargesCount?: number;
+    serviceChargesTotal?: number;
 }
 
 /** بناء TodayAppointment من نتيجة الحفظ لضمه إلى قائمة اليوم محلياً */
@@ -271,5 +280,7 @@ export const buildMergedTodayAppointment = (
     gender: input.gender,
     pregnant: input.pregnant,
     breastfeeding: input.breastfeeding,
+    serviceChargesCount: input.serviceChargesCount,
+    serviceChargesTotal: input.serviceChargesTotal,
 });
 

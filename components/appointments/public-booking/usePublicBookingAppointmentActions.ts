@@ -41,6 +41,7 @@ export const usePublicBookingAppointmentActions = ({
   sessionBranchId,
   onSessionInvalid,
   success,
+  secretaryName,
   patientName,
   age,
   dateOfBirth,
@@ -73,6 +74,7 @@ export const usePublicBookingAppointmentActions = ({
   discountPercent,
   discountReasonId,
   discountReasonLabel,
+  visitServiceDrafts,
   setPaymentType,
   setInsuranceCompanyId,
   setInsuranceCompanyName,
@@ -83,6 +85,7 @@ export const usePublicBookingAppointmentActions = ({
   setDiscountPercent,
   setDiscountReasonId,
   setDiscountReasonLabel,
+  setVisitServiceDrafts,
   setPendingEntryAppointmentId,
   setBookingQuotaNotice,
   setFormError,
@@ -216,6 +219,7 @@ export const usePublicBookingAppointmentActions = ({
   };
 
   const handleEditAppointment = (apt: TodayAppointment) => {
+    setVisitServiceDrafts([]);
     const dt = new Date(apt.dateTime);
     if (Number.isNaN(dt.getTime())) return;
     const pad = (value: number) => String(value).padStart(2, '0');
@@ -398,6 +402,8 @@ export const usePublicBookingAppointmentActions = ({
         gender: genderForPayload,
         pregnant: pregnantForPayload,
         breastfeeding: breastfeedingForPayload,
+        secretaryName,
+        visitServices: visitServiceDrafts,
       });
 
       if (savedAppointmentId) {
@@ -428,6 +434,11 @@ export const usePublicBookingAppointmentActions = ({
           gender: genderForPayload,
           pregnant: pregnantForPayload,
           breastfeeding: breastfeedingForPayload,
+          serviceChargesCount: visitServiceDrafts.length,
+          serviceChargesTotal: visitServiceDrafts.reduce(
+            (sum, item) => sum + (Number(item.amount) || 0),
+            0,
+          ),
         });
         const currentDayStr = toLocalDateStr(new Date());
         const cleanedCurrentDayAppointments = todayAppointments.filter((apt) =>
@@ -471,6 +482,7 @@ export const usePublicBookingAppointmentActions = ({
       setDiscountPercent(0);
       setDiscountReasonId('');
       setDiscountReasonLabel('');
+      setVisitServiceDrafts([]);
       setSuccess(true);
       // 💾 صوت حفظ — تأكيد نجاح (3 نغمات صاعدة)
       void playNotificationCue('appointment_saved');
@@ -525,6 +537,7 @@ export const usePublicBookingAppointmentActions = ({
     setDiscountPercent(0);
     setDiscountReasonId('');
     setDiscountReasonLabel('');
+    setVisitServiceDrafts([]);
   };
 
   useEffect(() => {

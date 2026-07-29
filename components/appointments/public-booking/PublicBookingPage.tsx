@@ -160,6 +160,8 @@ export const PublicBookingPage: React.FC = () => {
     submitting,
     formError,
     bookingQuotaNotice,
+    visitServiceDrafts,
+    setVisitServiceDrafts,
     appointmentType,
     handleAppointmentTypeChange,
     visibleConsultationCandidates,
@@ -502,6 +504,9 @@ export const PublicBookingPage: React.FC = () => {
                 insuranceCompanies={insuranceCompanies}
                 bookingSecret={secret}
                 secretarySessionToken={secretarySessionToken}
+                secretaryName={secretaryNameInput}
+                visitServiceDrafts={visitServiceDrafts}
+                onVisitServiceDraftsChange={setVisitServiceDrafts}
                 userId={secret ? userId : undefined}
                 sessionBranchId={sessionBranchId}
               />

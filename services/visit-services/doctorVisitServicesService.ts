@@ -10,8 +10,6 @@ import {
 import { branchDocKey } from '../financial-data/normalizers';
 import {
   loadCostsFromFirestore,
-  subscribeToPatientFileCosts,
-  type PatientCostItem,
 } from '../patientCostService';
 import type { DirectPaymentType } from '../../utils/paymentMethods';
 import {
@@ -49,6 +47,15 @@ interface DeleteDoctorVisitServiceInput {
   patientFileId: string;
   itemId: string;
   appointmentId?: string;
+}
+
+interface FinalizePendingVisitServicesInput {
+  userId: string;
+  branchId?: string;
+  patientFileId: string;
+  visitId: string;
+  appointmentId?: string;
+  recordId?: string;
 }
 
 const toArray = <T>(value: unknown): T[] => Array.isArray(value) ? value as T[] : [];
@@ -103,9 +110,17 @@ export const subscribeToDoctorVisitServiceItems = (
   patientFileId: string,
   onUpdate: (items: VisitServiceCharge[]) => void,
 ): (() => void) =>
-  subscribeToPatientFileCosts(userId, patientFileId, (costs) => {
-    onUpdate(costs as VisitServiceCharge[]);
-  });
+  onSnapshot(
+    doc(db, 'users', userId, 'patientFileData', patientFileId),
+    (snapshot) => {
+      const data = snapshot.exists() ? snapshot.data() : {};
+      onUpdate([
+        ...toArray<VisitServiceCharge>(data.costItems),
+        ...toArray<VisitServiceCharge>(data.pendingCostItems),
+      ]);
+    },
+    () => onUpdate([]),
+  );
 
 export const addDoctorVisitService = async (
   input: AddDoctorVisitServiceInput,
@@ -144,39 +159,29 @@ export const addDoctorVisitService = async (
     source: 'doctor_new_exam',
     addedByRole: 'doctor',
     addedByName: String(input.actorName || '').trim() || 'الطبيب',
+    financialStatus: 'pending',
   };
 
   const patientRef = doc(db, 'users', input.userId, 'patientFileData', identity.patientFileId);
-  const dailyRef = getDailyRef(input.userId, input.dateKey, branchId);
   const templateRef = getTemplateRef(input.userId, branchId);
   const appointmentRef = input.appointmentId
     ? doc(db, 'users', input.userId, 'appointments', input.appointmentId)
     : null;
 
   await runTransaction(db, async (transaction) => {
-    const [patientSnapshot, dailySnapshot, templateSnapshot, appointmentSnapshot] = await Promise.all([
+    const [patientSnapshot, templateSnapshot, appointmentSnapshot] = await Promise.all([
       transaction.get(patientRef),
-      transaction.get(dailyRef),
       transaction.get(templateRef),
       appointmentRef ? transaction.get(appointmentRef) : Promise.resolve(null),
     ]);
 
     const existingPatientData = patientSnapshot.exists() ? patientSnapshot.data() : {};
-    const costItems = toArray<VisitServiceCharge>(existingPatientData.costItems);
-    const updatedPatientItems = [...costItems.filter((entry) => entry.id !== item.id), item];
-
-    const existingDailyData = dailySnapshot.exists() ? dailySnapshot.data() : {};
-    const dailyItems = toArray<VisitServiceCharge>(existingDailyData.cashCostItems);
-    const updatedDailyItems = [...dailyItems.filter((entry) => entry.id !== item.id), item];
-    const totals = calculateTotals(updatedDailyItems);
+    const pendingItems = toArray<VisitServiceCharge>(existingPatientData.pendingCostItems);
+    const updatedPendingItems = [...pendingItems.filter((entry) => entry.id !== item.id), item];
+    const postedItems = toArray<VisitServiceCharge>(existingPatientData.costItems);
 
     transaction.set(patientRef, {
-      costItems: updatedPatientItems,
-      updatedAt: now,
-    }, { merge: true });
-    transaction.set(dailyRef, {
-      cashCostItems: updatedDailyItems,
-      ...totals,
+      pendingCostItems: updatedPendingItems,
       updatedAt: now,
     }, { merge: true });
 
@@ -221,13 +226,12 @@ export const addDoctorVisitService = async (
         patientFileId: identity.patientFileId,
         patientFileNumber: identity.patientFileNumber,
         patientFileNameKey: identity.patientFileNameKey,
-        ...buildAppointmentSummary(updatedPatientItems, input.appointmentId!),
+        ...buildAppointmentSummary([...postedItems, ...updatedPendingItems], input.appointmentId!),
+        serviceChargesStatus: 'pending',
       }, { merge: true });
     }
   });
 
-  void loadCostsFromFirestore(input.userId, identity.patientFileId);
-  window.dispatchEvent(new Event('financialDataUpdated'));
   return { item, identity };
 };
 
@@ -244,6 +248,31 @@ export const deleteDoctorVisitService = async (
     if (!patientSnapshot.exists()) return;
     const patientData = patientSnapshot.data();
     const costItems = toArray<VisitServiceCharge>(patientData.costItems);
+    const pendingItems = toArray<VisitServiceCharge>(patientData.pendingCostItems);
+    const pendingTarget = pendingItems.find((entry) => entry.id === input.itemId);
+    if (pendingTarget) {
+      const updatedPendingItems = pendingItems.filter((entry) => entry.id !== input.itemId);
+      const appointmentSnapshot = appointmentRef ? await transaction.get(appointmentRef) : null;
+      const now = Date.now();
+      transaction.set(
+        patientRef,
+        { pendingCostItems: updatedPendingItems, updatedAt: now },
+        { merge: true },
+      );
+      if (appointmentRef && appointmentSnapshot?.exists() && input.appointmentId) {
+        transaction.set(
+          appointmentRef,
+          {
+            ...buildAppointmentSummary([...costItems, ...updatedPendingItems], input.appointmentId),
+            serviceChargesStatus: updatedPendingItems.some(
+              (entry) => entry.visitId === input.appointmentId,
+            ) ? 'pending' : 'posted',
+          },
+          { merge: true },
+        );
+      }
+      return;
+    }
     const target = costItems.find((entry) => entry.id === input.itemId);
     if (!target) return;
 
@@ -275,4 +304,84 @@ export const deleteDoctorVisitService = async (
 
   void loadCostsFromFirestore(input.userId, input.patientFileId);
   window.dispatchEvent(new Event('financialDataUpdated'));
+};
+
+export const finalizePendingVisitServices = async (
+  input: FinalizePendingVisitServicesInput,
+): Promise<number> => {
+  const normalizedVisitId = String(input.visitId || '').trim();
+  const normalizedFileId = String(input.patientFileId || '').trim();
+  if (!input.userId || !normalizedVisitId || !normalizedFileId) return 0;
+
+  const patientRef = doc(db, 'users', input.userId, 'patientFileData', normalizedFileId);
+  const appointmentRef = input.appointmentId
+    ? doc(db, 'users', input.userId, 'appointments', input.appointmentId)
+    : null;
+
+  const postedCount = await runTransaction(db, async (transaction) => {
+    const patientSnapshot = await transaction.get(patientRef);
+    if (!patientSnapshot.exists()) return 0;
+    const patientData = patientSnapshot.data();
+    const pendingItems = toArray<VisitServiceCharge>(patientData.pendingCostItems);
+    const matchingPending = pendingItems.filter((entry) => entry.visitId === normalizedVisitId);
+    if (matchingPending.length === 0) return 0;
+
+    const branchId = String(
+      input.branchId || matchingPending[0]?.branchId || 'main',
+    ).trim() || 'main';
+    const dateKey = String(matchingPending[0]?.dateKey || '').trim();
+    if (!dateKey) return 0;
+    const dailyRef = getDailyRef(input.userId, dateKey, branchId);
+    const [dailySnapshot, appointmentSnapshot] = await Promise.all([
+      transaction.get(dailyRef),
+      appointmentRef ? transaction.get(appointmentRef) : Promise.resolve(null),
+    ]);
+    const now = Date.now();
+    const existingPosted = toArray<VisitServiceCharge>(patientData.costItems);
+    const existingIds = new Set(existingPosted.map((entry) => entry.id));
+    const newlyPosted = matchingPending
+      .filter((entry) => !existingIds.has(entry.id))
+      .map((entry) => ({
+        ...entry,
+        financialStatus: 'posted' as const,
+        ...(input.recordId ? { recordId: input.recordId } : {}),
+        postedAt: now,
+      }));
+    const updatedPosted = [...existingPosted, ...newlyPosted];
+    const matchingIds = new Set(matchingPending.map((entry) => entry.id));
+    const remainingPending = pendingItems.filter((entry) => !matchingIds.has(entry.id));
+    const dailyData = dailySnapshot.exists() ? dailySnapshot.data() : {};
+    const existingDaily = toArray<VisitServiceCharge>(dailyData.cashCostItems);
+    const dailyIds = new Set(existingDaily.map((entry) => entry.id));
+    const updatedDaily = [
+      ...existingDaily,
+      ...newlyPosted.filter((entry) => !dailyIds.has(entry.id)),
+    ];
+
+    transaction.set(patientRef, {
+      costItems: updatedPosted,
+      pendingCostItems: remainingPending,
+      updatedAt: now,
+    }, { merge: true });
+    transaction.set(dailyRef, {
+      cashCostItems: updatedDaily,
+      ...calculateTotals(updatedDaily),
+      updatedAt: now,
+    }, { merge: true });
+    if (appointmentRef && appointmentSnapshot?.exists() && input.appointmentId) {
+      transaction.set(appointmentRef, {
+        ...buildAppointmentSummary(updatedPosted, input.appointmentId),
+        serviceChargesStatus: 'posted',
+        serviceChargesPostedAt: now,
+        ...(input.recordId ? { recordId: input.recordId } : {}),
+      }, { merge: true });
+    }
+    return matchingPending.length;
+  });
+
+  if (postedCount > 0) {
+    void loadCostsFromFirestore(input.userId, normalizedFileId);
+    window.dispatchEvent(new Event('financialDataUpdated'));
+  }
+  return postedCount;
 };

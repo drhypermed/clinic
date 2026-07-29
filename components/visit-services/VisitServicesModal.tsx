@@ -316,6 +316,11 @@ export const VisitServicesModal: React.FC<VisitServicesModalProps> = ({
                         <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[10px] font-bold text-slate-500">
                           <span>{getPaymentMethodLabel(item.paymentType)}</span>
                           <span>أضيف بواسطة: {item.addedByName || (item.addedByRole === 'secretary' ? 'السكرتارية' : 'الطبيب')}</span>
+                          {item.financialStatus === 'pending' && (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
+                              معلّقة حتى حفظ السجل
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="shrink-0 text-left">

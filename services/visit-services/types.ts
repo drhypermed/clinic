@@ -36,6 +36,9 @@ export interface VisitServiceCharge {
   source?: 'doctor_new_exam' | 'secretary_appointment';
   addedByRole?: VisitServiceActorRole;
   addedByName?: string;
+  financialStatus?: 'pending' | 'posted';
+  recordId?: string;
+  postedAt?: number;
 }
 
 export interface AddVisitServiceInput {
@@ -44,6 +47,10 @@ export interface AddVisitServiceInput {
   type: VisitServiceType;
   paymentType: DirectPaymentType;
   saveAsTemplate: boolean;
+}
+
+export interface VisitServiceDraft extends AddVisitServiceInput {
+  id: string;
 }
 
 export interface VisitServiceIdentity {

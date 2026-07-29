@@ -19,6 +19,7 @@ import type { PaymentType } from '../../types';
 import type { DirectPaymentType } from '../../utils/paymentMethods';
 import { isDirectPaymentType } from '../../utils/paymentMethods';
 import { VisitServicesModal } from './VisitServicesModal';
+import { setActiveVisitServiceScope } from '../../services/visit-services/activeVisitServiceScope';
 
 interface DoctorVisitServicesButtonProps {
   userId: string;
@@ -72,6 +73,16 @@ export const DoctorVisitServicesButton: React.FC<DoctorVisitServicesButtonProps>
   const visitId = appointmentId || manualVisitId;
 
   React.useEffect(() => {
+    if (!userId || !visitId) return;
+    setActiveVisitServiceScope(userId, {
+      visitId,
+      patientFileId: resolvedFileId || undefined,
+      appointmentId,
+      branchId,
+    });
+  }, [appointmentId, branchId, resolvedFileId, userId, visitId]);
+
+  React.useEffect(() => {
     if (patientFileId) {
       setResolvedFileId(patientFileId);
     } else if (!patientName.trim()) {
@@ -97,7 +108,7 @@ export const DoctorVisitServicesButton: React.FC<DoctorVisitServicesButtonProps>
   }, [branchId, isOpen, userId]);
 
   React.useEffect(() => {
-    if (!isOpen || !userId) return;
+    if ((!isOpen && !appointmentId) || !userId) return;
     const fallbackFileId = buildPatientFileDocIdFromNameKey(buildPatientFileNameKey(patientName));
     const fileId = resolvedFileId || fallbackFileId;
     if (!fileId) {

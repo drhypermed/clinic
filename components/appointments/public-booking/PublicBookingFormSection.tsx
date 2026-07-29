@@ -23,6 +23,7 @@ import type {
 } from '../../../types';
 import type { InsuranceCompany } from '../../../services/insuranceService';
 import type { DiscountReason } from '../../../services/discountReasonService';
+import type { VisitServiceDraft } from '../../../services/visit-services/types';
 
 /**
  * الخصائص (Props) التي يتقبلها مكون نموذج الحجز
@@ -102,6 +103,9 @@ type PublicBookingFormSectionProps = {
   userId?: string;
   bookingSecret?: string;
   secretarySessionToken?: string;
+  secretaryName?: string;
+  visitServiceDrafts: VisitServiceDraft[];
+  onVisitServiceDraftsChange: (drafts: VisitServiceDraft[]) => void;
   /**
    * الفرع الحالي للسكرتيرة — يُمرَّر إلى `AddAppointmentForm` ثم `InsurancePaymentSelector`
    * لاختيار override نسبة تحمل المريض الخاصة بالفرع (لو الطبيب حدد نسب مختلفة لكل فرع).
@@ -186,6 +190,9 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
   userId,
   bookingSecret,
   secretarySessionToken,
+  secretaryName,
+  visitServiceDrafts,
+  onVisitServiceDraftsChange,
   sessionBranchId,
 }) => {
   return (
@@ -286,6 +293,10 @@ export const PublicBookingFormSection: React.FC<PublicBookingFormSectionProps> =
               insuranceCompanies={insuranceCompanies}
               userId={userId}
               activeBranchId={sessionBranchId}
+              secretaryName={secretaryName}
+              visitServiceDrafts={visitServiceDrafts}
+              onVisitServiceDraftsChange={onVisitServiceDraftsChange}
+              hideVisitServices={Boolean(editingAppointmentId)}
             />
           )}
         </div>

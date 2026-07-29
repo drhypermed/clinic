@@ -25,6 +25,7 @@
 const { parseSecretaryLoginIdentifier, resolveSecretaryUsernameLoginTarget } =
   require('./secretaryUsernameFunctions');
 const { isPendingAppointmentExpired } = require('../appointmentRetention');
+const { createAppointmentWithVisitServices } = require('./secretaryBookingVisitServices');
 
 const SUPPORTED_PAYMENT_TYPES = new Set([
   'cash',
@@ -707,9 +708,21 @@ module.exports = ({ HttpsError, getDb, admin, getCairoDateKey }) => {
     }
 
     try {
-      const appointmentsRef = db.collection('users').doc(userId).collection('appointments');
-      const createdRef = await appointmentsRef.add(appointmentData);
-      return { success: true, appointmentId: createdRef.id };
+      const createdAppointmentId = await createAppointmentWithVisitServices({
+        db,
+        admin,
+        HttpsError,
+        getCairoDateKey,
+        userId,
+        branchId,
+        appointmentData,
+        appointmentDate: new Date(dateMs),
+        patientName,
+        phone,
+        secretaryName: normalizeOptionalText(request?.data?.secretaryName),
+        draftServices: request?.data?.visitServices,
+      });
+      return { success: true, appointmentId: createdAppointmentId };
     } catch (error) {
       console.error('[secretaryFunctions] Failed to create appointment:', error);
       throw new HttpsError('internal', 'FAILED_TO_CREATE_APPOINTMENT');

@@ -4,14 +4,18 @@ import { normalizeVisitServiceTemplates } from './helpers';
 import type {
   AddVisitServiceInput,
   VisitServiceCharge,
+  VisitServiceTemplate,
   VisitServicesSnapshot,
 } from './types';
 
-interface SecretaryVisitServiceContext {
+export interface SecretaryVisitServiceBaseContext {
   userId: string;
   secret: string;
   sessionToken?: string;
   branchId?: string;
+}
+
+interface SecretaryVisitServiceContext extends SecretaryVisitServiceBaseContext {
   appointmentId: string;
   secretaryName?: string;
 }
@@ -24,6 +28,15 @@ const parseItems = (value: unknown): VisitServiceCharge[] =>
         && String((item as VisitServiceCharge).id || '').trim(),
       ))
     : [];
+
+export const loadSecretaryVisitServiceTemplates = async (
+  context: SecretaryVisitServiceBaseContext,
+): Promise<VisitServiceTemplate[]> => {
+  const callable = httpsCallable(functions, 'listVisitServiceTemplatesForSecretary');
+  const response = await callable(context);
+  const data = (response.data || {}) as { templates?: unknown };
+  return normalizeVisitServiceTemplates(data.templates);
+};
 
 export const loadSecretaryVisitServices = async (
   context: SecretaryVisitServiceContext,
@@ -62,4 +75,3 @@ export const deleteSecretaryVisitService = async (
     templates: normalizeVisitServiceTemplates(data.templates),
   };
 };
-

@@ -19,6 +19,7 @@ import type {
     SecretaryVitalsInput,
     SecretaryVitalsVisibility,
 } from '../../../../types';
+import type { VisitServiceDraft } from '../../../../services/visit-services/types';
 
 /** شكل بيانات الموعد المطلوب الدخول إليه من السكرتارية */
 export type EntryRequestAppointment = {
@@ -41,6 +42,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     sessionBranchId?: string;
     onSessionInvalid?: (message?: string) => void;
     success: boolean;
+    secretaryName?: string;
     patientName: string;
     age: string;
     dateOfBirth: string;
@@ -73,6 +75,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     discountPercent: number;
     discountReasonId: string;
     discountReasonLabel: string;
+    visitServiceDrafts: VisitServiceDraft[];
     setPaymentType: Dispatch<SetStateAction<PaymentType>>;
     setInsuranceCompanyId: Dispatch<SetStateAction<string>>;
     setInsuranceCompanyName: Dispatch<SetStateAction<string>>;
@@ -83,6 +86,7 @@ export type UsePublicBookingAppointmentActionsParams = {
     setDiscountPercent: Dispatch<SetStateAction<number>>;
     setDiscountReasonId: Dispatch<SetStateAction<string>>;
     setDiscountReasonLabel: Dispatch<SetStateAction<string>>;
+    setVisitServiceDrafts: Dispatch<SetStateAction<VisitServiceDraft[]>>;
     setPendingEntryAppointmentId: Dispatch<SetStateAction<string | null>>;
     setBookingQuotaNotice: Dispatch<SetStateAction<BookingQuotaNotice | null>>;
     setFormError: Dispatch<SetStateAction<string | null>>;

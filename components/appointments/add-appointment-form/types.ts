@@ -9,6 +9,7 @@ import type {
 } from '../../../app/drug-catalog/types';
 import type { InsuranceCompany } from '../../../services/insuranceService';
 import type { DiscountReason } from '../../../services/discountReasonService';
+import type { VisitServiceDraft } from '../../../services/visit-services/types';
 
 /**
  * تعريف الهياكل البيانية لنموذج إضافة المواعيد (Appointment Form Types)
@@ -121,6 +122,10 @@ export interface AddAppointmentFormProps {
   secretarySessionToken?: string;
   /** الفرع النشط — يستخدم لاختيار override نسبة تحمل المريض من شركة التأمين (لو موجود). */
   activeBranchId?: string;
+  secretaryName?: string;
+  visitServiceDrafts?: VisitServiceDraft[];
+  onVisitServiceDraftsChange?: (drafts: VisitServiceDraft[]) => void;
+  hideVisitServices?: boolean;
   paymentType?: PaymentType;
   onPaymentTypeChange?: (v: PaymentType) => void;
   insuranceCompanyId?: string;

@@ -29,6 +29,7 @@ import {
 } from '../../../utils/secretaryVitals';
 import { InsurancePaymentSelector } from '../../prescription/InsurancePaymentSelector';
 import { PatientAddressFields } from '../../common/PatientAddressFields';
+import { SecretaryBookingVisitServicesButton } from '../../visit-services/SecretaryBookingVisitServicesButton';
 
 /**
  * الملف: AddAppointmentForm.tsx
@@ -59,6 +60,8 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
   submitLabel, hideTopHeader = false, isOpen = true, onToggleOpen,
   bookingSecret, addressTemplateRole = 'doctor', secretarySessionToken,
   userId, activeBranchId, paymentType = 'cash', onPaymentTypeChange,
+  secretaryName, visitServiceDrafts = [], onVisitServiceDraftsChange,
+  hideVisitServices = false,
   insuranceCompanyId = '', onInsuranceCompanyIdChange,
   insuranceCompanyName = '', onInsuranceCompanyNameChange,
   insuranceApprovalCode = '', onInsuranceApprovalCodeChange,
@@ -628,6 +631,32 @@ export const AddAppointmentForm: React.FC<AddAppointmentFormProps> = ({
                 insuranceCompanies={propInsuranceCompanies}
               />
             </div>
+          )}
+
+          {userId
+            && bookingSecret
+            && onVisitServiceDraftsChange
+            && !hideVisitServices && (
+              <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border border-brand-100 bg-brand-50/40 p-3">
+                <div className="mb-2">
+                  <div className="text-xs font-black text-slate-700">خدمات ورسوم الموعد</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-slate-500">
+                أضف أي تدخل أو رسم الآن، وسيظهر للطبيب تلقائيًا عند فتح الكشف،
+                ولن يدخل الحسابات إلا بعد حفظ السجل.
+                  </div>
+                </div>
+                <SecretaryBookingVisitServicesButton
+                  userId={userId}
+                  secret={bookingSecret}
+                  sessionToken={secretarySessionToken}
+                  branchId={activeBranchId}
+                  secretaryName={secretaryName}
+                  patientName={patientName}
+                  drafts={visitServiceDrafts}
+                  onChange={onVisitServiceDraftsChange}
+                  disabled={saving}
+                />
+              </div>
           )}
 
           <div className="sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
